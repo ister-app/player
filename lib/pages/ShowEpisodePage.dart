@@ -54,7 +54,7 @@ class ShowEpisodePage extends StatelessWidget {
             return getContent(
                 episode,
                 MetadataUtil.getTitle(episode.metadata) ??
-                    AppLocalizations.of(context)!.episode(episode.number ?? ""),
+                    AppLocalizations.of(context)!.episode(episode.number ?? 0),
                 MetadataUtil.getDescription(episode.metadata) ?? "",
                 context);
           }

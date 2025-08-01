@@ -43,7 +43,7 @@ class TvShowSeasonList extends StatelessWidget {
                     context: context,
                     tiles: List.filled(7, BoneMock.title).map((e) {
                       return getListTile(context, e, BoneMock.paragraph, false,
-                          "1", "1", "1", null, null);
+                          1, "1", "1", null, null);
                     }).toList())
                 .toList());
             return Skeletonizer(enabled: true, child: Column(children: list));
@@ -65,10 +65,10 @@ class TvShowSeasonList extends StatelessWidget {
                             context,
                             MetadataUtil.getTitle(episode.metadata) ??
                                 AppLocalizations.of(context)!
-                                    .episode(episode.number ?? ""),
+                                    .episode(episode.number ?? 0),
                             MetadataUtil.getDescription(episode.metadata) ?? "",
                             isWatched(episode),
-                            episode.number,
+                            episode.number ?? 0,
                             episode.$show!.id,
                             episode.id,
                             imageUrl,
@@ -97,7 +97,7 @@ class TvShowSeasonList extends StatelessWidget {
       String title,
       String description,
       bool isWatched,
-      episodeNumber,
+      int episodeNumber,
       String showId,
       String episodeId,
       String? imageUrl,

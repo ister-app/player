@@ -1,0 +1,66 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Build and Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: 'zulu' # Alternative distribution options are available
+
+      - name: Install dependencies from Apt
+        run: |
+          sudo apt update -y && sudo apt upgrade -y;
+          
+          # These packages are listed in the setup instructions for Linux desktop. They may not all be necessary.
+          # For reference: https://docs.flutter.dev/get-started/install/linux/desktop
+          sudo apt install -y curl git unzip xz-utils zip libglu1-mesa clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev
+
+      - name: Install mpv # for media_kit
+        run: sudo apt install -y libmpv-dev mpv
+
+      - name: Install libsecret # for OIDC
+        run: sudo apt install -y libsecret-1-0 libsecret-1-dev libjsoncpp25 libjsoncpp-dev
+
+      - name: Install Flutter
+        # Running "flutter doctor" will download Flutter's dependencies
+        run: flutter doctor
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build Linux
+        run: flutter build linux --release
+
+      - name: Build Android
+        run: flutter build apk --release
+
+      - name: Upload Linux Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: build/linux/x64/release/bundle/
+
+      - name: Upload Android Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk

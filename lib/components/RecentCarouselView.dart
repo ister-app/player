@@ -77,7 +77,7 @@ class RecentCarouselView extends StatelessWidget {
                   serverName: serverName,
                   title: MetadataUtil.getTitle(episode.metadata) ??
                       AppLocalizations.of(context)!
-                          .episode(episode.number ?? ""),
+                          .episode(episode.number ?? 0),
                   subTitle: MetadataUtil.getDescription(episode.metadata) ?? "",
                   imageUrl: ImageUtil.getImageIdByType(
                       images, ImageTypes.background));

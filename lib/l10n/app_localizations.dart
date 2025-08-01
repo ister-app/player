@@ -114,19 +114,19 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Season {number}'**
-  String season(num number);
+  String season(int number);
+
+  /// Episode with a number of the episode after
+  ///
+  /// In en, this message translates to:
+  /// **'Episode {number}'**
+  String episode(int number);
 
   /// The firtst letter of the word episode. After this is the episode number.
   ///
   /// In en, this message translates to:
-  /// **'Episode {number}'**
-  String episode(Object number);
-
-  /// No description provided for @episodePrefix.
-  ///
-  /// In en, this message translates to:
   /// **'E{number}'**
-  String episodePrefix(Object number);
+  String episodePrefix(int number);
 }
 
 class _AppLocalizationsDelegate

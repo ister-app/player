@@ -15,17 +15,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recentlyAddedShows => 'Recently added shows';
 
   @override
-  String season(num number) {
+  String season(int number) {
     return 'Season $number';
   }
 
   @override
-  String episode(Object number) {
+  String episode(int number) {
     return 'Episode $number';
   }
 
   @override
-  String episodePrefix(Object number) {
+  String episodePrefix(int number) {
     return 'E$number';
   }
 }
