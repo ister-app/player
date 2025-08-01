@@ -1,0 +1,29 @@
+query episodesRecentWatchedQuery {
+    episodesRecentWatched {
+        id
+        show {
+            id
+            metadata {
+                ...fragmentMetadata
+            }
+            images {
+                ...fragmentImages
+            }
+        }
+        season {
+            number
+        }
+        number
+        metadata {
+            ...fragmentMetadata
+        }
+        mediaFile {
+            id
+        }
+        images {
+            language
+            id
+            type
+        }
+    }
+}

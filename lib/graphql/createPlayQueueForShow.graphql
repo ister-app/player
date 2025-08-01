@@ -1,0 +1,10 @@
+mutation createPlayQueueForShow($id: ID!, $episodeId: ID!) {
+    createPlayQueueForShow(showId: $id, episodeId: $episodeId) {
+        id
+        playQueueItems {
+            id
+            itemId
+        }
+        currentItem
+    }
+}

@@ -1,0 +1,17 @@
+query showById($id: ID!) {
+    showById(id: $id) {
+        id
+        images {
+            ...fragmentImages
+        }
+        name
+        releaseYear
+        metadata {
+            ...fragmentMetadata
+        }
+        seasons {
+            id
+            number
+        }
+    }
+}

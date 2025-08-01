@@ -1,0 +1,29 @@
+query seasonById($id: ID!) {
+    seasonById(id: $id) {
+        episodes {
+            id
+            number
+            metadata {
+                ...fragmentMetadata
+            }
+            show {
+                id
+            }
+            images {
+                ...fragmentImages
+            }
+            watchStatus {
+                id
+                playQueueItemId
+                progressInMilliseconds
+                watched
+            }
+            mediaFile {
+                durationInMilliseconds
+                id
+                path
+                size
+            }
+        }
+    }
+}

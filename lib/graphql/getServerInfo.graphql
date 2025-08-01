@@ -1,0 +1,8 @@
+query getServerInfoQuery {
+    getServerInfo {
+        name
+        openIdUrl
+        url
+        version
+    }
+}

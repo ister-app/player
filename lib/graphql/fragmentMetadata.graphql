@@ -1,0 +1,7 @@
+fragment fragmentMetadata on Metadata {
+    description
+    id
+    language
+    sourceUri
+    title
+}

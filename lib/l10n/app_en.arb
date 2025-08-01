@@ -1,0 +1,34 @@
+{
+  "watchNext": "Continue watching",
+  "@season": {
+    "description": "Text above recently watched media"
+  },
+  "recentlyAddedShows": "Recently added shows",
+  "@season": {
+    "description": "Text above recently added shows"
+  },
+  "season": "Season {number}",
+  "@season": {
+    "description": "Season with a number of the season after",
+    "placeholders": {
+      "number": {
+        "type": "num",
+        "example": "4"
+      }
+    }
+  },
+  "episode": "Episode {number}",
+  "@episode": {
+    "description": "Episode with a number of the episode after",
+    "placeholders": {
+      "number": {
+        "type": "num",
+        "example": "4"
+      }
+    }
+  },
+  "episodePrefix": "E{number}",
+  "@episodePrefix": {
+    "description": "The firtst letter of the word episode. After this is the episode number."
+  }
+}

@@ -3,6 +3,13 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  flutter_secure_storage_linux
+  media_kit_libs_linux
+  media_kit_video
+  oidc_linux
+  url_launcher_linux
+  volume_controller
+  window_to_front
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST

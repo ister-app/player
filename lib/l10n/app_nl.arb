@@ -1,0 +1,7 @@
+{
+    "watchNext": "Kijk verder",
+    "recentlyAddedShows": "Recent toegevoegde series",
+    "season": "Seizoen {number}",
+    "episode": "Aflevering {number}",
+    "episodePrefix": "A{number}"
+}
