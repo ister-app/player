@@ -24,8 +24,9 @@ class RecentCarouselView extends StatelessWidget {
   Widget build(BuildContext context) {
     PlayQueueService playQueueService = PlayQueueService();
     return Query(
-      options:
-          QueryOptions(document: documentNodeQueryepisodesRecentWatchedQuery, ),
+      options: QueryOptions(
+        document: documentNodeQueryepisodesRecentWatchedQuery,
+      ),
       builder: (QueryResult result,
           {VoidCallback? refetch, FetchMore? fetchMore}) {
         playQueueService.getPlayQueueChangedStream().listen((event) {
@@ -79,8 +80,16 @@ class RecentCarouselView extends StatelessWidget {
                       AppLocalizations.of(context)!
                           .episode(episode.number ?? 0),
                   subTitle: MetadataUtil.getDescription(episode.metadata) ?? "",
-                  imageUrl: ImageUtil.getImageIdByType(
-                      images, ImageTypes.background));
+                  imageUrl:
+                      ImageUtil.getImageIdByType(images, ImageTypes.background),
+                  progress: episode.watchStatus != null &&
+                          episode.watchStatus!.isNotEmpty &&
+                          episode.watchStatus!.first.watched != true &&
+                          episode.mediaFile != null &&
+                          episode.mediaFile!.isNotEmpty
+                      ? episode.watchStatus!.first.progressInMilliseconds /
+                          episode.mediaFile!.first!.durationInMilliseconds!
+                      : null);
             }).toList(),
             onTap: (value) => {
                   AutoRouter.of(context).pushPath(

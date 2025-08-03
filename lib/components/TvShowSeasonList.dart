@@ -7,6 +7,7 @@ import 'package:player/utils/MetadataUtil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../l10n/app_localizations.dart';
+import '../utils/ClientManager.dart';
 import '../utils/ImageTypes.dart';
 import '../utils/ImageUtil.dart';
 import '../utils/LoginManager.dart';
@@ -74,7 +75,10 @@ class TvShowSeasonList extends StatelessWidget {
                             imageUrl,
                             episode.watchStatus != null &&
                                     episode.watchStatus!.isNotEmpty &&
-                                    episode.watchStatus!.first.watched != true
+                                    episode.watchStatus!.first.watched !=
+                                        true &&
+                                    episode.mediaFile != null &&
+                                    episode.mediaFile!.isNotEmpty
                                 ? episode.watchStatus!.first
                                         .progressInMilliseconds /
                                     episode.mediaFile!.first!
@@ -132,7 +136,7 @@ class TvShowSeasonList extends StatelessWidget {
                           fit: BoxFit.fitHeight,
                           image: NetworkImage(
                             headers: LoginManager.getHeaders(serverName),
-                            'https://$serverName/images/$imageUrl/download',
+                            '${ClientManager.getHttpOrHttps(serverName)}://$serverName/images/$imageUrl/download',
                           ),
                         )
                       : Container(),

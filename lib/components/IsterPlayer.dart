@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:player/utils/ClientManager.dart';
 
 import '../utils/LoginManager.dart';
 
 class IsterPlayer extends StatefulWidget {
   const IsterPlayer(
-      {super.key, required this.serverName, required this.mediaId, this.onProgressChanged, this.startTimeInMilliseconds, this.onCompleted});
+      {super.key,
+      required this.serverName,
+      required this.mediaId,
+      this.onProgressChanged,
+      this.startTimeInMilliseconds,
+      this.onCompleted});
 
   final String serverName;
   final String mediaId;
@@ -40,18 +46,24 @@ class _IsterPlayerState extends State<IsterPlayer> {
     _initPlayer();
 
     player.stream.position.listen(
-          (Duration position) {
-            if (widget.onProgressChanged != null && (lastDurationUpdate == null || (position.inMilliseconds - lastDurationUpdate!.inMilliseconds).abs() > 10 * 1000)) {
-              lastDurationUpdate = position;
-              widget.onProgressChanged!(position);
-            }
+      (Duration position) {
+        if (widget.onProgressChanged != null &&
+            (lastDurationUpdate == null ||
+                (position.inMilliseconds - lastDurationUpdate!.inMilliseconds)
+                        .abs() >
+                    10 * 1000)) {
+          lastDurationUpdate = position;
+          widget.onProgressChanged!(position);
+        }
       },
     );
-    player.stream.completed.listen((completed) {
-      if (widget.onCompleted != null) {
-        widget.onCompleted!(completed);
-      }
-    },);
+    player.stream.completed.listen(
+      (completed) {
+        if (widget.onCompleted != null) {
+          widget.onCompleted!(completed);
+        }
+      },
+    );
   }
 
   void _initPlayer() async {
@@ -81,7 +93,7 @@ class _IsterPlayerState extends State<IsterPlayer> {
     var duration = Duration(milliseconds: widget.startTimeInMilliseconds ?? 0);
     print(duration);
     var media = Media(
-        'https://${widget.serverName}/mediaFile/${widget.mediaId}/download',
+        '${ClientManager.getHttpOrHttps(widget.serverName)}://${widget.serverName}/mediaFile/${widget.mediaId}/download',
         start: duration,
         httpHeaders: LoginManager.getHeaders(widget.serverName));
     player.open(media);

@@ -1,0 +1,5 @@
+query getPlayQueue($id: ID!) {
+    getPlayQueue(id: $id) {
+        ...fragmentPlayQueue
+    }
+}

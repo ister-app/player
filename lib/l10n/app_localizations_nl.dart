@@ -9,6 +9,9 @@ class AppLocalizationsNl extends AppLocalizations {
   AppLocalizationsNl([String locale = 'nl']) : super(locale);
 
   @override
+  String get scanLibrary => 'Scan bibliotheek';
+
+  @override
   String get watchNext => 'Kijk verder';
 
   @override

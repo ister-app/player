@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:player/utils/LoginManager.dart';
 
+import '../utils/ClientManager.dart';
+
 class CarouselItemView extends StatelessWidget {
   const CarouselItemView(
       {super.key,
       required this.serverName,
       required this.title,
       required this.subTitle,
-      this.imageUrl});
+      this.imageUrl,
+      this.progress});
 
   final String serverName;
   final String title;
   final String subTitle;
   final String? imageUrl;
+  final double? progress;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +35,7 @@ class CarouselItemView extends StatelessWidget {
                         fit: BoxFit.fitHeight,
                         image: NetworkImage(
                           headers: LoginManager.getHeaders(serverName),
-                          'https://$serverName/images/$imageUrl/download',
+                          '${ClientManager.getHttpOrHttps(serverName)}://$serverName/images/$imageUrl/download',
                         ),
                       )
                     : Container(),
@@ -40,6 +44,7 @@ class CarouselItemView extends StatelessWidget {
         Opacity(
             opacity: 0.8,
             child: Container(
+              width: double.infinity,
               padding: const EdgeInsets.all(10),
               color: Theme.of(context).colorScheme.surface,
               child: Column(
@@ -64,6 +69,15 @@ class CarouselItemView extends StatelessWidget {
                 ],
               ),
             )),
+        progress != null
+            ? Positioned(
+                left: 0,
+                bottom: 0,
+                right: 0,
+                child: LinearProgressIndicator(
+                  value: progress,
+                ))
+            : Container(),
       ],
     );
   }

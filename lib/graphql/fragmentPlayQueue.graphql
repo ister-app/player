@@ -1,0 +1,8 @@
+fragment fragmentPlayQueue on PlayQueue {
+    id
+    playQueueItems {
+        id
+        itemId
+    }
+    currentItemId
+}

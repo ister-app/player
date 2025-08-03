@@ -5,6 +5,14 @@ import 'package:player/utils/LoginManager.dart';
 class ClientManager {
   static Map<String, ValueNotifier<GraphQLClient>> clients = {};
 
+  static String getHttpOrHttps(String url) {
+    if (url == "localhost:8080") {
+      return "http";
+    } else {
+      return "https";
+    }
+  }
+
   static ValueNotifier<GraphQLClient> getClientForUrl(String url) {
     if (clients.containsKey(url)) {
       return clients[url]!;
@@ -17,7 +25,7 @@ class ClientManager {
 
   static ValueNotifier<GraphQLClient> createClient(String url) {
     final HttpLink httpLink = HttpLink(
-      'https://$url/graphql',
+      '${getHttpOrHttps(url)}://$url/graphql',
     );
 
     final AuthLink authLink =

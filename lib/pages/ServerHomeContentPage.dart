@@ -1,6 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/components/TvShowSlide.dart';
+import 'package:player/graphql/scanLibrary.graphql.dart';
 
 import '../components/RecentCarouselView.dart';
 import '../l10n/app_localizations.dart';
@@ -21,9 +23,36 @@ class ServerHomeContentPage extends StatefulWidget {
 class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
   @override
   Widget build(BuildContext context) {
+    GraphQLClient graphQLClient = GraphQLProvider.of(context).value;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.serverName),
+        actions: [
+          MenuAnchor(
+            menuChildren: <Widget>[
+              MenuItemButton(
+                  onPressed: () {
+                    scanLibrary(graphQLClient);
+                  },
+                  child: ListTile(
+                    leading: const Icon(Icons.refresh),
+                    title: Text(AppLocalizations.of(context)!.scanLibrary),
+                  )),
+            ],
+            builder: (_, MenuController controller, Widget? child) {
+              return IconButton(
+                onPressed: () {
+                  if (controller.isOpen) {
+                    controller.close();
+                  } else {
+                    controller.open();
+                  }
+                },
+                icon: const Icon(Icons.more_vert),
+              );
+            },
+          )
+        ],
       ),
       body: ListView(children: [
         Container(
@@ -56,5 +85,17 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
             ))
       ]),
     );
+  }
+
+  Future<void> scanLibrary(GraphQLClient graphQLClient) async {
+    final MutationOptions options = MutationOptions(
+      document: documentNodeMutationscanLibrary,
+    );
+    final QueryResult result = await graphQLClient.mutate(options);
+
+    if (result.hasException) {
+      print(result.exception.toString());
+      return;
+    }
   }
 }

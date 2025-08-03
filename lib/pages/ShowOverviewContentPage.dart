@@ -4,6 +4,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/showById.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../utils/ClientManager.dart';
 import '../utils/ImageTypes.dart';
 import '../utils/ImageUtil.dart';
 import '../utils/LoginManager.dart';
@@ -76,7 +77,7 @@ class ShowOverviewContentPage extends StatelessWidget {
                   fit: BoxFit.cover,
                   image: NetworkImage(
                     headers: LoginManager.getHeaders(serverName),
-                    'https://$serverName/images/$imageUrl/download',
+                    '${ClientManager.getHttpOrHttps(serverName)}://$serverName/images/$imageUrl/download',
                   ),
                 )
               : Container(),

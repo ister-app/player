@@ -7,6 +7,7 @@ import 'package:player/graphql/episodeById.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../l10n/app_localizations.dart';
+import '../utils/ClientManager.dart';
 import '../utils/ImageTypes.dart';
 import '../utils/ImageUtil.dart';
 import '../utils/LoginManager.dart';
@@ -31,7 +32,6 @@ class ShowEpisodePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Query(
       options: QueryOptions(
-          // document: gql(getEpisodesRecentWatched),
           document: documentNodeQueryepisodeById,
           variables: Map.of({"id": episodeId})),
       builder: (QueryResult result,
@@ -86,7 +86,7 @@ class ShowEpisodePage extends StatelessWidget {
                                   image: NetworkImage(
                                     headers:
                                         LoginManager.getHeaders(serverName),
-                                    'https://$serverName/images/$imageUrl/download',
+                                    '${ClientManager.getHttpOrHttps(serverName)}://$serverName/images/$imageUrl/download',
                                   ),
                                 )
                               : Container(),

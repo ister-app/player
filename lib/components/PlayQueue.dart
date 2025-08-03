@@ -7,6 +7,7 @@ import 'package:player/utils/PlayQueueService.dart';
 
 import '../graphql/createPlayQueueForShow.graphql.dart';
 import '../graphql/episodeById.graphql.dart';
+import '../graphql/fragmentPlayQueue.graphql.dart';
 import '../routes/AppRouter.gr.dart';
 
 class PlayQueue extends StatelessWidget {
@@ -22,31 +23,24 @@ class PlayQueue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("Playqueue: ${playQueueId}");
     if (episode == null || episode!.$show == null) {
       return Text("episode null");
     }
     GraphQLClient graphQLClient = GraphQLProvider.of(context).value;
     PlayQueueService playQueueService = PlayQueueService();
 
-    return Mutation(
-      options: MutationOptions(
-        document: documentNodeMutationcreatePlayQueueForShow,
-      ),
-      builder: (runMutation, result) {
-        if (result == null || result.data == null) {
-          runMutation(Map.of({
-            "id": episode!.$show!.id,
-            "episodeId": episode!.id,
-          }));
-          return Container(child: Text("null"));
-        } else if (result.hasException) {
-          return Text(result.exception.toString());
-        } else if (result.isLoading) {
+    return FutureBuilder<Fragment$fragmentPlayQueue?>(
+      future: playQueueService.getOrCreatePlayQueue(
+          graphQLClient, playQueueId, episode!.id, episode!.$show!.id),
+      builder: (BuildContext context,
+          AsyncSnapshot<Fragment$fragmentPlayQueue?> snapshot) {
+        if (snapshot.hasError == true) {
+          return Text("Error");
+        } else if (snapshot.hasData == false || snapshot.data == null) {
           return Container(child: Text("loading"));
         } else {
-          final parsedData =
-              Mutation$createPlayQueueForShow.fromJson(result.data!);
-          final playQueueObject = parsedData.createPlayQueueForShow;
+          final playQueueObject = snapshot!.data;
           if (playQueueObject == null) {
             return const Text("Something went wrong");
           } else {
@@ -59,8 +53,11 @@ class PlayQueue extends StatelessWidget {
                   ? episode?.watchStatus?.first.progressInMilliseconds
                   : null,
               onProgressChanged: (duration) {
-                playQueueService.updateProgress(graphQLClient,
-                    playQueueObject.id, playQueueObject.currentItem!, duration);
+                playQueueService.updateProgress(
+                    graphQLClient,
+                    playQueueObject.id,
+                    playQueueObject.currentItemId!,
+                    duration);
               },
               onCompleted: (completed) {
                 if (completed) {
@@ -69,9 +66,10 @@ class PlayQueue extends StatelessWidget {
                       i < playQueueObject.playQueueItems!.length;
                       i++) {
                     if (playQueueObject.playQueueItems![i].id ==
-                            playQueueObject.currentItem &&
+                            playQueueObject.currentItemId &&
                         i + 1 < playQueueObject.playQueueItems!.length) {
                       AutoRouter.of(context).navigate(ShowEpisodeRoute(
+                          playQueueId: playQueueObject.id,
                           showId: episode!.$show!.id,
                           episodeId:
                               playQueueObject.playQueueItems![i + 1].itemId));

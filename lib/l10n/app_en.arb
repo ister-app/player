@@ -1,10 +1,14 @@
 {
+  "scanLibrary": "Scan library",
+  "@scanLibrary": {
+    "description": "Text in list tile when clicked it will trigger a library scan."
+  },
   "watchNext": "Continue watching",
-  "@season": {
+  "@watchNext": {
     "description": "Text above recently watched media"
   },
   "recentlyAddedShows": "Recently added shows",
-  "@season": {
+  "@recentlyAddedShows": {
     "description": "Text above recently added shows"
   },
   "season": "Season {number}",

@@ -98,13 +98,19 @@ abstract class AppLocalizations {
     Locale('nl')
   ];
 
-  /// No description provided for @watchNext.
+  /// Text in list tile when clicked it will trigger a library scan.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan library'**
+  String get scanLibrary;
+
+  /// Text above recently watched media
   ///
   /// In en, this message translates to:
   /// **'Continue watching'**
   String get watchNext;
 
-  /// No description provided for @recentlyAddedShows.
+  /// Text above recently added shows
   ///
   /// In en, this message translates to:
   /// **'Recently added shows'**
