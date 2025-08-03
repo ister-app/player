@@ -6,6 +6,7 @@ import 'package:player/graphql/scanLibrary.graphql.dart';
 
 import '../components/RecentCarouselView.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/LoggerService.dart';
 
 @RoutePage()
 class ServerHomeContentPage extends StatefulWidget {
@@ -94,7 +95,7 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
     final QueryResult result = await graphQLClient.mutate(options);
 
     if (result.hasException) {
-      print(result.exception.toString());
+      LoggerService().logger.e(result.exception);
       return;
     }
   }

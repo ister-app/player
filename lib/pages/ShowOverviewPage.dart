@@ -6,6 +6,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/TvShowSeasonExpansionPanelList.dart';
 import '../graphql/fragmentImages.graphql.dart';
+import '../utils/LoggerService.dart';
 
 @RoutePage()
 class ShowOverviewPage extends StatelessWidget {
@@ -31,7 +32,7 @@ class ShowOverviewPage extends StatelessWidget {
         Widget body = Text("Body");
 
         if (result.hasException) {
-          print(result.data);
+          LoggerService().logger.e(result.exception);
           body = Text(result.exception.toString());
         }
 

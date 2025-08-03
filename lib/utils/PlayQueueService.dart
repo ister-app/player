@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 import 'package:player/graphql/getPlayQueue.graphql.dart';
+import 'package:player/utils/LoggerService.dart';
 
 import '../graphql/createPlayQueueForShow.graphql.dart';
 import '../graphql/updatePlayQueue.graphql.dart';
@@ -43,7 +44,7 @@ class PlayQueueService {
     final QueryResult result = await graphQLClient.mutate(options);
 
     if (result.hasException) {
-      print(result.exception.toString());
+      LoggerService().logger.e(result.exception);
       return null;
     }
     return Mutation$createPlayQueueForShow.fromJson(result.data!)
@@ -59,7 +60,7 @@ class PlayQueueService {
         })));
 
     if (result.hasException) {
-      print(result.exception.toString());
+      LoggerService().logger.e(result.exception);
       return null;
     }
     return Query$getPlayQueue.fromJson(result.data!).getPlayQueue;
@@ -77,7 +78,7 @@ class PlayQueueService {
     final QueryResult result = await graphQLClient.mutate(options);
 
     if (result.hasException) {
-      print(result.exception.toString());
+      LoggerService().logger.e(result.exception);
       return;
     }
   }

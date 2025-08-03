@@ -91,7 +91,6 @@ class _IsterPlayerState extends State<IsterPlayer> {
 
     // Play a [Media] or [Playlist].
     var duration = Duration(milliseconds: widget.startTimeInMilliseconds ?? 0);
-    print(duration);
     var media = Media(
         '${ClientManager.getHttpOrHttps(widget.serverName)}://${widget.serverName}/mediaFile/${widget.mediaId}/download',
         start: duration,

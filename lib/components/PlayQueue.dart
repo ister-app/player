@@ -23,7 +23,6 @@ class PlayQueue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("Playqueue: ${playQueueId}");
     if (episode == null || episode!.$show == null) {
       return Text("episode null");
     }

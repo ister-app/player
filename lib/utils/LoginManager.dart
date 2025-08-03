@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:oidc/oidc.dart';
 import 'package:oidc_default_store/oidc_default_store.dart';
+import 'package:player/utils/LoggerService.dart';
 
 import 'ClientManager.dart';
 
@@ -24,10 +25,10 @@ class LoginManager {
   static Future<void> initIfNotExists(
       String serverUrl, String discoveryDocumentUri) async {
     if (managers.containsKey(serverUrl)) {
-      print("All ready LoginManager inited for $serverUrl");
+      LoggerService().logger.d("All ready LoginManager inited for $serverUrl");
     } else {
       ClientManager.getClientForUrl(serverUrl);
-      print(discoveryDocumentUri);
+      LoggerService().logger.d("discoveryDocumentUri $discoveryDocumentUri");
       httpHeaders[serverUrl] = Map.of({"Authorization": ""});
       managers[serverUrl] = OidcUserManager.lazy(
         discoveryDocumentUri: Uri.parse(discoveryDocumentUri),
@@ -45,7 +46,7 @@ class LoginManager {
         ),
       );
       managers[serverUrl]?.userChanges().listen((event) {
-        print(
+        LoggerService().logger.d(
           'User changed: ${event?.claims.toJson()}, info: ${event?.userInfo}',
         );
         if (event?.token.accessToken != null) {
@@ -58,7 +59,7 @@ class LoginManager {
   }
 
   static Future<OidcUser?> startLogin(String serverUrl) async {
-    print("'${managers[serverUrl]?.discoveryDocumentUri}'");
+    LoggerService().logger.d("Start login for '${managers[serverUrl]?.discoveryDocumentUri}'");
     return await managers[serverUrl]?.loginAuthorizationCodeFlow();
   }
 
