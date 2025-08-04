@@ -25,12 +25,25 @@ class PlayQueueService {
       GraphQLClient graphQLClient,
       String? playQueueId,
       String episodeId,
-      String showId) async {
+      String showId,
+      int? startTimeInMilliseconds) async {
     if (playQueueId == null) {
       return await _createPlayQueue(graphQLClient, episodeId, showId);
     } else {
-      return await _getPlayQueue(graphQLClient, playQueueId);
+      var playQueue = await _getPlayQueue(graphQLClient, playQueueId);
+      if (playQueue != null) {
+        String? currentItemId = getPlayQueueItemId(playQueue, episodeId);
+        if (currentItemId != null) {
+          updateProgress(graphQLClient, playQueue.id, currentItemId,
+              Duration(milliseconds: startTimeInMilliseconds ?? 0));
+        }
+      }
+      return playQueue;
     }
+  }
+
+  String? getPlayQueueItemId(Fragment$fragmentPlayQueue playQueue, String id) {
+    return playQueue.playQueueItems?.firstWhere((element) => element.itemId == id).id;
   }
 
   Future<Fragment$fragmentPlayQueue?> _createPlayQueue(
