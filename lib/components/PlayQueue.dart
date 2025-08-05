@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/components/IsterPlayer.dart';
+import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/PlayQueueService.dart';
 
 import '../graphql/episodeById.graphql.dart';

@@ -30,9 +30,12 @@ class ShowEpisodePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool loadComplete = false;
     return Query(
       options: QueryOptions(
           document: documentNodeQueryepisodeById,
+          // Keep track if the graphql query is done. Otherwise the player can be loaded twice.
+          onComplete: (data) => loadComplete = true,
           variables: Map.of({"id": episodeId})),
       builder: (QueryResult result,
           {VoidCallback? refetch, FetchMore? fetchMore}) {
@@ -41,8 +44,8 @@ class ShowEpisodePage extends StatelessWidget {
         } else if (result.isLoading) {
           return Skeletonizer(
               enabled: true,
-              child:
-                  getContent(null, BoneMock.name, BoneMock.words(15), context));
+              child: getContent(
+                  false, null, BoneMock.name, BoneMock.words(15), context));
         } else {
           final parsedData = Query$episodeById.fromJson(result.data!);
 
@@ -52,6 +55,7 @@ class ShowEpisodePage extends StatelessWidget {
             return const Text('No Episode');
           } else {
             return getContent(
+                loadComplete,
                 episode,
                 MetadataUtil.getTitle(episode.metadata) ??
                     AppLocalizations.of(context)!.episode(episode.number ?? 0),
@@ -63,15 +67,15 @@ class ShowEpisodePage extends StatelessWidget {
     );
   }
 
-  Column getContent(Query$episodeById$episodeById? episode, String title,
-      String description, BuildContext context) {
+  Column getContent(bool loadComplete, Query$episodeById$episodeById? episode,
+      String title, String description, BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       LayoutBuilder(
         builder: (context, constraints) {
           return Container(
             decoration: BoxDecoration(color: Colors.grey),
             height: constraints.maxWidth < 800 ? 300 : 500,
-            child: episode != null
+            child: episode != null && loadComplete == true
                 ? kIsWeb
                     ? LayoutBuilder(builder: (context, constraints) {
                         var imageUrl = ImageUtil.getImageIdByType(
