@@ -76,7 +76,8 @@ class ShowEpisodePage extends StatelessWidget {
             decoration: BoxDecoration(color: Colors.grey),
             height: constraints.maxWidth < 800 ? 300 : 500,
             child: episode != null && loadComplete == true
-                ? kIsWeb
+                // When in web or when no media file is present show the background image.
+                ? kIsWeb || episode.mediaFile == null || episode.mediaFile!.isEmpty
                     ? LayoutBuilder(builder: (context, constraints) {
                         var imageUrl = ImageUtil.getImageIdByType(
                             episode.images, ImageTypes.background);
