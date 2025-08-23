@@ -77,7 +77,9 @@ class ShowEpisodePage extends StatelessWidget {
             height: constraints.maxWidth < 800 ? 300 : 500,
             child: episode != null && loadComplete == true
                 // When in web or when no media file is present show the background image.
-                ? kIsWeb || episode.mediaFile == null || episode.mediaFile!.isEmpty
+                ? kIsWeb ||
+                        episode.mediaFile == null ||
+                        episode.mediaFile!.isEmpty
                     ? LayoutBuilder(builder: (context, constraints) {
                         var imageUrl = ImageUtil.getImageIdByType(
                             episode.images, ImageTypes.background);
@@ -110,9 +112,60 @@ class ShowEpisodePage extends StatelessWidget {
           padding: EdgeInsetsGeometry.all(10),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, style: Theme.of(context).textTheme.headlineSmall),
+            Row(
+              children: [
+                Text(title, style: Theme.of(context).textTheme.headlineSmall),
+                Expanded(child: Container()),
+                MenuAnchor(
+                  menuChildren: <Widget>[
+                    MenuItemButton(
+                        onPressed: () {
+                          _dialogBuilder(context, episode!.toJson().toString());
+                        },
+                        child: ListTile(
+                          leading: const Icon(Icons.info),
+                          title: Text(AppLocalizations.of(context)!.rawData),
+                        )),
+                  ],
+                  builder: (_, MenuController controller, Widget? child) {
+                    return IconButton(
+                      onPressed: () {
+                        if (controller.isOpen) {
+                          controller.close();
+                        } else {
+                          controller.open();
+                        }
+                      },
+                      icon: const Icon(Icons.more_vert),
+                    );
+                  },
+                ),
+              ],
+            ),
             Text(description),
           ])),
     ]);
+  }
+
+  Future<void> _dialogBuilder(BuildContext context, String json) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.json),
+          content: SelectableText(json),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge),
+              child: Text(AppLocalizations.of(context)!.close),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

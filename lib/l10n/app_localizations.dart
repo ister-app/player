@@ -133,6 +133,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'E{number}'**
   String episodePrefix(int number);
+
+  /// Close a dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @json.
+  ///
+  /// In en, this message translates to:
+  /// **'JSON'**
+  String get json;
+
+  /// No description provided for @rawData.
+  ///
+  /// In en, this message translates to:
+  /// **'Raw data'**
+  String get rawData;
 }
 
 class _AppLocalizationsDelegate

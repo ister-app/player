@@ -4,5 +4,6 @@
     "recentlyAddedShows": "Recent toegevoegde series",
     "season": "Seizoen {number}",
     "episode": "Aflevering {number}",
-    "episodePrefix": "A{number}"
+    "episodePrefix": "A{number}",
+    "close": "Sluit"
 }

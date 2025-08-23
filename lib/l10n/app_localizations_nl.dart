@@ -31,4 +31,13 @@ class AppLocalizationsNl extends AppLocalizations {
   String episodePrefix(int number) {
     return 'A$number';
   }
+
+  @override
+  String get close => 'Sluit';
+
+  @override
+  String get json => 'JSON';
+
+  @override
+  String get rawData => 'Raw data';
 }

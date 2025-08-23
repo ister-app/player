@@ -40,5 +40,11 @@
         "example": "4"
       }
     }
-  }
+  },
+  "close": "Close",
+  "@close": {
+    "description": "Close a dialog"
+  },
+  "json": "JSON",
+  "rawData": "Raw data"
 }
