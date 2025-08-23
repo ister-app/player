@@ -1,10 +1,7 @@
 import 'package:gql/ast.dart';
 
 class Mutation$scanLibrary {
-  Mutation$scanLibrary({
-    this.scanLibrary,
-    this.$__typename = 'Mutation',
-  });
+  Mutation$scanLibrary({this.scanLibrary, this.$__typename = 'Mutation'});
 
   factory Mutation$scanLibrary.fromJson(Map<String, dynamic> json) {
     final l$scanLibrary = json['scanLibrary'];
@@ -32,10 +29,7 @@ class Mutation$scanLibrary {
   int get hashCode {
     final l$scanLibrary = scanLibrary;
     final l$$__typename = $__typename;
-    return Object.hashAll([
-      l$scanLibrary,
-      l$$__typename,
-    ]);
+    return Object.hashAll([l$scanLibrary, l$$__typename]);
   }
 
   @override
@@ -62,10 +56,7 @@ class Mutation$scanLibrary {
 
 extension UtilityExtension$Mutation$scanLibrary on Mutation$scanLibrary {
   CopyWith$Mutation$scanLibrary<Mutation$scanLibrary> get copyWith =>
-      CopyWith$Mutation$scanLibrary(
-        this,
-        (i) => i,
-      );
+      CopyWith$Mutation$scanLibrary(this, (i) => i);
 }
 
 abstract class CopyWith$Mutation$scanLibrary<TRes> {
@@ -77,18 +68,12 @@ abstract class CopyWith$Mutation$scanLibrary<TRes> {
   factory CopyWith$Mutation$scanLibrary.stub(TRes res) =
       _CopyWithStubImpl$Mutation$scanLibrary;
 
-  TRes call({
-    bool? scanLibrary,
-    String? $__typename,
-  });
+  TRes call({bool? scanLibrary, String? $__typename});
 }
 
 class _CopyWithImpl$Mutation$scanLibrary<TRes>
     implements CopyWith$Mutation$scanLibrary<TRes> {
-  _CopyWithImpl$Mutation$scanLibrary(
-    this._instance,
-    this._then,
-  );
+  _CopyWithImpl$Mutation$scanLibrary(this._instance, this._then);
 
   final Mutation$scanLibrary _instance;
 
@@ -99,15 +84,16 @@ class _CopyWithImpl$Mutation$scanLibrary<TRes>
   TRes call({
     Object? scanLibrary = _undefined,
     Object? $__typename = _undefined,
-  }) =>
-      _then(Mutation$scanLibrary(
-        scanLibrary: scanLibrary == _undefined
-            ? _instance.scanLibrary
-            : (scanLibrary as bool?),
-        $__typename: $__typename == _undefined || $__typename == null
-            ? _instance.$__typename
-            : ($__typename as String),
-      ));
+  }) => _then(
+    Mutation$scanLibrary(
+      scanLibrary: scanLibrary == _undefined
+          ? _instance.scanLibrary
+          : (scanLibrary as bool?),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 }
 
 class _CopyWithStubImpl$Mutation$scanLibrary<TRes>
@@ -116,34 +102,34 @@ class _CopyWithStubImpl$Mutation$scanLibrary<TRes>
 
   TRes _res;
 
-  call({
-    bool? scanLibrary,
-    String? $__typename,
-  }) =>
-      _res;
+  call({bool? scanLibrary, String? $__typename}) => _res;
 }
 
-const documentNodeMutationscanLibrary = DocumentNode(definitions: [
-  OperationDefinitionNode(
-    type: OperationType.mutation,
-    name: NameNode(value: 'scanLibrary'),
-    variableDefinitions: [],
-    directives: [],
-    selectionSet: SelectionSetNode(selections: [
-      FieldNode(
-        name: NameNode(value: 'scanLibrary'),
-        alias: null,
-        arguments: [],
-        directives: [],
-        selectionSet: null,
+const documentNodeMutationscanLibrary = DocumentNode(
+  definitions: [
+    OperationDefinitionNode(
+      type: OperationType.mutation,
+      name: NameNode(value: 'scanLibrary'),
+      variableDefinitions: [],
+      directives: [],
+      selectionSet: SelectionSetNode(
+        selections: [
+          FieldNode(
+            name: NameNode(value: 'scanLibrary'),
+            alias: null,
+            arguments: [],
+            directives: [],
+            selectionSet: null,
+          ),
+          FieldNode(
+            name: NameNode(value: '__typename'),
+            alias: null,
+            arguments: [],
+            directives: [],
+            selectionSet: null,
+          ),
+        ],
       ),
-      FieldNode(
-        name: NameNode(value: '__typename'),
-        alias: null,
-        arguments: [],
-        directives: [],
-        selectionSet: null,
-      ),
-    ]),
-  ),
-]);
+    ),
+  ],
+);

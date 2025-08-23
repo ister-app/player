@@ -120,10 +120,7 @@ class Fragment$fragmentMetadata {
 extension UtilityExtension$Fragment$fragmentMetadata
     on Fragment$fragmentMetadata {
   CopyWith$Fragment$fragmentMetadata<Fragment$fragmentMetadata> get copyWith =>
-      CopyWith$Fragment$fragmentMetadata(
-        this,
-        (i) => i,
-      );
+      CopyWith$Fragment$fragmentMetadata(this, (i) => i);
 }
 
 abstract class CopyWith$Fragment$fragmentMetadata<TRes> {
@@ -147,10 +144,7 @@ abstract class CopyWith$Fragment$fragmentMetadata<TRes> {
 
 class _CopyWithImpl$Fragment$fragmentMetadata<TRes>
     implements CopyWith$Fragment$fragmentMetadata<TRes> {
-  _CopyWithImpl$Fragment$fragmentMetadata(
-    this._instance,
-    this._then,
-  );
+  _CopyWithImpl$Fragment$fragmentMetadata(this._instance, this._then);
 
   final Fragment$fragmentMetadata _instance;
 
@@ -165,22 +159,24 @@ class _CopyWithImpl$Fragment$fragmentMetadata<TRes>
     Object? sourceUri = _undefined,
     Object? title = _undefined,
     Object? $__typename = _undefined,
-  }) =>
-      _then(Fragment$fragmentMetadata(
-        description: description == _undefined
-            ? _instance.description
-            : (description as String?),
-        id: id == _undefined || id == null ? _instance.id : (id as String),
-        language:
-            language == _undefined ? _instance.language : (language as String?),
-        sourceUri: sourceUri == _undefined
-            ? _instance.sourceUri
-            : (sourceUri as String?),
-        title: title == _undefined ? _instance.title : (title as String?),
-        $__typename: $__typename == _undefined || $__typename == null
-            ? _instance.$__typename
-            : ($__typename as String),
-      ));
+  }) => _then(
+    Fragment$fragmentMetadata(
+      description: description == _undefined
+          ? _instance.description
+          : (description as String?),
+      id: id == _undefined || id == null ? _instance.id : (id as String),
+      language: language == _undefined
+          ? _instance.language
+          : (language as String?),
+      sourceUri: sourceUri == _undefined
+          ? _instance.sourceUri
+          : (sourceUri as String?),
+      title: title == _undefined ? _instance.title : (title as String?),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 }
 
 class _CopyWithStubImpl$Fragment$fragmentMetadata<TRes>
@@ -196,63 +192,62 @@ class _CopyWithStubImpl$Fragment$fragmentMetadata<TRes>
     String? sourceUri,
     String? title,
     String? $__typename,
-  }) =>
-      _res;
+  }) => _res;
 }
 
 const fragmentDefinitionfragmentMetadata = FragmentDefinitionNode(
   name: NameNode(value: 'fragmentMetadata'),
   typeCondition: TypeConditionNode(
-      on: NamedTypeNode(
-    name: NameNode(value: 'Metadata'),
-    isNonNull: false,
-  )),
+    on: NamedTypeNode(name: NameNode(value: 'Metadata'), isNonNull: false),
+  ),
   directives: [],
-  selectionSet: SelectionSetNode(selections: [
-    FieldNode(
-      name: NameNode(value: 'description'),
-      alias: null,
-      arguments: [],
-      directives: [],
-      selectionSet: null,
-    ),
-    FieldNode(
-      name: NameNode(value: 'id'),
-      alias: null,
-      arguments: [],
-      directives: [],
-      selectionSet: null,
-    ),
-    FieldNode(
-      name: NameNode(value: 'language'),
-      alias: null,
-      arguments: [],
-      directives: [],
-      selectionSet: null,
-    ),
-    FieldNode(
-      name: NameNode(value: 'sourceUri'),
-      alias: null,
-      arguments: [],
-      directives: [],
-      selectionSet: null,
-    ),
-    FieldNode(
-      name: NameNode(value: 'title'),
-      alias: null,
-      arguments: [],
-      directives: [],
-      selectionSet: null,
-    ),
-    FieldNode(
-      name: NameNode(value: '__typename'),
-      alias: null,
-      arguments: [],
-      directives: [],
-      selectionSet: null,
-    ),
-  ]),
+  selectionSet: SelectionSetNode(
+    selections: [
+      FieldNode(
+        name: NameNode(value: 'description'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'id'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'language'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'sourceUri'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'title'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: '__typename'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+    ],
+  ),
 );
-const documentNodeFragmentfragmentMetadata = DocumentNode(definitions: [
-  fragmentDefinitionfragmentMetadata,
-]);
+const documentNodeFragmentfragmentMetadata = DocumentNode(
+  definitions: [fragmentDefinitionfragmentMetadata],
+);

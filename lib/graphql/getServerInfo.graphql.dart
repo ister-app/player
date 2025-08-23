@@ -1,10 +1,7 @@
 import 'package:gql/ast.dart';
 
 class Query$getServerInfoQuery {
-  Query$getServerInfoQuery({
-    this.getServerInfo,
-    this.$__typename = 'Query',
-  });
+  Query$getServerInfoQuery({this.getServerInfo, this.$__typename = 'Query'});
 
   factory Query$getServerInfoQuery.fromJson(Map<String, dynamic> json) {
     final l$getServerInfo = json['getServerInfo'];
@@ -13,7 +10,8 @@ class Query$getServerInfoQuery {
       getServerInfo: l$getServerInfo == null
           ? null
           : Query$getServerInfoQuery$getServerInfo.fromJson(
-              (l$getServerInfo as Map<String, dynamic>)),
+              (l$getServerInfo as Map<String, dynamic>),
+            ),
       $__typename: (l$$__typename as String),
     );
   }
@@ -35,10 +33,7 @@ class Query$getServerInfoQuery {
   int get hashCode {
     final l$getServerInfo = getServerInfo;
     final l$$__typename = $__typename;
-    return Object.hashAll([
-      l$getServerInfo,
-      l$$__typename,
-    ]);
+    return Object.hashAll([l$getServerInfo, l$$__typename]);
   }
 
   @override
@@ -67,10 +62,7 @@ class Query$getServerInfoQuery {
 extension UtilityExtension$Query$getServerInfoQuery
     on Query$getServerInfoQuery {
   CopyWith$Query$getServerInfoQuery<Query$getServerInfoQuery> get copyWith =>
-      CopyWith$Query$getServerInfoQuery(
-        this,
-        (i) => i,
-      );
+      CopyWith$Query$getServerInfoQuery(this, (i) => i);
 }
 
 abstract class CopyWith$Query$getServerInfoQuery<TRes> {
@@ -91,10 +83,7 @@ abstract class CopyWith$Query$getServerInfoQuery<TRes> {
 
 class _CopyWithImpl$Query$getServerInfoQuery<TRes>
     implements CopyWith$Query$getServerInfoQuery<TRes> {
-  _CopyWithImpl$Query$getServerInfoQuery(
-    this._instance,
-    this._then,
-  );
+  _CopyWithImpl$Query$getServerInfoQuery(this._instance, this._then);
 
   final Query$getServerInfoQuery _instance;
 
@@ -105,22 +94,25 @@ class _CopyWithImpl$Query$getServerInfoQuery<TRes>
   TRes call({
     Object? getServerInfo = _undefined,
     Object? $__typename = _undefined,
-  }) =>
-      _then(Query$getServerInfoQuery(
-        getServerInfo: getServerInfo == _undefined
-            ? _instance.getServerInfo
-            : (getServerInfo as Query$getServerInfoQuery$getServerInfo?),
-        $__typename: $__typename == _undefined || $__typename == null
-            ? _instance.$__typename
-            : ($__typename as String),
-      ));
+  }) => _then(
+    Query$getServerInfoQuery(
+      getServerInfo: getServerInfo == _undefined
+          ? _instance.getServerInfo
+          : (getServerInfo as Query$getServerInfoQuery$getServerInfo?),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 
   CopyWith$Query$getServerInfoQuery$getServerInfo<TRes> get getServerInfo {
     final local$getServerInfo = _instance.getServerInfo;
     return local$getServerInfo == null
         ? CopyWith$Query$getServerInfoQuery$getServerInfo.stub(_then(_instance))
         : CopyWith$Query$getServerInfoQuery$getServerInfo(
-            local$getServerInfo, (e) => call(getServerInfo: e));
+            local$getServerInfo,
+            (e) => call(getServerInfo: e),
+          );
   }
 }
 
@@ -133,53 +125,65 @@ class _CopyWithStubImpl$Query$getServerInfoQuery<TRes>
   call({
     Query$getServerInfoQuery$getServerInfo? getServerInfo,
     String? $__typename,
-  }) =>
-      _res;
+  }) => _res;
 
   CopyWith$Query$getServerInfoQuery$getServerInfo<TRes> get getServerInfo =>
       CopyWith$Query$getServerInfoQuery$getServerInfo.stub(_res);
 }
 
-const documentNodeQuerygetServerInfoQuery = DocumentNode(definitions: [
-  OperationDefinitionNode(
-    type: OperationType.query,
-    name: NameNode(value: 'getServerInfoQuery'),
-    variableDefinitions: [],
-    directives: [],
-    selectionSet: SelectionSetNode(selections: [
-      FieldNode(
-        name: NameNode(value: 'getServerInfo'),
-        alias: null,
-        arguments: [],
-        directives: [],
-        selectionSet: SelectionSetNode(selections: [
+const documentNodeQuerygetServerInfoQuery = DocumentNode(
+  definitions: [
+    OperationDefinitionNode(
+      type: OperationType.query,
+      name: NameNode(value: 'getServerInfoQuery'),
+      variableDefinitions: [],
+      directives: [],
+      selectionSet: SelectionSetNode(
+        selections: [
           FieldNode(
-            name: NameNode(value: 'name'),
+            name: NameNode(value: 'getServerInfo'),
             alias: null,
             arguments: [],
             directives: [],
-            selectionSet: null,
-          ),
-          FieldNode(
-            name: NameNode(value: 'openIdUrl'),
-            alias: null,
-            arguments: [],
-            directives: [],
-            selectionSet: null,
-          ),
-          FieldNode(
-            name: NameNode(value: 'url'),
-            alias: null,
-            arguments: [],
-            directives: [],
-            selectionSet: null,
-          ),
-          FieldNode(
-            name: NameNode(value: 'version'),
-            alias: null,
-            arguments: [],
-            directives: [],
-            selectionSet: null,
+            selectionSet: SelectionSetNode(
+              selections: [
+                FieldNode(
+                  name: NameNode(value: 'name'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'openIdUrl'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'url'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'version'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: '__typename'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+              ],
+            ),
           ),
           FieldNode(
             name: NameNode(value: '__typename'),
@@ -188,18 +192,11 @@ const documentNodeQuerygetServerInfoQuery = DocumentNode(definitions: [
             directives: [],
             selectionSet: null,
           ),
-        ]),
+        ],
       ),
-      FieldNode(
-        name: NameNode(value: '__typename'),
-        alias: null,
-        arguments: [],
-        directives: [],
-        selectionSet: null,
-      ),
-    ]),
-  ),
-]);
+    ),
+  ],
+);
 
 class Query$getServerInfoQuery$getServerInfo {
   Query$getServerInfoQuery$getServerInfo({
@@ -211,7 +208,8 @@ class Query$getServerInfoQuery$getServerInfo {
   });
 
   factory Query$getServerInfoQuery$getServerInfo.fromJson(
-      Map<String, dynamic> json) {
+    Map<String, dynamic> json,
+  ) {
     final l$name = json['name'];
     final l$openIdUrl = json['openIdUrl'];
     final l$url = json['url'];
@@ -308,11 +306,10 @@ class Query$getServerInfoQuery$getServerInfo {
 extension UtilityExtension$Query$getServerInfoQuery$getServerInfo
     on Query$getServerInfoQuery$getServerInfo {
   CopyWith$Query$getServerInfoQuery$getServerInfo<
-          Query$getServerInfoQuery$getServerInfo>
-      get copyWith => CopyWith$Query$getServerInfoQuery$getServerInfo(
-            this,
-            (i) => i,
-          );
+    Query$getServerInfoQuery$getServerInfo
+  >
+  get copyWith =>
+      CopyWith$Query$getServerInfoQuery$getServerInfo(this, (i) => i);
 }
 
 abstract class CopyWith$Query$getServerInfoQuery$getServerInfo<TRes> {
@@ -352,22 +349,23 @@ class _CopyWithImpl$Query$getServerInfoQuery$getServerInfo<TRes>
     Object? url = _undefined,
     Object? version = _undefined,
     Object? $__typename = _undefined,
-  }) =>
-      _then(Query$getServerInfoQuery$getServerInfo(
-        name: name == _undefined || name == null
-            ? _instance.name
-            : (name as String),
-        openIdUrl: openIdUrl == _undefined || openIdUrl == null
-            ? _instance.openIdUrl
-            : (openIdUrl as String),
-        url: url == _undefined || url == null ? _instance.url : (url as String),
-        version: version == _undefined || version == null
-            ? _instance.version
-            : (version as String),
-        $__typename: $__typename == _undefined || $__typename == null
-            ? _instance.$__typename
-            : ($__typename as String),
-      ));
+  }) => _then(
+    Query$getServerInfoQuery$getServerInfo(
+      name: name == _undefined || name == null
+          ? _instance.name
+          : (name as String),
+      openIdUrl: openIdUrl == _undefined || openIdUrl == null
+          ? _instance.openIdUrl
+          : (openIdUrl as String),
+      url: url == _undefined || url == null ? _instance.url : (url as String),
+      version: version == _undefined || version == null
+          ? _instance.version
+          : (version as String),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 }
 
 class _CopyWithStubImpl$Query$getServerInfoQuery$getServerInfo<TRes>
@@ -382,6 +380,5 @@ class _CopyWithStubImpl$Query$getServerInfoQuery$getServerInfo<TRes>
     String? url,
     String? version,
     String? $__typename,
-  }) =>
-      _res;
+  }) => _res;
 }

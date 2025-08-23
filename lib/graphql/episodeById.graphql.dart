@@ -4,9 +4,7 @@ import 'package:gql/ast.dart';
 
 class Variables$Query$episodeById {
   factory Variables$Query$episodeById({required String id}) =>
-      Variables$Query$episodeById._({
-        r'id': id,
-      });
+      Variables$Query$episodeById._({r'id': id});
 
   Variables$Query$episodeById._(this._$data);
 
@@ -29,10 +27,7 @@ class Variables$Query$episodeById {
   }
 
   CopyWith$Variables$Query$episodeById<Variables$Query$episodeById>
-      get copyWith => CopyWith$Variables$Query$episodeById(
-            this,
-            (i) => i,
-          );
+  get copyWith => CopyWith$Variables$Query$episodeById(this, (i) => i);
 
   @override
   bool operator ==(Object other) {
@@ -72,10 +67,7 @@ abstract class CopyWith$Variables$Query$episodeById<TRes> {
 
 class _CopyWithImpl$Variables$Query$episodeById<TRes>
     implements CopyWith$Variables$Query$episodeById<TRes> {
-  _CopyWithImpl$Variables$Query$episodeById(
-    this._instance,
-    this._then,
-  );
+  _CopyWithImpl$Variables$Query$episodeById(this._instance, this._then);
 
   final Variables$Query$episodeById _instance;
 
@@ -83,10 +75,12 @@ class _CopyWithImpl$Variables$Query$episodeById<TRes>
 
   static const _undefined = <dynamic, dynamic>{};
 
-  TRes call({Object? id = _undefined}) => _then(Variables$Query$episodeById._({
-        ..._instance._$data,
-        if (id != _undefined && id != null) 'id': (id as String),
-      }));
+  TRes call({Object? id = _undefined}) => _then(
+    Variables$Query$episodeById._({
+      ..._instance._$data,
+      if (id != _undefined && id != null) 'id': (id as String),
+    }),
+  );
 }
 
 class _CopyWithStubImpl$Variables$Query$episodeById<TRes>
@@ -99,10 +93,7 @@ class _CopyWithStubImpl$Variables$Query$episodeById<TRes>
 }
 
 class Query$episodeById {
-  Query$episodeById({
-    this.episodeById,
-    this.$__typename = 'Query',
-  });
+  Query$episodeById({this.episodeById, this.$__typename = 'Query'});
 
   factory Query$episodeById.fromJson(Map<String, dynamic> json) {
     final l$episodeById = json['episodeById'];
@@ -111,7 +102,8 @@ class Query$episodeById {
       episodeById: l$episodeById == null
           ? null
           : Query$episodeById$episodeById.fromJson(
-              (l$episodeById as Map<String, dynamic>)),
+              (l$episodeById as Map<String, dynamic>),
+            ),
       $__typename: (l$$__typename as String),
     );
   }
@@ -133,10 +125,7 @@ class Query$episodeById {
   int get hashCode {
     final l$episodeById = episodeById;
     final l$$__typename = $__typename;
-    return Object.hashAll([
-      l$episodeById,
-      l$$__typename,
-    ]);
+    return Object.hashAll([l$episodeById, l$$__typename]);
   }
 
   @override
@@ -163,10 +152,7 @@ class Query$episodeById {
 
 extension UtilityExtension$Query$episodeById on Query$episodeById {
   CopyWith$Query$episodeById<Query$episodeById> get copyWith =>
-      CopyWith$Query$episodeById(
-        this,
-        (i) => i,
-      );
+      CopyWith$Query$episodeById(this, (i) => i);
 }
 
 abstract class CopyWith$Query$episodeById<TRes> {
@@ -178,19 +164,13 @@ abstract class CopyWith$Query$episodeById<TRes> {
   factory CopyWith$Query$episodeById.stub(TRes res) =
       _CopyWithStubImpl$Query$episodeById;
 
-  TRes call({
-    Query$episodeById$episodeById? episodeById,
-    String? $__typename,
-  });
+  TRes call({Query$episodeById$episodeById? episodeById, String? $__typename});
   CopyWith$Query$episodeById$episodeById<TRes> get episodeById;
 }
 
 class _CopyWithImpl$Query$episodeById<TRes>
     implements CopyWith$Query$episodeById<TRes> {
-  _CopyWithImpl$Query$episodeById(
-    this._instance,
-    this._then,
-  );
+  _CopyWithImpl$Query$episodeById(this._instance, this._then);
 
   final Query$episodeById _instance;
 
@@ -201,22 +181,25 @@ class _CopyWithImpl$Query$episodeById<TRes>
   TRes call({
     Object? episodeById = _undefined,
     Object? $__typename = _undefined,
-  }) =>
-      _then(Query$episodeById(
-        episodeById: episodeById == _undefined
-            ? _instance.episodeById
-            : (episodeById as Query$episodeById$episodeById?),
-        $__typename: $__typename == _undefined || $__typename == null
-            ? _instance.$__typename
-            : ($__typename as String),
-      ));
+  }) => _then(
+    Query$episodeById(
+      episodeById: episodeById == _undefined
+          ? _instance.episodeById
+          : (episodeById as Query$episodeById$episodeById?),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 
   CopyWith$Query$episodeById$episodeById<TRes> get episodeById {
     final local$episodeById = _instance.episodeById;
     return local$episodeById == null
         ? CopyWith$Query$episodeById$episodeById.stub(_then(_instance))
         : CopyWith$Query$episodeById$episodeById(
-            local$episodeById, (e) => call(episodeById: e));
+            local$episodeById,
+            (e) => call(episodeById: e),
+          );
   }
 }
 
@@ -226,303 +209,324 @@ class _CopyWithStubImpl$Query$episodeById<TRes>
 
   TRes _res;
 
-  call({
-    Query$episodeById$episodeById? episodeById,
-    String? $__typename,
-  }) =>
+  call({Query$episodeById$episodeById? episodeById, String? $__typename}) =>
       _res;
 
   CopyWith$Query$episodeById$episodeById<TRes> get episodeById =>
       CopyWith$Query$episodeById$episodeById.stub(_res);
 }
 
-const documentNodeQueryepisodeById = DocumentNode(definitions: [
-  OperationDefinitionNode(
-    type: OperationType.query,
-    name: NameNode(value: 'episodeById'),
-    variableDefinitions: [
-      VariableDefinitionNode(
-        variable: VariableNode(name: NameNode(value: 'id')),
-        type: NamedTypeNode(
-          name: NameNode(value: 'ID'),
-          isNonNull: true,
+const documentNodeQueryepisodeById = DocumentNode(
+  definitions: [
+    OperationDefinitionNode(
+      type: OperationType.query,
+      name: NameNode(value: 'episodeById'),
+      variableDefinitions: [
+        VariableDefinitionNode(
+          variable: VariableNode(name: NameNode(value: 'id')),
+          type: NamedTypeNode(name: NameNode(value: 'ID'), isNonNull: true),
+          defaultValue: DefaultValueNode(value: null),
+          directives: [],
         ),
-        defaultValue: DefaultValueNode(value: null),
-        directives: [],
-      )
-    ],
-    directives: [],
-    selectionSet: SelectionSetNode(selections: [
-      FieldNode(
-        name: NameNode(value: 'episodeById'),
-        alias: null,
-        arguments: [
-          ArgumentNode(
-            name: NameNode(value: 'id'),
-            value: VariableNode(name: NameNode(value: 'id')),
-          )
-        ],
-        directives: [],
-        selectionSet: SelectionSetNode(selections: [
+      ],
+      directives: [],
+      selectionSet: SelectionSetNode(
+        selections: [
           FieldNode(
-            name: NameNode(value: 'id'),
+            name: NameNode(value: 'episodeById'),
             alias: null,
-            arguments: [],
-            directives: [],
-            selectionSet: null,
-          ),
-          FieldNode(
-            name: NameNode(value: 'number'),
-            alias: null,
-            arguments: [],
-            directives: [],
-            selectionSet: null,
-          ),
-          FieldNode(
-            name: NameNode(value: 'show'),
-            alias: null,
-            arguments: [],
-            directives: [],
-            selectionSet: SelectionSetNode(selections: [
-              FieldNode(
+            arguments: [
+              ArgumentNode(
                 name: NameNode(value: 'id'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
+                value: VariableNode(name: NameNode(value: 'id')),
               ),
-              FieldNode(
-                name: NameNode(value: '__typename'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-            ]),
-          ),
-          FieldNode(
-            name: NameNode(value: 'season'),
-            alias: null,
-            arguments: [],
+            ],
             directives: [],
-            selectionSet: SelectionSetNode(selections: [
-              FieldNode(
-                name: NameNode(value: 'id'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-              FieldNode(
-                name: NameNode(value: '__typename'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-            ]),
-          ),
-          FieldNode(
-            name: NameNode(value: 'metadata'),
-            alias: null,
-            arguments: [],
-            directives: [],
-            selectionSet: SelectionSetNode(selections: [
-              FragmentSpreadNode(
-                name: NameNode(value: 'fragmentMetadata'),
-                directives: [],
-              ),
-              FieldNode(
-                name: NameNode(value: '__typename'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-            ]),
-          ),
-          FieldNode(
-            name: NameNode(value: 'images'),
-            alias: null,
-            arguments: [],
-            directives: [],
-            selectionSet: SelectionSetNode(selections: [
-              FragmentSpreadNode(
-                name: NameNode(value: 'fragmentImages'),
-                directives: [],
-              ),
-              FieldNode(
-                name: NameNode(value: '__typename'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-            ]),
-          ),
-          FieldNode(
-            name: NameNode(value: 'watchStatus'),
-            alias: null,
-            arguments: [],
-            directives: [],
-            selectionSet: SelectionSetNode(selections: [
-              FieldNode(
-                name: NameNode(value: 'id'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-              FieldNode(
-                name: NameNode(value: 'playQueueItemId'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-              FieldNode(
-                name: NameNode(value: 'progressInMilliseconds'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-              FieldNode(
-                name: NameNode(value: 'watched'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-              FieldNode(
-                name: NameNode(value: '__typename'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-            ]),
-          ),
-          FieldNode(
-            name: NameNode(value: 'mediaFile'),
-            alias: null,
-            arguments: [],
-            directives: [],
-            selectionSet: SelectionSetNode(selections: [
-              FieldNode(
-                name: NameNode(value: 'durationInMilliseconds'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-              FieldNode(
-                name: NameNode(value: 'id'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-              FieldNode(
-                name: NameNode(value: 'path'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-              FieldNode(
-                name: NameNode(value: 'size'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-              FieldNode(
-                name: NameNode(value: 'mediaFileStreams'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: SelectionSetNode(selections: [
-                  FieldNode(
-                    name: NameNode(value: 'codecName'),
-                    alias: null,
-                    arguments: [],
-                    directives: [],
-                    selectionSet: null,
+            selectionSet: SelectionSetNode(
+              selections: [
+                FieldNode(
+                  name: NameNode(value: 'id'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'number'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'show'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: SelectionSetNode(
+                    selections: [
+                      FieldNode(
+                        name: NameNode(value: 'id'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                      FieldNode(
+                        name: NameNode(value: '__typename'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                    ],
                   ),
-                  FieldNode(
-                    name: NameNode(value: 'codecType'),
-                    alias: null,
-                    arguments: [],
-                    directives: [],
-                    selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'season'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: SelectionSetNode(
+                    selections: [
+                      FieldNode(
+                        name: NameNode(value: 'id'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                      FieldNode(
+                        name: NameNode(value: '__typename'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                    ],
                   ),
-                  FieldNode(
-                    name: NameNode(value: 'height'),
-                    alias: null,
-                    arguments: [],
-                    directives: [],
-                    selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'metadata'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: SelectionSetNode(
+                    selections: [
+                      FragmentSpreadNode(
+                        name: NameNode(value: 'fragmentMetadata'),
+                        directives: [],
+                      ),
+                      FieldNode(
+                        name: NameNode(value: '__typename'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                    ],
                   ),
-                  FieldNode(
-                    name: NameNode(value: 'id'),
-                    alias: null,
-                    arguments: [],
-                    directives: [],
-                    selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'images'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: SelectionSetNode(
+                    selections: [
+                      FragmentSpreadNode(
+                        name: NameNode(value: 'fragmentImages'),
+                        directives: [],
+                      ),
+                      FieldNode(
+                        name: NameNode(value: '__typename'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                    ],
                   ),
-                  FieldNode(
-                    name: NameNode(value: 'language'),
-                    alias: null,
-                    arguments: [],
-                    directives: [],
-                    selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'watchStatus'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: SelectionSetNode(
+                    selections: [
+                      FieldNode(
+                        name: NameNode(value: 'id'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                      FieldNode(
+                        name: NameNode(value: 'playQueueItemId'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                      FieldNode(
+                        name: NameNode(value: 'progressInMilliseconds'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                      FieldNode(
+                        name: NameNode(value: 'watched'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                      FieldNode(
+                        name: NameNode(value: '__typename'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                    ],
                   ),
-                  FieldNode(
-                    name: NameNode(value: 'path'),
-                    alias: null,
-                    arguments: [],
-                    directives: [],
-                    selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'mediaFile'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: SelectionSetNode(
+                    selections: [
+                      FieldNode(
+                        name: NameNode(value: 'durationInMilliseconds'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                      FieldNode(
+                        name: NameNode(value: 'id'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                      FieldNode(
+                        name: NameNode(value: 'path'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                      FieldNode(
+                        name: NameNode(value: 'size'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                      FieldNode(
+                        name: NameNode(value: 'mediaFileStreams'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: SelectionSetNode(
+                          selections: [
+                            FieldNode(
+                              name: NameNode(value: 'codecName'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                            FieldNode(
+                              name: NameNode(value: 'codecType'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                            FieldNode(
+                              name: NameNode(value: 'height'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                            FieldNode(
+                              name: NameNode(value: 'id'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                            FieldNode(
+                              name: NameNode(value: 'language'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                            FieldNode(
+                              name: NameNode(value: 'path'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                            FieldNode(
+                              name: NameNode(value: 'streamIndex'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                            FieldNode(
+                              name: NameNode(value: 'title'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                            FieldNode(
+                              name: NameNode(value: 'width'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                            FieldNode(
+                              name: NameNode(value: '__typename'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                          ],
+                        ),
+                      ),
+                      FieldNode(
+                        name: NameNode(value: '__typename'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                    ],
                   ),
-                  FieldNode(
-                    name: NameNode(value: 'streamIndex'),
-                    alias: null,
-                    arguments: [],
-                    directives: [],
-                    selectionSet: null,
-                  ),
-                  FieldNode(
-                    name: NameNode(value: 'title'),
-                    alias: null,
-                    arguments: [],
-                    directives: [],
-                    selectionSet: null,
-                  ),
-                  FieldNode(
-                    name: NameNode(value: 'width'),
-                    alias: null,
-                    arguments: [],
-                    directives: [],
-                    selectionSet: null,
-                  ),
-                  FieldNode(
-                    name: NameNode(value: '__typename'),
-                    alias: null,
-                    arguments: [],
-                    directives: [],
-                    selectionSet: null,
-                  ),
-                ]),
-              ),
-              FieldNode(
-                name: NameNode(value: '__typename'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-            ]),
+                ),
+                FieldNode(
+                  name: NameNode(value: '__typename'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+              ],
+            ),
           ),
           FieldNode(
             name: NameNode(value: '__typename'),
@@ -531,20 +535,13 @@ const documentNodeQueryepisodeById = DocumentNode(definitions: [
             directives: [],
             selectionSet: null,
           ),
-        ]),
+        ],
       ),
-      FieldNode(
-        name: NameNode(value: '__typename'),
-        alias: null,
-        arguments: [],
-        directives: [],
-        selectionSet: null,
-      ),
-    ]),
-  ),
-  fragmentDefinitionfragmentMetadata,
-  fragmentDefinitionfragmentImages,
-]);
+    ),
+    fragmentDefinitionfragmentMetadata,
+    fragmentDefinitionfragmentImages,
+  ],
+);
 
 class Query$episodeById$episodeById {
   Query$episodeById$episodeById({
@@ -575,26 +572,38 @@ class Query$episodeById$episodeById {
       $show: l$$show == null
           ? null
           : Query$episodeById$episodeById$show.fromJson(
-              (l$$show as Map<String, dynamic>)),
+              (l$$show as Map<String, dynamic>),
+            ),
       season: l$season == null
           ? null
           : Query$episodeById$episodeById$season.fromJson(
-              (l$season as Map<String, dynamic>)),
+              (l$season as Map<String, dynamic>),
+            ),
       metadata: (l$metadata as List<dynamic>?)
-          ?.map((e) =>
-              Fragment$fragmentMetadata.fromJson((e as Map<String, dynamic>)))
+          ?.map(
+            (e) =>
+                Fragment$fragmentMetadata.fromJson((e as Map<String, dynamic>)),
+          )
           .toList(),
       images: (l$images as List<dynamic>?)
-          ?.map((e) =>
-              Fragment$fragmentImages.fromJson((e as Map<String, dynamic>)))
+          ?.map(
+            (e) =>
+                Fragment$fragmentImages.fromJson((e as Map<String, dynamic>)),
+          )
           .toList(),
       watchStatus: (l$watchStatus as List<dynamic>?)
-          ?.map((e) => Query$episodeById$episodeById$watchStatus.fromJson(
-              (e as Map<String, dynamic>)))
+          ?.map(
+            (e) => Query$episodeById$episodeById$watchStatus.fromJson(
+              (e as Map<String, dynamic>),
+            ),
+          )
           .toList(),
       mediaFile: (l$mediaFile as List<dynamic>?)
-          ?.map((e) => Query$episodeById$episodeById$mediaFile.fromJson(
-              (e as Map<String, dynamic>)))
+          ?.map(
+            (e) => Query$episodeById$episodeById$mediaFile.fromJson(
+              (e as Map<String, dynamic>),
+            ),
+          )
           .toList(),
       $__typename: (l$$__typename as String),
     );
@@ -772,10 +781,7 @@ class Query$episodeById$episodeById {
 extension UtilityExtension$Query$episodeById$episodeById
     on Query$episodeById$episodeById {
   CopyWith$Query$episodeById$episodeById<Query$episodeById$episodeById>
-      get copyWith => CopyWith$Query$episodeById$episodeById(
-            this,
-            (i) => i,
-          );
+  get copyWith => CopyWith$Query$episodeById$episodeById(this, (i) => i);
 }
 
 abstract class CopyWith$Query$episodeById$episodeById<TRes> {
@@ -801,36 +807,42 @@ abstract class CopyWith$Query$episodeById$episodeById<TRes> {
   CopyWith$Query$episodeById$episodeById$show<TRes> get $show;
   CopyWith$Query$episodeById$episodeById$season<TRes> get season;
   TRes metadata(
-      Iterable<Fragment$fragmentMetadata>? Function(
-              Iterable<
-                  CopyWith$Fragment$fragmentMetadata<
-                      Fragment$fragmentMetadata>>?)
-          _fn);
+    Iterable<Fragment$fragmentMetadata>? Function(
+      Iterable<CopyWith$Fragment$fragmentMetadata<Fragment$fragmentMetadata>>?,
+    )
+    _fn,
+  );
   TRes images(
-      Iterable<Fragment$fragmentImages>? Function(
-              Iterable<
-                  CopyWith$Fragment$fragmentImages<Fragment$fragmentImages>>?)
-          _fn);
+    Iterable<Fragment$fragmentImages>? Function(
+      Iterable<CopyWith$Fragment$fragmentImages<Fragment$fragmentImages>>?,
+    )
+    _fn,
+  );
   TRes watchStatus(
-      Iterable<Query$episodeById$episodeById$watchStatus>? Function(
-              Iterable<
-                  CopyWith$Query$episodeById$episodeById$watchStatus<
-                      Query$episodeById$episodeById$watchStatus>>?)
-          _fn);
+    Iterable<Query$episodeById$episodeById$watchStatus>? Function(
+      Iterable<
+        CopyWith$Query$episodeById$episodeById$watchStatus<
+          Query$episodeById$episodeById$watchStatus
+        >
+      >?,
+    )
+    _fn,
+  );
   TRes mediaFile(
-      Iterable<Query$episodeById$episodeById$mediaFile>? Function(
-              Iterable<
-                  CopyWith$Query$episodeById$episodeById$mediaFile<
-                      Query$episodeById$episodeById$mediaFile>>?)
-          _fn);
+    Iterable<Query$episodeById$episodeById$mediaFile>? Function(
+      Iterable<
+        CopyWith$Query$episodeById$episodeById$mediaFile<
+          Query$episodeById$episodeById$mediaFile
+        >
+      >?,
+    )
+    _fn,
+  );
 }
 
 class _CopyWithImpl$Query$episodeById$episodeById<TRes>
     implements CopyWith$Query$episodeById$episodeById<TRes> {
-  _CopyWithImpl$Query$episodeById$episodeById(
-    this._instance,
-    this._then,
-  );
+  _CopyWithImpl$Query$episodeById$episodeById(this._instance, this._then);
 
   final Query$episodeById$episodeById _instance;
 
@@ -848,39 +860,42 @@ class _CopyWithImpl$Query$episodeById$episodeById<TRes>
     Object? watchStatus = _undefined,
     Object? mediaFile = _undefined,
     Object? $__typename = _undefined,
-  }) =>
-      _then(Query$episodeById$episodeById(
-        id: id == _undefined || id == null ? _instance.id : (id as String),
-        number: number == _undefined ? _instance.number : (number as int?),
-        $show: $show == _undefined
-            ? _instance.$show
-            : ($show as Query$episodeById$episodeById$show?),
-        season: season == _undefined
-            ? _instance.season
-            : (season as Query$episodeById$episodeById$season?),
-        metadata: metadata == _undefined
-            ? _instance.metadata
-            : (metadata as List<Fragment$fragmentMetadata>?),
-        images: images == _undefined
-            ? _instance.images
-            : (images as List<Fragment$fragmentImages>?),
-        watchStatus: watchStatus == _undefined
-            ? _instance.watchStatus
-            : (watchStatus as List<Query$episodeById$episodeById$watchStatus>?),
-        mediaFile: mediaFile == _undefined
-            ? _instance.mediaFile
-            : (mediaFile as List<Query$episodeById$episodeById$mediaFile>?),
-        $__typename: $__typename == _undefined || $__typename == null
-            ? _instance.$__typename
-            : ($__typename as String),
-      ));
+  }) => _then(
+    Query$episodeById$episodeById(
+      id: id == _undefined || id == null ? _instance.id : (id as String),
+      number: number == _undefined ? _instance.number : (number as int?),
+      $show: $show == _undefined
+          ? _instance.$show
+          : ($show as Query$episodeById$episodeById$show?),
+      season: season == _undefined
+          ? _instance.season
+          : (season as Query$episodeById$episodeById$season?),
+      metadata: metadata == _undefined
+          ? _instance.metadata
+          : (metadata as List<Fragment$fragmentMetadata>?),
+      images: images == _undefined
+          ? _instance.images
+          : (images as List<Fragment$fragmentImages>?),
+      watchStatus: watchStatus == _undefined
+          ? _instance.watchStatus
+          : (watchStatus as List<Query$episodeById$episodeById$watchStatus>?),
+      mediaFile: mediaFile == _undefined
+          ? _instance.mediaFile
+          : (mediaFile as List<Query$episodeById$episodeById$mediaFile>?),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 
   CopyWith$Query$episodeById$episodeById$show<TRes> get $show {
     final local$$show = _instance.$show;
     return local$$show == null
         ? CopyWith$Query$episodeById$episodeById$show.stub(_then(_instance))
         : CopyWith$Query$episodeById$episodeById$show(
-            local$$show, (e) => call($show: e));
+            local$$show,
+            (e) => call($show: e),
+          );
   }
 
   CopyWith$Query$episodeById$episodeById$season<TRes> get season {
@@ -888,60 +903,70 @@ class _CopyWithImpl$Query$episodeById$episodeById<TRes>
     return local$season == null
         ? CopyWith$Query$episodeById$episodeById$season.stub(_then(_instance))
         : CopyWith$Query$episodeById$episodeById$season(
-            local$season, (e) => call(season: e));
+            local$season,
+            (e) => call(season: e),
+          );
   }
 
   TRes metadata(
-          Iterable<Fragment$fragmentMetadata>? Function(
-                  Iterable<
-                      CopyWith$Fragment$fragmentMetadata<
-                          Fragment$fragmentMetadata>>?)
-              _fn) =>
-      call(
-          metadata: _fn(
-              _instance.metadata?.map((e) => CopyWith$Fragment$fragmentMetadata(
-                    e,
-                    (i) => i,
-                  )))?.toList());
+    Iterable<Fragment$fragmentMetadata>? Function(
+      Iterable<CopyWith$Fragment$fragmentMetadata<Fragment$fragmentMetadata>>?,
+    )
+    _fn,
+  ) => call(
+    metadata: _fn(
+      _instance.metadata?.map(
+        (e) => CopyWith$Fragment$fragmentMetadata(e, (i) => i),
+      ),
+    )?.toList(),
+  );
 
   TRes images(
-          Iterable<Fragment$fragmentImages>? Function(
-                  Iterable<
-                      CopyWith$Fragment$fragmentImages<
-                          Fragment$fragmentImages>>?)
-              _fn) =>
-      call(
-          images:
-              _fn(_instance.images?.map((e) => CopyWith$Fragment$fragmentImages(
-                    e,
-                    (i) => i,
-                  )))?.toList());
+    Iterable<Fragment$fragmentImages>? Function(
+      Iterable<CopyWith$Fragment$fragmentImages<Fragment$fragmentImages>>?,
+    )
+    _fn,
+  ) => call(
+    images: _fn(
+      _instance.images?.map(
+        (e) => CopyWith$Fragment$fragmentImages(e, (i) => i),
+      ),
+    )?.toList(),
+  );
 
   TRes watchStatus(
-          Iterable<Query$episodeById$episodeById$watchStatus>? Function(
-                  Iterable<
-                      CopyWith$Query$episodeById$episodeById$watchStatus<
-                          Query$episodeById$episodeById$watchStatus>>?)
-              _fn) =>
-      call(
-          watchStatus: _fn(_instance.watchStatus
-              ?.map((e) => CopyWith$Query$episodeById$episodeById$watchStatus(
-                    e,
-                    (i) => i,
-                  )))?.toList());
+    Iterable<Query$episodeById$episodeById$watchStatus>? Function(
+      Iterable<
+        CopyWith$Query$episodeById$episodeById$watchStatus<
+          Query$episodeById$episodeById$watchStatus
+        >
+      >?,
+    )
+    _fn,
+  ) => call(
+    watchStatus: _fn(
+      _instance.watchStatus?.map(
+        (e) => CopyWith$Query$episodeById$episodeById$watchStatus(e, (i) => i),
+      ),
+    )?.toList(),
+  );
 
   TRes mediaFile(
-          Iterable<Query$episodeById$episodeById$mediaFile>? Function(
-                  Iterable<
-                      CopyWith$Query$episodeById$episodeById$mediaFile<
-                          Query$episodeById$episodeById$mediaFile>>?)
-              _fn) =>
-      call(
-          mediaFile: _fn(_instance.mediaFile
-              ?.map((e) => CopyWith$Query$episodeById$episodeById$mediaFile(
-                    e,
-                    (i) => i,
-                  )))?.toList());
+    Iterable<Query$episodeById$episodeById$mediaFile>? Function(
+      Iterable<
+        CopyWith$Query$episodeById$episodeById$mediaFile<
+          Query$episodeById$episodeById$mediaFile
+        >
+      >?,
+    )
+    _fn,
+  ) => call(
+    mediaFile: _fn(
+      _instance.mediaFile?.map(
+        (e) => CopyWith$Query$episodeById$episodeById$mediaFile(e, (i) => i),
+      ),
+    )?.toList(),
+  );
 }
 
 class _CopyWithStubImpl$Query$episodeById$episodeById<TRes>
@@ -960,8 +985,7 @@ class _CopyWithStubImpl$Query$episodeById$episodeById<TRes>
     List<Query$episodeById$episodeById$watchStatus>? watchStatus,
     List<Query$episodeById$episodeById$mediaFile>? mediaFile,
     String? $__typename,
-  }) =>
-      _res;
+  }) => _res;
 
   CopyWith$Query$episodeById$episodeById$show<TRes> get $show =>
       CopyWith$Query$episodeById$episodeById$show.stub(_res);
@@ -985,7 +1009,8 @@ class Query$episodeById$episodeById$show {
   });
 
   factory Query$episodeById$episodeById$show.fromJson(
-      Map<String, dynamic> json) {
+    Map<String, dynamic> json,
+  ) {
     final l$id = json['id'];
     final l$$__typename = json['__typename'];
     return Query$episodeById$episodeById$show(
@@ -1011,10 +1036,7 @@ class Query$episodeById$episodeById$show {
   int get hashCode {
     final l$id = id;
     final l$$__typename = $__typename;
-    return Object.hashAll([
-      l$id,
-      l$$__typename,
-    ]);
+    return Object.hashAll([l$id, l$$__typename]);
   }
 
   @override
@@ -1043,11 +1065,9 @@ class Query$episodeById$episodeById$show {
 extension UtilityExtension$Query$episodeById$episodeById$show
     on Query$episodeById$episodeById$show {
   CopyWith$Query$episodeById$episodeById$show<
-          Query$episodeById$episodeById$show>
-      get copyWith => CopyWith$Query$episodeById$episodeById$show(
-            this,
-            (i) => i,
-          );
+    Query$episodeById$episodeById$show
+  >
+  get copyWith => CopyWith$Query$episodeById$episodeById$show(this, (i) => i);
 }
 
 abstract class CopyWith$Query$episodeById$episodeById$show<TRes> {
@@ -1059,18 +1079,12 @@ abstract class CopyWith$Query$episodeById$episodeById$show<TRes> {
   factory CopyWith$Query$episodeById$episodeById$show.stub(TRes res) =
       _CopyWithStubImpl$Query$episodeById$episodeById$show;
 
-  TRes call({
-    String? id,
-    String? $__typename,
-  });
+  TRes call({String? id, String? $__typename});
 }
 
 class _CopyWithImpl$Query$episodeById$episodeById$show<TRes>
     implements CopyWith$Query$episodeById$episodeById$show<TRes> {
-  _CopyWithImpl$Query$episodeById$episodeById$show(
-    this._instance,
-    this._then,
-  );
+  _CopyWithImpl$Query$episodeById$episodeById$show(this._instance, this._then);
 
   final Query$episodeById$episodeById$show _instance;
 
@@ -1078,16 +1092,15 @@ class _CopyWithImpl$Query$episodeById$episodeById$show<TRes>
 
   static const _undefined = <dynamic, dynamic>{};
 
-  TRes call({
-    Object? id = _undefined,
-    Object? $__typename = _undefined,
-  }) =>
-      _then(Query$episodeById$episodeById$show(
-        id: id == _undefined || id == null ? _instance.id : (id as String),
-        $__typename: $__typename == _undefined || $__typename == null
-            ? _instance.$__typename
-            : ($__typename as String),
-      ));
+  TRes call({Object? id = _undefined, Object? $__typename = _undefined}) =>
+      _then(
+        Query$episodeById$episodeById$show(
+          id: id == _undefined || id == null ? _instance.id : (id as String),
+          $__typename: $__typename == _undefined || $__typename == null
+              ? _instance.$__typename
+              : ($__typename as String),
+        ),
+      );
 }
 
 class _CopyWithStubImpl$Query$episodeById$episodeById$show<TRes>
@@ -1096,11 +1109,7 @@ class _CopyWithStubImpl$Query$episodeById$episodeById$show<TRes>
 
   TRes _res;
 
-  call({
-    String? id,
-    String? $__typename,
-  }) =>
-      _res;
+  call({String? id, String? $__typename}) => _res;
 }
 
 class Query$episodeById$episodeById$season {
@@ -1110,7 +1119,8 @@ class Query$episodeById$episodeById$season {
   });
 
   factory Query$episodeById$episodeById$season.fromJson(
-      Map<String, dynamic> json) {
+    Map<String, dynamic> json,
+  ) {
     final l$id = json['id'];
     final l$$__typename = json['__typename'];
     return Query$episodeById$episodeById$season(
@@ -1136,10 +1146,7 @@ class Query$episodeById$episodeById$season {
   int get hashCode {
     final l$id = id;
     final l$$__typename = $__typename;
-    return Object.hashAll([
-      l$id,
-      l$$__typename,
-    ]);
+    return Object.hashAll([l$id, l$$__typename]);
   }
 
   @override
@@ -1168,11 +1175,9 @@ class Query$episodeById$episodeById$season {
 extension UtilityExtension$Query$episodeById$episodeById$season
     on Query$episodeById$episodeById$season {
   CopyWith$Query$episodeById$episodeById$season<
-          Query$episodeById$episodeById$season>
-      get copyWith => CopyWith$Query$episodeById$episodeById$season(
-            this,
-            (i) => i,
-          );
+    Query$episodeById$episodeById$season
+  >
+  get copyWith => CopyWith$Query$episodeById$episodeById$season(this, (i) => i);
 }
 
 abstract class CopyWith$Query$episodeById$episodeById$season<TRes> {
@@ -1184,10 +1189,7 @@ abstract class CopyWith$Query$episodeById$episodeById$season<TRes> {
   factory CopyWith$Query$episodeById$episodeById$season.stub(TRes res) =
       _CopyWithStubImpl$Query$episodeById$episodeById$season;
 
-  TRes call({
-    String? id,
-    String? $__typename,
-  });
+  TRes call({String? id, String? $__typename});
 }
 
 class _CopyWithImpl$Query$episodeById$episodeById$season<TRes>
@@ -1203,16 +1205,15 @@ class _CopyWithImpl$Query$episodeById$episodeById$season<TRes>
 
   static const _undefined = <dynamic, dynamic>{};
 
-  TRes call({
-    Object? id = _undefined,
-    Object? $__typename = _undefined,
-  }) =>
-      _then(Query$episodeById$episodeById$season(
-        id: id == _undefined || id == null ? _instance.id : (id as String),
-        $__typename: $__typename == _undefined || $__typename == null
-            ? _instance.$__typename
-            : ($__typename as String),
-      ));
+  TRes call({Object? id = _undefined, Object? $__typename = _undefined}) =>
+      _then(
+        Query$episodeById$episodeById$season(
+          id: id == _undefined || id == null ? _instance.id : (id as String),
+          $__typename: $__typename == _undefined || $__typename == null
+              ? _instance.$__typename
+              : ($__typename as String),
+        ),
+      );
 }
 
 class _CopyWithStubImpl$Query$episodeById$episodeById$season<TRes>
@@ -1221,11 +1222,7 @@ class _CopyWithStubImpl$Query$episodeById$episodeById$season<TRes>
 
   TRes _res;
 
-  call({
-    String? id,
-    String? $__typename,
-  }) =>
-      _res;
+  call({String? id, String? $__typename}) => _res;
 }
 
 class Query$episodeById$episodeById$watchStatus {
@@ -1238,7 +1235,8 @@ class Query$episodeById$episodeById$watchStatus {
   });
 
   factory Query$episodeById$episodeById$watchStatus.fromJson(
-      Map<String, dynamic> json) {
+    Map<String, dynamic> json,
+  ) {
     final l$id = json['id'];
     final l$playQueueItemId = json['playQueueItemId'];
     final l$progressInMilliseconds = json['progressInMilliseconds'];
@@ -1335,11 +1333,10 @@ class Query$episodeById$episodeById$watchStatus {
 extension UtilityExtension$Query$episodeById$episodeById$watchStatus
     on Query$episodeById$episodeById$watchStatus {
   CopyWith$Query$episodeById$episodeById$watchStatus<
-          Query$episodeById$episodeById$watchStatus>
-      get copyWith => CopyWith$Query$episodeById$episodeById$watchStatus(
-            this,
-            (i) => i,
-          );
+    Query$episodeById$episodeById$watchStatus
+  >
+  get copyWith =>
+      CopyWith$Query$episodeById$episodeById$watchStatus(this, (i) => i);
 }
 
 abstract class CopyWith$Query$episodeById$episodeById$watchStatus<TRes> {
@@ -1379,24 +1376,24 @@ class _CopyWithImpl$Query$episodeById$episodeById$watchStatus<TRes>
     Object? progressInMilliseconds = _undefined,
     Object? watched = _undefined,
     Object? $__typename = _undefined,
-  }) =>
-      _then(Query$episodeById$episodeById$watchStatus(
-        id: id == _undefined || id == null ? _instance.id : (id as String),
-        playQueueItemId:
-            playQueueItemId == _undefined || playQueueItemId == null
-                ? _instance.playQueueItemId
-                : (playQueueItemId as String),
-        progressInMilliseconds: progressInMilliseconds == _undefined ||
-                progressInMilliseconds == null
-            ? _instance.progressInMilliseconds
-            : (progressInMilliseconds as int),
-        watched: watched == _undefined || watched == null
-            ? _instance.watched
-            : (watched as bool),
-        $__typename: $__typename == _undefined || $__typename == null
-            ? _instance.$__typename
-            : ($__typename as String),
-      ));
+  }) => _then(
+    Query$episodeById$episodeById$watchStatus(
+      id: id == _undefined || id == null ? _instance.id : (id as String),
+      playQueueItemId: playQueueItemId == _undefined || playQueueItemId == null
+          ? _instance.playQueueItemId
+          : (playQueueItemId as String),
+      progressInMilliseconds:
+          progressInMilliseconds == _undefined || progressInMilliseconds == null
+          ? _instance.progressInMilliseconds
+          : (progressInMilliseconds as int),
+      watched: watched == _undefined || watched == null
+          ? _instance.watched
+          : (watched as bool),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 }
 
 class _CopyWithStubImpl$Query$episodeById$episodeById$watchStatus<TRes>
@@ -1411,8 +1408,7 @@ class _CopyWithStubImpl$Query$episodeById$episodeById$watchStatus<TRes>
     int? progressInMilliseconds,
     bool? watched,
     String? $__typename,
-  }) =>
-      _res;
+  }) => _res;
 }
 
 class Query$episodeById$episodeById$mediaFile {
@@ -1426,7 +1422,8 @@ class Query$episodeById$episodeById$mediaFile {
   });
 
   factory Query$episodeById$episodeById$mediaFile.fromJson(
-      Map<String, dynamic> json) {
+    Map<String, dynamic> json,
+  ) {
     final l$durationInMilliseconds = json['durationInMilliseconds'];
     final l$id = json['id'];
     final l$path = json['path'];
@@ -1439,10 +1436,13 @@ class Query$episodeById$episodeById$mediaFile {
       path: (l$path as String),
       size: (l$size as num).toDouble(),
       mediaFileStreams: (l$mediaFileStreams as List<dynamic>?)
-          ?.map((e) => e == null
-              ? null
-              : Query$episodeById$episodeById$mediaFile$mediaFileStreams
-                  .fromJson((e as Map<String, dynamic>)))
+          ?.map(
+            (e) => e == null
+                ? null
+                : Query$episodeById$episodeById$mediaFile$mediaFileStreams.fromJson(
+                    (e as Map<String, dynamic>),
+                  ),
+          )
           .toList(),
       $__typename: (l$$__typename as String),
     );
@@ -1457,7 +1457,7 @@ class Query$episodeById$episodeById$mediaFile {
   final double size;
 
   final List<Query$episodeById$episodeById$mediaFile$mediaFileStreams?>?
-      mediaFileStreams;
+  mediaFileStreams;
 
   final String $__typename;
 
@@ -1472,8 +1472,9 @@ class Query$episodeById$episodeById$mediaFile {
     final l$size = size;
     _resultData['size'] = l$size;
     final l$mediaFileStreams = mediaFileStreams;
-    _resultData['mediaFileStreams'] =
-        l$mediaFileStreams?.map((e) => e?.toJson()).toList();
+    _resultData['mediaFileStreams'] = l$mediaFileStreams
+        ?.map((e) => e?.toJson())
+        .toList();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -1556,11 +1557,10 @@ class Query$episodeById$episodeById$mediaFile {
 extension UtilityExtension$Query$episodeById$episodeById$mediaFile
     on Query$episodeById$episodeById$mediaFile {
   CopyWith$Query$episodeById$episodeById$mediaFile<
-          Query$episodeById$episodeById$mediaFile>
-      get copyWith => CopyWith$Query$episodeById$episodeById$mediaFile(
-            this,
-            (i) => i,
-          );
+    Query$episodeById$episodeById$mediaFile
+  >
+  get copyWith =>
+      CopyWith$Query$episodeById$episodeById$mediaFile(this, (i) => i);
 }
 
 abstract class CopyWith$Query$episodeById$episodeById$mediaFile<TRes> {
@@ -1578,15 +1578,20 @@ abstract class CopyWith$Query$episodeById$episodeById$mediaFile<TRes> {
     String? path,
     double? size,
     List<Query$episodeById$episodeById$mediaFile$mediaFileStreams?>?
-        mediaFileStreams,
+    mediaFileStreams,
     String? $__typename,
   });
   TRes mediaFileStreams(
-      Iterable<Query$episodeById$episodeById$mediaFile$mediaFileStreams?>? Function(
-              Iterable<
-                  CopyWith$Query$episodeById$episodeById$mediaFile$mediaFileStreams<
-                      Query$episodeById$episodeById$mediaFile$mediaFileStreams>?>?)
-          _fn);
+    Iterable<Query$episodeById$episodeById$mediaFile$mediaFileStreams?>?
+    Function(
+      Iterable<
+        CopyWith$Query$episodeById$episodeById$mediaFile$mediaFileStreams<
+          Query$episodeById$episodeById$mediaFile$mediaFileStreams
+        >?
+      >?,
+    )
+    _fn,
+  );
 }
 
 class _CopyWithImpl$Query$episodeById$episodeById$mediaFile<TRes>
@@ -1609,40 +1614,52 @@ class _CopyWithImpl$Query$episodeById$episodeById$mediaFile<TRes>
     Object? size = _undefined,
     Object? mediaFileStreams = _undefined,
     Object? $__typename = _undefined,
-  }) =>
-      _then(Query$episodeById$episodeById$mediaFile(
-        durationInMilliseconds: durationInMilliseconds == _undefined
-            ? _instance.durationInMilliseconds
-            : (durationInMilliseconds as int?),
-        id: id == _undefined || id == null ? _instance.id : (id as String),
-        path: path == _undefined || path == null
-            ? _instance.path
-            : (path as String),
-        size: size == _undefined || size == null
-            ? _instance.size
-            : (size as double),
-        mediaFileStreams: mediaFileStreams == _undefined
-            ? _instance.mediaFileStreams
-            : (mediaFileStreams as List<
-                Query$episodeById$episodeById$mediaFile$mediaFileStreams?>?),
-        $__typename: $__typename == _undefined || $__typename == null
-            ? _instance.$__typename
-            : ($__typename as String),
-      ));
+  }) => _then(
+    Query$episodeById$episodeById$mediaFile(
+      durationInMilliseconds: durationInMilliseconds == _undefined
+          ? _instance.durationInMilliseconds
+          : (durationInMilliseconds as int?),
+      id: id == _undefined || id == null ? _instance.id : (id as String),
+      path: path == _undefined || path == null
+          ? _instance.path
+          : (path as String),
+      size: size == _undefined || size == null
+          ? _instance.size
+          : (size as double),
+      mediaFileStreams: mediaFileStreams == _undefined
+          ? _instance.mediaFileStreams
+          : (mediaFileStreams
+                as List<
+                  Query$episodeById$episodeById$mediaFile$mediaFileStreams?
+                >?),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 
   TRes mediaFileStreams(
-          Iterable<Query$episodeById$episodeById$mediaFile$mediaFileStreams?>? Function(
-                  Iterable<
-                      CopyWith$Query$episodeById$episodeById$mediaFile$mediaFileStreams<
-                          Query$episodeById$episodeById$mediaFile$mediaFileStreams>?>?)
-              _fn) =>
-      call(
-          mediaFileStreams: _fn(_instance.mediaFileStreams?.map((e) => e == null
-              ? null
-              : CopyWith$Query$episodeById$episodeById$mediaFile$mediaFileStreams(
-                  e,
-                  (i) => i,
-                )))?.toList());
+    Iterable<Query$episodeById$episodeById$mediaFile$mediaFileStreams?>?
+    Function(
+      Iterable<
+        CopyWith$Query$episodeById$episodeById$mediaFile$mediaFileStreams<
+          Query$episodeById$episodeById$mediaFile$mediaFileStreams
+        >?
+      >?,
+    )
+    _fn,
+  ) => call(
+    mediaFileStreams: _fn(
+      _instance.mediaFileStreams?.map(
+        (e) => e == null
+            ? null
+            : CopyWith$Query$episodeById$episodeById$mediaFile$mediaFileStreams(
+                e,
+                (i) => i,
+              ),
+      ),
+    )?.toList(),
+  );
 }
 
 class _CopyWithStubImpl$Query$episodeById$episodeById$mediaFile<TRes>
@@ -1657,10 +1674,9 @@ class _CopyWithStubImpl$Query$episodeById$episodeById$mediaFile<TRes>
     String? path,
     double? size,
     List<Query$episodeById$episodeById$mediaFile$mediaFileStreams?>?
-        mediaFileStreams,
+    mediaFileStreams,
     String? $__typename,
-  }) =>
-      _res;
+  }) => _res;
 
   mediaFileStreams(_fn) => _res;
 }
@@ -1680,7 +1696,8 @@ class Query$episodeById$episodeById$mediaFile$mediaFileStreams {
   });
 
   factory Query$episodeById$episodeById$mediaFile$mediaFileStreams.fromJson(
-      Map<String, dynamic> json) {
+    Map<String, dynamic> json,
+  ) {
     final l$codecName = json['codecName'];
     final l$codecType = json['codecType'];
     final l$height = json['height'];
@@ -1842,25 +1859,27 @@ class Query$episodeById$episodeById$mediaFile$mediaFileStreams {
 extension UtilityExtension$Query$episodeById$episodeById$mediaFile$mediaFileStreams
     on Query$episodeById$episodeById$mediaFile$mediaFileStreams {
   CopyWith$Query$episodeById$episodeById$mediaFile$mediaFileStreams<
-          Query$episodeById$episodeById$mediaFile$mediaFileStreams>
-      get copyWith =>
-          CopyWith$Query$episodeById$episodeById$mediaFile$mediaFileStreams(
-            this,
-            (i) => i,
-          );
+    Query$episodeById$episodeById$mediaFile$mediaFileStreams
+  >
+  get copyWith =>
+      CopyWith$Query$episodeById$episodeById$mediaFile$mediaFileStreams(
+        this,
+        (i) => i,
+      );
 }
 
 abstract class CopyWith$Query$episodeById$episodeById$mediaFile$mediaFileStreams<
-    TRes> {
+  TRes
+> {
   factory CopyWith$Query$episodeById$episodeById$mediaFile$mediaFileStreams(
     Query$episodeById$episodeById$mediaFile$mediaFileStreams instance,
     TRes Function(Query$episodeById$episodeById$mediaFile$mediaFileStreams)
-        then,
+    then,
   ) = _CopyWithImpl$Query$episodeById$episodeById$mediaFile$mediaFileStreams;
 
   factory CopyWith$Query$episodeById$episodeById$mediaFile$mediaFileStreams.stub(
-          TRes res) =
-      _CopyWithStubImpl$Query$episodeById$episodeById$mediaFile$mediaFileStreams;
+    TRes res,
+  ) = _CopyWithStubImpl$Query$episodeById$episodeById$mediaFile$mediaFileStreams;
 
   TRes call({
     String? codecName,
@@ -1877,10 +1896,12 @@ abstract class CopyWith$Query$episodeById$episodeById$mediaFile$mediaFileStreams
 }
 
 class _CopyWithImpl$Query$episodeById$episodeById$mediaFile$mediaFileStreams<
-        TRes>
+  TRes
+>
     implements
         CopyWith$Query$episodeById$episodeById$mediaFile$mediaFileStreams<
-            TRes> {
+          TRes
+        > {
   _CopyWithImpl$Query$episodeById$episodeById$mediaFile$mediaFileStreams(
     this._instance,
     this._then,
@@ -1889,7 +1910,7 @@ class _CopyWithImpl$Query$episodeById$episodeById$mediaFile$mediaFileStreams<
   final Query$episodeById$episodeById$mediaFile$mediaFileStreams _instance;
 
   final TRes Function(Query$episodeById$episodeById$mediaFile$mediaFileStreams)
-      _then;
+  _then;
 
   static const _undefined = <dynamic, dynamic>{};
 
@@ -1904,43 +1925,48 @@ class _CopyWithImpl$Query$episodeById$episodeById$mediaFile$mediaFileStreams<
     Object? title = _undefined,
     Object? width = _undefined,
     Object? $__typename = _undefined,
-  }) =>
-      _then(Query$episodeById$episodeById$mediaFile$mediaFileStreams(
-        codecName: codecName == _undefined || codecName == null
-            ? _instance.codecName
-            : (codecName as String),
-        codecType: codecType == _undefined || codecType == null
-            ? _instance.codecType
-            : (codecType as String),
-        height: height == _undefined || height == null
-            ? _instance.height
-            : (height as int),
-        id: id == _undefined || id == null ? _instance.id : (id as String),
-        language:
-            language == _undefined ? _instance.language : (language as String?),
-        path: path == _undefined || path == null
-            ? _instance.path
-            : (path as String),
-        streamIndex: streamIndex == _undefined
-            ? _instance.streamIndex
-            : (streamIndex as int?),
-        title: title == _undefined ? _instance.title : (title as String?),
-        width: width == _undefined || width == null
-            ? _instance.width
-            : (width as int),
-        $__typename: $__typename == _undefined || $__typename == null
-            ? _instance.$__typename
-            : ($__typename as String),
-      ));
+  }) => _then(
+    Query$episodeById$episodeById$mediaFile$mediaFileStreams(
+      codecName: codecName == _undefined || codecName == null
+          ? _instance.codecName
+          : (codecName as String),
+      codecType: codecType == _undefined || codecType == null
+          ? _instance.codecType
+          : (codecType as String),
+      height: height == _undefined || height == null
+          ? _instance.height
+          : (height as int),
+      id: id == _undefined || id == null ? _instance.id : (id as String),
+      language: language == _undefined
+          ? _instance.language
+          : (language as String?),
+      path: path == _undefined || path == null
+          ? _instance.path
+          : (path as String),
+      streamIndex: streamIndex == _undefined
+          ? _instance.streamIndex
+          : (streamIndex as int?),
+      title: title == _undefined ? _instance.title : (title as String?),
+      width: width == _undefined || width == null
+          ? _instance.width
+          : (width as int),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 }
 
 class _CopyWithStubImpl$Query$episodeById$episodeById$mediaFile$mediaFileStreams<
-        TRes>
+  TRes
+>
     implements
         CopyWith$Query$episodeById$episodeById$mediaFile$mediaFileStreams<
-            TRes> {
+          TRes
+        > {
   _CopyWithStubImpl$Query$episodeById$episodeById$mediaFile$mediaFileStreams(
-      this._res);
+    this._res,
+  );
 
   TRes _res;
 
@@ -1955,6 +1981,5 @@ class _CopyWithStubImpl$Query$episodeById$episodeById$mediaFile$mediaFileStreams
     String? title,
     int? width,
     String? $__typename,
-  }) =>
-      _res;
+  }) => _res;
 }

@@ -3,18 +3,18 @@ import 'fragmentMetadata.graphql.dart';
 import 'package:gql/ast.dart';
 
 class Query$showsRecentAdded {
-  Query$showsRecentAdded({
-    this.showsRecentAdded,
-    this.$__typename = 'Query',
-  });
+  Query$showsRecentAdded({this.showsRecentAdded, this.$__typename = 'Query'});
 
   factory Query$showsRecentAdded.fromJson(Map<String, dynamic> json) {
     final l$showsRecentAdded = json['showsRecentAdded'];
     final l$$__typename = json['__typename'];
     return Query$showsRecentAdded(
       showsRecentAdded: (l$showsRecentAdded as List<dynamic>?)
-          ?.map((e) => Query$showsRecentAdded$showsRecentAdded.fromJson(
-              (e as Map<String, dynamic>)))
+          ?.map(
+            (e) => Query$showsRecentAdded$showsRecentAdded.fromJson(
+              (e as Map<String, dynamic>),
+            ),
+          )
           .toList(),
       $__typename: (l$$__typename as String),
     );
@@ -27,8 +27,9 @@ class Query$showsRecentAdded {
   Map<String, dynamic> toJson() {
     final _resultData = <String, dynamic>{};
     final l$showsRecentAdded = showsRecentAdded;
-    _resultData['showsRecentAdded'] =
-        l$showsRecentAdded?.map((e) => e.toJson()).toList();
+    _resultData['showsRecentAdded'] = l$showsRecentAdded
+        ?.map((e) => e.toJson())
+        .toList();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -81,10 +82,7 @@ class Query$showsRecentAdded {
 
 extension UtilityExtension$Query$showsRecentAdded on Query$showsRecentAdded {
   CopyWith$Query$showsRecentAdded<Query$showsRecentAdded> get copyWith =>
-      CopyWith$Query$showsRecentAdded(
-        this,
-        (i) => i,
-      );
+      CopyWith$Query$showsRecentAdded(this, (i) => i);
 }
 
 abstract class CopyWith$Query$showsRecentAdded<TRes> {
@@ -101,19 +99,20 @@ abstract class CopyWith$Query$showsRecentAdded<TRes> {
     String? $__typename,
   });
   TRes showsRecentAdded(
-      Iterable<Query$showsRecentAdded$showsRecentAdded>? Function(
-              Iterable<
-                  CopyWith$Query$showsRecentAdded$showsRecentAdded<
-                      Query$showsRecentAdded$showsRecentAdded>>?)
-          _fn);
+    Iterable<Query$showsRecentAdded$showsRecentAdded>? Function(
+      Iterable<
+        CopyWith$Query$showsRecentAdded$showsRecentAdded<
+          Query$showsRecentAdded$showsRecentAdded
+        >
+      >?,
+    )
+    _fn,
+  );
 }
 
 class _CopyWithImpl$Query$showsRecentAdded<TRes>
     implements CopyWith$Query$showsRecentAdded<TRes> {
-  _CopyWithImpl$Query$showsRecentAdded(
-    this._instance,
-    this._then,
-  );
+  _CopyWithImpl$Query$showsRecentAdded(this._instance, this._then);
 
   final Query$showsRecentAdded _instance;
 
@@ -124,29 +123,34 @@ class _CopyWithImpl$Query$showsRecentAdded<TRes>
   TRes call({
     Object? showsRecentAdded = _undefined,
     Object? $__typename = _undefined,
-  }) =>
-      _then(Query$showsRecentAdded(
-        showsRecentAdded: showsRecentAdded == _undefined
-            ? _instance.showsRecentAdded
-            : (showsRecentAdded
+  }) => _then(
+    Query$showsRecentAdded(
+      showsRecentAdded: showsRecentAdded == _undefined
+          ? _instance.showsRecentAdded
+          : (showsRecentAdded
                 as List<Query$showsRecentAdded$showsRecentAdded>?),
-        $__typename: $__typename == _undefined || $__typename == null
-            ? _instance.$__typename
-            : ($__typename as String),
-      ));
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 
   TRes showsRecentAdded(
-          Iterable<Query$showsRecentAdded$showsRecentAdded>? Function(
-                  Iterable<
-                      CopyWith$Query$showsRecentAdded$showsRecentAdded<
-                          Query$showsRecentAdded$showsRecentAdded>>?)
-              _fn) =>
-      call(
-          showsRecentAdded: _fn(_instance.showsRecentAdded
-              ?.map((e) => CopyWith$Query$showsRecentAdded$showsRecentAdded(
-                    e,
-                    (i) => i,
-                  )))?.toList());
+    Iterable<Query$showsRecentAdded$showsRecentAdded>? Function(
+      Iterable<
+        CopyWith$Query$showsRecentAdded$showsRecentAdded<
+          Query$showsRecentAdded$showsRecentAdded
+        >
+      >?,
+    )
+    _fn,
+  ) => call(
+    showsRecentAdded: _fn(
+      _instance.showsRecentAdded?.map(
+        (e) => CopyWith$Query$showsRecentAdded$showsRecentAdded(e, (i) => i),
+      ),
+    )?.toList(),
+  );
 }
 
 class _CopyWithStubImpl$Query$showsRecentAdded<TRes>
@@ -158,105 +162,123 @@ class _CopyWithStubImpl$Query$showsRecentAdded<TRes>
   call({
     List<Query$showsRecentAdded$showsRecentAdded>? showsRecentAdded,
     String? $__typename,
-  }) =>
-      _res;
+  }) => _res;
 
   showsRecentAdded(_fn) => _res;
 }
 
-const documentNodeQueryshowsRecentAdded = DocumentNode(definitions: [
-  OperationDefinitionNode(
-    type: OperationType.query,
-    name: NameNode(value: 'showsRecentAdded'),
-    variableDefinitions: [],
-    directives: [],
-    selectionSet: SelectionSetNode(selections: [
-      FieldNode(
-        name: NameNode(value: 'showsRecentAdded'),
-        alias: null,
-        arguments: [],
-        directives: [],
-        selectionSet: SelectionSetNode(selections: [
+const documentNodeQueryshowsRecentAdded = DocumentNode(
+  definitions: [
+    OperationDefinitionNode(
+      type: OperationType.query,
+      name: NameNode(value: 'showsRecentAdded'),
+      variableDefinitions: [],
+      directives: [],
+      selectionSet: SelectionSetNode(
+        selections: [
           FieldNode(
-            name: NameNode(value: 'id'),
+            name: NameNode(value: 'showsRecentAdded'),
             alias: null,
             arguments: [],
             directives: [],
-            selectionSet: null,
-          ),
-          FieldNode(
-            name: NameNode(value: 'releaseYear'),
-            alias: null,
-            arguments: [],
-            directives: [],
-            selectionSet: null,
-          ),
-          FieldNode(
-            name: NameNode(value: 'name'),
-            alias: null,
-            arguments: [],
-            directives: [],
-            selectionSet: null,
-          ),
-          FieldNode(
-            name: NameNode(value: 'images'),
-            alias: null,
-            arguments: [],
-            directives: [],
-            selectionSet: SelectionSetNode(selections: [
-              FragmentSpreadNode(
-                name: NameNode(value: 'fragmentImages'),
-                directives: [],
-              ),
-              FieldNode(
-                name: NameNode(value: '__typename'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-            ]),
-          ),
-          FieldNode(
-            name: NameNode(value: 'episodes'),
-            alias: null,
-            arguments: [],
-            directives: [],
-            selectionSet: SelectionSetNode(selections: [
-              FieldNode(
-                name: NameNode(value: 'number'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-              FieldNode(
-                name: NameNode(value: '__typename'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-            ]),
-          ),
-          FieldNode(
-            name: NameNode(value: 'metadata'),
-            alias: null,
-            arguments: [],
-            directives: [],
-            selectionSet: SelectionSetNode(selections: [
-              FragmentSpreadNode(
-                name: NameNode(value: 'fragmentMetadata'),
-                directives: [],
-              ),
-              FieldNode(
-                name: NameNode(value: '__typename'),
-                alias: null,
-                arguments: [],
-                directives: [],
-                selectionSet: null,
-              ),
-            ]),
+            selectionSet: SelectionSetNode(
+              selections: [
+                FieldNode(
+                  name: NameNode(value: 'id'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'releaseYear'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'name'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'images'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: SelectionSetNode(
+                    selections: [
+                      FragmentSpreadNode(
+                        name: NameNode(value: 'fragmentImages'),
+                        directives: [],
+                      ),
+                      FieldNode(
+                        name: NameNode(value: '__typename'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                    ],
+                  ),
+                ),
+                FieldNode(
+                  name: NameNode(value: 'episodes'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: SelectionSetNode(
+                    selections: [
+                      FieldNode(
+                        name: NameNode(value: 'number'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                      FieldNode(
+                        name: NameNode(value: '__typename'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                    ],
+                  ),
+                ),
+                FieldNode(
+                  name: NameNode(value: 'metadata'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: SelectionSetNode(
+                    selections: [
+                      FragmentSpreadNode(
+                        name: NameNode(value: 'fragmentMetadata'),
+                        directives: [],
+                      ),
+                      FieldNode(
+                        name: NameNode(value: '__typename'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                    ],
+                  ),
+                ),
+                FieldNode(
+                  name: NameNode(value: '__typename'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+              ],
+            ),
           ),
           FieldNode(
             name: NameNode(value: '__typename'),
@@ -265,20 +287,13 @@ const documentNodeQueryshowsRecentAdded = DocumentNode(definitions: [
             directives: [],
             selectionSet: null,
           ),
-        ]),
+        ],
       ),
-      FieldNode(
-        name: NameNode(value: '__typename'),
-        alias: null,
-        arguments: [],
-        directives: [],
-        selectionSet: null,
-      ),
-    ]),
-  ),
-  fragmentDefinitionfragmentImages,
-  fragmentDefinitionfragmentMetadata,
-]);
+    ),
+    fragmentDefinitionfragmentImages,
+    fragmentDefinitionfragmentMetadata,
+  ],
+);
 
 class Query$showsRecentAdded$showsRecentAdded {
   Query$showsRecentAdded$showsRecentAdded({
@@ -292,7 +307,8 @@ class Query$showsRecentAdded$showsRecentAdded {
   });
 
   factory Query$showsRecentAdded$showsRecentAdded.fromJson(
-      Map<String, dynamic> json) {
+    Map<String, dynamic> json,
+  ) {
     final l$id = json['id'];
     final l$releaseYear = json['releaseYear'];
     final l$name = json['name'];
@@ -305,17 +321,23 @@ class Query$showsRecentAdded$showsRecentAdded {
       releaseYear: (l$releaseYear as int),
       name: (l$name as String),
       images: (l$images as List<dynamic>?)
-          ?.map((e) =>
-              Fragment$fragmentImages.fromJson((e as Map<String, dynamic>)))
+          ?.map(
+            (e) =>
+                Fragment$fragmentImages.fromJson((e as Map<String, dynamic>)),
+          )
           .toList(),
       episodes: (l$episodes as List<dynamic>?)
-          ?.map((e) =>
-              Query$showsRecentAdded$showsRecentAdded$episodes.fromJson(
-                  (e as Map<String, dynamic>)))
+          ?.map(
+            (e) => Query$showsRecentAdded$showsRecentAdded$episodes.fromJson(
+              (e as Map<String, dynamic>),
+            ),
+          )
           .toList(),
       metadata: (l$metadata as List<dynamic>?)
-          ?.map((e) =>
-              Fragment$fragmentMetadata.fromJson((e as Map<String, dynamic>)))
+          ?.map(
+            (e) =>
+                Fragment$fragmentMetadata.fromJson((e as Map<String, dynamic>)),
+          )
           .toList(),
       $__typename: (l$$__typename as String),
     );
@@ -458,11 +480,10 @@ class Query$showsRecentAdded$showsRecentAdded {
 extension UtilityExtension$Query$showsRecentAdded$showsRecentAdded
     on Query$showsRecentAdded$showsRecentAdded {
   CopyWith$Query$showsRecentAdded$showsRecentAdded<
-          Query$showsRecentAdded$showsRecentAdded>
-      get copyWith => CopyWith$Query$showsRecentAdded$showsRecentAdded(
-            this,
-            (i) => i,
-          );
+    Query$showsRecentAdded$showsRecentAdded
+  >
+  get copyWith =>
+      CopyWith$Query$showsRecentAdded$showsRecentAdded(this, (i) => i);
 }
 
 abstract class CopyWith$Query$showsRecentAdded$showsRecentAdded<TRes> {
@@ -484,22 +505,27 @@ abstract class CopyWith$Query$showsRecentAdded$showsRecentAdded<TRes> {
     String? $__typename,
   });
   TRes images(
-      Iterable<Fragment$fragmentImages>? Function(
-              Iterable<
-                  CopyWith$Fragment$fragmentImages<Fragment$fragmentImages>>?)
-          _fn);
+    Iterable<Fragment$fragmentImages>? Function(
+      Iterable<CopyWith$Fragment$fragmentImages<Fragment$fragmentImages>>?,
+    )
+    _fn,
+  );
   TRes episodes(
-      Iterable<Query$showsRecentAdded$showsRecentAdded$episodes>? Function(
-              Iterable<
-                  CopyWith$Query$showsRecentAdded$showsRecentAdded$episodes<
-                      Query$showsRecentAdded$showsRecentAdded$episodes>>?)
-          _fn);
+    Iterable<Query$showsRecentAdded$showsRecentAdded$episodes>? Function(
+      Iterable<
+        CopyWith$Query$showsRecentAdded$showsRecentAdded$episodes<
+          Query$showsRecentAdded$showsRecentAdded$episodes
+        >
+      >?,
+    )
+    _fn,
+  );
   TRes metadata(
-      Iterable<Fragment$fragmentMetadata>? Function(
-              Iterable<
-                  CopyWith$Fragment$fragmentMetadata<
-                      Fragment$fragmentMetadata>>?)
-          _fn);
+    Iterable<Fragment$fragmentMetadata>? Function(
+      Iterable<CopyWith$Fragment$fragmentMetadata<Fragment$fragmentMetadata>>?,
+    )
+    _fn,
+  );
 }
 
 class _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded<TRes>
@@ -523,68 +549,76 @@ class _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded<TRes>
     Object? episodes = _undefined,
     Object? metadata = _undefined,
     Object? $__typename = _undefined,
-  }) =>
-      _then(Query$showsRecentAdded$showsRecentAdded(
-        id: id == _undefined || id == null ? _instance.id : (id as String),
-        releaseYear: releaseYear == _undefined || releaseYear == null
-            ? _instance.releaseYear
-            : (releaseYear as int),
-        name: name == _undefined || name == null
-            ? _instance.name
-            : (name as String),
-        images: images == _undefined
-            ? _instance.images
-            : (images as List<Fragment$fragmentImages>?),
-        episodes: episodes == _undefined
-            ? _instance.episodes
-            : (episodes
+  }) => _then(
+    Query$showsRecentAdded$showsRecentAdded(
+      id: id == _undefined || id == null ? _instance.id : (id as String),
+      releaseYear: releaseYear == _undefined || releaseYear == null
+          ? _instance.releaseYear
+          : (releaseYear as int),
+      name: name == _undefined || name == null
+          ? _instance.name
+          : (name as String),
+      images: images == _undefined
+          ? _instance.images
+          : (images as List<Fragment$fragmentImages>?),
+      episodes: episodes == _undefined
+          ? _instance.episodes
+          : (episodes
                 as List<Query$showsRecentAdded$showsRecentAdded$episodes>?),
-        metadata: metadata == _undefined
-            ? _instance.metadata
-            : (metadata as List<Fragment$fragmentMetadata>?),
-        $__typename: $__typename == _undefined || $__typename == null
-            ? _instance.$__typename
-            : ($__typename as String),
-      ));
+      metadata: metadata == _undefined
+          ? _instance.metadata
+          : (metadata as List<Fragment$fragmentMetadata>?),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 
   TRes images(
-          Iterable<Fragment$fragmentImages>? Function(
-                  Iterable<
-                      CopyWith$Fragment$fragmentImages<
-                          Fragment$fragmentImages>>?)
-              _fn) =>
-      call(
-          images:
-              _fn(_instance.images?.map((e) => CopyWith$Fragment$fragmentImages(
-                    e,
-                    (i) => i,
-                  )))?.toList());
+    Iterable<Fragment$fragmentImages>? Function(
+      Iterable<CopyWith$Fragment$fragmentImages<Fragment$fragmentImages>>?,
+    )
+    _fn,
+  ) => call(
+    images: _fn(
+      _instance.images?.map(
+        (e) => CopyWith$Fragment$fragmentImages(e, (i) => i),
+      ),
+    )?.toList(),
+  );
 
   TRes episodes(
-          Iterable<Query$showsRecentAdded$showsRecentAdded$episodes>? Function(
-                  Iterable<
-                      CopyWith$Query$showsRecentAdded$showsRecentAdded$episodes<
-                          Query$showsRecentAdded$showsRecentAdded$episodes>>?)
-              _fn) =>
-      call(
-          episodes: _fn(_instance.episodes?.map(
-              (e) => CopyWith$Query$showsRecentAdded$showsRecentAdded$episodes(
-                    e,
-                    (i) => i,
-                  )))?.toList());
+    Iterable<Query$showsRecentAdded$showsRecentAdded$episodes>? Function(
+      Iterable<
+        CopyWith$Query$showsRecentAdded$showsRecentAdded$episodes<
+          Query$showsRecentAdded$showsRecentAdded$episodes
+        >
+      >?,
+    )
+    _fn,
+  ) => call(
+    episodes: _fn(
+      _instance.episodes?.map(
+        (e) => CopyWith$Query$showsRecentAdded$showsRecentAdded$episodes(
+          e,
+          (i) => i,
+        ),
+      ),
+    )?.toList(),
+  );
 
   TRes metadata(
-          Iterable<Fragment$fragmentMetadata>? Function(
-                  Iterable<
-                      CopyWith$Fragment$fragmentMetadata<
-                          Fragment$fragmentMetadata>>?)
-              _fn) =>
-      call(
-          metadata: _fn(
-              _instance.metadata?.map((e) => CopyWith$Fragment$fragmentMetadata(
-                    e,
-                    (i) => i,
-                  )))?.toList());
+    Iterable<Fragment$fragmentMetadata>? Function(
+      Iterable<CopyWith$Fragment$fragmentMetadata<Fragment$fragmentMetadata>>?,
+    )
+    _fn,
+  ) => call(
+    metadata: _fn(
+      _instance.metadata?.map(
+        (e) => CopyWith$Fragment$fragmentMetadata(e, (i) => i),
+      ),
+    )?.toList(),
+  );
 }
 
 class _CopyWithStubImpl$Query$showsRecentAdded$showsRecentAdded<TRes>
@@ -601,8 +635,7 @@ class _CopyWithStubImpl$Query$showsRecentAdded$showsRecentAdded<TRes>
     List<Query$showsRecentAdded$showsRecentAdded$episodes>? episodes,
     List<Fragment$fragmentMetadata>? metadata,
     String? $__typename,
-  }) =>
-      _res;
+  }) => _res;
 
   images(_fn) => _res;
 
@@ -618,7 +651,8 @@ class Query$showsRecentAdded$showsRecentAdded$episodes {
   });
 
   factory Query$showsRecentAdded$showsRecentAdded$episodes.fromJson(
-      Map<String, dynamic> json) {
+    Map<String, dynamic> json,
+  ) {
     final l$number = json['number'];
     final l$$__typename = json['__typename'];
     return Query$showsRecentAdded$showsRecentAdded$episodes(
@@ -644,10 +678,7 @@ class Query$showsRecentAdded$showsRecentAdded$episodes {
   int get hashCode {
     final l$number = number;
     final l$$__typename = $__typename;
-    return Object.hashAll([
-      l$number,
-      l$$__typename,
-    ]);
+    return Object.hashAll([l$number, l$$__typename]);
   }
 
   @override
@@ -676,11 +707,10 @@ class Query$showsRecentAdded$showsRecentAdded$episodes {
 extension UtilityExtension$Query$showsRecentAdded$showsRecentAdded$episodes
     on Query$showsRecentAdded$showsRecentAdded$episodes {
   CopyWith$Query$showsRecentAdded$showsRecentAdded$episodes<
-          Query$showsRecentAdded$showsRecentAdded$episodes>
-      get copyWith => CopyWith$Query$showsRecentAdded$showsRecentAdded$episodes(
-            this,
-            (i) => i,
-          );
+    Query$showsRecentAdded$showsRecentAdded$episodes
+  >
+  get copyWith =>
+      CopyWith$Query$showsRecentAdded$showsRecentAdded$episodes(this, (i) => i);
 }
 
 abstract class CopyWith$Query$showsRecentAdded$showsRecentAdded$episodes<TRes> {
@@ -690,13 +720,10 @@ abstract class CopyWith$Query$showsRecentAdded$showsRecentAdded$episodes<TRes> {
   ) = _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded$episodes;
 
   factory CopyWith$Query$showsRecentAdded$showsRecentAdded$episodes.stub(
-          TRes res) =
-      _CopyWithStubImpl$Query$showsRecentAdded$showsRecentAdded$episodes;
+    TRes res,
+  ) = _CopyWithStubImpl$Query$showsRecentAdded$showsRecentAdded$episodes;
 
-  TRes call({
-    int? number,
-    String? $__typename,
-  });
+  TRes call({int? number, String? $__typename});
 }
 
 class _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded$episodes<TRes>
@@ -712,16 +739,15 @@ class _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded$episodes<TRes>
 
   static const _undefined = <dynamic, dynamic>{};
 
-  TRes call({
-    Object? number = _undefined,
-    Object? $__typename = _undefined,
-  }) =>
-      _then(Query$showsRecentAdded$showsRecentAdded$episodes(
-        number: number == _undefined ? _instance.number : (number as int?),
-        $__typename: $__typename == _undefined || $__typename == null
-            ? _instance.$__typename
-            : ($__typename as String),
-      ));
+  TRes call({Object? number = _undefined, Object? $__typename = _undefined}) =>
+      _then(
+        Query$showsRecentAdded$showsRecentAdded$episodes(
+          number: number == _undefined ? _instance.number : (number as int?),
+          $__typename: $__typename == _undefined || $__typename == null
+              ? _instance.$__typename
+              : ($__typename as String),
+        ),
+      );
 }
 
 class _CopyWithStubImpl$Query$showsRecentAdded$showsRecentAdded$episodes<TRes>
@@ -730,9 +756,5 @@ class _CopyWithStubImpl$Query$showsRecentAdded$showsRecentAdded$episodes<TRes>
 
   TRes _res;
 
-  call({
-    int? number,
-    String? $__typename,
-  }) =>
-      _res;
+  call({int? number, String? $__typename}) => _res;
 }

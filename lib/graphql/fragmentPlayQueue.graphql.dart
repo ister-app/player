@@ -16,8 +16,11 @@ class Fragment$fragmentPlayQueue {
     return Fragment$fragmentPlayQueue(
       id: (l$id as String),
       playQueueItems: (l$playQueueItems as List<dynamic>?)
-          ?.map((e) => Fragment$fragmentPlayQueue$playQueueItems.fromJson(
-              (e as Map<String, dynamic>)))
+          ?.map(
+            (e) => Fragment$fragmentPlayQueue$playQueueItems.fromJson(
+              (e as Map<String, dynamic>),
+            ),
+          )
           .toList(),
       currentItemId: (l$currentItemId as String?),
       $__typename: (l$$__typename as String),
@@ -37,8 +40,9 @@ class Fragment$fragmentPlayQueue {
     final l$id = id;
     _resultData['id'] = l$id;
     final l$playQueueItems = playQueueItems;
-    _resultData['playQueueItems'] =
-        l$playQueueItems?.map((e) => e.toJson()).toList();
+    _resultData['playQueueItems'] = l$playQueueItems
+        ?.map((e) => e.toJson())
+        .toList();
     final l$currentItemId = currentItemId;
     _resultData['currentItemId'] = l$currentItemId;
     final l$$__typename = $__typename;
@@ -109,10 +113,7 @@ class Fragment$fragmentPlayQueue {
 extension UtilityExtension$Fragment$fragmentPlayQueue
     on Fragment$fragmentPlayQueue {
   CopyWith$Fragment$fragmentPlayQueue<Fragment$fragmentPlayQueue>
-      get copyWith => CopyWith$Fragment$fragmentPlayQueue(
-            this,
-            (i) => i,
-          );
+  get copyWith => CopyWith$Fragment$fragmentPlayQueue(this, (i) => i);
 }
 
 abstract class CopyWith$Fragment$fragmentPlayQueue<TRes> {
@@ -131,19 +132,20 @@ abstract class CopyWith$Fragment$fragmentPlayQueue<TRes> {
     String? $__typename,
   });
   TRes playQueueItems(
-      Iterable<Fragment$fragmentPlayQueue$playQueueItems>? Function(
-              Iterable<
-                  CopyWith$Fragment$fragmentPlayQueue$playQueueItems<
-                      Fragment$fragmentPlayQueue$playQueueItems>>?)
-          _fn);
+    Iterable<Fragment$fragmentPlayQueue$playQueueItems>? Function(
+      Iterable<
+        CopyWith$Fragment$fragmentPlayQueue$playQueueItems<
+          Fragment$fragmentPlayQueue$playQueueItems
+        >
+      >?,
+    )
+    _fn,
+  );
 }
 
 class _CopyWithImpl$Fragment$fragmentPlayQueue<TRes>
     implements CopyWith$Fragment$fragmentPlayQueue<TRes> {
-  _CopyWithImpl$Fragment$fragmentPlayQueue(
-    this._instance,
-    this._then,
-  );
+  _CopyWithImpl$Fragment$fragmentPlayQueue(this._instance, this._then);
 
   final Fragment$fragmentPlayQueue _instance;
 
@@ -156,33 +158,38 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue<TRes>
     Object? playQueueItems = _undefined,
     Object? currentItemId = _undefined,
     Object? $__typename = _undefined,
-  }) =>
-      _then(Fragment$fragmentPlayQueue(
-        id: id == _undefined || id == null ? _instance.id : (id as String),
-        playQueueItems: playQueueItems == _undefined
-            ? _instance.playQueueItems
-            : (playQueueItems
+  }) => _then(
+    Fragment$fragmentPlayQueue(
+      id: id == _undefined || id == null ? _instance.id : (id as String),
+      playQueueItems: playQueueItems == _undefined
+          ? _instance.playQueueItems
+          : (playQueueItems
                 as List<Fragment$fragmentPlayQueue$playQueueItems>?),
-        currentItemId: currentItemId == _undefined
-            ? _instance.currentItemId
-            : (currentItemId as String?),
-        $__typename: $__typename == _undefined || $__typename == null
-            ? _instance.$__typename
-            : ($__typename as String),
-      ));
+      currentItemId: currentItemId == _undefined
+          ? _instance.currentItemId
+          : (currentItemId as String?),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 
   TRes playQueueItems(
-          Iterable<Fragment$fragmentPlayQueue$playQueueItems>? Function(
-                  Iterable<
-                      CopyWith$Fragment$fragmentPlayQueue$playQueueItems<
-                          Fragment$fragmentPlayQueue$playQueueItems>>?)
-              _fn) =>
-      call(
-          playQueueItems: _fn(_instance.playQueueItems
-              ?.map((e) => CopyWith$Fragment$fragmentPlayQueue$playQueueItems(
-                    e,
-                    (i) => i,
-                  )))?.toList());
+    Iterable<Fragment$fragmentPlayQueue$playQueueItems>? Function(
+      Iterable<
+        CopyWith$Fragment$fragmentPlayQueue$playQueueItems<
+          Fragment$fragmentPlayQueue$playQueueItems
+        >
+      >?,
+    )
+    _fn,
+  ) => call(
+    playQueueItems: _fn(
+      _instance.playQueueItems?.map(
+        (e) => CopyWith$Fragment$fragmentPlayQueue$playQueueItems(e, (i) => i),
+      ),
+    )?.toList(),
+  );
 }
 
 class _CopyWithStubImpl$Fragment$fragmentPlayQueue<TRes>
@@ -196,8 +203,7 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue<TRes>
     List<Fragment$fragmentPlayQueue$playQueueItems>? playQueueItems,
     String? currentItemId,
     String? $__typename,
-  }) =>
-      _res;
+  }) => _res;
 
   playQueueItems(_fn) => _res;
 }
@@ -205,67 +211,69 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue<TRes>
 const fragmentDefinitionfragmentPlayQueue = FragmentDefinitionNode(
   name: NameNode(value: 'fragmentPlayQueue'),
   typeCondition: TypeConditionNode(
-      on: NamedTypeNode(
-    name: NameNode(value: 'PlayQueue'),
-    isNonNull: false,
-  )),
+    on: NamedTypeNode(name: NameNode(value: 'PlayQueue'), isNonNull: false),
+  ),
   directives: [],
-  selectionSet: SelectionSetNode(selections: [
-    FieldNode(
-      name: NameNode(value: 'id'),
-      alias: null,
-      arguments: [],
-      directives: [],
-      selectionSet: null,
-    ),
-    FieldNode(
-      name: NameNode(value: 'playQueueItems'),
-      alias: null,
-      arguments: [],
-      directives: [],
-      selectionSet: SelectionSetNode(selections: [
-        FieldNode(
-          name: NameNode(value: 'id'),
-          alias: null,
-          arguments: [],
-          directives: [],
-          selectionSet: null,
+  selectionSet: SelectionSetNode(
+    selections: [
+      FieldNode(
+        name: NameNode(value: 'id'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'playQueueItems'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: SelectionSetNode(
+          selections: [
+            FieldNode(
+              name: NameNode(value: 'id'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'itemId'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: '__typename'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+          ],
         ),
-        FieldNode(
-          name: NameNode(value: 'itemId'),
-          alias: null,
-          arguments: [],
-          directives: [],
-          selectionSet: null,
-        ),
-        FieldNode(
-          name: NameNode(value: '__typename'),
-          alias: null,
-          arguments: [],
-          directives: [],
-          selectionSet: null,
-        ),
-      ]),
-    ),
-    FieldNode(
-      name: NameNode(value: 'currentItemId'),
-      alias: null,
-      arguments: [],
-      directives: [],
-      selectionSet: null,
-    ),
-    FieldNode(
-      name: NameNode(value: '__typename'),
-      alias: null,
-      arguments: [],
-      directives: [],
-      selectionSet: null,
-    ),
-  ]),
+      ),
+      FieldNode(
+        name: NameNode(value: 'currentItemId'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: '__typename'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+    ],
+  ),
 );
-const documentNodeFragmentfragmentPlayQueue = DocumentNode(definitions: [
-  fragmentDefinitionfragmentPlayQueue,
-]);
+const documentNodeFragmentfragmentPlayQueue = DocumentNode(
+  definitions: [fragmentDefinitionfragmentPlayQueue],
+);
 
 class Fragment$fragmentPlayQueue$playQueueItems {
   Fragment$fragmentPlayQueue$playQueueItems({
@@ -275,7 +283,8 @@ class Fragment$fragmentPlayQueue$playQueueItems {
   });
 
   factory Fragment$fragmentPlayQueue$playQueueItems.fromJson(
-      Map<String, dynamic> json) {
+    Map<String, dynamic> json,
+  ) {
     final l$id = json['id'];
     final l$itemId = json['itemId'];
     final l$$__typename = json['__typename'];
@@ -308,11 +317,7 @@ class Fragment$fragmentPlayQueue$playQueueItems {
     final l$id = id;
     final l$itemId = itemId;
     final l$$__typename = $__typename;
-    return Object.hashAll([
-      l$id,
-      l$itemId,
-      l$$__typename,
-    ]);
+    return Object.hashAll([l$id, l$itemId, l$$__typename]);
   }
 
   @override
@@ -346,11 +351,10 @@ class Fragment$fragmentPlayQueue$playQueueItems {
 extension UtilityExtension$Fragment$fragmentPlayQueue$playQueueItems
     on Fragment$fragmentPlayQueue$playQueueItems {
   CopyWith$Fragment$fragmentPlayQueue$playQueueItems<
-          Fragment$fragmentPlayQueue$playQueueItems>
-      get copyWith => CopyWith$Fragment$fragmentPlayQueue$playQueueItems(
-            this,
-            (i) => i,
-          );
+    Fragment$fragmentPlayQueue$playQueueItems
+  >
+  get copyWith =>
+      CopyWith$Fragment$fragmentPlayQueue$playQueueItems(this, (i) => i);
 }
 
 abstract class CopyWith$Fragment$fragmentPlayQueue$playQueueItems<TRes> {
@@ -362,11 +366,7 @@ abstract class CopyWith$Fragment$fragmentPlayQueue$playQueueItems<TRes> {
   factory CopyWith$Fragment$fragmentPlayQueue$playQueueItems.stub(TRes res) =
       _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems;
 
-  TRes call({
-    String? id,
-    String? itemId,
-    String? $__typename,
-  });
+  TRes call({String? id, String? itemId, String? $__typename});
 }
 
 class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems<TRes>
@@ -386,16 +386,17 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems<TRes>
     Object? id = _undefined,
     Object? itemId = _undefined,
     Object? $__typename = _undefined,
-  }) =>
-      _then(Fragment$fragmentPlayQueue$playQueueItems(
-        id: id == _undefined || id == null ? _instance.id : (id as String),
-        itemId: itemId == _undefined || itemId == null
-            ? _instance.itemId
-            : (itemId as String),
-        $__typename: $__typename == _undefined || $__typename == null
-            ? _instance.$__typename
-            : ($__typename as String),
-      ));
+  }) => _then(
+    Fragment$fragmentPlayQueue$playQueueItems(
+      id: id == _undefined || id == null ? _instance.id : (id as String),
+      itemId: itemId == _undefined || itemId == null
+          ? _instance.itemId
+          : (itemId as String),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 }
 
 class _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems<TRes>
@@ -404,10 +405,5 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems<TRes>
 
   TRes _res;
 
-  call({
-    String? id,
-    String? itemId,
-    String? $__typename,
-  }) =>
-      _res;
+  call({String? id, String? itemId, String? $__typename}) => _res;
 }

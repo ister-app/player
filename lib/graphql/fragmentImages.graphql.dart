@@ -40,11 +40,7 @@ class Fragment$fragmentImages {
     final l$type = type;
     final l$id = id;
     final l$$__typename = $__typename;
-    return Object.hashAll([
-      l$type,
-      l$id,
-      l$$__typename,
-    ]);
+    return Object.hashAll([l$type, l$id, l$$__typename]);
   }
 
   @override
@@ -76,10 +72,7 @@ class Fragment$fragmentImages {
 
 extension UtilityExtension$Fragment$fragmentImages on Fragment$fragmentImages {
   CopyWith$Fragment$fragmentImages<Fragment$fragmentImages> get copyWith =>
-      CopyWith$Fragment$fragmentImages(
-        this,
-        (i) => i,
-      );
+      CopyWith$Fragment$fragmentImages(this, (i) => i);
 }
 
 abstract class CopyWith$Fragment$fragmentImages<TRes> {
@@ -91,19 +84,12 @@ abstract class CopyWith$Fragment$fragmentImages<TRes> {
   factory CopyWith$Fragment$fragmentImages.stub(TRes res) =
       _CopyWithStubImpl$Fragment$fragmentImages;
 
-  TRes call({
-    String? type,
-    String? id,
-    String? $__typename,
-  });
+  TRes call({String? type, String? id, String? $__typename});
 }
 
 class _CopyWithImpl$Fragment$fragmentImages<TRes>
     implements CopyWith$Fragment$fragmentImages<TRes> {
-  _CopyWithImpl$Fragment$fragmentImages(
-    this._instance,
-    this._then,
-  );
+  _CopyWithImpl$Fragment$fragmentImages(this._instance, this._then);
 
   final Fragment$fragmentImages _instance;
 
@@ -115,16 +101,17 @@ class _CopyWithImpl$Fragment$fragmentImages<TRes>
     Object? type = _undefined,
     Object? id = _undefined,
     Object? $__typename = _undefined,
-  }) =>
-      _then(Fragment$fragmentImages(
-        type: type == _undefined || type == null
-            ? _instance.type
-            : (type as String),
-        id: id == _undefined || id == null ? _instance.id : (id as String),
-        $__typename: $__typename == _undefined || $__typename == null
-            ? _instance.$__typename
-            : ($__typename as String),
-      ));
+  }) => _then(
+    Fragment$fragmentImages(
+      type: type == _undefined || type == null
+          ? _instance.type
+          : (type as String),
+      id: id == _undefined || id == null ? _instance.id : (id as String),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 }
 
 class _CopyWithStubImpl$Fragment$fragmentImages<TRes>
@@ -133,46 +120,41 @@ class _CopyWithStubImpl$Fragment$fragmentImages<TRes>
 
   TRes _res;
 
-  call({
-    String? type,
-    String? id,
-    String? $__typename,
-  }) =>
-      _res;
+  call({String? type, String? id, String? $__typename}) => _res;
 }
 
 const fragmentDefinitionfragmentImages = FragmentDefinitionNode(
   name: NameNode(value: 'fragmentImages'),
   typeCondition: TypeConditionNode(
-      on: NamedTypeNode(
-    name: NameNode(value: 'Image'),
-    isNonNull: false,
-  )),
+    on: NamedTypeNode(name: NameNode(value: 'Image'), isNonNull: false),
+  ),
   directives: [],
-  selectionSet: SelectionSetNode(selections: [
-    FieldNode(
-      name: NameNode(value: 'type'),
-      alias: null,
-      arguments: [],
-      directives: [],
-      selectionSet: null,
-    ),
-    FieldNode(
-      name: NameNode(value: 'id'),
-      alias: null,
-      arguments: [],
-      directives: [],
-      selectionSet: null,
-    ),
-    FieldNode(
-      name: NameNode(value: '__typename'),
-      alias: null,
-      arguments: [],
-      directives: [],
-      selectionSet: null,
-    ),
-  ]),
+  selectionSet: SelectionSetNode(
+    selections: [
+      FieldNode(
+        name: NameNode(value: 'type'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'id'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: '__typename'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+    ],
+  ),
 );
-const documentNodeFragmentfragmentImages = DocumentNode(definitions: [
-  fragmentDefinitionfragmentImages,
-]);
+const documentNodeFragmentfragmentImages = DocumentNode(
+  definitions: [fragmentDefinitionfragmentImages],
+);
