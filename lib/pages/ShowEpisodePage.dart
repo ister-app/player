@@ -114,8 +114,7 @@ class ShowEpisodePage extends StatelessWidget {
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(
               children: [
-                Text(title, style: Theme.of(context).textTheme.headlineSmall),
-                Expanded(child: Container()),
+                Expanded(child: Text(title, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.headlineSmall)),
                 MenuAnchor(
                   menuChildren: <Widget>[
                     MenuItemButton(
