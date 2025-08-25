@@ -98,6 +98,12 @@ abstract class AppLocalizations {
     Locale('nl')
   ];
 
+  /// Refresh data of this page.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh page'**
+  String get refreshPage;
+
   /// Text in list tile when clicked it will trigger a library scan.
   ///
   /// In en, this message translates to:

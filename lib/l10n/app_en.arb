@@ -1,4 +1,8 @@
 {
+  "refreshPage": "Refresh page",
+  "@refreshPage": {
+    "description": "Refresh data of this page."
+  },
   "scanLibrary": "Scan library",
   "@scanLibrary": {
     "description": "Text in list tile when clicked it will trigger a library scan."

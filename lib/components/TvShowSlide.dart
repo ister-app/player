@@ -12,10 +12,12 @@ import 'CarouselItemView.dart';
 
 class Tvshowslide extends StatelessWidget {
   final String serverName;
+  final Function(VoidCallback?)? onRefetch;
+  final Function()? onEmptyView;
 
   const Tvshowslide({
     super.key,
-    required this.serverName,
+    required this.serverName, this.onRefetch, this.onEmptyView,
   });
 
   // final String getEpisodesRecentWatched = Query$episodesRecentWatchedQuery();
@@ -30,6 +32,9 @@ class Tvshowslide extends StatelessWidget {
       // while fetchMore() can be used for pagination purpose
       builder: (QueryResult result,
           {VoidCallback? refetch, FetchMore? fetchMore}) {
+        if (onRefetch != null) {
+          onRefetch!(refetch);
+        }
         if (result.hasException) {
           return Text(result.exception.toString());
         }
@@ -57,6 +62,9 @@ class Tvshowslide extends StatelessWidget {
             parsedData.showsRecentAdded;
 
         if (shows == null) {
+          if (onEmptyView != null) {
+            onEmptyView!();
+          }
           return const Text('No shows');
         }
 

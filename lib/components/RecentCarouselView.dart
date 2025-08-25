@@ -13,12 +13,15 @@ import '../utils/PlayQueueService.dart';
 import 'CarouselItemView.dart';
 
 class RecentCarouselView extends StatelessWidget {
-  const RecentCarouselView({
-    super.key,
-    required this.serverName,
-  });
 
   final String serverName;
+  final Function(VoidCallback?)? onRefetch;
+  final Function()? onEmptyView;
+
+  const RecentCarouselView({
+    super.key,
+    required this.serverName, this.onRefetch, this.onEmptyView,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +35,9 @@ class RecentCarouselView extends StatelessWidget {
         playQueueService.getPlayQueueChangedStream().listen((event) {
           refetch != null ? refetch() : null;
         });
+        if (onRefetch != null) {
+          onRefetch!(refetch);
+        }
         if (result.hasException) {
           return Text(result.exception.toString());
         }
@@ -59,7 +65,10 @@ class RecentCarouselView extends StatelessWidget {
         List<Query$episodesRecentWatchedQuery$episodesRecentWatched>? episodes =
             parsedData.episodesRecentWatched;
 
-        if (episodes == null) {
+        if (episodes == null || episodes.isEmpty) {
+          if (onEmptyView != null) {
+            onEmptyView!();
+          }
           return const Text('No episodes');
         }
 
@@ -97,6 +106,5 @@ class RecentCarouselView extends StatelessWidget {
                 });
       },
     );
-    ;
   }
 }
