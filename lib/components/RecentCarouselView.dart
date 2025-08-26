@@ -43,7 +43,7 @@ class RecentCarouselView extends StatelessWidget {
           return Text(result.exception.toString());
         }
 
-        if (result.isLoading) {
+        if (result.data == null && result.isLoading) {
           return Skeletonizer(
               enabled: true,
               child: CarouselView(

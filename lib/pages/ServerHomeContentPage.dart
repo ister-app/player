@@ -28,6 +28,12 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
   Refetch? _refetchTvshow;
   bool _tvshowViewEmpty = false;
 
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
+
+  void triggerRefresh() {
+    _refreshIndicatorKey.currentState?.show();
+  }
+
   Future<void> _refresh() async {
     LoggerService().logger.i("refreshing");
     if (_refetchRecent != null) {
@@ -70,7 +76,7 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
           MenuAnchor(
             menuChildren: <Widget>[
               MenuItemButton(
-                  onPressed: _refresh,
+                  onPressed: () => triggerRefresh(),
                   child: ListTile(
                     leading: const Icon(Icons.refresh),
                     title: Text(AppLocalizations.of(context)!.refreshPage),
@@ -100,6 +106,7 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
         ],
       ),
       body: RefreshIndicator(
+          key: _refreshIndicatorKey,
           onRefresh: _refresh,
           child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
