@@ -110,6 +110,12 @@ abstract class AppLocalizations {
   /// **'Scan library'**
   String get scanLibrary;
 
+  /// In menu archor an item when clicked go to show of that item.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to show'**
+  String get goToShow;
+
   /// Text above recently watched media
   ///
   /// In en, this message translates to:

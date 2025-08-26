@@ -1,6 +1,7 @@
 {
     "refreshPage": "Herlaad pagina",
     "scanLibrary": "Scan bibliotheek",
+    "goToShow": "Ga naar show",
     "watchNext": "Kijk verder",
     "recentlyAddedShows": "Recent toegevoegde series",
     "season": "Seizoen {number}",

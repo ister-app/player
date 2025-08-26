@@ -9,18 +9,20 @@ import 'package:player/utils/MetadataUtil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../l10n/app_localizations.dart';
+import '../routes/AppRouter.gr.dart';
 import '../utils/PlayQueueService.dart';
 import 'CarouselItemView.dart';
 
 class RecentCarouselView extends StatelessWidget {
-
   final String serverName;
   final Function(VoidCallback?)? onRefetch;
   final Function()? onEmptyView;
 
   const RecentCarouselView({
     super.key,
-    required this.serverName, this.onRefetch, this.onEmptyView,
+    required this.serverName,
+    this.onRefetch,
+    this.onEmptyView,
   });
 
   @override
@@ -72,38 +74,60 @@ class RecentCarouselView extends StatelessWidget {
           return const Text('No episodes');
         }
 
-        return CarouselView(
-            controller: CarouselController(initialItem: 0),
-            // flexWeights: const <int>[1, 1, 1, 1],
-            itemExtent: 300.0,
-            shrinkExtent: 300.0,
-            children: episodes.map(
-                (Query$episodesRecentWatchedQuery$episodesRecentWatched
-                    episode) {
-              List<Fragment$fragmentImages>? images = episode.images
-                  ?.map((e) => Fragment$fragmentImages.fromJson(e.toJson()))
-                  .toList();
-              return CarouselItemView(
-                  serverName: serverName,
-                  title: MetadataUtil.getTitle(episode.metadata) ??
-                      AppLocalizations.of(context)!
-                          .episode(episode.number ?? 0),
-                  subTitle: MetadataUtil.getDescription(episode.metadata) ?? "",
-                  imageUrl:
-                      ImageUtil.getImageIdByType(images, ImageTypes.background),
-                  progress: episode.watchStatus != null &&
-                          episode.watchStatus!.isNotEmpty &&
-                          episode.watchStatus!.first.watched != true &&
-                          episode.mediaFile != null &&
-                          episode.mediaFile!.isNotEmpty
-                      ? episode.watchStatus!.first.progressInMilliseconds /
-                          episode.mediaFile!.first!.durationInMilliseconds!
-                      : null);
-            }).toList(),
-            onTap: (value) => {
-                  AutoRouter.of(context).pushPath(
-                      'shows/${episodes[value].$show!.id}/episodes/${episodes[value].id}')
-                });
+        return ListView(
+          // controller: CarouselController(initialItem: 0),
+          itemExtent: 300.0,
+          scrollDirection: Axis.horizontal,
+          children: episodes.map(
+              (Query$episodesRecentWatchedQuery$episodesRecentWatched episode) {
+            List<Fragment$fragmentImages>? images = episode.images
+                ?.map((e) => Fragment$fragmentImages.fromJson(e.toJson()))
+                .toList();
+            var _menuController = MenuController();
+            return MenuAnchor(
+                controller: _menuController,
+                menuChildren: <Widget>[
+                  MenuItemButton(
+                      onPressed: () {
+                        AutoRouter.of(context)
+                            .push(ShowOverviewRoute(showId: episode.$show!.id));
+                      },
+                      child: ListTile(
+                        leading: const Icon(Icons.tv),
+                        title: Text(AppLocalizations.of(context)!.goToShow),
+                      )),
+                ],
+                child: CarouselItemView(
+                    serverName: serverName,
+                    title: MetadataUtil.getTitle(episode.metadata) ??
+                        AppLocalizations.of(context)!
+                            .episode(episode.number ?? 0),
+                    subTitle:
+                        MetadataUtil.getDescription(episode.metadata) ?? "",
+                    imageUrl: ImageUtil.getImageIdByType(
+                        images, ImageTypes.background),
+                    progress: episode.watchStatus != null &&
+                            episode.watchStatus!.isNotEmpty &&
+                            episode.watchStatus!.first.watched != true &&
+                            episode.mediaFile != null &&
+                            episode.mediaFile!.isNotEmpty
+                        ? episode.watchStatus!.first.progressInMilliseconds /
+                            episode.mediaFile!.first!.durationInMilliseconds!
+                        : null,
+                    onSecondaryTapDown: (TapDownDetails details) =>
+                        _menuController.isOpen
+                            ? _menuController.close()
+                            : _menuController.open(
+                                position: details.localPosition),
+                    onLongPress: () => _menuController.isOpen
+                        ? _menuController.close()
+                        : _menuController.open(),
+                    onTap: () => {
+                          AutoRouter.of(context).pushPath(
+                              'shows/${episode.$show!.id}/episodes/${episode.id}')
+                        }));
+          }).toList(),
+        );
       },
     );
   }

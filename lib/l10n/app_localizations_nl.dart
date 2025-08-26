@@ -15,6 +15,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get scanLibrary => 'Scan bibliotheek';
 
   @override
+  String get goToShow => 'Ga naar show';
+
+  @override
   String get watchNext => 'Kijk verder';
 
   @override

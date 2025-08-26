@@ -7,6 +7,10 @@
   "@scanLibrary": {
     "description": "Text in list tile when clicked it will trigger a library scan."
   },
+  "goToShow": "Go to show",
+  "@goToShow": {
+    "description": "In menu archor an item when clicked go to show of that item."
+  },
   "watchNext": "Continue watching",
   "@watchNext": {
     "description": "Text above recently watched media"
