@@ -22,19 +22,19 @@ class ServerHomeContentPage extends StatefulWidget {
 }
 
 class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
-  VoidCallback? _refetchRecent;
+  Refetch? _refetchRecent;
   bool _recentViewEmpty = false;
 
-  VoidCallback? _refetchTvshow;
+  Refetch? _refetchTvshow;
   bool _tvshowViewEmpty = false;
 
   Future<void> _refresh() async {
     LoggerService().logger.i("refreshing");
     if (_refetchRecent != null) {
-      _refetchRecent!();
+      await _refetchRecent!();
     }
     if (_refetchTvshow != null) {
-      _refetchTvshow!();
+      await _refetchTvshow!();
     }
     setState(() {
       _recentViewEmpty = false;

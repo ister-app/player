@@ -13,7 +13,7 @@ import 'CarouselItemView.dart';
 
 class Tvshowslide extends StatefulWidget {
   final String serverName;
-  final Function(VoidCallback?)? onRefetch;
+  final Function(Refetch?)? onRefetch;
   final Function()? onEmptyView;
 
   const Tvshowslide({
@@ -28,34 +28,17 @@ class Tvshowslide extends StatefulWidget {
 }
 
 class _TvshowslideState extends State<Tvshowslide> {
-  late ScrollController _scrollController;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController = ScrollController();
-    _scrollController.addListener(_scrollListener);
-  }
-
-  void _scrollListener() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 500) {
-      LoggerService().logger.t("End of Tvshowslide reached");
-    }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
+  bool _loading = false;
 
   @override
   Widget build(BuildContext context) {
+    int fetched = 0;
+
     return Query(
-      options: QueryOptions(document: documentNodeQueryshowsRecentAdded),
-      builder: (QueryResult result,
-          {VoidCallback? refetch, FetchMore? fetchMore}) {
+      options: QueryOptions(
+          document: documentNodeQueryshowsRecentAdded,
+          variables: Map.of({"page": 0, "size": 15})),
+      builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
         if (widget.onRefetch != null) {
           widget.onRefetch!(refetch);
         }
@@ -63,7 +46,7 @@ class _TvshowslideState extends State<Tvshowslide> {
           return Text(result.exception.toString());
         }
 
-        if (result.isLoading) {
+        if (result.data == null && result.isLoading) {
           return Skeletonizer(
               enabled: true,
               child: CarouselView(
@@ -81,8 +64,10 @@ class _TvshowslideState extends State<Tvshowslide> {
         }
 
         final parsedData = Query$showsRecentAdded.fromJson(result.data!);
-        List<Query$showsRecentAdded$showsRecentAdded>? shows =
+        Query$showsRecentAdded$showsRecentAdded? showPage =
             parsedData.showsRecentAdded;
+        List<Query$showsRecentAdded$showsRecentAdded$content>? shows =
+            showPage?.content;
 
         if (shows == null) {
           if (widget.onEmptyView != null) {
@@ -91,21 +76,71 @@ class _TvshowslideState extends State<Tvshowslide> {
           return const Text('No shows');
         }
 
-        return ListView(
-          controller: _scrollController,
-          itemExtent: 300.0,
-          scrollDirection: Axis.horizontal,
-          children: shows.map((Query$showsRecentAdded$showsRecentAdded show) {
-            return CarouselItemView(
-                serverName: widget.serverName,
-                title: MetadataUtil.getTitle(show.metadata) ?? "",
-                subTitle: MetadataUtil.getDescription(show.metadata) ?? "",
-                imageUrl: ImageUtil.getImageIdByType(
-                    show.images, ImageTypes.background),
-                onTap: () => AutoRouter.of(context)
-                    .push(ShowOverviewRoute(showId: show.id)));
-          }).toList(),
-        );
+        return NotificationListener<ScrollUpdateNotification>(
+            onNotification: (ScrollUpdateNotification notification) {
+              if (notification.metrics.pixels >=
+                  notification.metrics.maxScrollExtent - 500) {
+                LoggerService()
+                    .logger
+                    .t("End of Tvshowslide reached page: ${showPage!.number}");
+                if (result.isLoading == false &&
+                    _loading == false &&
+                    fetched != showPage.number + 1 &&
+                    fetchMore != null &&
+                    showPage.totalPages > showPage.number) {
+                  setState(() {
+                    _loading = true;
+                  });
+                  fetched = showPage.number + 1;
+                  LoggerService().logger.d(
+                      "Fetching more page: ${showPage.number + 1}, size: ${showPage.size}");
+                  fetchMore(FetchMoreOptions(
+                    variables: Map.of(
+                        {"page": showPage.number + 1, "size": showPage.size}),
+                    updateQuery: (previousResultData, fetchMoreResultData) {
+                      final List<dynamic> content = [
+                        ...previousResultData!['showsRecentAdded']['content']
+                            as List<dynamic>,
+                        ...fetchMoreResultData!['showsRecentAdded']['content']
+                            as List<dynamic>
+                      ];
+
+                      fetchMoreResultData['showsRecentAdded']['content'] =
+                          content;
+                      setState(() {
+                        _loading = false;
+                      });
+                      return fetchMoreResultData;
+                    },
+                  ));
+                }
+              }
+              return true;
+            },
+            child: ListView.builder(
+              itemExtent: 300.0,
+              itemCount: shows.length + (_loading ? 1 : 0), // Add 1 if loading
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (context, index) {
+                if (index < shows.length) {
+                  final show = shows[index];
+                  return CarouselItemView(
+                    serverName: widget.serverName,
+                    title: MetadataUtil.getTitle(show.metadata) ?? "",
+                    subTitle: MetadataUtil.getDescription(show.metadata) ?? "",
+                    imageUrl: ImageUtil.getImageIdByType(
+                        show.images, ImageTypes.background),
+                    onTap: () => AutoRouter.of(context)
+                        .push(ShowOverviewRoute(showId: show.id)),
+                  );
+                } else {
+                  // Return a loading spinner if loading more items
+                  return Center(
+                    child: CircularProgressIndicator(), // Spinner
+                  );
+                }
+              },
+            ));
       },
     );
   }

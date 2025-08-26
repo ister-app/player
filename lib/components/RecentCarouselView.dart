@@ -15,7 +15,7 @@ import 'CarouselItemView.dart';
 
 class RecentCarouselView extends StatelessWidget {
   final String serverName;
-  final Function(VoidCallback?)? onRefetch;
+  final Function(Refetch?)? onRefetch;
   final Function()? onEmptyView;
 
   const RecentCarouselView({
@@ -32,8 +32,7 @@ class RecentCarouselView extends StatelessWidget {
       options: QueryOptions(
         document: documentNodeQueryepisodesRecentWatchedQuery,
       ),
-      builder: (QueryResult result,
-          {VoidCallback? refetch, FetchMore? fetchMore}) {
+      builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
         playQueueService.getPlayQueueChangedStream().listen((event) {
           refetch != null ? refetch() : null;
         });

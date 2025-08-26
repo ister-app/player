@@ -1,16 +1,23 @@
-query showsRecentAdded {
-    showsRecentAdded {
-        id
-        releaseYear
-        name
-        images {
-            ...fragmentImages
-        }
-        episodes {
-            number
-        }
-        metadata {
-            ...fragmentMetadata
+query showsRecentAdded($page: Int, $size: Int) {
+    showsRecentAdded(page: $page, size: $size) {
+        number
+        size
+        totalElements
+        totalPages
+        content {
+            id
+            releaseYear
+            name
+            images {
+                ...fragmentImages
+            }
+            episodes {
+                number
+            }
+            metadata {
+                ...fragmentMetadata
+            }
+
         }
     }
 }
