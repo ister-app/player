@@ -34,7 +34,7 @@ class ShowOverviewContentPage extends StatelessWidget {
 
         if (result.hasException) {
           body = Text(result.exception.toString());
-        } else if (result.isLoading) {
+        } else if (result.data == null && result.isLoading) {
           body = Skeletonizer(
               enabled: true,
               child:

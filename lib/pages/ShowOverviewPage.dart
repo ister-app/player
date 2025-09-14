@@ -36,7 +36,7 @@ class ShowOverviewPage extends StatelessWidget {
           body = Text(result.exception.toString());
         }
 
-        if (result.isLoading) {
+        if (result.data == null && result.isLoading) {
           title = Skeletonizer(enabled: true, child: Text(BoneMock.name));
           body = Skeletonizer(enabled: true, child: getContent(false, null));
         } else {

@@ -14,7 +14,7 @@ import '../utils/LoginManager.dart';
 import '../utils/MetadataUtil.dart';
 
 @RoutePage()
-class ShowEpisodePage extends StatelessWidget {
+class ShowEpisodePage extends StatefulWidget {
   const ShowEpisodePage({
     super.key,
     @PathParam.inherit('serverName') required this.serverName,
@@ -29,39 +29,45 @@ class ShowEpisodePage extends StatelessWidget {
   final String? playQueueId;
 
   @override
+  _ShowEpisodePageState createState() => _ShowEpisodePageState();
+}
+
+class _ShowEpisodePageState extends State<ShowEpisodePage> {
+  bool loadComplete = false;
+  Query$episodeById$episodeById? episode;
+
+  @override
   Widget build(BuildContext context) {
-    bool loadComplete = false;
     return Query(
       options: QueryOptions(
-          document: documentNodeQueryepisodeById,
-          // Keep track if the graphql query is done. Otherwise the player can be loaded twice.
-          onComplete: (data) => loadComplete = true,
-          variables: Map.of({"id": episodeId})),
+        document: documentNodeQueryepisodeById,
+        onComplete: (data) {
+          setState(() {
+            loadComplete = true;
+            episode = Query$episodeById.fromJson(data!).episodeById;
+          });
+        },
+        variables: Map.of({"id": widget.episodeId}),
+      ),
       builder: (QueryResult result,
           {VoidCallback? refetch, FetchMore? fetchMore}) {
         if (result.hasException) {
-          return Text(result.exception.toString());
-        } else if (result.isLoading) {
+          return Center(child: Text(result.exception.toString()));
+        } else if (result.data == null && result.isLoading) {
           return Skeletonizer(
-              enabled: true,
-              child: getContent(
-                  false, null, BoneMock.name, BoneMock.words(15), context));
+            enabled: true,
+            child: getContent(
+                false, null, BoneMock.name, BoneMock.words(15), context),
+          );
         } else {
-          final parsedData = Query$episodeById.fromJson(result.data!);
-
-          Query$episodeById$episodeById? episode = parsedData.episodeById;
-
-          if (episode == null) {
-            return const Text('No Episode');
-          } else {
-            return getContent(
-                loadComplete,
-                episode,
-                MetadataUtil.getTitle(episode.metadata) ??
-                    AppLocalizations.of(context)!.episode(episode.number ?? 0),
-                MetadataUtil.getDescription(episode.metadata) ?? "",
-                context);
-          }
+          return getContent(
+            loadComplete,
+            episode,
+            MetadataUtil.getTitle(episode?.metadata) ??
+                AppLocalizations.of(context)!.episode(episode?.number ?? 0),
+            MetadataUtil.getDescription(episode?.metadata) ?? "",
+            context,
+          );
         }
       },
     );
@@ -75,8 +81,7 @@ class ShowEpisodePage extends StatelessWidget {
           return Container(
             decoration: BoxDecoration(color: Colors.grey),
             height: constraints.maxWidth < 800 ? 300 : 500,
-            child: episode != null && loadComplete == true
-                // When in web or when no media file is present show the background image.
+            child: episode != null && loadComplete
                 ? kIsWeb ||
                         episode.mediaFile == null ||
                         episode.mediaFile!.isEmpty
@@ -87,44 +92,51 @@ class ShowEpisodePage extends StatelessWidget {
                           height: constraints.maxWidth < 800 ? 300 : 500,
                           width: constraints.maxWidth,
                           decoration: BoxDecoration(color: Colors.grey),
-                          child: (imageUrl != null && imageUrl != '')
+                          child: (imageUrl != null && imageUrl.isNotEmpty)
                               ? Image(
                                   fit: BoxFit.cover,
                                   image: NetworkImage(
-                                    headers:
-                                        LoginManager.getHeaders(serverName),
-                                    '${ClientManager.getHttpOrHttps(serverName)}://$serverName/images/$imageUrl/download',
+                                    headers: LoginManager.getHeaders(
+                                        widget.serverName),
+                                    '${ClientManager.getHttpOrHttps(widget.serverName)}://${widget.serverName}/images/$imageUrl/download',
                                   ),
                                 )
                               : Container(),
                         );
                       })
                     : PlayQueue(
-                        serverName: serverName,
+                        serverName: widget.serverName,
                         episode: episode,
-                        playQueueId: playQueueId,
+                        playQueueId: widget.playQueueId,
                       )
                 : Container(),
           );
         },
       ),
       Container(
-          padding: EdgeInsetsGeometry.all(10),
+          padding: const EdgeInsets.all(10),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(
               children: [
-                Expanded(child: Text(title, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.headlineSmall)),
+                Expanded(
+                  child: Text(
+                    title,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                ),
                 MenuAnchor(
                   menuChildren: <Widget>[
                     MenuItemButton(
-                        onPressed: () {
-                          _dialogBuilder(context, episode!.toJson().toString());
-                        },
-                        child: ListTile(
-                          leading: const Icon(Icons.info),
-                          title: Text(AppLocalizations.of(context)!.rawData),
-                        )),
+                      onPressed: () {
+                        _dialogBuilder(context, episode!.toJson().toString());
+                      },
+                      child: ListTile(
+                        leading: const Icon(Icons.info),
+                        title: Text(AppLocalizations.of(context)!.rawData),
+                      ),
+                    ),
                   ],
                   builder: (_, MenuController controller, Widget? child) {
                     return IconButton(
