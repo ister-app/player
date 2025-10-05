@@ -1,11 +1,15 @@
 {
-    "refreshPage": "Herlaad pagina",
-    "scanLibrary": "Scan bibliotheek",
-    "goToShow": "Ga naar show",
-    "watchNext": "Kijk verder",
-    "recentlyAddedShows": "Recent toegevoegde series",
-    "season": "Seizoen {number}",
-    "episode": "Aflevering {number}",
-    "episodePrefix": "A{number}",
-    "close": "Sluit"
+  "home": "Home",
+  "library": "Bibliotheek",
+  "refreshPage": "Vernieuw pagina",
+  "scanLibrary": "Scan bibliotheek",
+  "goToShow": "Ga naar show",
+  "watchNext": "Blijf kijken",
+  "recentlyAddedShows": "Onlangs toegevoegde shows",
+  "season": "Seizoen {number}",
+  "episode": "Aflevering {number}",
+  "episodePrefix": "A{number}",
+  "close": "Sluiten",
+  "json": "JSON",
+  "rawData": "Raw data"
 }

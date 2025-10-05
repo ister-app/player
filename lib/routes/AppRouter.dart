@@ -10,7 +10,13 @@ class AppRouter extends RootStackRouter {
     AutoRoute(path: "/", page: HomeRoute.page), // page with all logged in servers and button to login in new server
     AutoRoute(path: "/server/:serverName", page: ServerHomeRoute.page,
         children: [
-          AutoRoute(path: 'home', page: ServerHomeContentRoute.page, initial: true), // Overview with newly added items and resume watching view
+          AutoRoute(path: '', page: ServerHomeOverviewRoute.page, initial: true,
+              children: [
+                RedirectRoute(path: '', redirectTo: 'home'),
+                AutoRoute(path: 'home', page: ServerHomeContentRoute.page),
+                AutoRoute(path: 'library', page: ShowHomeRoute.page),
+                ]
+          ), // Overview with newly added items and resume watching view
           AutoRoute(path: 'shows/:showId', page: ShowOverviewRoute.page,
             children: [
               AutoRoute(path: 'overview', page: ShowOverviewContentRoute.page, initial: true),

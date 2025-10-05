@@ -1,4 +1,12 @@
 {
+  "home":"Home",
+  "@home": {
+    "description": "Home as in start page"
+  },
+  "library":"Library",
+  "@library": {
+    "description": "Library of shows/films/music"
+  },
   "refreshPage": "Refresh page",
   "@refreshPage": {
     "description": "Refresh data of this page."

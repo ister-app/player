@@ -9,7 +9,13 @@ class AppLocalizationsNl extends AppLocalizations {
   AppLocalizationsNl([String locale = 'nl']) : super(locale);
 
   @override
-  String get refreshPage => 'Herlaad pagina';
+  String get home => 'Home';
+
+  @override
+  String get library => 'Bibliotheek';
+
+  @override
+  String get refreshPage => 'Vernieuw pagina';
 
   @override
   String get scanLibrary => 'Scan bibliotheek';
@@ -18,10 +24,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get goToShow => 'Ga naar show';
 
   @override
-  String get watchNext => 'Kijk verder';
+  String get watchNext => 'Blijf kijken';
 
   @override
-  String get recentlyAddedShows => 'Recent toegevoegde series';
+  String get recentlyAddedShows => 'Onlangs toegevoegde shows';
 
   @override
   String season(int number) {
@@ -39,7 +45,7 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get close => 'Sluit';
+  String get close => 'Sluiten';
 
   @override
   String get json => 'JSON';

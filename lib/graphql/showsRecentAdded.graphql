@@ -1,5 +1,5 @@
-query showsRecentAdded($page: Int, $size: Int) {
-    showsRecentAdded(page: $page, size: $size) {
+query shows($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder) {
+    shows(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder) {
         number
         size
         totalElements

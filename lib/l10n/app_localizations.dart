@@ -98,6 +98,18 @@ abstract class AppLocalizations {
     Locale('nl')
   ];
 
+  /// Home as in start page
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// Library of shows/films/music
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get library;
+
   /// Refresh data of this page.
   ///
   /// In en, this message translates to:

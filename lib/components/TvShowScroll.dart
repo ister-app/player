@@ -12,12 +12,12 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../utils/MetadataUtil.dart';
 import 'CarouselItemView.dart';
 
-class Tvshowslide extends StatefulWidget {
+class TvShowScroll extends StatefulWidget {
   final String serverName;
   final Function(Refetch?)? onRefetch;
   final Function()? onEmptyView;
 
-  const Tvshowslide({
+  const TvShowScroll({
     super.key,
     required this.serverName,
     this.onRefetch,
@@ -25,10 +25,10 @@ class Tvshowslide extends StatefulWidget {
   });
 
   @override
-  State<Tvshowslide> createState() => _TvshowslideState();
+  State<TvShowScroll> createState() => _TvShowScrollState();
 }
 
-class _TvshowslideState extends State<Tvshowslide> {
+class _TvShowScrollState extends State<TvShowScroll> {
   bool _loading = false;
 
   @override
@@ -36,14 +36,12 @@ class _TvshowslideState extends State<Tvshowslide> {
     int fetched = 0;
 
     return Query(
-      options: QueryOptions(
-          document: documentNodeQueryshows,
-          variables: Map.of({
-            "page": 0,
-            "size": 15,
-            "sorting": Enum$SortingEnum.DATE_CREATED,
-            "sortingOrder": Enum$SortingOrder.DESCENDING
-          })),
+      options: QueryOptions(document: documentNodeQueryshows, variables: {
+        "page": 0,
+        "size": 15,
+        "sorting": Enum$SortingEnum.NAME,
+        "sortingOrder": Enum$SortingOrder.ASCENDING
+      }),
       builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
         if (widget.onRefetch != null) {
           widget.onRefetch!(refetch);
@@ -55,17 +53,19 @@ class _TvshowslideState extends State<Tvshowslide> {
         if (result.data == null && result.isLoading) {
           return Skeletonizer(
               enabled: true,
-              child: CarouselView(
-                controller: CarouselController(initialItem: 0),
-                itemExtent: 300.0,
-                shrinkExtent: 100.0,
-                children: List.filled(
-                    7,
-                    CarouselItemView(
-                      serverName: widget.serverName,
-                      title: BoneMock.name,
-                      subTitle: BoneMock.words(10),
-                    )),
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                  childAspectRatio: 0.65,
+                  maxCrossAxisExtent: 300, // Adjust aspect ratio as needed
+                ),
+                itemCount: 7, // Number of placeholders
+                itemBuilder: (context, index) {
+                  return CarouselItemView(
+                    serverName: widget.serverName,
+                    title: BoneMock.name,
+                    subTitle: BoneMock.words(10),
+                  );
+                },
               ));
         }
 
@@ -99,8 +99,10 @@ class _TvshowslideState extends State<Tvshowslide> {
                   LoggerService().logger.d(
                       "Fetching more page: ${showPage.number + 1}, size: ${showPage.size}");
                   fetchMore(FetchMoreOptions(
-                    variables: Map.of(
-                        {"page": showPage.number + 1, "size": showPage.size}),
+                    variables: {
+                      "page": showPage.number + 1,
+                      "size": showPage.size
+                    },
                     updateQuery: (previousResultData, fetchMoreResultData) {
                       final List<dynamic> content = [
                         ...previousResultData!['shows']['content']
@@ -120,10 +122,12 @@ class _TvshowslideState extends State<Tvshowslide> {
               }
               return true;
             },
-            child: ListView.builder(
-              itemExtent: 300.0,
+            child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                childAspectRatio: 0.65,
+                maxCrossAxisExtent: 300, // Adjust aspect ratio as needed
+              ),
               itemCount: shows.length + (_loading ? 1 : 0), // Add 1 if loading
-              scrollDirection: Axis.horizontal,
               itemBuilder: (context, index) {
                 if (index < shows.length) {
                   final show = shows[index];
@@ -132,7 +136,7 @@ class _TvshowslideState extends State<Tvshowslide> {
                     title: MetadataUtil.getTitle(show.metadata) ?? "",
                     subTitle: MetadataUtil.getDescription(show.metadata) ?? "",
                     imageUrl: ImageUtil.getImageIdByType(
-                        show.images, ImageTypes.background),
+                        show.images, ImageTypes.cover),
                     onTap: () => AutoRouter.of(context)
                         .push(ShowOverviewRoute(showId: show.id)),
                   );

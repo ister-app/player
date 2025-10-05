@@ -1,17 +1,24 @@
 import 'fragmentImages.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
 import 'package:gql/ast.dart';
+import 'schema.graphql.dart';
 
-class Variables$Query$showsRecentAdded {
-  factory Variables$Query$showsRecentAdded({int? page, int? size}) =>
-      Variables$Query$showsRecentAdded._({
-        if (page != null) r'page': page,
-        if (size != null) r'size': size,
-      });
+class Variables$Query$shows {
+  factory Variables$Query$shows({
+    int? page,
+    int? size,
+    Enum$SortingEnum? sorting,
+    Enum$SortingOrder? sortingOrder,
+  }) => Variables$Query$shows._({
+    if (page != null) r'page': page,
+    if (size != null) r'size': size,
+    if (sorting != null) r'sorting': sorting,
+    if (sortingOrder != null) r'sortingOrder': sortingOrder,
+  });
 
-  Variables$Query$showsRecentAdded._(this._$data);
+  Variables$Query$shows._(this._$data);
 
-  factory Variables$Query$showsRecentAdded.fromJson(Map<String, dynamic> data) {
+  factory Variables$Query$shows.fromJson(Map<String, dynamic> data) {
     final result$data = <String, dynamic>{};
     if (data.containsKey('page')) {
       final l$page = data['page'];
@@ -21,7 +28,19 @@ class Variables$Query$showsRecentAdded {
       final l$size = data['size'];
       result$data['size'] = (l$size as int?);
     }
-    return Variables$Query$showsRecentAdded._(result$data);
+    if (data.containsKey('sorting')) {
+      final l$sorting = data['sorting'];
+      result$data['sorting'] = l$sorting == null
+          ? null
+          : fromJson$Enum$SortingEnum((l$sorting as String));
+    }
+    if (data.containsKey('sortingOrder')) {
+      final l$sortingOrder = data['sortingOrder'];
+      result$data['sortingOrder'] = l$sortingOrder == null
+          ? null
+          : fromJson$Enum$SortingOrder((l$sortingOrder as String));
+    }
+    return Variables$Query$shows._(result$data);
   }
 
   Map<String, dynamic> _$data;
@@ -29,6 +48,11 @@ class Variables$Query$showsRecentAdded {
   int? get page => (_$data['page'] as int?);
 
   int? get size => (_$data['size'] as int?);
+
+  Enum$SortingEnum? get sorting => (_$data['sorting'] as Enum$SortingEnum?);
+
+  Enum$SortingOrder? get sortingOrder =>
+      (_$data['sortingOrder'] as Enum$SortingOrder?);
 
   Map<String, dynamic> toJson() {
     final result$data = <String, dynamic>{};
@@ -40,19 +64,30 @@ class Variables$Query$showsRecentAdded {
       final l$size = size;
       result$data['size'] = l$size;
     }
+    if (_$data.containsKey('sorting')) {
+      final l$sorting = sorting;
+      result$data['sorting'] = l$sorting == null
+          ? null
+          : toJson$Enum$SortingEnum(l$sorting);
+    }
+    if (_$data.containsKey('sortingOrder')) {
+      final l$sortingOrder = sortingOrder;
+      result$data['sortingOrder'] = l$sortingOrder == null
+          ? null
+          : toJson$Enum$SortingOrder(l$sortingOrder);
+    }
     return result$data;
   }
 
-  CopyWith$Variables$Query$showsRecentAdded<Variables$Query$showsRecentAdded>
-  get copyWith => CopyWith$Variables$Query$showsRecentAdded(this, (i) => i);
+  CopyWith$Variables$Query$shows<Variables$Query$shows> get copyWith =>
+      CopyWith$Variables$Query$shows(this, (i) => i);
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! Variables$Query$showsRecentAdded ||
-        runtimeType != other.runtimeType) {
+    if (other is! Variables$Query$shows || runtimeType != other.runtimeType) {
       return false;
     }
     final l$page = page;
@@ -71,6 +106,23 @@ class Variables$Query$showsRecentAdded {
     if (l$size != lOther$size) {
       return false;
     }
+    final l$sorting = sorting;
+    final lOther$sorting = other.sorting;
+    if (_$data.containsKey('sorting') != other._$data.containsKey('sorting')) {
+      return false;
+    }
+    if (l$sorting != lOther$sorting) {
+      return false;
+    }
+    final l$sortingOrder = sortingOrder;
+    final lOther$sortingOrder = other.sortingOrder;
+    if (_$data.containsKey('sortingOrder') !=
+        other._$data.containsKey('sortingOrder')) {
+      return false;
+    }
+    if (l$sortingOrder != lOther$sortingOrder) {
+      return false;
+    }
     return true;
   }
 
@@ -78,77 +130,97 @@ class Variables$Query$showsRecentAdded {
   int get hashCode {
     final l$page = page;
     final l$size = size;
+    final l$sorting = sorting;
+    final l$sortingOrder = sortingOrder;
     return Object.hashAll([
       _$data.containsKey('page') ? l$page : const {},
       _$data.containsKey('size') ? l$size : const {},
+      _$data.containsKey('sorting') ? l$sorting : const {},
+      _$data.containsKey('sortingOrder') ? l$sortingOrder : const {},
     ]);
   }
 }
 
-abstract class CopyWith$Variables$Query$showsRecentAdded<TRes> {
-  factory CopyWith$Variables$Query$showsRecentAdded(
-    Variables$Query$showsRecentAdded instance,
-    TRes Function(Variables$Query$showsRecentAdded) then,
-  ) = _CopyWithImpl$Variables$Query$showsRecentAdded;
+abstract class CopyWith$Variables$Query$shows<TRes> {
+  factory CopyWith$Variables$Query$shows(
+    Variables$Query$shows instance,
+    TRes Function(Variables$Query$shows) then,
+  ) = _CopyWithImpl$Variables$Query$shows;
 
-  factory CopyWith$Variables$Query$showsRecentAdded.stub(TRes res) =
-      _CopyWithStubImpl$Variables$Query$showsRecentAdded;
+  factory CopyWith$Variables$Query$shows.stub(TRes res) =
+      _CopyWithStubImpl$Variables$Query$shows;
 
-  TRes call({int? page, int? size});
+  TRes call({
+    int? page,
+    int? size,
+    Enum$SortingEnum? sorting,
+    Enum$SortingOrder? sortingOrder,
+  });
 }
 
-class _CopyWithImpl$Variables$Query$showsRecentAdded<TRes>
-    implements CopyWith$Variables$Query$showsRecentAdded<TRes> {
-  _CopyWithImpl$Variables$Query$showsRecentAdded(this._instance, this._then);
+class _CopyWithImpl$Variables$Query$shows<TRes>
+    implements CopyWith$Variables$Query$shows<TRes> {
+  _CopyWithImpl$Variables$Query$shows(this._instance, this._then);
 
-  final Variables$Query$showsRecentAdded _instance;
+  final Variables$Query$shows _instance;
 
-  final TRes Function(Variables$Query$showsRecentAdded) _then;
+  final TRes Function(Variables$Query$shows) _then;
 
   static const _undefined = <dynamic, dynamic>{};
 
-  TRes call({Object? page = _undefined, Object? size = _undefined}) => _then(
-    Variables$Query$showsRecentAdded._({
+  TRes call({
+    Object? page = _undefined,
+    Object? size = _undefined,
+    Object? sorting = _undefined,
+    Object? sortingOrder = _undefined,
+  }) => _then(
+    Variables$Query$shows._({
       ..._instance._$data,
       if (page != _undefined) 'page': (page as int?),
       if (size != _undefined) 'size': (size as int?),
+      if (sorting != _undefined) 'sorting': (sorting as Enum$SortingEnum?),
+      if (sortingOrder != _undefined)
+        'sortingOrder': (sortingOrder as Enum$SortingOrder?),
     }),
   );
 }
 
-class _CopyWithStubImpl$Variables$Query$showsRecentAdded<TRes>
-    implements CopyWith$Variables$Query$showsRecentAdded<TRes> {
-  _CopyWithStubImpl$Variables$Query$showsRecentAdded(this._res);
+class _CopyWithStubImpl$Variables$Query$shows<TRes>
+    implements CopyWith$Variables$Query$shows<TRes> {
+  _CopyWithStubImpl$Variables$Query$shows(this._res);
 
   TRes _res;
 
-  call({int? page, int? size}) => _res;
+  call({
+    int? page,
+    int? size,
+    Enum$SortingEnum? sorting,
+    Enum$SortingOrder? sortingOrder,
+  }) => _res;
 }
 
-class Query$showsRecentAdded {
-  Query$showsRecentAdded({this.showsRecentAdded, this.$__typename = 'Query'});
+class Query$shows {
+  Query$shows({this.shows, this.$__typename = 'Query'});
 
-  factory Query$showsRecentAdded.fromJson(Map<String, dynamic> json) {
-    final l$showsRecentAdded = json['showsRecentAdded'];
+  factory Query$shows.fromJson(Map<String, dynamic> json) {
+    final l$shows = json['shows'];
     final l$$__typename = json['__typename'];
-    return Query$showsRecentAdded(
-      showsRecentAdded: l$showsRecentAdded == null
+    return Query$shows(
+      shows: l$shows == null
           ? null
-          : Query$showsRecentAdded$showsRecentAdded.fromJson(
-              (l$showsRecentAdded as Map<String, dynamic>),
-            ),
+          : Query$shows$shows.fromJson((l$shows as Map<String, dynamic>)),
       $__typename: (l$$__typename as String),
     );
   }
 
-  final Query$showsRecentAdded$showsRecentAdded? showsRecentAdded;
+  final Query$shows$shows? shows;
 
   final String $__typename;
 
   Map<String, dynamic> toJson() {
     final _resultData = <String, dynamic>{};
-    final l$showsRecentAdded = showsRecentAdded;
-    _resultData['showsRecentAdded'] = l$showsRecentAdded?.toJson();
+    final l$shows = shows;
+    _resultData['shows'] = l$shows?.toJson();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -156,9 +228,9 @@ class Query$showsRecentAdded {
 
   @override
   int get hashCode {
-    final l$showsRecentAdded = showsRecentAdded;
+    final l$shows = shows;
     final l$$__typename = $__typename;
-    return Object.hashAll([l$showsRecentAdded, l$$__typename]);
+    return Object.hashAll([l$shows, l$$__typename]);
   }
 
   @override
@@ -166,12 +238,12 @@ class Query$showsRecentAdded {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! Query$showsRecentAdded || runtimeType != other.runtimeType) {
+    if (other is! Query$shows || runtimeType != other.runtimeType) {
       return false;
     }
-    final l$showsRecentAdded = showsRecentAdded;
-    final lOther$showsRecentAdded = other.showsRecentAdded;
-    if (l$showsRecentAdded != lOther$showsRecentAdded) {
+    final l$shows = shows;
+    final lOther$shows = other.shows;
+    if (l$shows != lOther$shows) {
       return false;
     }
     final l$$__typename = $__typename;
@@ -183,84 +255,69 @@ class Query$showsRecentAdded {
   }
 }
 
-extension UtilityExtension$Query$showsRecentAdded on Query$showsRecentAdded {
-  CopyWith$Query$showsRecentAdded<Query$showsRecentAdded> get copyWith =>
-      CopyWith$Query$showsRecentAdded(this, (i) => i);
+extension UtilityExtension$Query$shows on Query$shows {
+  CopyWith$Query$shows<Query$shows> get copyWith =>
+      CopyWith$Query$shows(this, (i) => i);
 }
 
-abstract class CopyWith$Query$showsRecentAdded<TRes> {
-  factory CopyWith$Query$showsRecentAdded(
-    Query$showsRecentAdded instance,
-    TRes Function(Query$showsRecentAdded) then,
-  ) = _CopyWithImpl$Query$showsRecentAdded;
+abstract class CopyWith$Query$shows<TRes> {
+  factory CopyWith$Query$shows(
+    Query$shows instance,
+    TRes Function(Query$shows) then,
+  ) = _CopyWithImpl$Query$shows;
 
-  factory CopyWith$Query$showsRecentAdded.stub(TRes res) =
-      _CopyWithStubImpl$Query$showsRecentAdded;
+  factory CopyWith$Query$shows.stub(TRes res) = _CopyWithStubImpl$Query$shows;
 
-  TRes call({
-    Query$showsRecentAdded$showsRecentAdded? showsRecentAdded,
-    String? $__typename,
-  });
-  CopyWith$Query$showsRecentAdded$showsRecentAdded<TRes> get showsRecentAdded;
+  TRes call({Query$shows$shows? shows, String? $__typename});
+  CopyWith$Query$shows$shows<TRes> get shows;
 }
 
-class _CopyWithImpl$Query$showsRecentAdded<TRes>
-    implements CopyWith$Query$showsRecentAdded<TRes> {
-  _CopyWithImpl$Query$showsRecentAdded(this._instance, this._then);
+class _CopyWithImpl$Query$shows<TRes> implements CopyWith$Query$shows<TRes> {
+  _CopyWithImpl$Query$shows(this._instance, this._then);
 
-  final Query$showsRecentAdded _instance;
+  final Query$shows _instance;
 
-  final TRes Function(Query$showsRecentAdded) _then;
+  final TRes Function(Query$shows) _then;
 
   static const _undefined = <dynamic, dynamic>{};
 
-  TRes call({
-    Object? showsRecentAdded = _undefined,
-    Object? $__typename = _undefined,
-  }) => _then(
-    Query$showsRecentAdded(
-      showsRecentAdded: showsRecentAdded == _undefined
-          ? _instance.showsRecentAdded
-          : (showsRecentAdded as Query$showsRecentAdded$showsRecentAdded?),
-      $__typename: $__typename == _undefined || $__typename == null
-          ? _instance.$__typename
-          : ($__typename as String),
-    ),
-  );
+  TRes call({Object? shows = _undefined, Object? $__typename = _undefined}) =>
+      _then(
+        Query$shows(
+          shows: shows == _undefined
+              ? _instance.shows
+              : (shows as Query$shows$shows?),
+          $__typename: $__typename == _undefined || $__typename == null
+              ? _instance.$__typename
+              : ($__typename as String),
+        ),
+      );
 
-  CopyWith$Query$showsRecentAdded$showsRecentAdded<TRes> get showsRecentAdded {
-    final local$showsRecentAdded = _instance.showsRecentAdded;
-    return local$showsRecentAdded == null
-        ? CopyWith$Query$showsRecentAdded$showsRecentAdded.stub(
-            _then(_instance),
-          )
-        : CopyWith$Query$showsRecentAdded$showsRecentAdded(
-            local$showsRecentAdded,
-            (e) => call(showsRecentAdded: e),
-          );
+  CopyWith$Query$shows$shows<TRes> get shows {
+    final local$shows = _instance.shows;
+    return local$shows == null
+        ? CopyWith$Query$shows$shows.stub(_then(_instance))
+        : CopyWith$Query$shows$shows(local$shows, (e) => call(shows: e));
   }
 }
 
-class _CopyWithStubImpl$Query$showsRecentAdded<TRes>
-    implements CopyWith$Query$showsRecentAdded<TRes> {
-  _CopyWithStubImpl$Query$showsRecentAdded(this._res);
+class _CopyWithStubImpl$Query$shows<TRes>
+    implements CopyWith$Query$shows<TRes> {
+  _CopyWithStubImpl$Query$shows(this._res);
 
   TRes _res;
 
-  call({
-    Query$showsRecentAdded$showsRecentAdded? showsRecentAdded,
-    String? $__typename,
-  }) => _res;
+  call({Query$shows$shows? shows, String? $__typename}) => _res;
 
-  CopyWith$Query$showsRecentAdded$showsRecentAdded<TRes> get showsRecentAdded =>
-      CopyWith$Query$showsRecentAdded$showsRecentAdded.stub(_res);
+  CopyWith$Query$shows$shows<TRes> get shows =>
+      CopyWith$Query$shows$shows.stub(_res);
 }
 
-const documentNodeQueryshowsRecentAdded = DocumentNode(
+const documentNodeQueryshows = DocumentNode(
   definitions: [
     OperationDefinitionNode(
       type: OperationType.query,
-      name: NameNode(value: 'showsRecentAdded'),
+      name: NameNode(value: 'shows'),
       variableDefinitions: [
         VariableDefinitionNode(
           variable: VariableNode(name: NameNode(value: 'page')),
@@ -274,12 +331,30 @@ const documentNodeQueryshowsRecentAdded = DocumentNode(
           defaultValue: DefaultValueNode(value: null),
           directives: [],
         ),
+        VariableDefinitionNode(
+          variable: VariableNode(name: NameNode(value: 'sorting')),
+          type: NamedTypeNode(
+            name: NameNode(value: 'SortingEnum'),
+            isNonNull: false,
+          ),
+          defaultValue: DefaultValueNode(value: null),
+          directives: [],
+        ),
+        VariableDefinitionNode(
+          variable: VariableNode(name: NameNode(value: 'sortingOrder')),
+          type: NamedTypeNode(
+            name: NameNode(value: 'SortingOrder'),
+            isNonNull: false,
+          ),
+          defaultValue: DefaultValueNode(value: null),
+          directives: [],
+        ),
       ],
       directives: [],
       selectionSet: SelectionSetNode(
         selections: [
           FieldNode(
-            name: NameNode(value: 'showsRecentAdded'),
+            name: NameNode(value: 'shows'),
             alias: null,
             arguments: [
               ArgumentNode(
@@ -289,6 +364,14 @@ const documentNodeQueryshowsRecentAdded = DocumentNode(
               ArgumentNode(
                 name: NameNode(value: 'size'),
                 value: VariableNode(name: NameNode(value: 'size')),
+              ),
+              ArgumentNode(
+                name: NameNode(value: 'sorting'),
+                value: VariableNode(name: NameNode(value: 'sorting')),
+              ),
+              ArgumentNode(
+                name: NameNode(value: 'sortingOrder'),
+                value: VariableNode(name: NameNode(value: 'sortingOrder')),
               ),
             ],
             directives: [],
@@ -451,8 +534,8 @@ const documentNodeQueryshowsRecentAdded = DocumentNode(
   ],
 );
 
-class Query$showsRecentAdded$showsRecentAdded {
-  Query$showsRecentAdded$showsRecentAdded({
+class Query$shows$shows {
+  Query$shows$shows({
     required this.number,
     required this.size,
     required this.totalElements,
@@ -461,25 +544,22 @@ class Query$showsRecentAdded$showsRecentAdded {
     this.$__typename = 'ShowPage',
   });
 
-  factory Query$showsRecentAdded$showsRecentAdded.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory Query$shows$shows.fromJson(Map<String, dynamic> json) {
     final l$number = json['number'];
     final l$size = json['size'];
     final l$totalElements = json['totalElements'];
     final l$totalPages = json['totalPages'];
     final l$content = json['content'];
     final l$$__typename = json['__typename'];
-    return Query$showsRecentAdded$showsRecentAdded(
+    return Query$shows$shows(
       number: (l$number as int),
       size: (l$size as int),
       totalElements: (l$totalElements as int),
       totalPages: (l$totalPages as int),
       content: (l$content as List<dynamic>)
           .map(
-            (e) => Query$showsRecentAdded$showsRecentAdded$content.fromJson(
-              (e as Map<String, dynamic>),
-            ),
+            (e) =>
+                Query$shows$shows$content.fromJson((e as Map<String, dynamic>)),
           )
           .toList(),
       $__typename: (l$$__typename as String),
@@ -494,7 +574,7 @@ class Query$showsRecentAdded$showsRecentAdded {
 
   final int totalPages;
 
-  final List<Query$showsRecentAdded$showsRecentAdded$content> content;
+  final List<Query$shows$shows$content> content;
 
   final String $__typename;
 
@@ -538,8 +618,7 @@ class Query$showsRecentAdded$showsRecentAdded {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! Query$showsRecentAdded$showsRecentAdded ||
-        runtimeType != other.runtimeType) {
+    if (other is! Query$shows$shows || runtimeType != other.runtimeType) {
       return false;
     }
     final l$number = number;
@@ -583,54 +662,43 @@ class Query$showsRecentAdded$showsRecentAdded {
   }
 }
 
-extension UtilityExtension$Query$showsRecentAdded$showsRecentAdded
-    on Query$showsRecentAdded$showsRecentAdded {
-  CopyWith$Query$showsRecentAdded$showsRecentAdded<
-    Query$showsRecentAdded$showsRecentAdded
-  >
-  get copyWith =>
-      CopyWith$Query$showsRecentAdded$showsRecentAdded(this, (i) => i);
+extension UtilityExtension$Query$shows$shows on Query$shows$shows {
+  CopyWith$Query$shows$shows<Query$shows$shows> get copyWith =>
+      CopyWith$Query$shows$shows(this, (i) => i);
 }
 
-abstract class CopyWith$Query$showsRecentAdded$showsRecentAdded<TRes> {
-  factory CopyWith$Query$showsRecentAdded$showsRecentAdded(
-    Query$showsRecentAdded$showsRecentAdded instance,
-    TRes Function(Query$showsRecentAdded$showsRecentAdded) then,
-  ) = _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded;
+abstract class CopyWith$Query$shows$shows<TRes> {
+  factory CopyWith$Query$shows$shows(
+    Query$shows$shows instance,
+    TRes Function(Query$shows$shows) then,
+  ) = _CopyWithImpl$Query$shows$shows;
 
-  factory CopyWith$Query$showsRecentAdded$showsRecentAdded.stub(TRes res) =
-      _CopyWithStubImpl$Query$showsRecentAdded$showsRecentAdded;
+  factory CopyWith$Query$shows$shows.stub(TRes res) =
+      _CopyWithStubImpl$Query$shows$shows;
 
   TRes call({
     int? number,
     int? size,
     int? totalElements,
     int? totalPages,
-    List<Query$showsRecentAdded$showsRecentAdded$content>? content,
+    List<Query$shows$shows$content>? content,
     String? $__typename,
   });
   TRes content(
-    Iterable<Query$showsRecentAdded$showsRecentAdded$content> Function(
-      Iterable<
-        CopyWith$Query$showsRecentAdded$showsRecentAdded$content<
-          Query$showsRecentAdded$showsRecentAdded$content
-        >
-      >,
+    Iterable<Query$shows$shows$content> Function(
+      Iterable<CopyWith$Query$shows$shows$content<Query$shows$shows$content>>,
     )
     _fn,
   );
 }
 
-class _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded<TRes>
-    implements CopyWith$Query$showsRecentAdded$showsRecentAdded<TRes> {
-  _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded(
-    this._instance,
-    this._then,
-  );
+class _CopyWithImpl$Query$shows$shows<TRes>
+    implements CopyWith$Query$shows$shows<TRes> {
+  _CopyWithImpl$Query$shows$shows(this._instance, this._then);
 
-  final Query$showsRecentAdded$showsRecentAdded _instance;
+  final Query$shows$shows _instance;
 
-  final TRes Function(Query$showsRecentAdded$showsRecentAdded) _then;
+  final TRes Function(Query$shows$shows) _then;
 
   static const _undefined = <dynamic, dynamic>{};
 
@@ -642,7 +710,7 @@ class _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded<TRes>
     Object? content = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
-    Query$showsRecentAdded$showsRecentAdded(
+    Query$shows$shows(
       number: number == _undefined || number == null
           ? _instance.number
           : (number as int),
@@ -655,7 +723,7 @@ class _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded<TRes>
           : (totalPages as int),
       content: content == _undefined || content == null
           ? _instance.content
-          : (content as List<Query$showsRecentAdded$showsRecentAdded$content>),
+          : (content as List<Query$shows$shows$content>),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -663,29 +731,22 @@ class _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded<TRes>
   );
 
   TRes content(
-    Iterable<Query$showsRecentAdded$showsRecentAdded$content> Function(
-      Iterable<
-        CopyWith$Query$showsRecentAdded$showsRecentAdded$content<
-          Query$showsRecentAdded$showsRecentAdded$content
-        >
-      >,
+    Iterable<Query$shows$shows$content> Function(
+      Iterable<CopyWith$Query$shows$shows$content<Query$shows$shows$content>>,
     )
     _fn,
   ) => call(
     content: _fn(
       _instance.content.map(
-        (e) => CopyWith$Query$showsRecentAdded$showsRecentAdded$content(
-          e,
-          (i) => i,
-        ),
+        (e) => CopyWith$Query$shows$shows$content(e, (i) => i),
       ),
     ).toList(),
   );
 }
 
-class _CopyWithStubImpl$Query$showsRecentAdded$showsRecentAdded<TRes>
-    implements CopyWith$Query$showsRecentAdded$showsRecentAdded<TRes> {
-  _CopyWithStubImpl$Query$showsRecentAdded$showsRecentAdded(this._res);
+class _CopyWithStubImpl$Query$shows$shows<TRes>
+    implements CopyWith$Query$shows$shows<TRes> {
+  _CopyWithStubImpl$Query$shows$shows(this._res);
 
   TRes _res;
 
@@ -694,15 +755,15 @@ class _CopyWithStubImpl$Query$showsRecentAdded$showsRecentAdded<TRes>
     int? size,
     int? totalElements,
     int? totalPages,
-    List<Query$showsRecentAdded$showsRecentAdded$content>? content,
+    List<Query$shows$shows$content>? content,
     String? $__typename,
   }) => _res;
 
   content(_fn) => _res;
 }
 
-class Query$showsRecentAdded$showsRecentAdded$content {
-  Query$showsRecentAdded$showsRecentAdded$content({
+class Query$shows$shows$content {
+  Query$shows$shows$content({
     required this.id,
     required this.releaseYear,
     required this.name,
@@ -712,9 +773,7 @@ class Query$showsRecentAdded$showsRecentAdded$content {
     this.$__typename = 'Show',
   });
 
-  factory Query$showsRecentAdded$showsRecentAdded$content.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory Query$shows$shows$content.fromJson(Map<String, dynamic> json) {
     final l$id = json['id'];
     final l$releaseYear = json['releaseYear'];
     final l$name = json['name'];
@@ -722,7 +781,7 @@ class Query$showsRecentAdded$showsRecentAdded$content {
     final l$episodes = json['episodes'];
     final l$metadata = json['metadata'];
     final l$$__typename = json['__typename'];
-    return Query$showsRecentAdded$showsRecentAdded$content(
+    return Query$shows$shows$content(
       id: (l$id as String),
       releaseYear: (l$releaseYear as int),
       name: (l$name as String),
@@ -734,10 +793,9 @@ class Query$showsRecentAdded$showsRecentAdded$content {
           .toList(),
       episodes: (l$episodes as List<dynamic>?)
           ?.map(
-            (e) =>
-                Query$showsRecentAdded$showsRecentAdded$content$episodes.fromJson(
-                  (e as Map<String, dynamic>),
-                ),
+            (e) => Query$shows$shows$content$episodes.fromJson(
+              (e as Map<String, dynamic>),
+            ),
           )
           .toList(),
       metadata: (l$metadata as List<dynamic>?)
@@ -758,8 +816,7 @@ class Query$showsRecentAdded$showsRecentAdded$content {
 
   final List<Fragment$fragmentImages>? images;
 
-  final List<Query$showsRecentAdded$showsRecentAdded$content$episodes>?
-  episodes;
+  final List<Query$shows$shows$content$episodes>? episodes;
 
   final List<Fragment$fragmentMetadata>? metadata;
 
@@ -809,7 +866,7 @@ class Query$showsRecentAdded$showsRecentAdded$content {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! Query$showsRecentAdded$showsRecentAdded$content ||
+    if (other is! Query$shows$shows$content ||
         runtimeType != other.runtimeType) {
       return false;
     }
@@ -885,31 +942,27 @@ class Query$showsRecentAdded$showsRecentAdded$content {
   }
 }
 
-extension UtilityExtension$Query$showsRecentAdded$showsRecentAdded$content
-    on Query$showsRecentAdded$showsRecentAdded$content {
-  CopyWith$Query$showsRecentAdded$showsRecentAdded$content<
-    Query$showsRecentAdded$showsRecentAdded$content
-  >
-  get copyWith =>
-      CopyWith$Query$showsRecentAdded$showsRecentAdded$content(this, (i) => i);
+extension UtilityExtension$Query$shows$shows$content
+    on Query$shows$shows$content {
+  CopyWith$Query$shows$shows$content<Query$shows$shows$content> get copyWith =>
+      CopyWith$Query$shows$shows$content(this, (i) => i);
 }
 
-abstract class CopyWith$Query$showsRecentAdded$showsRecentAdded$content<TRes> {
-  factory CopyWith$Query$showsRecentAdded$showsRecentAdded$content(
-    Query$showsRecentAdded$showsRecentAdded$content instance,
-    TRes Function(Query$showsRecentAdded$showsRecentAdded$content) then,
-  ) = _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded$content;
+abstract class CopyWith$Query$shows$shows$content<TRes> {
+  factory CopyWith$Query$shows$shows$content(
+    Query$shows$shows$content instance,
+    TRes Function(Query$shows$shows$content) then,
+  ) = _CopyWithImpl$Query$shows$shows$content;
 
-  factory CopyWith$Query$showsRecentAdded$showsRecentAdded$content.stub(
-    TRes res,
-  ) = _CopyWithStubImpl$Query$showsRecentAdded$showsRecentAdded$content;
+  factory CopyWith$Query$shows$shows$content.stub(TRes res) =
+      _CopyWithStubImpl$Query$shows$shows$content;
 
   TRes call({
     String? id,
     int? releaseYear,
     String? name,
     List<Fragment$fragmentImages>? images,
-    List<Query$showsRecentAdded$showsRecentAdded$content$episodes>? episodes,
+    List<Query$shows$shows$content$episodes>? episodes,
     List<Fragment$fragmentMetadata>? metadata,
     String? $__typename,
   });
@@ -920,11 +973,10 @@ abstract class CopyWith$Query$showsRecentAdded$showsRecentAdded$content<TRes> {
     _fn,
   );
   TRes episodes(
-    Iterable<Query$showsRecentAdded$showsRecentAdded$content$episodes>?
-    Function(
+    Iterable<Query$shows$shows$content$episodes>? Function(
       Iterable<
-        CopyWith$Query$showsRecentAdded$showsRecentAdded$content$episodes<
-          Query$showsRecentAdded$showsRecentAdded$content$episodes
+        CopyWith$Query$shows$shows$content$episodes<
+          Query$shows$shows$content$episodes
         >
       >?,
     )
@@ -938,16 +990,13 @@ abstract class CopyWith$Query$showsRecentAdded$showsRecentAdded$content<TRes> {
   );
 }
 
-class _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded$content<TRes>
-    implements CopyWith$Query$showsRecentAdded$showsRecentAdded$content<TRes> {
-  _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded$content(
-    this._instance,
-    this._then,
-  );
+class _CopyWithImpl$Query$shows$shows$content<TRes>
+    implements CopyWith$Query$shows$shows$content<TRes> {
+  _CopyWithImpl$Query$shows$shows$content(this._instance, this._then);
 
-  final Query$showsRecentAdded$showsRecentAdded$content _instance;
+  final Query$shows$shows$content _instance;
 
-  final TRes Function(Query$showsRecentAdded$showsRecentAdded$content) _then;
+  final TRes Function(Query$shows$shows$content) _then;
 
   static const _undefined = <dynamic, dynamic>{};
 
@@ -960,7 +1009,7 @@ class _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded$content<TRes>
     Object? metadata = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
-    Query$showsRecentAdded$showsRecentAdded$content(
+    Query$shows$shows$content(
       id: id == _undefined || id == null ? _instance.id : (id as String),
       releaseYear: releaseYear == _undefined || releaseYear == null
           ? _instance.releaseYear
@@ -973,10 +1022,7 @@ class _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded$content<TRes>
           : (images as List<Fragment$fragmentImages>?),
       episodes: episodes == _undefined
           ? _instance.episodes
-          : (episodes
-                as List<
-                  Query$showsRecentAdded$showsRecentAdded$content$episodes
-                >?),
+          : (episodes as List<Query$shows$shows$content$episodes>?),
       metadata: metadata == _undefined
           ? _instance.metadata
           : (metadata as List<Fragment$fragmentMetadata>?),
@@ -1000,11 +1046,10 @@ class _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded$content<TRes>
   );
 
   TRes episodes(
-    Iterable<Query$showsRecentAdded$showsRecentAdded$content$episodes>?
-    Function(
+    Iterable<Query$shows$shows$content$episodes>? Function(
       Iterable<
-        CopyWith$Query$showsRecentAdded$showsRecentAdded$content$episodes<
-          Query$showsRecentAdded$showsRecentAdded$content$episodes
+        CopyWith$Query$shows$shows$content$episodes<
+          Query$shows$shows$content$episodes
         >
       >?,
     )
@@ -1012,11 +1057,7 @@ class _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded$content<TRes>
   ) => call(
     episodes: _fn(
       _instance.episodes?.map(
-        (e) =>
-            CopyWith$Query$showsRecentAdded$showsRecentAdded$content$episodes(
-              e,
-              (i) => i,
-            ),
+        (e) => CopyWith$Query$shows$shows$content$episodes(e, (i) => i),
       ),
     )?.toList(),
   );
@@ -1035,9 +1076,9 @@ class _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded$content<TRes>
   );
 }
 
-class _CopyWithStubImpl$Query$showsRecentAdded$showsRecentAdded$content<TRes>
-    implements CopyWith$Query$showsRecentAdded$showsRecentAdded$content<TRes> {
-  _CopyWithStubImpl$Query$showsRecentAdded$showsRecentAdded$content(this._res);
+class _CopyWithStubImpl$Query$shows$shows$content<TRes>
+    implements CopyWith$Query$shows$shows$content<TRes> {
+  _CopyWithStubImpl$Query$shows$shows$content(this._res);
 
   TRes _res;
 
@@ -1046,7 +1087,7 @@ class _CopyWithStubImpl$Query$showsRecentAdded$showsRecentAdded$content<TRes>
     int? releaseYear,
     String? name,
     List<Fragment$fragmentImages>? images,
-    List<Query$showsRecentAdded$showsRecentAdded$content$episodes>? episodes,
+    List<Query$shows$shows$content$episodes>? episodes,
     List<Fragment$fragmentMetadata>? metadata,
     String? $__typename,
   }) => _res;
@@ -1058,18 +1099,18 @@ class _CopyWithStubImpl$Query$showsRecentAdded$showsRecentAdded$content<TRes>
   metadata(_fn) => _res;
 }
 
-class Query$showsRecentAdded$showsRecentAdded$content$episodes {
-  Query$showsRecentAdded$showsRecentAdded$content$episodes({
+class Query$shows$shows$content$episodes {
+  Query$shows$shows$content$episodes({
     this.number,
     this.$__typename = 'Episode',
   });
 
-  factory Query$showsRecentAdded$showsRecentAdded$content$episodes.fromJson(
+  factory Query$shows$shows$content$episodes.fromJson(
     Map<String, dynamic> json,
   ) {
     final l$number = json['number'];
     final l$$__typename = json['__typename'];
-    return Query$showsRecentAdded$showsRecentAdded$content$episodes(
+    return Query$shows$shows$content$episodes(
       number: (l$number as int?),
       $__typename: (l$$__typename as String),
     );
@@ -1100,7 +1141,7 @@ class Query$showsRecentAdded$showsRecentAdded$content$episodes {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! Query$showsRecentAdded$showsRecentAdded$content$episodes ||
+    if (other is! Query$shows$shows$content$episodes ||
         runtimeType != other.runtimeType) {
       return false;
     }
@@ -1118,56 +1159,39 @@ class Query$showsRecentAdded$showsRecentAdded$content$episodes {
   }
 }
 
-extension UtilityExtension$Query$showsRecentAdded$showsRecentAdded$content$episodes
-    on Query$showsRecentAdded$showsRecentAdded$content$episodes {
-  CopyWith$Query$showsRecentAdded$showsRecentAdded$content$episodes<
-    Query$showsRecentAdded$showsRecentAdded$content$episodes
+extension UtilityExtension$Query$shows$shows$content$episodes
+    on Query$shows$shows$content$episodes {
+  CopyWith$Query$shows$shows$content$episodes<
+    Query$shows$shows$content$episodes
   >
-  get copyWith =>
-      CopyWith$Query$showsRecentAdded$showsRecentAdded$content$episodes(
-        this,
-        (i) => i,
-      );
+  get copyWith => CopyWith$Query$shows$shows$content$episodes(this, (i) => i);
 }
 
-abstract class CopyWith$Query$showsRecentAdded$showsRecentAdded$content$episodes<
-  TRes
-> {
-  factory CopyWith$Query$showsRecentAdded$showsRecentAdded$content$episodes(
-    Query$showsRecentAdded$showsRecentAdded$content$episodes instance,
-    TRes Function(Query$showsRecentAdded$showsRecentAdded$content$episodes)
-    then,
-  ) = _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded$content$episodes;
+abstract class CopyWith$Query$shows$shows$content$episodes<TRes> {
+  factory CopyWith$Query$shows$shows$content$episodes(
+    Query$shows$shows$content$episodes instance,
+    TRes Function(Query$shows$shows$content$episodes) then,
+  ) = _CopyWithImpl$Query$shows$shows$content$episodes;
 
-  factory CopyWith$Query$showsRecentAdded$showsRecentAdded$content$episodes.stub(
-    TRes res,
-  ) = _CopyWithStubImpl$Query$showsRecentAdded$showsRecentAdded$content$episodes;
+  factory CopyWith$Query$shows$shows$content$episodes.stub(TRes res) =
+      _CopyWithStubImpl$Query$shows$shows$content$episodes;
 
   TRes call({int? number, String? $__typename});
 }
 
-class _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded$content$episodes<
-  TRes
->
-    implements
-        CopyWith$Query$showsRecentAdded$showsRecentAdded$content$episodes<
-          TRes
-        > {
-  _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded$content$episodes(
-    this._instance,
-    this._then,
-  );
+class _CopyWithImpl$Query$shows$shows$content$episodes<TRes>
+    implements CopyWith$Query$shows$shows$content$episodes<TRes> {
+  _CopyWithImpl$Query$shows$shows$content$episodes(this._instance, this._then);
 
-  final Query$showsRecentAdded$showsRecentAdded$content$episodes _instance;
+  final Query$shows$shows$content$episodes _instance;
 
-  final TRes Function(Query$showsRecentAdded$showsRecentAdded$content$episodes)
-  _then;
+  final TRes Function(Query$shows$shows$content$episodes) _then;
 
   static const _undefined = <dynamic, dynamic>{};
 
   TRes call({Object? number = _undefined, Object? $__typename = _undefined}) =>
       _then(
-        Query$showsRecentAdded$showsRecentAdded$content$episodes(
+        Query$shows$shows$content$episodes(
           number: number == _undefined ? _instance.number : (number as int?),
           $__typename: $__typename == _undefined || $__typename == null
               ? _instance.$__typename
@@ -1176,16 +1200,9 @@ class _CopyWithImpl$Query$showsRecentAdded$showsRecentAdded$content$episodes<
       );
 }
 
-class _CopyWithStubImpl$Query$showsRecentAdded$showsRecentAdded$content$episodes<
-  TRes
->
-    implements
-        CopyWith$Query$showsRecentAdded$showsRecentAdded$content$episodes<
-          TRes
-        > {
-  _CopyWithStubImpl$Query$showsRecentAdded$showsRecentAdded$content$episodes(
-    this._res,
-  );
+class _CopyWithStubImpl$Query$shows$shows$content$episodes<TRes>
+    implements CopyWith$Query$shows$shows$content$episodes<TRes> {
+  _CopyWithStubImpl$Query$shows$shows$content$episodes(this._res);
 
   TRes _res;
 

@@ -1,3 +1,69 @@
+enum Enum$SortingEnum {
+  DATE_CREATED,
+  NAME,
+  $unknown;
+
+  factory Enum$SortingEnum.fromJson(String value) =>
+      fromJson$Enum$SortingEnum(value);
+
+  String toJson() => toJson$Enum$SortingEnum(this);
+}
+
+String toJson$Enum$SortingEnum(Enum$SortingEnum e) {
+  switch (e) {
+    case Enum$SortingEnum.DATE_CREATED:
+      return r'DATE_CREATED';
+    case Enum$SortingEnum.NAME:
+      return r'NAME';
+    case Enum$SortingEnum.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$SortingEnum fromJson$Enum$SortingEnum(String value) {
+  switch (value) {
+    case r'DATE_CREATED':
+      return Enum$SortingEnum.DATE_CREATED;
+    case r'NAME':
+      return Enum$SortingEnum.NAME;
+    default:
+      return Enum$SortingEnum.$unknown;
+  }
+}
+
+enum Enum$SortingOrder {
+  DESCENDING,
+  ASCENDING,
+  $unknown;
+
+  factory Enum$SortingOrder.fromJson(String value) =>
+      fromJson$Enum$SortingOrder(value);
+
+  String toJson() => toJson$Enum$SortingOrder(this);
+}
+
+String toJson$Enum$SortingOrder(Enum$SortingOrder e) {
+  switch (e) {
+    case Enum$SortingOrder.DESCENDING:
+      return r'DESCENDING';
+    case Enum$SortingOrder.ASCENDING:
+      return r'ASCENDING';
+    case Enum$SortingOrder.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$SortingOrder fromJson$Enum$SortingOrder(String value) {
+  switch (value) {
+    case r'DESCENDING':
+      return Enum$SortingOrder.DESCENDING;
+    case r'ASCENDING':
+      return Enum$SortingOrder.ASCENDING;
+    default:
+      return Enum$SortingOrder.$unknown;
+  }
+}
+
 enum Enum$__TypeKind {
   SCALAR,
   OBJECT,

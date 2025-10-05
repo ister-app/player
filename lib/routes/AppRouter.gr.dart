@@ -9,25 +9,27 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:auto_route/auto_route.dart' as _i7;
-import 'package:flutter/foundation.dart' as _i9;
-import 'package:flutter/material.dart' as _i8;
+import 'package:auto_route/auto_route.dart' as _i9;
+import 'package:flutter/foundation.dart' as _i11;
+import 'package:flutter/material.dart' as _i10;
 import 'package:player/pages/HomePage.dart' as _i1;
 import 'package:player/pages/ServerHomeContentPage.dart' as _i2;
-import 'package:player/pages/ServerHomePage.dart' as _i3;
-import 'package:player/pages/ShowEpisodePage.dart' as _i4;
-import 'package:player/pages/ShowOverviewContentPage.dart' as _i5;
-import 'package:player/pages/ShowOverviewPage.dart' as _i6;
+import 'package:player/pages/ServerHomeOverviewPage.dart' as _i3;
+import 'package:player/pages/ServerHomePage.dart' as _i4;
+import 'package:player/pages/ShowEpisodePage.dart' as _i5;
+import 'package:player/pages/ShowHomePage.dart' as _i6;
+import 'package:player/pages/ShowOverviewContentPage.dart' as _i7;
+import 'package:player/pages/ShowOverviewPage.dart' as _i8;
 
 /// generated route for
 /// [_i1.HomePage]
-class HomeRoute extends _i7.PageRouteInfo<void> {
-  const HomeRoute({List<_i7.PageRouteInfo>? children})
+class HomeRoute extends _i9.PageRouteInfo<void> {
+  const HomeRoute({List<_i9.PageRouteInfo>? children})
       : super(HomeRoute.name, initialChildren: children);
 
   static const String name = 'HomeRoute';
 
-  static _i7.PageInfo page = _i7.PageInfo(
+  static _i9.PageInfo page = _i9.PageInfo(
     name,
     builder: (data) {
       return const _i1.HomePage();
@@ -38,8 +40,8 @@ class HomeRoute extends _i7.PageRouteInfo<void> {
 /// generated route for
 /// [_i2.ServerHomeContentPage]
 class ServerHomeContentRoute
-    extends _i7.PageRouteInfo<ServerHomeContentRouteArgs> {
-  ServerHomeContentRoute({_i8.Key? key, List<_i7.PageRouteInfo>? children})
+    extends _i9.PageRouteInfo<ServerHomeContentRouteArgs> {
+  ServerHomeContentRoute({_i10.Key? key, List<_i9.PageRouteInfo>? children})
       : super(
           ServerHomeContentRoute.name,
           args: ServerHomeContentRouteArgs(key: key),
@@ -48,7 +50,7 @@ class ServerHomeContentRoute
 
   static const String name = 'ServerHomeContentRoute';
 
-  static _i7.PageInfo page = _i7.PageInfo(
+  static _i9.PageInfo page = _i9.PageInfo(
     name,
     builder: (data) {
       final pathParams = data.inheritedPathParams;
@@ -66,7 +68,7 @@ class ServerHomeContentRoute
 class ServerHomeContentRouteArgs {
   const ServerHomeContentRouteArgs({this.key});
 
-  final _i8.Key? key;
+  final _i10.Key? key;
 
   @override
   String toString() {
@@ -85,12 +87,61 @@ class ServerHomeContentRouteArgs {
 }
 
 /// generated route for
-/// [_i3.ServerHomePage]
-class ServerHomeRoute extends _i7.PageRouteInfo<ServerHomeRouteArgs> {
+/// [_i3.ServerHomeOverviewPage]
+class ServerHomeOverviewRoute
+    extends _i9.PageRouteInfo<ServerHomeOverviewRouteArgs> {
+  ServerHomeOverviewRoute({_i10.Key? key, List<_i9.PageRouteInfo>? children})
+      : super(
+          ServerHomeOverviewRoute.name,
+          args: ServerHomeOverviewRouteArgs(key: key),
+          initialChildren: children,
+        );
+
+  static const String name = 'ServerHomeOverviewRoute';
+
+  static _i9.PageInfo page = _i9.PageInfo(
+    name,
+    builder: (data) {
+      final pathParams = data.inheritedPathParams;
+      final args = data.argsAs<ServerHomeOverviewRouteArgs>(
+        orElse: () => ServerHomeOverviewRouteArgs(),
+      );
+      return _i3.ServerHomeOverviewPage(
+        key: args.key,
+        serverName: pathParams.getString('serverName'),
+      );
+    },
+  );
+}
+
+class ServerHomeOverviewRouteArgs {
+  const ServerHomeOverviewRouteArgs({this.key});
+
+  final _i10.Key? key;
+
+  @override
+  String toString() {
+    return 'ServerHomeOverviewRouteArgs{key: $key}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! ServerHomeOverviewRouteArgs) return false;
+    return key == other.key;
+  }
+
+  @override
+  int get hashCode => key.hashCode;
+}
+
+/// generated route for
+/// [_i4.ServerHomePage]
+class ServerHomeRoute extends _i9.PageRouteInfo<ServerHomeRouteArgs> {
   ServerHomeRoute({
-    _i8.Key? key,
+    _i10.Key? key,
     required String serverName,
-    List<_i7.PageRouteInfo>? children,
+    List<_i9.PageRouteInfo>? children,
   }) : super(
           ServerHomeRoute.name,
           args: ServerHomeRouteArgs(key: key, serverName: serverName),
@@ -100,7 +151,7 @@ class ServerHomeRoute extends _i7.PageRouteInfo<ServerHomeRouteArgs> {
 
   static const String name = 'ServerHomeRoute';
 
-  static _i7.PageInfo page = _i7.PageInfo(
+  static _i9.PageInfo page = _i9.PageInfo(
     name,
     builder: (data) {
       final pathParams = data.inheritedPathParams;
@@ -108,7 +159,7 @@ class ServerHomeRoute extends _i7.PageRouteInfo<ServerHomeRouteArgs> {
         orElse: () =>
             ServerHomeRouteArgs(serverName: pathParams.getString('serverName')),
       );
-      return _i3.ServerHomePage(key: args.key, serverName: args.serverName);
+      return _i4.ServerHomePage(key: args.key, serverName: args.serverName);
     },
   );
 }
@@ -116,7 +167,7 @@ class ServerHomeRoute extends _i7.PageRouteInfo<ServerHomeRouteArgs> {
 class ServerHomeRouteArgs {
   const ServerHomeRouteArgs({this.key, required this.serverName});
 
-  final _i8.Key? key;
+  final _i10.Key? key;
 
   final String serverName;
 
@@ -137,14 +188,14 @@ class ServerHomeRouteArgs {
 }
 
 /// generated route for
-/// [_i4.ShowEpisodePage]
-class ShowEpisodeRoute extends _i7.PageRouteInfo<ShowEpisodeRouteArgs> {
+/// [_i5.ShowEpisodePage]
+class ShowEpisodeRoute extends _i9.PageRouteInfo<ShowEpisodeRouteArgs> {
   ShowEpisodeRoute({
-    _i9.Key? key,
+    _i11.Key? key,
     required String showId,
     required String episodeId,
     String? playQueueId,
-    List<_i7.PageRouteInfo>? children,
+    List<_i9.PageRouteInfo>? children,
   }) : super(
           ShowEpisodeRoute.name,
           args: ShowEpisodeRouteArgs(
@@ -160,7 +211,7 @@ class ShowEpisodeRoute extends _i7.PageRouteInfo<ShowEpisodeRouteArgs> {
 
   static const String name = 'ShowEpisodeRoute';
 
-  static _i7.PageInfo page = _i7.PageInfo(
+  static _i9.PageInfo page = _i9.PageInfo(
     name,
     builder: (data) {
       final pathParams = data.inheritedPathParams;
@@ -172,7 +223,7 @@ class ShowEpisodeRoute extends _i7.PageRouteInfo<ShowEpisodeRouteArgs> {
           playQueueId: queryParams.optString('playQueueId'),
         ),
       );
-      return _i4.ShowEpisodePage(
+      return _i5.ShowEpisodePage(
         key: args.key,
         serverName: pathParams.getString('serverName'),
         showId: args.showId,
@@ -191,7 +242,7 @@ class ShowEpisodeRouteArgs {
     this.playQueueId,
   });
 
-  final _i9.Key? key;
+  final _i11.Key? key;
 
   final String showId;
 
@@ -223,13 +274,61 @@ class ShowEpisodeRouteArgs {
 }
 
 /// generated route for
-/// [_i5.ShowOverviewContentPage]
+/// [_i6.ShowHomePage]
+class ShowHomeRoute extends _i9.PageRouteInfo<ShowHomeRouteArgs> {
+  ShowHomeRoute({_i10.Key? key, List<_i9.PageRouteInfo>? children})
+      : super(
+          ShowHomeRoute.name,
+          args: ShowHomeRouteArgs(key: key),
+          initialChildren: children,
+        );
+
+  static const String name = 'ShowHomeRoute';
+
+  static _i9.PageInfo page = _i9.PageInfo(
+    name,
+    builder: (data) {
+      final pathParams = data.inheritedPathParams;
+      final args = data.argsAs<ShowHomeRouteArgs>(
+        orElse: () => ShowHomeRouteArgs(),
+      );
+      return _i6.ShowHomePage(
+        key: args.key,
+        serverName: pathParams.getString('serverName'),
+      );
+    },
+  );
+}
+
+class ShowHomeRouteArgs {
+  const ShowHomeRouteArgs({this.key});
+
+  final _i10.Key? key;
+
+  @override
+  String toString() {
+    return 'ShowHomeRouteArgs{key: $key}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! ShowHomeRouteArgs) return false;
+    return key == other.key;
+  }
+
+  @override
+  int get hashCode => key.hashCode;
+}
+
+/// generated route for
+/// [_i7.ShowOverviewContentPage]
 class ShowOverviewContentRoute
-    extends _i7.PageRouteInfo<ShowOverviewContentRouteArgs> {
+    extends _i9.PageRouteInfo<ShowOverviewContentRouteArgs> {
   ShowOverviewContentRoute({
-    _i8.Key? key,
+    _i10.Key? key,
     required String showId,
-    List<_i7.PageRouteInfo>? children,
+    List<_i9.PageRouteInfo>? children,
   }) : super(
           ShowOverviewContentRoute.name,
           args: ShowOverviewContentRouteArgs(key: key, showId: showId),
@@ -239,7 +338,7 @@ class ShowOverviewContentRoute
 
   static const String name = 'ShowOverviewContentRoute';
 
-  static _i7.PageInfo page = _i7.PageInfo(
+  static _i9.PageInfo page = _i9.PageInfo(
     name,
     builder: (data) {
       final pathParams = data.inheritedPathParams;
@@ -248,7 +347,7 @@ class ShowOverviewContentRoute
           showId: pathParams.getString('showId'),
         ),
       );
-      return _i5.ShowOverviewContentPage(
+      return _i7.ShowOverviewContentPage(
         key: args.key,
         serverName: pathParams.getString('serverName'),
         showId: args.showId,
@@ -260,7 +359,7 @@ class ShowOverviewContentRoute
 class ShowOverviewContentRouteArgs {
   const ShowOverviewContentRouteArgs({this.key, required this.showId});
 
-  final _i8.Key? key;
+  final _i10.Key? key;
 
   final String showId;
 
@@ -281,12 +380,12 @@ class ShowOverviewContentRouteArgs {
 }
 
 /// generated route for
-/// [_i6.ShowOverviewPage]
-class ShowOverviewRoute extends _i7.PageRouteInfo<ShowOverviewRouteArgs> {
+/// [_i8.ShowOverviewPage]
+class ShowOverviewRoute extends _i9.PageRouteInfo<ShowOverviewRouteArgs> {
   ShowOverviewRoute({
-    _i8.Key? key,
+    _i10.Key? key,
     required String showId,
-    List<_i7.PageRouteInfo>? children,
+    List<_i9.PageRouteInfo>? children,
   }) : super(
           ShowOverviewRoute.name,
           args: ShowOverviewRouteArgs(key: key, showId: showId),
@@ -296,7 +395,7 @@ class ShowOverviewRoute extends _i7.PageRouteInfo<ShowOverviewRouteArgs> {
 
   static const String name = 'ShowOverviewRoute';
 
-  static _i7.PageInfo page = _i7.PageInfo(
+  static _i9.PageInfo page = _i9.PageInfo(
     name,
     builder: (data) {
       final pathParams = data.inheritedPathParams;
@@ -304,7 +403,7 @@ class ShowOverviewRoute extends _i7.PageRouteInfo<ShowOverviewRouteArgs> {
         orElse: () =>
             ShowOverviewRouteArgs(showId: pathParams.getString('showId')),
       );
-      return _i6.ShowOverviewPage(
+      return _i8.ShowOverviewPage(
         key: args.key,
         serverName: pathParams.getString('serverName'),
         showId: args.showId,
@@ -316,7 +415,7 @@ class ShowOverviewRoute extends _i7.PageRouteInfo<ShowOverviewRouteArgs> {
 class ShowOverviewRouteArgs {
   const ShowOverviewRouteArgs({this.key, required this.showId});
 
-  final _i8.Key? key;
+  final _i10.Key? key;
 
   final String showId;
 
