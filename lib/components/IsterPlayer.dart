@@ -25,6 +25,7 @@ class IsterPlayer extends StatefulWidget {
 }
 
 class _IsterPlayerState extends State<IsterPlayer> {
+  late final GlobalKey<VideoState> key = GlobalKey<VideoState>();
   late final player = Player(
       configuration: PlayerConfiguration(
           libass: true,
@@ -59,6 +60,7 @@ class _IsterPlayerState extends State<IsterPlayer> {
     );
     player.stream.completed.listen(
       (completed) {
+        key.currentState?.exitFullscreen();
         if (widget.onCompleted != null) {
           widget.onCompleted!(completed);
         }
@@ -118,7 +120,8 @@ class _IsterPlayerState extends State<IsterPlayer> {
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.width * 9.0 / 16.0,
       // Use [Video] widget to display video output.
-      child: Video(controller: controller, controls: AdaptiveVideoControls),
+      child: Video(
+          key: key, controller: controller, controls: AdaptiveVideoControls),
     );
   }
 }
