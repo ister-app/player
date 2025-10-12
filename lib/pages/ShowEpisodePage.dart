@@ -1,6 +1,8 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/components/PlayQueue.dart';
 import 'package:player/graphql/episodeById.graphql.dart';
@@ -86,20 +88,26 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                         episode.mediaFile == null ||
                         episode.mediaFile!.isEmpty
                     ? LayoutBuilder(builder: (context, constraints) {
-                        var imageUrl = ImageUtil.getImageIdByType(
+                        var imageByType = ImageUtil.getImageByType(
                             episode.images, ImageTypes.background);
                         return Container(
                           height: constraints.maxWidth < 800 ? 300 : 500,
                           width: constraints.maxWidth,
                           decoration: BoxDecoration(color: Colors.grey),
-                          child: (imageUrl != null && imageUrl.isNotEmpty)
-                              ? Image(
+                          child: (imageByType?.id != null)
+                              ? CachedNetworkImage(
+                            placeholder: (context, url) => imageByType?.blurHash != null ? BlurHash(
+                                    hash: imageByType!.blurHash!,
+                                    optimizationMode:
+                                        BlurHashOptimizationMode.standard,
+                                    color: Colors.grey,
+                                    duration: Duration.zero,
+                                  ) : Container(),
                                   fit: BoxFit.cover,
-                                  image: NetworkImage(
-                                    headers: LoginManager.getHeaders(
-                                        widget.serverName),
-                                    '${ClientManager.getHttpOrHttps(widget.serverName)}://${widget.serverName}/images/$imageUrl/download',
-                                  ),
+                                  httpHeaders: LoginManager.getHeaders(
+                                      widget.serverName),
+                                  imageUrl:
+                                      '${ClientManager.getHttpOrHttps(widget.serverName)}://${widget.serverName}/images/$imageByType/download',
                                 )
                               : Container(),
                         );

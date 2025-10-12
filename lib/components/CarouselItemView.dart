@@ -1,4 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:player/utils/LoginManager.dart';
 
 import '../utils/ClientManager.dart';
@@ -10,6 +12,7 @@ class CarouselItemView extends StatelessWidget {
       required this.title,
       required this.subTitle,
       this.imageUrl,
+      this.blurHash,
       this.progress,
       this.onTap,
       this.onLongPress,
@@ -19,6 +22,7 @@ class CarouselItemView extends StatelessWidget {
   final String title;
   final String subTitle;
   final String? imageUrl;
+  final String? blurHash;
   final double? progress;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
@@ -40,12 +44,20 @@ class CarouselItemView extends StatelessWidget {
                       maxWidth: width * 7 / 8,
                       minWidth: width * 7 / 8,
                       child: (imageUrl != null && imageUrl != '')
-                          ? Image(
+                          ? CachedNetworkImage(
+                              placeholder: (context, url) => blurHash != null ? BlurHash(
+                                hash: blurHash!,
+                                optimizationMode:
+                                    BlurHashOptimizationMode.standard,
+                                color: Colors.grey,
+                                duration: Duration.zero,
+                              ) : Container(),
+                              imageUrl:
+                                  '${ClientManager.getHttpOrHttps(serverName)}://$serverName/images/$imageUrl/download',
                               fit: BoxFit.fitHeight,
-                              image: NetworkImage(
-                                headers: LoginManager.getHeaders(serverName),
-                                '${ClientManager.getHttpOrHttps(serverName)}://$serverName/images/$imageUrl/download',
-                              ),
+                              httpHeaders: LoginManager.getHeaders(serverName),
+                              fadeOutDuration: Duration.zero,
+                              fadeInDuration: Duration.zero,
                             )
                           : Container(),
                     )),

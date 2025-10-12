@@ -24,6 +24,8 @@ dependencies:
     sdk: flutter
   intl: any
   logger: ^2.6.1
+  flutter_blurhash: ^0.9.1
+  cached_network_image: ^3.4.1
 
 #dependency_overrides:
 #  web: ">=0.5.1 <2.0.0"

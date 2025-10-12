@@ -122,6 +122,12 @@ abstract class AppLocalizations {
   /// **'Scan library'**
   String get scanLibrary;
 
+  /// Text in list tile when clicked it will trigger a analyze scan.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze library'**
+  String get analyzeLibrary;
+
   /// In menu archor an item when clicked go to show of that item.
   ///
   /// In en, this message translates to:

@@ -1,5 +1,7 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/seasonById.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
@@ -44,7 +46,7 @@ class TvShowSeasonList extends StatelessWidget {
                     context: context,
                     tiles: List.filled(7, BoneMock.title).map((e) {
                       return getListTile(context, e, BoneMock.paragraph, false,
-                          1, "1", "1", null, null);
+                          1, "1", "1", null, null, null);
                     }).toList())
                 .toList());
             return Skeletonizer(enabled: true, child: Column(children: list));
@@ -60,7 +62,7 @@ class TvShowSeasonList extends StatelessWidget {
               list.addAll(ListTile.divideTiles(
                       context: context,
                       tiles: season.episodes!.map((episode) {
-                        String? imageUrl = ImageUtil.getImageIdByType(
+                        var imageByType = ImageUtil.getImageByType(
                             episode.images, ImageTypes.background);
                         return getListTile(
                             context,
@@ -72,7 +74,8 @@ class TvShowSeasonList extends StatelessWidget {
                             episode.number ?? 0,
                             episode.$show!.id,
                             episode.id,
-                            imageUrl,
+                            imageByType?.id,
+                            imageByType?.blurHash,
                             episode.watchStatus != null &&
                                     episode.watchStatus!.isNotEmpty &&
                                     episode.watchStatus!.first.watched !=
@@ -105,6 +108,7 @@ class TvShowSeasonList extends StatelessWidget {
       String showId,
       String episodeId,
       String? imageUrl,
+      String? blurHash,
       double? progress) {
     return ListTile(
         contentPadding: EdgeInsets.all(0),
@@ -132,12 +136,22 @@ class TvShowSeasonList extends StatelessWidget {
                 decoration: BoxDecoration(color: Colors.grey),
                 child: OverflowBox(
                   child: (imageUrl != null && imageUrl != '')
-                      ? Image(
+                      ? CachedNetworkImage(
+                          placeholder: (context, url) => blurHash != null
+                              ? BlurHash(
+                                  hash: blurHash,
+                                  optimizationMode:
+                                      BlurHashOptimizationMode.standard,
+                                  color: Colors.grey,
+                                  duration: Duration.zero,
+                                )
+                              : Container(),
                           fit: BoxFit.fitHeight,
-                          image: NetworkImage(
-                            headers: LoginManager.getHeaders(serverName),
-                            '${ClientManager.getHttpOrHttps(serverName)}://$serverName/images/$imageUrl/download',
-                          ),
+                          imageUrl:
+                              '${ClientManager.getHttpOrHttps(serverName)}://$serverName/images/$imageUrl/download',
+                          httpHeaders: LoginManager.getHeaders(serverName),
+                          fadeOutDuration: Duration.zero,
+                          fadeInDuration: Duration.zero,
                         )
                       : Container(),
                 )),

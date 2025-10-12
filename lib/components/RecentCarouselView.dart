@@ -83,6 +83,8 @@ class RecentCarouselView extends StatelessWidget {
                 ?.map((e) => Fragment$fragmentImages.fromJson(e.toJson()))
                 .toList();
             var _menuController = MenuController();
+            var imageByType =
+                ImageUtil.getImageByType(images, ImageTypes.background);
             return MenuAnchor(
                 controller: _menuController,
                 menuChildren: <Widget>[
@@ -103,8 +105,8 @@ class RecentCarouselView extends StatelessWidget {
                             .episode(episode.number ?? 0),
                     subTitle:
                         MetadataUtil.getDescription(episode.metadata) ?? "",
-                    imageUrl: ImageUtil.getImageIdByType(
-                        images, ImageTypes.background),
+                    imageUrl: imageByType?.id,
+                    blurHash: imageByType?.blurHash,
                     progress: episode.watchStatus != null &&
                             episode.watchStatus!.isNotEmpty &&
                             episode.watchStatus!.first.watched != true &&

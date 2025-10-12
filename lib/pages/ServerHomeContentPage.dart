@@ -5,6 +5,7 @@ import 'package:player/components/TvShowSlide.dart';
 import 'package:player/graphql/scanLibrary.graphql.dart';
 
 import '../components/RecentCarouselView.dart';
+import '../graphql/analyzeLibrary.graphql.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/LoggerService.dart';
 
@@ -28,7 +29,8 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
   Refetch? _refetchTvshow;
   bool _tvshowViewEmpty = false;
 
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
 
   void triggerRefresh() {
     _refreshIndicatorKey.currentState?.show();
@@ -88,6 +90,14 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                   child: ListTile(
                     leading: const Icon(Icons.loop),
                     title: Text(AppLocalizations.of(context)!.scanLibrary),
+                  )),
+              MenuItemButton(
+                  onPressed: () {
+                    analyzeLibrary(graphQLClient);
+                  },
+                  child: ListTile(
+                    leading: const Icon(Icons.loop),
+                    title: Text(AppLocalizations.of(context)!.analyzeLibrary),
                   )),
             ],
             builder: (_, MenuController controller, Widget? child) {
@@ -162,6 +172,18 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
   Future<void> scanLibrary(GraphQLClient graphQLClient) async {
     final MutationOptions options = MutationOptions(
       document: documentNodeMutationscanLibrary,
+    );
+    final QueryResult result = await graphQLClient.mutate(options);
+
+    if (result.hasException) {
+      LoggerService().logger.e(result.exception);
+      return;
+    }
+  }
+
+  Future<void> analyzeLibrary(GraphQLClient graphQLClient) async {
+    final MutationOptions options = MutationOptions(
+      document: documentNodeMutationanalyzeLibrary,
     );
     final QueryResult result = await graphQLClient.mutate(options);
 

@@ -1,4 +1,5 @@
 fragment fragmentImages on Image {
     type
     id
+    blurHash
 }

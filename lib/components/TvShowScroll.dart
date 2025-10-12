@@ -131,12 +131,14 @@ class _TvShowScrollState extends State<TvShowScroll> {
               itemBuilder: (context, index) {
                 if (index < shows.length) {
                   final show = shows[index];
+                  var imageByType =
+                      ImageUtil.getImageByType(show.images, ImageTypes.cover);
                   return CarouselItemView(
                     serverName: widget.serverName,
                     title: MetadataUtil.getTitle(show.metadata) ?? "",
                     subTitle: MetadataUtil.getDescription(show.metadata) ?? "",
-                    imageUrl: ImageUtil.getImageIdByType(
-                        show.images, ImageTypes.cover),
+                    imageUrl: imageByType?.id,
+                    blurHash: imageByType?.blurHash,
                     onTap: () => AutoRouter.of(context)
                         .push(ShowOverviewRoute(showId: show.id)),
                   );

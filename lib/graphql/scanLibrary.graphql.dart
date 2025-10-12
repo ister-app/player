@@ -1,18 +1,21 @@
 import 'package:gql/ast.dart';
 
 class Mutation$scanLibrary {
-  Mutation$scanLibrary({this.scanLibrary, this.$__typename = 'Mutation'});
+  Mutation$scanLibrary({
+    required this.scanLibrary,
+    this.$__typename = 'Mutation',
+  });
 
   factory Mutation$scanLibrary.fromJson(Map<String, dynamic> json) {
     final l$scanLibrary = json['scanLibrary'];
     final l$$__typename = json['__typename'];
     return Mutation$scanLibrary(
-      scanLibrary: (l$scanLibrary as bool?),
+      scanLibrary: (l$scanLibrary as bool),
       $__typename: (l$$__typename as String),
     );
   }
 
-  final bool? scanLibrary;
+  final bool scanLibrary;
 
   final String $__typename;
 
@@ -86,9 +89,9 @@ class _CopyWithImpl$Mutation$scanLibrary<TRes>
     Object? $__typename = _undefined,
   }) => _then(
     Mutation$scanLibrary(
-      scanLibrary: scanLibrary == _undefined
+      scanLibrary: scanLibrary == _undefined || scanLibrary == null
           ? _instance.scanLibrary
-          : (scanLibrary as bool?),
+          : (scanLibrary as bool),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),

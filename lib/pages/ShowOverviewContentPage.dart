@@ -1,5 +1,7 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/showById.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -37,8 +39,8 @@ class ShowOverviewContentPage extends StatelessWidget {
         } else if (result.data == null && result.isLoading) {
           body = Skeletonizer(
               enabled: true,
-              child:
-                  getContent(null, BoneMock.name, BoneMock.words(15), context));
+              child: getContent(
+                  null, null, BoneMock.name, BoneMock.words(15), context));
           // Skeletonizer(enabled: true, child: Text(BoneMock.name));
         } else {
           final parsedData = Query$showById.fromJson(result.data!);
@@ -48,10 +50,11 @@ class ShowOverviewContentPage extends StatelessWidget {
           if (show == null) {
             body = const Text('No show found');
           } else {
-            var imageUrl =
-                ImageUtil.getImageIdByType(show.images, ImageTypes.background);
+            var imageByType =
+                ImageUtil.getImageByType(show.images, ImageTypes.background);
             body = getContent(
-                imageUrl,
+                imageByType?.id,
+                imageByType?.blurHash,
                 MetadataUtil.getTitle(show.metadata) ?? "",
                 MetadataUtil.getDescription(show.metadata) ?? "",
                 context);
@@ -63,8 +66,8 @@ class ShowOverviewContentPage extends StatelessWidget {
     );
   }
 
-  SingleChildScrollView getContent(String? imageUrl, String title,
-      String description, BuildContext context) {
+  SingleChildScrollView getContent(String? imageUrl, String? blurHash,
+      String title, String description, BuildContext context) {
     return SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       LayoutBuilder(builder: (context, constraints) {
@@ -73,12 +76,21 @@ class ShowOverviewContentPage extends StatelessWidget {
           width: constraints.maxWidth,
           decoration: BoxDecoration(color: Colors.grey),
           child: (imageUrl != null && imageUrl != '')
-              ? Image(
+              ? CachedNetworkImage(
+                  placeholder: (context, url) => blurHash != null
+                      ? BlurHash(
+                          hash: blurHash,
+                          optimizationMode: BlurHashOptimizationMode.standard,
+                          color: Colors.grey,
+                          duration: Duration.zero,
+                        )
+                      : Container(),
                   fit: BoxFit.cover,
-                  image: NetworkImage(
-                    headers: LoginManager.getHeaders(serverName),
-                    '${ClientManager.getHttpOrHttps(serverName)}://$serverName/images/$imageUrl/download',
-                  ),
+                  httpHeaders: LoginManager.getHeaders(serverName),
+                  imageUrl:
+                      '${ClientManager.getHttpOrHttps(serverName)}://$serverName/images/$imageUrl/download',
+                  fadeOutDuration: Duration.zero,
+                  fadeInDuration: Duration.zero,
                 )
               : Container(),
         );
