@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -13,7 +15,7 @@ import '../routes/AppRouter.gr.dart';
 import '../utils/PlayQueueService.dart';
 import 'CarouselItemView.dart';
 
-class RecentCarouselView extends StatelessWidget {
+class RecentCarouselView extends StatefulWidget {
   final String serverName;
   final Function(Refetch?)? onRefetch;
   final Function()? onEmptyView;
@@ -26,18 +28,45 @@ class RecentCarouselView extends StatelessWidget {
   });
 
   @override
+  _RecentCarouselViewState createState() => _RecentCarouselViewState();
+}
+
+class _RecentCarouselViewState extends State<RecentCarouselView> {
+  late final PlayQueueService playQueueService;
+  late StreamSubscription _playQueueSubscription;
+  Refetch? refetch;
+
+  @override
+  void initState() {
+    super.initState();
+    playQueueService = PlayQueueService();
+
+    // Subscribe to the playqueue changed stream
+    _playQueueSubscription =
+        playQueueService.getPlayQueueChangedStream().listen((event) {
+      if (refetch != null) {
+        refetch!();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    // Cancel the subscription when the widget is disposed
+    _playQueueSubscription.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    PlayQueueService playQueueService = PlayQueueService();
     return Query(
       options: QueryOptions(
         document: documentNodeQueryepisodesRecentWatchedQuery,
       ),
       builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
-        playQueueService.getPlayQueueChangedStream().listen((event) {
-          refetch != null ? refetch() : null;
-        });
-        if (onRefetch != null) {
-          onRefetch!(refetch);
+        if (widget.onRefetch != null) {
+          this.refetch = refetch;
+          widget.onRefetch!(refetch);
         }
         if (result.hasException) {
           return Text(result.exception.toString());
@@ -53,7 +82,7 @@ class RecentCarouselView extends StatelessWidget {
                 children: List.filled(
                     7,
                     CarouselItemView(
-                      serverName: serverName,
+                      serverName: widget.serverName,
                       title: BoneMock.name,
                       subTitle: BoneMock.words(10),
                     )),
@@ -67,14 +96,13 @@ class RecentCarouselView extends StatelessWidget {
             parsedData.episodesRecentWatched;
 
         if (episodes == null || episodes.isEmpty) {
-          if (onEmptyView != null) {
-            onEmptyView!();
+          if (widget.onEmptyView != null) {
+            widget.onEmptyView!();
           }
           return const Text('No episodes');
         }
 
         return ListView(
-          // controller: CarouselController(initialItem: 0),
           itemExtent: 300.0,
           scrollDirection: Axis.horizontal,
           children: episodes.map(
@@ -99,7 +127,7 @@ class RecentCarouselView extends StatelessWidget {
                       )),
                 ],
                 child: CarouselItemView(
-                    serverName: serverName,
+                    serverName: widget.serverName,
                     title: MetadataUtil.getTitle(episode.metadata) ??
                         AppLocalizations.of(context)!
                             .episode(episode.number ?? 0),
