@@ -26,6 +26,7 @@ dependencies:
   logger: ^2.6.1
   flutter_blurhash: ^0.9.1
   cached_network_image: ^3.4.1
+  dropdown_button2: ^3.0.0-beta.23
 
 #dependency_overrides:
 #  web: ">=0.5.1 <2.0.0"
@@ -52,6 +53,7 @@ flutter:
   assets:
     - assets/fonts/DroidSansFallback.ttf
     - assets/background.png
+    - assets/iso-639-3.tab
   fonts:
     - family: Roboto
       fonts:

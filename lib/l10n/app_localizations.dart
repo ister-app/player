@@ -110,6 +110,60 @@ abstract class AppLocalizations {
   /// **'Library'**
   String get library;
 
+  /// Title of the settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @preferredSpoken.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred spoken languages:'**
+  String get preferredSpoken;
+
+  /// No description provided for @preferredSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred subtitle languages:'**
+  String get preferredSubtitle;
+
+  /// Error message shown when the preferences cannot be loaded
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load preferences: {error}'**
+  String loadError(Object error);
+
+  /// No description provided for @selectLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a Language'**
+  String get selectLanguage;
+
+  /// No description provided for @error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String error(Object error);
+
+  /// No description provided for @noLanguagesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No languages found.'**
+  String get noLanguagesFound;
+
+  /// No description provided for @searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for a language...'**
+  String get searchHint;
+
+  /// No description provided for @noLanguageFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No Language Found!'**
+  String get noLanguageFound;
+
   /// Refresh data of this page.
   ///
   /// In en, this message translates to:

@@ -18,6 +18,7 @@ class ServerHomeOverviewPage extends StatelessWidget {
       routes: [
         ServerHomeContentRoute(),
         ShowHomeRoute(),
+        ServerSettingsRoute(),
       ],
       transitionBuilder: (context, child, animation) => FadeTransition(
         opacity: animation,
@@ -49,6 +50,10 @@ class ServerHomeOverviewPage extends StatelessWidget {
                       icon: Icon(Icons.book),
                       label: Text(AppLocalizations.of(context)!.library),
                     ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.settings),
+                      label: Text(AppLocalizations.of(context)!.settings),
+                    ),
                   ],
                 ),
               if (isWideScreen) const VerticalDivider(thickness: 1, width: 5),
@@ -72,6 +77,10 @@ class ServerHomeOverviewPage extends StatelessWidget {
                     NavigationDestination(
                       icon: const Icon(Icons.book),
                       label: AppLocalizations.of(context)!.library,
+                    ),
+                    NavigationDestination(
+                      icon: const Icon(Icons.settings),
+                      label: AppLocalizations.of(context)!.settings,
                     ),
                   ],
                 )

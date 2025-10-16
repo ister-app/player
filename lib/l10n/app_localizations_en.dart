@@ -15,6 +15,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get library => 'Library';
 
   @override
+  String get settings => 'Settings';
+
+  @override
+  String get preferredSpoken => 'Preferred spoken languages:';
+
+  @override
+  String get preferredSubtitle => 'Preferred subtitle languages:';
+
+  @override
+  String loadError(Object error) {
+    return 'Failed to load preferences: $error';
+  }
+
+  @override
+  String get selectLanguage => 'Select a Language';
+
+  @override
+  String error(Object error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get noLanguagesFound => 'No languages found.';
+
+  @override
+  String get searchHint => 'Search for a language...';
+
+  @override
+  String get noLanguageFound => 'No Language Found!';
+
+  @override
   String get refreshPage => 'Refresh page';
 
   @override

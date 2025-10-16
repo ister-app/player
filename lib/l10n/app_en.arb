@@ -7,6 +7,24 @@
   "@library": {
     "description": "Library of shows/films/music"
   },
+  "settings":"Settings",
+  "@settings": {
+    "description": "Title of the settings page"
+  },
+  "preferredSpoken": "Preferred spoken languages:",
+  "preferredSubtitle": "Preferred subtitle languages:",
+  "loadError": "Failed to load preferences: {error}",
+  "@loadError": {
+    "description": "Error message shown when the preferences cannot be loaded",
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "selectLanguage": "Select a Language",
+  "error": "Error: {error}",
+  "noLanguagesFound": "No languages found.",
+  "searchHint": "Search for a language...",
+  "noLanguageFound": "No Language Found!",
   "refreshPage": "Refresh page",
   "@refreshPage": {
     "description": "Refresh data of this page."

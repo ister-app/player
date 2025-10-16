@@ -15,6 +15,7 @@ class AppRouter extends RootStackRouter {
                 RedirectRoute(path: '', redirectTo: 'home'),
                 AutoRoute(path: 'home', page: ServerHomeContentRoute.page),
                 AutoRoute(path: 'library', page: ShowHomeRoute.page),
+                AutoRoute(path: 'settings', page: ServerSettingsRoute.page),
                 ]
           ), // Overview with newly added items and resume watching view
           AutoRoute(path: 'shows/:showId', page: ShowOverviewRoute.page,

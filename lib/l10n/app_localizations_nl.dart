@@ -15,6 +15,37 @@ class AppLocalizationsNl extends AppLocalizations {
   String get library => 'Bibliotheek';
 
   @override
+  String get settings => 'Instellingen';
+
+  @override
+  String get preferredSpoken => 'Voorkeurstaal voor gesproken audio:';
+
+  @override
+  String get preferredSubtitle => 'Voorkeurstaal voor ondertiteling:';
+
+  @override
+  String loadError(Object error) {
+    return 'Kan voorkeuren niet laden: $error';
+  }
+
+  @override
+  String get selectLanguage => 'Selecteer een taal';
+
+  @override
+  String error(Object error) {
+    return 'Fout: $error';
+  }
+
+  @override
+  String get noLanguagesFound => 'Geen talen gevonden.';
+
+  @override
+  String get searchHint => 'Zoek naar een taal...';
+
+  @override
+  String get noLanguageFound => 'Geen taal gevonden!';
+
+  @override
   String get refreshPage => 'Vernieuw pagina';
 
   @override
