@@ -158,7 +158,7 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                     ? Container()
                     : SizedBox(
                         height: 200,
-                        child: Tvshowslide(
+                        child: TvShowSlide(
                           serverName: widget.serverName,
                           onRefetch: (refetch) {
                             _refetchTvshow = refetch;

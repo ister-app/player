@@ -27,6 +27,7 @@ dependencies:
   flutter_blurhash: ^0.9.1
   cached_network_image: ^3.4.1
   dropdown_button2: ^3.0.0-beta.23
+  visibility_detector: ^0.4.0
 
 #dependency_overrides:
 #  web: ">=0.5.1 <2.0.0"

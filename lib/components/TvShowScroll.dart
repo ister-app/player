@@ -6,16 +6,16 @@ import 'package:player/graphql/showsRecentAdded.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
-import 'package:player/utils/LoggerService.dart';
+import 'package:player/utils/MetadataUtil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
-import '../utils/MetadataUtil.dart';
 import 'CarouselItemView.dart';
 
 class TvShowScroll extends StatefulWidget {
   final String serverName;
   final Function(Refetch?)? onRefetch;
-  final Function()? onEmptyView;
+  final VoidCallback? onEmptyView;
 
   const TvShowScroll({
     super.key,
@@ -29,127 +29,142 @@ class TvShowScroll extends StatefulWidget {
 }
 
 class _TvShowScrollState extends State<TvShowScroll> {
-  bool _loading = false;
+  static const int _pageSize = 15;
+
+  /// Pages that have already been loaded.
+  final List<int> _fetchedPages = [0];
+
+  /// Pages that are currently being requested.
+  final Set<int> _loadingPages = {};
+
+  /// Request a page from the server if it hasn't been loaded yet.
+  void _requestPage(int page, FetchMore fetchMore) {
+    if (_fetchedPages.contains(page) || _loadingPages.contains(page)) return;
+
+    _loadingPages.add(page);
+
+    fetchMore(
+      FetchMoreOptions(
+        variables: {'page': page, 'size': _pageSize},
+        updateQuery: (previous, fetchMoreResult) {
+          // Bail out on error / empty result.
+          if (fetchMoreResult == null ||
+              fetchMoreResult['shows']?['content'] == null) {
+            _loadingPages.remove(page);
+            return previous!;
+          }
+
+          final prev = previous!['shows']['content'] as List<dynamic>;
+          final fresh = fetchMoreResult['shows']['content'] as List<dynamic>;
+
+          previous['shows']['content'] = [...prev, ...fresh];
+          _fetchedPages.add(page);
+          _loadingPages.remove(page);
+          return previous;
+        },
+      ),
+    ).catchError((_) => _loadingPages.remove(page));
+  }
 
   @override
   Widget build(BuildContext context) {
-    int fetched = 0;
-
     return Query(
-      options: QueryOptions(document: documentNodeQueryshows, variables: {
-        "page": 0,
-        "size": 15,
-        "sorting": Enum$SortingEnum.NAME,
-        "sortingOrder": Enum$SortingOrder.ASCENDING
-      }),
-      builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
-        if (widget.onRefetch != null) {
-          widget.onRefetch!(refetch);
-        }
+      options: QueryOptions(
+        document: documentNodeQueryshows,
+        variables: {
+          'page': 0,
+          'size': _pageSize,
+          'sorting': Enum$SortingEnum.NAME,
+          'sortingOrder': Enum$SortingOrder.ASCENDING,
+        },
+        fetchPolicy: FetchPolicy.cacheAndNetwork,
+      ),
+      builder: (result, {Refetch? refetch, FetchMore? fetchMore}) {
+        widget.onRefetch?.call(refetch);
+
         if (result.hasException) {
-          return Text(result.exception.toString());
+          return Center(child: Text(result.exception.toString()));
         }
 
-        if (result.data == null && result.isLoading) {
-          return Skeletonizer(
-              enabled: true,
-              child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                  childAspectRatio: 0.65,
-                  maxCrossAxisExtent: 300, // Adjust aspect ratio as needed
-                ),
-                itemCount: 7, // Number of placeholders
-                itemBuilder: (context, index) {
-                  return CarouselItemView(
-                    serverName: widget.serverName,
-                    title: BoneMock.name,
-                    subTitle: BoneMock.words(10),
-                  );
-                },
-              ));
-        }
+        // Current data we already have (may be empty on first load)
+        final shows = result.data == null
+            ? const <Query$shows$shows$content>[]
+            : (Query$shows.fromJson(result.data!).shows?.content ??
+                const <Query$shows$shows$content>[]);
 
-        final parsedData = Query$shows.fromJson(result.data!);
-        Query$shows$shows? showPage = parsedData.shows;
-        List<Query$shows$shows$content>? shows = showPage?.content;
+        // Server‑side total number of items (if the query returns it)
+        final int? serverTotal = result.data == null
+            ? null
+            : Query$shows.fromJson(result.data!).shows?.totalElements;
 
-        if (shows == null) {
-          if (widget.onEmptyView != null) {
-            widget.onEmptyView!();
-          }
-          return const Text('No shows');
-        }
+        // How many placeholder slots we need to keep the carousel length
+        final int placeholderCount = serverTotal == null
+            ? _pageSize * 3
+            : (serverTotal - shows.length).clamp(0, serverTotal);
 
-        return NotificationListener<ScrollUpdateNotification>(
-            onNotification: (ScrollUpdateNotification notification) {
-              if (notification.metrics.pixels >=
-                  notification.metrics.maxScrollExtent - 500) {
-                LoggerService()
-                    .logger
-                    .t("End of Tvshowslide reached page: ${showPage!.number}");
-                if (result.isLoading == false &&
-                    _loading == false &&
-                    fetched != showPage.number + 1 &&
-                    fetchMore != null &&
-                    showPage.totalPages > showPage.number) {
-                  setState(() {
-                    _loading = true;
-                  });
-                  fetched = showPage.number + 1;
-                  LoggerService().logger.d(
-                      "Fetching more page: ${showPage.number + 1}, size: ${showPage.size}");
-                  fetchMore(FetchMoreOptions(
-                    variables: {
-                      "page": showPage.number + 1,
-                      "size": showPage.size
-                    },
-                    updateQuery: (previousResultData, fetchMoreResultData) {
-                      final List<dynamic> content = [
-                        ...previousResultData!['shows']['content']
-                            as List<dynamic>,
-                        ...fetchMoreResultData!['shows']['content']
-                            as List<dynamic>
-                      ];
+        // Size of the last page (if known)
+        final int itemsInLastPage =
+            serverTotal == null ? _pageSize : serverTotal % _pageSize;
 
-                      fetchMoreResultData['shows']['content'] = content;
-                      setState(() {
-                        _loading = false;
-                      });
-                      return fetchMoreResultData;
-                    },
-                  ));
-                }
-              }
-              return true;
-            },
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                childAspectRatio: 0.65,
-                maxCrossAxisExtent: 300, // Adjust aspect ratio as needed
-              ),
-              itemCount: shows.length + (_loading ? 1 : 0), // Add 1 if loading
-              itemBuilder: (context, index) {
-                if (index < shows.length) {
-                  final show = shows[index];
-                  var imageByType =
-                      ImageUtil.getImageByType(show.images, ImageTypes.cover);
-                  return CarouselItemView(
-                    serverName: widget.serverName,
-                    title: MetadataUtil.getTitle(show.metadata) ?? "",
-                    subTitle: MetadataUtil.getDescription(show.metadata) ?? "",
-                    imageUrl: imageByType?.id,
-                    blurHash: imageByType?.blurHash,
-                    onTap: () => AutoRouter.of(context)
-                        .push(ShowOverviewRoute(showId: show.id)),
-                  );
-                } else {
-                  // Return a loading spinner if loading more items
-                  return Center(
-                    child: CircularProgressIndicator(), // Spinner
-                  );
+        return GridView.builder(
+          padding: const EdgeInsets.all(8),
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 300,
+            childAspectRatio: 0.65,
+            mainAxisSpacing: 0,
+            crossAxisSpacing: 0,
+          ),
+          itemCount: shows.length + placeholderCount,
+          itemBuilder: (context, index) {
+            // Determine which page this index belongs to
+            final pageForIndex = index ~/ _pageSize;
+            final pageFetched = _fetchedPages.contains(pageForIndex);
+
+            // Resolve the flat list index for a fetched page
+            int flatIndex = 0;
+            for (final fetchedPage in _fetchedPages) {
+              if (fetchedPage == pageForIndex) break;
+              final isLastPage = serverTotal != null &&
+                  fetchedPage == serverTotal ~/ _pageSize;
+              flatIndex += isLastPage ? itemsInLastPage : _pageSize;
+            }
+            flatIndex += index - pageForIndex * _pageSize;
+
+            // Real item – we have data for this page
+            if (pageFetched && shows.length > flatIndex) {
+              final show = shows[flatIndex];
+              final img =
+                  ImageUtil.getImageByType(show.images, ImageTypes.cover);
+              return CarouselItemView(
+                serverName: widget.serverName,
+                title: MetadataUtil.getTitle(show.metadata) ?? '',
+                subTitle: MetadataUtil.getDescription(show.metadata) ?? '',
+                imageUrl: img?.id,
+                blurHash: img?.blurHash,
+                onTap: () => AutoRouter.of(context)
+                    .push(ShowOverviewRoute(showId: show.id)),
+              );
+            }
+
+            // Placeholder – trigger a fetch when it becomes visible
+            return VisibilityDetector(
+              key: ValueKey('tvshow-skeleton-$index'),
+              onVisibilityChanged: (info) {
+                if (info.visibleFraction > 0 && fetchMore != null) {
+                  _requestPage(pageForIndex, fetchMore);
                 }
               },
-            ));
+              child: Skeletonizer(
+                enabled: true,
+                child: CarouselItemView(
+                  serverName: '',
+                  title: BoneMock.name,
+                  subTitle: BoneMock.words(10),
+                ),
+              ),
+            );
+          },
+        );
       },
     );
   }
