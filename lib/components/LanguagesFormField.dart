@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../components/LanguageDataWidget.dart';
 
 /// A form field that lets the user pick an arbitrary number of languages.
@@ -17,9 +18,9 @@ class LanguageFormField extends FormField<List<String>> {
     super.autovalidateMode = AutovalidateMode.disabled,
     super.validator,
   }) : super(
-    initialValue: initialValue ?? const [],
-    builder: (_) => const SizedBox.shrink(),
-  );
+          initialValue: initialValue ?? const [],
+          builder: (_) => const SizedBox.shrink(),
+        );
 
   @override
   FormFieldState<List<String>> createState() => _LanguageFormFieldState();
@@ -98,6 +99,7 @@ class _LanguageFormFieldState extends FormFieldState<List<String>> {
 
   /// Reorders the internal list.
   void _reorder(int oldIndex, int newIndex) {
+    if (_languages.length == oldIndex) return;
     setState(() {
       if (newIndex > oldIndex) newIndex--;
       final moved = _languages.removeAt(oldIndex);
@@ -127,9 +129,8 @@ class _LanguageFormFieldState extends FormFieldState<List<String>> {
             title: LanguageDataWidget(
               // `initialLanguage` expects a nullable Language object; we pass the ID.
               initialLanguage: languageId,
-              onChanged: (value) => value != null
-                  ? _onLanguageChanged(value.id, index)
-                  : null,
+              onChanged: (value) =>
+                  value != null ? _onLanguageChanged(value.id, index) : null,
             ),
           ),
         );
