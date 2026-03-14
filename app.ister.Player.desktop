@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Ister Player
+Comment=Media player for the Ister media server
+Exec=ister
+Icon=app.ister.Player
+Terminal=false
+Categories=AudioVideo;Video;Player;
+StartupWMClass=player
