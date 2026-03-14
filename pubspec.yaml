@@ -6,14 +6,14 @@ version: 1.0.0+1
 
 environment:
   sdk: ^3.5.4
-  flutter: 3.35.7
+  flutter: 3.41.4
 
 dependencies:
   flutter:
     sdk: flutter
   auto_route: ^11.0.0
-  oidc: ^0.13.0
-  oidc_default_store: ^0.5.0
+  oidc: ^0.14.0+2
+  oidc_default_store: ^0.6.0+2
   graphql_flutter: ^5.1.2
   media_kit: ^1.2.3 # Primary package.
   media_kit_video: ^2.0.1 # For video rendering.
