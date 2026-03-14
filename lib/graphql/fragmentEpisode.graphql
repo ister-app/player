@@ -1,0 +1,25 @@
+fragment fragmentEpisode on Episode {
+    id
+    number
+    show {
+        id
+    }
+    season {
+        id
+    }
+    metadata {
+        ...fragmentMetadata
+    }
+    images {
+        ...fragmentImages
+    }
+    watchStatus {
+        id
+        playQueueItemId
+        progressInMilliseconds
+        watched
+    }
+    mediaFile {
+        ...fragmentMediaFiles
+    }
+}

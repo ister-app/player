@@ -1,0 +1,17 @@
+fragment fragmentMediaFiles on MediaFile {
+    durationInMilliseconds
+    id
+    path
+    size
+    mediaFileStreams {
+        codecName
+        codecType
+        height
+        id
+        language
+        path
+        streamIndex
+        title
+        width
+    }
+}

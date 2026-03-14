@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:player/routes/AppRouter.gr.dart';
+import 'package:player/utils/ClientManager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ServerList extends StatefulWidget {
@@ -42,6 +43,10 @@ class _ServerListState extends State<ServerList> {
   @override
   void initState() {
     super.initState();
+    if (ClientManager.instance.lastClientUsed != null) {
+      goToServerRoute(ClientManager.instance.lastClientUsed!);
+    }
+
     _servers = _sharedPreferencesAsync.getStringList('servers').then(
       (value) {
         return value ?? [];
@@ -97,15 +102,18 @@ class _ServerListState extends State<ServerList> {
                                             icon: Icon(Icons.delete),
                                           ),
                                           title: Text(snapshot.data![index]),
-                                          onTap: () => AutoRouter.of(context)
-                                              .push(ServerHomeRoute(
-                                                  serverName:
-                                                      snapshot.data![index]))));
+                                          onTap: () => goToServerRoute(snapshot.data![index])));
                                 }
                               });
                         }
                     }
                   }),
             ]))));
+  }
+
+  Future<void> goToServerRoute(String serverName) async {
+    if (!mounted) return;
+    await _sharedPreferencesAsync.setString("currentServer", serverName);
+    AutoRouter.of(context).replace(ServerHomeRoute(serverName: serverName));
   }
 }

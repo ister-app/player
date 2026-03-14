@@ -1,19 +1,26 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:player/components/PlayQueue.dart';
 import 'package:player/graphql/episodeById.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../components/IsterPlayer.dart';
+import '../graphql/fragmentEpisode.graphql.dart';
+import '../graphql/fragmentPlayQueue.graphql.dart';
 import '../l10n/app_localizations.dart';
+import '../routes/AppRouter.gr.dart';
 import '../utils/ClientManager.dart';
 import '../utils/ImageTypes.dart';
 import '../utils/ImageUtil.dart';
 import '../utils/LoginManager.dart';
+import '../utils/MediaPlayerHandler.dart';
 import '../utils/MetadataUtil.dart';
+import '../utils/PlayQueueService.dart';
 
 @RoutePage()
 class ShowEpisodePage extends StatefulWidget {
@@ -36,7 +43,46 @@ class ShowEpisodePage extends StatefulWidget {
 
 class _ShowEpisodePageState extends State<ShowEpisodePage> {
   bool loadComplete = false;
-  Query$episodeById$episodeById? episode;
+  Fragment$fragmentEpisode? episode;
+  bool _playQueueStarted = false;
+
+  late final PlayQueueService playQueueService;
+  late StreamSubscription _playQueueSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    playQueueService = PlayQueueService();
+
+    // Subscribe to the playqueue changed stream
+    _playQueueSubscription = playQueueService
+        .getPlayQueueChangedStream()
+        .listen(_onPlayQueueChanged);
+  }
+
+  @override
+  void dispose() {
+    _playQueueSubscription.cancel();
+    super.dispose();
+  }
+
+  void _onPlayQueueChanged(Fragment$fragmentPlayQueue playQueue) {
+    final episode =
+        PlayQueueService.getCurrentPlayQueueItem(playQueue)?.episode;
+    if (episode == null) return;
+    if (episode.id == widget.episodeId) return;
+    if (episode.$show?.id != widget.showId) return;
+
+    if (!mounted) return; // widget disposed → abort
+
+    AutoRouter.of(context).navigate(
+      ShowEpisodeRoute(
+        playQueueId: playQueue.id,
+        showId: episode.$show!.id,
+        episodeId: episode.id,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +108,12 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                 false, null, BoneMock.name, BoneMock.words(15), context),
           );
         } else {
+          final MediaPlayerHandler _handler = MediaPlayerHandler.instance;
+          if (episode != null && !_playQueueStarted) {
+            _playQueueStarted = true;
+            _handler.startPlayQueue(GraphQLProvider.of(context).value,
+                widget.playQueueId, episode!, widget.serverName);
+          }
           return getContent(
             loadComplete,
             episode,
@@ -75,7 +127,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
     );
   }
 
-  Column getContent(bool loadComplete, Query$episodeById$episodeById? episode,
+  Column getContent(bool loadComplete, Fragment$fragmentEpisode? episode,
       String title, String description, BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       LayoutBuilder(
@@ -96,13 +148,17 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                           decoration: BoxDecoration(color: Colors.grey),
                           child: (imageByType?.id != null)
                               ? CachedNetworkImage(
-                            placeholder: (context, url) => imageByType?.blurHash != null ? BlurHash(
-                                    hash: imageByType!.blurHash!,
-                                    optimizationMode:
-                                        BlurHashOptimizationMode.standard,
-                                    color: Colors.grey,
-                                    duration: Duration.zero,
-                                  ) : Container(),
+                                  placeholder: (context, url) =>
+                                      imageByType?.blurHash != null
+                                          ? BlurHash(
+                                              hash: imageByType!.blurHash!,
+                                              optimizationMode:
+                                                  BlurHashOptimizationMode
+                                                      .standard,
+                                              color: Colors.grey,
+                                              duration: Duration.zero,
+                                            )
+                                          : Container(),
                                   fit: BoxFit.cover,
                                   httpHeaders: LoginManager.getHeaders(
                                       widget.serverName),
@@ -112,11 +168,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                               : Container(),
                         );
                       })
-                    : PlayQueue(
-                        serverName: widget.serverName,
-                        episode: episode,
-                        playQueueId: widget.playQueueId,
-                      )
+                    : IsterPlayer()
                 : Container(),
           );
         },

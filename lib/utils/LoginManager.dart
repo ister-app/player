@@ -58,9 +58,49 @@ class LoginManager {
     }
   }
 
+  static Future<String?> waitForToken(String serverUrl) async {
+    while (true) {
+      print("getting token");
+      final manager = managers[serverUrl];
+
+      if (manager != null &&
+          manager.didInit &&
+          manager.currentUser?.token.accessToken != null) {
+        break; // voorwaarden zijn voldaan → stop de loop
+      }
+
+      await Future.delayed(const Duration(seconds: 5));
+    }
+
+    return getToken(serverUrl);
+  }
+
+  static const String _successfulLoginPage = '''
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="refresh" content="0; url=https://github.com/ister-app">
+    <title>Login successful</title>
+  </head>
+  <body>
+    <p>Login successful. Redirecting to <a href="https://github.com/ister-app">ister-app</a>...</p>
+  </body>
+</html>
+''';
+
   static Future<OidcUser?> startLogin(String serverUrl) async {
     LoggerService().logger.d("Start login for '${managers[serverUrl]?.discoveryDocumentUri}'");
-    return await managers[serverUrl]?.loginAuthorizationCodeFlow();
+    return await managers[serverUrl]?.loginAuthorizationCodeFlow(
+      options: OidcPlatformSpecificOptions(
+        linux: const OidcPlatformSpecificOptions_Native(
+          successfulPageResponse: _successfulLoginPage,
+        ),
+        windows: const OidcPlatformSpecificOptions_Native(
+          successfulPageResponse: _successfulLoginPage,
+        ),
+      ),
+    );
   }
 
   static String? getToken(String serverUrl) {

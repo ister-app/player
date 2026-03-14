@@ -1,3 +1,7 @@
+import 'fragmentEpisode.graphql.dart';
+import 'fragmentImages.graphql.dart';
+import 'fragmentMediafiles.graphql.dart';
+import 'fragmentMetadata.graphql.dart';
 import 'fragmentPlayQueue.graphql.dart';
 import 'package:gql/ast.dart';
 
@@ -312,5 +316,9 @@ const documentNodeMutationcreatePlayQueueForShow = DocumentNode(
       ),
     ),
     fragmentDefinitionfragmentPlayQueue,
+    fragmentDefinitionfragmentEpisode,
+    fragmentDefinitionfragmentMetadata,
+    fragmentDefinitionfragmentImages,
+    fragmentDefinitionfragmentMediaFiles,
   ],
 );

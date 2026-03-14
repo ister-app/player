@@ -1,8 +1,22 @@
 fragment fragmentPlayQueue on PlayQueue {
     id
+    currentItemId
     playQueueItems {
         id
-        itemId
+        episode {
+            ...fragmentEpisode
+        }
+        movie {
+            id
+            metadata {
+                ...fragmentMetadata
+            }
+            images {
+                ...fragmentImages
+            }
+            mediaFile {
+                ...fragmentMediaFiles
+            }
+        }
     }
-    currentItemId
 }

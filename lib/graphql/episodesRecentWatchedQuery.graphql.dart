@@ -426,26 +426,9 @@ const documentNodeQueryepisodesRecentWatchedQuery = DocumentNode(
                   directives: [],
                   selectionSet: SelectionSetNode(
                     selections: [
-                      FieldNode(
-                        name: NameNode(value: 'language'),
-                        alias: null,
-                        arguments: [],
+                      FragmentSpreadNode(
+                        name: NameNode(value: 'fragmentImages'),
                         directives: [],
-                        selectionSet: null,
-                      ),
-                      FieldNode(
-                        name: NameNode(value: 'id'),
-                        alias: null,
-                        arguments: [],
-                        directives: [],
-                        selectionSet: null,
-                      ),
-                      FieldNode(
-                        name: NameNode(value: 'type'),
-                        alias: null,
-                        arguments: [],
-                        directives: [],
-                        selectionSet: null,
                       ),
                       FieldNode(
                         name: NameNode(value: '__typename'),
@@ -545,9 +528,7 @@ class Query$episodesRecentWatchedQuery$episodesRecentWatched {
       images: (l$images as List<dynamic>?)
           ?.map(
             (e) =>
-                Query$episodesRecentWatchedQuery$episodesRecentWatched$images.fromJson(
-                  (e as Map<String, dynamic>),
-                ),
+                Fragment$fragmentImages.fromJson((e as Map<String, dynamic>)),
           )
           .toList(),
       $__typename: (l$$__typename as String),
@@ -572,8 +553,7 @@ class Query$episodesRecentWatchedQuery$episodesRecentWatched {
 
   final List<Fragment$fragmentMetadata>? metadata;
 
-  final List<Query$episodesRecentWatchedQuery$episodesRecentWatched$images>?
-  images;
+  final List<Fragment$fragmentImages>? images;
 
   final String $__typename;
 
@@ -762,7 +742,7 @@ abstract class CopyWith$Query$episodesRecentWatchedQuery$episodesRecentWatched<
     mediaFile,
     int? number,
     List<Fragment$fragmentMetadata>? metadata,
-    List<Query$episodesRecentWatchedQuery$episodesRecentWatched$images>? images,
+    List<Fragment$fragmentImages>? images,
     String? $__typename,
   });
   CopyWith$Query$episodesRecentWatchedQuery$episodesRecentWatched$show<TRes>
@@ -800,13 +780,8 @@ abstract class CopyWith$Query$episodesRecentWatchedQuery$episodesRecentWatched<
     _fn,
   );
   TRes images(
-    Iterable<Query$episodesRecentWatchedQuery$episodesRecentWatched$images>?
-    Function(
-      Iterable<
-        CopyWith$Query$episodesRecentWatchedQuery$episodesRecentWatched$images<
-          Query$episodesRecentWatchedQuery$episodesRecentWatched$images
-        >
-      >?,
+    Iterable<Fragment$fragmentImages>? Function(
+      Iterable<CopyWith$Fragment$fragmentImages<Fragment$fragmentImages>>?,
     )
     _fn,
   );
@@ -866,10 +841,7 @@ class _CopyWithImpl$Query$episodesRecentWatchedQuery$episodesRecentWatched<TRes>
           : (metadata as List<Fragment$fragmentMetadata>?),
       images: images == _undefined
           ? _instance.images
-          : (images
-                as List<
-                  Query$episodesRecentWatchedQuery$episodesRecentWatched$images
-                >?),
+          : (images as List<Fragment$fragmentImages>?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -962,23 +934,14 @@ class _CopyWithImpl$Query$episodesRecentWatchedQuery$episodesRecentWatched<TRes>
   );
 
   TRes images(
-    Iterable<Query$episodesRecentWatchedQuery$episodesRecentWatched$images>?
-    Function(
-      Iterable<
-        CopyWith$Query$episodesRecentWatchedQuery$episodesRecentWatched$images<
-          Query$episodesRecentWatchedQuery$episodesRecentWatched$images
-        >
-      >?,
+    Iterable<Fragment$fragmentImages>? Function(
+      Iterable<CopyWith$Fragment$fragmentImages<Fragment$fragmentImages>>?,
     )
     _fn,
   ) => call(
     images: _fn(
       _instance.images?.map(
-        (e) =>
-            CopyWith$Query$episodesRecentWatchedQuery$episodesRecentWatched$images(
-              e,
-              (i) => i,
-            ),
+        (e) => CopyWith$Fragment$fragmentImages(e, (i) => i),
       ),
     )?.toList(),
   );
@@ -1005,7 +968,7 @@ class _CopyWithStubImpl$Query$episodesRecentWatchedQuery$episodesRecentWatched<
     mediaFile,
     int? number,
     List<Fragment$fragmentMetadata>? metadata,
-    List<Query$episodesRecentWatchedQuery$episodesRecentWatched$images>? images,
+    List<Fragment$fragmentImages>? images,
     String? $__typename,
   }) => _res;
 
@@ -1799,178 +1762,4 @@ class _CopyWithStubImpl$Query$episodesRecentWatchedQuery$episodesRecentWatched$m
   TRes _res;
 
   call({int? durationInMilliseconds, String? $__typename, String? id}) => _res;
-}
-
-class Query$episodesRecentWatchedQuery$episodesRecentWatched$images {
-  Query$episodesRecentWatchedQuery$episodesRecentWatched$images({
-    this.language,
-    required this.id,
-    required this.type,
-    this.$__typename = 'Image',
-  });
-
-  factory Query$episodesRecentWatchedQuery$episodesRecentWatched$images.fromJson(
-    Map<String, dynamic> json,
-  ) {
-    final l$language = json['language'];
-    final l$id = json['id'];
-    final l$type = json['type'];
-    final l$$__typename = json['__typename'];
-    return Query$episodesRecentWatchedQuery$episodesRecentWatched$images(
-      language: (l$language as String?),
-      id: (l$id as String),
-      type: (l$type as String),
-      $__typename: (l$$__typename as String),
-    );
-  }
-
-  final String? language;
-
-  final String id;
-
-  final String type;
-
-  final String $__typename;
-
-  Map<String, dynamic> toJson() {
-    final _resultData = <String, dynamic>{};
-    final l$language = language;
-    _resultData['language'] = l$language;
-    final l$id = id;
-    _resultData['id'] = l$id;
-    final l$type = type;
-    _resultData['type'] = l$type;
-    final l$$__typename = $__typename;
-    _resultData['__typename'] = l$$__typename;
-    return _resultData;
-  }
-
-  @override
-  int get hashCode {
-    final l$language = language;
-    final l$id = id;
-    final l$type = type;
-    final l$$__typename = $__typename;
-    return Object.hashAll([l$language, l$id, l$type, l$$__typename]);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    if (other
-            is! Query$episodesRecentWatchedQuery$episodesRecentWatched$images ||
-        runtimeType != other.runtimeType) {
-      return false;
-    }
-    final l$language = language;
-    final lOther$language = other.language;
-    if (l$language != lOther$language) {
-      return false;
-    }
-    final l$id = id;
-    final lOther$id = other.id;
-    if (l$id != lOther$id) {
-      return false;
-    }
-    final l$type = type;
-    final lOther$type = other.type;
-    if (l$type != lOther$type) {
-      return false;
-    }
-    final l$$__typename = $__typename;
-    final lOther$$__typename = other.$__typename;
-    if (l$$__typename != lOther$$__typename) {
-      return false;
-    }
-    return true;
-  }
-}
-
-extension UtilityExtension$Query$episodesRecentWatchedQuery$episodesRecentWatched$images
-    on Query$episodesRecentWatchedQuery$episodesRecentWatched$images {
-  CopyWith$Query$episodesRecentWatchedQuery$episodesRecentWatched$images<
-    Query$episodesRecentWatchedQuery$episodesRecentWatched$images
-  >
-  get copyWith =>
-      CopyWith$Query$episodesRecentWatchedQuery$episodesRecentWatched$images(
-        this,
-        (i) => i,
-      );
-}
-
-abstract class CopyWith$Query$episodesRecentWatchedQuery$episodesRecentWatched$images<
-  TRes
-> {
-  factory CopyWith$Query$episodesRecentWatchedQuery$episodesRecentWatched$images(
-    Query$episodesRecentWatchedQuery$episodesRecentWatched$images instance,
-    TRes Function(Query$episodesRecentWatchedQuery$episodesRecentWatched$images)
-    then,
-  ) = _CopyWithImpl$Query$episodesRecentWatchedQuery$episodesRecentWatched$images;
-
-  factory CopyWith$Query$episodesRecentWatchedQuery$episodesRecentWatched$images.stub(
-    TRes res,
-  ) = _CopyWithStubImpl$Query$episodesRecentWatchedQuery$episodesRecentWatched$images;
-
-  TRes call({String? language, String? id, String? type, String? $__typename});
-}
-
-class _CopyWithImpl$Query$episodesRecentWatchedQuery$episodesRecentWatched$images<
-  TRes
->
-    implements
-        CopyWith$Query$episodesRecentWatchedQuery$episodesRecentWatched$images<
-          TRes
-        > {
-  _CopyWithImpl$Query$episodesRecentWatchedQuery$episodesRecentWatched$images(
-    this._instance,
-    this._then,
-  );
-
-  final Query$episodesRecentWatchedQuery$episodesRecentWatched$images _instance;
-
-  final TRes Function(
-    Query$episodesRecentWatchedQuery$episodesRecentWatched$images,
-  )
-  _then;
-
-  static const _undefined = <dynamic, dynamic>{};
-
-  TRes call({
-    Object? language = _undefined,
-    Object? id = _undefined,
-    Object? type = _undefined,
-    Object? $__typename = _undefined,
-  }) => _then(
-    Query$episodesRecentWatchedQuery$episodesRecentWatched$images(
-      language: language == _undefined
-          ? _instance.language
-          : (language as String?),
-      id: id == _undefined || id == null ? _instance.id : (id as String),
-      type: type == _undefined || type == null
-          ? _instance.type
-          : (type as String),
-      $__typename: $__typename == _undefined || $__typename == null
-          ? _instance.$__typename
-          : ($__typename as String),
-    ),
-  );
-}
-
-class _CopyWithStubImpl$Query$episodesRecentWatchedQuery$episodesRecentWatched$images<
-  TRes
->
-    implements
-        CopyWith$Query$episodesRecentWatchedQuery$episodesRecentWatched$images<
-          TRes
-        > {
-  _CopyWithStubImpl$Query$episodesRecentWatchedQuery$episodesRecentWatched$images(
-    this._res,
-  );
-
-  TRes _res;
-
-  call({String? language, String? id, String? type, String? $__typename}) =>
-      _res;
 }

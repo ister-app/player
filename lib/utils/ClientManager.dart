@@ -1,9 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/utils/LoginManager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ClientManager {
+  static final ClientManager _instance = ClientManager._internal();
+
+  static ClientManager get instance => _instance;
+
+  ClientManager._internal() {
+    _sharedPreferencesAsync.getString("currentServer").then(
+      (value) {
+        _lastClientUsed = value;
+      },
+    );
+  }
+
+  final SharedPreferencesAsync _sharedPreferencesAsync = SharedPreferencesAsync();
+  String? _lastClientUsed;
   static Map<String, ValueNotifier<GraphQLClient>> clients = {};
+
+  String? get lastClientUsed => _lastClientUsed;
+  set lastClientUsed(String? value) {
+    _lastClientUsed = value;
+    if (value != null) {
+      _sharedPreferencesAsync.setString("currentServer", value);
+    } else {
+      _sharedPreferencesAsync.remove("currentServer");
+    }
+  }
 
   static String getHttpOrHttps(String url) {
     if (url == "localhost:8080") {
@@ -33,7 +58,7 @@ class ClientManager {
 
     final Link link = authLink.concat(httpLink);
     ValueNotifier<GraphQLClient> client = ValueNotifier(
-      GraphQLClient(link: link, cache: GraphQLCache(store: InMemoryStore())),
+      GraphQLClient(link: link, cache: GraphQLCache(store: InMemoryStore()), queryRequestTimeout: Duration(seconds: 30)),
     );
     return client;
   }

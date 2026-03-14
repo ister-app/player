@@ -1,5 +1,6 @@
 fragment fragmentImages on Image {
     type
     id
+    language
     blurHash
 }

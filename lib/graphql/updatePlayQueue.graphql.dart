@@ -1,3 +1,8 @@
+import 'fragmentEpisode.graphql.dart';
+import 'fragmentImages.graphql.dart';
+import 'fragmentMediafiles.graphql.dart';
+import 'fragmentMetadata.graphql.dart';
+import 'fragmentPlayQueue.graphql.dart';
 import 'package:gql/ast.dart';
 
 class Variables$Mutation$updatePlayQueue {
@@ -147,14 +152,14 @@ class Mutation$updatePlayQueue {
     return Mutation$updatePlayQueue(
       updatePlayQueue: l$updatePlayQueue == null
           ? null
-          : Mutation$updatePlayQueue$updatePlayQueue.fromJson(
+          : Fragment$fragmentPlayQueue.fromJson(
               (l$updatePlayQueue as Map<String, dynamic>),
             ),
       $__typename: (l$$__typename as String),
     );
   }
 
-  final Mutation$updatePlayQueue$updatePlayQueue? updatePlayQueue;
+  final Fragment$fragmentPlayQueue? updatePlayQueue;
 
   final String $__typename;
 
@@ -212,11 +217,8 @@ abstract class CopyWith$Mutation$updatePlayQueue<TRes> {
   factory CopyWith$Mutation$updatePlayQueue.stub(TRes res) =
       _CopyWithStubImpl$Mutation$updatePlayQueue;
 
-  TRes call({
-    Mutation$updatePlayQueue$updatePlayQueue? updatePlayQueue,
-    String? $__typename,
-  });
-  CopyWith$Mutation$updatePlayQueue$updatePlayQueue<TRes> get updatePlayQueue;
+  TRes call({Fragment$fragmentPlayQueue? updatePlayQueue, String? $__typename});
+  CopyWith$Fragment$fragmentPlayQueue<TRes> get updatePlayQueue;
 }
 
 class _CopyWithImpl$Mutation$updatePlayQueue<TRes>
@@ -236,20 +238,18 @@ class _CopyWithImpl$Mutation$updatePlayQueue<TRes>
     Mutation$updatePlayQueue(
       updatePlayQueue: updatePlayQueue == _undefined
           ? _instance.updatePlayQueue
-          : (updatePlayQueue as Mutation$updatePlayQueue$updatePlayQueue?),
+          : (updatePlayQueue as Fragment$fragmentPlayQueue?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
     ),
   );
 
-  CopyWith$Mutation$updatePlayQueue$updatePlayQueue<TRes> get updatePlayQueue {
+  CopyWith$Fragment$fragmentPlayQueue<TRes> get updatePlayQueue {
     final local$updatePlayQueue = _instance.updatePlayQueue;
     return local$updatePlayQueue == null
-        ? CopyWith$Mutation$updatePlayQueue$updatePlayQueue.stub(
-            _then(_instance),
-          )
-        : CopyWith$Mutation$updatePlayQueue$updatePlayQueue(
+        ? CopyWith$Fragment$fragmentPlayQueue.stub(_then(_instance))
+        : CopyWith$Fragment$fragmentPlayQueue(
             local$updatePlayQueue,
             (e) => call(updatePlayQueue: e),
           );
@@ -262,13 +262,11 @@ class _CopyWithStubImpl$Mutation$updatePlayQueue<TRes>
 
   TRes _res;
 
-  call({
-    Mutation$updatePlayQueue$updatePlayQueue? updatePlayQueue,
-    String? $__typename,
-  }) => _res;
+  call({Fragment$fragmentPlayQueue? updatePlayQueue, String? $__typename}) =>
+      _res;
 
-  CopyWith$Mutation$updatePlayQueue$updatePlayQueue<TRes> get updatePlayQueue =>
-      CopyWith$Mutation$updatePlayQueue$updatePlayQueue.stub(_res);
+  CopyWith$Fragment$fragmentPlayQueue<TRes> get updatePlayQueue =>
+      CopyWith$Fragment$fragmentPlayQueue.stub(_res);
 }
 
 const documentNodeMutationupdatePlayQueue = DocumentNode(
@@ -323,12 +321,9 @@ const documentNodeMutationupdatePlayQueue = DocumentNode(
             directives: [],
             selectionSet: SelectionSetNode(
               selections: [
-                FieldNode(
-                  name: NameNode(value: 'currentItemId'),
-                  alias: null,
-                  arguments: [],
+                FragmentSpreadNode(
+                  name: NameNode(value: 'fragmentPlayQueue'),
                   directives: [],
-                  selectionSet: null,
                 ),
                 FieldNode(
                   name: NameNode(value: '__typename'),
@@ -350,123 +345,10 @@ const documentNodeMutationupdatePlayQueue = DocumentNode(
         ],
       ),
     ),
+    fragmentDefinitionfragmentPlayQueue,
+    fragmentDefinitionfragmentEpisode,
+    fragmentDefinitionfragmentMetadata,
+    fragmentDefinitionfragmentImages,
+    fragmentDefinitionfragmentMediaFiles,
   ],
 );
-
-class Mutation$updatePlayQueue$updatePlayQueue {
-  Mutation$updatePlayQueue$updatePlayQueue({
-    this.currentItemId,
-    this.$__typename = 'PlayQueue',
-  });
-
-  factory Mutation$updatePlayQueue$updatePlayQueue.fromJson(
-    Map<String, dynamic> json,
-  ) {
-    final l$currentItemId = json['currentItemId'];
-    final l$$__typename = json['__typename'];
-    return Mutation$updatePlayQueue$updatePlayQueue(
-      currentItemId: (l$currentItemId as String?),
-      $__typename: (l$$__typename as String),
-    );
-  }
-
-  final String? currentItemId;
-
-  final String $__typename;
-
-  Map<String, dynamic> toJson() {
-    final _resultData = <String, dynamic>{};
-    final l$currentItemId = currentItemId;
-    _resultData['currentItemId'] = l$currentItemId;
-    final l$$__typename = $__typename;
-    _resultData['__typename'] = l$$__typename;
-    return _resultData;
-  }
-
-  @override
-  int get hashCode {
-    final l$currentItemId = currentItemId;
-    final l$$__typename = $__typename;
-    return Object.hashAll([l$currentItemId, l$$__typename]);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    if (other is! Mutation$updatePlayQueue$updatePlayQueue ||
-        runtimeType != other.runtimeType) {
-      return false;
-    }
-    final l$currentItemId = currentItemId;
-    final lOther$currentItemId = other.currentItemId;
-    if (l$currentItemId != lOther$currentItemId) {
-      return false;
-    }
-    final l$$__typename = $__typename;
-    final lOther$$__typename = other.$__typename;
-    if (l$$__typename != lOther$$__typename) {
-      return false;
-    }
-    return true;
-  }
-}
-
-extension UtilityExtension$Mutation$updatePlayQueue$updatePlayQueue
-    on Mutation$updatePlayQueue$updatePlayQueue {
-  CopyWith$Mutation$updatePlayQueue$updatePlayQueue<
-    Mutation$updatePlayQueue$updatePlayQueue
-  >
-  get copyWith =>
-      CopyWith$Mutation$updatePlayQueue$updatePlayQueue(this, (i) => i);
-}
-
-abstract class CopyWith$Mutation$updatePlayQueue$updatePlayQueue<TRes> {
-  factory CopyWith$Mutation$updatePlayQueue$updatePlayQueue(
-    Mutation$updatePlayQueue$updatePlayQueue instance,
-    TRes Function(Mutation$updatePlayQueue$updatePlayQueue) then,
-  ) = _CopyWithImpl$Mutation$updatePlayQueue$updatePlayQueue;
-
-  factory CopyWith$Mutation$updatePlayQueue$updatePlayQueue.stub(TRes res) =
-      _CopyWithStubImpl$Mutation$updatePlayQueue$updatePlayQueue;
-
-  TRes call({String? currentItemId, String? $__typename});
-}
-
-class _CopyWithImpl$Mutation$updatePlayQueue$updatePlayQueue<TRes>
-    implements CopyWith$Mutation$updatePlayQueue$updatePlayQueue<TRes> {
-  _CopyWithImpl$Mutation$updatePlayQueue$updatePlayQueue(
-    this._instance,
-    this._then,
-  );
-
-  final Mutation$updatePlayQueue$updatePlayQueue _instance;
-
-  final TRes Function(Mutation$updatePlayQueue$updatePlayQueue) _then;
-
-  static const _undefined = <dynamic, dynamic>{};
-
-  TRes call({
-    Object? currentItemId = _undefined,
-    Object? $__typename = _undefined,
-  }) => _then(
-    Mutation$updatePlayQueue$updatePlayQueue(
-      currentItemId: currentItemId == _undefined
-          ? _instance.currentItemId
-          : (currentItemId as String?),
-      $__typename: $__typename == _undefined || $__typename == null
-          ? _instance.$__typename
-          : ($__typename as String),
-    ),
-  );
-}
-
-class _CopyWithStubImpl$Mutation$updatePlayQueue$updatePlayQueue<TRes>
-    implements CopyWith$Mutation$updatePlayQueue$updatePlayQueue<TRes> {
-  _CopyWithStubImpl$Mutation$updatePlayQueue$updatePlayQueue(this._res);
-
-  TRes _res;
-
-  call({String? currentItemId, String? $__typename}) => _res;
-}

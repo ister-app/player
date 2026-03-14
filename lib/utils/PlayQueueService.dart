@@ -18,8 +18,8 @@ class PlayQueueService {
     return _instance;
   }
 
-  final StreamController<DateTime> playQueueChanges =
-      StreamController<DateTime>.broadcast();
+  final StreamController<Fragment$fragmentPlayQueue> playQueueChanges =
+      StreamController<Fragment$fragmentPlayQueue>.broadcast();
 
   Future<Fragment$fragmentPlayQueue?> getOrCreatePlayQueue(
       GraphQLClient graphQLClient,
@@ -43,7 +43,9 @@ class PlayQueueService {
   }
 
   String? getPlayQueueItemId(Fragment$fragmentPlayQueue playQueue, String id) {
-    return playQueue.playQueueItems?.firstWhere((element) => element.itemId == id).id;
+    return playQueue.playQueueItems
+        ?.firstWhere((element) => element.episode?.id == id)
+        .id;
   }
 
   Future<Fragment$fragmentPlayQueue?> _createPlayQueue(
@@ -79,8 +81,11 @@ class PlayQueueService {
     return Query$getPlayQueue.fromJson(result.data!).getPlayQueue;
   }
 
-  Future<void> updateProgress(GraphQLClient graphQLClient, String playQueueId,
-      String playQueueItemId, Duration duration) async {
+  Future<Fragment$fragmentPlayQueue?> updateProgress(
+      GraphQLClient graphQLClient,
+      String playQueueId,
+      String playQueueItemId,
+      Duration duration) async {
     final MutationOptions options = MutationOptions(
         document: documentNodeMutationupdatePlayQueue,
         variables: Map.of({
@@ -92,16 +97,22 @@ class PlayQueueService {
 
     if (result.hasException) {
       LoggerService().logger.e(result.exception);
-      return;
+      return null;
+    } else {
+      return Mutation$updatePlayQueue.fromJson(result.data!).updatePlayQueue;
     }
   }
 
-  void playQueueChanged() {
-    playQueueChanges.sink.add(DateTime.now());
+  void playQueueChanged(Fragment$fragmentPlayQueue item) {
+    playQueueChanges.sink.add(item);
   }
 
-  Stream<DateTime> getPlayQueueChangedStream() {
+  Stream<Fragment$fragmentPlayQueue> getPlayQueueChangedStream() {
     return playQueueChanges.stream;
+  }
+
+  static Fragment$fragmentPlayQueue$playQueueItems? getCurrentPlayQueueItem(Fragment$fragmentPlayQueue? playQueue) {
+    return playQueue?.playQueueItems?.where((element) => element.id == playQueue.currentItemId).firstOrNull;
   }
 
   void dispose() {

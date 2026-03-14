@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/showById.graphql.dart';
+import 'package:player/utils/ImageTypes.dart';
+import 'package:player/utils/ImageUtil.dart';
+import 'package:player/utils/MetadataUtil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../utils/ClientManager.dart';
-import '../utils/ImageTypes.dart';
-import '../utils/ImageUtil.dart';
 import '../utils/LoginManager.dart';
-import '../utils/MetadataUtil.dart';
 
 @RoutePage()
 class ShowOverviewContentPage extends StatelessWidget {
@@ -39,7 +39,7 @@ class ShowOverviewContentPage extends StatelessWidget {
         } else if (result.data == null && result.isLoading) {
           body = Skeletonizer(
               enabled: true,
-              child: getContent(
+              child: _buildContent(
                   null, null, BoneMock.name, BoneMock.words(15), context));
           // Skeletonizer(enabled: true, child: Text(BoneMock.name));
         } else {
@@ -52,7 +52,7 @@ class ShowOverviewContentPage extends StatelessWidget {
           } else {
             var imageByType =
                 ImageUtil.getImageByType(show.images, ImageTypes.background);
-            body = getContent(
+            body = _buildContent(
                 imageByType?.id,
                 imageByType?.blurHash,
                 MetadataUtil.getTitle(show.metadata) ?? "",
@@ -66,7 +66,7 @@ class ShowOverviewContentPage extends StatelessWidget {
     );
   }
 
-  SingleChildScrollView getContent(String? imageUrl, String? blurHash,
+  SingleChildScrollView _buildContent(String? imageUrl, String? blurHash,
       String title, String description, BuildContext context) {
     return SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

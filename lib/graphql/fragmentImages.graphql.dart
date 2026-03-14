@@ -4,6 +4,7 @@ class Fragment$fragmentImages {
   Fragment$fragmentImages({
     required this.type,
     required this.id,
+    this.language,
     this.blurHash,
     this.$__typename = 'Image',
   });
@@ -11,11 +12,13 @@ class Fragment$fragmentImages {
   factory Fragment$fragmentImages.fromJson(Map<String, dynamic> json) {
     final l$type = json['type'];
     final l$id = json['id'];
+    final l$language = json['language'];
     final l$blurHash = json['blurHash'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentImages(
       type: (l$type as String),
       id: (l$id as String),
+      language: (l$language as String?),
       blurHash: (l$blurHash as String?),
       $__typename: (l$$__typename as String),
     );
@@ -24,6 +27,8 @@ class Fragment$fragmentImages {
   final String type;
 
   final String id;
+
+  final String? language;
 
   final String? blurHash;
 
@@ -35,6 +40,8 @@ class Fragment$fragmentImages {
     _resultData['type'] = l$type;
     final l$id = id;
     _resultData['id'] = l$id;
+    final l$language = language;
+    _resultData['language'] = l$language;
     final l$blurHash = blurHash;
     _resultData['blurHash'] = l$blurHash;
     final l$$__typename = $__typename;
@@ -46,9 +53,16 @@ class Fragment$fragmentImages {
   int get hashCode {
     final l$type = type;
     final l$id = id;
+    final l$language = language;
     final l$blurHash = blurHash;
     final l$$__typename = $__typename;
-    return Object.hashAll([l$type, l$id, l$blurHash, l$$__typename]);
+    return Object.hashAll([
+      l$type,
+      l$id,
+      l$language,
+      l$blurHash,
+      l$$__typename,
+    ]);
   }
 
   @override
@@ -67,6 +81,11 @@ class Fragment$fragmentImages {
     final l$id = id;
     final lOther$id = other.id;
     if (l$id != lOther$id) {
+      return false;
+    }
+    final l$language = language;
+    final lOther$language = other.language;
+    if (l$language != lOther$language) {
       return false;
     }
     final l$blurHash = blurHash;
@@ -97,7 +116,13 @@ abstract class CopyWith$Fragment$fragmentImages<TRes> {
   factory CopyWith$Fragment$fragmentImages.stub(TRes res) =
       _CopyWithStubImpl$Fragment$fragmentImages;
 
-  TRes call({String? type, String? id, String? blurHash, String? $__typename});
+  TRes call({
+    String? type,
+    String? id,
+    String? language,
+    String? blurHash,
+    String? $__typename,
+  });
 }
 
 class _CopyWithImpl$Fragment$fragmentImages<TRes>
@@ -113,6 +138,7 @@ class _CopyWithImpl$Fragment$fragmentImages<TRes>
   TRes call({
     Object? type = _undefined,
     Object? id = _undefined,
+    Object? language = _undefined,
     Object? blurHash = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
@@ -121,6 +147,9 @@ class _CopyWithImpl$Fragment$fragmentImages<TRes>
           ? _instance.type
           : (type as String),
       id: id == _undefined || id == null ? _instance.id : (id as String),
+      language: language == _undefined
+          ? _instance.language
+          : (language as String?),
       blurHash: blurHash == _undefined
           ? _instance.blurHash
           : (blurHash as String?),
@@ -137,8 +166,13 @@ class _CopyWithStubImpl$Fragment$fragmentImages<TRes>
 
   TRes _res;
 
-  call({String? type, String? id, String? blurHash, String? $__typename}) =>
-      _res;
+  call({
+    String? type,
+    String? id,
+    String? language,
+    String? blurHash,
+    String? $__typename,
+  }) => _res;
 }
 
 const fragmentDefinitionfragmentImages = FragmentDefinitionNode(
@@ -158,6 +192,13 @@ const fragmentDefinitionfragmentImages = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'id'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'language'),
         alias: null,
         arguments: [],
         directives: [],

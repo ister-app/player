@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/components/TvShowSlide.dart';
 import 'package:player/graphql/scanLibrary.graphql.dart';
+import 'package:player/routes/AppRouter.gr.dart';
+import 'package:player/utils/ClientManager.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/RecentCarouselView.dart';
 import '../graphql/analyzeLibrary.graphql.dart';
@@ -98,6 +101,15 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                   child: ListTile(
                     leading: const Icon(Icons.loop),
                     title: Text(AppLocalizations.of(context)!.analyzeLibrary),
+                  )),
+              MenuItemButton(
+                  onPressed: () {
+                    ClientManager.instance.lastClientUsed = null;
+                    AutoRouter.of(context).replace(HomeRoute());
+                  },
+                  child: ListTile(
+                    leading: const Icon(Icons.logout),
+                    title: Text("Switch server"),
                   )),
             ],
             builder: (_, MenuController controller, Widget? child) {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:oidc/oidc.dart';
 import 'package:player/graphql/getServerInfo.graphql.dart';
+import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
 
 import '../utils/LoginManager.dart';
@@ -37,6 +38,8 @@ class _ServerHomePageState extends State<ServerHomePage> {
                 {VoidCallback? refetch, FetchMore? fetchMore}) {
               Widget body;
               if (result.hasException) {
+                ClientManager.instance.lastClientUsed = null;
+                AutoRouter.of(context).replace(HomeRoute());
                 body = Text(result.exception.toString());
               } else if (result.isLoading) {
                 body = Text('Loading');
