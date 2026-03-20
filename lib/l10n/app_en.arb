@@ -94,5 +94,6 @@
   "json": "JSON",
   "rawData": "Raw data",
   "nodes": "Nodes",
-  "server": "Server"
+  "server": "Server",
+  "languageSettings": "Language settings"
 }

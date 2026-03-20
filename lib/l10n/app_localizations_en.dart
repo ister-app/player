@@ -98,4 +98,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get server => 'Server';
+
+  @override
+  String get languageSettings => 'Language settings';
 }

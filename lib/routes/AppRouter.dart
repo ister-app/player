@@ -18,6 +18,8 @@ class AppRouter extends RootStackRouter {
                 AutoRoute(path: 'settings', page: ServerSettingsRoute.page),
                 ]
           ), // Overview with newly added items and resume watching view
+          AutoRoute(path: 'settings/languages', page: ServerSettingsLanguageRoute.page),
+          AutoRoute(path: 'settings/cluster', page: ServerSettingsClusterRoute.page),
           AutoRoute(path: 'shows/:showId', page: ShowOverviewRoute.page,
             children: [
               AutoRoute(path: 'overview', page: ShowOverviewContentRoute.page, initial: true),
