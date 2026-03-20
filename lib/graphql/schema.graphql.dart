@@ -97,6 +97,39 @@ Enum$LibraryType fromJson$Enum$LibraryType(String value) {
   }
 }
 
+enum Enum$MediaType {
+  MOVIE,
+  EPISODE,
+  $unknown;
+
+  factory Enum$MediaType.fromJson(String value) =>
+      fromJson$Enum$MediaType(value);
+
+  String toJson() => toJson$Enum$MediaType(this);
+}
+
+String toJson$Enum$MediaType(Enum$MediaType e) {
+  switch (e) {
+    case Enum$MediaType.MOVIE:
+      return r'MOVIE';
+    case Enum$MediaType.EPISODE:
+      return r'EPISODE';
+    case Enum$MediaType.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$MediaType fromJson$Enum$MediaType(String value) {
+  switch (value) {
+    case r'MOVIE':
+      return Enum$MediaType.MOVIE;
+    case r'EPISODE':
+      return Enum$MediaType.EPISODE;
+    default:
+      return Enum$MediaType.$unknown;
+  }
+}
+
 enum Enum$DirectoryType {
   LIBRARY,
   CACHE,

@@ -2,6 +2,7 @@ import 'fragmentEpisode.graphql.dart';
 import 'fragmentImages.graphql.dart';
 import 'fragmentMediafiles.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
+import 'fragmentMovie.graphql.dart';
 import 'fragmentPlayQueue.graphql.dart';
 import 'package:gql/ast.dart';
 
@@ -275,5 +276,6 @@ const documentNodeQuerygetPlayQueue = DocumentNode(
     fragmentDefinitionfragmentMetadata,
     fragmentDefinitionfragmentImages,
     fragmentDefinitionfragmentMediaFiles,
+    fragmentDefinitionfragmentMovie,
   ],
 );

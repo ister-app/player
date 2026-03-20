@@ -3,14 +3,14 @@ import 'fragmentMetadata.graphql.dart';
 import 'package:gql/ast.dart';
 import 'schema.graphql.dart';
 
-class Variables$Query$shows {
-  factory Variables$Query$shows({
+class Variables$Query$movies {
+  factory Variables$Query$movies({
     int? page,
     int? size,
     Enum$SortingEnum? sorting,
     Enum$SortingOrder? sortingOrder,
     String? libraryId,
-  }) => Variables$Query$shows._({
+  }) => Variables$Query$movies._({
     if (page != null) r'page': page,
     if (size != null) r'size': size,
     if (sorting != null) r'sorting': sorting,
@@ -18,9 +18,9 @@ class Variables$Query$shows {
     if (libraryId != null) r'libraryId': libraryId,
   });
 
-  Variables$Query$shows._(this._$data);
+  Variables$Query$movies._(this._$data);
 
-  factory Variables$Query$shows.fromJson(Map<String, dynamic> data) {
+  factory Variables$Query$movies.fromJson(Map<String, dynamic> data) {
     final result$data = <String, dynamic>{};
     if (data.containsKey('page')) {
       final l$page = data['page'];
@@ -46,7 +46,7 @@ class Variables$Query$shows {
       final l$libraryId = data['libraryId'];
       result$data['libraryId'] = (l$libraryId as String?);
     }
-    return Variables$Query$shows._(result$data);
+    return Variables$Query$movies._(result$data);
   }
 
   Map<String, dynamic> _$data;
@@ -91,15 +91,15 @@ class Variables$Query$shows {
     return result$data;
   }
 
-  CopyWith$Variables$Query$shows<Variables$Query$shows> get copyWith =>
-      CopyWith$Variables$Query$shows(this, (i) => i);
+  CopyWith$Variables$Query$movies<Variables$Query$movies> get copyWith =>
+      CopyWith$Variables$Query$movies(this, (i) => i);
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! Variables$Query$shows || runtimeType != other.runtimeType) {
+    if (other is! Variables$Query$movies || runtimeType != other.runtimeType) {
       return false;
     }
     final l$page = page;
@@ -164,14 +164,14 @@ class Variables$Query$shows {
   }
 }
 
-abstract class CopyWith$Variables$Query$shows<TRes> {
-  factory CopyWith$Variables$Query$shows(
-    Variables$Query$shows instance,
-    TRes Function(Variables$Query$shows) then,
-  ) = _CopyWithImpl$Variables$Query$shows;
+abstract class CopyWith$Variables$Query$movies<TRes> {
+  factory CopyWith$Variables$Query$movies(
+    Variables$Query$movies instance,
+    TRes Function(Variables$Query$movies) then,
+  ) = _CopyWithImpl$Variables$Query$movies;
 
-  factory CopyWith$Variables$Query$shows.stub(TRes res) =
-      _CopyWithStubImpl$Variables$Query$shows;
+  factory CopyWith$Variables$Query$movies.stub(TRes res) =
+      _CopyWithStubImpl$Variables$Query$movies;
 
   TRes call({
     int? page,
@@ -182,13 +182,13 @@ abstract class CopyWith$Variables$Query$shows<TRes> {
   });
 }
 
-class _CopyWithImpl$Variables$Query$shows<TRes>
-    implements CopyWith$Variables$Query$shows<TRes> {
-  _CopyWithImpl$Variables$Query$shows(this._instance, this._then);
+class _CopyWithImpl$Variables$Query$movies<TRes>
+    implements CopyWith$Variables$Query$movies<TRes> {
+  _CopyWithImpl$Variables$Query$movies(this._instance, this._then);
 
-  final Variables$Query$shows _instance;
+  final Variables$Query$movies _instance;
 
-  final TRes Function(Variables$Query$shows) _then;
+  final TRes Function(Variables$Query$movies) _then;
 
   static const _undefined = <dynamic, dynamic>{};
 
@@ -199,7 +199,7 @@ class _CopyWithImpl$Variables$Query$shows<TRes>
     Object? sortingOrder = _undefined,
     Object? libraryId = _undefined,
   }) => _then(
-    Variables$Query$shows._({
+    Variables$Query$movies._({
       ..._instance._$data,
       if (page != _undefined) 'page': (page as int?),
       if (size != _undefined) 'size': (size as int?),
@@ -211,9 +211,9 @@ class _CopyWithImpl$Variables$Query$shows<TRes>
   );
 }
 
-class _CopyWithStubImpl$Variables$Query$shows<TRes>
-    implements CopyWith$Variables$Query$shows<TRes> {
-  _CopyWithStubImpl$Variables$Query$shows(this._res);
+class _CopyWithStubImpl$Variables$Query$movies<TRes>
+    implements CopyWith$Variables$Query$movies<TRes> {
+  _CopyWithStubImpl$Variables$Query$movies(this._res);
 
   TRes _res;
 
@@ -226,28 +226,28 @@ class _CopyWithStubImpl$Variables$Query$shows<TRes>
   }) => _res;
 }
 
-class Query$shows {
-  Query$shows({this.shows, this.$__typename = 'Query'});
+class Query$movies {
+  Query$movies({this.movies, this.$__typename = 'Query'});
 
-  factory Query$shows.fromJson(Map<String, dynamic> json) {
-    final l$shows = json['shows'];
+  factory Query$movies.fromJson(Map<String, dynamic> json) {
+    final l$movies = json['movies'];
     final l$$__typename = json['__typename'];
-    return Query$shows(
-      shows: l$shows == null
+    return Query$movies(
+      movies: l$movies == null
           ? null
-          : Query$shows$shows.fromJson((l$shows as Map<String, dynamic>)),
+          : Query$movies$movies.fromJson((l$movies as Map<String, dynamic>)),
       $__typename: (l$$__typename as String),
     );
   }
 
-  final Query$shows$shows? shows;
+  final Query$movies$movies? movies;
 
   final String $__typename;
 
   Map<String, dynamic> toJson() {
     final _resultData = <String, dynamic>{};
-    final l$shows = shows;
-    _resultData['shows'] = l$shows?.toJson();
+    final l$movies = movies;
+    _resultData['movies'] = l$movies?.toJson();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -255,9 +255,9 @@ class Query$shows {
 
   @override
   int get hashCode {
-    final l$shows = shows;
+    final l$movies = movies;
     final l$$__typename = $__typename;
-    return Object.hashAll([l$shows, l$$__typename]);
+    return Object.hashAll([l$movies, l$$__typename]);
   }
 
   @override
@@ -265,12 +265,12 @@ class Query$shows {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! Query$shows || runtimeType != other.runtimeType) {
+    if (other is! Query$movies || runtimeType != other.runtimeType) {
       return false;
     }
-    final l$shows = shows;
-    final lOther$shows = other.shows;
-    if (l$shows != lOther$shows) {
+    final l$movies = movies;
+    final lOther$movies = other.movies;
+    if (l$movies != lOther$movies) {
       return false;
     }
     final l$$__typename = $__typename;
@@ -282,69 +282,69 @@ class Query$shows {
   }
 }
 
-extension UtilityExtension$Query$shows on Query$shows {
-  CopyWith$Query$shows<Query$shows> get copyWith =>
-      CopyWith$Query$shows(this, (i) => i);
+extension UtilityExtension$Query$movies on Query$movies {
+  CopyWith$Query$movies<Query$movies> get copyWith =>
+      CopyWith$Query$movies(this, (i) => i);
 }
 
-abstract class CopyWith$Query$shows<TRes> {
-  factory CopyWith$Query$shows(
-    Query$shows instance,
-    TRes Function(Query$shows) then,
-  ) = _CopyWithImpl$Query$shows;
+abstract class CopyWith$Query$movies<TRes> {
+  factory CopyWith$Query$movies(
+    Query$movies instance,
+    TRes Function(Query$movies) then,
+  ) = _CopyWithImpl$Query$movies;
 
-  factory CopyWith$Query$shows.stub(TRes res) = _CopyWithStubImpl$Query$shows;
+  factory CopyWith$Query$movies.stub(TRes res) = _CopyWithStubImpl$Query$movies;
 
-  TRes call({Query$shows$shows? shows, String? $__typename});
-  CopyWith$Query$shows$shows<TRes> get shows;
+  TRes call({Query$movies$movies? movies, String? $__typename});
+  CopyWith$Query$movies$movies<TRes> get movies;
 }
 
-class _CopyWithImpl$Query$shows<TRes> implements CopyWith$Query$shows<TRes> {
-  _CopyWithImpl$Query$shows(this._instance, this._then);
+class _CopyWithImpl$Query$movies<TRes> implements CopyWith$Query$movies<TRes> {
+  _CopyWithImpl$Query$movies(this._instance, this._then);
 
-  final Query$shows _instance;
+  final Query$movies _instance;
 
-  final TRes Function(Query$shows) _then;
+  final TRes Function(Query$movies) _then;
 
   static const _undefined = <dynamic, dynamic>{};
 
-  TRes call({Object? shows = _undefined, Object? $__typename = _undefined}) =>
+  TRes call({Object? movies = _undefined, Object? $__typename = _undefined}) =>
       _then(
-        Query$shows(
-          shows: shows == _undefined
-              ? _instance.shows
-              : (shows as Query$shows$shows?),
+        Query$movies(
+          movies: movies == _undefined
+              ? _instance.movies
+              : (movies as Query$movies$movies?),
           $__typename: $__typename == _undefined || $__typename == null
               ? _instance.$__typename
               : ($__typename as String),
         ),
       );
 
-  CopyWith$Query$shows$shows<TRes> get shows {
-    final local$shows = _instance.shows;
-    return local$shows == null
-        ? CopyWith$Query$shows$shows.stub(_then(_instance))
-        : CopyWith$Query$shows$shows(local$shows, (e) => call(shows: e));
+  CopyWith$Query$movies$movies<TRes> get movies {
+    final local$movies = _instance.movies;
+    return local$movies == null
+        ? CopyWith$Query$movies$movies.stub(_then(_instance))
+        : CopyWith$Query$movies$movies(local$movies, (e) => call(movies: e));
   }
 }
 
-class _CopyWithStubImpl$Query$shows<TRes>
-    implements CopyWith$Query$shows<TRes> {
-  _CopyWithStubImpl$Query$shows(this._res);
+class _CopyWithStubImpl$Query$movies<TRes>
+    implements CopyWith$Query$movies<TRes> {
+  _CopyWithStubImpl$Query$movies(this._res);
 
   TRes _res;
 
-  call({Query$shows$shows? shows, String? $__typename}) => _res;
+  call({Query$movies$movies? movies, String? $__typename}) => _res;
 
-  CopyWith$Query$shows$shows<TRes> get shows =>
-      CopyWith$Query$shows$shows.stub(_res);
+  CopyWith$Query$movies$movies<TRes> get movies =>
+      CopyWith$Query$movies$movies.stub(_res);
 }
 
-const documentNodeQueryshows = DocumentNode(
+const documentNodeQuerymovies = DocumentNode(
   definitions: [
     OperationDefinitionNode(
       type: OperationType.query,
-      name: NameNode(value: 'shows'),
+      name: NameNode(value: 'movies'),
       variableDefinitions: [
         VariableDefinitionNode(
           variable: VariableNode(name: NameNode(value: 'page')),
@@ -387,7 +387,7 @@ const documentNodeQueryshows = DocumentNode(
       selectionSet: SelectionSetNode(
         selections: [
           FieldNode(
-            name: NameNode(value: 'shows'),
+            name: NameNode(value: 'movies'),
             alias: null,
             arguments: [
               ArgumentNode(
@@ -457,14 +457,14 @@ const documentNodeQueryshows = DocumentNode(
                         selectionSet: null,
                       ),
                       FieldNode(
-                        name: NameNode(value: 'releaseYear'),
+                        name: NameNode(value: 'name'),
                         alias: null,
                         arguments: [],
                         directives: [],
                         selectionSet: null,
                       ),
                       FieldNode(
-                        name: NameNode(value: 'name'),
+                        name: NameNode(value: 'releaseYear'),
                         alias: null,
                         arguments: [],
                         directives: [],
@@ -480,30 +480,6 @@ const documentNodeQueryshows = DocumentNode(
                             FragmentSpreadNode(
                               name: NameNode(value: 'fragmentImages'),
                               directives: [],
-                            ),
-                            FieldNode(
-                              name: NameNode(value: '__typename'),
-                              alias: null,
-                              arguments: [],
-                              directives: [],
-                              selectionSet: null,
-                            ),
-                          ],
-                        ),
-                      ),
-                      FieldNode(
-                        name: NameNode(value: 'episodes'),
-                        alias: null,
-                        arguments: [],
-                        directives: [],
-                        selectionSet: SelectionSetNode(
-                          selections: [
-                            FieldNode(
-                              name: NameNode(value: 'number'),
-                              alias: null,
-                              arguments: [],
-                              directives: [],
-                              selectionSet: null,
                             ),
                             FieldNode(
                               name: NameNode(value: '__typename'),
@@ -571,32 +547,33 @@ const documentNodeQueryshows = DocumentNode(
   ],
 );
 
-class Query$shows$shows {
-  Query$shows$shows({
+class Query$movies$movies {
+  Query$movies$movies({
     required this.number,
     required this.size,
     required this.totalElements,
     required this.totalPages,
     required this.content,
-    this.$__typename = 'ShowPage',
+    this.$__typename = 'MoviePage',
   });
 
-  factory Query$shows$shows.fromJson(Map<String, dynamic> json) {
+  factory Query$movies$movies.fromJson(Map<String, dynamic> json) {
     final l$number = json['number'];
     final l$size = json['size'];
     final l$totalElements = json['totalElements'];
     final l$totalPages = json['totalPages'];
     final l$content = json['content'];
     final l$$__typename = json['__typename'];
-    return Query$shows$shows(
+    return Query$movies$movies(
       number: (l$number as int),
       size: (l$size as int),
       totalElements: (l$totalElements as int),
       totalPages: (l$totalPages as int),
       content: (l$content as List<dynamic>)
           .map(
-            (e) =>
-                Query$shows$shows$content.fromJson((e as Map<String, dynamic>)),
+            (e) => Query$movies$movies$content.fromJson(
+              (e as Map<String, dynamic>),
+            ),
           )
           .toList(),
       $__typename: (l$$__typename as String),
@@ -611,7 +588,7 @@ class Query$shows$shows {
 
   final int totalPages;
 
-  final List<Query$shows$shows$content> content;
+  final List<Query$movies$movies$content> content;
 
   final String $__typename;
 
@@ -655,7 +632,7 @@ class Query$shows$shows {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! Query$shows$shows || runtimeType != other.runtimeType) {
+    if (other is! Query$movies$movies || runtimeType != other.runtimeType) {
       return false;
     }
     final l$number = number;
@@ -699,43 +676,45 @@ class Query$shows$shows {
   }
 }
 
-extension UtilityExtension$Query$shows$shows on Query$shows$shows {
-  CopyWith$Query$shows$shows<Query$shows$shows> get copyWith =>
-      CopyWith$Query$shows$shows(this, (i) => i);
+extension UtilityExtension$Query$movies$movies on Query$movies$movies {
+  CopyWith$Query$movies$movies<Query$movies$movies> get copyWith =>
+      CopyWith$Query$movies$movies(this, (i) => i);
 }
 
-abstract class CopyWith$Query$shows$shows<TRes> {
-  factory CopyWith$Query$shows$shows(
-    Query$shows$shows instance,
-    TRes Function(Query$shows$shows) then,
-  ) = _CopyWithImpl$Query$shows$shows;
+abstract class CopyWith$Query$movies$movies<TRes> {
+  factory CopyWith$Query$movies$movies(
+    Query$movies$movies instance,
+    TRes Function(Query$movies$movies) then,
+  ) = _CopyWithImpl$Query$movies$movies;
 
-  factory CopyWith$Query$shows$shows.stub(TRes res) =
-      _CopyWithStubImpl$Query$shows$shows;
+  factory CopyWith$Query$movies$movies.stub(TRes res) =
+      _CopyWithStubImpl$Query$movies$movies;
 
   TRes call({
     int? number,
     int? size,
     int? totalElements,
     int? totalPages,
-    List<Query$shows$shows$content>? content,
+    List<Query$movies$movies$content>? content,
     String? $__typename,
   });
   TRes content(
-    Iterable<Query$shows$shows$content> Function(
-      Iterable<CopyWith$Query$shows$shows$content<Query$shows$shows$content>>,
+    Iterable<Query$movies$movies$content> Function(
+      Iterable<
+        CopyWith$Query$movies$movies$content<Query$movies$movies$content>
+      >,
     )
     _fn,
   );
 }
 
-class _CopyWithImpl$Query$shows$shows<TRes>
-    implements CopyWith$Query$shows$shows<TRes> {
-  _CopyWithImpl$Query$shows$shows(this._instance, this._then);
+class _CopyWithImpl$Query$movies$movies<TRes>
+    implements CopyWith$Query$movies$movies<TRes> {
+  _CopyWithImpl$Query$movies$movies(this._instance, this._then);
 
-  final Query$shows$shows _instance;
+  final Query$movies$movies _instance;
 
-  final TRes Function(Query$shows$shows) _then;
+  final TRes Function(Query$movies$movies) _then;
 
   static const _undefined = <dynamic, dynamic>{};
 
@@ -747,7 +726,7 @@ class _CopyWithImpl$Query$shows$shows<TRes>
     Object? content = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
-    Query$shows$shows(
+    Query$movies$movies(
       number: number == _undefined || number == null
           ? _instance.number
           : (number as int),
@@ -760,7 +739,7 @@ class _CopyWithImpl$Query$shows$shows<TRes>
           : (totalPages as int),
       content: content == _undefined || content == null
           ? _instance.content
-          : (content as List<Query$shows$shows$content>),
+          : (content as List<Query$movies$movies$content>),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -768,22 +747,24 @@ class _CopyWithImpl$Query$shows$shows<TRes>
   );
 
   TRes content(
-    Iterable<Query$shows$shows$content> Function(
-      Iterable<CopyWith$Query$shows$shows$content<Query$shows$shows$content>>,
+    Iterable<Query$movies$movies$content> Function(
+      Iterable<
+        CopyWith$Query$movies$movies$content<Query$movies$movies$content>
+      >,
     )
     _fn,
   ) => call(
     content: _fn(
       _instance.content.map(
-        (e) => CopyWith$Query$shows$shows$content(e, (i) => i),
+        (e) => CopyWith$Query$movies$movies$content(e, (i) => i),
       ),
     ).toList(),
   );
 }
 
-class _CopyWithStubImpl$Query$shows$shows<TRes>
-    implements CopyWith$Query$shows$shows<TRes> {
-  _CopyWithStubImpl$Query$shows$shows(this._res);
+class _CopyWithStubImpl$Query$movies$movies<TRes>
+    implements CopyWith$Query$movies$movies<TRes> {
+  _CopyWithStubImpl$Query$movies$movies(this._res);
 
   TRes _res;
 
@@ -792,47 +773,38 @@ class _CopyWithStubImpl$Query$shows$shows<TRes>
     int? size,
     int? totalElements,
     int? totalPages,
-    List<Query$shows$shows$content>? content,
+    List<Query$movies$movies$content>? content,
     String? $__typename,
   }) => _res;
 
   content(_fn) => _res;
 }
 
-class Query$shows$shows$content {
-  Query$shows$shows$content({
+class Query$movies$movies$content {
+  Query$movies$movies$content({
     required this.id,
-    required this.releaseYear,
     required this.name,
+    required this.releaseYear,
     this.images,
-    this.episodes,
     this.metadata,
-    this.$__typename = 'Show',
+    this.$__typename = 'Movie',
   });
 
-  factory Query$shows$shows$content.fromJson(Map<String, dynamic> json) {
+  factory Query$movies$movies$content.fromJson(Map<String, dynamic> json) {
     final l$id = json['id'];
-    final l$releaseYear = json['releaseYear'];
     final l$name = json['name'];
+    final l$releaseYear = json['releaseYear'];
     final l$images = json['images'];
-    final l$episodes = json['episodes'];
     final l$metadata = json['metadata'];
     final l$$__typename = json['__typename'];
-    return Query$shows$shows$content(
+    return Query$movies$movies$content(
       id: (l$id as String),
-      releaseYear: (l$releaseYear as int),
       name: (l$name as String),
+      releaseYear: (l$releaseYear as int),
       images: (l$images as List<dynamic>?)
           ?.map(
             (e) =>
                 Fragment$fragmentImages.fromJson((e as Map<String, dynamic>)),
-          )
-          .toList(),
-      episodes: (l$episodes as List<dynamic>?)
-          ?.map(
-            (e) => Query$shows$shows$content$episodes.fromJson(
-              (e as Map<String, dynamic>),
-            ),
           )
           .toList(),
       metadata: (l$metadata as List<dynamic>?)
@@ -847,13 +819,11 @@ class Query$shows$shows$content {
 
   final String id;
 
-  final int releaseYear;
-
   final String name;
 
-  final List<Fragment$fragmentImages>? images;
+  final int releaseYear;
 
-  final List<Query$shows$shows$content$episodes>? episodes;
+  final List<Fragment$fragmentImages>? images;
 
   final List<Fragment$fragmentMetadata>? metadata;
 
@@ -863,14 +833,12 @@ class Query$shows$shows$content {
     final _resultData = <String, dynamic>{};
     final l$id = id;
     _resultData['id'] = l$id;
-    final l$releaseYear = releaseYear;
-    _resultData['releaseYear'] = l$releaseYear;
     final l$name = name;
     _resultData['name'] = l$name;
+    final l$releaseYear = releaseYear;
+    _resultData['releaseYear'] = l$releaseYear;
     final l$images = images;
     _resultData['images'] = l$images?.map((e) => e.toJson()).toList();
-    final l$episodes = episodes;
-    _resultData['episodes'] = l$episodes?.map((e) => e.toJson()).toList();
     final l$metadata = metadata;
     _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
     final l$$__typename = $__typename;
@@ -881,18 +849,16 @@ class Query$shows$shows$content {
   @override
   int get hashCode {
     final l$id = id;
-    final l$releaseYear = releaseYear;
     final l$name = name;
+    final l$releaseYear = releaseYear;
     final l$images = images;
-    final l$episodes = episodes;
     final l$metadata = metadata;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
-      l$releaseYear,
       l$name,
+      l$releaseYear,
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
-      l$episodes == null ? null : Object.hashAll(l$episodes.map((v) => v)),
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$$__typename,
     ]);
@@ -903,7 +869,7 @@ class Query$shows$shows$content {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! Query$shows$shows$content ||
+    if (other is! Query$movies$movies$content ||
         runtimeType != other.runtimeType) {
       return false;
     }
@@ -912,14 +878,14 @@ class Query$shows$shows$content {
     if (l$id != lOther$id) {
       return false;
     }
-    final l$releaseYear = releaseYear;
-    final lOther$releaseYear = other.releaseYear;
-    if (l$releaseYear != lOther$releaseYear) {
-      return false;
-    }
     final l$name = name;
     final lOther$name = other.name;
     if (l$name != lOther$name) {
+      return false;
+    }
+    final l$releaseYear = releaseYear;
+    final lOther$releaseYear = other.releaseYear;
+    if (l$releaseYear != lOther$releaseYear) {
       return false;
     }
     final l$images = images;
@@ -936,22 +902,6 @@ class Query$shows$shows$content {
         }
       }
     } else if (l$images != lOther$images) {
-      return false;
-    }
-    final l$episodes = episodes;
-    final lOther$episodes = other.episodes;
-    if (l$episodes != null && lOther$episodes != null) {
-      if (l$episodes.length != lOther$episodes.length) {
-        return false;
-      }
-      for (int i = 0; i < l$episodes.length; i++) {
-        final l$episodes$entry = l$episodes[i];
-        final lOther$episodes$entry = lOther$episodes[i];
-        if (l$episodes$entry != lOther$episodes$entry) {
-          return false;
-        }
-      }
-    } else if (l$episodes != lOther$episodes) {
       return false;
     }
     final l$metadata = metadata;
@@ -979,43 +929,32 @@ class Query$shows$shows$content {
   }
 }
 
-extension UtilityExtension$Query$shows$shows$content
-    on Query$shows$shows$content {
-  CopyWith$Query$shows$shows$content<Query$shows$shows$content> get copyWith =>
-      CopyWith$Query$shows$shows$content(this, (i) => i);
+extension UtilityExtension$Query$movies$movies$content
+    on Query$movies$movies$content {
+  CopyWith$Query$movies$movies$content<Query$movies$movies$content>
+  get copyWith => CopyWith$Query$movies$movies$content(this, (i) => i);
 }
 
-abstract class CopyWith$Query$shows$shows$content<TRes> {
-  factory CopyWith$Query$shows$shows$content(
-    Query$shows$shows$content instance,
-    TRes Function(Query$shows$shows$content) then,
-  ) = _CopyWithImpl$Query$shows$shows$content;
+abstract class CopyWith$Query$movies$movies$content<TRes> {
+  factory CopyWith$Query$movies$movies$content(
+    Query$movies$movies$content instance,
+    TRes Function(Query$movies$movies$content) then,
+  ) = _CopyWithImpl$Query$movies$movies$content;
 
-  factory CopyWith$Query$shows$shows$content.stub(TRes res) =
-      _CopyWithStubImpl$Query$shows$shows$content;
+  factory CopyWith$Query$movies$movies$content.stub(TRes res) =
+      _CopyWithStubImpl$Query$movies$movies$content;
 
   TRes call({
     String? id,
-    int? releaseYear,
     String? name,
+    int? releaseYear,
     List<Fragment$fragmentImages>? images,
-    List<Query$shows$shows$content$episodes>? episodes,
     List<Fragment$fragmentMetadata>? metadata,
     String? $__typename,
   });
   TRes images(
     Iterable<Fragment$fragmentImages>? Function(
       Iterable<CopyWith$Fragment$fragmentImages<Fragment$fragmentImages>>?,
-    )
-    _fn,
-  );
-  TRes episodes(
-    Iterable<Query$shows$shows$content$episodes>? Function(
-      Iterable<
-        CopyWith$Query$shows$shows$content$episodes<
-          Query$shows$shows$content$episodes
-        >
-      >?,
     )
     _fn,
   );
@@ -1027,39 +966,35 @@ abstract class CopyWith$Query$shows$shows$content<TRes> {
   );
 }
 
-class _CopyWithImpl$Query$shows$shows$content<TRes>
-    implements CopyWith$Query$shows$shows$content<TRes> {
-  _CopyWithImpl$Query$shows$shows$content(this._instance, this._then);
+class _CopyWithImpl$Query$movies$movies$content<TRes>
+    implements CopyWith$Query$movies$movies$content<TRes> {
+  _CopyWithImpl$Query$movies$movies$content(this._instance, this._then);
 
-  final Query$shows$shows$content _instance;
+  final Query$movies$movies$content _instance;
 
-  final TRes Function(Query$shows$shows$content) _then;
+  final TRes Function(Query$movies$movies$content) _then;
 
   static const _undefined = <dynamic, dynamic>{};
 
   TRes call({
     Object? id = _undefined,
-    Object? releaseYear = _undefined,
     Object? name = _undefined,
+    Object? releaseYear = _undefined,
     Object? images = _undefined,
-    Object? episodes = _undefined,
     Object? metadata = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
-    Query$shows$shows$content(
+    Query$movies$movies$content(
       id: id == _undefined || id == null ? _instance.id : (id as String),
-      releaseYear: releaseYear == _undefined || releaseYear == null
-          ? _instance.releaseYear
-          : (releaseYear as int),
       name: name == _undefined || name == null
           ? _instance.name
           : (name as String),
+      releaseYear: releaseYear == _undefined || releaseYear == null
+          ? _instance.releaseYear
+          : (releaseYear as int),
       images: images == _undefined
           ? _instance.images
           : (images as List<Fragment$fragmentImages>?),
-      episodes: episodes == _undefined
-          ? _instance.episodes
-          : (episodes as List<Query$shows$shows$content$episodes>?),
       metadata: metadata == _undefined
           ? _instance.metadata
           : (metadata as List<Fragment$fragmentMetadata>?),
@@ -1082,23 +1017,6 @@ class _CopyWithImpl$Query$shows$shows$content<TRes>
     )?.toList(),
   );
 
-  TRes episodes(
-    Iterable<Query$shows$shows$content$episodes>? Function(
-      Iterable<
-        CopyWith$Query$shows$shows$content$episodes<
-          Query$shows$shows$content$episodes
-        >
-      >?,
-    )
-    _fn,
-  ) => call(
-    episodes: _fn(
-      _instance.episodes?.map(
-        (e) => CopyWith$Query$shows$shows$content$episodes(e, (i) => i),
-      ),
-    )?.toList(),
-  );
-
   TRes metadata(
     Iterable<Fragment$fragmentMetadata>? Function(
       Iterable<CopyWith$Fragment$fragmentMetadata<Fragment$fragmentMetadata>>?,
@@ -1113,135 +1031,22 @@ class _CopyWithImpl$Query$shows$shows$content<TRes>
   );
 }
 
-class _CopyWithStubImpl$Query$shows$shows$content<TRes>
-    implements CopyWith$Query$shows$shows$content<TRes> {
-  _CopyWithStubImpl$Query$shows$shows$content(this._res);
+class _CopyWithStubImpl$Query$movies$movies$content<TRes>
+    implements CopyWith$Query$movies$movies$content<TRes> {
+  _CopyWithStubImpl$Query$movies$movies$content(this._res);
 
   TRes _res;
 
   call({
     String? id,
-    int? releaseYear,
     String? name,
+    int? releaseYear,
     List<Fragment$fragmentImages>? images,
-    List<Query$shows$shows$content$episodes>? episodes,
     List<Fragment$fragmentMetadata>? metadata,
     String? $__typename,
   }) => _res;
 
   images(_fn) => _res;
 
-  episodes(_fn) => _res;
-
   metadata(_fn) => _res;
-}
-
-class Query$shows$shows$content$episodes {
-  Query$shows$shows$content$episodes({
-    this.number,
-    this.$__typename = 'Episode',
-  });
-
-  factory Query$shows$shows$content$episodes.fromJson(
-    Map<String, dynamic> json,
-  ) {
-    final l$number = json['number'];
-    final l$$__typename = json['__typename'];
-    return Query$shows$shows$content$episodes(
-      number: (l$number as int?),
-      $__typename: (l$$__typename as String),
-    );
-  }
-
-  final int? number;
-
-  final String $__typename;
-
-  Map<String, dynamic> toJson() {
-    final _resultData = <String, dynamic>{};
-    final l$number = number;
-    _resultData['number'] = l$number;
-    final l$$__typename = $__typename;
-    _resultData['__typename'] = l$$__typename;
-    return _resultData;
-  }
-
-  @override
-  int get hashCode {
-    final l$number = number;
-    final l$$__typename = $__typename;
-    return Object.hashAll([l$number, l$$__typename]);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    if (other is! Query$shows$shows$content$episodes ||
-        runtimeType != other.runtimeType) {
-      return false;
-    }
-    final l$number = number;
-    final lOther$number = other.number;
-    if (l$number != lOther$number) {
-      return false;
-    }
-    final l$$__typename = $__typename;
-    final lOther$$__typename = other.$__typename;
-    if (l$$__typename != lOther$$__typename) {
-      return false;
-    }
-    return true;
-  }
-}
-
-extension UtilityExtension$Query$shows$shows$content$episodes
-    on Query$shows$shows$content$episodes {
-  CopyWith$Query$shows$shows$content$episodes<
-    Query$shows$shows$content$episodes
-  >
-  get copyWith => CopyWith$Query$shows$shows$content$episodes(this, (i) => i);
-}
-
-abstract class CopyWith$Query$shows$shows$content$episodes<TRes> {
-  factory CopyWith$Query$shows$shows$content$episodes(
-    Query$shows$shows$content$episodes instance,
-    TRes Function(Query$shows$shows$content$episodes) then,
-  ) = _CopyWithImpl$Query$shows$shows$content$episodes;
-
-  factory CopyWith$Query$shows$shows$content$episodes.stub(TRes res) =
-      _CopyWithStubImpl$Query$shows$shows$content$episodes;
-
-  TRes call({int? number, String? $__typename});
-}
-
-class _CopyWithImpl$Query$shows$shows$content$episodes<TRes>
-    implements CopyWith$Query$shows$shows$content$episodes<TRes> {
-  _CopyWithImpl$Query$shows$shows$content$episodes(this._instance, this._then);
-
-  final Query$shows$shows$content$episodes _instance;
-
-  final TRes Function(Query$shows$shows$content$episodes) _then;
-
-  static const _undefined = <dynamic, dynamic>{};
-
-  TRes call({Object? number = _undefined, Object? $__typename = _undefined}) =>
-      _then(
-        Query$shows$shows$content$episodes(
-          number: number == _undefined ? _instance.number : (number as int?),
-          $__typename: $__typename == _undefined || $__typename == null
-              ? _instance.$__typename
-              : ($__typename as String),
-        ),
-      );
-}
-
-class _CopyWithStubImpl$Query$shows$shows$content$episodes<TRes>
-    implements CopyWith$Query$shows$shows$content$episodes<TRes> {
-  _CopyWithStubImpl$Query$shows$shows$content$episodes(this._res);
-
-  TRes _res;
-
-  call({int? number, String? $__typename}) => _res;
 }

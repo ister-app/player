@@ -1,8 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/components/MovieSlide.dart';
 import 'package:player/components/TvShowSlide.dart';
+import 'package:player/graphql/libraries.graphql.dart';
 import 'package:player/graphql/scanLibrary.graphql.dart';
+import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -29,9 +32,6 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
   Refetch? _refetchRecent;
   bool _recentViewEmpty = false;
 
-  Refetch? _refetchTvshow;
-  bool _tvshowViewEmpty = false;
-
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
 
@@ -48,33 +48,15 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
     } catch (e) {
       LoggerService().logger.w("Could not refetch recent: $e");
     }
-    try {
-      if (_refetchTvshow != null) {
-        await _refetchTvshow!();
-      }
-    } catch (e) {
-      LoggerService().logger.w("Could not refetch tvshow: $e");
-    }
     setState(() {
       _recentViewEmpty = false;
-      _tvshowViewEmpty = false;
     });
   }
 
   void _setRecentViewEmpty() {
-    // Use a delayed call to avoid calling setState during build
     Future.microtask(() {
       setState(() {
         _recentViewEmpty = true;
-      });
-    });
-  }
-
-  void _setTvshowViewEmpty() {
-    // Use a delayed call to avoid calling setState during build
-    Future.microtask(() {
-      setState(() {
-        _tvshowViewEmpty = true;
       });
     });
   }
@@ -115,8 +97,8 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                     ClientManager.instance.lastClientUsed = null;
                     AutoRouter.of(context).replace(HomeRoute());
                   },
-                  child: ListTile(
-                    leading: const Icon(Icons.logout),
+                  child: const ListTile(
+                    leading: Icon(Icons.logout),
                     title: Text("Switch server"),
                   )),
             ],
@@ -138,54 +120,68 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
       body: RefreshIndicator(
           key: _refreshIndicatorKey,
           onRefresh: _refresh,
-          child: ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              children: [
-                _recentViewEmpty
-                    ? Container()
-                    : Container(
-                        padding: EdgeInsets.all(5),
-                        child: Text(
-                          "${AppLocalizations.of(context)!.watchNext}:",
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium!
-                              .copyWith(fontWeight: FontWeight.bold),
-                        )),
-                _recentViewEmpty
-                    ? Container()
-                    : SizedBox(
-                        height: 200,
-                        child: RecentCarouselView(
-                          serverName: widget.serverName,
-                          onRefetch: (refetch) {
-                            _refetchRecent = refetch;
-                          },
-                          onEmptyView: _setRecentViewEmpty,
-                        )),
-                _tvshowViewEmpty
-                    ? Container()
-                    : Container(
-                        padding: EdgeInsets.all(5),
-                        child: Text(
-                          "${AppLocalizations.of(context)!.recentlyAddedShows}:",
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium!
-                              .copyWith(fontWeight: FontWeight.bold),
-                        )),
-                _tvshowViewEmpty
-                    ? Container()
-                    : SizedBox(
-                        height: 200,
-                        child: TvShowSlide(
-                          serverName: widget.serverName,
-                          onRefetch: (refetch) {
-                            _refetchTvshow = refetch;
-                          },
-                          onEmptyView: _setTvshowViewEmpty,
-                        ))
-              ])),
+          child: Query(
+            options: QueryOptions(
+              document: documentNodeQuerylibraries,
+              fetchPolicy: FetchPolicy.cacheAndNetwork,
+            ),
+            builder: (QueryResult libraryResult,
+                {Refetch? refetch, FetchMore? fetchMore}) {
+              final libraries = libraryResult.data == null
+                  ? <Query$libraries$libraries>[]
+                  : (Query$libraries.fromJson(libraryResult.data!).libraries ??
+                      <Query$libraries$libraries>[]);
+
+              return ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    _recentViewEmpty
+                        ? Container()
+                        : Container(
+                            padding: const EdgeInsets.all(5),
+                            child: Text(
+                              "${AppLocalizations.of(context)!.watchNext}:",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium!
+                                  .copyWith(fontWeight: FontWeight.bold),
+                            )),
+                    _recentViewEmpty
+                        ? Container()
+                        : SizedBox(
+                            height: 200,
+                            child: RecentCarouselView(
+                              serverName: widget.serverName,
+                              onRefetch: (refetch) {
+                                _refetchRecent = refetch;
+                              },
+                              onEmptyView: _setRecentViewEmpty,
+                            )),
+                    ...libraries.expand((library) => [
+                          Container(
+                              padding: const EdgeInsets.all(5),
+                              child: Text(
+                                "${library.name}:",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium!
+                                    .copyWith(fontWeight: FontWeight.bold),
+                              )),
+                          SizedBox(
+                              height: 200,
+                              child: library.type == Enum$LibraryType.SHOW
+                                  ? TvShowSlide(
+                                      serverName: widget.serverName,
+                                      libraryId: library.id,
+                                    )
+                                  : MovieSlide(
+                                      serverName: widget.serverName,
+                                      libraryId: library.id,
+                                    )),
+                        ]),
+                  ]);
+            },
+          )),
     );
   }
 

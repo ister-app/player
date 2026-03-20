@@ -24,6 +24,7 @@ class AppRouter extends RootStackRouter {
               AutoRoute(path: 'episodes/:episodeId', page: ShowEpisodeRoute.page),
             ]
           ),
+          AutoRoute(path: 'movies/:movieId', page: MovieRoute.page),
         ]
     ),
   ];

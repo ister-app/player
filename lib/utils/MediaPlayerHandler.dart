@@ -14,6 +14,7 @@ import 'package:player/utils/LoginManager.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../graphql/fragmentEpisode.graphql.dart';
+import '../graphql/fragmentMovie.graphql.dart';
 import '../graphql/fragmentPlayQueue.graphql.dart';
 import 'ImageTypes.dart';
 import 'ImageUtil.dart';
@@ -68,6 +69,8 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   // ── State ───────────────────────────────────────────────────────────
   Fragment$fragmentEpisode? episode;
+  Fragment$fragmentMovie? movie;
+  bool _isMovie = false;
   Fragment$fragmentPlayQueue$playQueueItems? currentPlayQueueItem;
   Fragment$fragmentPlayQueue? playQueue;
   String? serverName;
@@ -85,6 +88,8 @@ class MediaPlayerHandler extends BaseAudioHandler
         serverName != newServerName;
 
     episode = newEpisode;
+    movie = null;
+    _isMovie = false;
     serverName = newServerName;
     graphQLClient = client;
 
@@ -146,10 +151,82 @@ class MediaPlayerHandler extends BaseAudioHandler
     return null;
   }
 
+  int? get _movieStartTimeMs {
+    final ws = movie?.watchStatus;
+    if (ws != null && ws.isNotEmpty && !ws.first.watched) {
+      return ws.first.progressInMilliseconds;
+    }
+    return null;
+  }
+
+  Future<void> startPlayQueueForMovie(
+    GraphQLClient client,
+    String? playQueueId,
+    Fragment$fragmentMovie newMovie,
+    String newServerName,
+  ) async {
+    final shouldRefresh = movie == null ||
+        movie!.id != newMovie.id ||
+        serverName != newServerName;
+
+    movie = newMovie;
+    episode = null;
+    _isMovie = true;
+    serverName = newServerName;
+    graphQLClient = client;
+
+    if (shouldRefresh) {
+      final playQueueObject = await _playQueueService.getOrCreatePlayQueueForMovie(
+        client,
+        playQueueId,
+        newMovie.id,
+        _movieStartTimeMs,
+      );
+
+      queueTitle.add("Now Playing");
+
+      queue.add(playQueueObject?.playQueueItems?.map((e) {
+            Uri? imgUri;
+            if (e.movie?.images != null && serverName != null) {
+              final imageByType = ImageUtil.getImageByType(
+                newMovie.images,
+                ImageTypes.background,
+              );
+              imgUri = imageByType != null
+                  ? Uri.tryParse(ImageUtil.buildUrl(imageByType) ?? '')
+                  : null;
+            }
+            return MediaItem(
+              id: MediaItemId(newServerName, IsterMediaTypes.movie, e.id).toString(),
+              title: e.movie?.name ?? newMovie.name,
+              artist: "ister",
+              duration: Duration(
+                  milliseconds:
+                      e.movie?.mediaFile?.first.durationInMilliseconds ?? 0),
+              artUri: imgUri,
+              artHeaders: LoginManager.getHeaders(serverName ?? ""),
+            );
+          }).toList() ??
+          []);
+
+      playQueue = playQueueObject;
+      currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
+
+      await _openMedia(
+        serverName: newServerName,
+        mediaUrl: ImageUtil.buildMediaFileUrl(newMovie.mediaFile!.first) ?? '',
+        startTimeInMilliseconds: _movieStartTimeMs,
+        isMovie: true,
+      );
+    }
+    updatePlaybackState();
+  }
+
   Future<void> _openMedia({
     required String serverName,
     required String mediaUrl,
     int? startTimeInMilliseconds,
+    bool isMovie = false,
   }) async {
     print("openmedia: " + serverName + mediaUrl);
     final start = Duration(milliseconds: startTimeInMilliseconds ?? 0);
@@ -164,8 +241,9 @@ class MediaPlayerHandler extends BaseAudioHandler
       _playing = true;
       final currentItemId = playQueue?.currentItemId;
       if (currentItemId != null) {
+        final mediaType = isMovie ? IsterMediaTypes.movie : IsterMediaTypes.episode;
         final found = queue.value.where((e) =>
-            e.id == MediaItemId(serverName, IsterMediaTypes.episode, currentItemId).toString()
+            e.id == MediaItemId(serverName, mediaType, currentItemId).toString()
         ).firstOrNull;
         if (found != null && mediaItem.valueOrNull != found) {
           mediaItem.add(found);
@@ -318,9 +396,10 @@ class MediaPlayerHandler extends BaseAudioHandler
       processingState = AudioProcessingState.completed;
     }
     final currentItemId = playQueue?.currentItemId;
+    final mediaType = _isMovie ? IsterMediaTypes.movie : IsterMediaTypes.episode;
     var currentMediaItemList = (currentItemId != null && serverName != null)
         ? queue.value.where((e) =>
-            e.id == MediaItemId(serverName!, IsterMediaTypes.episode, currentItemId).toString())
+            e.id == MediaItemId(serverName!, mediaType, currentItemId).toString())
         : const <MediaItem>[];
     playbackState.add(
       playbackState.value.copyWith(
@@ -379,11 +458,13 @@ class MediaPlayerHandler extends BaseAudioHandler
         _lastProgress = pos;
 
         final client = graphQLClient;
-        if (playQueue != null && client != null && episode != null) {
-          final itemId = _playQueueService.getPlayQueueItemId(
-            playQueue!,
-            episode!.id,
-          );
+        if (playQueue != null && client != null) {
+          String? itemId;
+          if (episode != null) {
+            itemId = _playQueueService.getPlayQueueItemId(playQueue!, episode!.id);
+          } else if (movie != null) {
+            itemId = _playQueueService.getMoviePlayQueueItemId(playQueue!, movie!.id);
+          }
           if (itemId != null) {
             final playQueueObject = await _playQueueService.updateProgress(
               client,

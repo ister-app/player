@@ -1,14 +1,13 @@
-import 'package:audio_service/audio_service.dart';
 import 'package:graphql/src/graphql_client.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/dto/IsterMediaItem.dart';
 import 'package:player/dto/MediaItemId.dart';
 import 'package:player/graphql/episodeById.graphql.dart';
 import 'package:player/graphql/fragmentEpisode.graphql.dart';
-import 'package:player/graphql/showById.graphql.dart';
 
 import '../graphql/episodesRecentWatchedQuery.graphql.dart';
 import '../graphql/fragmentImages.graphql.dart';
+import '../graphql/schema.graphql.dart';
 import '../utils/ClientManager.dart';
 import '../utils/ImageTypes.dart';
 import '../utils/ImageUtil.dart';
@@ -24,6 +23,7 @@ class IsterMediaService {
       IsterMediaTypes.episode => getEpisode(mediaItemId),
       IsterMediaTypes.show => List.empty(),
       IsterMediaTypes.list => getList(mediaItemId),
+      IsterMediaTypes.movie => List.empty(),
     };
   }
 
@@ -39,7 +39,7 @@ class IsterMediaService {
     GraphQLClient client = await getClient(mediaItemId.serverName);
 
     final QueryResult result = await client.query(QueryOptions(
-      document: documentNodeQueryepisodesRecentWatchedQuery,
+      document: documentNodeQueryrecentlyWatched,
     ));
 
     LoggerService().logger.e(result);
@@ -47,24 +47,38 @@ class IsterMediaService {
       LoggerService().logger.e(result.exception);
       return List.empty();
     }
-    return Query$episodesRecentWatchedQuery
+    final items = Query$recentlyWatched
         .fromJson(result.data!)
-        .episodesRecentWatched!
-        .map(
-          (e) {
+        .recentlyWatched;
+    if (items == null) return List.empty();
+
+    return items.map((e) {
+      if (e.type == Enum$MediaType.EPISODE && e.episode != null) {
+        final ep = e.episode!;
         return IsterMediaItem(
-          id: e.id,
-          title: MetadataUtil.getTitle(e.metadata) ?? "unknown",
+          id: ep.id,
+          title: MetadataUtil.getTitle(ep.metadata) ?? "unknown",
           duration: Duration(
-              milliseconds: e.mediaFile?.first.durationInMilliseconds ?? 0),
+              milliseconds: ep.mediaFile?.first.durationInMilliseconds ?? 0),
           serverName: mediaItemId.serverName,
-          isterMediaType: mediaItemId.isterMediaType,
+          isterMediaType: IsterMediaTypes.episode,
           stubTitle: 'Ister',
-          artUri: artUriFromEpisode(e.images, mediaItemId.serverName),
+          artUri: artUriFromImages(ep.images, mediaItemId.serverName),
         );
-      },
-    )
-        .toList();
+      } else {
+        final mv = e.movie!;
+        return IsterMediaItem(
+          id: mv.id,
+          title: mv.name,
+          duration: Duration(
+              milliseconds: mv.mediaFile?.first.durationInMilliseconds ?? 0),
+          serverName: mediaItemId.serverName,
+          isterMediaType: IsterMediaTypes.movie,
+          stubTitle: 'Ister',
+          artUri: artUriFromImages(mv.images, mediaItemId.serverName),
+        );
+      }
+    }).toList();
   }
 
   Future<Fragment$fragmentEpisode?> getEpisodeFragmentById(
@@ -94,17 +108,21 @@ class IsterMediaService {
       serverName: mediaItemId.serverName,
       isterMediaType: mediaItemId.isterMediaType,
       stubTitle: 'Ister',
-      artUri: artUriFromEpisode(data.images, mediaItemId.serverName),
+      artUri: artUriFromImages(data.images, mediaItemId.serverName),
     );
     return {isterMediaItem}.toList();
   }
 
-  static Uri? artUriFromEpisode(List<Fragment$fragmentImages>? images,
+  static Uri? artUriFromImages(List<Fragment$fragmentImages>? images,
       String serverName) {
     final imageByType = ImageUtil.getImageByType(images, ImageTypes.background);
     final url = ImageUtil.buildUrl(imageByType);
     return url != null ? Uri.parse(url) : null;
   }
+
+  // Keep old name as alias for compatibility
+  static Uri? artUriFromEpisode(List<Fragment$fragmentImages>? images,
+      String serverName) => artUriFromImages(images, serverName);
 
   static Future<GraphQLClient> getClient(String serverName) async {
     await LoginManager.waitForToken(serverName);

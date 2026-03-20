@@ -1,0 +1,15 @@
+query movies($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $libraryId: ID) {
+    movies(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, libraryId: $libraryId) {
+        number
+        size
+        totalElements
+        totalPages
+        content {
+            id
+            name
+            releaseYear
+            images { ...fragmentImages }
+            metadata { ...fragmentMetadata }
+        }
+    }
+}

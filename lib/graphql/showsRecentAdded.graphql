@@ -1,5 +1,5 @@
-query shows($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder) {
-    shows(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder) {
+query shows($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $libraryId: ID) {
+    shows(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, libraryId: $libraryId) {
         number
         size
         totalElements

@@ -29,5 +29,6 @@ class IsterMediaItem {
 enum IsterMediaTypes {
   episode,
   show,
-  list // I.E. Recent or last added
+  list, // I.E. Recent or last added
+  movie,
 }

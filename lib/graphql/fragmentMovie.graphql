@@ -1,0 +1,9 @@
+fragment fragmentMovie on Movie {
+    id
+    name
+    releaseYear
+    images { ...fragmentImages }
+    metadata { ...fragmentMetadata }
+    watchStatus { id playQueueItemId progressInMilliseconds watched }
+    mediaFile { ...fragmentMediaFiles }
+}

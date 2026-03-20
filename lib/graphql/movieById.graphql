@@ -1,0 +1,5 @@
+query movieById($id: ID) {
+    movieById(id: $id) {
+        ...fragmentMovie
+    }
+}

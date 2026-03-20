@@ -1,0 +1,5 @@
+mutation createPlayQueueForMovie($movieId: ID!) {
+    createPlayQueueForMovie(movieId: $movieId) {
+        ...fragmentPlayQueue
+    }
+}

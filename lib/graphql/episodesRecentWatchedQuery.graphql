@@ -1,36 +1,23 @@
-query episodesRecentWatchedQuery {
-    episodesRecentWatched {
-        id
-        show {
+query recentlyWatched {
+    recentlyWatched {
+        type
+        episode {
             id
-            metadata {
-                ...fragmentMetadata
-            }
-            images {
-                ...fragmentImages
-            }
-        }
-        season {
             number
+            show { id metadata { ...fragmentMetadata } images { ...fragmentImages } }
+            season { number }
+            watchStatus { id playQueueItemId progressInMilliseconds watched }
+            mediaFile { id durationInMilliseconds }
+            metadata { ...fragmentMetadata }
+            images { ...fragmentImages }
         }
-        watchStatus {
+        movie {
             id
-            playQueueItemId
-            progressInMilliseconds
-            watched
-        }
-        mediaFile {
-            durationInMilliseconds
-        }
-        number
-        metadata {
-            ...fragmentMetadata
-        }
-        mediaFile {
-            id
-        }
-        images {
-            ...fragmentImages
+            name
+            images { ...fragmentImages }
+            metadata { ...fragmentMetadata }
+            watchStatus { id playQueueItemId progressInMilliseconds watched }
+            mediaFile { id durationInMilliseconds }
         }
     }
 }

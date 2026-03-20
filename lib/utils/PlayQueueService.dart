@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/graphql/createPlayQueueForMovie.graphql.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 import 'package:player/graphql/getPlayQueue.graphql.dart';
 import 'package:player/utils/LoggerService.dart';
@@ -46,6 +47,49 @@ class PlayQueueService {
     return playQueue.playQueueItems
         ?.firstWhere((element) => element.episode?.id == id)
         .id;
+  }
+
+  String? getMoviePlayQueueItemId(Fragment$fragmentPlayQueue playQueue, String movieId) {
+    return playQueue.playQueueItems
+        ?.firstWhere((element) => element.movie?.id == movieId)
+        .id;
+  }
+
+  Future<Fragment$fragmentPlayQueue?> getOrCreatePlayQueueForMovie(
+      GraphQLClient graphQLClient,
+      String? playQueueId,
+      String movieId,
+      int? startTimeInMilliseconds) async {
+    if (playQueueId == null) {
+      return await _createPlayQueueForMovie(graphQLClient, movieId);
+    } else {
+      var playQueue = await _getPlayQueue(graphQLClient, playQueueId);
+      if (playQueue != null) {
+        String? currentItemId = getMoviePlayQueueItemId(playQueue, movieId);
+        if (currentItemId != null) {
+          updateProgress(graphQLClient, playQueue.id, currentItemId,
+              Duration(milliseconds: startTimeInMilliseconds ?? 0));
+        }
+      }
+      return playQueue;
+    }
+  }
+
+  Future<Fragment$fragmentPlayQueue?> _createPlayQueueForMovie(
+      GraphQLClient graphQLClient, String movieId) async {
+    final MutationOptions options = MutationOptions(
+        document: documentNodeMutationcreatePlayQueueForMovie,
+        variables: Map.of({
+          "movieId": movieId,
+        }));
+    final QueryResult result = await graphQLClient.mutate(options);
+
+    if (result.hasException) {
+      LoggerService().logger.e(result.exception);
+      return null;
+    }
+    return Mutation$createPlayQueueForMovie.fromJson(result.data!)
+        .createPlayQueueForMovie;
   }
 
   Future<Fragment$fragmentPlayQueue?> _createPlayQueue(
