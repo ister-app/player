@@ -3,6 +3,11 @@ fragment fragmentMediaFiles on MediaFile {
     id
     path
     size
+    directory {
+        node {
+            url
+        }
+    }
     mediaFileStreams {
         codecName
         codecType

@@ -101,19 +101,9 @@ class IsterMediaService {
 
   static Uri? artUriFromEpisode(List<Fragment$fragmentImages>? images,
       String serverName) {
-    Uri? imgUri;
-    if (images != null) {
-      final imageByType = ImageUtil.getImageByType(
-        images,
-        ImageTypes.background,
-      );
-      imgUri = imageByType != null
-          ? Uri.parse(
-          '${ClientManager.getHttpOrHttps(
-              serverName!)}://$serverName/images/${imageByType.id}/download')
-          : null;
-    }
-    return imgUri;
+    final imageByType = ImageUtil.getImageByType(images, ImageTypes.background);
+    final url = ImageUtil.buildUrl(imageByType);
+    return url != null ? Uri.parse(url) : null;
   }
 
   static Future<GraphQLClient> getClient(String serverName) async {

@@ -9,7 +9,6 @@ import 'package:player/utils/MetadataUtil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../l10n/app_localizations.dart';
-import '../utils/ClientManager.dart';
 import '../utils/ImageTypes.dart';
 import '../utils/ImageUtil.dart';
 import '../utils/LoginManager.dart';
@@ -74,7 +73,7 @@ class TvShowSeasonList extends StatelessWidget {
                             episode.number ?? 0,
                             episode.$show!.id,
                             episode.id,
-                            imageByType?.id,
+                            ImageUtil.buildUrl(imageByType),
                             imageByType?.blurHash,
                             episode.watchStatus != null &&
                                     episode.watchStatus!.isNotEmpty &&
@@ -147,8 +146,7 @@ class TvShowSeasonList extends StatelessWidget {
                                 )
                               : Container(),
                           fit: BoxFit.fitHeight,
-                          imageUrl:
-                              '${ClientManager.getHttpOrHttps(serverName)}://$serverName/images/$imageUrl/download',
+                          imageUrl: imageUrl!,
                           httpHeaders: LoginManager.getHeaders(serverName),
                           fadeOutDuration: Duration.zero,
                           fadeInDuration: Duration.zero,

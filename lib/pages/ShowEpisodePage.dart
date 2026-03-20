@@ -14,7 +14,6 @@ import '../graphql/fragmentEpisode.graphql.dart';
 import '../graphql/fragmentPlayQueue.graphql.dart';
 import '../l10n/app_localizations.dart';
 import '../routes/AppRouter.gr.dart';
-import '../utils/ClientManager.dart';
 import '../utils/ImageTypes.dart';
 import '../utils/ImageUtil.dart';
 import '../utils/LoginManager.dart';
@@ -162,8 +161,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                                   fit: BoxFit.cover,
                                   httpHeaders: LoginManager.getHeaders(
                                       widget.serverName),
-                                  imageUrl:
-                                      '${ClientManager.getHttpOrHttps(widget.serverName)}://${widget.serverName}/images/$imageByType/download',
+                                  imageUrl: ImageUtil.buildUrl(imageByType)!,
                                 )
                               : Container(),
                         );

@@ -3,4 +3,9 @@ fragment fragmentImages on Image {
     id
     language
     blurHash
+    directory {
+        node {
+            url
+        }
+    }
 }

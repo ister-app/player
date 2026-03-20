@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/showById.graphql.dart';
+import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MetadataUtil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../utils/ClientManager.dart';
 import '../utils/LoginManager.dart';
 
 @RoutePage()
@@ -40,7 +40,7 @@ class ShowOverviewContentPage extends StatelessWidget {
           body = Skeletonizer(
               enabled: true,
               child: _buildContent(
-                  null, null, BoneMock.name, BoneMock.words(15), context));
+                  null, null, BoneMock.name, BoneMock.words(15), context, null));
           // Skeletonizer(enabled: true, child: Text(BoneMock.name));
         } else {
           final parsedData = Query$showById.fromJson(result.data!);
@@ -53,11 +53,12 @@ class ShowOverviewContentPage extends StatelessWidget {
             var imageByType =
                 ImageUtil.getImageByType(show.images, ImageTypes.background);
             body = _buildContent(
-                imageByType?.id,
+                ImageUtil.buildUrl(imageByType),
                 imageByType?.blurHash,
                 MetadataUtil.getTitle(show.metadata) ?? "",
                 MetadataUtil.getDescription(show.metadata) ?? "",
-                context);
+                context,
+                show.toJson().toString());
           }
         }
 
@@ -67,7 +68,7 @@ class ShowOverviewContentPage extends StatelessWidget {
   }
 
   SingleChildScrollView _buildContent(String? imageUrl, String? blurHash,
-      String title, String description, BuildContext context) {
+      String title, String description, BuildContext context, String? rawJson) {
     return SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       LayoutBuilder(builder: (context, constraints) {
@@ -87,8 +88,7 @@ class ShowOverviewContentPage extends StatelessWidget {
                       : Container(),
                   fit: BoxFit.cover,
                   httpHeaders: LoginManager.getHeaders(serverName),
-                  imageUrl:
-                      '${ClientManager.getHttpOrHttps(serverName)}://$serverName/images/$imageUrl/download',
+                  imageUrl: imageUrl!,
                   fadeOutDuration: Duration.zero,
                   fadeInDuration: Duration.zero,
                 )
@@ -99,9 +99,63 @@ class ShowOverviewContentPage extends StatelessWidget {
           padding: EdgeInsetsGeometry.all(10),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, style: Theme.of(context).textTheme.headlineSmall),
+            Row(
+              children: [
+                Expanded(
+                    child: Text(title,
+                        style: Theme.of(context).textTheme.headlineSmall)),
+                if (rawJson != null)
+                  MenuAnchor(
+                    menuChildren: <Widget>[
+                      MenuItemButton(
+                        onPressed: () {
+                          _dialogBuilder(context, rawJson);
+                        },
+                        child: ListTile(
+                          leading: const Icon(Icons.info),
+                          title: Text(AppLocalizations.of(context)!.rawData),
+                        ),
+                      ),
+                    ],
+                    builder: (_, MenuController controller, Widget? child) {
+                      return IconButton(
+                        onPressed: () {
+                          if (controller.isOpen) {
+                            controller.close();
+                          } else {
+                            controller.open();
+                          }
+                        },
+                        icon: const Icon(Icons.more_vert),
+                      );
+                    },
+                  ),
+              ],
+            ),
             Text(description),
           ])),
     ]));
+  }
+
+  Future<void> _dialogBuilder(BuildContext context, String json) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.json),
+          content: SelectableText(json),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge),
+              child: Text(AppLocalizations.of(context)!.close),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

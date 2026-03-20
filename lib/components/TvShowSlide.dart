@@ -140,7 +140,7 @@ class _TvShowSlideState extends State<TvShowSlide> {
                 serverName: widget.serverName,
                 title: MetadataUtil.getTitle(show.metadata) ?? '',
                 subTitle: MetadataUtil.getDescription(show.metadata) ?? '',
-                imageUrl: img?.id,
+                imageUrl: ImageUtil.buildUrl(img),
                 blurHash: img?.blurHash,
                 onTap: () => AutoRouter.of(context).push(
                   ShowOverviewRoute(showId: show.id),

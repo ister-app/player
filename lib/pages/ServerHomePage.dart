@@ -6,6 +6,7 @@ import 'package:player/graphql/getServerInfo.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
 
+import '../l10n/app_localizations.dart';
 import '../utils/LoginManager.dart';
 
 @RoutePage()
@@ -38,9 +39,35 @@ class _ServerHomePageState extends State<ServerHomePage> {
                 {VoidCallback? refetch, FetchMore? fetchMore}) {
               Widget body;
               if (result.hasException) {
-                ClientManager.instance.lastClientUsed = null;
-                AutoRouter.of(context).replace(HomeRoute());
-                body = Text(result.exception.toString());
+                final loc = AppLocalizations.of(context)!;
+                body = Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.cloud_off, size: 64),
+                      const SizedBox(height: 16),
+                      Text(
+                        loc.serverUnreachable,
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        result.exception.toString(),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          ClientManager.instance.lastClientUsed = null;
+                          AutoRouter.of(context).replace(HomeRoute());
+                        },
+                        icon: const Icon(Icons.arrow_back),
+                        label: Text(loc.backToServerOverview),
+                      ),
+                    ],
+                  ),
+                );
               } else if (result.isLoading) {
                 body = Text('Loading');
               } else {

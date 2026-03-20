@@ -41,11 +41,19 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
 
   Future<void> _refresh() async {
     LoggerService().logger.i("refreshing");
-    if (_refetchRecent != null) {
-      await _refetchRecent!();
+    try {
+      if (_refetchRecent != null) {
+        await _refetchRecent!();
+      }
+    } catch (e) {
+      LoggerService().logger.w("Could not refetch recent: $e");
     }
-    if (_refetchTvshow != null) {
-      await _refetchTvshow!();
+    try {
+      if (_refetchTvshow != null) {
+        await _refetchTvshow!();
+      }
+    } catch (e) {
+      LoggerService().logger.w("Could not refetch tvshow: $e");
     }
     setState(() {
       _recentViewEmpty = false;
@@ -182,6 +190,7 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
   }
 
   Future<void> scanLibrary(GraphQLClient graphQLClient) async {
+    LoggerService().logger.i("scanLibrary");
     final MutationOptions options = MutationOptions(
       document: documentNodeMutationscanLibrary,
     );
@@ -194,6 +203,7 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
   }
 
   Future<void> analyzeLibrary(GraphQLClient graphQLClient) async {
+    LoggerService().logger.i("analyzeLibrary");
     final MutationOptions options = MutationOptions(
       document: documentNodeMutationanalyzeLibrary,
     );

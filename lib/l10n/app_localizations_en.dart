@@ -79,6 +79,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get serverUnreachable => 'Server unreachable';
+
+  @override
+  String get backToServerOverview => 'Back to server overview';
+
+  @override
   String get close => 'Close';
 
   @override
@@ -86,4 +92,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rawData => 'Raw data';
+
+  @override
+  String get nodes => 'Nodes';
+
+  @override
+  String get server => 'Server';
 }

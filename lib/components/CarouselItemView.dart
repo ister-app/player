@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:player/utils/LoginManager.dart';
 
-import '../utils/ClientManager.dart';
-
 class CarouselItemView extends StatelessWidget {
   const CarouselItemView(
       {super.key,
@@ -52,8 +50,7 @@ class CarouselItemView extends StatelessWidget {
                                 color: Colors.grey,
                                 duration: Duration.zero,
                               ) : Container(),
-                              imageUrl:
-                                  '${ClientManager.getHttpOrHttps(serverName)}://$serverName/images/$imageUrl/download',
+                              imageUrl: imageUrl!,
                               fit: BoxFit.fitHeight,
                               httpHeaders: LoginManager.getHeaders(serverName),
                               fadeOutDuration: Duration.zero,

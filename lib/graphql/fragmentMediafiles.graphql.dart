@@ -6,6 +6,7 @@ class Fragment$fragmentMediaFiles {
     required this.id,
     required this.path,
     required this.size,
+    required this.directory,
     this.mediaFileStreams,
     this.$__typename = 'MediaFile',
   });
@@ -15,6 +16,7 @@ class Fragment$fragmentMediaFiles {
     final l$id = json['id'];
     final l$path = json['path'];
     final l$size = json['size'];
+    final l$directory = json['directory'];
     final l$mediaFileStreams = json['mediaFileStreams'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentMediaFiles(
@@ -22,6 +24,9 @@ class Fragment$fragmentMediaFiles {
       id: (l$id as String),
       path: (l$path as String),
       size: (l$size as num).toDouble(),
+      directory: Fragment$fragmentMediaFiles$directory.fromJson(
+        (l$directory as Map<String, dynamic>),
+      ),
       mediaFileStreams: (l$mediaFileStreams as List<dynamic>?)
           ?.map(
             (e) => e == null
@@ -43,6 +48,8 @@ class Fragment$fragmentMediaFiles {
 
   final double size;
 
+  final Fragment$fragmentMediaFiles$directory directory;
+
   final List<Fragment$fragmentMediaFiles$mediaFileStreams?>? mediaFileStreams;
 
   final String $__typename;
@@ -57,6 +64,8 @@ class Fragment$fragmentMediaFiles {
     _resultData['path'] = l$path;
     final l$size = size;
     _resultData['size'] = l$size;
+    final l$directory = directory;
+    _resultData['directory'] = l$directory.toJson();
     final l$mediaFileStreams = mediaFileStreams;
     _resultData['mediaFileStreams'] = l$mediaFileStreams
         ?.map((e) => e?.toJson())
@@ -72,6 +81,7 @@ class Fragment$fragmentMediaFiles {
     final l$id = id;
     final l$path = path;
     final l$size = size;
+    final l$directory = directory;
     final l$mediaFileStreams = mediaFileStreams;
     final l$$__typename = $__typename;
     return Object.hashAll([
@@ -79,6 +89,7 @@ class Fragment$fragmentMediaFiles {
       l$id,
       l$path,
       l$size,
+      l$directory,
       l$mediaFileStreams == null
           ? null
           : Object.hashAll(l$mediaFileStreams.map((v) => v)),
@@ -113,6 +124,11 @@ class Fragment$fragmentMediaFiles {
     final l$size = size;
     final lOther$size = other.size;
     if (l$size != lOther$size) {
+      return false;
+    }
+    final l$directory = directory;
+    final lOther$directory = other.directory;
+    if (l$directory != lOther$directory) {
       return false;
     }
     final l$mediaFileStreams = mediaFileStreams;
@@ -160,9 +176,11 @@ abstract class CopyWith$Fragment$fragmentMediaFiles<TRes> {
     String? id,
     String? path,
     double? size,
+    Fragment$fragmentMediaFiles$directory? directory,
     List<Fragment$fragmentMediaFiles$mediaFileStreams?>? mediaFileStreams,
     String? $__typename,
   });
+  CopyWith$Fragment$fragmentMediaFiles$directory<TRes> get directory;
   TRes mediaFileStreams(
     Iterable<Fragment$fragmentMediaFiles$mediaFileStreams?>? Function(
       Iterable<
@@ -190,6 +208,7 @@ class _CopyWithImpl$Fragment$fragmentMediaFiles<TRes>
     Object? id = _undefined,
     Object? path = _undefined,
     Object? size = _undefined,
+    Object? directory = _undefined,
     Object? mediaFileStreams = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
@@ -204,6 +223,9 @@ class _CopyWithImpl$Fragment$fragmentMediaFiles<TRes>
       size: size == _undefined || size == null
           ? _instance.size
           : (size as double),
+      directory: directory == _undefined || directory == null
+          ? _instance.directory
+          : (directory as Fragment$fragmentMediaFiles$directory),
       mediaFileStreams: mediaFileStreams == _undefined
           ? _instance.mediaFileStreams
           : (mediaFileStreams
@@ -213,6 +235,14 @@ class _CopyWithImpl$Fragment$fragmentMediaFiles<TRes>
           : ($__typename as String),
     ),
   );
+
+  CopyWith$Fragment$fragmentMediaFiles$directory<TRes> get directory {
+    final local$directory = _instance.directory;
+    return CopyWith$Fragment$fragmentMediaFiles$directory(
+      local$directory,
+      (e) => call(directory: e),
+    );
+  }
 
   TRes mediaFileStreams(
     Iterable<Fragment$fragmentMediaFiles$mediaFileStreams?>? Function(
@@ -248,9 +278,13 @@ class _CopyWithStubImpl$Fragment$fragmentMediaFiles<TRes>
     String? id,
     String? path,
     double? size,
+    Fragment$fragmentMediaFiles$directory? directory,
     List<Fragment$fragmentMediaFiles$mediaFileStreams?>? mediaFileStreams,
     String? $__typename,
   }) => _res;
+
+  CopyWith$Fragment$fragmentMediaFiles$directory<TRes> get directory =>
+      CopyWith$Fragment$fragmentMediaFiles$directory.stub(_res);
 
   mediaFileStreams(_fn) => _res;
 }
@@ -290,6 +324,47 @@ const fragmentDefinitionfragmentMediaFiles = FragmentDefinitionNode(
         arguments: [],
         directives: [],
         selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'directory'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: SelectionSetNode(
+          selections: [
+            FieldNode(
+              name: NameNode(value: 'node'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: SelectionSetNode(
+                selections: [
+                  FieldNode(
+                    name: NameNode(value: 'url'),
+                    alias: null,
+                    arguments: [],
+                    directives: [],
+                    selectionSet: null,
+                  ),
+                  FieldNode(
+                    name: NameNode(value: '__typename'),
+                    alias: null,
+                    arguments: [],
+                    directives: [],
+                    selectionSet: null,
+                  ),
+                ],
+              ),
+            ),
+            FieldNode(
+              name: NameNode(value: '__typename'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+          ],
+        ),
       ),
       FieldNode(
         name: NameNode(value: 'mediaFileStreams'),
@@ -384,6 +459,258 @@ const fragmentDefinitionfragmentMediaFiles = FragmentDefinitionNode(
 const documentNodeFragmentfragmentMediaFiles = DocumentNode(
   definitions: [fragmentDefinitionfragmentMediaFiles],
 );
+
+class Fragment$fragmentMediaFiles$directory {
+  Fragment$fragmentMediaFiles$directory({
+    required this.node,
+    this.$__typename = 'Directory',
+  });
+
+  factory Fragment$fragmentMediaFiles$directory.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final l$node = json['node'];
+    final l$$__typename = json['__typename'];
+    return Fragment$fragmentMediaFiles$directory(
+      node: Fragment$fragmentMediaFiles$directory$node.fromJson(
+        (l$node as Map<String, dynamic>),
+      ),
+      $__typename: (l$$__typename as String),
+    );
+  }
+
+  final Fragment$fragmentMediaFiles$directory$node node;
+
+  final String $__typename;
+
+  Map<String, dynamic> toJson() {
+    final _resultData = <String, dynamic>{};
+    final l$node = node;
+    _resultData['node'] = l$node.toJson();
+    final l$$__typename = $__typename;
+    _resultData['__typename'] = l$$__typename;
+    return _resultData;
+  }
+
+  @override
+  int get hashCode {
+    final l$node = node;
+    final l$$__typename = $__typename;
+    return Object.hashAll([l$node, l$$__typename]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Fragment$fragmentMediaFiles$directory ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$node = node;
+    final lOther$node = other.node;
+    if (l$node != lOther$node) {
+      return false;
+    }
+    final l$$__typename = $__typename;
+    final lOther$$__typename = other.$__typename;
+    if (l$$__typename != lOther$$__typename) {
+      return false;
+    }
+    return true;
+  }
+}
+
+extension UtilityExtension$Fragment$fragmentMediaFiles$directory
+    on Fragment$fragmentMediaFiles$directory {
+  CopyWith$Fragment$fragmentMediaFiles$directory<
+    Fragment$fragmentMediaFiles$directory
+  >
+  get copyWith =>
+      CopyWith$Fragment$fragmentMediaFiles$directory(this, (i) => i);
+}
+
+abstract class CopyWith$Fragment$fragmentMediaFiles$directory<TRes> {
+  factory CopyWith$Fragment$fragmentMediaFiles$directory(
+    Fragment$fragmentMediaFiles$directory instance,
+    TRes Function(Fragment$fragmentMediaFiles$directory) then,
+  ) = _CopyWithImpl$Fragment$fragmentMediaFiles$directory;
+
+  factory CopyWith$Fragment$fragmentMediaFiles$directory.stub(TRes res) =
+      _CopyWithStubImpl$Fragment$fragmentMediaFiles$directory;
+
+  TRes call({
+    Fragment$fragmentMediaFiles$directory$node? node,
+    String? $__typename,
+  });
+  CopyWith$Fragment$fragmentMediaFiles$directory$node<TRes> get node;
+}
+
+class _CopyWithImpl$Fragment$fragmentMediaFiles$directory<TRes>
+    implements CopyWith$Fragment$fragmentMediaFiles$directory<TRes> {
+  _CopyWithImpl$Fragment$fragmentMediaFiles$directory(
+    this._instance,
+    this._then,
+  );
+
+  final Fragment$fragmentMediaFiles$directory _instance;
+
+  final TRes Function(Fragment$fragmentMediaFiles$directory) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({Object? node = _undefined, Object? $__typename = _undefined}) =>
+      _then(
+        Fragment$fragmentMediaFiles$directory(
+          node: node == _undefined || node == null
+              ? _instance.node
+              : (node as Fragment$fragmentMediaFiles$directory$node),
+          $__typename: $__typename == _undefined || $__typename == null
+              ? _instance.$__typename
+              : ($__typename as String),
+        ),
+      );
+
+  CopyWith$Fragment$fragmentMediaFiles$directory$node<TRes> get node {
+    final local$node = _instance.node;
+    return CopyWith$Fragment$fragmentMediaFiles$directory$node(
+      local$node,
+      (e) => call(node: e),
+    );
+  }
+}
+
+class _CopyWithStubImpl$Fragment$fragmentMediaFiles$directory<TRes>
+    implements CopyWith$Fragment$fragmentMediaFiles$directory<TRes> {
+  _CopyWithStubImpl$Fragment$fragmentMediaFiles$directory(this._res);
+
+  TRes _res;
+
+  call({
+    Fragment$fragmentMediaFiles$directory$node? node,
+    String? $__typename,
+  }) => _res;
+
+  CopyWith$Fragment$fragmentMediaFiles$directory$node<TRes> get node =>
+      CopyWith$Fragment$fragmentMediaFiles$directory$node.stub(_res);
+}
+
+class Fragment$fragmentMediaFiles$directory$node {
+  Fragment$fragmentMediaFiles$directory$node({
+    required this.url,
+    this.$__typename = 'Node',
+  });
+
+  factory Fragment$fragmentMediaFiles$directory$node.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final l$url = json['url'];
+    final l$$__typename = json['__typename'];
+    return Fragment$fragmentMediaFiles$directory$node(
+      url: (l$url as String),
+      $__typename: (l$$__typename as String),
+    );
+  }
+
+  final String url;
+
+  final String $__typename;
+
+  Map<String, dynamic> toJson() {
+    final _resultData = <String, dynamic>{};
+    final l$url = url;
+    _resultData['url'] = l$url;
+    final l$$__typename = $__typename;
+    _resultData['__typename'] = l$$__typename;
+    return _resultData;
+  }
+
+  @override
+  int get hashCode {
+    final l$url = url;
+    final l$$__typename = $__typename;
+    return Object.hashAll([l$url, l$$__typename]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Fragment$fragmentMediaFiles$directory$node ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$url = url;
+    final lOther$url = other.url;
+    if (l$url != lOther$url) {
+      return false;
+    }
+    final l$$__typename = $__typename;
+    final lOther$$__typename = other.$__typename;
+    if (l$$__typename != lOther$$__typename) {
+      return false;
+    }
+    return true;
+  }
+}
+
+extension UtilityExtension$Fragment$fragmentMediaFiles$directory$node
+    on Fragment$fragmentMediaFiles$directory$node {
+  CopyWith$Fragment$fragmentMediaFiles$directory$node<
+    Fragment$fragmentMediaFiles$directory$node
+  >
+  get copyWith =>
+      CopyWith$Fragment$fragmentMediaFiles$directory$node(this, (i) => i);
+}
+
+abstract class CopyWith$Fragment$fragmentMediaFiles$directory$node<TRes> {
+  factory CopyWith$Fragment$fragmentMediaFiles$directory$node(
+    Fragment$fragmentMediaFiles$directory$node instance,
+    TRes Function(Fragment$fragmentMediaFiles$directory$node) then,
+  ) = _CopyWithImpl$Fragment$fragmentMediaFiles$directory$node;
+
+  factory CopyWith$Fragment$fragmentMediaFiles$directory$node.stub(TRes res) =
+      _CopyWithStubImpl$Fragment$fragmentMediaFiles$directory$node;
+
+  TRes call({String? url, String? $__typename});
+}
+
+class _CopyWithImpl$Fragment$fragmentMediaFiles$directory$node<TRes>
+    implements CopyWith$Fragment$fragmentMediaFiles$directory$node<TRes> {
+  _CopyWithImpl$Fragment$fragmentMediaFiles$directory$node(
+    this._instance,
+    this._then,
+  );
+
+  final Fragment$fragmentMediaFiles$directory$node _instance;
+
+  final TRes Function(Fragment$fragmentMediaFiles$directory$node) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({Object? url = _undefined, Object? $__typename = _undefined}) =>
+      _then(
+        Fragment$fragmentMediaFiles$directory$node(
+          url: url == _undefined || url == null
+              ? _instance.url
+              : (url as String),
+          $__typename: $__typename == _undefined || $__typename == null
+              ? _instance.$__typename
+              : ($__typename as String),
+        ),
+      );
+}
+
+class _CopyWithStubImpl$Fragment$fragmentMediaFiles$directory$node<TRes>
+    implements CopyWith$Fragment$fragmentMediaFiles$directory$node<TRes> {
+  _CopyWithStubImpl$Fragment$fragmentMediaFiles$directory$node(this._res);
+
+  TRes _res;
+
+  call({String? url, String? $__typename}) => _res;
+}
 
 class Fragment$fragmentMediaFiles$mediaFileStreams {
   Fragment$fragmentMediaFiles$mediaFileStreams({

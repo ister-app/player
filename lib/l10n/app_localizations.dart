@@ -218,6 +218,18 @@ abstract class AppLocalizations {
   /// **'E{number}'**
   String episodePrefix(int number);
 
+  /// Title shown when the server cannot be reached
+  ///
+  /// In en, this message translates to:
+  /// **'Server unreachable'**
+  String get serverUnreachable;
+
+  /// Button label to navigate back to the server list
+  ///
+  /// In en, this message translates to:
+  /// **'Back to server overview'**
+  String get backToServerOverview;
+
   /// Close a dialog
   ///
   /// In en, this message translates to:
@@ -235,6 +247,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Raw data'**
   String get rawData;
+
+  /// No description provided for @nodes.
+  ///
+  /// In en, this message translates to:
+  /// **'Nodes'**
+  String get nodes;
+
+  /// No description provided for @server.
+  ///
+  /// In en, this message translates to:
+  /// **'Server'**
+  String get server;
 }
 
 class _AppLocalizationsDelegate

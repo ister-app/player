@@ -1,4 +1,5 @@
 import 'package:player/graphql/fragmentImages.graphql.dart';
+import 'package:player/graphql/fragmentMediafiles.graphql.dart';
 
 import 'ImageTypes.dart';
 
@@ -19,5 +20,15 @@ class ImageUtil {
       }
     }
     return null;
+  }
+
+  static String? buildUrl(Fragment$fragmentImages? image) {
+    if (image == null) return null;
+    return '${image.directory.node.url}/images/${image.id}/download';
+  }
+
+  static String? buildMediaFileUrl(Fragment$fragmentMediaFiles? mediaFile) {
+    if (mediaFile == null) return null;
+    return '${mediaFile.directory.node.url}/mediaFile/${mediaFile.id}/download';
   }
 }

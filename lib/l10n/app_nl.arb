@@ -19,7 +19,11 @@
   "season": "Seizoen {number}",
   "episode": "Aflevering {number}",
   "episodePrefix": "A{number}",
+  "serverUnreachable": "Server niet bereikbaar",
+  "backToServerOverview": "Terug naar serveroverzicht",
   "close": "Sluiten",
   "json": "JSON",
-  "rawData": "Raw data"
+  "rawData": "Raw data",
+  "nodes": "Nodes",
+  "server": "Server"
 }

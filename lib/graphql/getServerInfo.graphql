@@ -3,6 +3,11 @@ query getServerInfoQuery {
         name
         openIdUrl
         url
-        version
+        nodes {
+            id
+            name
+            url
+            version
+        }
     }
 }

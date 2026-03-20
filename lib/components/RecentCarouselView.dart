@@ -133,7 +133,7 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
                             .episode(episode.number ?? 0),
                     subTitle:
                         MetadataUtil.getDescription(episode.metadata) ?? "",
-                    imageUrl: imageByType?.id,
+                    imageUrl: ImageUtil.buildUrl(imageByType),
                     blurHash: imageByType?.blurHash,
                     progress: episode.watchStatus != null &&
                             episode.watchStatus!.isNotEmpty &&

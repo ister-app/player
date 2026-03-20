@@ -58,6 +58,7 @@ class ShowOverviewPage extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(
+            leading: AutoLeadingButton(),
             title: title,
           ),
           body: body,

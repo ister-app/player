@@ -64,6 +64,72 @@ Enum$SortingOrder fromJson$Enum$SortingOrder(String value) {
   }
 }
 
+enum Enum$LibraryType {
+  MOVIE,
+  SHOW,
+  $unknown;
+
+  factory Enum$LibraryType.fromJson(String value) =>
+      fromJson$Enum$LibraryType(value);
+
+  String toJson() => toJson$Enum$LibraryType(this);
+}
+
+String toJson$Enum$LibraryType(Enum$LibraryType e) {
+  switch (e) {
+    case Enum$LibraryType.MOVIE:
+      return r'MOVIE';
+    case Enum$LibraryType.SHOW:
+      return r'SHOW';
+    case Enum$LibraryType.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$LibraryType fromJson$Enum$LibraryType(String value) {
+  switch (value) {
+    case r'MOVIE':
+      return Enum$LibraryType.MOVIE;
+    case r'SHOW':
+      return Enum$LibraryType.SHOW;
+    default:
+      return Enum$LibraryType.$unknown;
+  }
+}
+
+enum Enum$DirectoryType {
+  LIBRARY,
+  CACHE,
+  $unknown;
+
+  factory Enum$DirectoryType.fromJson(String value) =>
+      fromJson$Enum$DirectoryType(value);
+
+  String toJson() => toJson$Enum$DirectoryType(this);
+}
+
+String toJson$Enum$DirectoryType(Enum$DirectoryType e) {
+  switch (e) {
+    case Enum$DirectoryType.LIBRARY:
+      return r'LIBRARY';
+    case Enum$DirectoryType.CACHE:
+      return r'CACHE';
+    case Enum$DirectoryType.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$DirectoryType fromJson$Enum$DirectoryType(String value) {
+  switch (value) {
+    case r'LIBRARY':
+      return Enum$DirectoryType.LIBRARY;
+    case r'CACHE':
+      return Enum$DirectoryType.CACHE;
+    default:
+      return Enum$DirectoryType.$unknown;
+  }
+}
+
 enum Enum$__TypeKind {
   SCALAR,
   OBJECT,

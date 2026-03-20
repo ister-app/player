@@ -108,8 +108,7 @@ class MediaPlayerHandler extends BaseAudioHandler
                   ImageTypes.background,
                 );
                 imgUri = imageByType != null
-                    ? Uri.parse(
-                        '${ClientManager.getHttpOrHttps(serverName!)}://$serverName/images/${imageByType.id}/download')
+                    ? Uri.tryParse(ImageUtil.buildUrl(imageByType) ?? '')
                     : null;
               }
 
@@ -129,13 +128,13 @@ class MediaPlayerHandler extends BaseAudioHandler
 
       playQueue = playQueueObject;
       currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
-    }
 
-    await _openMedia(
-      serverName: newServerName,
-      mediaId: newEpisode.mediaFile!.first.id,
-      startTimeInMilliseconds: _startTimeMs,
-    );
+      await _openMedia(
+        serverName: newServerName,
+        mediaUrl: ImageUtil.buildMediaFileUrl(newEpisode.mediaFile!.first) ?? '',
+        startTimeInMilliseconds: _startTimeMs,
+      );
+    }
     updatePlaybackState();
   }
 
@@ -149,14 +148,13 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   Future<void> _openMedia({
     required String serverName,
-    required String mediaId,
+    required String mediaUrl,
     int? startTimeInMilliseconds,
   }) async {
-    print("openmedia: " + serverName + mediaId);
+    print("openmedia: " + serverName + mediaUrl);
     final start = Duration(milliseconds: startTimeInMilliseconds ?? 0);
     final media = Media(
-      '${ClientManager.getHttpOrHttps(serverName)}://$serverName'
-      '/mediaFile/$mediaId/download',
+      mediaUrl,
       start: start,
       httpHeaders: LoginManager.getHeaders(serverName),
     );
@@ -258,7 +256,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       episode = newEpisodeList.first.episode;
       await _openMedia(
         serverName: mediaItemId.serverName,
-        mediaId: newEpisodeList.first.episode!.mediaFile!.first.id,
+        mediaUrl: ImageUtil.buildMediaFileUrl(newEpisodeList.first.episode!.mediaFile!.first) ?? '',
         startTimeInMilliseconds: 0,
       );
       final playQueueObject = await _playQueueService.updateProgress(

@@ -31,7 +31,7 @@ class ClientManager {
   }
 
   static String getHttpOrHttps(String url) {
-    if (url == "localhost:8080") {
+    if (url.contains("localhost")) {
       return "http";
     } else {
       return "https";
