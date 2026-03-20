@@ -1,4 +1,5 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:media_kit/media_kit.dart';
@@ -36,27 +37,33 @@ class Main extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appRouter = AppRouter();
-    return MaterialApp.router(
-      title: 'Ister',
-      localizationsDelegates: [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: [
-        Locale('en'), // English
-        Locale('nl'), // Dutch
-      ],
-      theme: ThemeData(
-        brightness: Brightness.light,
-        fontFamily: 'Roboto',
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        fontFamily: 'Roboto',
-      ),
-      routerConfig: appRouter.config(),
+    return DynamicColorBuilder(
+      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+        return MaterialApp.router(
+          title: 'Ister',
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: [
+            Locale('en'), // English
+            Locale('nl'), // Dutch
+          ],
+          theme: ThemeData(
+            colorScheme: lightDynamic ?? ColorScheme.fromSeed(seedColor: Colors.blue),
+            brightness: Brightness.light,
+            fontFamily: 'Roboto',
+          ),
+          darkTheme: ThemeData(
+            colorScheme: darkDynamic ?? ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
+            brightness: Brightness.dark,
+            fontFamily: 'Roboto',
+          ),
+          routerConfig: appRouter.config(),
+        );
+      },
     );
   }
 }
