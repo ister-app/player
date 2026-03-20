@@ -1,5 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/graphql/getServerInfo.graphql.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -93,16 +96,74 @@ class _ServerListState extends State<ServerList> {
                               itemCount: snapshot.data?.length,
                               itemBuilder: (BuildContext context, int index) {
                                 if (snapshot.data?[index] != null) {
-                                  return Card(
-                                      child: ListTile(
-                                          leading: Icon(Icons.computer),
-                                          trailing: IconButton(
-                                            onPressed: () => _deleteServer(
-                                                snapshot.data![index]),
-                                            icon: Icon(Icons.delete),
+                                  final serverUrl = snapshot.data![index];
+                                  return GraphQLProvider(
+                                    client: ClientManager.getClientForUrl(serverUrl),
+                                    child: Query(
+                                      options: QueryOptions(
+                                        document: documentNodeQuerygetServerInfoQuery,
+                                        fetchPolicy: FetchPolicy.cacheAndNetwork,
+                                      ),
+                                      builder: (QueryResult result,
+                                          {VoidCallback? refetch, FetchMore? fetchMore}) {
+                                        final isLoading = result.data == null && result.isLoading;
+                                        final hasError = result.hasException;
+
+                                        if (isLoading) {
+                                          return Skeletonizer(
+                                            enabled: true,
+                                            child: Card(
+                                              child: ListTile(
+                                                leading: const Icon(Icons.dns),
+                                                title: Text(BoneMock.name),
+                                                subtitle: Text(BoneMock.words(3)),
+                                              ),
+                                            ),
+                                          );
+                                        }
+
+                                        if (hasError) {
+                                          return Card(
+                                            child: ListTile(
+                                              leading: Icon(Icons.dns,
+                                                  color: Theme.of(context).disabledColor),
+                                              title: Text(serverUrl,
+                                                  style: TextStyle(
+                                                      color: Theme.of(context).disabledColor)),
+                                              subtitle: Text(
+                                                result.exception.toString(),
+                                                style: TextStyle(
+                                                    color: Theme.of(context).disabledColor),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              trailing: IconButton(
+                                                onPressed: () => _deleteServer(serverUrl),
+                                                icon: Icon(Icons.delete,
+                                                    color: Theme.of(context).disabledColor),
+                                              ),
+                                            ),
+                                          );
+                                        }
+
+                                        final info = Query$getServerInfoQuery
+                                            .fromJson(result.data!)
+                                            .getServerInfo;
+                                        return Card(
+                                          child: ListTile(
+                                            leading: const Icon(Icons.dns),
+                                            trailing: IconButton(
+                                              onPressed: () => _deleteServer(serverUrl),
+                                              icon: const Icon(Icons.delete),
+                                            ),
+                                            title: Text(info?.name ?? serverUrl),
+                                            subtitle: info != null ? Text(info.url) : null,
+                                            onTap: () => goToServerRoute(serverUrl),
                                           ),
-                                          title: Text(snapshot.data![index]),
-                                          onTap: () => goToServerRoute(snapshot.data![index])));
+                                        );
+                                      },
+                                    ),
+                                  );
                                 }
                               });
                         }
