@@ -75,14 +75,14 @@ class ShowOverviewContentPage extends StatelessWidget {
         return Container(
           height: constraints.maxWidth < 800 ? 300 : 500,
           width: constraints.maxWidth,
-          decoration: BoxDecoration(color: Colors.grey),
+          decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
           child: (imageUrl != null && imageUrl != '')
               ? CachedNetworkImage(
                   placeholder: (context, url) => blurHash != null
                       ? BlurHash(
                           hash: blurHash,
                           optimizationMode: BlurHashOptimizationMode.standard,
-                          color: Colors.grey,
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
                           duration: Duration.zero,
                         )
                       : Container(),

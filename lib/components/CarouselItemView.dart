@@ -37,7 +37,7 @@ class CarouselItemView extends StatelessWidget {
               alignment: AlignmentDirectional.bottomStart,
               children: <Widget>[
                 Container(
-                    decoration: BoxDecoration(color: Colors.grey),
+                    decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
                     child: OverflowBox(
                       maxWidth: width * 7 / 8,
                       minWidth: width * 7 / 8,
@@ -47,7 +47,7 @@ class CarouselItemView extends StatelessWidget {
                                 hash: blurHash!,
                                 optimizationMode:
                                     BlurHashOptimizationMode.standard,
-                                color: Colors.grey,
+                                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                                 duration: Duration.zero,
                               ) : Container(),
                               imageUrl: imageUrl!,

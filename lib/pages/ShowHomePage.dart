@@ -24,6 +24,24 @@ class ShowHomePage extends StatefulWidget {
 class _ShowHomePageState extends State<ShowHomePage> {
   String? _selectedLibraryId;
   Enum$LibraryType? _selectedLibraryType;
+  Refetch? _refetchLibraries;
+  int _refreshCount = 0;
+
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
+
+  void triggerRefresh() {
+    _refreshIndicatorKey.currentState?.show();
+  }
+
+  Future<void> _refresh() async {
+    try {
+      if (_refetchLibraries != null) await _refetchLibraries!();
+    } catch (_) {}
+    setState(() {
+      _refreshCount++;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +51,23 @@ class _ShowHomePageState extends State<ShowHomePage> {
         fetchPolicy: FetchPolicy.cacheAndNetwork,
       ),
       builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
+        _refetchLibraries = refetch;
+
         final libraries = result.data == null
             ? <Query$libraries$libraries>[]
             : (Query$libraries.fromJson(result.data!).libraries ??
                 <Query$libraries$libraries>[]);
+
+        // Auto-select first library when loaded
+        if (_selectedLibraryId == null && libraries.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            setState(() {
+              _selectedLibraryId = libraries.first.id;
+              _selectedLibraryType = libraries.first.type;
+            });
+          });
+        }
 
         return Scaffold(
           appBar: AppBar(
@@ -46,49 +77,52 @@ class _ShowHomePageState extends State<ShowHomePage> {
                 DropdownButtonHideUnderline(
                   child: DropdownButton<String?>(
                     value: _selectedLibraryId,
-                    items: [
-                      ...libraries.map((lib) => DropdownMenuItem<String?>(
-                            value: lib.id,
-                            child: Text(lib.name),
-                          )),
-                    ],
+                    items: libraries.map((lib) => DropdownMenuItem<String?>(
+                          value: lib.id,
+                          child: Text(lib.name),
+                        )).toList(),
                     onChanged: (value) {
                       setState(() {
                         _selectedLibraryId = value;
                         _selectedLibraryType = value == null
                             ? null
-                            : libraries
-                                .firstWhere((l) => l.id == value)
-                                .type;
+                            : libraries.firstWhere((l) => l.id == value).type;
                       });
                     },
                   ),
                 ),
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: triggerRefresh,
+              ),
             ],
           ),
-          body: _buildBody(),
+          body: RefreshIndicator(
+            key: _refreshIndicatorKey,
+            onRefresh: _refresh,
+            child: _buildBody(),
+          ),
         );
       },
     );
   }
 
   Widget _buildBody() {
+    final key = ValueKey('${_selectedLibraryId ?? 'all'}-$_refreshCount');
     if (_selectedLibraryId == null) {
-      // Show all: shows + movies
-      return Column(
-        children: [
-          Expanded(
-            child: TvShowScroll(serverName: widget.serverName),
-          ),
-        ],
+      return TvShowScroll(
+        key: key,
+        serverName: widget.serverName,
       );
     } else if (_selectedLibraryType == Enum$LibraryType.SHOW) {
       return TvShowScroll(
+        key: key,
         serverName: widget.serverName,
         libraryId: _selectedLibraryId,
       );
     } else {
       return MovieScroll(
+        key: key,
         serverName: widget.serverName,
         libraryId: _selectedLibraryId,
       );

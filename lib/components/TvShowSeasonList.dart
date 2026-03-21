@@ -132,7 +132,7 @@ class TvShowSeasonList extends StatelessWidget {
             Container(
                 height: 80,
                 width: 120,
-                decoration: BoxDecoration(color: Colors.grey),
+                decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
                 child: OverflowBox(
                   child: (imageUrl != null && imageUrl != '')
                       ? CachedNetworkImage(
@@ -141,7 +141,7 @@ class TvShowSeasonList extends StatelessWidget {
                                   hash: blurHash,
                                   optimizationMode:
                                       BlurHashOptimizationMode.standard,
-                                  color: Colors.grey,
+                                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                                   duration: Duration.zero,
                                 )
                               : Container(),
@@ -157,7 +157,7 @@ class TvShowSeasonList extends StatelessWidget {
                 opacity: 0.8,
                 child: Container(
                   padding: const EdgeInsets.all(4),
-                  color: Colors.black,
+                  color: Theme.of(context).colorScheme.inverseSurface,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -169,7 +169,7 @@ class TvShowSeasonList extends StatelessWidget {
                         style: Theme.of(context)
                             .textTheme
                             .bodySmall
-                            ?.copyWith(color: Colors.white),
+                            ?.copyWith(color: Theme.of(context).colorScheme.onInverseSurface),
                       ),
                     ],
                   ),

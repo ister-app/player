@@ -16,12 +16,12 @@ class ServerSettingsClusterPage extends StatelessWidget {
     @PathParam.inherit('serverName') required this.serverName,
   });
 
-  Widget _sectionHeader(BuildContext context, String title) {
+  Widget _sectionLabel(BuildContext context, String title) {
     return Padding(
-      padding: const EdgeInsets.only(top: 4.0, bottom: 2.0),
+      padding: const EdgeInsets.only(left: 4.0, top: 16.0, bottom: 4.0),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
       ),
@@ -53,24 +53,33 @@ class ServerSettingsClusterPage extends StatelessWidget {
               return Skeletonizer(
                 enabled: true,
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.all(16.0),
                   children: [
-                    ListTile(
-                      leading: const Icon(Icons.dns, size: 32),
-                      title: Text(BoneMock.name),
-                      subtitle: Text(BoneMock.words(3)),
-                    ),
-                    const Divider(),
-                    _sectionHeader(context, loc.nodes),
-                    ...List.generate(
-                      2,
-                      (_) => ListTile(
-                        dense: true,
-                        leading: Icon(Icons.storage, size: 20, color: mutedColor),
+                    Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.dns, size: 32),
                         title: Text(BoneMock.name),
                         subtitle: Text(BoneMock.words(3)),
-                        trailing: const Chip(label: Text('1.0.0')),
+                      ),
+                    ),
+                    _sectionLabel(context, loc.nodes),
+                    Card(
+                      child: Column(
+                        children: List.generate(
+                          2,
+                          (i) => Column(
+                            children: [
+                              if (i > 0) const Divider(height: 1, indent: 56),
+                              ListTile(
+                                leading: Icon(Icons.storage,
+                                    size: 20, color: mutedColor),
+                                title: Text(BoneMock.name),
+                                subtitle: Text(BoneMock.words(3)),
+                                trailing: const Chip(label: Text('1.0.0')),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -85,45 +94,55 @@ class ServerSettingsClusterPage extends StatelessWidget {
                 Theme.of(context).colorScheme.onSurfaceVariant;
 
             return ListView(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.all(16.0),
               children: [
                 if (info != null) ...[
-                  ListTile(
-                    leading: const Icon(Icons.dns, size: 32),
-                    title: Text(
-                      info.name,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    subtitle: Text(
-                      info.url,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ),
-                  const Divider(),
-                ],
-                _sectionHeader(context, loc.nodes),
-                ...nodes.map((node) => ListTile(
-                      dense: true,
-                      leading:
-                          Icon(Icons.storage, size: 20, color: mutedColor),
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.dns, size: 32),
                       title: Text(
-                        node.name,
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        info.name,
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
                       subtitle: Text(
-                        node.url,
+                        info.url,
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
-                      trailing: Chip(
-                        label: Text(
-                          node.version,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        padding: EdgeInsets.zero,
-                        visualDensity: VisualDensity.compact,
-                      ),
-                    )),
+                    ),
+                  ),
+                ],
+                if (nodes.isNotEmpty) ...[
+                  _sectionLabel(context, loc.nodes),
+                  Card(
+                    child: Column(
+                      children: [
+                        for (int i = 0; i < nodes.length; i++) ...[
+                          if (i > 0) const Divider(height: 1, indent: 56),
+                          ListTile(
+                            leading: Icon(Icons.storage,
+                                size: 20, color: mutedColor),
+                            title: Text(
+                              nodes[i].name,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            subtitle: Text(
+                              nodes[i].url,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            trailing: Chip(
+                              label: Text(
+                                nodes[i].version,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              padding: EdgeInsets.zero,
+                              visualDensity: VisualDensity.compact,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
               ],
             );
           },

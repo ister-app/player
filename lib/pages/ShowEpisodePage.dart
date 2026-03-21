@@ -132,7 +132,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
       LayoutBuilder(
         builder: (context, constraints) {
           return Container(
-            decoration: BoxDecoration(color: Colors.grey),
+            decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
             height: constraints.maxWidth < 800 ? 300 : 500,
             child: episode != null && loadComplete
                 ? kIsWeb ||
@@ -144,7 +144,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                         return Container(
                           height: constraints.maxWidth < 800 ? 300 : 500,
                           width: constraints.maxWidth,
-                          decoration: BoxDecoration(color: Colors.grey),
+                          decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
                           child: (imageByType?.id != null)
                               ? CachedNetworkImage(
                                   placeholder: (context, url) =>
@@ -154,7 +154,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                                               optimizationMode:
                                                   BlurHashOptimizationMode
                                                       .standard,
-                                              color: Colors.grey,
+                                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
                                               duration: Duration.zero,
                                             )
                                           : Container(),

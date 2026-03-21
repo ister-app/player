@@ -99,7 +99,7 @@ class _MoviePageState extends State<MoviePage> {
       LayoutBuilder(
         builder: (context, constraints) {
           return Container(
-            decoration: const BoxDecoration(color: Colors.grey),
+            decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
             height: constraints.maxWidth < 800 ? 300 : 500,
             child: movie != null && loadComplete
                 ? kIsWeb ||
@@ -111,7 +111,7 @@ class _MoviePageState extends State<MoviePage> {
                         return Container(
                           height: constraints.maxWidth < 800 ? 300 : 500,
                           width: constraints.maxWidth,
-                          decoration: const BoxDecoration(color: Colors.grey),
+                          decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
                           child: imageByType != null
                               ? Image.network(
                                   ImageUtil.buildUrl(imageByType)!,

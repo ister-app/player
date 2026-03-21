@@ -55,10 +55,15 @@ class _ServerSettingsLanguagePageState
       ..addAll(newList));
   }
 
-  Widget _sectionHeader(BuildContext context, String title) {
+  Widget _sectionLabel(BuildContext context, String title) {
     return Padding(
-      padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
-      child: Text(title, style: Theme.of(context).textTheme.titleMedium),
+      padding: const EdgeInsets.only(left: 4.0, top: 16.0, bottom: 4.0),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+      ),
     );
   }
 
@@ -81,27 +86,28 @@ class _ServerSettingsLanguagePageState
             return Center(
               child: Text(
                 loc.loadError(snapshot.error!),
-                style: const TextStyle(color: Colors.red),
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
                 textAlign: TextAlign.center,
               ),
             );
           }
 
           return ListView(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.all(16.0),
             children: [
-              _sectionHeader(context, loc.preferredSpoken),
-              LanguageFormField(
-                initialValue: _spokenLanguages,
-                onChanged: _handleSpokenChanged,
+              _sectionLabel(context, loc.preferredSpoken),
+              Card(
+                child: LanguageFormField(
+                  initialValue: _spokenLanguages,
+                  onChanged: _handleSpokenChanged,
+                ),
               ),
-              const SizedBox(height: 8),
-              const Divider(),
-              _sectionHeader(context, loc.preferredSubtitle),
-              LanguageFormField(
-                initialValue: _subtitleLanguages,
-                onChanged: _handleSubtitleChanged,
+              _sectionLabel(context, loc.preferredSubtitle),
+              Card(
+                child: LanguageFormField(
+                  initialValue: _subtitleLanguages,
+                  onChanged: _handleSubtitleChanged,
+                ),
               ),
             ],
           );
