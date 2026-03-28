@@ -6,11 +6,13 @@ import 'package:media_kit_video/media_kit_video.dart';
 import 'package:player/dto/IsterMediaItem.dart';
 import 'package:player/dto/IsterMediaService.dart';
 import 'package:player/dto/MediaItemId.dart';
+import 'package:flutter/foundation.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/LanguagePreferences.dart';
 import 'package:player/utils/LanguageService.dart';
 import 'package:player/utils/LoggerService.dart';
-import 'package:player/utils/LoginManager.dart';
+import 'package:player/utils/PlaybackPreferences.dart';
+import 'package:player/utils/StreamTokenService.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../graphql/fragmentEpisode.graphql.dart';
@@ -39,6 +41,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         enableHardwareAcceleration: true,
       ),
     );
+    _videoController.seekHandler = seekAware;
 
     _playQueueService = PlayQueueService();
 
@@ -76,6 +79,16 @@ class MediaPlayerHandler extends BaseAudioHandler
   String? serverName;
   GraphQLClient? graphQLClient;
 
+  // Track selection state for reload-based switching
+  String? _currentMediaUrl;
+  SubtitleTrack? _forcedSubtitle;
+  AudioTrack? _forcedAudio;
+  // The position (ms) at which the current stream was opened. Seeking backward
+  // past this point means the HLS subtitle segments before it were never
+  // fetched, so we must reload the stream from the new position.
+  // ignore: unused_field
+  int _streamOpenPositionMs = 0;
+
   // ── Public API used by the widget ─────────────────────────────────────
   Future<void> startPlayQueue(
     GraphQLClient client,
@@ -109,23 +122,22 @@ class MediaPlayerHandler extends BaseAudioHandler
               Uri? imgUri;
               if (e.episode?.images != null && serverName != null) {
                 final imageByType = ImageUtil.getImageByType(
-                  episode!.images,
+                  e.episode!.images,
                   ImageTypes.background,
                 );
                 imgUri = imageByType != null
-                    ? Uri.tryParse(ImageUtil.buildUrl(imageByType) ?? '')
+                    ? Uri.tryParse(ImageUtil.buildUrl(imageByType, token: StreamTokenService.getToken(newServerName)) ?? '')
                     : null;
               }
 
               return MediaItem(
                 id: MediaItemId(newServerName, IsterMediaTypes.episode, e.id).toString(),
-                title: MetadataUtil.getTitle(e.episode?.metadata) ?? "unkown",
+                title: MetadataUtil.getTitle(e.episode?.metadata) ?? "unknown",
                 artist: "ister",
                 duration: Duration(
                     milliseconds:
                         e.episode?.mediaFile?.first.durationInMilliseconds ?? 0),
                 artUri: imgUri,
-                artHeaders: LoginManager.getHeaders(serverName ?? ""),
               );
             },
           ).toList() ??
@@ -134,9 +146,11 @@ class MediaPlayerHandler extends BaseAudioHandler
       playQueue = playQueueObject;
       currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
+      final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay();
+      final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode();
       await _openMedia(
         serverName: newServerName,
-        mediaUrl: ImageUtil.buildMediaFileUrl(newEpisode.mediaFile!.first) ?? '',
+        mediaUrl: ImageUtil.buildMediaFileUrl(newEpisode.mediaFile!.first, token: StreamTokenService.getToken(newServerName), direct: directPlay, transcode: transcode) ?? '',
         startTimeInMilliseconds: _startTimeMs,
       );
     }
@@ -193,7 +207,7 @@ class MediaPlayerHandler extends BaseAudioHandler
                 ImageTypes.background,
               );
               imgUri = imageByType != null
-                  ? Uri.tryParse(ImageUtil.buildUrl(imageByType) ?? '')
+                  ? Uri.tryParse(ImageUtil.buildUrl(imageByType, token: StreamTokenService.getToken(newServerName)) ?? '')
                   : null;
             }
             return MediaItem(
@@ -204,7 +218,6 @@ class MediaPlayerHandler extends BaseAudioHandler
                   milliseconds:
                       e.movie?.mediaFile?.first.durationInMilliseconds ?? 0),
               artUri: imgUri,
-              artHeaders: LoginManager.getHeaders(serverName ?? ""),
             );
           }).toList() ??
           []);
@@ -212,9 +225,11 @@ class MediaPlayerHandler extends BaseAudioHandler
       playQueue = playQueueObject;
       currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
+      final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay();
+      final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode();
       await _openMedia(
         serverName: newServerName,
-        mediaUrl: ImageUtil.buildMediaFileUrl(newMovie.mediaFile!.first) ?? '',
+        mediaUrl: ImageUtil.buildMediaFileUrl(newMovie.mediaFile!.first, token: StreamTokenService.getToken(newServerName), direct: directPlay, transcode: transcode) ?? '',
         startTimeInMilliseconds: _movieStartTimeMs,
         isMovie: true,
       );
@@ -228,15 +243,18 @@ class MediaPlayerHandler extends BaseAudioHandler
     int? startTimeInMilliseconds,
     bool isMovie = false,
   }) async {
-    print("openmedia: " + serverName + mediaUrl);
+    _currentMediaUrl = mediaUrl;
+    _streamOpenPositionMs = startTimeInMilliseconds ?? 0;
+    LoggerService().logger.d('openmedia: $serverName$mediaUrl');
     final start = Duration(milliseconds: startTimeInMilliseconds ?? 0);
     final media = Media(
       mediaUrl,
       start: start,
-      httpHeaders: LoginManager.getHeaders(serverName),
     );
 
     try {
+      _audioPreferenceApplied = false;
+      _subtitlePreferenceApplied = false;
       await _player.open(media);
       _playing = true;
       final currentItemId = playQueue?.currentItemId;
@@ -265,7 +283,34 @@ class MediaPlayerHandler extends BaseAudioHandler
   Future<void> stop() => _player.pause();
 
   @override
-  Future<void> seek(Duration position) => _player.seek(position);
+  Future<void> seek(Duration position) => seekAware(position);
+
+  /// Seek with subtitle awareness. When seeking backward with an active subtitle
+  /// track, mpv's HLS subtitle rendering stalls (it does not re-fire sub-text
+  /// events after a backward seek). Reloading the stream from [position]
+  /// ensures HLS subtitle segments are fetched fresh from that point, fixing
+  /// subtitle display. Forward seeks are passed straight through to the player.
+  Future<void> seekAware(Duration position) async {
+    final currentPosition = _player.state.position;
+    final isBackward = position < currentPosition;
+    final sub = _player.state.track.subtitle;
+    final hasActiveSub = sub.id != 'no' && sub.id != 'auto';
+    final url = _currentMediaUrl;
+
+    if (!kIsWeb && isBackward && hasActiveSub && url != null && serverName != null) {
+      _forcedSubtitle = sub;
+      _forcedAudio = _player.state.track.audio;
+      _audioPreferenceApplied = false;
+      _subtitlePreferenceApplied = false;
+      await _openMedia(
+        serverName: serverName!,
+        mediaUrl: url,
+        startTimeInMilliseconds: position.inMilliseconds,
+      );
+    } else {
+      await _player.seek(position);
+    }
+  }
 
   @override
   Future<void> skipToNext() async {
@@ -285,18 +330,18 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   @override
   Future<void> playFromUri(Uri uri, [Map<String, dynamic>? extras]) async {
-    print("playformuri " + uri.toString());
+    LoggerService().logger.d('playformuri $uri');
   }
 
   @override
   Future<void> playMediaItem(MediaItem mediaItem) async {
-    print("playMediaItem " + mediaItem.toString());
+    LoggerService().logger.d('playMediaItem $mediaItem');
   }
 
   @override
   Future<void> playFromMediaId(String mediaId,
       [Map<String, dynamic>? extras]) async {
-    print("playFromMediaId: $mediaId");
+    LoggerService().logger.d('playFromMediaId: $mediaId');
 
     final mediaItemId = MediaItemId.byStringId(mediaId);
 
@@ -304,7 +349,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     final currentQueue = queue.value;
     final index = currentQueue.indexWhere((e) => e.id == mediaId);
     if (index != -1) {
-      print("zit in huidige playqueue mediaId: $mediaId");
+      LoggerService().logger.d('zit in huidige playqueue mediaId: $mediaId');
       await skipToQueueItem(index);
       return;
     }
@@ -332,9 +377,11 @@ class MediaPlayerHandler extends BaseAudioHandler
         .toList();
     if (newEpisodeList != null && newEpisodeList.isNotEmpty) {
       episode = newEpisodeList.first.episode;
+      final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay();
+      final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode();
       await _openMedia(
         serverName: mediaItemId.serverName,
-        mediaUrl: ImageUtil.buildMediaFileUrl(newEpisodeList.first.episode!.mediaFile!.first) ?? '',
+        mediaUrl: ImageUtil.buildMediaFileUrl(newEpisodeList.first.episode!.mediaFile!.first, token: StreamTokenService.getToken(mediaItemId.serverName), direct: directPlay, transcode: transcode) ?? '',
         startTimeInMilliseconds: 0,
       );
       final playQueueObject = await _playQueueService.updateProgress(
@@ -363,17 +410,21 @@ class MediaPlayerHandler extends BaseAudioHandler
   @override
   Future<List<MediaItem>> getChildren(String parentMediaId,
       [Map<String, dynamic>? options]) async {
-    print("getChildren: $parentMediaId");
+    LoggerService().logger.d('getChildren: $parentMediaId');
     if (parentMediaId == AudioService.recentRootId) {
       return _recentSubject.value;
     } else if (parentMediaId == AudioService.browsableRootId) {
+      if (serverName == null) {
+        LoggerService().logger.w('getChildren: serverName is null, cannot build browsable root');
+        return [];
+      }
       return Future.value(List.of({
         MediaItem(
-          id: MediaItemId(serverName ?? "media.droogers.cloud/api", IsterMediaTypes.list, "recent").toString(),
+          id: MediaItemId(serverName!, IsterMediaTypes.list, "recent").toString(),
           title: "Recent",
           playable: false,
         ),
-        MediaItem(id: MediaItemId(serverName ?? "media.droogers.cloud/api", IsterMediaTypes.list, "added").toString(), title: "Library", playable: false),
+        MediaItem(id: MediaItemId(serverName!, IsterMediaTypes.list, "added").toString(), title: "Library", playable: false),
       }));
     }
 
@@ -437,17 +488,87 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   void _listenToTracks() {
     _player.stream.tracks.listen((tracks) async {
-      await _selectPreferredTrack<SubtitleTrack>(
-        tracks.subtitle,
-        LanguagePreferences.getSubtitleLanguages,
-        (t) => _player.setSubtitleTrack(t),
-      );
-      await _selectPreferredTrack<AudioTrack>(
-        tracks.audio,
-        LanguagePreferences.getSpokenLanguages,
-        (t) => _player.setAudioTrack(t),
-      );
+      debugPrint('[TRACKS_HANDLER] audioApplied=$_audioPreferenceApplied subApplied=$_subtitlePreferenceApplied | audio=${tracks.audio.map((t) => t.id).join(",")} sub=${tracks.subtitle.map((t) => t.id).join(",")}');
+
+      if (!_audioPreferenceApplied &&
+          tracks.audio.any((t) => t.id != 'auto' && t.id != 'no')) {
+        _audioPreferenceApplied = true;
+        final forcedAudio = _forcedAudio;
+        _forcedAudio = null;
+        if (forcedAudio != null && forcedAudio.id != 'auto') {
+          // Restore the audio track the user had selected before the reload.
+          final match = tracks.audio.firstWhere(
+            (t) => t.language != null && t.language == forcedAudio.language,
+            orElse: () => AudioTrack.auto(),
+          );
+          debugPrint('[TRACKS_HANDLER] restoring forced audio: ${match.id}');
+          await _player.setAudioTrack(match);
+        } else {
+          debugPrint('[TRACKS_HANDLER] applying audio preference');
+          await _selectPreferredTrack<AudioTrack>(
+            tracks.audio,
+            LanguagePreferences.getSpokenLanguages,
+            (t) => _player.setAudioTrack(t),
+          );
+        }
+        debugPrint('[TRACKS_HANDLER] audio applied: ${_player.state.track.audio.id}');
+      }
+
+      if (!_subtitlePreferenceApplied &&
+          tracks.subtitle.any((t) => t.id != 'auto' && t.id != 'no')) {
+        _subtitlePreferenceApplied = true;
+        final forcedSubtitle = _forcedSubtitle;
+        _forcedSubtitle = null;
+        if (forcedSubtitle != null) {
+          if (forcedSubtitle.id == 'no') {
+            debugPrint('[TRACKS_HANDLER] restoring forced subtitle: no');
+            await _player.setSubtitleTrack(SubtitleTrack.no());
+          } else {
+            // Match by language since track IDs can change after a reload.
+            final match = tracks.subtitle.firstWhere(
+              (t) => t.language != null && t.language == forcedSubtitle.language,
+              orElse: () => SubtitleTrack.no(),
+            );
+            debugPrint('[TRACKS_HANDLER] restoring forced subtitle: ${match.id}');
+            await _player.setSubtitleTrack(match);
+          }
+        } else {
+          debugPrint('[TRACKS_HANDLER] applying subtitle preference');
+          await _selectPreferredTrack<SubtitleTrack>(
+            tracks.subtitle,
+            LanguagePreferences.getSubtitleLanguages,
+            (t) => _player.setSubtitleTrack(t),
+          );
+        }
+        debugPrint('[TRACKS_HANDLER] subtitle applied: ${_player.state.track.subtitle.id}');
+      }
     });
+  }
+
+  /// Switches the subtitle track by reloading the stream at the current
+  /// position. This is necessary because with a large buffer (320 MB) the
+  /// HLS fetcher is far ahead and a plain setSubtitleTrack only takes effect
+  /// on segments that haven't been fetched yet — which could be minutes away.
+  Future<void> switchSubtitleTrack(SubtitleTrack track) async {
+    if (kIsWeb) {
+      // On web, hls.js applies subtitle track changes immediately — no reload needed.
+      await _player.setSubtitleTrack(track);
+      return;
+    }
+
+    final url = _currentMediaUrl;
+    if (url == null || serverName == null) return;
+
+    _forcedSubtitle = track;
+    _forcedAudio = _player.state.track.audio;
+    _audioPreferenceApplied = false;
+    _subtitlePreferenceApplied = false;
+
+    await _openMedia(
+      serverName: serverName!,
+      mediaUrl: url,
+      startTimeInMilliseconds: _player.state.position.inMilliseconds,
+    );
   }
 
   void _listenToPosition() {
@@ -522,6 +643,8 @@ class MediaPlayerHandler extends BaseAudioHandler
   bool _listenersAdded = false;
   bool _playing = false;
   bool _interrupted = false;
+  bool _audioPreferenceApplied = false;
+  bool _subtitlePreferenceApplied = false;
 
   Future<void> _selectPreferredTrack<T>(
     List<T> available,

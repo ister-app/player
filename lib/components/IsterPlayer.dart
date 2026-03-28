@@ -14,21 +14,12 @@ class IsterPlayer extends StatefulWidget {
 
 class _IsterPlayerState extends State<IsterPlayer> {
   final MediaPlayerHandler _handler = MediaPlayerHandler.instance;
-  final GlobalKey<VideoState> _videoKey = GlobalKey<VideoState>();
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return AspectRatio(
-          aspectRatio: 16 / 9,
-          child: Video(
-            key: _videoKey,
-            controller: _handler.videoController,
-            controls: AdaptiveVideoControls,
-          ),
-        );
-      },
+    return Video(
+      controller: _handler.videoController,
+      controls: AdaptiveVideoControls,
     );
   }
 }

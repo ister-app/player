@@ -1,22 +1,23 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
+import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/graphql/analyzeDataForEpisode.graphql.dart';
 import 'package:player/graphql/episodeById.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/IsterPlayer.dart';
+import '../components/TrackSelectionWidget.dart';
 import '../graphql/fragmentEpisode.graphql.dart';
 import '../graphql/fragmentPlayQueue.graphql.dart';
 import '../l10n/app_localizations.dart';
 import '../routes/AppRouter.gr.dart';
 import '../utils/ImageTypes.dart';
 import '../utils/ImageUtil.dart';
-import '../utils/LoginManager.dart';
+import '../utils/StreamTokenService.dart';
 import '../utils/MediaPlayerHandler.dart';
 import '../utils/MetadataUtil.dart';
 import '../utils/PlayQueueService.dart';
@@ -60,6 +61,22 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
   }
 
   @override
+  void didUpdateWidget(ShowEpisodePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.episodeId != widget.episodeId) {
+      final isAutoAdvance = widget.playQueueId != null &&
+          MediaPlayerHandler.instance.playQueue?.id == widget.playQueueId;
+      if (!isAutoAdvance) {
+        setState(() {
+          episode = null;
+          _playQueueStarted = false;
+          loadComplete = false;
+        });
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _playQueueSubscription.cancel();
     super.dispose();
@@ -100,7 +117,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
           {VoidCallback? refetch, FetchMore? fetchMore}) {
         if (result.hasException) {
           return Center(child: Text(result.exception.toString()));
-        } else if (result.data == null && result.isLoading) {
+        } else if (result.data == null || result.isLoading) {
           return Skeletonizer(
             enabled: true,
             child: getContent(
@@ -135,8 +152,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
             decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
             height: constraints.maxWidth < 800 ? 300 : 500,
             child: episode != null && loadComplete
-                ? kIsWeb ||
-                        episode.mediaFile == null ||
+                ? episode.mediaFile == null ||
                         episode.mediaFile!.isEmpty
                     ? LayoutBuilder(builder: (context, constraints) {
                         var imageByType = ImageUtil.getImageByType(
@@ -159,9 +175,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                                             )
                                           : Container(),
                                   fit: BoxFit.cover,
-                                  httpHeaders: LoginManager.getHeaders(
-                                      widget.serverName),
-                                  imageUrl: ImageUtil.buildUrl(imageByType)!,
+                                  imageUrl: ImageUtil.buildUrl(imageByType, token: StreamTokenService.getToken(widget.serverName))!,
                                 )
                               : Container(),
                         );
@@ -195,6 +209,20 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                         title: Text(AppLocalizations.of(context)!.rawData),
                       ),
                     ),
+                    if (episode != null)
+                      MenuItemButton(
+                        onPressed: () async {
+                          final client = GraphQLProvider.of(context).value;
+                          await client.mutate(MutationOptions(
+                            document: documentNodeMutationanalyzeDataForEpisodeMutation,
+                            variables: {'episodeId': episode.id},
+                          ));
+                        },
+                        child: ListTile(
+                          leading: const Icon(Icons.analytics),
+                          title: Text(AppLocalizations.of(context)!.analyzeMedia),
+                        ),
+                      ),
                   ],
                   builder: (_, MenuController controller, Widget? child) {
                     return IconButton(
@@ -213,6 +241,8 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
             ),
             Text(description),
           ])),
+      if (loadComplete && episode != null && episode.mediaFile != null && episode.mediaFile!.isNotEmpty)
+        const TrackSelectionWidget(),
     ]);
   }
 

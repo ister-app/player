@@ -97,9 +97,9 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                     ClientManager.instance.lastClientUsed = null;
                     AutoRouter.of(context).replace(HomeRoute());
                   },
-                  child: const ListTile(
-                    leading: Icon(Icons.logout),
-                    title: Text("Switch server"),
+                  child: ListTile(
+                    leading: const Icon(Icons.logout),
+                    title: Text(AppLocalizations.of(context)!.switchServer),
                   )),
             ],
             builder: (_, MenuController controller, Widget? child) {

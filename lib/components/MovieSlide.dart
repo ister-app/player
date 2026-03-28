@@ -7,6 +7,7 @@ import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MetadataUtil.dart';
+import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -34,13 +35,14 @@ class MovieSlide extends StatefulWidget {
 class _MovieSlideState extends State<MovieSlide> {
   static const int _pageSize = 15;
 
-  final List<int> _fetchedPages = [0];
-  final Set<int> _loadingPages = {};
+  final List<Query$movies$movies$content> _items = [];
+  int? _totalItems;
+  bool _initialized = false;
+  final Set<int> _requestedPages = {0};
 
   void _requestPage(int page, FetchMore fetchMore) {
-    if (_fetchedPages.contains(page) || _loadingPages.contains(page)) return;
-
-    _loadingPages.add(page);
+    if (_requestedPages.contains(page)) return;
+    _requestedPages.add(page);
 
     fetchMore(
       FetchMoreOptions(
@@ -48,20 +50,24 @@ class _MovieSlideState extends State<MovieSlide> {
         updateQuery: (previous, fetchMoreResult) {
           if (fetchMoreResult == null ||
               fetchMoreResult['movies']?['content'] == null) {
-            _loadingPages.remove(page);
+            _requestedPages.remove(page);
             return previous!;
           }
 
-          final prev = previous!['movies']['content'] as List<dynamic>;
-          final fresh = fetchMoreResult['movies']['content'] as List<dynamic>;
+          final fresh =
+              (fetchMoreResult['movies']['content'] as List<dynamic>)
+                  .map((e) => Query$movies$movies$content.fromJson(
+                      e as Map<String, dynamic>))
+                  .toList();
 
-          previous['movies']['content'] = [...prev, ...fresh];
-          _fetchedPages.add(page);
-          _loadingPages.remove(page);
-          return previous;
+          if (mounted) {
+            setState(() => _items.addAll(fresh));
+          }
+
+          return previous!;
         },
       ),
-    ).catchError((_) => _loadingPages.remove(page));
+    ).then<void>((_) {}, onError: (_) => _requestedPages.remove(page));
   }
 
   @override
@@ -81,57 +87,44 @@ class _MovieSlideState extends State<MovieSlide> {
       builder: (result, {Refetch? refetch, FetchMore? fetchMore}) {
         widget.onRefetch?.call(refetch);
 
-        if (result.hasException) {
+        if (!_initialized && result.data != null) {
+          _initialized = true;
+          final parsed = Query$movies.fromJson(result.data!);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            setState(() {
+              _items.clear();
+              _items.addAll(parsed.movies?.content ?? []);
+              _totalItems = parsed.movies?.totalElements;
+            });
+          });
+        }
+
+        if (result.hasException && _items.isEmpty) {
           return Center(child: Text(result.exception.toString()));
         }
 
-        final movies = result.data == null
-            ? const <Query$movies$movies$content>[]
-            : (Query$movies.fromJson(result.data!).movies?.content ??
-                const <Query$movies$movies$content>[]);
-
-        final serverTotal = result.data == null
-            ? null
-            : Query$movies.fromJson(result.data!).movies?.totalElements;
-
-        final placeholderCount = serverTotal == null
-            ? _pageSize * 3
-            : (serverTotal - movies.length).clamp(0, serverTotal);
+        final int placeholderCount = _totalItems == null
+            ? _pageSize * 2
+            : (_totalItems! - _items.length).clamp(0, _pageSize);
 
         return ListView.builder(
           scrollDirection: Axis.horizontal,
           itemExtent: 300.0,
-          itemCount: movies.length + placeholderCount,
+          itemCount: _items.length + placeholderCount,
           itemBuilder: (context, index) {
-            final page = index ~/ _pageSize;
-            final pageFetched = _fetchedPages.contains(page);
-
-            int flatIndex = 0;
-            for (final fetchedPage in _fetchedPages) {
-              if (fetchedPage == page) break;
-
-              final isLastPage = serverTotal != null &&
-                  fetchedPage == serverTotal ~/ _pageSize;
-              flatIndex += isLastPage
-                  ? (serverTotal % _pageSize == 0
-                      ? _pageSize
-                      : serverTotal % _pageSize)
-                  : _pageSize;
-            }
-            flatIndex += index - page * _pageSize;
-
-            if (pageFetched && movies.length > flatIndex) {
-              final movie = movies[flatIndex];
+            if (index < _items.length) {
+              final movie = _items[index];
               final img = ImageUtil.getImageByType(
                 movie.images,
                 ImageTypes.background,
               );
-
               return CarouselItemView(
                 serverName: widget.serverName,
                 title: MetadataUtil.getTitle(movie.metadata) ?? movie.name,
                 subTitle: MetadataUtil.getDescription(movie.metadata) ?? '',
-                imageUrl: ImageUtil.buildUrl(img),
+                imageUrl: ImageUtil.buildUrl(img,
+                    token: StreamTokenService.getToken(widget.serverName)),
                 blurHash: img?.blurHash,
                 onTap: () => AutoRouter.of(context).push(
                   MovieRoute(movieId: movie.id),
@@ -139,6 +132,7 @@ class _MovieSlideState extends State<MovieSlide> {
               );
             }
 
+            final page = index ~/ _pageSize;
             return VisibilityDetector(
               key: ValueKey('movie-slide-placeholder-$index'),
               onVisibilityChanged: (info) {

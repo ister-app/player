@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:player/graphql/getServerInfo.graphql.dart';
+import 'package:player/l10n/app_localizations.dart';
+import 'package:player/utils/WellKnownService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
@@ -11,13 +11,18 @@ class ServerList extends StatefulWidget {
   const ServerList({super.key});
 
   @override
-  State<ServerList> createState() => _ServerListState();
+  State<ServerList> createState() => ServerListState();
 }
 
-class _ServerListState extends State<ServerList> {
+class ServerListState extends State<ServerList> {
   final SharedPreferencesAsync _sharedPreferencesAsync =
       SharedPreferencesAsync();
   late Future<List<String>> _servers;
+  int _refreshToken = 0;
+
+  void refresh() => setState(() {
+        _refreshToken++;
+      });
 
   Future<void> _addServer(String value) async {
     final List<String> servers =
@@ -35,6 +40,7 @@ class _ServerListState extends State<ServerList> {
     final List<String> servers =
         await _sharedPreferencesAsync.getStringList('servers') ?? [];
     servers.remove(value);
+    await WellKnownService.remove(value);
     setState(() {
       _servers =
           _sharedPreferencesAsync.setStringList('servers', servers).then((_) {
@@ -68,7 +74,7 @@ class _ServerListState extends State<ServerList> {
                   child: TextField(
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
-                        hintText: 'Add a server',
+                        hintText: AppLocalizations.of(context)!.addServer,
                       ),
                       onSubmitted: (value) => _addServer(value))),
               FutureBuilder<List<String>>(
@@ -82,12 +88,11 @@ class _ServerListState extends State<ServerList> {
                       case ConnectionState.active:
                       case ConnectionState.done:
                         if (snapshot.hasError) {
-                          return Text('Error: ${snapshot.error}');
+                          return Text(AppLocalizations.of(context)!.error(snapshot.error!));
                         } else {
                           if (snapshot.data == null ||
-                              snapshot.data?.isEmpty == null ||
                               snapshot.data!.isEmpty) {
-                            return Text("No servers added yet");
+                            return Text(AppLocalizations.of(context)!.noServersAdded);
                           }
                           return ListView.builder(
                               shrinkWrap: true,
@@ -95,76 +100,64 @@ class _ServerListState extends State<ServerList> {
                               padding: const EdgeInsets.all(8),
                               itemCount: snapshot.data?.length,
                               itemBuilder: (BuildContext context, int index) {
-                                if (snapshot.data?[index] != null) {
-                                  final serverUrl = snapshot.data![index];
-                                  return GraphQLProvider(
-                                    client: ClientManager.getClientForUrl(serverUrl),
-                                    child: Query(
-                                      options: QueryOptions(
-                                        document: documentNodeQuerygetServerInfoQuery,
-                                        fetchPolicy: FetchPolicy.cacheAndNetwork,
-                                      ),
-                                      builder: (QueryResult result,
-                                          {VoidCallback? refetch, FetchMore? fetchMore}) {
-                                        final isLoading = result.data == null && result.isLoading;
-                                        final hasError = result.hasException;
-
-                                        if (isLoading) {
-                                          return Skeletonizer(
-                                            enabled: true,
-                                            child: Card(
-                                              child: ListTile(
-                                                leading: const Icon(Icons.dns),
-                                                title: Text(BoneMock.name),
-                                                subtitle: Text(BoneMock.words(3)),
-                                              ),
-                                            ),
-                                          );
-                                        }
-
-                                        if (hasError) {
-                                          return Card(
+                                final serverUrl = snapshot.data![index];
+                                return FutureBuilder<WellKnownInfo?>(
+                                    key: ValueKey('$serverUrl-$_refreshToken'),
+                                    future: WellKnownService.fetch(serverUrl),
+                                    builder: (context, infoSnapshot) {
+                                      if (infoSnapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return Skeletonizer(
+                                          enabled: true,
+                                          child: Card(
                                             child: ListTile(
-                                              leading: Icon(Icons.dns,
-                                                  color: Theme.of(context).disabledColor),
-                                              title: Text(serverUrl,
-                                                  style: TextStyle(
-                                                      color: Theme.of(context).disabledColor)),
-                                              subtitle: Text(
-                                                result.exception.toString(),
-                                                style: TextStyle(
-                                                    color: Theme.of(context).disabledColor),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                              trailing: IconButton(
-                                                onPressed: () => _deleteServer(serverUrl),
-                                                icon: Icon(Icons.delete,
-                                                    color: Theme.of(context).disabledColor),
-                                              ),
+                                              leading: const Icon(Icons.dns),
+                                              title: Text(BoneMock.name),
+                                              subtitle: Text(BoneMock.words(3)),
                                             ),
-                                          );
-                                        }
-
-                                        final info = Query$getServerInfoQuery
-                                            .fromJson(result.data!)
-                                            .getServerInfo;
-                                        return Card(
-                                          child: ListTile(
-                                            leading: const Icon(Icons.dns),
-                                            trailing: IconButton(
-                                              onPressed: () => _deleteServer(serverUrl),
-                                              icon: const Icon(Icons.delete),
-                                            ),
-                                            title: Text(info?.name ?? serverUrl),
-                                            subtitle: info != null ? Text(info.url) : null,
-                                            onTap: () => goToServerRoute(serverUrl),
                                           ),
                                         );
-                                      },
-                                    ),
+                                      }
+
+                                      final info = infoSnapshot.data;
+                                      return Card(
+                                        child: ListTile(
+                                          leading: Icon(Icons.dns,
+                                              color: info == null
+                                                  ? Theme.of(context).disabledColor
+                                                  : null),
+                                          trailing: IconButton(
+                                            onPressed: () =>
+                                                _deleteServer(serverUrl),
+                                            icon: Icon(Icons.delete,
+                                                color: info == null
+                                                    ? Theme.of(context).disabledColor
+                                                    : null),
+                                          ),
+                                          title: Text(
+                                            info?.name ?? serverUrl,
+                                            style: info == null
+                                                ? TextStyle(
+                                                    color: Theme.of(context)
+                                                        .disabledColor)
+                                                : null,
+                                          ),
+                                          subtitle: info != null
+                                              ? Text(info.serverUrl)
+                                              : Text(
+                                                  AppLocalizations.of(context)!
+                                                      .serverUnreachable,
+                                                  style: TextStyle(
+                                                      color: Theme.of(context)
+                                                          .disabledColor),
+                                                ),
+                                          onTap: info != null
+                                              ? () => goToServerRoute(serverUrl)
+                                              : null,
+                                        ),
+                                      );
+                                    },
                                   );
-                                }
                               });
                         }
                     }

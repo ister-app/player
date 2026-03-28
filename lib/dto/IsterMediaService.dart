@@ -1,4 +1,3 @@
-import 'package:graphql/src/graphql_client.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/dto/IsterMediaItem.dart';
 import 'package:player/dto/MediaItemId.dart';
@@ -13,6 +12,7 @@ import '../utils/ImageTypes.dart';
 import '../utils/ImageUtil.dart';
 import '../utils/LoggerService.dart';
 import '../utils/LoginManager.dart';
+import '../utils/StreamTokenService.dart';
 import '../utils/MetadataUtil.dart';
 
 class IsterMediaService {
@@ -31,7 +31,8 @@ class IsterMediaService {
     if (mediaItemId.id == "recent") {
       return getRecent(mediaItemId);
     } else {
-      return getRecent(mediaItemId);
+      LoggerService().logger.w('getList: unsupported list type "${mediaItemId.id}" for ${mediaItemId.serverName}');
+      return List.empty();
     }
   }
 
@@ -116,7 +117,7 @@ class IsterMediaService {
   static Uri? artUriFromImages(List<Fragment$fragmentImages>? images,
       String serverName) {
     final imageByType = ImageUtil.getImageByType(images, ImageTypes.background);
-    final url = ImageUtil.buildUrl(imageByType);
+    final url = ImageUtil.buildUrl(imageByType, token: StreamTokenService.getToken(serverName));
     return url != null ? Uri.parse(url) : null;
   }
 

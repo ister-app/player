@@ -47,7 +47,7 @@ class ServerSettingsClusterPage extends StatelessWidget {
               return Center(child: Text(result.exception.toString()));
             }
 
-            if (result.data == null && result.isLoading) {
+            if (result.data == null || result.isLoading) {
               final mutedColor =
                   Theme.of(context).colorScheme.onSurfaceVariant;
               return Skeletonizer(

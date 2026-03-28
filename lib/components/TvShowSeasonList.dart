@@ -1,5 +1,5 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -11,7 +11,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/ImageTypes.dart';
 import '../utils/ImageUtil.dart';
-import '../utils/LoginManager.dart';
+import '../utils/StreamTokenService.dart';
 
 class TvShowSeasonList extends StatelessWidget {
   final String serverName;
@@ -55,7 +55,7 @@ class TvShowSeasonList extends StatelessWidget {
             Query$seasonById$seasonById? season = parsedData.seasonById;
 
             if (season == null) {
-              return const Text('No season');
+              return Text(AppLocalizations.of(context)!.noSeason);
             } else {
               var list = List<Widget>.of([Divider()]);
               list.addAll(ListTile.divideTiles(
@@ -73,7 +73,7 @@ class TvShowSeasonList extends StatelessWidget {
                             episode.number ?? 0,
                             episode.$show!.id,
                             episode.id,
-                            ImageUtil.buildUrl(imageByType),
+                            ImageUtil.buildUrl(imageByType, token: StreamTokenService.getToken(serverName)),
                             imageByType?.blurHash,
                             episode.watchStatus != null &&
                                     episode.watchStatus!.isNotEmpty &&
@@ -83,7 +83,7 @@ class TvShowSeasonList extends StatelessWidget {
                                     episode.mediaFile!.isNotEmpty
                                 ? episode.watchStatus!.first
                                         .progressInMilliseconds /
-                                    episode.mediaFile!.first!
+                                    episode.mediaFile!.first
                                         .durationInMilliseconds!
                                 : null);
                       }).toList())
@@ -146,8 +146,7 @@ class TvShowSeasonList extends StatelessWidget {
                                 )
                               : Container(),
                           fit: BoxFit.fitHeight,
-                          imageUrl: imageUrl!,
-                          httpHeaders: LoginManager.getHeaders(serverName),
+                          imageUrl: imageUrl,
                           fadeOutDuration: Duration.zero,
                           fadeInDuration: Duration.zero,
                         )

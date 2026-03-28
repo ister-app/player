@@ -2,14 +2,18 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/graphql/analyzeDataForMovie.graphql.dart';
 import 'package:player/graphql/movieById.graphql.dart';
+import 'package:player/l10n/app_localizations.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/IsterPlayer.dart';
+import '../components/TrackSelectionWidget.dart';
 import '../graphql/fragmentMovie.graphql.dart';
 import '../utils/ImageTypes.dart';
 import '../utils/ImageUtil.dart';
 import '../utils/MediaPlayerHandler.dart';
+import '../utils/StreamTokenService.dart';
 import '../utils/MetadataUtil.dart';
 
 @RoutePage()
@@ -54,7 +58,7 @@ class _MoviePageState extends State<MoviePage> {
             appBar: AppBar(),
             body: Center(child: Text(result.exception.toString())),
           );
-        } else if (result.data == null && result.isLoading) {
+        } else if (result.data == null || result.isLoading) {
           return Scaffold(
             appBar: AppBar(),
             body: SingleChildScrollView(
@@ -102,8 +106,7 @@ class _MoviePageState extends State<MoviePage> {
             decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
             height: constraints.maxWidth < 800 ? 300 : 500,
             child: movie != null && loadComplete
-                ? kIsWeb ||
-                        movie.mediaFile == null ||
+                ? movie.mediaFile == null ||
                         movie.mediaFile!.isEmpty
                     ? LayoutBuilder(builder: (context, constraints) {
                         var imageByType = ImageUtil.getImageByType(
@@ -114,7 +117,7 @@ class _MoviePageState extends State<MoviePage> {
                           decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
                           child: imageByType != null
                               ? Image.network(
-                                  ImageUtil.buildUrl(imageByType)!,
+                                  ImageUtil.buildUrl(imageByType, token: StreamTokenService.getToken(widget.serverName))!,
                                   fit: BoxFit.cover,
                                 )
                               : Container(),
@@ -129,13 +132,73 @@ class _MoviePageState extends State<MoviePage> {
           padding: const EdgeInsets.all(10),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(
-              title,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.headlineSmall,
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                ),
+                MenuAnchor(
+                  menuChildren: <Widget>[
+                    if (movie != null)
+                      MenuItemButton(
+                        onPressed: () {
+                          showDialog<void>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text(AppLocalizations.of(context)!.rawData),
+                              content: SelectableText(movie!.toJson().toString()),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: Text(AppLocalizations.of(context)!.close),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        child: ListTile(
+                          leading: const Icon(Icons.info),
+                          title: Text(AppLocalizations.of(context)!.rawData),
+                        ),
+                      ),
+                    if (movie != null)
+                      MenuItemButton(
+                        onPressed: () async {
+                          final client = GraphQLProvider.of(context).value;
+                          await client.mutate(MutationOptions(
+                            document: documentNodeMutationanalyzeDataForMovieMutation,
+                            variables: {'movieId': movie!.id},
+                          ));
+                        },
+                        child: ListTile(
+                          leading: const Icon(Icons.analytics),
+                          title: Text(AppLocalizations.of(context)!.analyzeMedia),
+                        ),
+                      ),
+                  ],
+                  builder: (_, MenuController controller, Widget? child) {
+                    return IconButton(
+                      onPressed: () {
+                        if (controller.isOpen) {
+                          controller.close();
+                        } else {
+                          controller.open();
+                        }
+                      },
+                      icon: const Icon(Icons.more_vert),
+                    );
+                  },
+                ),
+              ],
             ),
             Text(description),
           ])),
+      if (loadComplete && movie != null && movie!.mediaFile != null && movie!.mediaFile!.isNotEmpty)
+        const TrackSelectionWidget(),
     ]);
   }
 }

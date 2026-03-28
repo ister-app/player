@@ -101,4 +101,67 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get languageSettings => 'Taalinstellingen';
+
+  @override
+  String get loginTitle => 'Aanmelden';
+
+  @override
+  String loginDescription(Object serverName) {
+    return 'Meld je aan om toegang te krijgen tot $serverName';
+  }
+
+  @override
+  String loginButton(Object serverName) {
+    return 'Aanmelden bij $serverName';
+  }
+
+  @override
+  String get playbackSettings => 'Afspeelinstelling';
+
+  @override
+  String get directPlay => 'Direct afspelen';
+
+  @override
+  String get directPlayDescription =>
+      'Origineel bestand streamen zonder transcodering';
+
+  @override
+  String get analyzeMedia => 'Analyseer media';
+
+  @override
+  String get switchServer => 'Wissel van server';
+
+  @override
+  String get servers => 'Servers';
+
+  @override
+  String get noRecentItems => 'Geen recente items';
+
+  @override
+  String get noSeason => 'Geen seizoen';
+
+  @override
+  String get addServer => 'Voeg een server toe';
+
+  @override
+  String get noServersAdded => 'Nog geen servers toegevoegd';
+
+  @override
+  String get noSeasonsFound => 'Geen seizoenen gevonden';
+
+  @override
+  String get trackAuto => 'Auto';
+
+  @override
+  String get trackNone => 'Geen';
+
+  @override
+  String get noShowFound => 'Geen show gevonden';
+
+  @override
+  String get transcode => 'Transcoderen';
+
+  @override
+  String get transcodeDescription =>
+      'Stream server-side hercoderen (altijd aan voor web)';
 }

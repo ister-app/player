@@ -1,12 +1,14 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/graphql/analyzeDataForLibrary.graphql.dart';
 import 'package:player/graphql/libraries.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 
 import '../components/MovieScroll.dart';
 import '../components/TvShowScroll.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/LoggerService.dart';
 
 @RoutePage()
 class ShowHomePage extends StatefulWidget {
@@ -37,7 +39,9 @@ class _ShowHomePageState extends State<ShowHomePage> {
   Future<void> _refresh() async {
     try {
       if (_refetchLibraries != null) await _refetchLibraries!();
-    } catch (_) {}
+    } catch (e) {
+      LoggerService().logger.w('Failed to refetch libraries: $e');
+    }
     setState(() {
       _refreshCount++;
     });
@@ -74,27 +78,66 @@ class _ShowHomePageState extends State<ShowHomePage> {
             title: Text(AppLocalizations.of(context)!.library),
             actions: [
               if (libraries.isNotEmpty)
-                DropdownButtonHideUnderline(
-                  child: DropdownButton<String?>(
-                    value: _selectedLibraryId,
-                    items: libraries.map((lib) => DropdownMenuItem<String?>(
-                          value: lib.id,
-                          child: Text(lib.name),
-                        )).toList(),
-                    onChanged: (value) {
+                MenuAnchor(
+                  menuChildren: libraries.map((lib) => MenuItemButton(
+                    onPressed: () {
                       setState(() {
-                        _selectedLibraryId = value;
-                        _selectedLibraryType = value == null
-                            ? null
-                            : libraries.firstWhere((l) => l.id == value).type;
+                        _selectedLibraryId = lib.id;
+                        _selectedLibraryType = lib.type;
                       });
                     },
-                  ),
+                    child: Text(lib.name),
+                  )).toList(),
+                  builder: (context, controller, child) {
+                    final selectedName = _selectedLibraryId == null
+                        ? ''
+                        : libraries.firstWhere((l) => l.id == _selectedLibraryId, orElse: () => libraries.first).name;
+                    return TextButton(
+                      onPressed: () => controller.isOpen ? controller.close() : controller.open(),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(selectedName),
+                          const Icon(Icons.arrow_drop_down),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               IconButton(
                 icon: const Icon(Icons.refresh),
                 onPressed: triggerRefresh,
               ),
+              if (_selectedLibraryId != null)
+                MenuAnchor(
+                  menuChildren: <Widget>[
+                    MenuItemButton(
+                      onPressed: () async {
+                        final client = GraphQLProvider.of(context).value;
+                        await client.mutate(MutationOptions(
+                          document: documentNodeMutationanalyzeDataForLibraryMutation,
+                          variables: {'libraryId': _selectedLibraryId},
+                        ));
+                      },
+                      child: ListTile(
+                        leading: const Icon(Icons.analytics),
+                        title: Text(AppLocalizations.of(context)!.analyzeLibrary),
+                      ),
+                    ),
+                  ],
+                  builder: (_, MenuController controller, Widget? child) {
+                    return IconButton(
+                      onPressed: () {
+                        if (controller.isOpen) {
+                          controller.close();
+                        } else {
+                          controller.open();
+                        }
+                      },
+                      icon: const Icon(Icons.more_vert),
+                    );
+                  },
+                ),
             ],
           ),
           body: RefreshIndicator(

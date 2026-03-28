@@ -26,7 +26,7 @@ class _TvShowSeasonExpansionPanelListState
   @override
   Widget build(BuildContext context) {
     if (widget.seasons == null) {
-      return Text("No seasons found");
+      return Text(AppLocalizations.of(context)!.noSeasonsFound);
     } else {
       return ExpansionPanelList(
           expansionCallback: (int index, bool isExpanded) {

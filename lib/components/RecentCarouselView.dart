@@ -14,6 +14,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../l10n/app_localizations.dart';
 import '../routes/AppRouter.gr.dart';
 import '../utils/PlayQueueService.dart';
+import '../utils/StreamTokenService.dart';
 import 'CarouselItemView.dart';
 
 class RecentCarouselView extends StatefulWidget {
@@ -56,6 +57,7 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
     super.dispose();
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Query(
@@ -71,7 +73,7 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
           return Text(result.exception.toString());
         }
 
-        if (result.data == null && result.isLoading) {
+        if (result.data == null || result.isLoading) {
           return Skeletonizer(
               enabled: true,
               child: CarouselView(
@@ -95,7 +97,7 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
           if (widget.onEmptyView != null) {
             widget.onEmptyView!();
           }
-          return const Text('No recent items');
+          return Text(AppLocalizations.of(context)!.noRecentItems);
         }
 
         return ListView(
@@ -130,7 +132,7 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
                               .episode(episode.number ?? 0),
                       subTitle:
                           MetadataUtil.getDescription(episode.metadata) ?? "",
-                      imageUrl: ImageUtil.buildUrl(imageByType),
+                      imageUrl: ImageUtil.buildUrl(imageByType, token: StreamTokenService.getToken(widget.serverName)),
                       blurHash: imageByType?.blurHash,
                       progress: episode.watchStatus != null &&
                               episode.watchStatus!.isNotEmpty &&
@@ -167,7 +169,7 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
                       title: MetadataUtil.getTitle(mv.metadata) ?? mv.name,
                       subTitle:
                           MetadataUtil.getDescription(mv.metadata) ?? "",
-                      imageUrl: ImageUtil.buildUrl(imageByType),
+                      imageUrl: ImageUtil.buildUrl(imageByType, token: StreamTokenService.getToken(widget.serverName)),
                       blurHash: imageByType?.blurHash,
                       progress: mv.watchStatus != null &&
                               mv.watchStatus!.isNotEmpty &&

@@ -1,8 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:player/routes/AppRouter.gr.dart';
+import 'package:player/routes/ServerChildDeepLinkGuard.dart';
 
 @AutoRouterConfig(replaceInRouteName: 'Screen|Page,Route')
 class AppRouter extends RootStackRouter {
+  final _deepLinkGuard = ServerChildDeepLinkGuard();
 
   @override
   List<AutoRoute> get routes => [
@@ -18,15 +20,17 @@ class AppRouter extends RootStackRouter {
                 AutoRoute(path: 'settings', page: ServerSettingsRoute.page),
                 ]
           ), // Overview with newly added items and resume watching view
-          AutoRoute(path: 'settings/languages', page: ServerSettingsLanguageRoute.page),
-          AutoRoute(path: 'settings/cluster', page: ServerSettingsClusterRoute.page),
+          AutoRoute(path: 'settings/languages', page: ServerSettingsLanguageRoute.page, guards: [_deepLinkGuard]),
+          AutoRoute(path: 'settings/cluster', page: ServerSettingsClusterRoute.page, guards: [_deepLinkGuard]),
+          AutoRoute(path: 'settings/playback', page: ServerSettingsPlaybackRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'shows/:showId', page: ShowOverviewRoute.page,
+            guards: [_deepLinkGuard],
             children: [
               AutoRoute(path: 'overview', page: ShowOverviewContentRoute.page, initial: true),
               AutoRoute(path: 'episodes/:episodeId', page: ShowEpisodeRoute.page),
             ]
           ),
-          AutoRoute(path: 'movies/:movieId', page: MovieRoute.page),
+          AutoRoute(path: 'movies/:movieId', page: MovieRoute.page, guards: [_deepLinkGuard]),
         ]
     ),
   ];

@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/showById.graphql.dart';
+import 'package:player/l10n/app_localizations.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/TvShowSeasonExpansionPanelList.dart';
@@ -36,7 +37,7 @@ class ShowOverviewPage extends StatelessWidget {
           body = Text(result.exception.toString());
         }
 
-        if (result.data == null && result.isLoading) {
+        if (result.data == null || result.isLoading) {
           title = Skeletonizer(enabled: true, child: Text(BoneMock.name));
           body = Skeletonizer(enabled: true, child: getContent(false, null));
         } else {
@@ -49,7 +50,7 @@ class ShowOverviewPage extends StatelessWidget {
               .toList();
 
           if (show == null) {
-            body = const Text('No show');
+            body = Text(AppLocalizations.of(context)!.noShowFound);
           } else {
             title = Text(show.name);
             body = getContent(true, show.seasons);

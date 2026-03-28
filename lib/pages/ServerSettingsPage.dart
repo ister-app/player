@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 
@@ -40,6 +41,16 @@ class ServerSettingsPage extends StatelessWidget {
                   onTap: () => AutoRouter.of(context)
                       .push(ServerSettingsClusterRoute()),
                 ),
+                if (!kIsWeb) ...[
+                  const Divider(height: 1, indent: 56),
+                  ListTile(
+                    leading: const Icon(Icons.play_circle_outline),
+                    title: Text(loc.playbackSettings),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => AutoRouter.of(context)
+                        .push(ServerSettingsPlaybackRoute()),
+                  ),
+                ],
               ],
             ),
           ),

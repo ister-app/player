@@ -1,0 +1,6 @@
+mutation createStreamTokenMutation {
+  createStreamToken {
+    token
+    expiresAt
+  }
+}

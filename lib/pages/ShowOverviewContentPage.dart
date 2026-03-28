@@ -1,16 +1,16 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/graphql/analyzeDataForShow.graphql.dart';
 import 'package:player/graphql/showById.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MetadataUtil.dart';
+import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-
-import '../utils/LoginManager.dart';
 
 @RoutePage()
 class ShowOverviewContentPage extends StatelessWidget {
@@ -36,7 +36,7 @@ class ShowOverviewContentPage extends StatelessWidget {
 
         if (result.hasException) {
           body = Text(result.exception.toString());
-        } else if (result.data == null && result.isLoading) {
+        } else if (result.data == null || result.isLoading) {
           body = Skeletonizer(
               enabled: true,
               child: _buildContent(
@@ -48,12 +48,12 @@ class ShowOverviewContentPage extends StatelessWidget {
           Query$showById$showById? show = parsedData.showById;
 
           if (show == null) {
-            body = const Text('No show found');
+            body = Text(AppLocalizations.of(context)!.noShowFound);
           } else {
             var imageByType =
                 ImageUtil.getImageByType(show.images, ImageTypes.background);
             body = _buildContent(
-                ImageUtil.buildUrl(imageByType),
+                ImageUtil.buildUrl(imageByType, token: StreamTokenService.getToken(serverName)),
                 imageByType?.blurHash,
                 MetadataUtil.getTitle(show.metadata) ?? "",
                 MetadataUtil.getDescription(show.metadata) ?? "",
@@ -87,8 +87,7 @@ class ShowOverviewContentPage extends StatelessWidget {
                         )
                       : Container(),
                   fit: BoxFit.cover,
-                  httpHeaders: LoginManager.getHeaders(serverName),
-                  imageUrl: imageUrl!,
+                  imageUrl: imageUrl,
                   fadeOutDuration: Duration.zero,
                   fadeInDuration: Duration.zero,
                 )
@@ -96,7 +95,7 @@ class ShowOverviewContentPage extends StatelessWidget {
         );
       }),
       Container(
-          padding: EdgeInsetsGeometry.all(10),
+          padding: const EdgeInsets.all(10),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(
@@ -114,6 +113,19 @@ class ShowOverviewContentPage extends StatelessWidget {
                         child: ListTile(
                           leading: const Icon(Icons.info),
                           title: Text(AppLocalizations.of(context)!.rawData),
+                        ),
+                      ),
+                      MenuItemButton(
+                        onPressed: () async {
+                          final client = GraphQLProvider.of(context).value;
+                          await client.mutate(MutationOptions(
+                            document: documentNodeMutationanalyzeDataForShowMutation,
+                            variables: {'showId': showId},
+                          ));
+                        },
+                        child: ListTile(
+                          leading: const Icon(Icons.analytics),
+                          title: Text(AppLocalizations.of(context)!.analyzeMedia),
                         ),
                       ),
                     ],

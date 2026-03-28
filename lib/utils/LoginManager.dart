@@ -60,7 +60,7 @@ class LoginManager {
 
   static Future<String?> waitForToken(String serverUrl) async {
     while (true) {
-      print("getting token");
+      LoggerService().logger.d('waiting for token for $serverUrl');
       final manager = managers[serverUrl];
 
       if (manager != null &&
@@ -103,9 +103,23 @@ class LoginManager {
     );
   }
 
-  static String? getToken(String serverUrl) {
-    var token = managers[serverUrl]?.currentUser?.token.accessToken;
-    return token != null ? "Bearer $token" : null;
+  static Future<String?> getToken(String serverUrl) async {
+    final manager = managers[serverUrl];
+    if (manager == null) return null;
+
+    final token = manager.currentUser?.token;
+    if (token == null) return null;
+
+    if (token.isAccessTokenAboutToExpire()) {
+      try {
+        await manager.refreshToken();
+      } catch (e) {
+        LoggerService().logger.e('Token refresh mislukt voor $serverUrl: $e');
+      }
+    }
+
+    final accessToken = manager.currentUser?.token.accessToken;
+    return accessToken != null ? "Bearer $accessToken" : null;
   }
 
   static Map<String, String> getHeaders(String serverUrl) {

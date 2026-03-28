@@ -1,0 +1,3 @@
+mutation analyzeDataForLibraryMutation($libraryId: ID!) {
+    analyzeDataForLibrary(libraryId: $libraryId)
+}

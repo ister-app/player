@@ -265,6 +265,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Language settings'**
   String get languageSettings;
+
+  /// Title on the login screen
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get loginTitle;
+
+  /// Explanation text on the login screen
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to access {serverName}'**
+  String loginDescription(Object serverName);
+
+  /// Label on the login button
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with {serverName}'**
+  String loginButton(Object serverName);
+
+  /// Title of the playback settings subpage
+  ///
+  /// In en, this message translates to:
+  /// **'Playback settings'**
+  String get playbackSettings;
+
+  /// Label for the direct play toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Direct play'**
+  String get directPlay;
+
+  /// Subtitle for the direct play toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Stream the original file without transcoding'**
+  String get directPlayDescription;
+
+  /// Menu item to trigger media analysis for an episode, movie or show
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze media'**
+  String get analyzeMedia;
+
+  /// Menu item to navigate back to the server list
+  ///
+  /// In en, this message translates to:
+  /// **'Switch server'**
+  String get switchServer;
+
+  /// Title of the server list / home page
+  ///
+  /// In en, this message translates to:
+  /// **'Servers'**
+  String get servers;
+
+  /// Shown when the recently watched list is empty
+  ///
+  /// In en, this message translates to:
+  /// **'No recent items'**
+  String get noRecentItems;
+
+  /// Shown when a season cannot be found
+  ///
+  /// In en, this message translates to:
+  /// **'No season'**
+  String get noSeason;
+
+  /// Hint text in the add-server text field
+  ///
+  /// In en, this message translates to:
+  /// **'Add a server'**
+  String get addServer;
+
+  /// Shown when no servers have been added
+  ///
+  /// In en, this message translates to:
+  /// **'No servers added yet'**
+  String get noServersAdded;
+
+  /// Shown when a show has no seasons
+  ///
+  /// In en, this message translates to:
+  /// **'No seasons found'**
+  String get noSeasonsFound;
+
+  /// Label for the automatic audio track option
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get trackAuto;
+
+  /// Label for the 'no subtitle' option
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get trackNone;
+
+  /// Shown when a show cannot be found
+  ///
+  /// In en, this message translates to:
+  /// **'No show found'**
+  String get noShowFound;
+
+  /// Label for the transcode toggle in playback settings
+  ///
+  /// In en, this message translates to:
+  /// **'Transcode'**
+  String get transcode;
+
+  /// Subtitle for the transcode toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Re-encode the stream server-side (always on for web)'**
+  String get transcodeDescription;
 }
 
 class _AppLocalizationsDelegate

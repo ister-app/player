@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/utils/LoginManager.dart';
+import 'package:player/utils/WellKnownService.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ClientManager {
@@ -9,7 +10,7 @@ class ClientManager {
   static ClientManager get instance => _instance;
 
   ClientManager._internal() {
-    _sharedPreferencesAsync.getString("currentServer").then(
+    _readyFuture = _sharedPreferencesAsync.getString("currentServer").then(
       (value) {
         _lastClientUsed = value;
       },
@@ -18,6 +19,9 @@ class ClientManager {
 
   final SharedPreferencesAsync _sharedPreferencesAsync = SharedPreferencesAsync();
   String? _lastClientUsed;
+  late final Future<void> _readyFuture;
+
+  static Future<void> ensureInitialized() => ClientManager.instance._readyFuture;
   static Map<String, ValueNotifier<GraphQLClient>> clients = {};
 
   String? get lastClientUsed => _lastClientUsed;
@@ -31,7 +35,9 @@ class ClientManager {
   }
 
   static String getHttpOrHttps(String url) {
-    if (url.contains("localhost")) {
+    final ipv4 = RegExp(r'^\d+\.\d+\.\d+\.\d+');
+    final ipv6 = RegExp(r'^\[?[0-9a-fA-F:]+\]?');
+    if (url.startsWith('localhost') || ipv4.hasMatch(url) || ipv6.hasMatch(url)) {
       return "http";
     } else {
       return "https";
@@ -49,9 +55,12 @@ class ClientManager {
   }
 
   static ValueNotifier<GraphQLClient> createClient(String url) {
-    final HttpLink httpLink = HttpLink(
-      '${getHttpOrHttps(url)}://$url/graphql',
-    );
+    final cachedInfo = WellKnownService.getCached(url);
+    if (cachedInfo == null) {
+      throw StateError(
+          'WellKnownInfo not cached for $url — fetch must complete before createClient');
+    }
+    final HttpLink httpLink = HttpLink('${cachedInfo.serverUrl}/graphql');
 
     final AuthLink authLink =
         AuthLink(getToken: () => LoginManager.getToken(url));

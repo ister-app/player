@@ -95,5 +95,87 @@
   "rawData": "Raw data",
   "nodes": "Nodes",
   "server": "Server",
-  "languageSettings": "Language settings"
+  "languageSettings": "Language settings",
+  "loginTitle": "Sign in",
+  "@loginTitle": {
+    "description": "Title on the login screen"
+  },
+  "loginDescription": "Sign in to access {serverName}",
+  "@loginDescription": {
+    "description": "Explanation text on the login screen",
+    "placeholders": {
+      "serverName": {}
+    }
+  },
+  "loginButton": "Sign in with {serverName}",
+  "@loginButton": {
+    "description": "Label on the login button",
+    "placeholders": {
+      "serverName": {}
+    }
+  },
+  "playbackSettings": "Playback settings",
+  "@playbackSettings": {
+    "description": "Title of the playback settings subpage"
+  },
+  "directPlay": "Direct play",
+  "@directPlay": {
+    "description": "Label for the direct play toggle"
+  },
+  "directPlayDescription": "Stream the original file without transcoding",
+  "@directPlayDescription": {
+    "description": "Subtitle for the direct play toggle"
+  },
+  "analyzeMedia": "Analyze media",
+  "@analyzeMedia": {
+    "description": "Menu item to trigger media analysis for an episode, movie or show"
+  },
+  "switchServer": "Switch server",
+  "@switchServer": {
+    "description": "Menu item to navigate back to the server list"
+  },
+  "servers": "Servers",
+  "@servers": {
+    "description": "Title of the server list / home page"
+  },
+  "noRecentItems": "No recent items",
+  "@noRecentItems": {
+    "description": "Shown when the recently watched list is empty"
+  },
+  "noSeason": "No season",
+  "@noSeason": {
+    "description": "Shown when a season cannot be found"
+  },
+  "addServer": "Add a server",
+  "@addServer": {
+    "description": "Hint text in the add-server text field"
+  },
+  "noServersAdded": "No servers added yet",
+  "@noServersAdded": {
+    "description": "Shown when no servers have been added"
+  },
+  "noSeasonsFound": "No seasons found",
+  "@noSeasonsFound": {
+    "description": "Shown when a show has no seasons"
+  },
+  "trackAuto": "Auto",
+  "@trackAuto": {
+    "description": "Label for the automatic audio track option"
+  },
+  "trackNone": "None",
+  "@trackNone": {
+    "description": "Label for the 'no subtitle' option"
+  },
+  "noShowFound": "No show found",
+  "@noShowFound": {
+    "description": "Shown when a show cannot be found"
+  },
+  "transcode": "Transcode",
+  "@transcode": {
+    "description": "Label for the transcode toggle in playback settings"
+  },
+  "transcodeDescription": "Re-encode the stream server-side (always on for web)",
+  "@transcodeDescription": {
+    "description": "Subtitle for the transcode toggle"
+  }
 }

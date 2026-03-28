@@ -101,4 +101,67 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageSettings => 'Language settings';
+
+  @override
+  String get loginTitle => 'Sign in';
+
+  @override
+  String loginDescription(Object serverName) {
+    return 'Sign in to access $serverName';
+  }
+
+  @override
+  String loginButton(Object serverName) {
+    return 'Sign in with $serverName';
+  }
+
+  @override
+  String get playbackSettings => 'Playback settings';
+
+  @override
+  String get directPlay => 'Direct play';
+
+  @override
+  String get directPlayDescription =>
+      'Stream the original file without transcoding';
+
+  @override
+  String get analyzeMedia => 'Analyze media';
+
+  @override
+  String get switchServer => 'Switch server';
+
+  @override
+  String get servers => 'Servers';
+
+  @override
+  String get noRecentItems => 'No recent items';
+
+  @override
+  String get noSeason => 'No season';
+
+  @override
+  String get addServer => 'Add a server';
+
+  @override
+  String get noServersAdded => 'No servers added yet';
+
+  @override
+  String get noSeasonsFound => 'No seasons found';
+
+  @override
+  String get trackAuto => 'Auto';
+
+  @override
+  String get trackNone => 'None';
+
+  @override
+  String get noShowFound => 'No show found';
+
+  @override
+  String get transcode => 'Transcode';
+
+  @override
+  String get transcodeDescription =>
+      'Re-encode the stream server-side (always on for web)';
 }
