@@ -1,5 +1,4 @@
 import 'package:audio_service/audio_service.dart';
-import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'utils/url_strategy_stub.dart'
@@ -50,42 +49,38 @@ class Main extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appRouter = AppRouter();
-    return DynamicColorBuilder(
-      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-        return MaterialApp.router(
-          title: 'Ister',
-          localizationsDelegates: [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: [
-            Locale('en'), // English
-            Locale('nl'), // Dutch
-          ],
-          theme: ThemeData(
-            colorScheme: lightDynamic ?? ColorScheme.fromSeed(seedColor: Colors.blue),
-            brightness: Brightness.light,
-            fontFamily: 'Roboto',
-          ),
-          darkTheme: ThemeData(
-            colorScheme: darkDynamic ?? ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
-            brightness: Brightness.dark,
-            fontFamily: 'Roboto',
-          ),
-          routerConfig: appRouter.config(
-            deepLinkBuilder: initialServer != null
-                ? (platformDeepLink) {
-                    if (platformDeepLink.path == '/' || platformDeepLink.path.isEmpty) {
-                      return DeepLink.path('/server/$initialServer');
-                    }
-                    return platformDeepLink;
-                  }
-                : null,
-          ),
-        );
-      },
+    return MaterialApp.router(
+      title: 'Ister',
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        Locale('en'), // English
+        Locale('nl'), // Dutch
+      ],
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        brightness: Brightness.light,
+        fontFamily: 'Roboto',
+      ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
+        brightness: Brightness.dark,
+        fontFamily: 'Roboto',
+      ),
+      routerConfig: appRouter.config(
+        deepLinkBuilder: initialServer != null
+            ? (platformDeepLink) {
+                if (platformDeepLink.path == '/' || platformDeepLink.path.isEmpty) {
+                  return DeepLink.path('/server/$initialServer');
+                }
+                return platformDeepLink;
+              }
+            : null,
+      ),
     );
   }
 }

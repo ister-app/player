@@ -36,7 +36,6 @@ dependencies:
   audio_session: ^0.2.2
   rxdart: ^0.28.0
   flutter_cache_manager: ^3.4.1
-  dynamic_color: ^1.7.0
   http: ^1.2.0
 
 dependency_overrides:
