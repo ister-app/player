@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/WellKnownService.dart';
@@ -57,8 +58,17 @@ class ServerListState extends State<ServerList> {
     }
 
     _servers = _sharedPreferencesAsync.getStringList('servers').then(
-      (value) {
-        return value ?? [];
+      (value) async {
+        final servers = value ?? [];
+        if (kIsWeb && servers.isEmpty && ClientManager.instance.lastClientUsed == null) {
+          final host = Uri.base.host;
+          servers.add(host);
+          await _sharedPreferencesAsync.setStringList('servers', servers);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) goToServerRoute(host);
+          });
+        }
+        return servers;
       },
     );
   }
