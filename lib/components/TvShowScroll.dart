@@ -34,7 +34,7 @@ class TvShowScroll extends StatefulWidget {
 class _TvShowScrollState extends State<TvShowScroll> {
   static const int _pageSize = 15;
 
-  final List<Query$shows$shows$content> _items = [];
+  final Map<int, List<Query$shows$shows$content>> _pageData = {};
   int? _totalItems;
   bool _initialized = false;
   final Set<int> _requestedPages = {0};
@@ -60,7 +60,7 @@ class _TvShowScrollState extends State<TvShowScroll> {
                   .toList();
 
           if (mounted) {
-            setState(() => _items.addAll(fresh));
+            setState(() => _pageData[page] = fresh);
           }
 
           return previous!;
@@ -92,20 +92,17 @@ class _TvShowScrollState extends State<TvShowScroll> {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
             setState(() {
-              _items.clear();
-              _items.addAll(parsed.shows?.content ?? []);
+              _pageData[0] = parsed.shows?.content ?? [];
               _totalItems = parsed.shows?.totalElements;
             });
           });
         }
 
-        if (result.hasException && _items.isEmpty) {
+        if (result.hasException && _pageData.isEmpty) {
           return Center(child: Text(result.exception.toString()));
         }
 
-        final int placeholderCount = _totalItems == null
-            ? _pageSize * 2
-            : (_totalItems! - _items.length).clamp(0, _pageSize);
+        final int itemCount = _totalItems ?? (_pageSize * 2);
 
         return GridView.builder(
           padding: const EdgeInsets.all(8),
@@ -115,10 +112,14 @@ class _TvShowScrollState extends State<TvShowScroll> {
             mainAxisSpacing: 0,
             crossAxisSpacing: 0,
           ),
-          itemCount: _items.length + placeholderCount,
+          itemCount: itemCount,
           itemBuilder: (context, index) {
-            if (index < _items.length) {
-              final show = _items[index];
+            final page = index ~/ _pageSize;
+            final itemIndex = index % _pageSize;
+            final pageItems = _pageData[page];
+
+            if (pageItems != null && itemIndex < pageItems.length) {
+              final show = pageItems[itemIndex];
               final img =
                   ImageUtil.getImageByType(show.images, ImageTypes.cover);
               return CarouselItemView(
@@ -133,7 +134,6 @@ class _TvShowScrollState extends State<TvShowScroll> {
               );
             }
 
-            final page = index ~/ _pageSize;
             return VisibilityDetector(
               key: ValueKey('tvshow-skeleton-$index'),
               onVisibilityChanged: (info) {
