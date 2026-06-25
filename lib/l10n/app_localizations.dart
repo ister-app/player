@@ -188,6 +188,12 @@ abstract class AppLocalizations {
   /// **'Go to show'**
   String get goToShow;
 
+  /// In context menu an item when clicked navigates to the artist page.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to artist'**
+  String get goToArtist;
+
   /// Text above recently watched media
   ///
   /// In en, this message translates to:
@@ -368,6 +374,12 @@ abstract class AppLocalizations {
   /// **'No show found'**
   String get noShowFound;
 
+  /// Instructions shown on Android TV during device authorization flow
+  ///
+  /// In en, this message translates to:
+  /// **'Go to the URL below on another device and enter the code:'**
+  String get deviceFlowInstructions;
+
   /// Label for the transcode toggle in playback settings
   ///
   /// In en, this message translates to:
@@ -379,6 +391,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Re-encode the stream server-side (always on for web)'**
   String get transcodeDescription;
+
+  /// Button label to start playback
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get play;
+
+  /// Button label to start playback in shuffle mode
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle'**
+  String get shuffle;
+
+  /// Section header for the list of tracks on an album page
+  ///
+  /// In en, this message translates to:
+  /// **'Songs'**
+  String get songs;
+
+  /// Section header for the list of albums on an artist page
+  ///
+  /// In en, this message translates to:
+  /// **'Albums'**
+  String get albums;
+
+  /// Section header for the description of an album or artist
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// Tab label in the music player for previously played tracks
+  ///
+  /// In en, this message translates to:
+  /// **'BACK TO'**
+  String get previousTracks;
+
+  /// Tab label in the music player for upcoming tracks
+  ///
+  /// In en, this message translates to:
+  /// **'UP NEXT'**
+  String get upNext;
+
+  /// Shown in the music player when there are no previously played tracks
+  ///
+  /// In en, this message translates to:
+  /// **'No previous tracks'**
+  String get noPreviousTracks;
+
+  /// Shown in the music player when there are no upcoming tracks
+  ///
+  /// In en, this message translates to:
+  /// **'No upcoming tracks'**
+  String get noNextTracks;
 }
 
 class _AppLocalizationsDelegate

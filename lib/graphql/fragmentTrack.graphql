@@ -1,0 +1,6 @@
+fragment fragmentTrack on Track {
+    id number discNumber
+    artist { id name }
+    metadata { ...fragmentMetadata }
+    mediaFile { durationInMilliseconds }
+}

@@ -117,8 +117,8 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
                   menuChildren: <Widget>[
                     MenuItemButton(
                         onPressed: () {
-                          AutoRouter.of(context).push(
-                              ShowOverviewRoute(showId: episode.$show!.id));
+                          AutoRouter.of(context)
+                              .push(ShowOverviewRoute(showId: episode.$show!.id));
                         },
                         child: ListTile(
                           leading: const Icon(Icons.tv),
@@ -150,8 +150,16 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
                       onLongPress: () => menuController.isOpen
                           ? menuController.close()
                           : menuController.open(),
-                      onTap: () => AutoRouter.of(context).pushPath(
-                          'shows/${episode.$show!.id}/episodes/${episode.id}')));
+                      onTap: () => AutoRouter.of(context).push(
+                          ShowOverviewRoute(
+                            showId: episode.$show!.id,
+                            children: [
+                              ShowEpisodeRoute(
+                                showId: episode.$show!.id,
+                                episodeId: episode.id,
+                              ),
+                            ],
+                          ))));
             } else if (item.type == Enum$MediaType.MOVIE &&
                 item.movie != null) {
               final mv = item.movie!;

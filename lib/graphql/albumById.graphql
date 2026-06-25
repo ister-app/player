@@ -1,0 +1,6 @@
+query albumById($id: ID) {
+    albumById(id: $id) {
+        ...fragmentAlbum
+        tracks { ...fragmentTrack }
+    }
+}

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/graphql/createPlayQueueForAlbum.graphql.dart';
 import 'package:player/graphql/createPlayQueueForMovie.graphql.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 import 'package:player/graphql/getPlayQueue.graphql.dart';
@@ -73,6 +74,44 @@ class PlayQueueService {
       }
       return playQueue;
     }
+  }
+
+  Future<Fragment$fragmentPlayQueue?> getOrCreatePlayQueueForAlbum(
+      GraphQLClient graphQLClient,
+      String? playQueueId,
+      String albumId,
+      String trackId) async {
+    if (playQueueId == null) {
+      return await _createPlayQueueForAlbum(graphQLClient, albumId, trackId);
+    } else {
+      return await _getPlayQueue(graphQLClient, playQueueId);
+    }
+  }
+
+  String? getTrackPlayQueueItemId(
+      Fragment$fragmentPlayQueue playQueue, String trackId) {
+    return playQueue.playQueueItems
+        ?.where((element) => element.track?.id == trackId)
+        .firstOrNull
+        ?.id;
+  }
+
+  Future<Fragment$fragmentPlayQueue?> _createPlayQueueForAlbum(
+      GraphQLClient graphQLClient, String albumId, String trackId) async {
+    final MutationOptions options = MutationOptions(
+        document: documentNodeMutationcreatePlayQueueForAlbum,
+        variables: Map.of({
+          "albumId": albumId,
+          "trackId": trackId,
+        }));
+    final QueryResult result = await graphQLClient.mutate(options);
+
+    if (result.hasException) {
+      LoggerService().logger.e(result.exception);
+      return null;
+    }
+    return Mutation$createPlayQueueForAlbum.fromJson(result.data!)
+        .createPlayQueueForAlbum;
   }
 
   Future<Fragment$fragmentPlayQueue?> _createPlayQueueForMovie(

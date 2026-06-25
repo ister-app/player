@@ -58,6 +58,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get goToShow => 'Ga naar show';
 
   @override
+  String get goToArtist => 'Ga naar artiest';
+
+  @override
   String get watchNext => 'Blijf kijken';
 
   @override
@@ -159,9 +162,40 @@ class AppLocalizationsNl extends AppLocalizations {
   String get noShowFound => 'Geen show gevonden';
 
   @override
+  String get deviceFlowInstructions =>
+      'Ga naar de onderstaande URL op een ander apparaat en voer de code in:';
+
+  @override
   String get transcode => 'Transcoderen';
 
   @override
   String get transcodeDescription =>
       'Stream server-side hercoderen (altijd aan voor web)';
+
+  @override
+  String get play => 'Afspelen';
+
+  @override
+  String get shuffle => 'Willekeurig';
+
+  @override
+  String get songs => 'Nummers';
+
+  @override
+  String get albums => 'Albums';
+
+  @override
+  String get description => 'Beschrijving';
+
+  @override
+  String get previousTracks => 'TERUG NAAR';
+
+  @override
+  String get upNext => 'HIERNA';
+
+  @override
+  String get noPreviousTracks => 'Geen vorige nummers';
+
+  @override
+  String get noNextTracks => 'Geen volgende nummers';
 }

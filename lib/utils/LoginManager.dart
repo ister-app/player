@@ -89,6 +89,16 @@ class LoginManager {
 </html>
 ''';
 
+  static Future<OidcUser?> startDeviceLogin(
+    String serverUrl, {
+    required void Function(OidcDeviceAuthorizationResponse) onVerification,
+  }) async {
+    LoggerService().logger.d("Start device code flow login for '$serverUrl'");
+    return await managers[serverUrl]?.loginDeviceCodeFlow(
+      onVerification: onVerification,
+    );
+  }
+
   static Future<OidcUser?> startLogin(String serverUrl) async {
     LoggerService().logger.d("Start login for '${managers[serverUrl]?.discoveryDocumentUri}'");
     return await managers[serverUrl]?.loginAuthorizationCodeFlow(

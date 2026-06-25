@@ -1,0 +1,6 @@
+fragment fragmentAlbum on Album {
+    id name releaseYear
+    artist { id name }
+    images { ...fragmentImages }
+    metadata { ...fragmentMetadata }
+}

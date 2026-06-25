@@ -41,6 +41,10 @@
   "@goToShow": {
     "description": "In menu archor an item when clicked go to show of that item."
   },
+  "goToArtist": "Go to artist",
+  "@goToArtist": {
+    "description": "In context menu an item when clicked navigates to the artist page."
+  },
   "watchNext": "Continue watching",
   "@watchNext": {
     "description": "Text above recently watched media"
@@ -170,6 +174,10 @@
   "@noShowFound": {
     "description": "Shown when a show cannot be found"
   },
+  "deviceFlowInstructions": "Go to the URL below on another device and enter the code:",
+  "@deviceFlowInstructions": {
+    "description": "Instructions shown on Android TV during device authorization flow"
+  },
   "transcode": "Transcode",
   "@transcode": {
     "description": "Label for the transcode toggle in playback settings"
@@ -177,5 +185,41 @@
   "transcodeDescription": "Re-encode the stream server-side (always on for web)",
   "@transcodeDescription": {
     "description": "Subtitle for the transcode toggle"
+  },
+  "play": "Play",
+  "@play": {
+    "description": "Button label to start playback"
+  },
+  "shuffle": "Shuffle",
+  "@shuffle": {
+    "description": "Button label to start playback in shuffle mode"
+  },
+  "songs": "Songs",
+  "@songs": {
+    "description": "Section header for the list of tracks on an album page"
+  },
+  "albums": "Albums",
+  "@albums": {
+    "description": "Section header for the list of albums on an artist page"
+  },
+  "description": "Description",
+  "@description": {
+    "description": "Section header for the description of an album or artist"
+  },
+  "previousTracks": "BACK TO",
+  "@previousTracks": {
+    "description": "Tab label in the music player for previously played tracks"
+  },
+  "upNext": "UP NEXT",
+  "@upNext": {
+    "description": "Tab label in the music player for upcoming tracks"
+  },
+  "noPreviousTracks": "No previous tracks",
+  "@noPreviousTracks": {
+    "description": "Shown in the music player when there are no previously played tracks"
+  },
+  "noNextTracks": "No upcoming tracks",
+  "@noNextTracks": {
+    "description": "Shown in the music player when there are no upcoming tracks"
   }
 }

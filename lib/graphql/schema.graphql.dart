@@ -67,6 +67,7 @@ Enum$SortingOrder fromJson$Enum$SortingOrder(String value) {
 enum Enum$LibraryType {
   MOVIE,
   SHOW,
+  MUSIC,
   $unknown;
 
   factory Enum$LibraryType.fromJson(String value) =>
@@ -81,6 +82,8 @@ String toJson$Enum$LibraryType(Enum$LibraryType e) {
       return r'MOVIE';
     case Enum$LibraryType.SHOW:
       return r'SHOW';
+    case Enum$LibraryType.MUSIC:
+      return r'MUSIC';
     case Enum$LibraryType.$unknown:
       return r'$unknown';
   }
@@ -92,6 +95,8 @@ Enum$LibraryType fromJson$Enum$LibraryType(String value) {
       return Enum$LibraryType.MOVIE;
     case r'SHOW':
       return Enum$LibraryType.SHOW;
+    case r'MUSIC':
+      return Enum$LibraryType.MUSIC;
     default:
       return Enum$LibraryType.$unknown;
   }

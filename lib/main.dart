@@ -34,21 +34,48 @@ Future<void> main() async {
     config: AudioServiceConfig(
       androidNotificationChannelId: 'app.ister.player.channel.audio',
       androidNotificationChannelName: 'Ister Player',
-      androidNotificationOngoing: true,
+      // Keep the foreground service alive while paused / between tracks. On
+      // Android 16 a backgrounded app may not restart a foreground service, so
+      // tearing it down on every pause would block the next track from playing
+      // until the app is reopened. (androidNotificationOngoing is incompatible
+      // with this and unnecessary — the service stays foreground regardless.)
+      androidStopForegroundOnPause: false,
     ),
   );
 
   runApp(Main(initialServer: initialServer));
 }
 
-class Main extends StatelessWidget {
+class Main extends StatefulWidget {
   const Main({super.key, this.initialServer});
 
   final String? initialServer;
 
   @override
-  Widget build(BuildContext context) {
+  State<Main> createState() => _MainState();
+}
+
+class _MainState extends State<Main> {
+  late final RouterConfig<UrlState> _routerConfig;
+
+  @override
+  void initState() {
+    super.initState();
     final appRouter = AppRouter();
+    _routerConfig = appRouter.config(
+      deepLinkBuilder: widget.initialServer != null
+          ? (platformDeepLink) {
+              if (platformDeepLink.path == '/' || platformDeepLink.path.isEmpty) {
+                return DeepLink.path('/server/${widget.initialServer}');
+              }
+              return platformDeepLink;
+            }
+          : null,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Ister',
       localizationsDelegates: [
@@ -71,16 +98,7 @@ class Main extends StatelessWidget {
         brightness: Brightness.dark,
         fontFamily: 'Roboto',
       ),
-      routerConfig: appRouter.config(
-        deepLinkBuilder: initialServer != null
-            ? (platformDeepLink) {
-                if (platformDeepLink.path == '/' || platformDeepLink.path.isEmpty) {
-                  return DeepLink.path('/server/$initialServer');
-                }
-                return platformDeepLink;
-              }
-            : null,
-      ),
+      routerConfig: _routerConfig,
     );
   }
 }

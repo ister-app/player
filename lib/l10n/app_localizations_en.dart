@@ -58,6 +58,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goToShow => 'Go to show';
 
   @override
+  String get goToArtist => 'Go to artist';
+
+  @override
   String get watchNext => 'Continue watching';
 
   @override
@@ -159,9 +162,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noShowFound => 'No show found';
 
   @override
+  String get deviceFlowInstructions =>
+      'Go to the URL below on another device and enter the code:';
+
+  @override
   String get transcode => 'Transcode';
 
   @override
   String get transcodeDescription =>
       'Re-encode the stream server-side (always on for web)';
+
+  @override
+  String get play => 'Play';
+
+  @override
+  String get shuffle => 'Shuffle';
+
+  @override
+  String get songs => 'Songs';
+
+  @override
+  String get albums => 'Albums';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get previousTracks => 'BACK TO';
+
+  @override
+  String get upNext => 'UP NEXT';
+
+  @override
+  String get noPreviousTracks => 'No previous tracks';
+
+  @override
+  String get noNextTracks => 'No upcoming tracks';
 }

@@ -9,5 +9,12 @@ fragment fragmentPlayQueue on PlayQueue {
         movie {
             ...fragmentMovie
         }
+        track {
+            id number discNumber
+            artist { id name }
+            album { id name images { ...fragmentImages } }
+            metadata { ...fragmentMetadata }
+            mediaFile { ...fragmentMediaFiles }
+        }
     }
 }

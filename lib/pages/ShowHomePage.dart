@@ -4,7 +4,9 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/analyzeDataForLibrary.graphql.dart';
 import 'package:player/graphql/libraries.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../components/AlbumScroll.dart';
 import '../components/MovieScroll.dart';
 import '../components/TvShowScroll.dart';
 import '../l10n/app_localizations.dart';
@@ -29,8 +31,45 @@ class _ShowHomePageState extends State<ShowHomePage> {
   Refetch? _refetchLibraries;
   int _refreshCount = 0;
 
+  static const _kSelectedLibraryKey = 'selected_library_id';
+  static const _kSelectedLibraryTypeKey = 'selected_library_type';
+  static final SharedPreferencesAsync _prefs = SharedPreferencesAsync();
+
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedLibrary();
+  }
+
+  Future<void> _loadSavedLibrary() async {
+    final saved = await _prefs.getString('${_kSelectedLibraryKey}_${widget.serverName}');
+    final savedType = await _prefs.getString('${_kSelectedLibraryTypeKey}_${widget.serverName}');
+    if (mounted && saved != null) {
+      setState(() {
+        _selectedLibraryId = saved;
+        // Restore the type too so we render the right widget immediately
+        // instead of briefly defaulting to MovieScroll. The libraries query
+        // below still corrects it if the stored type is stale/missing.
+        _selectedLibraryType = savedType == null
+            ? null
+            : Enum$LibraryType.values.firstWhere(
+                (t) => t.name == savedType,
+                orElse: () => Enum$LibraryType.$unknown);
+      });
+    }
+  }
+
+  Future<void> _selectLibrary(Query$libraries$libraries lib) async {
+    setState(() {
+      _selectedLibraryId = lib.id;
+      _selectedLibraryType = lib.type;
+    });
+    await _prefs.setString('${_kSelectedLibraryKey}_${widget.serverName}', lib.id);
+    await _prefs.setString('${_kSelectedLibraryTypeKey}_${widget.serverName}', lib.type.name);
+  }
 
   void triggerRefresh() {
     _refreshIndicatorKey.currentState?.show();
@@ -62,15 +101,26 @@ class _ShowHomePageState extends State<ShowHomePage> {
             : (Query$libraries.fromJson(result.data!).libraries ??
                 <Query$libraries$libraries>[]);
 
-        // Auto-select first library when loaded
-        if (_selectedLibraryId == null && libraries.isNotEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            setState(() {
-              _selectedLibraryId = libraries.first.id;
-              _selectedLibraryType = libraries.first.type;
+        // Resolve type for a restored library ID, or auto-select first
+        if (libraries.isNotEmpty) {
+          final match = _selectedLibraryId != null
+              ? libraries.cast<Query$libraries$libraries?>().firstWhere(
+                  (l) => l!.id == _selectedLibraryId,
+                  orElse: () => null)
+              : null;
+          if (match != null && _selectedLibraryType != match.type) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              setState(() {
+                _selectedLibraryType = match.type;
+              });
             });
-          });
+          } else if (_selectedLibraryId == null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              _selectLibrary(libraries.first);
+            });
+          }
         }
 
         return Scaffold(
@@ -80,12 +130,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
               if (libraries.isNotEmpty)
                 MenuAnchor(
                   menuChildren: libraries.map((lib) => MenuItemButton(
-                    onPressed: () {
-                      setState(() {
-                        _selectedLibraryId = lib.id;
-                        _selectedLibraryType = lib.type;
-                      });
-                    },
+                    onPressed: () => _selectLibrary(lib),
                     child: Text(lib.name),
                   )).toList(),
                   builder: (context, controller, child) {
@@ -163,12 +208,23 @@ class _ShowHomePageState extends State<ShowHomePage> {
         serverName: widget.serverName,
         libraryId: _selectedLibraryId,
       );
-    } else {
+    } else if (_selectedLibraryType == Enum$LibraryType.MUSIC) {
+      return AlbumScroll(
+        key: key,
+        serverName: widget.serverName,
+        libraryId: _selectedLibraryId,
+      );
+    } else if (_selectedLibraryType == Enum$LibraryType.MOVIE) {
       return MovieScroll(
         key: key,
         serverName: widget.serverName,
         libraryId: _selectedLibraryId,
       );
+    } else {
+      // Type not resolved yet (e.g. restored ID without a stored type). Wait for
+      // the libraries query rather than guessing a widget and querying the wrong
+      // content type against the library.
+      return const Center(child: CircularProgressIndicator());
     }
   }
 }

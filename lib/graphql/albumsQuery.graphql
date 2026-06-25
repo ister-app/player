@@ -1,0 +1,6 @@
+query albums($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $libraryId: ID) {
+    albums(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, libraryId: $libraryId) {
+        content { ...fragmentAlbum }
+        totalPages totalElements number size
+    }
+}

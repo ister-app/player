@@ -31,4 +31,5 @@ enum IsterMediaTypes {
   show,
   list, // I.E. Recent or last added
   movie,
+  track,
 }

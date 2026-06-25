@@ -14,6 +14,7 @@
   "scanLibrary": "Scan bibliotheek",
   "analyzeLibrary": "Analyseer bibliotheek",
   "goToShow": "Ga naar show",
+  "goToArtist": "Ga naar artiest",
   "watchNext": "Blijf kijken",
   "recentlyAddedShows": "Onlangs toegevoegde shows",
   "season": "Seizoen {number}",
@@ -44,6 +45,16 @@
   "trackAuto": "Auto",
   "trackNone": "Geen",
   "noShowFound": "Geen show gevonden",
+  "deviceFlowInstructions": "Ga naar de onderstaande URL op een ander apparaat en voer de code in:",
   "transcode": "Transcoderen",
-  "transcodeDescription": "Stream server-side hercoderen (altijd aan voor web)"
+  "transcodeDescription": "Stream server-side hercoderen (altijd aan voor web)",
+  "play": "Afspelen",
+  "shuffle": "Willekeurig",
+  "songs": "Nummers",
+  "albums": "Albums",
+  "description": "Beschrijving",
+  "previousTracks": "TERUG NAAR",
+  "upNext": "HIERNA",
+  "noPreviousTracks": "Geen vorige nummers",
+  "noNextTracks": "Geen volgende nummers"
 }

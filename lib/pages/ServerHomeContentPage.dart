@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/components/AlbumSlide.dart';
 import 'package:player/components/MovieSlide.dart';
 import 'package:player/components/TvShowSlide.dart';
 import 'package:player/graphql/libraries.graphql.dart';
@@ -30,6 +31,8 @@ class ServerHomeContentPage extends StatefulWidget {
 
 class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
   Refetch? _refetchRecent;
+  Refetch? _refetchLibraries;
+  final Map<String, Refetch> _refetchSlides = {};
   bool _recentViewEmpty = false;
 
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
@@ -39,15 +42,21 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
     _refreshIndicatorKey.currentState?.show();
   }
 
+  Future<void> _safeRefetch(Refetch refetch, String label) async {
+    try {
+      await refetch();
+    } catch (e) {
+      LoggerService().logger.w("Could not refetch $label: $e");
+    }
+  }
+
   Future<void> _refresh() async {
     LoggerService().logger.i("refreshing");
-    try {
-      if (_refetchRecent != null) {
-        await _refetchRecent!();
-      }
-    } catch (e) {
-      LoggerService().logger.w("Could not refetch recent: $e");
-    }
+    await Future.wait([
+      if (_refetchRecent != null) _safeRefetch(_refetchRecent!, "recent"),
+      if (_refetchLibraries != null) _safeRefetch(_refetchLibraries!, "libraries"),
+      ..._refetchSlides.entries.map((e) => _safeRefetch(e.value, "slide ${e.key}")),
+    ]);
     setState(() {
       _recentViewEmpty = false;
     });
@@ -127,6 +136,7 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
             ),
             builder: (QueryResult libraryResult,
                 {Refetch? refetch, FetchMore? fetchMore}) {
+              if (refetch != null) _refetchLibraries = refetch;
               final libraries = libraryResult.data == null
                   ? <Query$libraries$libraries>[]
                   : (Query$libraries.fromJson(libraryResult.data!).libraries ??
@@ -173,11 +183,25 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                                   ? TvShowSlide(
                                       serverName: widget.serverName,
                                       libraryId: library.id,
+                                      onRefetch: (r) {
+                                        if (r != null) _refetchSlides[library.id] = r;
+                                      },
                                     )
-                                  : MovieSlide(
-                                      serverName: widget.serverName,
-                                      libraryId: library.id,
-                                    )),
+                                  : library.type == Enum$LibraryType.MUSIC
+                                      ? AlbumSlide(
+                                          serverName: widget.serverName,
+                                          libraryId: library.id,
+                                          onRefetch: (r) {
+                                            if (r != null) _refetchSlides[library.id] = r;
+                                          },
+                                        )
+                                      : MovieSlide(
+                                          serverName: widget.serverName,
+                                          libraryId: library.id,
+                                          onRefetch: (r) {
+                                            if (r != null) _refetchSlides[library.id] = r;
+                                          },
+                                        )),
                         ]),
                   ]);
             },

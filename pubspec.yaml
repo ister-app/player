@@ -6,7 +6,7 @@ version: 1.0.0+1
 
 environment:
   sdk: ^3.5.4
-  flutter: 3.41.4
+  flutter: 3.41.9
 
 dependencies:
   flutter:
@@ -17,6 +17,7 @@ dependencies:
   oidc: ^0.14.0+2
   oidc_default_store: ^0.6.0+2
   graphql_flutter: ^5.1.2
+  gql: ^1.0.1 # DocumentNode type for the shared PagedContentView
   media_kit: ^1.2.3 # Primary package.
   media_kit_video: ^2.0.1 # For video rendering.
   media_kit_libs_video: ^1.0.5 # Native video dependencies.
@@ -37,6 +38,8 @@ dependencies:
   rxdart: ^0.28.0
   flutter_cache_manager: ^3.4.1
   http: ^1.2.0
+  device_info_plus: ^13.1.0
+  qr_flutter: ^4.1.0
 
 dependency_overrides:
   media_kit:

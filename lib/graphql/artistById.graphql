@@ -1,0 +1,8 @@
+query artistById($id: ID) {
+    artistById(id: $id) {
+        id name
+        images { ...fragmentImages }
+        metadata { ...fragmentMetadata }
+        albums { ...fragmentAlbum }
+    }
+}

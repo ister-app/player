@@ -24,6 +24,7 @@ class IsterMediaService {
       IsterMediaTypes.show => List.empty(),
       IsterMediaTypes.list => getList(mediaItemId),
       IsterMediaTypes.movie => List.empty(),
+      IsterMediaTypes.track => List.empty(),
     };
   }
 

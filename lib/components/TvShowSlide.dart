@@ -126,9 +126,8 @@ class _TvShowSlideState extends State<TvShowSlide> {
                 imageUrl: ImageUtil.buildUrl(img,
                     token: StreamTokenService.getToken(widget.serverName)),
                 blurHash: img?.blurHash,
-                onTap: () => AutoRouter.of(context).push(
-                  ShowOverviewRoute(showId: show.id),
-                ),
+                onTap: () => AutoRouter.of(context)
+                    .push(ShowOverviewRoute(showId: show.id)),
               );
             }
 
