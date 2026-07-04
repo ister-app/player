@@ -46,6 +46,7 @@ class AlbumCarouselTile extends StatelessWidget {
         imageUrl: ImageUtil.buildUrl(img,
             token: StreamTokenService.getToken(serverName)),
         blurHash: img?.blurHash,
+        placeholderIcon: Icons.music_note,
         onTap: () => AutoRouter.of(context).push(AlbumRoute(albumId: album.id)),
         onLongPress: () => menuController.isOpen
             ? menuController.close()

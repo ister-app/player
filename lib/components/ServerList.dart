@@ -6,6 +6,8 @@ import 'package:player/utils/WellKnownService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
+import 'package:player/utils/LoginManager.dart';
+import 'package:player/utils/StreamTokenService.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ServerList extends StatefulWidget {
@@ -42,6 +44,9 @@ class ServerListState extends State<ServerList> {
         await _sharedPreferencesAsync.getStringList('servers') ?? [];
     servers.remove(value);
     await WellKnownService.remove(value);
+    await LoginManager.remove(value);
+    StreamTokenService.invalidateToken(value);
+    ClientManager.removeClient(value);
     setState(() {
       _servers =
           _sharedPreferencesAsync.setStringList('servers', servers).then((_) {
@@ -177,7 +182,8 @@ class ServerListState extends State<ServerList> {
 
   Future<void> goToServerRoute(String serverName) async {
     if (!mounted) return;
-    await _sharedPreferencesAsync.setString("currentServer", serverName);
+    // Route through the setter so the in-memory value stays in sync too.
+    ClientManager.instance.lastClientUsed = serverName;
     AutoRouter.of(context).replace(ServerHomeRoute(serverName: serverName));
   }
 }

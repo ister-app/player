@@ -48,7 +48,7 @@ class WellKnownService {
         if (lines.length != 3) {
           LoggerService().logger.w(
               '/.well-known/ister: unexpected format for $serverIdentifier (got ${lines.length} lines)');
-          return null;
+          return _loadFromPrefs(serverIdentifier);
         }
 
         final info = WellKnownInfo(
@@ -62,7 +62,7 @@ class WellKnownService {
       } else {
         LoggerService().logger.w(
             '/.well-known/ister: server $serverIdentifier returned ${response.statusCode}');
-        return null;
+        return _loadFromPrefs(serverIdentifier);
       }
     } catch (e) {
       LoggerService().logger

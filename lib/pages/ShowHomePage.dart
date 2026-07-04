@@ -81,6 +81,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
     } catch (e) {
       LoggerService().logger.w('Failed to refetch libraries: $e');
     }
+    if (!mounted) return;
     setState(() {
       _refreshCount++;
     });

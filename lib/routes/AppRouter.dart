@@ -61,7 +61,7 @@ class AppRouter extends RootStackRouter {
   @override
   List<AutoRoute> get routes => [
     AutoRoute(path: "/", page: HomeRoute.page),
-    CustomRoute(path: '/player', page: MusicPlayerRoute.page, opaque: false, barrierColor: Colors.transparent, durationInMilliseconds: 0, reverseDurationInMilliseconds: 0),
+    CustomRoute(path: '/player', page: MusicPlayerRoute.page, opaque: false, barrierColor: Colors.transparent, duration: Duration.zero, reverseDuration: Duration.zero),
     AutoRoute(path: "/server/:serverName", page: ServerHomeRoute.page,
         children: [
           AutoRoute(path: '', page: ServerHomeOverviewRoute.page, initial: true,

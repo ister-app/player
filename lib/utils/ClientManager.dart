@@ -35,12 +35,30 @@ class ClientManager {
   }
 
   static String getHttpOrHttps(String url) {
-    final ipv4 = RegExp(r'^\d+\.\d+\.\d+\.\d+');
-    final ipv6 = RegExp(r'^\[?[0-9a-fA-F:]+\]?');
-    if (url.startsWith('localhost') || ipv4.hasMatch(url) || ipv6.hasMatch(url)) {
+    // Extract the host from "host", "host:port", "host/path" or "[ipv6]:port".
+    final authority = url.split('/').first;
+    final String host;
+    if (authority.startsWith('[')) {
+      final end = authority.indexOf(']');
+      host = end == -1 ? authority.substring(1) : authority.substring(1, end);
+    } else {
+      host = authority.split(':').first;
+    }
+    final ipv4 = RegExp(r'^\d{1,3}(\.\d{1,3}){3}$');
+    final ipv6 = RegExp(r'^[0-9a-fA-F:]+$');
+    final isIpv6 = host.contains(':') && ipv6.hasMatch(host);
+    if (host == 'localhost' || ipv4.hasMatch(host) || isIpv6) {
       return "http";
     } else {
       return "https";
+    }
+  }
+
+  /// Drops all per-server state for [url] (used when a server is deleted).
+  static void removeClient(String url) {
+    clients.remove(url);
+    if (instance._lastClientUsed == url) {
+      instance.lastClientUsed = null;
     }
   }
 

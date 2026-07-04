@@ -15,10 +15,14 @@ class MusicDetailHero extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.backgroundAlignment = Alignment.center,
+    this.placeholderIcon = Icons.music_note,
   });
 
   final String? imageUrl;
   final String? blurHash;
+
+  /// Icon shown on the cover card when there is no (loadable) image.
+  final IconData placeholderIcon;
 
   /// When null the foreground content (cover card + text) is hidden — e.g.
   /// while the page is still loading and only the backdrop should show.
@@ -27,6 +31,13 @@ class MusicDetailHero extends StatelessWidget {
 
   /// Alignment for the blurred backdrop image (artist pages anchor to the top).
   final Alignment backgroundAlignment;
+
+  Widget _coverPlaceholder() => Container(
+        color: Colors.grey[900],
+        child: Center(
+          child: Icon(placeholderIcon, size: 44, color: Colors.white54),
+        ),
+      );
 
   Widget _blurHashOr(Widget fallback) => blurHash != null
       ? BlurHash(
@@ -94,10 +105,11 @@ class MusicDetailHero extends StatelessWidget {
                             fit: BoxFit.cover,
                             placeholder: (context, url) =>
                                 _blurHashOr(Container(color: Colors.grey[900])),
+                            errorBuilder: (_, __, ___) => _coverPlaceholder(),
                             fadeOutDuration: Duration.zero,
                             fadeInDuration: Duration.zero,
                           )
-                        : Container(color: Colors.grey[900]),
+                        : _coverPlaceholder(),
                   ),
                 ),
                 const SizedBox(width: 16),

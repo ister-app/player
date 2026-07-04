@@ -66,7 +66,8 @@ class _MainState extends State<Main> {
       deepLinkBuilder: widget.initialServer != null
           ? (platformDeepLink) {
               if (platformDeepLink.path == '/' || platformDeepLink.path.isEmpty) {
-                return DeepLink.path('/server/${widget.initialServer}');
+                return DeepLink.path(
+                    '/server/${Uri.encodeComponent(widget.initialServer!)}');
               }
               return platformDeepLink;
             }

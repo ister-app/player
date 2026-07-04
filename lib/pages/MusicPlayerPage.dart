@@ -191,6 +191,9 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
   /// already-played tracks (newest first) and the still-to-come tracks.
   ({List<MediaItem> previous, List<MediaItem> upNext}) _sliceQueue(
       List<MediaItem> allItems, int currentIndex) {
+    // queueIndex can briefly be stale (e.g. right after switching to a shorter
+    // album); clamp so sublist can never reach past the queue.
+    if (currentIndex >= allItems.length) currentIndex = allItems.length - 1;
     final previous = currentIndex > 0
         ? allItems.sublist(0, currentIndex).reversed.toList()
         : <MediaItem>[];
@@ -255,6 +258,32 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
     );
   }
 
+  /// Album artwork, or the same music-note placeholder the queue list uses
+  /// when a track has no (loadable) artwork.
+  Widget _artworkOrPlaceholder(String? artUri, double size) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: artUri != null
+            ? CachedNetworkImage(
+                imageUrl: artUri,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _artPlaceholder(size),
+              )
+            : _artPlaceholder(size),
+      ),
+    );
+  }
+
+  Widget _artPlaceholder(double size) {
+    return Container(
+      color: Colors.white12,
+      child: Icon(Icons.music_note, color: Colors.white54, size: size * 0.4),
+    );
+  }
+
   Widget _buildPortrait(BuildContext context, MediaItem? item, String? artUri, BoxConstraints constraints) {
     final maxImageSize = min(constraints.maxWidth - 80, constraints.maxHeight - 340).clamp(80.0, 400.0);
 
@@ -294,15 +323,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
                           ),
                         ),
                         const Spacer(),
-                        if (artUri != null)
-                          SizedBox(
-                            width: maxImageSize,
-                            height: maxImageSize,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: CachedNetworkImage(imageUrl: artUri, fit: BoxFit.cover),
-                            ),
-                          ),
+                        _artworkOrPlaceholder(artUri, maxImageSize),
                         const Spacer(),
                         Padding(
                           padding: EdgeInsets.fromLTRB(24, 0, 24, hasQueue ? 4 : 32),
@@ -372,16 +393,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
                       ),
                       Expanded(
                         child: Center(
-                          child: artUri != null
-                              ? SizedBox(
-                                  width: imageSize,
-                                  height: imageSize,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: CachedNetworkImage(imageUrl: artUri, fit: BoxFit.cover),
-                                  ),
-                                )
-                              : const SizedBox(),
+                          child: _artworkOrPlaceholder(artUri, imageSize),
                         ),
                       ),
                     ],
@@ -456,6 +468,18 @@ class _QueueItem extends StatefulWidget {
 class _QueueItemState extends State<_QueueItem> {
   bool _hovered = false;
 
+  Widget _queueArtPlaceholder() {
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: Colors.white12,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: const Icon(Icons.music_note, color: Colors.white54),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final artUri = widget.item.artUri?.toString();
@@ -479,17 +503,10 @@ class _QueueItemState extends State<_QueueItem> {
                         width: 48,
                         height: 48,
                         fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _queueArtPlaceholder(),
                       ),
                     )
-                  : Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: Colors.white12,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Icon(Icons.music_note, color: Colors.white54),
-                    ),
+                  : _queueArtPlaceholder(),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -650,7 +667,11 @@ class _SeekBarState extends State<_SeekBar> {
                         value: currentMs,
                         min: 0,
                         max: maxMs,
-                        onChanged: (v) => setState(() => _dragValue = v),
+                        // Disabled until the duration is known (HLS reports it
+                        // late) — seeking in an unknown range is meaningless.
+                        onChanged: duration.inMilliseconds > 0
+                            ? (v) => setState(() => _dragValue = v)
+                            : null,
                         onChangeEnd: (v) {
                           MediaPlayerHandler.instance.seek(Duration(milliseconds: v.toInt()));
                           setState(() => _dragValue = null);

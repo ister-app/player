@@ -35,10 +35,21 @@ class TvShowSlide extends StatefulWidget {
 class _TvShowSlideState extends State<TvShowSlide> {
   static const int _pageSize = 15;
 
-  final List<Query$shows$shows$content> _items = [];
+  // Per-page storage: page 0 comes from the main query, later pages from
+  // fetchMore. A single flat list would let a racing page-0 rebuild wipe
+  // pages that already arrived.
+  final Map<int, List<Query$shows$shows$content>> _pageData = {};
   int? _totalItems;
-  bool _initialized = false;
+  DateTime? _lastResultTimestamp;
   final Set<int> _requestedPages = {0};
+
+  List<Query$shows$shows$content> get _orderedItems {
+    final out = <Query$shows$shows$content>[];
+    for (var page = 0; _pageData.containsKey(page); page++) {
+      out.addAll(_pageData[page]!);
+    }
+    return out;
+  }
 
   void _requestPage(int page, FetchMore fetchMore) {
     if (_requestedPages.contains(page)) return;
@@ -61,7 +72,7 @@ class _TvShowSlideState extends State<TvShowSlide> {
                   .toList();
 
           if (mounted) {
-            setState(() => _items.addAll(fresh));
+            setState(() => _pageData[page] = fresh);
           }
 
           return previous!;
@@ -87,34 +98,39 @@ class _TvShowSlideState extends State<TvShowSlide> {
       builder: (result, {Refetch? refetch, FetchMore? fetchMore}) {
         widget.onRefetch?.call(refetch);
 
-        if (!_initialized && result.data != null) {
-          _initialized = true;
+        // Parse every new emission (cache, network, refetch) exactly once —
+        // an "initialized" latch would pin the UI to the first (cached)
+        // result and make refreshes a no-op.
+        if (result.data != null && result.timestamp != _lastResultTimestamp) {
+          _lastResultTimestamp = result.timestamp;
           final parsed = Query$shows.fromJson(result.data!);
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
             setState(() {
-              _items.clear();
-              _items.addAll(parsed.shows?.content ?? []);
+              _pageData[0] = parsed.shows?.content ?? [];
               _totalItems = parsed.shows?.totalElements;
             });
+            if (_totalItems == 0) widget.onEmptyView?.call();
           });
         }
 
-        if (result.hasException && _items.isEmpty) {
+        final items = _orderedItems;
+
+        if (result.hasException && items.isEmpty) {
           return Center(child: Text(result.exception.toString()));
         }
 
         final int placeholderCount = _totalItems == null
             ? _pageSize * 2
-            : (_totalItems! - _items.length).clamp(0, _pageSize);
+            : (_totalItems! - items.length).clamp(0, _pageSize);
 
         return ListView.builder(
           scrollDirection: Axis.horizontal,
           itemExtent: 300.0,
-          itemCount: _items.length + placeholderCount,
+          itemCount: items.length + placeholderCount,
           itemBuilder: (context, index) {
-            if (index < _items.length) {
-              final show = _items[index];
+            if (index < items.length) {
+              final show = items[index];
               final img = ImageUtil.getImageByType(
                 show.images,
                 ImageTypes.background,

@@ -124,10 +124,10 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                 false, null, BoneMock.name, BoneMock.words(15), context),
           );
         } else {
-          final MediaPlayerHandler _handler = MediaPlayerHandler.instance;
+          final MediaPlayerHandler handler = MediaPlayerHandler.instance;
           if (episode != null && !_playQueueStarted) {
             _playQueueStarted = true;
-            _handler.startPlayQueue(GraphQLProvider.of(context).value,
+            handler.startPlayQueue(GraphQLProvider.of(context).value,
                 widget.playQueueId, episode!, widget.serverName);
           }
           return getContent(
@@ -200,15 +200,16 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                 ),
                 MenuAnchor(
                   menuChildren: <Widget>[
-                    MenuItemButton(
-                      onPressed: () {
-                        _dialogBuilder(context, episode!.toJson().toString());
-                      },
-                      child: ListTile(
-                        leading: const Icon(Icons.info),
-                        title: Text(AppLocalizations.of(context)!.rawData),
+                    if (episode != null)
+                      MenuItemButton(
+                        onPressed: () {
+                          _dialogBuilder(context, episode.toJson().toString());
+                        },
+                        child: ListTile(
+                          leading: const Icon(Icons.info),
+                          title: Text(AppLocalizations.of(context)!.rawData),
+                        ),
                       ),
-                    ),
                     if (episode != null)
                       MenuItemButton(
                         onPressed: () async {

@@ -6,7 +6,6 @@ import 'package:player/l10n/app_localizations.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/TvShowSeasonExpansionPanelList.dart';
-import '../graphql/fragmentImages.graphql.dart';
 import '../utils/LoggerService.dart';
 
 @RoutePage()
@@ -44,10 +43,6 @@ class ShowOverviewPage extends StatelessWidget {
           final parsedData = Query$showById.fromJson(result.data!);
 
           Query$showById$showById? show = parsedData.showById;
-
-          List<Fragment$fragmentImages>? images = show?.images
-              ?.map((e) => Fragment$fragmentImages.fromJson(e.toJson()))
-              .toList();
 
           if (show == null) {
             body = Text(AppLocalizations.of(context)!.noShowFound);

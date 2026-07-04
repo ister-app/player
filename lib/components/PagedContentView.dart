@@ -89,7 +89,7 @@ class PagedContentView<T> extends StatefulWidget {
 class _PagedContentViewState<T> extends State<PagedContentView<T>> {
   final Map<int, List<T>> _pageData = {};
   int? _totalItems;
-  bool _initialized = false;
+  DateTime? _lastResultTimestamp;
   final Set<int> _requestedPages = {0};
   FetchMore? _fetchMore;
 
@@ -140,8 +140,11 @@ class _PagedContentViewState<T> extends State<PagedContentView<T>> {
         widget.onRefetch?.call(refetch);
         _fetchMore = fetchMore;
 
-        if (!_initialized && result.data != null) {
-          _initialized = true;
+        // Parse every new emission (cache, network, refetch) exactly once —
+        // an "initialized" latch would pin the UI to the first (cached)
+        // result and make pull-to-refresh a no-op.
+        if (result.data != null && result.timestamp != _lastResultTimestamp) {
+          _lastResultTimestamp = result.timestamp;
           final root = result.data![widget.rootField];
           final content = root?['content'] as List<dynamic>?;
           final total = root?['totalElements'] as int?;

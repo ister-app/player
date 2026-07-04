@@ -54,33 +54,39 @@ class IsterMediaService {
         .recentlyWatched;
     if (items == null) return List.empty();
 
-    return items.map((e) {
+    return items.map<IsterMediaItem?>((e) {
       if (e.type == Enum$MediaType.EPISODE && e.episode != null) {
         final ep = e.episode!;
         return IsterMediaItem(
           id: ep.id,
           title: MetadataUtil.getTitle(ep.metadata) ?? "unknown",
           duration: Duration(
-              milliseconds: ep.mediaFile?.first.durationInMilliseconds ?? 0),
+              milliseconds:
+                  ep.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0),
           serverName: mediaItemId.serverName,
           isterMediaType: IsterMediaTypes.episode,
           stubTitle: 'Ister',
           artUri: artUriFromImages(ep.images, mediaItemId.serverName),
         );
-      } else {
+      } else if (e.type == Enum$MediaType.MOVIE && e.movie != null) {
         final mv = e.movie!;
         return IsterMediaItem(
           id: mv.id,
           title: mv.name,
           duration: Duration(
-              milliseconds: mv.mediaFile?.first.durationInMilliseconds ?? 0),
+              milliseconds:
+                  mv.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0),
           serverName: mediaItemId.serverName,
           isterMediaType: IsterMediaTypes.movie,
           stubTitle: 'Ister',
           artUri: artUriFromImages(mv.images, mediaItemId.serverName),
         );
+      } else {
+        LoggerService().logger.w(
+            'getRecent: skipping item with type ${e.type} and no matching media');
+        return null;
       }
-    }).toList();
+    }).whereType<IsterMediaItem>().toList();
   }
 
   Future<Fragment$fragmentEpisode?> getEpisodeFragmentById(
@@ -106,7 +112,7 @@ class IsterMediaService {
       id: data.id,
       title: MetadataUtil.getTitle(data.metadata) ?? "unknown",
       duration: Duration(
-          milliseconds: data.mediaFile?.first.durationInMilliseconds ?? 0),
+          milliseconds: data.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0),
       serverName: mediaItemId.serverName,
       isterMediaType: mediaItemId.isterMediaType,
       stubTitle: 'Ister',

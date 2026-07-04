@@ -36,7 +36,7 @@ class _TvShowScrollState extends State<TvShowScroll> {
 
   final Map<int, List<Query$shows$shows$content>> _pageData = {};
   int? _totalItems;
-  bool _initialized = false;
+  DateTime? _lastResultTimestamp;
   final Set<int> _requestedPages = {0};
 
   void _requestPage(int page, FetchMore fetchMore) {
@@ -86,8 +86,11 @@ class _TvShowScrollState extends State<TvShowScroll> {
       builder: (result, {Refetch? refetch, FetchMore? fetchMore}) {
         widget.onRefetch?.call(refetch);
 
-        if (!_initialized && result.data != null) {
-          _initialized = true;
+        // Parse every new emission (cache, network, refetch) exactly once —
+        // an "initialized" latch would pin the UI to the first (cached)
+        // result and make refreshes a no-op.
+        if (result.data != null && result.timestamp != _lastResultTimestamp) {
+          _lastResultTimestamp = result.timestamp;
           final parsed = Query$shows.fromJson(result.data!);
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
@@ -95,6 +98,7 @@ class _TvShowScrollState extends State<TvShowScroll> {
               _pageData[0] = parsed.shows?.content ?? [];
               _totalItems = parsed.shows?.totalElements;
             });
+            if (_totalItems == 0) widget.onEmptyView?.call();
           });
         }
 

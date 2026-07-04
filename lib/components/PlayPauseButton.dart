@@ -49,15 +49,15 @@ class PlayPauseButton extends StatelessWidget {
                 : Icon(isPlaying ? Icons.pause : Icons.play_arrow,
                     size: iconSize, color: iconColor),
           ),
-          onPressed: showSpinner
-              ? null
-              : () {
-                  if (isPlaying) {
-                    MediaPlayerHandler.instance.pause();
-                  } else {
-                    MediaPlayerHandler.instance.play();
-                  }
-                },
+          // Stays tappable while the spinner shows — a paused stream that is
+          // buffering must still accept a play tap.
+          onPressed: () {
+            if (isPlaying) {
+              MediaPlayerHandler.instance.pause();
+            } else {
+              MediaPlayerHandler.instance.play();
+            }
+          },
         );
       },
     );

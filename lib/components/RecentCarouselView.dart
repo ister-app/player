@@ -65,10 +65,10 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
         document: documentNodeQueryrecentlyWatched,
       ),
       builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
-        if (widget.onRefetch != null) {
-          this.refetch = refetch;
-          widget.onRefetch!(refetch);
-        }
+        // Always capture refetch — the play-queue stream listener needs it for
+        // live progress updates, independent of the parent's callback.
+        this.refetch = refetch;
+        widget.onRefetch?.call(refetch);
         if (result.hasException) {
           return Text(result.exception.toString());
         }
@@ -112,18 +112,20 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
               var menuController = MenuController();
               var imageByType =
                   ImageUtil.getImageByType(images, ImageTypes.background);
+              final showId = episode.$show?.id;
               return MenuAnchor(
                   controller: menuController,
                   menuChildren: <Widget>[
-                    MenuItemButton(
-                        onPressed: () {
-                          AutoRouter.of(context)
-                              .push(ShowOverviewRoute(showId: episode.$show!.id));
-                        },
-                        child: ListTile(
-                          leading: const Icon(Icons.tv),
-                          title: Text(AppLocalizations.of(context)!.goToShow),
-                        )),
+                    if (showId != null)
+                      MenuItemButton(
+                          onPressed: () {
+                            AutoRouter.of(context)
+                                .push(ShowOverviewRoute(showId: showId));
+                          },
+                          child: ListTile(
+                            leading: const Icon(Icons.tv),
+                            title: Text(AppLocalizations.of(context)!.goToShow),
+                          )),
                   ],
                   child: CarouselItemView(
                       serverName: widget.serverName,
@@ -137,8 +139,10 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
                       progress: episode.watchStatus != null &&
                               episode.watchStatus!.isNotEmpty &&
                               episode.watchStatus!.first.watched != true &&
-                              episode.mediaFile != null &&
-                              episode.mediaFile!.isNotEmpty
+                              (episode.mediaFile?.firstOrNull
+                                          ?.durationInMilliseconds ??
+                                      0) >
+                                  0
                           ? episode.watchStatus!.first.progressInMilliseconds /
                               episode.mediaFile!.first.durationInMilliseconds!
                           : null,
@@ -150,16 +154,18 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
                       onLongPress: () => menuController.isOpen
                           ? menuController.close()
                           : menuController.open(),
-                      onTap: () => AutoRouter.of(context).push(
-                          ShowOverviewRoute(
-                            showId: episode.$show!.id,
-                            children: [
-                              ShowEpisodeRoute(
-                                showId: episode.$show!.id,
-                                episodeId: episode.id,
-                              ),
-                            ],
-                          ))));
+                      onTap: showId == null
+                          ? null
+                          : () => AutoRouter.of(context).push(
+                              ShowOverviewRoute(
+                                showId: showId,
+                                children: [
+                                  ShowEpisodeRoute(
+                                    showId: showId,
+                                    episodeId: episode.id,
+                                  ),
+                                ],
+                              ))));
             } else if (item.type == Enum$MediaType.MOVIE &&
                 item.movie != null) {
               final mv = item.movie!;
@@ -182,8 +188,10 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
                       progress: mv.watchStatus != null &&
                               mv.watchStatus!.isNotEmpty &&
                               mv.watchStatus!.first.watched != true &&
-                              mv.mediaFile != null &&
-                              mv.mediaFile!.isNotEmpty
+                              (mv.mediaFile?.firstOrNull
+                                          ?.durationInMilliseconds ??
+                                      0) >
+                                  0
                           ? mv.watchStatus!.first.progressInMilliseconds /
                               mv.mediaFile!.first.durationInMilliseconds!
                           : null,

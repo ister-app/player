@@ -102,6 +102,9 @@ class _LanguageFormFieldState extends FormFieldState<List<String>> {
     if (_languages.length == oldIndex) return;
     setState(() {
       if (newIndex > oldIndex) newIndex--;
+      // The list view also contains the trailing placeholder row; a drop past
+      // it would otherwise index beyond the real list.
+      if (newIndex > _languages.length - 1) newIndex = _languages.length - 1;
       final moved = _languages.removeAt(oldIndex);
       _languages.insert(newIndex, moved);
       _notifyChange();

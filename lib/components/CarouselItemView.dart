@@ -12,7 +12,8 @@ class CarouselItemView extends StatelessWidget {
       this.progress,
       this.onTap,
       this.onLongPress,
-      this.onSecondaryTapDown});
+      this.onSecondaryTapDown,
+      this.placeholderIcon});
 
   final String serverName;
   final String title;
@@ -24,9 +25,19 @@ class CarouselItemView extends StatelessWidget {
   final VoidCallback? onLongPress;
   final GestureTapDownCallback? onSecondaryTapDown;
 
+  /// Icon shown when there is no (loadable) image, e.g. an album without
+  /// cover art. When null the tile keeps its plain tinted background.
+  final IconData? placeholderIcon;
+
   @override
   Widget build(BuildContext context) {
     final double width = MediaQuery.sizeOf(context).width;
+    final Widget placeholder = placeholderIcon != null
+        ? Center(
+            child: Icon(placeholderIcon,
+                size: 64,
+                color: Theme.of(context).colorScheme.onSurfaceVariant))
+        : Container();
     return Padding(
         padding: EdgeInsets.all(5.0),
         child: ClipRRect(
@@ -53,8 +64,9 @@ class CarouselItemView extends StatelessWidget {
                               fit: BoxFit.fitHeight,
                               fadeOutDuration: Duration.zero,
                               fadeInDuration: Duration.zero,
+                              errorBuilder: (_, __, ___) => placeholder,
                             )
-                          : Container(),
+                          : placeholder,
                     ),
                   ),
                 ),

@@ -36,8 +36,9 @@ class PlayQueueService {
       if (playQueue != null) {
         String? currentItemId = getPlayQueueItemId(playQueue, episodeId);
         if (currentItemId != null) {
-          updateProgress(graphQLClient, playQueue.id, currentItemId,
-              Duration(milliseconds: startTimeInMilliseconds ?? 0));
+          final updated = await updateProgress(graphQLClient, playQueue.id,
+              currentItemId, Duration(milliseconds: startTimeInMilliseconds ?? 0));
+          if (updated != null) playQueue = updated;
         }
       }
       return playQueue;
@@ -46,14 +47,16 @@ class PlayQueueService {
 
   String? getPlayQueueItemId(Fragment$fragmentPlayQueue playQueue, String id) {
     return playQueue.playQueueItems
-        ?.firstWhere((element) => element.episode?.id == id)
-        .id;
+        ?.where((element) => element.episode?.id == id)
+        .firstOrNull
+        ?.id;
   }
 
   String? getMoviePlayQueueItemId(Fragment$fragmentPlayQueue playQueue, String movieId) {
     return playQueue.playQueueItems
-        ?.firstWhere((element) => element.movie?.id == movieId)
-        .id;
+        ?.where((element) => element.movie?.id == movieId)
+        .firstOrNull
+        ?.id;
   }
 
   Future<Fragment$fragmentPlayQueue?> getOrCreatePlayQueueForMovie(
@@ -68,8 +71,9 @@ class PlayQueueService {
       if (playQueue != null) {
         String? currentItemId = getMoviePlayQueueItemId(playQueue, movieId);
         if (currentItemId != null) {
-          updateProgress(graphQLClient, playQueue.id, currentItemId,
-              Duration(milliseconds: startTimeInMilliseconds ?? 0));
+          final updated = await updateProgress(graphQLClient, playQueue.id,
+              currentItemId, Duration(milliseconds: startTimeInMilliseconds ?? 0));
+          if (updated != null) playQueue = updated;
         }
       }
       return playQueue;
@@ -84,7 +88,16 @@ class PlayQueueService {
     if (playQueueId == null) {
       return await _createPlayQueueForAlbum(graphQLClient, albumId, trackId);
     } else {
-      return await _getPlayQueue(graphQLClient, playQueueId);
+      var playQueue = await _getPlayQueue(graphQLClient, playQueueId);
+      if (playQueue != null) {
+        String? currentItemId = getTrackPlayQueueItemId(playQueue, trackId);
+        if (currentItemId != null && currentItemId != playQueue.currentItemId) {
+          final updated = await updateProgress(
+              graphQLClient, playQueue.id, currentItemId, Duration.zero);
+          if (updated != null) playQueue = updated;
+        }
+      }
+      return playQueue;
     }
   }
 

@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/analyzeDataForMovie.graphql.dart';
@@ -79,7 +78,7 @@ class _MoviePageState extends State<MoviePage> {
               widget.serverName,
             );
           }
-          final title = movie?.name ?? MetadataUtil.getTitle(movie?.metadata) ?? '';
+          final title = MetadataUtil.getTitle(movie?.metadata) ?? movie?.name ?? '';
           return Scaffold(
             appBar: AppBar(title: Text(title)),
             body: SingleChildScrollView(
@@ -150,7 +149,7 @@ class _MoviePageState extends State<MoviePage> {
                             context: context,
                             builder: (context) => AlertDialog(
                               title: Text(AppLocalizations.of(context)!.rawData),
-                              content: SelectableText(movie!.toJson().toString()),
+                              content: SelectableText(movie.toJson().toString()),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.of(context).pop(),
@@ -171,7 +170,7 @@ class _MoviePageState extends State<MoviePage> {
                           final client = GraphQLProvider.of(context).value;
                           await client.mutate(MutationOptions(
                             document: documentNodeMutationanalyzeDataForMovieMutation,
-                            variables: {'movieId': movie!.id},
+                            variables: {'movieId': movie.id},
                           ));
                         },
                         child: ListTile(
@@ -197,7 +196,7 @@ class _MoviePageState extends State<MoviePage> {
             ),
             Text(description),
           ])),
-      if (loadComplete && movie != null && movie!.mediaFile != null && movie!.mediaFile!.isNotEmpty)
+      if (loadComplete && movie != null && movie.mediaFile != null && movie.mediaFile!.isNotEmpty)
         const TrackSelectionWidget(),
     ]);
   }

@@ -130,11 +130,12 @@ class MediaPlayerHandler extends BaseAudioHandler
   String? _currentMediaUrl;
   SubtitleTrack? _forcedSubtitle;
   AudioTrack? _forcedAudio;
-  // The position (ms) at which the current stream was opened. Seeking backward
-  // past this point means the HLS subtitle segments before it were never
-  // fetched, so we must reload the stream from the new position.
-  // ignore: unused_field
+  // The position (ms) at which the current stream was opened. Used by the
+  // stall watchdog to re-open a hung stream at its resume point instead of 0.
   int _streamOpenPositionMs = 0;
+  // Bumped whenever the current item or queue changes; in-flight progress
+  // responses from before the bump are dropped instead of applied.
+  int _syncGeneration = 0;
 
   // ── Public API used by the widget ─────────────────────────────────────
   Future<void> startPlayQueue(
@@ -158,6 +159,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     graphQLClient = client;
 
     if (shouldRefresh) {
+      _syncGeneration++;
       final playQueueObject = await _playQueueService.getOrCreatePlayQueue(
         client,
         playQueueId,
@@ -205,8 +207,19 @@ class MediaPlayerHandler extends BaseAudioHandler
         mediaUrl: ImageUtil.buildMediaFileUrl(newEpisode.mediaFile!.first, token: StreamTokenService.getToken(newServerName), direct: directPlay, transcode: transcode) ?? '',
         startTimeInMilliseconds: _startTimeMs,
       );
+    } else {
+      await _resumeCurrentItem();
     }
     updatePlaybackState();
+  }
+
+  /// Starting the item that is already loaded should resume it — and restart
+  /// it when it already played to the end — instead of doing nothing.
+  Future<void> _resumeCurrentItem() async {
+    if (_player.state.completed) {
+      await _player.seek(Duration.zero);
+    }
+    await play();
   }
 
   int? get _startTimeMs {
@@ -246,6 +259,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     graphQLClient = client;
 
     if (shouldRefresh) {
+      _syncGeneration++;
       final playQueueObject = await _playQueueService.getOrCreatePlayQueueForMovie(
         client,
         playQueueId,
@@ -259,7 +273,7 @@ class MediaPlayerHandler extends BaseAudioHandler
             Uri? imgUri;
             if (e.movie?.images != null && serverName != null) {
               final imageByType = ImageUtil.getImageByType(
-                newMovie.images,
+                e.movie!.images,
                 ImageTypes.background,
               );
               imgUri = imageByType != null
@@ -290,6 +304,8 @@ class MediaPlayerHandler extends BaseAudioHandler
         startTimeInMilliseconds: _movieStartTimeMs,
         mediaType: IsterMediaTypes.movie,
       );
+    } else {
+      await _resumeCurrentItem();
     }
     updatePlaybackState();
   }
@@ -317,6 +333,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     graphQLClient = client;
 
     if (shouldRefresh) {
+      _syncGeneration++;
       final playQueueObject =
           await _playQueueService.getOrCreatePlayQueueForAlbum(
         client,
@@ -379,6 +396,8 @@ class MediaPlayerHandler extends BaseAudioHandler
           mediaType: IsterMediaTypes.track,
         );
       }
+    } else {
+      await _resumeCurrentItem();
     }
     updatePlaybackState();
   }
@@ -432,12 +451,14 @@ class MediaPlayerHandler extends BaseAudioHandler
   @override
   Future<void> pause() {
     _intendsToPlay = false;
+    unawaited(_syncProgress(_player.state.position, force: true));
     return _player.pause();
   }
 
   @override
   Future<void> stop() async {
     _intendsToPlay = false;
+    unawaited(_syncProgress(_player.state.position, force: true));
     await _player.pause();
     // Explicit stop is the only place we release audio focus.
     final session = await AudioSession.instance;
@@ -478,15 +499,18 @@ class MediaPlayerHandler extends BaseAudioHandler
   @override
   Future<void> skipToNext() async {
     final q = queue.value;
-    final index = playbackState.value.queueIndex ?? -1;
+    // Unknown index means we cannot know what "next" is — do nothing instead
+    // of jumping to an arbitrary item.
+    final index = playbackState.value.queueIndex;
+    if (index == null) return;
     final next = index + 1;
     if (next < q.length) await skipToQueueItem(next);
   }
 
   @override
   Future<void> skipToPrevious() async {
-    final q = queue.value;
-    final index = playbackState.value.queueIndex ?? q.length;
+    final index = playbackState.value.queueIndex;
+    if (index == null) return;
     final prev = index - 1;
     if (prev >= 0) await skipToQueueItem(prev);
   }
@@ -534,6 +558,10 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (index < 0 || index >= queue.value.length) return;
     _intendsToPlay = true;
     _loadRetries = 0;
+    _syncGeneration++;
+    // Publish the target index immediately so a second next/previous tap
+    // during the awaits below doesn't act on the stale index.
+    playbackState.add(playbackState.value.copyWith(queueIndex: index));
 
     MediaItemId mediaItemId = MediaItemId.byStringId(queue.value[index].id);
 
@@ -559,6 +587,20 @@ class MediaPlayerHandler extends BaseAudioHandler
           startTimeInMilliseconds: 0,
           mediaType: IsterMediaTypes.track,
         );
+      } else if (queueItem.movie != null) {
+        movie = queueItem.movie;
+        episode = null;
+        album = null;
+        currentTrackId = null;
+        _currentMediaType = IsterMediaTypes.movie;
+        final mediaFile = queueItem.movie?.mediaFile?.firstOrNull;
+        if (mediaFile == null) return;
+        await _openMedia(
+          serverName: mediaItemId.serverName,
+          mediaUrl: ImageUtil.buildMediaFileUrl(mediaFile, token: StreamTokenService.getToken(mediaItemId.serverName), direct: directPlay, transcode: transcode) ?? '',
+          startTimeInMilliseconds: 0,
+          mediaType: IsterMediaTypes.movie,
+        );
       } else {
         episode = queueItem.episode;
         movie = null;
@@ -576,7 +618,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       }
 
       final playQueueObject = await _playQueueService.updateProgress(
-        ClientManager.getClientForUrl(serverName!).value,
+        ClientManager.getClientForUrl(mediaItemId.serverName).value,
         playQueue!.id,
         mediaItemId.id,
         Duration(milliseconds: 0),
@@ -781,33 +823,43 @@ class MediaPlayerHandler extends BaseAudioHandler
         _lastPositionAdvance = DateTime.now();
       }
 
-      // Throttle updates to ~10s to avoid spamming the server
-      if (_lastProgress == null ||
-          (pos - _lastProgress!).inMilliseconds.abs() > 10 * 1000) {
-        _lastProgress = pos;
-
-        final client = graphQLClient;
-        if (playQueue != null && client != null) {
-          String? itemId;
-          if (episode != null) {
-            itemId = _playQueueService.getPlayQueueItemId(playQueue!, episode!.id);
-          } else if (movie != null) {
-            itemId = _playQueueService.getMoviePlayQueueItemId(playQueue!, movie!.id);
-          } else if (currentTrackId != null) {
-            itemId = _playQueueService.getTrackPlayQueueItemId(playQueue!, currentTrackId!);
-          }
-          if (itemId != null) {
-            final playQueueObject = await _playQueueService.updateProgress(
-              client,
-              playQueue!.id,
-              itemId,
-              pos,
-            );
-            playQueueObject != null ? playQueue = playQueueObject : null;
-          }
-        }
-      }
+      await _syncProgress(pos);
     });
+  }
+
+  /// Syncs the playback position of the current item to the server. Throttled
+  /// to ~10s of position delta unless [force] is set (pause/stop flush the
+  /// final position so resume points don't lag behind).
+  Future<void> _syncProgress(Duration pos, {bool force = false}) async {
+    if (!force &&
+        _lastProgress != null &&
+        (pos - _lastProgress!).inMilliseconds.abs() <= 10 * 1000) {
+      return;
+    }
+    _lastProgress = pos;
+
+    final client = graphQLClient;
+    final pq = playQueue;
+    if (pq == null || client == null) return;
+
+    String? itemId;
+    if (episode != null) {
+      itemId = _playQueueService.getPlayQueueItemId(pq, episode!.id);
+    } else if (movie != null) {
+      itemId = _playQueueService.getMoviePlayQueueItemId(pq, movie!.id);
+    } else if (currentTrackId != null) {
+      itemId = _playQueueService.getTrackPlayQueueItemId(pq, currentTrackId!);
+    }
+    if (itemId == null) return;
+
+    final generation = _syncGeneration;
+    final playQueueObject =
+        await _playQueueService.updateProgress(client, pq.id, itemId, pos);
+    // Drop the response if the queue or current item changed while this
+    // request was in flight — a slow response must not revert a skip.
+    if (playQueueObject != null && generation == _syncGeneration) {
+      playQueue = playQueueObject;
+    }
   }
 
   /// Watchdog for streams that stall just before the end without ever firing
@@ -842,8 +894,19 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (DateTime.now().difference(openedAt) < const Duration(seconds: 12)) {
       return;
     }
-    // Only a stream that essentially never started counts as a failed load.
-    if (_player.state.position > const Duration(seconds: 1)) return;
+    // A stream with known duration that isn't buffering did load — it is
+    // paused (e.g. via the in-video controls, which bypass pause() and leave
+    // _intendsToPlay set), not hung.
+    if (!_player.state.buffering && _player.state.duration > Duration.zero) {
+      return;
+    }
+    // Only a stream that essentially never advanced past its open position
+    // counts as a failed load. (Resumed content opens mid-stream, so compare
+    // against the open position rather than 0.)
+    final openPosition = Duration(milliseconds: _streamOpenPositionMs);
+    if (_player.state.position - openPosition > const Duration(seconds: 1)) {
+      return;
+    }
     final url = _currentMediaUrl;
     if (url == null || serverName == null) return;
     if (_loadRetries >= 5) return;
@@ -853,7 +916,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     _openMedia(
       serverName: serverName!,
       mediaUrl: url,
-      startTimeInMilliseconds: 0,
+      startTimeInMilliseconds: _streamOpenPositionMs,
       mediaType: _currentMediaType,
     );
   }

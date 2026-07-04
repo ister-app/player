@@ -52,7 +52,7 @@ class ArtistPage extends StatelessWidget {
           );
         }
 
-        if (result.data == null || result.isLoading) {
+        if (result.data == null) {
           return Scaffold(
             body: Skeletonizer(
               enabled: true,
@@ -206,6 +206,7 @@ class ArtistPage extends StatelessWidget {
                     imageUrl: ImageUtil.buildUrl(img,
                         token: StreamTokenService.getToken(serverName)),
                     blurHash: img?.blurHash,
+                    placeholderIcon: Icons.music_note,
                     onTap: () => AutoRouter.of(context)
                         .push(AlbumRoute(albumId: album.id)),
                   );
@@ -246,6 +247,7 @@ class ArtistPage extends StatelessWidget {
           ? '$albumCount ${albumCount == 1 ? 'album' : 'albums'}'
           : null,
       backgroundAlignment: Alignment.topCenter,
+      placeholderIcon: Icons.person,
     );
   }
 }

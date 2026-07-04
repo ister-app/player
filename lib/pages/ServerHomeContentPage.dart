@@ -9,7 +9,6 @@ import 'package:player/graphql/scanLibrary.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/RecentCarouselView.dart';
 import '../graphql/analyzeLibrary.graphql.dart';
@@ -57,6 +56,7 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
       if (_refetchLibraries != null) _safeRefetch(_refetchLibraries!, "libraries"),
       ..._refetchSlides.entries.map((e) => _safeRefetch(e.value, "slide ${e.key}")),
     ]);
+    if (!mounted) return;
     setState(() {
       _recentViewEmpty = false;
     });
@@ -64,6 +64,7 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
 
   void _setRecentViewEmpty() {
     Future.microtask(() {
+      if (!mounted) return;
       setState(() {
         _recentViewEmpty = true;
       });

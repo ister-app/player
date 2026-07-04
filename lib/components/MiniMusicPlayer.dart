@@ -20,14 +20,38 @@ class _MiniMusicPlayerState extends State<MiniMusicPlayer> {
   bool _playerOpened = false;
 
   void _openAlbumPage(BuildContext context) {
-    final album = MediaPlayerHandler.instance.album;
-    if (album == null) return;
-    AutoRouter.of(context).push(AlbumRoute(albumId: album.id));
+    final handler = MediaPlayerHandler.instance;
+    final album = handler.album;
+    final playingServer = handler.serverName;
+    if (album == null || playingServer == null) return;
+    // The music can come from a different server than the one currently being
+    // browsed; AlbumRoute inherits :serverName from the route tree, so only a
+    // same-server album may be pushed in place.
+    final currentServer =
+        context.routeData.inheritedPathParams.optString('serverName');
+    if (currentServer == playingServer) {
+      AutoRouter.of(context).push(AlbumRoute(albumId: album.id));
+    } else {
+      AutoRouter.of(context).root.navigate(ServerHomeRoute(
+          serverName: playingServer,
+          children: [AlbumRoute(albumId: album.id)]));
+    }
   }
 
   void _openPlayerPage(BuildContext context, {double initialControllerValue = 0.0}) {
+    // Guard against a double tap pushing the player twice; the second copy's
+    // dispose would clear the dismiss handler of the first.
+    if (MediaPlayerHandler.instance.musicPlayerOpen.value) return;
     MediaPlayerHandler.instance.playerInitialControllerValue = initialControllerValue;
     AutoRouter.of(context).root.push(const MusicPlayerRoute());
+  }
+
+  Widget _artPlaceholder(BuildContext context) {
+    return Container(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: Icon(Icons.music_note,
+          size: 28, color: Theme.of(context).colorScheme.onSurfaceVariant),
+    );
   }
 
   void _onDragStart(DragStartDetails details) {
@@ -109,9 +133,9 @@ class _MiniMusicPlayerState extends State<MiniMusicPlayer> {
                                         imageUrl: item.artUri.toString(),
                                         fit: BoxFit.cover,
                                         errorBuilder: (_, __, ___) =>
-                                            const Icon(Icons.music_note, size: 44),
+                                            _artPlaceholder(context),
                                       )
-                                    : const Icon(Icons.music_note, size: 44),
+                                    : _artPlaceholder(context),
                               ),
                             ),
                           ),

@@ -39,7 +39,7 @@ class TvShowSeasonList extends StatelessWidget {
             return Text(result.exception.toString());
           }
 
-          if (result.isLoading) {
+          if (result.data == null || result.isLoading) {
             var list = List<Widget>.of([Divider()]);
             list.addAll(ListTile.divideTiles(
                     context: context,
@@ -60,7 +60,7 @@ class TvShowSeasonList extends StatelessWidget {
               var list = List<Widget>.of([Divider()]);
               list.addAll(ListTile.divideTiles(
                       context: context,
-                      tiles: season.episodes!.map((episode) {
+                      tiles: (season.episodes ?? []).map((episode) {
                         var imageByType = ImageUtil.getImageByType(
                             episode.images, ImageTypes.background);
                         return getListTile(
@@ -71,7 +71,7 @@ class TvShowSeasonList extends StatelessWidget {
                             MetadataUtil.getDescription(episode.metadata) ?? "",
                             isWatched(episode),
                             episode.number ?? 0,
-                            episode.$show!.id,
+                            episode.$show?.id ?? '',
                             episode.id,
                             ImageUtil.buildUrl(imageByType, token: StreamTokenService.getToken(serverName)),
                             imageByType?.blurHash,
@@ -79,8 +79,10 @@ class TvShowSeasonList extends StatelessWidget {
                                     episode.watchStatus!.isNotEmpty &&
                                     episode.watchStatus!.first.watched !=
                                         true &&
-                                    episode.mediaFile != null &&
-                                    episode.mediaFile!.isNotEmpty
+                                    (episode.mediaFile?.firstOrNull
+                                                ?.durationInMilliseconds ??
+                                            0) >
+                                        0
                                 ? episode.watchStatus!.first
                                         .progressInMilliseconds /
                                     episode.mediaFile!.first
@@ -184,8 +186,11 @@ class TvShowSeasonList extends StatelessWidget {
                 : Container(),
           ]),
         ]),
-        onTap: () => AutoRouter.innerRouterOf(context, ShowOverviewRoute.name)
-            ?.navigate(ShowEpisodeRoute(showId: showId, episodeId: episodeId))
+        onTap: showId.isEmpty
+            ? null
+            : () => AutoRouter.innerRouterOf(context, ShowOverviewRoute.name)
+                ?.navigate(
+                    ShowEpisodeRoute(showId: showId, episodeId: episodeId))
         // .pushPath('shows/${e.$show!.id}/episodes/${e.id}')
         // onTap: () => AutoRouter.of(context).navigate(ShowEpisodeRoute(showId: e.$show!.id, episodeId: e.id, serverName: 'servername')),
         );

@@ -175,7 +175,7 @@ class HomeRoute extends _i17.PageRouteInfo<void> {
 /// [_i4.MoviePage]
 class MovieRoute extends _i17.PageRouteInfo<MovieRouteArgs> {
   MovieRoute({
-    _i19.Key? key,
+    _i18.Key? key,
     required String movieId,
     String? playQueueId,
     List<_i17.PageRouteInfo>? children,
@@ -217,7 +217,7 @@ class MovieRoute extends _i17.PageRouteInfo<MovieRouteArgs> {
 class MovieRouteArgs {
   const MovieRouteArgs({this.key, required this.movieId, this.playQueueId});
 
-  final _i19.Key? key;
+  final _i18.Key? key;
 
   final String movieId;
 

@@ -71,7 +71,7 @@ class _AlbumPageState extends State<AlbumPage> {
           );
         }
 
-        if (result.data == null || result.isLoading) {
+        if (result.data == null) {
           return Scaffold(
             body: Skeletonizer(
               enabled: true,
