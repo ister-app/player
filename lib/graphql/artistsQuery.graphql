@@ -1,0 +1,9 @@
+query artists($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $libraryId: ID) {
+    artists(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, libraryId: $libraryId) {
+        content {
+            id name
+            images { ...fragmentImages }
+        }
+        totalPages totalElements number size
+    }
+}

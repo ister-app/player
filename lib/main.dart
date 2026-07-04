@@ -40,6 +40,13 @@ Future<void> main() async {
       // until the app is reopened. (androidNotificationOngoing is incompatible
       // with this and unnecessary — the service stays foreground regardless.)
       androidStopForegroundOnPause: false,
+      // Tell Android Auto we emit content-style hints; browse nodes opt into
+      // grid rendering per item (see IsterMediaService).
+      androidBrowsableRootExtras: <String, dynamic>{
+        'android.media.browse.CONTENT_STYLE_SUPPORTED': true,
+        'android.media.browse.CONTENT_STYLE_BROWSABLE_HINT': 1,
+        'android.media.browse.CONTENT_STYLE_PLAYABLE_HINT': 1,
+      },
     ),
   );
 

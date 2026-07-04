@@ -202,6 +202,14 @@
   "@albums": {
     "description": "Section header for the list of albums on an artist page"
   },
+  "artists": "Artists",
+  "@artists": {
+    "description": "Browse category for the artists in a music library (also used in Android Auto)"
+  },
+  "switchLibrary": "Switch library",
+  "@switchLibrary": {
+    "description": "Android Auto browse item that lists the available music libraries to pick from"
+  },
   "description": "Description",
   "@description": {
     "description": "Section header for the description of an album or artist"

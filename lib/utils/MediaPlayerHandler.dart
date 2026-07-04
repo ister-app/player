@@ -9,12 +9,14 @@ import 'package:player/dto/IsterMediaItem.dart';
 import 'package:player/dto/IsterMediaService.dart';
 import 'package:player/dto/MediaItemId.dart';
 import 'package:flutter/foundation.dart';
+import 'package:player/utils/AutoPreferences.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/LanguagePreferences.dart';
 import 'package:player/utils/LanguageService.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/PlaybackPreferences.dart';
 import 'package:player/utils/StreamTokenService.dart';
+import 'package:player/utils/WellKnownService.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../graphql/fragmentAlbum.graphql.dart';
@@ -400,6 +402,17 @@ class MediaPlayerHandler extends BaseAudioHandler
       await _resumeCurrentItem();
     }
     updatePlaybackState();
+    _rememberLastPlayed(newServerName, newAlbum.id, trackId);
+  }
+
+  /// Keeps the Android Auto "recent" tile and its persisted backup in sync
+  /// with what is playing.
+  void _rememberLastPlayed(String serverName, String albumId, String trackId) {
+    unawaited(AutoPreferences.setLastPlayed(serverName, albumId, trackId));
+    final nowPlaying = mediaItem.valueOrNull;
+    if (nowPlaying != null) {
+      _recentSubject.add([nowPlaying]);
+    }
   }
 
   Future<void> _openMedia({
@@ -541,16 +554,61 @@ class MediaPlayerHandler extends BaseAudioHandler
       return;
     }
 
-    // Not in queue — fetch episode and start a new play queue
-    final episodeFragment =
-        await IsterMediaService().getEpisodeFragmentById(mediaItemId);
-    if (episodeFragment == null) {
-      LoggerService().logger.e('playFromMediaId: episode not found for $mediaId');
+    // Not in queue — start a new play queue for the item.
+    switch (mediaItemId.isterMediaType) {
+      case IsterMediaTypes.track:
+        await playTrackById(mediaItemId);
+      case IsterMediaTypes.album:
+        await playAlbumById(mediaItemId);
+      case IsterMediaTypes.episode:
+        final episodeFragment =
+            await IsterMediaService().getEpisodeFragmentById(mediaItemId);
+        if (episodeFragment == null) {
+          LoggerService()
+              .logger
+              .e('playFromMediaId: episode not found for $mediaId');
+          return;
+        }
+        final client = await IsterMediaService.getClient(mediaItemId.serverName);
+        await startPlayQueue(
+            client, null, episodeFragment, mediaItemId.serverName);
+      default:
+        LoggerService().logger.w(
+            'playFromMediaId: unsupported type ${mediaItemId.isterMediaType} for $mediaId');
+    }
+  }
+
+  /// Starts an album play queue from just a track id — the browse tree and
+  /// the recent tile hand out bare track ids, but playback always runs on an
+  /// album play queue.
+  Future<void> playTrackById(MediaItemId mediaItemId) async {
+    final album = await IsterMediaService()
+        .getTrackAlbum(mediaItemId.serverName, mediaItemId.id);
+    if (album == null) {
+      LoggerService()
+          .logger
+          .e('playTrackById: album not found for track ${mediaItemId.id}');
       return;
     }
-
     final client = await IsterMediaService.getClient(mediaItemId.serverName);
-    await startPlayQueue(client, null, episodeFragment, mediaItemId.serverName);
+    await startPlayQueueForAlbum(
+        client, null, album, mediaItemId.id, mediaItemId.serverName);
+  }
+
+  /// Plays an album from its first track.
+  Future<void> playAlbumById(MediaItemId mediaItemId) async {
+    final album = await IsterMediaService()
+        .getAlbumWithTracks(mediaItemId.serverName, mediaItemId.id);
+    final firstTrack = album?.tracks?.firstOrNull;
+    if (album == null || firstTrack == null) {
+      LoggerService()
+          .logger
+          .e('playAlbumById: no playable tracks for album ${mediaItemId.id}');
+      return;
+    }
+    final client = await IsterMediaService.getClient(mediaItemId.serverName);
+    await startPlayQueueForAlbum(
+        client, null, album, firstTrack.id, mediaItemId.serverName);
   }
 
   @override
@@ -634,6 +692,10 @@ class MediaPlayerHandler extends BaseAudioHandler
       if (playQueue != null) {
         PlayQueueService().playQueueChanged(playQueue!);
       }
+      final track = queueItem.track;
+      if (track != null) {
+        _rememberLastPlayed(mediaItemId.serverName, track.album.id, track.id);
+      }
     }
   }
 
@@ -644,25 +706,170 @@ class MediaPlayerHandler extends BaseAudioHandler
   Future<List<MediaItem>> getChildren(String parentMediaId,
       [Map<String, dynamic>? options]) async {
     LoggerService().logger.d('getChildren: $parentMediaId');
-    if (parentMediaId == AudioService.recentRootId) {
-      return _recentSubject.value;
-    } else if (parentMediaId == AudioService.browsableRootId) {
-      if (serverName == null) {
-        LoggerService().logger.w('getChildren: serverName is null, cannot build browsable root');
-        return [];
+    try {
+      if (parentMediaId == AudioService.recentRootId) {
+        return await _getRecentChildren();
       }
-      return Future.value(List.of({
-        MediaItem(
-          id: MediaItemId(serverName!, IsterMediaTypes.list, "recent").toString(),
-          title: "Recent",
-          playable: false,
-        ),
-        MediaItem(id: MediaItemId(serverName!, IsterMediaTypes.list, "added").toString(), title: "Library", playable: false),
-      }));
+      if (parentMediaId == AudioService.browsableRootId) {
+        return await _getRootChildren();
+      }
+      final itemsByParentId =
+          await IsterMediaService().getItemsByParentId(parentMediaId);
+      return itemsByParentId.map((e) => e.mediaItem).toList();
+    } catch (e, stackTrace) {
+      // An uncaught exception here crashes the media browser connection; an
+      // empty list at least keeps the tree navigable.
+      LoggerService()
+          .logger
+          .e('getChildren failed for $parentMediaId: $e\n$stackTrace');
+      return [];
+    }
+  }
+
+  /// Root of the Android Auto browse tree: the categories of the remembered
+  /// music library plus a node to switch libraries. Falls back to the library
+  /// picker when no default could be resolved.
+  Future<List<MediaItem>> _getRootChildren() async {
+    final service = IsterMediaService();
+    final defaultLibrary = await _resolveDefaultLibrary(service);
+    if (defaultLibrary == null) {
+      return (await service.getMusicLibraries())
+          .map((e) => e.mediaItem)
+          .toList();
+    }
+    final categories = await service.getLibraryCategories(
+        defaultLibrary.serverName, defaultLibrary.libraryId);
+    return [
+      ...categories.map((e) => e.mediaItem),
+      MediaItem(
+        id: MediaItemId(
+                defaultLibrary.serverName, IsterMediaTypes.list, "libraries")
+            .toString(),
+        title: IsterMediaService.loc.switchLibrary,
+        playable: false,
+      ),
+    ];
+  }
+
+  /// The library the car opens into: the persisted choice as long as it still
+  /// exists, otherwise the only music library there is. Returns null when the
+  /// user has to pick one (multiple candidates, or the saved server is
+  /// unreachable).
+  Future<AutoLibrary?> _resolveDefaultLibrary(IsterMediaService service) async {
+    final saved = await AutoPreferences.getDefaultLibrary();
+    if (saved != null) {
+      try {
+        final libraries =
+            await service.getMusicLibrariesForServer(saved.serverName);
+        if (libraries.any((library) => library.id == saved.libraryId)) {
+          return saved;
+        }
+        // The saved library no longer exists — forget it and repick below.
+        await AutoPreferences.clearDefaultLibrary();
+      } catch (e) {
+        // Server unreachable: show the picker (other servers may still work)
+        // but keep the preference for when the server comes back.
+        LoggerService()
+            .logger
+            .w('Could not validate saved Android Auto library: $e');
+      }
     }
 
-    var itemsByParentId = await IsterMediaService().getItemsByParentId(parentMediaId);
-    return itemsByParentId.map((e) => e.mediaItem).toList();
+    final servers = await WellKnownService.getServers();
+    AutoLibrary? onlyLibrary;
+    var count = 0;
+    for (final server in servers) {
+      try {
+        for (final library
+            in await service.getMusicLibrariesForServer(server)) {
+          count++;
+          onlyLibrary = AutoLibrary(serverName: server, libraryId: library.id);
+        }
+      } catch (e) {
+        LoggerService()
+            .logger
+            .w('_resolveDefaultLibrary: skipping $server: $e');
+      }
+    }
+    if (count == 1 && onlyLibrary != null) {
+      await AutoPreferences.setDefaultLibrary(
+          onlyLibrary.serverName, onlyLibrary.libraryId);
+      return onlyLibrary;
+    }
+    return null;
+  }
+
+  /// The Android Auto "recent" tile. Rebuilt from the persisted last-played
+  /// track when the process was restarted since the last playback.
+  Future<List<MediaItem>> _getRecentChildren() async {
+    if (_recentSubject.value.isNotEmpty) return _recentSubject.value;
+    final last = await AutoPreferences.getLastPlayed();
+    if (last == null) return [];
+    final tracks = await IsterMediaService()
+        .getTracksForAlbum(last.serverName, last.albumId);
+    final item = tracks.where((t) => t.id == last.trackId).firstOrNull ??
+        tracks.firstOrNull;
+    if (item == null) return [];
+    final children = [item.mediaItem];
+    _recentSubject.add(children);
+    return children;
+  }
+
+  @override
+  Future<List<MediaItem>> search(String query,
+      [Map<String, dynamic>? extras]) async {
+    try {
+      final library = await AutoPreferences.getDefaultLibrary();
+      if (library == null) return [];
+      final results = await IsterMediaService()
+          .searchMusic(library.serverName, library.libraryId, query);
+      return results.map((e) => e.mediaItem).toList();
+    } catch (e) {
+      LoggerService().logger.e('search failed for "$query": $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<void> playFromSearch(String query,
+      [Map<String, dynamic>? extras]) async {
+    LoggerService().logger.d('playFromSearch: $query');
+    try {
+      // An empty query means "play something" — resume the last played track.
+      if (query.trim().isEmpty) {
+        final last = await AutoPreferences.getLastPlayed();
+        if (last != null) {
+          await playTrackById(MediaItemId(
+              last.serverName, IsterMediaTypes.track, last.trackId));
+        }
+        return;
+      }
+      final library = await AutoPreferences.getDefaultLibrary();
+      if (library == null) return;
+      final results = await IsterMediaService()
+          .searchMusic(library.serverName, library.libraryId, query);
+      final album = results
+          .where((e) => e.isterMediaType == IsterMediaTypes.album)
+          .firstOrNull;
+      if (album != null) {
+        await playAlbumById(
+            MediaItemId(album.serverName, IsterMediaTypes.album, album.id));
+        return;
+      }
+      final artist = results
+          .where((e) => e.isterMediaType == IsterMediaTypes.artist)
+          .firstOrNull;
+      if (artist == null) return;
+      final firstAlbum = (await IsterMediaService()
+              .getAlbumsForArtist(artist.serverName, artist.id))
+          .firstOrNull;
+      if (firstAlbum != null) {
+        await playAlbumById(MediaItemId(
+            firstAlbum.serverName, IsterMediaTypes.album, firstAlbum.id));
+      }
+    } catch (e) {
+      LoggerService().logger.e('playFromSearch failed for "$query": $e');
+    }
   }
 
   // ── Listener wiring ───────────────────────────────────────────────────

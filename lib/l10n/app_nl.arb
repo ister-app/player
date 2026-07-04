@@ -52,6 +52,8 @@
   "shuffle": "Willekeurig",
   "songs": "Nummers",
   "albums": "Albums",
+  "artists": "Artiesten",
+  "switchLibrary": "Bibliotheek wisselen",
   "description": "Beschrijving",
   "previousTracks": "TERUG NAAR",
   "upNext": "HIERNA",

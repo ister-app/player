@@ -29,6 +29,13 @@ class WellKnownService {
     return _cache[serverIdentifier];
   }
 
+  /// The servers configured in the app (the same list [ServerList] manages).
+  /// Lets the audio-service handler enumerate servers on a cold start in the
+  /// car, when no UI has run yet.
+  static Future<List<String>> getServers() async {
+    return await _prefs.getStringList('servers') ?? [];
+  }
+
   /// Always fetches /.well-known/ister from the network.
   /// Updates in-memory cache and SharedPreferences on success.
   /// Falls back to SharedPreferences if network fails.

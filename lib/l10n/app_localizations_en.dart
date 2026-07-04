@@ -185,6 +185,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get albums => 'Albums';
 
   @override
+  String get artists => 'Artists';
+
+  @override
+  String get switchLibrary => 'Switch library';
+
+  @override
   String get description => 'Description';
 
   @override

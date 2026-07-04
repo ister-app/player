@@ -185,6 +185,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get albums => 'Albums';
 
   @override
+  String get artists => 'Artiesten';
+
+  @override
+  String get switchLibrary => 'Bibliotheek wisselen';
+
+  @override
   String get description => 'Beschrijving';
 
   @override

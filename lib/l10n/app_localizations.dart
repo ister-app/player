@@ -416,6 +416,18 @@ abstract class AppLocalizations {
   /// **'Albums'**
   String get albums;
 
+  /// Browse category for the artists in a music library (also used in Android Auto)
+  ///
+  /// In en, this message translates to:
+  /// **'Artists'**
+  String get artists;
+
+  /// Android Auto browse item that lists the available music libraries to pick from
+  ///
+  /// In en, this message translates to:
+  /// **'Switch library'**
+  String get switchLibrary;
+
   /// Section header for the description of an album or artist
   ///
   /// In en, this message translates to:
