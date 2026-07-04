@@ -9,6 +9,20 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  exclude:
+    # Keep the analyzer out of build output and vendored/symlinked packages:
+    # the plugin symlinks and flatpak build dirs otherwise pull dozens of
+    # foreign packages (and a vendored Flutter SDK) into analysis, which
+    # makes `flutter analyze` take hours.
+    - build/**
+    - builddir/**
+    - repo/**
+    - .flatpak-builder/**
+    - linux/flutter/ephemeral/**
+    - windows/flutter/ephemeral/**
+    - macos/Flutter/ephemeral/**
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`
