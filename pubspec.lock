@@ -61,10 +61,10 @@ packages:
     dependency: "direct main"
     description:
       name: audio_service
-      sha256: cb122c7c2639d2a992421ef96b67948ad88c5221da3365ccef1031393a76e044
+      sha256: "95f3267f3449eb5cf71c8fcf1d556f57af1e898e2dc5815fb168d1843653edb7"
       url: "https://pub.dev"
     source: hosted
-    version: "0.18.18"
+    version: "0.18.19"
   audio_service_mpris:
     dependency: "direct main"
     description:
@@ -93,10 +93,10 @@ packages:
     dependency: "direct main"
     description:
       name: audio_session
-      sha256: "7217b229db57cc4dc577a8abb56b7429a5a212b978517a5be578704bfe5e568b"
+      sha256: f9e7711a0e24ca8b40f5d7ac374c3c6e55016f3157912badd18199cdbbca5c4d
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.3"
+    version: "0.2.4"
   auto_route:
     dependency: "direct main"
     description:
@@ -245,10 +245,10 @@ packages:
     dependency: transitive
     description:
       name: connectivity_plus
-      sha256: "62ffa266d9a23b79fb3fcbc206afc00bb979417ba57b1324c546b5aab95ba057"
+      sha256: cad0e811a289ea2a941119dc483c204ec1684cbb9a8fc7351fe4a230b8313160
       url: "https://pub.dev"
     source: hosted
-    version: "7.1.1"
+    version: "7.2.0"
   connectivity_plus_platform_interface:
     dependency: transitive
     description:
@@ -309,10 +309,10 @@ packages:
     dependency: "direct main"
     description:
       name: device_info_plus
-      sha256: "6a642e1daa10190af89ba6cb6386c0df7d071a3592080bfe1e44faa63ae1df65"
+      sha256: "0891702f96b2e465fe567b7ec448380e6b1c14f60af552a8536d9f583b6b8442"
       url: "https://pub.dev"
     source: hosted
-    version: "13.1.0"
+    version: "13.2.0"
   device_info_plus_platform_interface:
     dependency: transitive
     description:
@@ -810,7 +810,7 @@ packages:
     description:
       path: media_kit
       ref: HEAD
-      resolved-ref: "188e316198aeeebecfd77a35fcd48cd88b9bef29"
+      resolved-ref: "09ef5d85f27f3ff3ce297d719be43ac76fe8a359"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.2.6"
@@ -819,7 +819,7 @@ packages:
     description:
       path: "libs/android/media_kit_libs_android_video"
       ref: HEAD
-      resolved-ref: "188e316198aeeebecfd77a35fcd48cd88b9bef29"
+      resolved-ref: "09ef5d85f27f3ff3ce297d719be43ac76fe8a359"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.3.9"
@@ -828,16 +828,16 @@ packages:
     description:
       path: "libs/ios/media_kit_libs_ios_video"
       ref: HEAD
-      resolved-ref: "188e316198aeeebecfd77a35fcd48cd88b9bef29"
+      resolved-ref: "09ef5d85f27f3ff3ce297d719be43ac76fe8a359"
       url: "https://github.com/ister-app/media-kit"
     source: git
-    version: "1.1.4"
+    version: "1.1.5"
   media_kit_libs_linux:
     dependency: "direct overridden"
     description:
       path: "libs/linux/media_kit_libs_linux"
       ref: HEAD
-      resolved-ref: "188e316198aeeebecfd77a35fcd48cd88b9bef29"
+      resolved-ref: "09ef5d85f27f3ff3ce297d719be43ac76fe8a359"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.2.1"
@@ -846,16 +846,16 @@ packages:
     description:
       path: "libs/macos/media_kit_libs_macos_video"
       ref: HEAD
-      resolved-ref: "188e316198aeeebecfd77a35fcd48cd88b9bef29"
+      resolved-ref: "09ef5d85f27f3ff3ce297d719be43ac76fe8a359"
       url: "https://github.com/ister-app/media-kit"
     source: git
-    version: "1.1.4"
+    version: "1.1.5"
   media_kit_libs_video:
     dependency: "direct main"
     description:
       path: "libs/universal/media_kit_libs_video"
       ref: HEAD
-      resolved-ref: "188e316198aeeebecfd77a35fcd48cd88b9bef29"
+      resolved-ref: "09ef5d85f27f3ff3ce297d719be43ac76fe8a359"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.0.8"
@@ -864,7 +864,7 @@ packages:
     description:
       path: "libs/windows/media_kit_libs_windows_video"
       ref: HEAD
-      resolved-ref: "188e316198aeeebecfd77a35fcd48cd88b9bef29"
+      resolved-ref: "09ef5d85f27f3ff3ce297d719be43ac76fe8a359"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.0.12"
@@ -873,7 +873,7 @@ packages:
     description:
       path: media_kit_video
       ref: HEAD
-      resolved-ref: "188e316198aeeebecfd77a35fcd48cd88b9bef29"
+      resolved-ref: "09ef5d85f27f3ff3ce297d719be43ac76fe8a359"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "2.0.1"
@@ -1057,10 +1057,10 @@ packages:
     dependency: transitive
     description:
       name: package_info_plus
-      sha256: "4bf625947f6c7713ee242296a682e23e44823c09cf9d79e4f1238923c92db852"
+      sha256: f5c435dc0e0d461e5b32471a870f769b6a1cc46930637efe24fbc535314e78ad
       url: "https://pub.dev"
     source: hosted
-    version: "10.1.0"
+    version: "10.2.0"
   package_info_plus_platform_interface:
     dependency: transitive
     description:
@@ -1374,10 +1374,10 @@ packages:
     dependency: transitive
     description:
       name: sqflite_darwin
-      sha256: "164a5d73ab87a134566057219988bafde837029a64264e61f1f04376ef3cfcd2"
+      sha256: c86ca18b8f666bbf903924687fe21cc16fc385d086005067e26619ca530bef9f
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.3"
+    version: "2.4.3+1"
   sqflite_platform_interface:
     dependency: transitive
     description:

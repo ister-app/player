@@ -18,9 +18,9 @@ dependencies:
   oidc_default_store: ^0.6.0+2
   graphql_flutter: ^5.1.2
   gql: ^1.0.1 # DocumentNode type for the shared PagedContentView
-  media_kit: ^1.2.3 # Primary package.
+  media_kit: ^1.2.6 # Primary package.
   media_kit_video: ^2.0.1 # For video rendering.
-  media_kit_libs_video: ^1.0.5 # Native video dependencies.
+  media_kit_libs_video: ^1.0.8 # Native video dependencies.
   shared_preferences: ^2.3.3
   path_provider: ^2.1.5
   skeletonizer: ^2.1.0+1
@@ -38,7 +38,7 @@ dependencies:
   rxdart: ^0.28.0
   flutter_cache_manager: ^3.4.1
   http: ^1.2.0
-  device_info_plus: ^13.1.0
+  device_info_plus: ^13.2.0
   qr_flutter: ^4.1.0
 
 dependency_overrides:
