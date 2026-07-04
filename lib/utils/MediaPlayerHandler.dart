@@ -448,8 +448,13 @@ class MediaPlayerHandler extends BaseAudioHandler
       _audioPreferenceApplied = false;
       _subtitlePreferenceApplied = false;
       await _player.open(media);
-      await _player.setVideoTrack(
-          mediaType == IsterMediaTypes.track ? VideoTrack.no() : VideoTrack.auto());
+      // setVideoTrack throws UnsupportedError on web (media_kit); skipping it
+      // there would otherwise abort _openMedia before mediaItem is published,
+      // which is what the mini player gates its visibility on.
+      if (!kIsWeb) {
+        await _player.setVideoTrack(
+            mediaType == IsterMediaTypes.track ? VideoTrack.no() : VideoTrack.auto());
+      }
       final currentItemId = playQueue?.currentItemId;
       if (currentItemId != null) {
         final found = queue.value.where((e) =>
