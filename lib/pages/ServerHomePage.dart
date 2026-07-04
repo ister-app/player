@@ -11,7 +11,7 @@ import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/WellKnownService.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-import '../components/MiniMusicPlayer.dart';
+import '../components/MiniPlayer.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/LoggerService.dart';
 import '../utils/LoginManager.dart';
@@ -102,11 +102,11 @@ class _ServerHomePageState extends State<ServerHomePage> {
             ],
           ),
           bottomNavigationBar: isWideScreen
-              ? const MiniMusicPlayer()
+              ? const MiniPlayer()
               : Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const MiniMusicPlayer(),
+                    const MiniPlayer(),
                     NavigationBar(
                       selectedIndex: tabIndex,
                       onDestinationSelected: (i) => _navigate(context, i),

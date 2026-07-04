@@ -54,6 +54,9 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
     super.initState();
     playQueueService = PlayQueueService();
 
+    // Hide the mini player's video bar while this page (the full player) shows.
+    MediaPlayerHandler.instance.videoPageOpen.value++;
+
     // Subscribe to the playqueue changed stream
     _playQueueSubscription = playQueueService
         .getPlayQueueChangedStream()
@@ -78,6 +81,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
 
   @override
   void dispose() {
+    MediaPlayerHandler.instance.videoPageOpen.value--;
     _playQueueSubscription.cancel();
     super.dispose();
   }

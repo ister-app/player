@@ -38,6 +38,19 @@ class _MoviePageState extends State<MoviePage> {
   bool _playQueueStarted = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Hide the mini player's video bar while this page (the full player) shows.
+    MediaPlayerHandler.instance.videoPageOpen.value++;
+  }
+
+  @override
+  void dispose() {
+    MediaPlayerHandler.instance.videoPageOpen.value--;
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Query(
       options: QueryOptions(

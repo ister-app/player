@@ -119,6 +119,12 @@ class MediaPlayerHandler extends BaseAudioHandler
   double playerInitialControllerValue = 0.0;
   VoidCallback? dismissMusicPlayer;
   final ValueNotifier<bool> musicPlayerOpen = ValueNotifier(false);
+  // Number of video pages (episode/movie) currently mounted. The mini player
+  // hides its video bar while the item's own page is on screen — the full
+  // player is already visible there, so the bar would only duplicate it.
+  // A counter (not a bool) is robust against init-before-dispose ordering when
+  // navigating from one video page straight to another.
+  final ValueNotifier<int> videoPageOpen = ValueNotifier(0);
 
   Fragment$fragmentEpisode? episode;
   Fragment$fragmentMovie? movie;
