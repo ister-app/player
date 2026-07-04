@@ -80,9 +80,13 @@ class MediaPlayerHandler extends BaseAudioHandler
     const reconnect =
         'reconnect=1,reconnect_streamed=1,reconnect_on_network_error=1,reconnect_delay_max=30';
     try {
-      await platform.setProperty('network-timeout', '30');
-      await platform.setProperty('stream-lavf-o', reconnect);
-      await platform.setProperty('demuxer-lavf-o', reconnect);
+      // Dynamic dispatch: on web media_kit substitutes a stub NativePlayer
+      // without setProperty, so a static call breaks dart2js/dart2wasm even
+      // though this code is unreachable there.
+      final dynamic native = platform;
+      await native.setProperty('network-timeout', '30');
+      await native.setProperty('stream-lavf-o', reconnect);
+      await native.setProperty('demuxer-lavf-o', reconnect);
       LoggerService().logger.d('Applied mpv network reconnect options');
     } catch (e) {
       LoggerService().logger.w('Failed to set mpv network options: $e');
