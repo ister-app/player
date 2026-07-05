@@ -439,7 +439,7 @@ class Fragment$fragmentTrack$artist {
   Fragment$fragmentTrack$artist({
     required this.id,
     required this.name,
-    this.$__typename = 'Artist',
+    this.$__typename = 'Person',
   });
 
   factory Fragment$fragmentTrack$artist.fromJson(Map<String, dynamic> json) {

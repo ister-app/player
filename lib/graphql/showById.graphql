@@ -13,5 +13,8 @@ query showById($id: ID!) {
             id
             number
         }
+        cast {
+            ...fragmentCastMember
+        }
     }
 }

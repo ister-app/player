@@ -1,0 +1,3 @@
+mutation analyzeDataForTrackMutation($trackId: ID!) {
+    analyzeDataForTrack(trackId: $trackId)
+}

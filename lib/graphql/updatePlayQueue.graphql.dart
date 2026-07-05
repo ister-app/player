@@ -1,3 +1,4 @@
+import 'fragmentCredit.graphql.dart';
 import 'fragmentEpisode.graphql.dart';
 import 'fragmentImages.graphql.dart';
 import 'fragmentMediafiles.graphql.dart';
@@ -351,6 +352,7 @@ const documentNodeMutationupdatePlayQueue = DocumentNode(
     fragmentDefinitionfragmentMetadata,
     fragmentDefinitionfragmentImages,
     fragmentDefinitionfragmentMediaFiles,
+    fragmentDefinitionfragmentCastMember,
     fragmentDefinitionfragmentMovie,
   ],
 );

@@ -204,4 +204,10 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get noNextTracks => 'Geen volgende nummers';
+
+  @override
+  String get cast => 'Cast';
+
+  @override
+  String get appearsIn => 'Verschijnt in';
 }

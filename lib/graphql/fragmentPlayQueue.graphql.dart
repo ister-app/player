@@ -1,3 +1,4 @@
+import 'fragmentCredit.graphql.dart';
 import 'fragmentEpisode.graphql.dart';
 import 'fragmentImages.graphql.dart';
 import 'fragmentMediafiles.graphql.dart';
@@ -481,6 +482,7 @@ const documentNodeFragmentfragmentPlayQueue = DocumentNode(
     fragmentDefinitionfragmentMetadata,
     fragmentDefinitionfragmentImages,
     fragmentDefinitionfragmentMediaFiles,
+    fragmentDefinitionfragmentCastMember,
     fragmentDefinitionfragmentMovie,
   ],
 );
@@ -1080,7 +1082,7 @@ class Fragment$fragmentPlayQueue$playQueueItems$track$artist {
   Fragment$fragmentPlayQueue$playQueueItems$track$artist({
     required this.id,
     required this.name,
-    this.$__typename = 'Artist',
+    this.$__typename = 'Person',
   });
 
   factory Fragment$fragmentPlayQueue$playQueueItems$track$artist.fromJson(

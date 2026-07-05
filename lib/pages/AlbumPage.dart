@@ -4,6 +4,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/albumById.graphql.dart';
+import 'package:player/graphql/analyzeDataForAlbum.graphql.dart';
+import 'package:player/graphql/analyzeDataForTrack.graphql.dart';
 import 'package:player/graphql/fragmentAlbum.graphql.dart';
 import 'package:player/graphql/fragmentTrack.graphql.dart';
 import 'package:player/utils/DurationUtil.dart';
@@ -95,6 +97,7 @@ class _AlbumPageState extends State<AlbumPage> {
       Fragment$fragmentAlbum? album, List<Fragment$fragmentTrack> tracks) {
     final loc = AppLocalizations.of(context)!;
     final description = album != null ? MetadataUtil.getDescription(album.metadata) : null;
+    final metaLine = album != null ? MetadataUtil.getMetaLine(album.metadata) : null;
 
     return CustomScrollView(
       slivers: [
@@ -103,6 +106,20 @@ class _AlbumPageState extends State<AlbumPage> {
           pinned: true,
           stretch: true,
           foregroundColor: Colors.white,
+          actions: [
+            if (album != null)
+              IconButton(
+                icon: const Icon(Icons.analytics),
+                tooltip: loc.analyzeMedia,
+                onPressed: () async {
+                  final client = GraphQLProvider.of(context).value;
+                  await client.mutate(MutationOptions(
+                    document: documentNodeMutationanalyzeDataForAlbumMutation,
+                    variables: {'albumId': album.id},
+                  ));
+                },
+              ),
+          ],
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
             background: _buildHeader(album),
@@ -158,6 +175,24 @@ class _AlbumPageState extends State<AlbumPage> {
             ),
           ),
         ),
+        if (metaLine != null)
+          SliverToBoxAdapter(
+            child: Center(
+              child: Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(maxWidth: 1600),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                  child: Text(
+                    metaLine,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         if (description != null)
           SliverToBoxAdapter(
             child: Center(
@@ -246,7 +281,32 @@ class _AlbumPageState extends State<AlbumPage> {
                           ),
                       ],
                     ),
-                    trailing: const Icon(Icons.more_vert),
+                    trailing: MenuAnchor(
+                      menuChildren: [
+                        MenuItemButton(
+                          onPressed: () async {
+                            final client = GraphQLProvider.of(context).value;
+                            await client.mutate(MutationOptions(
+                              document:
+                                  documentNodeMutationanalyzeDataForTrackMutation,
+                              variables: {'trackId': track.id},
+                            ));
+                          },
+                          child: ListTile(
+                            leading: const Icon(Icons.analytics),
+                            title: Text(loc.analyzeMedia),
+                          ),
+                        ),
+                      ],
+                      builder: (_, MenuController controller, Widget? child) {
+                        return IconButton(
+                          icon: const Icon(Icons.more_vert),
+                          onPressed: () => controller.isOpen
+                              ? controller.close()
+                              : controller.open(),
+                        );
+                      },
+                    ),
                     onTap: album != null
                         ? () => _playTrack(context, album, track.id)
                         : null,

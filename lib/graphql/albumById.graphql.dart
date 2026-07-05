@@ -670,7 +670,7 @@ class Query$albumById$albumById$artist
   Query$albumById$albumById$artist({
     required this.id,
     required this.name,
-    this.$__typename = 'Artist',
+    this.$__typename = 'Person',
   });
 
   factory Query$albumById$albumById$artist.fromJson(Map<String, dynamic> json) {

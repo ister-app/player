@@ -1,8 +1,9 @@
 query artistById($id: ID) {
-    artistById(id: $id) {
-        id name
+    artistById: personById(id: $id) {
+        id name birthYear
         images { ...fragmentImages }
         metadata { ...fragmentMetadata }
         albums { ...fragmentAlbum }
+        credits { ...fragmentPersonCredit }
     }
 }

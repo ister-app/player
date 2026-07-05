@@ -6,6 +6,7 @@ import 'package:player/graphql/movieById.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../components/CastRow.dart';
 import '../components/IsterPlayer.dart';
 import '../components/TrackSelectionWidget.dart';
 import '../graphql/fragmentMovie.graphql.dart';
@@ -207,8 +208,20 @@ class _MoviePageState extends State<MoviePage> {
                 ),
               ],
             ),
+            if (MetadataUtil.getMetaLine(movie?.metadata) != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text(
+                  MetadataUtil.getMetaLine(movie?.metadata)!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ),
             Text(description),
           ])),
+      if (movie?.cast != null && movie!.cast!.isNotEmpty)
+        CastRow(serverName: widget.serverName, cast: movie.cast!),
       if (loadComplete && movie != null && movie.mediaFile != null && movie.mediaFile!.isNotEmpty)
         const TrackSelectionWidget(),
     ]);

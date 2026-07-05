@@ -1,9 +1,13 @@
 import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/graphql/analyzeDataForPerson.graphql.dart';
 import 'package:player/graphql/artistById.graphql.dart';
+import 'package:player/graphql/fragmentCredit.graphql.dart';
+import 'package:player/graphql/fragmentImages.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
@@ -75,7 +79,9 @@ class ArtistPage extends StatelessWidget {
       BuildContext context, Query$artistById$artistById? artist) {
     final loc = AppLocalizations.of(context)!;
     final albums = artist?.albums ?? [];
+    final credits = artist?.credits ?? [];
     final description = artist != null ? MetadataUtil.getDescription(artist.metadata) : null;
+    final hasAlbums = albums.isNotEmpty;
 
     return CustomScrollView(
       slivers: [
@@ -84,11 +90,26 @@ class ArtistPage extends StatelessWidget {
           pinned: true,
           stretch: true,
           foregroundColor: Colors.white,
+          actions: [
+            if (artist != null)
+              IconButton(
+                icon: const Icon(Icons.analytics),
+                tooltip: loc.analyzeMedia,
+                onPressed: () async {
+                  final client = GraphQLProvider.of(context).value;
+                  await client.mutate(MutationOptions(
+                    document: documentNodeMutationanalyzeDataForPersonMutation,
+                    variables: {'personId': artist.id},
+                  ));
+                },
+              ),
+          ],
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
             background: _buildHero(context, artist),
           ),
         ),
+        if (hasAlbums)
         SliverToBoxAdapter(
           child: Center(
             child: Container(
@@ -164,6 +185,7 @@ class ArtistPage extends StatelessWidget {
               ),
             ),
           ),
+        if (hasAlbums)
         SliverToBoxAdapter(
           child: Center(
             child: Container(
@@ -179,6 +201,7 @@ class ArtistPage extends StatelessWidget {
             ),
           ),
         ),
+        if (hasAlbums)
         SliverToBoxAdapter(
           child: Center(
             child: Container(
@@ -215,7 +238,138 @@ class ArtistPage extends StatelessWidget {
             ),
           ),
         ),
+        if (credits.isNotEmpty) _buildFilmography(context, loc, credits),
       ],
+    );
+  }
+
+  Widget _buildFilmography(BuildContext context, AppLocalizations loc,
+      List<Fragment$fragmentPersonCredit> credits) {
+    return SliverToBoxAdapter(
+      child: Center(
+        child: Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(maxWidth: 1600),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: Text(
+                  loc.appearsIn,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              SizedBox(
+                height: 260,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  itemCount: credits.length,
+                  itemBuilder: (context, index) =>
+                      _buildFilmographyTile(context, credits[index]),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilmographyTile(
+      BuildContext context, Fragment$fragmentPersonCredit credit) {
+    String? title;
+    String? subtitle = credit.characterName;
+    List<Fragment$fragmentImages>? images;
+    VoidCallback? onTap;
+
+    final movie = credit.movie;
+    final show = credit.$show;
+    final episode = credit.episode;
+    if (movie != null) {
+      title = movie.name;
+      images = movie.images;
+      onTap = () =>
+          AutoRouter.of(context).push(MovieRoute(movieId: movie.id));
+    } else if (show != null) {
+      title = show.name;
+      images = show.images;
+      onTap = () =>
+          AutoRouter.of(context).push(ShowOverviewRoute(showId: show.id));
+    } else if (episode != null) {
+      title = episode.$show?.name;
+      subtitle = AppLocalizations.of(context)!.episode(episode.number ?? 0);
+      images = episode.images;
+      onTap = episode.$show != null
+          ? () => AutoRouter.of(context).push(
+                ShowEpisodeRoute(showId: episode.$show!.id, episodeId: episode.id),
+              )
+          : null;
+    } else {
+      // Credit without a resolvable media reference — skip it.
+      return const SizedBox.shrink();
+    }
+
+    final img = ImageUtil.getImageByType(images, ImageTypes.cover) ??
+        ImageUtil.getImageByType(images, ImageTypes.background);
+    final imageUrl =
+        ImageUtil.buildUrl(img, token: StreamTokenService.getToken(serverName));
+    final placeholder = Icon(
+      Icons.movie,
+      size: 40,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+
+    return SizedBox(
+      width: 140,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: AspectRatio(
+                  aspectRatio: 2 / 3,
+                  child: Container(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    child: (imageUrl != null && imageUrl != '')
+                        ? CachedNetworkImage(
+                            imageUrl: imageUrl,
+                            fit: BoxFit.cover,
+                            fadeInDuration: Duration.zero,
+                            fadeOutDuration: Duration.zero,
+                            errorBuilder: (_, __, ___) =>
+                                Center(child: placeholder),
+                          )
+                        : Center(child: placeholder),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                title ?? '',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              if ((subtitle ?? '').isNotEmpty)
+                Text(
+                  subtitle!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

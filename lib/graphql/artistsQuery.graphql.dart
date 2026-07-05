@@ -391,8 +391,8 @@ const documentNodeQueryartists = DocumentNode(
       selectionSet: SelectionSetNode(
         selections: [
           FieldNode(
-            name: NameNode(value: 'artists'),
-            alias: null,
+            name: NameNode(value: 'persons'),
+            alias: NameNode(value: 'artists'),
             arguments: [
               ArgumentNode(
                 name: NameNode(value: 'page'),
@@ -529,7 +529,7 @@ class Query$artists$artists {
     required this.totalElements,
     required this.number,
     required this.size,
-    this.$__typename = 'ArtistPage',
+    this.$__typename = 'PersonPage',
   });
 
   factory Query$artists$artists.fromJson(Map<String, dynamic> json) {
@@ -760,7 +760,7 @@ class Query$artists$artists$content {
     required this.id,
     required this.name,
     this.images,
-    this.$__typename = 'Artist',
+    this.$__typename = 'Person',
   });
 
   factory Query$artists$artists$content.fromJson(Map<String, dynamic> json) {

@@ -58,5 +58,7 @@
   "previousTracks": "TERUG NAAR",
   "upNext": "HIERNA",
   "noPreviousTracks": "Geen vorige nummers",
-  "noNextTracks": "Geen volgende nummers"
+  "noNextTracks": "Geen volgende nummers",
+  "cast": "Cast",
+  "appearsIn": "Verschijnt in"
 }

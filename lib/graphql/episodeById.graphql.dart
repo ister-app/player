@@ -1,3 +1,4 @@
+import 'fragmentCredit.graphql.dart';
 import 'fragmentEpisode.graphql.dart';
 import 'fragmentImages.graphql.dart';
 import 'fragmentMediafiles.graphql.dart';
@@ -273,5 +274,6 @@ const documentNodeQueryepisodeById = DocumentNode(
     fragmentDefinitionfragmentMetadata,
     fragmentDefinitionfragmentImages,
     fragmentDefinitionfragmentMediaFiles,
+    fragmentDefinitionfragmentCastMember,
   ],
 );

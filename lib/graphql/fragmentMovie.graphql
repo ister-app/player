@@ -6,4 +6,5 @@ fragment fragmentMovie on Movie {
     metadata { ...fragmentMetadata }
     watchStatus { id playQueueItemId progressInMilliseconds watched }
     mediaFile { ...fragmentMediaFiles }
+    cast { ...fragmentCastMember }
 }

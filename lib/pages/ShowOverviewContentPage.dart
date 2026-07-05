@@ -3,7 +3,9 @@ import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/components/CastRow.dart';
 import 'package:player/graphql/analyzeDataForShow.graphql.dart';
+import 'package:player/graphql/fragmentCredit.graphql.dart';
 import 'package:player/graphql/showById.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/ImageTypes.dart';
@@ -40,7 +42,7 @@ class ShowOverviewContentPage extends StatelessWidget {
           body = Skeletonizer(
               enabled: true,
               child: _buildContent(
-                  null, null, BoneMock.name, BoneMock.words(15), context, null));
+                  null, null, BoneMock.name, BoneMock.words(15), context, null, null));
           // Skeletonizer(enabled: true, child: Text(BoneMock.name));
         } else {
           final parsedData = Query$showById.fromJson(result.data!);
@@ -58,7 +60,8 @@ class ShowOverviewContentPage extends StatelessWidget {
                 MetadataUtil.getTitle(show.metadata) ?? "",
                 MetadataUtil.getDescription(show.metadata) ?? "",
                 context,
-                show.toJson().toString());
+                show.toJson().toString(),
+                show.cast);
           }
         }
 
@@ -67,8 +70,14 @@ class ShowOverviewContentPage extends StatelessWidget {
     );
   }
 
-  SingleChildScrollView _buildContent(String? imageUrl, String? blurHash,
-      String title, String description, BuildContext context, String? rawJson) {
+  SingleChildScrollView _buildContent(
+      String? imageUrl,
+      String? blurHash,
+      String title,
+      String description,
+      BuildContext context,
+      String? rawJson,
+      List<Fragment$fragmentCastMember>? cast) {
     return SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       LayoutBuilder(builder: (context, constraints) {
@@ -146,6 +155,8 @@ class ShowOverviewContentPage extends StatelessWidget {
             ),
             Text(description),
           ])),
+      if (cast != null && cast.isNotEmpty)
+        CastRow(serverName: serverName, cast: cast),
     ]));
   }
 

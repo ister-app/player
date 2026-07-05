@@ -1,3 +1,4 @@
+import 'fragmentCredit.graphql.dart';
 import 'fragmentImages.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
 import 'package:gql/ast.dart';
@@ -338,6 +339,27 @@ const documentNodeQueryshowById = DocumentNode(
                   ),
                 ),
                 FieldNode(
+                  name: NameNode(value: 'cast'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: SelectionSetNode(
+                    selections: [
+                      FragmentSpreadNode(
+                        name: NameNode(value: 'fragmentCastMember'),
+                        directives: [],
+                      ),
+                      FieldNode(
+                        name: NameNode(value: '__typename'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                    ],
+                  ),
+                ),
+                FieldNode(
                   name: NameNode(value: '__typename'),
                   alias: null,
                   arguments: [],
@@ -359,6 +381,7 @@ const documentNodeQueryshowById = DocumentNode(
     ),
     fragmentDefinitionfragmentImages,
     fragmentDefinitionfragmentMetadata,
+    fragmentDefinitionfragmentCastMember,
   ],
 );
 
@@ -370,6 +393,7 @@ class Query$showById$showById {
     required this.releaseYear,
     this.metadata,
     this.seasons,
+    this.cast,
     this.$__typename = 'Show',
   });
 
@@ -380,6 +404,7 @@ class Query$showById$showById {
     final l$releaseYear = json['releaseYear'];
     final l$metadata = json['metadata'];
     final l$seasons = json['seasons'];
+    final l$cast = json['cast'];
     final l$$__typename = json['__typename'];
     return Query$showById$showById(
       id: (l$id as String),
@@ -404,6 +429,13 @@ class Query$showById$showById {
             ),
           )
           .toList(),
+      cast: (l$cast as List<dynamic>?)
+          ?.map(
+            (e) => Fragment$fragmentCastMember.fromJson(
+              (e as Map<String, dynamic>),
+            ),
+          )
+          .toList(),
       $__typename: (l$$__typename as String),
     );
   }
@@ -419,6 +451,8 @@ class Query$showById$showById {
   final List<Fragment$fragmentMetadata>? metadata;
 
   final List<Query$showById$showById$seasons>? seasons;
+
+  final List<Fragment$fragmentCastMember>? cast;
 
   final String $__typename;
 
@@ -436,6 +470,8 @@ class Query$showById$showById {
     _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
     final l$seasons = seasons;
     _resultData['seasons'] = l$seasons?.map((e) => e.toJson()).toList();
+    final l$cast = cast;
+    _resultData['cast'] = l$cast?.map((e) => e.toJson()).toList();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -449,6 +485,7 @@ class Query$showById$showById {
     final l$releaseYear = releaseYear;
     final l$metadata = metadata;
     final l$seasons = seasons;
+    final l$cast = cast;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
@@ -457,6 +494,7 @@ class Query$showById$showById {
       l$releaseYear,
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$seasons == null ? null : Object.hashAll(l$seasons.map((v) => v)),
+      l$cast == null ? null : Object.hashAll(l$cast.map((v) => v)),
       l$$__typename,
     ]);
   }
@@ -532,6 +570,22 @@ class Query$showById$showById {
     } else if (l$seasons != lOther$seasons) {
       return false;
     }
+    final l$cast = cast;
+    final lOther$cast = other.cast;
+    if (l$cast != null && lOther$cast != null) {
+      if (l$cast.length != lOther$cast.length) {
+        return false;
+      }
+      for (int i = 0; i < l$cast.length; i++) {
+        final l$cast$entry = l$cast[i];
+        final lOther$cast$entry = lOther$cast[i];
+        if (l$cast$entry != lOther$cast$entry) {
+          return false;
+        }
+      }
+    } else if (l$cast != lOther$cast) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -562,6 +616,7 @@ abstract class CopyWith$Query$showById$showById<TRes> {
     int? releaseYear,
     List<Fragment$fragmentMetadata>? metadata,
     List<Query$showById$showById$seasons>? seasons,
+    List<Fragment$fragmentCastMember>? cast,
     String? $__typename,
   });
   TRes images(
@@ -586,6 +641,14 @@ abstract class CopyWith$Query$showById$showById<TRes> {
     )
     _fn,
   );
+  TRes cast(
+    Iterable<Fragment$fragmentCastMember>? Function(
+      Iterable<
+        CopyWith$Fragment$fragmentCastMember<Fragment$fragmentCastMember>
+      >?,
+    )
+    _fn,
+  );
 }
 
 class _CopyWithImpl$Query$showById$showById<TRes>
@@ -605,6 +668,7 @@ class _CopyWithImpl$Query$showById$showById<TRes>
     Object? releaseYear = _undefined,
     Object? metadata = _undefined,
     Object? seasons = _undefined,
+    Object? cast = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Query$showById$showById(
@@ -624,6 +688,9 @@ class _CopyWithImpl$Query$showById$showById<TRes>
       seasons: seasons == _undefined
           ? _instance.seasons
           : (seasons as List<Query$showById$showById$seasons>?),
+      cast: cast == _undefined
+          ? _instance.cast
+          : (cast as List<Fragment$fragmentCastMember>?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -672,6 +739,21 @@ class _CopyWithImpl$Query$showById$showById<TRes>
       ),
     )?.toList(),
   );
+
+  TRes cast(
+    Iterable<Fragment$fragmentCastMember>? Function(
+      Iterable<
+        CopyWith$Fragment$fragmentCastMember<Fragment$fragmentCastMember>
+      >?,
+    )
+    _fn,
+  ) => call(
+    cast: _fn(
+      _instance.cast?.map(
+        (e) => CopyWith$Fragment$fragmentCastMember(e, (i) => i),
+      ),
+    )?.toList(),
+  );
 }
 
 class _CopyWithStubImpl$Query$showById$showById<TRes>
@@ -687,6 +769,7 @@ class _CopyWithStubImpl$Query$showById$showById<TRes>
     int? releaseYear,
     List<Fragment$fragmentMetadata>? metadata,
     List<Query$showById$showById$seasons>? seasons,
+    List<Fragment$fragmentCastMember>? cast,
     String? $__typename,
   }) => _res;
 
@@ -695,6 +778,8 @@ class _CopyWithStubImpl$Query$showById$showById<TRes>
   metadata(_fn) => _res;
 
   seasons(_fn) => _res;
+
+  cast(_fn) => _res;
 }
 
 class Query$showById$showById$seasons {

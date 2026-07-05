@@ -9,6 +9,7 @@ import 'package:player/graphql/analyzeDataForEpisode.graphql.dart';
 import 'package:player/graphql/episodeById.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../components/CastRow.dart';
 import '../components/IsterPlayer.dart';
 import '../components/TrackSelectionWidget.dart';
 import '../graphql/fragmentEpisode.graphql.dart';
@@ -244,8 +245,20 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                 ),
               ],
             ),
+            if (MetadataUtil.getMetaLine(episode?.metadata) != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text(
+                  MetadataUtil.getMetaLine(episode?.metadata)!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ),
             Text(description),
           ])),
+      if (episode?.cast != null && episode!.cast!.isNotEmpty)
+        CastRow(serverName: widget.serverName, cast: episode.cast!),
       if (loadComplete && episode != null && episode.mediaFile != null && episode.mediaFile!.isNotEmpty)
         const TrackSelectionWidget(),
     ]);

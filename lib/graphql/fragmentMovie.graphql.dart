@@ -1,3 +1,4 @@
+import 'fragmentCredit.graphql.dart';
 import 'fragmentImages.graphql.dart';
 import 'fragmentMediafiles.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
@@ -12,6 +13,7 @@ class Fragment$fragmentMovie {
     this.metadata,
     this.watchStatus,
     this.mediaFile,
+    this.cast,
     this.$__typename = 'Movie',
   });
 
@@ -23,6 +25,7 @@ class Fragment$fragmentMovie {
     final l$metadata = json['metadata'];
     final l$watchStatus = json['watchStatus'];
     final l$mediaFile = json['mediaFile'];
+    final l$cast = json['cast'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentMovie(
       id: (l$id as String),
@@ -54,6 +57,13 @@ class Fragment$fragmentMovie {
             ),
           )
           .toList(),
+      cast: (l$cast as List<dynamic>?)
+          ?.map(
+            (e) => Fragment$fragmentCastMember.fromJson(
+              (e as Map<String, dynamic>),
+            ),
+          )
+          .toList(),
       $__typename: (l$$__typename as String),
     );
   }
@@ -71,6 +81,8 @@ class Fragment$fragmentMovie {
   final List<Fragment$fragmentMovie$watchStatus>? watchStatus;
 
   final List<Fragment$fragmentMediaFiles>? mediaFile;
+
+  final List<Fragment$fragmentCastMember>? cast;
 
   final String $__typename;
 
@@ -90,6 +102,8 @@ class Fragment$fragmentMovie {
     _resultData['watchStatus'] = l$watchStatus?.map((e) => e.toJson()).toList();
     final l$mediaFile = mediaFile;
     _resultData['mediaFile'] = l$mediaFile?.map((e) => e.toJson()).toList();
+    final l$cast = cast;
+    _resultData['cast'] = l$cast?.map((e) => e.toJson()).toList();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -104,6 +118,7 @@ class Fragment$fragmentMovie {
     final l$metadata = metadata;
     final l$watchStatus = watchStatus;
     final l$mediaFile = mediaFile;
+    final l$cast = cast;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
@@ -115,6 +130,7 @@ class Fragment$fragmentMovie {
           ? null
           : Object.hashAll(l$watchStatus.map((v) => v)),
       l$mediaFile == null ? null : Object.hashAll(l$mediaFile.map((v) => v)),
+      l$cast == null ? null : Object.hashAll(l$cast.map((v) => v)),
       l$$__typename,
     ]);
   }
@@ -206,6 +222,22 @@ class Fragment$fragmentMovie {
     } else if (l$mediaFile != lOther$mediaFile) {
       return false;
     }
+    final l$cast = cast;
+    final lOther$cast = other.cast;
+    if (l$cast != null && lOther$cast != null) {
+      if (l$cast.length != lOther$cast.length) {
+        return false;
+      }
+      for (int i = 0; i < l$cast.length; i++) {
+        final l$cast$entry = l$cast[i];
+        final lOther$cast$entry = lOther$cast[i];
+        if (l$cast$entry != lOther$cast$entry) {
+          return false;
+        }
+      }
+    } else if (l$cast != lOther$cast) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -237,6 +269,7 @@ abstract class CopyWith$Fragment$fragmentMovie<TRes> {
     List<Fragment$fragmentMetadata>? metadata,
     List<Fragment$fragmentMovie$watchStatus>? watchStatus,
     List<Fragment$fragmentMediaFiles>? mediaFile,
+    List<Fragment$fragmentCastMember>? cast,
     String? $__typename,
   });
   TRes images(
@@ -269,6 +302,14 @@ abstract class CopyWith$Fragment$fragmentMovie<TRes> {
     )
     _fn,
   );
+  TRes cast(
+    Iterable<Fragment$fragmentCastMember>? Function(
+      Iterable<
+        CopyWith$Fragment$fragmentCastMember<Fragment$fragmentCastMember>
+      >?,
+    )
+    _fn,
+  );
 }
 
 class _CopyWithImpl$Fragment$fragmentMovie<TRes>
@@ -289,6 +330,7 @@ class _CopyWithImpl$Fragment$fragmentMovie<TRes>
     Object? metadata = _undefined,
     Object? watchStatus = _undefined,
     Object? mediaFile = _undefined,
+    Object? cast = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentMovie(
@@ -311,6 +353,9 @@ class _CopyWithImpl$Fragment$fragmentMovie<TRes>
       mediaFile: mediaFile == _undefined
           ? _instance.mediaFile
           : (mediaFile as List<Fragment$fragmentMediaFiles>?),
+      cast: cast == _undefined
+          ? _instance.cast
+          : (cast as List<Fragment$fragmentCastMember>?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -374,6 +419,21 @@ class _CopyWithImpl$Fragment$fragmentMovie<TRes>
       ),
     )?.toList(),
   );
+
+  TRes cast(
+    Iterable<Fragment$fragmentCastMember>? Function(
+      Iterable<
+        CopyWith$Fragment$fragmentCastMember<Fragment$fragmentCastMember>
+      >?,
+    )
+    _fn,
+  ) => call(
+    cast: _fn(
+      _instance.cast?.map(
+        (e) => CopyWith$Fragment$fragmentCastMember(e, (i) => i),
+      ),
+    )?.toList(),
+  );
 }
 
 class _CopyWithStubImpl$Fragment$fragmentMovie<TRes>
@@ -390,6 +450,7 @@ class _CopyWithStubImpl$Fragment$fragmentMovie<TRes>
     List<Fragment$fragmentMetadata>? metadata,
     List<Fragment$fragmentMovie$watchStatus>? watchStatus,
     List<Fragment$fragmentMediaFiles>? mediaFile,
+    List<Fragment$fragmentCastMember>? cast,
     String? $__typename,
   }) => _res;
 
@@ -400,6 +461,8 @@ class _CopyWithStubImpl$Fragment$fragmentMovie<TRes>
   watchStatus(_fn) => _res;
 
   mediaFile(_fn) => _res;
+
+  cast(_fn) => _res;
 }
 
 const fragmentDefinitionfragmentMovie = FragmentDefinitionNode(
@@ -540,6 +603,27 @@ const fragmentDefinitionfragmentMovie = FragmentDefinitionNode(
         ),
       ),
       FieldNode(
+        name: NameNode(value: 'cast'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: SelectionSetNode(
+          selections: [
+            FragmentSpreadNode(
+              name: NameNode(value: 'fragmentCastMember'),
+              directives: [],
+            ),
+            FieldNode(
+              name: NameNode(value: '__typename'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+          ],
+        ),
+      ),
+      FieldNode(
         name: NameNode(value: '__typename'),
         alias: null,
         arguments: [],
@@ -555,6 +639,7 @@ const documentNodeFragmentfragmentMovie = DocumentNode(
     fragmentDefinitionfragmentImages,
     fragmentDefinitionfragmentMetadata,
     fragmentDefinitionfragmentMediaFiles,
+    fragmentDefinitionfragmentCastMember,
   ],
 );
 

@@ -1,0 +1,3 @@
+mutation analyzeDataForPersonMutation($personId: ID!) {
+    analyzeDataForPerson(personId: $personId)
+}

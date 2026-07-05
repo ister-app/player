@@ -457,6 +457,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No upcoming tracks'**
   String get noNextTracks;
+
+  /// Section header for the list of actors in a movie, show or episode
+  ///
+  /// In en, this message translates to:
+  /// **'Cast'**
+  String get cast;
+
+  /// Section header on a person page listing the movies and shows they appear in
+  ///
+  /// In en, this message translates to:
+  /// **'Appears in'**
+  String get appearsIn;
 }
 
 class _AppLocalizationsDelegate

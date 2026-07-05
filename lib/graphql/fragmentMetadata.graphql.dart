@@ -7,6 +7,8 @@ class Fragment$fragmentMetadata {
     this.language,
     this.sourceUri,
     this.title,
+    this.released,
+    this.genre,
     this.$__typename = 'Metadata',
   });
 
@@ -16,6 +18,8 @@ class Fragment$fragmentMetadata {
     final l$language = json['language'];
     final l$sourceUri = json['sourceUri'];
     final l$title = json['title'];
+    final l$released = json['released'];
+    final l$genre = json['genre'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentMetadata(
       description: (l$description as String?),
@@ -23,6 +27,8 @@ class Fragment$fragmentMetadata {
       language: (l$language as String?),
       sourceUri: (l$sourceUri as String?),
       title: (l$title as String?),
+      released: (l$released as String?),
+      genre: (l$genre as String?),
       $__typename: (l$$__typename as String),
     );
   }
@@ -36,6 +42,10 @@ class Fragment$fragmentMetadata {
   final String? sourceUri;
 
   final String? title;
+
+  final String? released;
+
+  final String? genre;
 
   final String $__typename;
 
@@ -51,6 +61,10 @@ class Fragment$fragmentMetadata {
     _resultData['sourceUri'] = l$sourceUri;
     final l$title = title;
     _resultData['title'] = l$title;
+    final l$released = released;
+    _resultData['released'] = l$released;
+    final l$genre = genre;
+    _resultData['genre'] = l$genre;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -63,6 +77,8 @@ class Fragment$fragmentMetadata {
     final l$language = language;
     final l$sourceUri = sourceUri;
     final l$title = title;
+    final l$released = released;
+    final l$genre = genre;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$description,
@@ -70,6 +86,8 @@ class Fragment$fragmentMetadata {
       l$language,
       l$sourceUri,
       l$title,
+      l$released,
+      l$genre,
       l$$__typename,
     ]);
   }
@@ -108,6 +126,16 @@ class Fragment$fragmentMetadata {
     if (l$title != lOther$title) {
       return false;
     }
+    final l$released = released;
+    final lOther$released = other.released;
+    if (l$released != lOther$released) {
+      return false;
+    }
+    final l$genre = genre;
+    final lOther$genre = other.genre;
+    if (l$genre != lOther$genre) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -138,6 +166,8 @@ abstract class CopyWith$Fragment$fragmentMetadata<TRes> {
     String? language,
     String? sourceUri,
     String? title,
+    String? released,
+    String? genre,
     String? $__typename,
   });
 }
@@ -158,6 +188,8 @@ class _CopyWithImpl$Fragment$fragmentMetadata<TRes>
     Object? language = _undefined,
     Object? sourceUri = _undefined,
     Object? title = _undefined,
+    Object? released = _undefined,
+    Object? genre = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentMetadata(
@@ -172,6 +204,10 @@ class _CopyWithImpl$Fragment$fragmentMetadata<TRes>
           ? _instance.sourceUri
           : (sourceUri as String?),
       title: title == _undefined ? _instance.title : (title as String?),
+      released: released == _undefined
+          ? _instance.released
+          : (released as String?),
+      genre: genre == _undefined ? _instance.genre : (genre as String?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -191,6 +227,8 @@ class _CopyWithStubImpl$Fragment$fragmentMetadata<TRes>
     String? language,
     String? sourceUri,
     String? title,
+    String? released,
+    String? genre,
     String? $__typename,
   }) => _res;
 }
@@ -233,6 +271,20 @@ const fragmentDefinitionfragmentMetadata = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'title'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'released'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'genre'),
         alias: null,
         arguments: [],
         directives: [],

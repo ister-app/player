@@ -204,4 +204,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noNextTracks => 'No upcoming tracks';
+
+  @override
+  String get cast => 'Cast';
+
+  @override
+  String get appearsIn => 'Appears in';
 }

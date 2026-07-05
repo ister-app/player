@@ -168,6 +168,39 @@ Enum$DirectoryType fromJson$Enum$DirectoryType(String value) {
   }
 }
 
+enum Enum$CreditType {
+  CAST,
+  GUEST_STAR,
+  $unknown;
+
+  factory Enum$CreditType.fromJson(String value) =>
+      fromJson$Enum$CreditType(value);
+
+  String toJson() => toJson$Enum$CreditType(this);
+}
+
+String toJson$Enum$CreditType(Enum$CreditType e) {
+  switch (e) {
+    case Enum$CreditType.CAST:
+      return r'CAST';
+    case Enum$CreditType.GUEST_STAR:
+      return r'GUEST_STAR';
+    case Enum$CreditType.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$CreditType fromJson$Enum$CreditType(String value) {
+  switch (value) {
+    case r'CAST':
+      return Enum$CreditType.CAST;
+    case r'GUEST_STAR':
+      return Enum$CreditType.GUEST_STAR;
+    default:
+      return Enum$CreditType.$unknown;
+  }
+}
+
 enum Enum$__TypeKind {
   SCALAR,
   OBJECT,

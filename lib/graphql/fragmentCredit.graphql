@@ -1,0 +1,37 @@
+# Cast direction: a media item (movie/show/episode) lists the people in it.
+fragment fragmentCastMember on Credit {
+    id
+    characterName
+    creditType
+    castOrder
+    person {
+        id
+        name
+        images { ...fragmentImages }
+    }
+}
+
+# Filmography direction: a person lists the media they appear in.
+# Deliberately does NOT select `person` to keep the query finite.
+fragment fragmentPersonCredit on Credit {
+    id
+    characterName
+    creditType
+    castOrder
+    movie {
+        id
+        name
+        images { ...fragmentImages }
+    }
+    show {
+        id
+        name
+        images { ...fragmentImages }
+    }
+    episode {
+        id
+        number
+        images { ...fragmentImages }
+        show { id name }
+    }
+}

@@ -4,4 +4,6 @@ fragment fragmentMetadata on Metadata {
     language
     sourceUri
     title
+    released
+    genre
 }

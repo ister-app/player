@@ -1,0 +1,3 @@
+mutation analyzeDataForAlbumMutation($albumId: ID!) {
+    analyzeDataForAlbum(albumId: $albumId)
+}

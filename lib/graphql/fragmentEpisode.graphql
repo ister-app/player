@@ -22,4 +22,7 @@ fragment fragmentEpisode on Episode {
     mediaFile {
         ...fragmentMediaFiles
     }
+    cast {
+        ...fragmentCastMember
+    }
 }

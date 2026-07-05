@@ -229,5 +229,13 @@
   "noNextTracks": "No upcoming tracks",
   "@noNextTracks": {
     "description": "Shown in the music player when there are no upcoming tracks"
+  },
+  "cast": "Cast",
+  "@cast": {
+    "description": "Section header for the list of actors in a movie, show or episode"
+  },
+  "appearsIn": "Appears in",
+  "@appearsIn": {
+    "description": "Section header on a person page listing the movies and shows they appear in"
   }
 }

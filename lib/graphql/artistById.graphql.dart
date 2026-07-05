@@ -1,4 +1,5 @@
 import 'fragmentAlbum.graphql.dart';
+import 'fragmentCredit.graphql.dart';
 import 'fragmentImages.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
 import 'package:gql/ast.dart';
@@ -240,8 +241,8 @@ const documentNodeQueryartistById = DocumentNode(
       selectionSet: SelectionSetNode(
         selections: [
           FieldNode(
-            name: NameNode(value: 'artistById'),
-            alias: null,
+            name: NameNode(value: 'personById'),
+            alias: NameNode(value: 'artistById'),
             arguments: [
               ArgumentNode(
                 name: NameNode(value: 'id'),
@@ -260,6 +261,13 @@ const documentNodeQueryartistById = DocumentNode(
                 ),
                 FieldNode(
                   name: NameNode(value: 'name'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'birthYear'),
                   alias: null,
                   arguments: [],
                   directives: [],
@@ -329,6 +337,27 @@ const documentNodeQueryartistById = DocumentNode(
                   ),
                 ),
                 FieldNode(
+                  name: NameNode(value: 'credits'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: SelectionSetNode(
+                    selections: [
+                      FragmentSpreadNode(
+                        name: NameNode(value: 'fragmentPersonCredit'),
+                        directives: [],
+                      ),
+                      FieldNode(
+                        name: NameNode(value: '__typename'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                    ],
+                  ),
+                ),
+                FieldNode(
                   name: NameNode(value: '__typename'),
                   alias: null,
                   arguments: [],
@@ -351,6 +380,7 @@ const documentNodeQueryartistById = DocumentNode(
     fragmentDefinitionfragmentImages,
     fragmentDefinitionfragmentMetadata,
     fragmentDefinitionfragmentAlbum,
+    fragmentDefinitionfragmentPersonCredit,
   ],
 );
 
@@ -358,22 +388,27 @@ class Query$artistById$artistById {
   Query$artistById$artistById({
     required this.id,
     required this.name,
+    this.birthYear,
     this.images,
     this.metadata,
     this.albums,
-    this.$__typename = 'Artist',
+    this.credits,
+    this.$__typename = 'Person',
   });
 
   factory Query$artistById$artistById.fromJson(Map<String, dynamic> json) {
     final l$id = json['id'];
     final l$name = json['name'];
+    final l$birthYear = json['birthYear'];
     final l$images = json['images'];
     final l$metadata = json['metadata'];
     final l$albums = json['albums'];
+    final l$credits = json['credits'];
     final l$$__typename = json['__typename'];
     return Query$artistById$artistById(
       id: (l$id as String),
       name: (l$name as String),
+      birthYear: (l$birthYear as int?),
       images: (l$images as List<dynamic>?)
           ?.map(
             (e) =>
@@ -391,6 +426,13 @@ class Query$artistById$artistById {
             (e) => Fragment$fragmentAlbum.fromJson((e as Map<String, dynamic>)),
           )
           .toList(),
+      credits: (l$credits as List<dynamic>?)
+          ?.map(
+            (e) => Fragment$fragmentPersonCredit.fromJson(
+              (e as Map<String, dynamic>),
+            ),
+          )
+          .toList(),
       $__typename: (l$$__typename as String),
     );
   }
@@ -399,11 +441,15 @@ class Query$artistById$artistById {
 
   final String name;
 
+  final int? birthYear;
+
   final List<Fragment$fragmentImages>? images;
 
   final List<Fragment$fragmentMetadata>? metadata;
 
   final List<Fragment$fragmentAlbum>? albums;
+
+  final List<Fragment$fragmentPersonCredit>? credits;
 
   final String $__typename;
 
@@ -413,12 +459,16 @@ class Query$artistById$artistById {
     _resultData['id'] = l$id;
     final l$name = name;
     _resultData['name'] = l$name;
+    final l$birthYear = birthYear;
+    _resultData['birthYear'] = l$birthYear;
     final l$images = images;
     _resultData['images'] = l$images?.map((e) => e.toJson()).toList();
     final l$metadata = metadata;
     _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
     final l$albums = albums;
     _resultData['albums'] = l$albums?.map((e) => e.toJson()).toList();
+    final l$credits = credits;
+    _resultData['credits'] = l$credits?.map((e) => e.toJson()).toList();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -428,16 +478,20 @@ class Query$artistById$artistById {
   int get hashCode {
     final l$id = id;
     final l$name = name;
+    final l$birthYear = birthYear;
     final l$images = images;
     final l$metadata = metadata;
     final l$albums = albums;
+    final l$credits = credits;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
       l$name,
+      l$birthYear,
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$albums == null ? null : Object.hashAll(l$albums.map((v) => v)),
+      l$credits == null ? null : Object.hashAll(l$credits.map((v) => v)),
       l$$__typename,
     ]);
   }
@@ -459,6 +513,11 @@ class Query$artistById$artistById {
     final l$name = name;
     final lOther$name = other.name;
     if (l$name != lOther$name) {
+      return false;
+    }
+    final l$birthYear = birthYear;
+    final lOther$birthYear = other.birthYear;
+    if (l$birthYear != lOther$birthYear) {
       return false;
     }
     final l$images = images;
@@ -509,6 +568,22 @@ class Query$artistById$artistById {
     } else if (l$albums != lOther$albums) {
       return false;
     }
+    final l$credits = credits;
+    final lOther$credits = other.credits;
+    if (l$credits != null && lOther$credits != null) {
+      if (l$credits.length != lOther$credits.length) {
+        return false;
+      }
+      for (int i = 0; i < l$credits.length; i++) {
+        final l$credits$entry = l$credits[i];
+        final lOther$credits$entry = lOther$credits[i];
+        if (l$credits$entry != lOther$credits$entry) {
+          return false;
+        }
+      }
+    } else if (l$credits != lOther$credits) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -536,9 +611,11 @@ abstract class CopyWith$Query$artistById$artistById<TRes> {
   TRes call({
     String? id,
     String? name,
+    int? birthYear,
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
     List<Fragment$fragmentAlbum>? albums,
+    List<Fragment$fragmentPersonCredit>? credits,
     String? $__typename,
   });
   TRes images(
@@ -559,6 +636,14 @@ abstract class CopyWith$Query$artistById$artistById<TRes> {
     )
     _fn,
   );
+  TRes credits(
+    Iterable<Fragment$fragmentPersonCredit>? Function(
+      Iterable<
+        CopyWith$Fragment$fragmentPersonCredit<Fragment$fragmentPersonCredit>
+      >?,
+    )
+    _fn,
+  );
 }
 
 class _CopyWithImpl$Query$artistById$artistById<TRes>
@@ -574,9 +659,11 @@ class _CopyWithImpl$Query$artistById$artistById<TRes>
   TRes call({
     Object? id = _undefined,
     Object? name = _undefined,
+    Object? birthYear = _undefined,
     Object? images = _undefined,
     Object? metadata = _undefined,
     Object? albums = _undefined,
+    Object? credits = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Query$artistById$artistById(
@@ -584,6 +671,9 @@ class _CopyWithImpl$Query$artistById$artistById<TRes>
       name: name == _undefined || name == null
           ? _instance.name
           : (name as String),
+      birthYear: birthYear == _undefined
+          ? _instance.birthYear
+          : (birthYear as int?),
       images: images == _undefined
           ? _instance.images
           : (images as List<Fragment$fragmentImages>?),
@@ -593,6 +683,9 @@ class _CopyWithImpl$Query$artistById$artistById<TRes>
       albums: albums == _undefined
           ? _instance.albums
           : (albums as List<Fragment$fragmentAlbum>?),
+      credits: credits == _undefined
+          ? _instance.credits
+          : (credits as List<Fragment$fragmentPersonCredit>?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -637,6 +730,21 @@ class _CopyWithImpl$Query$artistById$artistById<TRes>
       ),
     )?.toList(),
   );
+
+  TRes credits(
+    Iterable<Fragment$fragmentPersonCredit>? Function(
+      Iterable<
+        CopyWith$Fragment$fragmentPersonCredit<Fragment$fragmentPersonCredit>
+      >?,
+    )
+    _fn,
+  ) => call(
+    credits: _fn(
+      _instance.credits?.map(
+        (e) => CopyWith$Fragment$fragmentPersonCredit(e, (i) => i),
+      ),
+    )?.toList(),
+  );
 }
 
 class _CopyWithStubImpl$Query$artistById$artistById<TRes>
@@ -648,9 +756,11 @@ class _CopyWithStubImpl$Query$artistById$artistById<TRes>
   call({
     String? id,
     String? name,
+    int? birthYear,
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
     List<Fragment$fragmentAlbum>? albums,
+    List<Fragment$fragmentPersonCredit>? credits,
     String? $__typename,
   }) => _res;
 
@@ -659,4 +769,6 @@ class _CopyWithStubImpl$Query$artistById$artistById<TRes>
   metadata(_fn) => _res;
 
   albums(_fn) => _res;
+
+  credits(_fn) => _res;
 }
