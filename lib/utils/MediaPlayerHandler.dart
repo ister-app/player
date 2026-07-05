@@ -632,6 +632,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     _intendsToPlay = true;
     _loadRetries = 0;
     _syncGeneration++;
+    final generation = _syncGeneration;
     // Publish the target index immediately so a second next/previous tap
     // during the awaits below doesn't act on the stale index.
     playbackState.add(playbackState.value.copyWith(queueIndex: index));
@@ -643,6 +644,27 @@ class MediaPlayerHandler extends BaseAudioHandler
         .toList();
     if (newEpisodeList != null && newEpisodeList.isNotEmpty) {
       final queueItem = newEpisodeList.first;
+
+      // An item without an (analyzed) media file cannot be opened — bail out
+      // before flipping any local state to it.
+      final hasMediaFile = queueItem.track?.mediaFile?.firstOrNull != null ||
+          queueItem.movie?.mediaFile?.firstOrNull != null ||
+          queueItem.episode?.mediaFile?.firstOrNull != null;
+      if (!hasMediaFile) return;
+
+      // Make the tapped item current locally, before any player or network
+      // work. The server update below is only a sync — the UI must not wait
+      // for its round-trip, and player events firing while it is in flight
+      // must not revert the index in updatePlaybackState.
+      playQueue = playQueue?.copyWith(currentItemId: mediaItemId.id);
+      currentPlayQueueItem =
+          PlayQueueService.getCurrentPlayQueueItem(playQueue);
+      _currentMediaType = mediaItemId.isterMediaType;
+      mediaItem.add(queue.value[index]);
+      if (playQueue != null) {
+        PlayQueueService().playQueueChanged(playQueue!);
+      }
+
       final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay();
       final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode();
 
@@ -690,26 +712,26 @@ class MediaPlayerHandler extends BaseAudioHandler
         );
       }
 
-      final playQueueObject = await _playQueueService.updateProgress(
-        ClientManager.getClientForUrl(mediaItemId.serverName).value,
-        playQueue!.id,
-        mediaItemId.id,
-        Duration(milliseconds: 0),
-      );
-      if (playQueueObject != null) {
-        playQueue = playQueueObject;
-      }
       _onPlayingChanged(true);
-
-      currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
-      // Explicitly update the mediaItem stream now that playQueue is current
-      mediaItem.add(queue.value[index]);
-      if (playQueue != null) {
-        PlayQueueService().playQueueChanged(playQueue!);
-      }
       final track = queueItem.track;
       if (track != null) {
         _rememberLastPlayed(mediaItemId.serverName, track.album.id, track.id);
+      }
+
+      // Sync the new current item to the server. The local state above is
+      // already final; the response only refreshes progress data, and is
+      // dropped when another skip happened in the meantime.
+      final playQueueObject = await _sendProgressUpdate(
+        ClientManager.getClientForUrl(mediaItemId.serverName).value,
+        playQueue!.id,
+        mediaItemId.id,
+        Duration.zero,
+      );
+      if (playQueueObject != null && generation == _syncGeneration) {
+        _applyServerPlayQueue(playQueueObject);
+        currentPlayQueueItem =
+            PlayQueueService.getCurrentPlayQueueItem(playQueue);
+        PlayQueueService().playQueueChanged(playQueue!);
       }
     }
   }
@@ -1049,6 +1071,35 @@ class MediaPlayerHandler extends BaseAudioHandler
     });
   }
 
+  // Progress updates are sent strictly one at a time, in submission order.
+  // Concurrent requests can be processed by the server out of order, letting
+  // an in-flight update for the previous track overwrite the currentItemId a
+  // skip just set.
+  Future<void> _progressChain = Future.value();
+
+  Future<Fragment$fragmentPlayQueue?> _sendProgressUpdate(
+    GraphQLClient client,
+    String playQueueId,
+    String playQueueItemId,
+    Duration position,
+  ) {
+    final send = _progressChain.then((_) => _playQueueService.updateProgress(
+        client, playQueueId, playQueueItemId, position));
+    _progressChain = send.then((_) {}, onError: (_) {});
+    return send;
+  }
+
+  /// Replaces [playQueue] with a server response while keeping the locally
+  /// tracked current item. The client is authoritative for what is playing —
+  /// a response can still carry a stale currentItemId (e.g. a progress update
+  /// for the previous track processed server-side around a skip).
+  void _applyServerPlayQueue(Fragment$fragmentPlayQueue response) {
+    final localCurrentItemId = playQueue?.currentItemId;
+    playQueue = localCurrentItemId != null
+        ? response.copyWith(currentItemId: localCurrentItemId)
+        : response;
+  }
+
   /// Syncs the playback position of the current item to the server. Throttled
   /// to ~10s of position delta unless [force] is set (pause/stop flush the
   /// final position so resume points don't lag behind).
@@ -1076,11 +1127,11 @@ class MediaPlayerHandler extends BaseAudioHandler
 
     final generation = _syncGeneration;
     final playQueueObject =
-        await _playQueueService.updateProgress(client, pq.id, itemId, pos);
+        await _sendProgressUpdate(client, pq.id, itemId, pos);
     // Drop the response if the queue or current item changed while this
     // request was in flight — a slow response must not revert a skip.
     if (playQueueObject != null && generation == _syncGeneration) {
-      playQueue = playQueueObject;
+      _applyServerPlayQueue(playQueueObject);
     }
   }
 
