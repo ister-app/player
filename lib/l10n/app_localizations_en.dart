@@ -210,4 +210,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appearsIn => 'Appears in';
+
+  @override
+  String get search => 'Search';
+
+  @override
+  String get noResults => 'No results';
+
+  @override
+  String get movie => 'Movie';
+
+  @override
+  String get show => 'Show';
+
+  @override
+  String get artist => 'Artist';
+
+  @override
+  String get addToQueue => 'Add to queue';
+
+  @override
+  String get removeFromQueue => 'Remove from queue';
+
+  @override
+  String get shufflePlay => 'Shuffle play';
 }

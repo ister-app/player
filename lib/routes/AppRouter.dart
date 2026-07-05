@@ -82,6 +82,7 @@ class AppRouter extends RootStackRouter {
               AutoRoute(path: 'episodes/:episodeId', page: ShowEpisodeRoute.page),
             ]
           ),
+          AutoRoute(path: 'search', page: SearchRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'movies/:movieId', page: MovieRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'albums/:albumId', page: AlbumRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'artists/:artistId', page: ArtistRoute.page, guards: [_deepLinkGuard]),

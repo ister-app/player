@@ -14,15 +14,19 @@ type Query {
     albums(page: Int, size: Int, sorting: SortingEnum, sortingOrder: SortingOrder, artistId: ID, libraryId: ID): AlbumPage
     albumById(id: ID): Album
     trackById(id: ID): Track
+    search(term: String!, size: Int, libraryId: ID): [SearchResult!]!
 }
+
+union SearchResult = Movie | Show | Episode | Person | Album | Track
 
 type Mutation {
     scanLibrary: Boolean!
     analyzeLibrary: Boolean!
-    createPlayQueueForShow(showId: ID!, episodeId: ID!): PlayQueue!
-    createPlayQueueForMovie(movieId: ID!): PlayQueue!
-    createPlayQueueForAlbum(albumId: ID!, trackId: ID!): PlayQueue!
+    createPlayQueue(input: CreatePlayQueueInput!): PlayQueue!
     updatePlayQueue(id: ID!, progressInMilliseconds: Int!, playQueueItemId: ID!): PlayQueue
+    movePlayQueueItem(playQueueId: ID!, playQueueItemId: ID!, afterPlayQueueItemId: ID): PlayQueue!
+    removePlayQueueItem(playQueueId: ID!, playQueueItemId: ID!): PlayQueue!
+    addPlayQueueItem(playQueueId: ID!, mediaType: MediaType!, mediaId: ID!, afterPlayQueueItemId: ID): PlayQueue!
     createStreamToken: StreamToken!
     analyzeDataForEpisode(episodeId: ID!): Boolean!
     analyzeDataForMovie(movieId: ID!): Boolean!
@@ -31,6 +35,7 @@ type Mutation {
     analyzeDataForPerson(personId: ID!): Boolean!
     analyzeDataForAlbum(albumId: ID!): Boolean!
     analyzeDataForTrack(trackId: ID!): Boolean!
+    reindexSearch: Boolean!
 }
 
 enum SortingEnum {
@@ -52,6 +57,23 @@ enum LibraryType {
 enum MediaType {
     MOVIE
     EPISODE
+    TRACK
+}
+
+enum PlayQueueSourceType {
+    MOVIE
+    SHOW
+    ALBUM
+    LIBRARY
+}
+
+input CreatePlayQueueInput {
+    sourceType: PlayQueueSourceType!
+    sourceId: ID!
+    "Episode or track to start at; ignored for MOVIE sources."
+    startId: ID
+    "Play the source in a stable random order; defaults to false, required for LIBRARY sources."
+    shuffle: Boolean
 }
 
 enum DirectoryType {
@@ -157,15 +179,18 @@ type Movie {
 type PlayQueue {
     id: ID!
     currentItemId: String
-    currentItemEpisode: Episode
-    currentItemMovie: Movie
-    currentItemTrack: Track
+    currentItem: PlayQueueItem
+    shuffle: Boolean!
+    sourceType: PlayQueueSourceType
+    "True when the source has no more items to append; the visible queue is the whole queue."
+    sourceExhausted: Boolean!
     playQueueItems: [PlayQueueItem!]
 }
 
 type PlayQueueItem {
     id: ID!
-    position: Int!
+    "Opaque sort key; may be fractional after reordering."
+    position: Float!
     type: MediaType!
     movie: Movie
     episode: Episode

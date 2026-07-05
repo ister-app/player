@@ -1,8 +1,12 @@
 fragment fragmentPlayQueue on PlayQueue {
     id
     currentItemId
+    shuffle
+    sourceType
+    sourceExhausted
     playQueueItems {
         id
+        position
         episode {
             ...fragmentEpisode
         }

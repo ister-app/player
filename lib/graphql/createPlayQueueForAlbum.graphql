@@ -1,5 +1,0 @@
-mutation createPlayQueueForAlbum($albumId: ID!, $trackId: ID!) {
-    createPlayQueueForAlbum(albumId: $albumId, trackId: $trackId) {
-        ...fragmentPlayQueue
-    }
-}

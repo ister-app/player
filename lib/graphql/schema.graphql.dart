@@ -1,3 +1,180 @@
+class Input$CreatePlayQueueInput {
+  factory Input$CreatePlayQueueInput({
+    required Enum$PlayQueueSourceType sourceType,
+    required String sourceId,
+    String? startId,
+    bool? shuffle,
+  }) => Input$CreatePlayQueueInput._({
+    r'sourceType': sourceType,
+    r'sourceId': sourceId,
+    if (startId != null) r'startId': startId,
+    if (shuffle != null) r'shuffle': shuffle,
+  });
+
+  Input$CreatePlayQueueInput._(this._$data);
+
+  factory Input$CreatePlayQueueInput.fromJson(Map<String, dynamic> data) {
+    final result$data = <String, dynamic>{};
+    final l$sourceType = data['sourceType'];
+    result$data['sourceType'] = fromJson$Enum$PlayQueueSourceType(
+      (l$sourceType as String),
+    );
+    final l$sourceId = data['sourceId'];
+    result$data['sourceId'] = (l$sourceId as String);
+    if (data.containsKey('startId')) {
+      final l$startId = data['startId'];
+      result$data['startId'] = (l$startId as String?);
+    }
+    if (data.containsKey('shuffle')) {
+      final l$shuffle = data['shuffle'];
+      result$data['shuffle'] = (l$shuffle as bool?);
+    }
+    return Input$CreatePlayQueueInput._(result$data);
+  }
+
+  Map<String, dynamic> _$data;
+
+  Enum$PlayQueueSourceType get sourceType =>
+      (_$data['sourceType'] as Enum$PlayQueueSourceType);
+
+  String get sourceId => (_$data['sourceId'] as String);
+
+  String? get startId => (_$data['startId'] as String?);
+
+  bool? get shuffle => (_$data['shuffle'] as bool?);
+
+  Map<String, dynamic> toJson() {
+    final result$data = <String, dynamic>{};
+    final l$sourceType = sourceType;
+    result$data['sourceType'] = toJson$Enum$PlayQueueSourceType(l$sourceType);
+    final l$sourceId = sourceId;
+    result$data['sourceId'] = l$sourceId;
+    if (_$data.containsKey('startId')) {
+      final l$startId = startId;
+      result$data['startId'] = l$startId;
+    }
+    if (_$data.containsKey('shuffle')) {
+      final l$shuffle = shuffle;
+      result$data['shuffle'] = l$shuffle;
+    }
+    return result$data;
+  }
+
+  CopyWith$Input$CreatePlayQueueInput<Input$CreatePlayQueueInput>
+  get copyWith => CopyWith$Input$CreatePlayQueueInput(this, (i) => i);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Input$CreatePlayQueueInput ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$sourceType = sourceType;
+    final lOther$sourceType = other.sourceType;
+    if (l$sourceType != lOther$sourceType) {
+      return false;
+    }
+    final l$sourceId = sourceId;
+    final lOther$sourceId = other.sourceId;
+    if (l$sourceId != lOther$sourceId) {
+      return false;
+    }
+    final l$startId = startId;
+    final lOther$startId = other.startId;
+    if (_$data.containsKey('startId') != other._$data.containsKey('startId')) {
+      return false;
+    }
+    if (l$startId != lOther$startId) {
+      return false;
+    }
+    final l$shuffle = shuffle;
+    final lOther$shuffle = other.shuffle;
+    if (_$data.containsKey('shuffle') != other._$data.containsKey('shuffle')) {
+      return false;
+    }
+    if (l$shuffle != lOther$shuffle) {
+      return false;
+    }
+    return true;
+  }
+
+  @override
+  int get hashCode {
+    final l$sourceType = sourceType;
+    final l$sourceId = sourceId;
+    final l$startId = startId;
+    final l$shuffle = shuffle;
+    return Object.hashAll([
+      l$sourceType,
+      l$sourceId,
+      _$data.containsKey('startId') ? l$startId : const {},
+      _$data.containsKey('shuffle') ? l$shuffle : const {},
+    ]);
+  }
+}
+
+abstract class CopyWith$Input$CreatePlayQueueInput<TRes> {
+  factory CopyWith$Input$CreatePlayQueueInput(
+    Input$CreatePlayQueueInput instance,
+    TRes Function(Input$CreatePlayQueueInput) then,
+  ) = _CopyWithImpl$Input$CreatePlayQueueInput;
+
+  factory CopyWith$Input$CreatePlayQueueInput.stub(TRes res) =
+      _CopyWithStubImpl$Input$CreatePlayQueueInput;
+
+  TRes call({
+    Enum$PlayQueueSourceType? sourceType,
+    String? sourceId,
+    String? startId,
+    bool? shuffle,
+  });
+}
+
+class _CopyWithImpl$Input$CreatePlayQueueInput<TRes>
+    implements CopyWith$Input$CreatePlayQueueInput<TRes> {
+  _CopyWithImpl$Input$CreatePlayQueueInput(this._instance, this._then);
+
+  final Input$CreatePlayQueueInput _instance;
+
+  final TRes Function(Input$CreatePlayQueueInput) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? sourceType = _undefined,
+    Object? sourceId = _undefined,
+    Object? startId = _undefined,
+    Object? shuffle = _undefined,
+  }) => _then(
+    Input$CreatePlayQueueInput._({
+      ..._instance._$data,
+      if (sourceType != _undefined && sourceType != null)
+        'sourceType': (sourceType as Enum$PlayQueueSourceType),
+      if (sourceId != _undefined && sourceId != null)
+        'sourceId': (sourceId as String),
+      if (startId != _undefined) 'startId': (startId as String?),
+      if (shuffle != _undefined) 'shuffle': (shuffle as bool?),
+    }),
+  );
+}
+
+class _CopyWithStubImpl$Input$CreatePlayQueueInput<TRes>
+    implements CopyWith$Input$CreatePlayQueueInput<TRes> {
+  _CopyWithStubImpl$Input$CreatePlayQueueInput(this._res);
+
+  TRes _res;
+
+  call({
+    Enum$PlayQueueSourceType? sourceType,
+    String? sourceId,
+    String? startId,
+    bool? shuffle,
+  }) => _res;
+}
+
 enum Enum$SortingEnum {
   DATE_CREATED,
   NAME,
@@ -105,6 +282,7 @@ Enum$LibraryType fromJson$Enum$LibraryType(String value) {
 enum Enum$MediaType {
   MOVIE,
   EPISODE,
+  TRACK,
   $unknown;
 
   factory Enum$MediaType.fromJson(String value) =>
@@ -119,6 +297,8 @@ String toJson$Enum$MediaType(Enum$MediaType e) {
       return r'MOVIE';
     case Enum$MediaType.EPISODE:
       return r'EPISODE';
+    case Enum$MediaType.TRACK:
+      return r'TRACK';
     case Enum$MediaType.$unknown:
       return r'$unknown';
   }
@@ -130,8 +310,53 @@ Enum$MediaType fromJson$Enum$MediaType(String value) {
       return Enum$MediaType.MOVIE;
     case r'EPISODE':
       return Enum$MediaType.EPISODE;
+    case r'TRACK':
+      return Enum$MediaType.TRACK;
     default:
       return Enum$MediaType.$unknown;
+  }
+}
+
+enum Enum$PlayQueueSourceType {
+  MOVIE,
+  SHOW,
+  ALBUM,
+  LIBRARY,
+  $unknown;
+
+  factory Enum$PlayQueueSourceType.fromJson(String value) =>
+      fromJson$Enum$PlayQueueSourceType(value);
+
+  String toJson() => toJson$Enum$PlayQueueSourceType(this);
+}
+
+String toJson$Enum$PlayQueueSourceType(Enum$PlayQueueSourceType e) {
+  switch (e) {
+    case Enum$PlayQueueSourceType.MOVIE:
+      return r'MOVIE';
+    case Enum$PlayQueueSourceType.SHOW:
+      return r'SHOW';
+    case Enum$PlayQueueSourceType.ALBUM:
+      return r'ALBUM';
+    case Enum$PlayQueueSourceType.LIBRARY:
+      return r'LIBRARY';
+    case Enum$PlayQueueSourceType.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$PlayQueueSourceType fromJson$Enum$PlayQueueSourceType(String value) {
+  switch (value) {
+    case r'MOVIE':
+      return Enum$PlayQueueSourceType.MOVIE;
+    case r'SHOW':
+      return Enum$PlayQueueSourceType.SHOW;
+    case r'ALBUM':
+      return Enum$PlayQueueSourceType.ALBUM;
+    case r'LIBRARY':
+      return Enum$PlayQueueSourceType.LIBRARY;
+    default:
+      return Enum$PlayQueueSourceType.$unknown;
   }
 }
 
@@ -382,4 +607,6 @@ Enum$__DirectiveLocation fromJson$Enum$__DirectiveLocation(String value) {
   }
 }
 
-const possibleTypesMap = <String, Set<String>>{};
+const possibleTypesMap = <String, Set<String>>{
+  'SearchResult': {'Movie', 'Show', 'Episode', 'Person', 'Album', 'Track'},
+};

@@ -1,5 +1,0 @@
-mutation createPlayQueueForShow($id: ID!, $episodeId: ID!) {
-    createPlayQueueForShow(showId: $id, episodeId: $episodeId) {
-        ...fragmentPlayQueue
-    }
-}

@@ -5,11 +5,15 @@ import 'fragmentMediafiles.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
 import 'fragmentMovie.graphql.dart';
 import 'package:gql/ast.dart';
+import 'schema.graphql.dart';
 
 class Fragment$fragmentPlayQueue {
   Fragment$fragmentPlayQueue({
     required this.id,
     this.currentItemId,
+    required this.shuffle,
+    this.sourceType,
+    required this.sourceExhausted,
     this.playQueueItems,
     this.$__typename = 'PlayQueue',
   });
@@ -17,11 +21,19 @@ class Fragment$fragmentPlayQueue {
   factory Fragment$fragmentPlayQueue.fromJson(Map<String, dynamic> json) {
     final l$id = json['id'];
     final l$currentItemId = json['currentItemId'];
+    final l$shuffle = json['shuffle'];
+    final l$sourceType = json['sourceType'];
+    final l$sourceExhausted = json['sourceExhausted'];
     final l$playQueueItems = json['playQueueItems'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentPlayQueue(
       id: (l$id as String),
       currentItemId: (l$currentItemId as String?),
+      shuffle: (l$shuffle as bool),
+      sourceType: l$sourceType == null
+          ? null
+          : fromJson$Enum$PlayQueueSourceType((l$sourceType as String)),
+      sourceExhausted: (l$sourceExhausted as bool),
       playQueueItems: (l$playQueueItems as List<dynamic>?)
           ?.map(
             (e) => Fragment$fragmentPlayQueue$playQueueItems.fromJson(
@@ -37,6 +49,12 @@ class Fragment$fragmentPlayQueue {
 
   final String? currentItemId;
 
+  final bool shuffle;
+
+  final Enum$PlayQueueSourceType? sourceType;
+
+  final bool sourceExhausted;
+
   final List<Fragment$fragmentPlayQueue$playQueueItems>? playQueueItems;
 
   final String $__typename;
@@ -47,6 +65,14 @@ class Fragment$fragmentPlayQueue {
     _resultData['id'] = l$id;
     final l$currentItemId = currentItemId;
     _resultData['currentItemId'] = l$currentItemId;
+    final l$shuffle = shuffle;
+    _resultData['shuffle'] = l$shuffle;
+    final l$sourceType = sourceType;
+    _resultData['sourceType'] = l$sourceType == null
+        ? null
+        : toJson$Enum$PlayQueueSourceType(l$sourceType);
+    final l$sourceExhausted = sourceExhausted;
+    _resultData['sourceExhausted'] = l$sourceExhausted;
     final l$playQueueItems = playQueueItems;
     _resultData['playQueueItems'] = l$playQueueItems
         ?.map((e) => e.toJson())
@@ -60,11 +86,17 @@ class Fragment$fragmentPlayQueue {
   int get hashCode {
     final l$id = id;
     final l$currentItemId = currentItemId;
+    final l$shuffle = shuffle;
+    final l$sourceType = sourceType;
+    final l$sourceExhausted = sourceExhausted;
     final l$playQueueItems = playQueueItems;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
       l$currentItemId,
+      l$shuffle,
+      l$sourceType,
+      l$sourceExhausted,
       l$playQueueItems == null
           ? null
           : Object.hashAll(l$playQueueItems.map((v) => v)),
@@ -89,6 +121,21 @@ class Fragment$fragmentPlayQueue {
     final l$currentItemId = currentItemId;
     final lOther$currentItemId = other.currentItemId;
     if (l$currentItemId != lOther$currentItemId) {
+      return false;
+    }
+    final l$shuffle = shuffle;
+    final lOther$shuffle = other.shuffle;
+    if (l$shuffle != lOther$shuffle) {
+      return false;
+    }
+    final l$sourceType = sourceType;
+    final lOther$sourceType = other.sourceType;
+    if (l$sourceType != lOther$sourceType) {
+      return false;
+    }
+    final l$sourceExhausted = sourceExhausted;
+    final lOther$sourceExhausted = other.sourceExhausted;
+    if (l$sourceExhausted != lOther$sourceExhausted) {
       return false;
     }
     final l$playQueueItems = playQueueItems;
@@ -134,6 +181,9 @@ abstract class CopyWith$Fragment$fragmentPlayQueue<TRes> {
   TRes call({
     String? id,
     String? currentItemId,
+    bool? shuffle,
+    Enum$PlayQueueSourceType? sourceType,
+    bool? sourceExhausted,
     List<Fragment$fragmentPlayQueue$playQueueItems>? playQueueItems,
     String? $__typename,
   });
@@ -162,6 +212,9 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue<TRes>
   TRes call({
     Object? id = _undefined,
     Object? currentItemId = _undefined,
+    Object? shuffle = _undefined,
+    Object? sourceType = _undefined,
+    Object? sourceExhausted = _undefined,
     Object? playQueueItems = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
@@ -170,6 +223,15 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue<TRes>
       currentItemId: currentItemId == _undefined
           ? _instance.currentItemId
           : (currentItemId as String?),
+      shuffle: shuffle == _undefined || shuffle == null
+          ? _instance.shuffle
+          : (shuffle as bool),
+      sourceType: sourceType == _undefined
+          ? _instance.sourceType
+          : (sourceType as Enum$PlayQueueSourceType?),
+      sourceExhausted: sourceExhausted == _undefined || sourceExhausted == null
+          ? _instance.sourceExhausted
+          : (sourceExhausted as bool),
       playQueueItems: playQueueItems == _undefined
           ? _instance.playQueueItems
           : (playQueueItems
@@ -207,6 +269,9 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue<TRes>
   call({
     String? id,
     String? currentItemId,
+    bool? shuffle,
+    Enum$PlayQueueSourceType? sourceType,
+    bool? sourceExhausted,
     List<Fragment$fragmentPlayQueue$playQueueItems>? playQueueItems,
     String? $__typename,
   }) => _res;
@@ -237,6 +302,27 @@ const fragmentDefinitionfragmentPlayQueue = FragmentDefinitionNode(
         selectionSet: null,
       ),
       FieldNode(
+        name: NameNode(value: 'shuffle'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'sourceType'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'sourceExhausted'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
         name: NameNode(value: 'playQueueItems'),
         alias: null,
         arguments: [],
@@ -245,6 +331,13 @@ const fragmentDefinitionfragmentPlayQueue = FragmentDefinitionNode(
           selections: [
             FieldNode(
               name: NameNode(value: 'id'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'position'),
               alias: null,
               arguments: [],
               directives: [],
@@ -490,6 +583,7 @@ const documentNodeFragmentfragmentPlayQueue = DocumentNode(
 class Fragment$fragmentPlayQueue$playQueueItems {
   Fragment$fragmentPlayQueue$playQueueItems({
     required this.id,
+    required this.position,
     this.episode,
     this.movie,
     this.track,
@@ -500,12 +594,14 @@ class Fragment$fragmentPlayQueue$playQueueItems {
     Map<String, dynamic> json,
   ) {
     final l$id = json['id'];
+    final l$position = json['position'];
     final l$episode = json['episode'];
     final l$movie = json['movie'];
     final l$track = json['track'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentPlayQueue$playQueueItems(
       id: (l$id as String),
+      position: (l$position as num).toDouble(),
       episode: l$episode == null
           ? null
           : Fragment$fragmentEpisode.fromJson(
@@ -525,6 +621,8 @@ class Fragment$fragmentPlayQueue$playQueueItems {
 
   final String id;
 
+  final double position;
+
   final Fragment$fragmentEpisode? episode;
 
   final Fragment$fragmentMovie? movie;
@@ -537,6 +635,8 @@ class Fragment$fragmentPlayQueue$playQueueItems {
     final _resultData = <String, dynamic>{};
     final l$id = id;
     _resultData['id'] = l$id;
+    final l$position = position;
+    _resultData['position'] = l$position;
     final l$episode = episode;
     _resultData['episode'] = l$episode?.toJson();
     final l$movie = movie;
@@ -551,11 +651,19 @@ class Fragment$fragmentPlayQueue$playQueueItems {
   @override
   int get hashCode {
     final l$id = id;
+    final l$position = position;
     final l$episode = episode;
     final l$movie = movie;
     final l$track = track;
     final l$$__typename = $__typename;
-    return Object.hashAll([l$id, l$episode, l$movie, l$track, l$$__typename]);
+    return Object.hashAll([
+      l$id,
+      l$position,
+      l$episode,
+      l$movie,
+      l$track,
+      l$$__typename,
+    ]);
   }
 
   @override
@@ -570,6 +678,11 @@ class Fragment$fragmentPlayQueue$playQueueItems {
     final l$id = id;
     final lOther$id = other.id;
     if (l$id != lOther$id) {
+      return false;
+    }
+    final l$position = position;
+    final lOther$position = other.position;
+    if (l$position != lOther$position) {
       return false;
     }
     final l$episode = episode;
@@ -616,6 +729,7 @@ abstract class CopyWith$Fragment$fragmentPlayQueue$playQueueItems<TRes> {
 
   TRes call({
     String? id,
+    double? position,
     Fragment$fragmentEpisode? episode,
     Fragment$fragmentMovie? movie,
     Fragment$fragmentPlayQueue$playQueueItems$track? track,
@@ -641,6 +755,7 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems<TRes>
 
   TRes call({
     Object? id = _undefined,
+    Object? position = _undefined,
     Object? episode = _undefined,
     Object? movie = _undefined,
     Object? track = _undefined,
@@ -648,6 +763,9 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems<TRes>
   }) => _then(
     Fragment$fragmentPlayQueue$playQueueItems(
       id: id == _undefined || id == null ? _instance.id : (id as String),
+      position: position == _undefined || position == null
+          ? _instance.position
+          : (position as double),
       episode: episode == _undefined
           ? _instance.episode
           : (episode as Fragment$fragmentEpisode?),
@@ -701,6 +819,7 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems<TRes>
 
   call({
     String? id,
+    double? position,
     Fragment$fragmentEpisode? episode,
     Fragment$fragmentMovie? movie,
     Fragment$fragmentPlayQueue$playQueueItems$track? track,

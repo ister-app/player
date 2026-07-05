@@ -1,0 +1,5 @@
+mutation movePlayQueueItem($playQueueId: ID!, $playQueueItemId: ID!, $afterPlayQueueItemId: ID) {
+    movePlayQueueItem(playQueueId: $playQueueId, playQueueItemId: $playQueueItemId, afterPlayQueueItemId: $afterPlayQueueItemId) {
+        ...fragmentPlayQueue
+    }
+}

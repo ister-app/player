@@ -21,8 +21,10 @@ import 'package:rxdart/rxdart.dart';
 
 import '../graphql/fragmentAlbum.graphql.dart';
 import '../graphql/fragmentEpisode.graphql.dart';
+import '../graphql/fragmentImages.graphql.dart';
 import '../graphql/fragmentMovie.graphql.dart';
 import '../graphql/fragmentPlayQueue.graphql.dart';
+import '../graphql/schema.graphql.dart';
 import 'ImageTypes.dart';
 import 'ImageUtil.dart';
 import 'MetadataUtil.dart';
@@ -425,6 +427,114 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
   }
 
+  /// Creates a shuffled queue for an entire [libraryId] and starts playback.
+  /// Works for any library type — the queue items carry their own media type.
+  Future<void> startLibraryShuffle(
+      GraphQLClient client, String srv, String libraryId) async {
+    final pq = await _playQueueService.createPlayQueue(
+      client,
+      sourceType: Enum$PlayQueueSourceType.LIBRARY,
+      sourceId: libraryId,
+      shuffle: true,
+    );
+    if (pq != null) await _startFromPlayQueue(client, pq, srv);
+  }
+
+  /// Creates a shuffled queue for [albumId] and starts playback.
+  Future<void> startAlbumShuffle(
+      GraphQLClient client, String srv, String albumId) async {
+    final pq = await _playQueueService.createPlayQueue(
+      client,
+      sourceType: Enum$PlayQueueSourceType.ALBUM,
+      sourceId: albumId,
+      shuffle: true,
+    );
+    if (pq != null) await _startFromPlayQueue(client, pq, srv);
+  }
+
+  /// Starts playback from an already-created [pq], opening its current item
+  /// (server-selected, or the first item). Used for shuffle/library sources
+  /// where the starting item isn't chosen by the caller.
+  Future<void> _startFromPlayQueue(
+      GraphQLClient client, Fragment$fragmentPlayQueue pq, String srv) async {
+    _intendsToPlay = true;
+    _loadRetries = 0;
+    _syncGeneration++;
+    serverName = srv;
+    graphQLClient = client;
+
+    final items = PlayQueueService.sortedItems(pq);
+    if (items.isEmpty) return;
+    final current = PlayQueueService.getCurrentPlayQueueItem(pq) ?? items.first;
+    playQueue =
+        pq.currentItemId == null ? pq.copyWith(currentItemId: current.id) : pq;
+
+    queueTitle.add("Now Playing");
+    queue.add(_buildQueueItems(playQueue!, srv));
+    currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
+
+    await _openQueueItem(current, srv);
+    updatePlaybackState();
+  }
+
+  /// Opens the media for [item], flipping the typed handler state (episode /
+  /// movie / track) to match. Mirrors the per-type open in [skipToQueueItem].
+  Future<void> _openQueueItem(
+      Fragment$fragmentPlayQueue$playQueueItems item, String srv) async {
+    final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay();
+    final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode();
+    final token = StreamTokenService.getToken(srv);
+
+    if (item.track != null) {
+      final t = item.track!;
+      currentTrackId = t.id;
+      episode = null;
+      movie = null;
+      album = null;
+      _currentMediaType = IsterMediaTypes.track;
+      final mf = t.mediaFile?.firstOrNull;
+      if (mf == null) return;
+      await _openMedia(
+        serverName: srv,
+        mediaUrl: ImageUtil.buildMediaFileUrl(mf,
+                token: token, direct: directPlay, transcode: transcode) ??
+            '',
+        mediaType: IsterMediaTypes.track,
+      );
+      _rememberLastPlayed(srv, t.album.id, t.id);
+    } else if (item.movie != null) {
+      movie = item.movie;
+      episode = null;
+      album = null;
+      currentTrackId = null;
+      _currentMediaType = IsterMediaTypes.movie;
+      final mf = item.movie?.mediaFile?.firstOrNull;
+      if (mf == null) return;
+      await _openMedia(
+        serverName: srv,
+        mediaUrl: ImageUtil.buildMediaFileUrl(mf,
+                token: token, direct: directPlay, transcode: transcode) ??
+            '',
+        mediaType: IsterMediaTypes.movie,
+      );
+    } else {
+      episode = item.episode;
+      movie = null;
+      album = null;
+      currentTrackId = null;
+      _currentMediaType = IsterMediaTypes.episode;
+      final mf = item.episode?.mediaFile?.firstOrNull;
+      if (mf == null) return;
+      await _openMedia(
+        serverName: srv,
+        mediaUrl: ImageUtil.buildMediaFileUrl(mf,
+                token: token, direct: directPlay, transcode: transcode) ??
+            '',
+        mediaType: IsterMediaTypes.episode,
+      );
+    }
+  }
+
   Future<void> _openMedia({
     required String serverName,
     required String mediaUrl,
@@ -734,6 +844,125 @@ class MediaPlayerHandler extends BaseAudioHandler
         PlayQueueService().playQueueChanged(playQueue!);
       }
     }
+  }
+
+  // ── Queue editing (add / remove / reorder) ───────────────────────────────
+
+  /// Appends [mediaId] (of [mediaType]) to the end of the active queue. Only
+  /// works when something is playing from the same [srv]; returns whether the
+  /// item was added. A play queue belongs to a single server, so items from a
+  /// different server can't be mixed in.
+  Future<bool> addToQueue(
+      String srv, Enum$MediaType mediaType, String mediaId) async {
+    final pq = playQueue;
+    final activeServer = serverName;
+    if (pq == null || activeServer == null || activeServer != srv) return false;
+
+    final items = PlayQueueService.sortedItems(pq);
+    final afterId = items.isNotEmpty ? items.last.id : null;
+    final client = ClientManager.getClientForUrl(srv).value;
+    final updated = await _playQueueService.addPlayQueueItem(
+      client,
+      pq.id,
+      mediaType,
+      mediaId,
+      afterPlayQueueItemId: afterId,
+    );
+    if (updated == null) return false;
+    _applyServerPlayQueue(updated);
+    _refreshQueueFromPlayQueue();
+    return true;
+  }
+
+  /// Removes [playQueueItemId] from the active queue. The currently playing
+  /// item can't be removed (skip first).
+  Future<void> removeFromQueue(String playQueueItemId) async {
+    final pq = playQueue;
+    final srv = serverName;
+    if (pq == null || srv == null) return;
+    if (pq.currentItemId == playQueueItemId) return;
+    final client = ClientManager.getClientForUrl(srv).value;
+    final updated =
+        await _playQueueService.removePlayQueueItem(client, pq.id, playQueueItemId);
+    if (updated == null) return;
+    _applyServerPlayQueue(updated);
+    _refreshQueueFromPlayQueue();
+  }
+
+  /// Moves [playQueueItemId] to sit right after [afterPlayQueueItemId]
+  /// (null moves it to the front).
+  Future<void> moveQueueItem(
+      String playQueueItemId, String? afterPlayQueueItemId) async {
+    final pq = playQueue;
+    final srv = serverName;
+    if (pq == null || srv == null) return;
+    final client = ClientManager.getClientForUrl(srv).value;
+    final updated = await _playQueueService.movePlayQueueItem(
+        client, pq.id, playQueueItemId, afterPlayQueueItemId);
+    if (updated == null) return;
+    _applyServerPlayQueue(updated);
+    _refreshQueueFromPlayQueue();
+  }
+
+  /// Rebuilds the audio_service [queue] from [playQueue] (sorted by position),
+  /// then republishes playback state and notifies queue subscribers.
+  void _refreshQueueFromPlayQueue() {
+    final pq = playQueue;
+    final srv = serverName;
+    if (pq == null || srv == null) return;
+    queue.add(_buildQueueItems(pq, srv));
+    currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
+    updatePlaybackState();
+    PlayQueueService().playQueueChanged(pq);
+  }
+
+  /// Builds the [MediaItem] list for [pq] in playback order, handling all three
+  /// media types the queue can contain.
+  List<MediaItem> _buildQueueItems(Fragment$fragmentPlayQueue pq, String srv) {
+    final token = StreamTokenService.getToken(srv);
+    Uri? artFor(Fragment$fragmentImages? img) => img == null
+        ? null
+        : Uri.tryParse(ImageUtil.buildUrl(img, token: token) ?? '');
+
+    return PlayQueueService.sortedItems(pq).map((e) {
+      if (e.track != null) {
+        final t = e.track!;
+        return MediaItem(
+          id: MediaItemId(srv, IsterMediaTypes.track, e.id).toString(),
+          title: MetadataUtil.getTitle(t.metadata) ?? '${t.number}',
+          artist: t.artist.name,
+          album: t.album.name,
+          duration: Duration(
+              milliseconds:
+                  t.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0),
+          artUri: artFor(ImageUtil.getImageByType(t.album.images, ImageTypes.cover)),
+        );
+      } else if (e.movie != null) {
+        final m = e.movie!;
+        return MediaItem(
+          id: MediaItemId(srv, IsterMediaTypes.movie, e.id).toString(),
+          title: m.name,
+          artist: "ister",
+          duration: Duration(
+              milliseconds:
+                  m.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0),
+          artUri: artFor(ImageUtil.getImageByType(m.images, ImageTypes.background)),
+        );
+      } else {
+        final ep = e.episode;
+        return MediaItem(
+          id: MediaItemId(srv, IsterMediaTypes.episode, e.id).toString(),
+          title: MetadataUtil.getTitle(ep?.metadata) ?? "unknown",
+          artist: "ister",
+          duration: Duration(
+              milliseconds:
+                  ep?.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0),
+          artUri: ep?.images == null
+              ? null
+              : artFor(ImageUtil.getImageByType(ep!.images, ImageTypes.background)),
+        );
+      }
+    }).toList();
   }
 
   final BehaviorSubject<List<MediaItem>> _recentSubject =
@@ -1131,7 +1360,16 @@ class MediaPlayerHandler extends BaseAudioHandler
     // Drop the response if the queue or current item changed while this
     // request was in flight — a slow response must not revert a skip.
     if (playQueueObject != null && generation == _syncGeneration) {
+      final before = playQueue?.playQueueItems?.length ?? 0;
       _applyServerPlayQueue(playQueueObject);
+      final after = playQueue?.playQueueItems?.length ?? 0;
+      // Sources with sourceExhausted == false grow server-side as playback
+      // advances; rebuild the visible queue when new items are appended.
+      if (after != before && serverName != null) {
+        queue.add(_buildQueueItems(playQueue!, serverName!));
+        updatePlaybackState();
+        PlayQueueService().playQueueChanged(playQueue!);
+      }
     }
   }
 

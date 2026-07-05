@@ -1,0 +1,5 @@
+mutation addPlayQueueItem($playQueueId: ID!, $mediaType: MediaType!, $mediaId: ID!, $afterPlayQueueItemId: ID) {
+    addPlayQueueItem(playQueueId: $playQueueId, mediaType: $mediaType, mediaId: $mediaId, afterPlayQueueItemId: $afterPlayQueueItemId) {
+        ...fragmentPlayQueue
+    }
+}

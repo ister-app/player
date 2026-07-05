@@ -1,0 +1,5 @@
+mutation removePlayQueueItem($playQueueId: ID!, $playQueueItemId: ID!) {
+    removePlayQueueItem(playQueueId: $playQueueId, playQueueItemId: $playQueueItemId) {
+        ...fragmentPlayQueue
+    }
+}

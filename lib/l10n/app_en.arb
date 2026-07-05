@@ -237,5 +237,41 @@
   "appearsIn": "Appears in",
   "@appearsIn": {
     "description": "Section header on a person page listing the movies and shows they appear in"
+  },
+  "search": "Search",
+  "@search": {
+    "description": "Search field hint and page title"
+  },
+  "noResults": "No results",
+  "@noResults": {
+    "description": "Shown when a search returns nothing"
+  },
+  "movie": "Movie",
+  "@movie": {
+    "description": "Label for a movie search result"
+  },
+  "show": "Show",
+  "@show": {
+    "description": "Label for a show search result"
+  },
+  "artist": "Artist",
+  "@artist": {
+    "description": "Label for a person/artist search result"
+  },
+  "addToQueue": "Add to queue",
+  "@addToQueue": {
+    "description": "Context menu action to append an item to the play queue"
+  },
+  "removeFromQueue": "Remove from queue",
+  "@removeFromQueue": {
+    "description": "Action to remove an item from the play queue"
+  },
+  "shuffle": "Shuffle",
+  "@shuffle": {
+    "description": "Shuffle toggle / shuffle-play action"
+  },
+  "shufflePlay": "Shuffle play",
+  "@shufflePlay": {
+    "description": "Action to play an entire library in shuffled order"
   }
 }

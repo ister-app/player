@@ -60,5 +60,14 @@
   "noPreviousTracks": "Geen vorige nummers",
   "noNextTracks": "Geen volgende nummers",
   "cast": "Cast",
-  "appearsIn": "Verschijnt in"
+  "appearsIn": "Verschijnt in",
+  "search": "Zoeken",
+  "noResults": "Geen resultaten",
+  "movie": "Film",
+  "show": "Serie",
+  "artist": "Artiest",
+  "addToQueue": "Aan wachtrij toevoegen",
+  "removeFromQueue": "Uit wachtrij verwijderen",
+  "shuffle": "Shuffle",
+  "shufflePlay": "Shuffle afspelen"
 }

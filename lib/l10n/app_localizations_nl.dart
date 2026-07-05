@@ -176,7 +176,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get play => 'Afspelen';
 
   @override
-  String get shuffle => 'Willekeurig';
+  String get shuffle => 'Shuffle';
 
   @override
   String get songs => 'Nummers';
@@ -210,4 +210,28 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get appearsIn => 'Verschijnt in';
+
+  @override
+  String get search => 'Zoeken';
+
+  @override
+  String get noResults => 'Geen resultaten';
+
+  @override
+  String get movie => 'Film';
+
+  @override
+  String get show => 'Serie';
+
+  @override
+  String get artist => 'Artiest';
+
+  @override
+  String get addToQueue => 'Aan wachtrij toevoegen';
+
+  @override
+  String get removeFromQueue => 'Uit wachtrij verwijderen';
+
+  @override
+  String get shufflePlay => 'Shuffle afspelen';
 }

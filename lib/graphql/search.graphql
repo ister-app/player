@@ -1,0 +1,45 @@
+query search($term: String!, $size: Int, $libraryId: ID) {
+    search(term: $term, size: $size, libraryId: $libraryId) {
+        __typename
+        ... on Movie {
+            id
+            name
+            releaseYear
+            images { ...fragmentImages }
+        }
+        ... on Show {
+            id
+            name
+            releaseYear
+            images { ...fragmentImages }
+        }
+        ... on Episode {
+            id
+            number
+            show { id name }
+            season { id number }
+            images { ...fragmentImages }
+            metadata { ...fragmentMetadata }
+        }
+        ... on Person {
+            id
+            name
+            images { ...fragmentImages }
+        }
+        ... on Album {
+            id
+            name
+            releaseYear
+            artist { id name }
+            images { ...fragmentImages }
+        }
+        ... on Track {
+            id
+            number
+            discNumber
+            artist { id name }
+            album { id name images { ...fragmentImages } }
+            metadata { ...fragmentMetadata }
+        }
+    }
+}

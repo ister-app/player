@@ -6,6 +6,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:player/components/PlayPauseButton.dart';
+import 'package:player/dto/MediaItemId.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/DurationUtil.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
@@ -25,6 +26,10 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
   int _selectedTab = 1; // 0 = TERUG NAAR, 1 = HIERNA
   bool _isDismissing = false;
   bool _isDismissed = false;
+
+  /// Optimistic queue order held during a reorder so the list doesn't snap back
+  /// while the server move is in flight. Cleared once the move round-trips.
+  List<MediaItem>? _localQueue;
 
   @override
   void initState() {
@@ -169,22 +174,104 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
                     style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 14),
                   ),
                 )
-              : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (int i = 0; i < items.length; i++)
-                      _QueueItem(
-                        item: items[i],
-                        onTap: () => MediaPlayerHandler.instance.skipToQueueItem(
-                          _selectedTab == 0 ? currentIndex - 1 - i : currentIndex + 1 + i,
-                        ),
-                      ),
-                  ],
-                ),
+              : _selectedTab == 1
+                  ? _buildUpNextList(items, currentIndex)
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (int i = 0; i < items.length; i++)
+                          _dismissible(
+                            items[i],
+                            _QueueItem(
+                              item: items[i],
+                              onTap: () => MediaPlayerHandler.instance
+                                  .skipToQueueItem(currentIndex - 1 - i),
+                            ),
+                          ),
+                      ],
+                    ),
         ),
       ),
       const SliverToBoxAdapter(child: SizedBox(height: 32)),
     ];
+  }
+
+  /// Reorderable "up next" list with swipe-to-remove and a drag handle.
+  Widget _buildUpNextList(List<MediaItem> upNext, int currentIndex) {
+    return ReorderableListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      buildDefaultDragHandles: false,
+      itemCount: upNext.length,
+      onReorder: (oldIndex, newIndex) =>
+          _onReorder(upNext, currentIndex, oldIndex, newIndex),
+      itemBuilder: (context, i) => _dismissible(
+        upNext[i],
+        _QueueItem(
+          key: ValueKey('content_${upNext[i].id}'),
+          item: upNext[i],
+          onTap: () =>
+              MediaPlayerHandler.instance.skipToQueueItem(currentIndex + 1 + i),
+          trailing: ReorderableDragStartListener(
+            index: i,
+            child: const Padding(
+              padding: EdgeInsets.only(left: 8),
+              child: Icon(Icons.drag_handle, color: Colors.white38),
+            ),
+          ),
+        ),
+      ),
+      proxyDecorator: (child, index, animation) =>
+          Material(color: Colors.transparent, child: child),
+    );
+  }
+
+  Widget _dismissible(MediaItem item, Widget child) {
+    return Dismissible(
+      key: ValueKey(item.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        color: Colors.red.withValues(alpha: 0.7),
+        padding: const EdgeInsets.only(right: 24),
+        child: const Icon(Icons.delete, color: Colors.white),
+      ),
+      onDismissed: (_) => _removeFromQueue(item),
+      child: child,
+    );
+  }
+
+  Future<void> _onReorder(List<MediaItem> upNext, int currentIndex,
+      int oldIndex, int newIndex) async {
+    if (newIndex > oldIndex) newIndex -= 1;
+    if (newIndex == oldIndex) return;
+    final handler = MediaPlayerHandler.instance;
+
+    final reordered = List<MediaItem>.of(upNext);
+    final moved = reordered.removeAt(oldIndex);
+    reordered.insert(newIndex, moved);
+
+    final full = _localQueue ?? handler.queue.value;
+    final head =
+        currentIndex >= 0 ? full.sublist(0, currentIndex + 1) : <MediaItem>[];
+    setState(() => _localQueue = [...head, ...reordered]);
+
+    final movedId = MediaItemId.byStringId(moved.id).id;
+    final afterId = newIndex == 0
+        ? handler.playQueue?.currentItemId
+        : MediaItemId.byStringId(reordered[newIndex - 1].id).id;
+    await handler.moveQueueItem(movedId, afterId);
+    if (mounted) setState(() => _localQueue = null);
+  }
+
+  Future<void> _removeFromQueue(MediaItem item) async {
+    final handler = MediaPlayerHandler.instance;
+    final id = MediaItemId.byStringId(item.id).id;
+    final full = List<MediaItem>.of(_localQueue ?? handler.queue.value)
+      ..removeWhere((e) => e.id == item.id);
+    setState(() => _localQueue = full);
+    await handler.removeFromQueue(id);
+    if (mounted) setState(() => _localQueue = null);
   }
 
   /// Splits the full queue around the currently playing index into the
@@ -295,7 +382,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
           stream: MediaPlayerHandler.instance.playbackState,
           initialData: MediaPlayerHandler.instance.playbackState.valueOrNull,
           builder: (context, stateSnapshot) {
-            final allItems = queueSnapshot.data ?? [];
+            final allItems = _localQueue ?? queueSnapshot.data ?? [];
             final currentIndex = stateSnapshot.data?.queueIndex ?? -1;
             final (:previous, :upNext) = _sliceQueue(allItems, currentIndex);
             final hasQueue = previous.isNotEmpty || upNext.isNotEmpty;
@@ -366,7 +453,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
           stream: MediaPlayerHandler.instance.playbackState,
           initialData: MediaPlayerHandler.instance.playbackState.valueOrNull,
           builder: (context, stateSnapshot) {
-            final allItems = queueSnapshot.data ?? [];
+            final allItems = _localQueue ?? queueSnapshot.data ?? [];
             final currentIndex = stateSnapshot.data?.queueIndex ?? -1;
             final (:previous, :upNext) = _sliceQueue(allItems, currentIndex);
             final hasQueue = previous.isNotEmpty || upNext.isNotEmpty;
@@ -456,10 +543,11 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
 }
 
 class _QueueItem extends StatefulWidget {
-  const _QueueItem({required this.item, required this.onTap});
+  const _QueueItem({super.key, required this.item, required this.onTap, this.trailing});
 
   final MediaItem item;
   final VoidCallback onTap;
+  final Widget? trailing;
 
   @override
   State<_QueueItem> createState() => _QueueItemState();
@@ -529,6 +617,7 @@ class _QueueItemState extends State<_QueueItem> {
                   ],
                 ),
               ),
+              if (widget.trailing != null) widget.trailing!,
             ],
           ),
         ),

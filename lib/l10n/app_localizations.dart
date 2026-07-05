@@ -398,7 +398,7 @@ abstract class AppLocalizations {
   /// **'Play'**
   String get play;
 
-  /// Button label to start playback in shuffle mode
+  /// Shuffle toggle / shuffle-play action
   ///
   /// In en, this message translates to:
   /// **'Shuffle'**
@@ -469,6 +469,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Appears in'**
   String get appearsIn;
+
+  /// Search field hint and page title
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get search;
+
+  /// Shown when a search returns nothing
+  ///
+  /// In en, this message translates to:
+  /// **'No results'**
+  String get noResults;
+
+  /// Label for a movie search result
+  ///
+  /// In en, this message translates to:
+  /// **'Movie'**
+  String get movie;
+
+  /// Label for a show search result
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get show;
+
+  /// Label for a person/artist search result
+  ///
+  /// In en, this message translates to:
+  /// **'Artist'**
+  String get artist;
+
+  /// Context menu action to append an item to the play queue
+  ///
+  /// In en, this message translates to:
+  /// **'Add to queue'**
+  String get addToQueue;
+
+  /// Action to remove an item from the play queue
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from queue'**
+  String get removeFromQueue;
+
+  /// Action to play an entire library in shuffled order
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle play'**
+  String get shufflePlay;
 }
 
 class _AppLocalizationsDelegate

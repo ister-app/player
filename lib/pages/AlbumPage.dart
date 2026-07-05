@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -8,6 +6,7 @@ import 'package:player/graphql/analyzeDataForAlbum.graphql.dart';
 import 'package:player/graphql/analyzeDataForTrack.graphql.dart';
 import 'package:player/graphql/fragmentAlbum.graphql.dart';
 import 'package:player/graphql/fragmentTrack.graphql.dart';
+import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/utils/DurationUtil.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
@@ -18,8 +17,6 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/MusicDetailHero.dart';
 import '../l10n/app_localizations.dart';
-
-final _random = Random();
 
 @RoutePage()
 class AlbumPage extends StatefulWidget {
@@ -48,6 +45,16 @@ class _AlbumPageState extends State<AlbumPage> {
       trackId,
       widget.serverName,
     );
+  }
+
+  Future<void> _addTrackToQueue(BuildContext context, String trackId) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final loc = AppLocalizations.of(context)!;
+    final added = await MediaPlayerHandler.instance
+        .addToQueue(widget.serverName, Enum$MediaType.TRACK, trackId);
+    if (added) {
+      messenger.showSnackBar(SnackBar(content: Text(loc.addToQueue)));
+    }
   }
 
   @override
@@ -152,9 +159,13 @@ class _AlbumPageState extends State<AlbumPage> {
                       child: FilledButton.icon(
                         onPressed: album != null && tracks.isNotEmpty
                             ? () {
-                                final randomTrack =
-                                    tracks[_random.nextInt(tracks.length)];
-                                _playTrack(context, album, randomTrack.id);
+                                final client =
+                                    GraphQLProvider.of(context).value;
+                                MediaPlayerHandler.instance.startAlbumShuffle(
+                                  client,
+                                  widget.serverName,
+                                  widget.albumId,
+                                );
                               }
                             : null,
                         icon: const Icon(Icons.shuffle),
@@ -283,6 +294,13 @@ class _AlbumPageState extends State<AlbumPage> {
                     ),
                     trailing: MenuAnchor(
                       menuChildren: [
+                        MenuItemButton(
+                          onPressed: () => _addTrackToQueue(context, track.id),
+                          child: ListTile(
+                            leading: const Icon(Icons.playlist_add),
+                            title: Text(loc.addToQueue),
+                          ),
+                        ),
                         MenuItemButton(
                           onPressed: () async {
                             final client = GraphQLProvider.of(context).value;

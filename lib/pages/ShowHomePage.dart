@@ -4,6 +4,8 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/analyzeDataForLibrary.graphql.dart';
 import 'package:player/graphql/libraries.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
+import 'package:player/routes/AppRouter.gr.dart';
+import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../components/AlbumScroll.dart';
@@ -128,6 +130,25 @@ class _ShowHomePageState extends State<ShowHomePage> {
           appBar: AppBar(
             title: Text(AppLocalizations.of(context)!.library),
             actions: [
+              IconButton(
+                icon: const Icon(Icons.search),
+                onPressed: () => AutoRouter.of(context).push(
+                  SearchRoute(libraryId: _selectedLibraryId),
+                ),
+              ),
+              if (_selectedLibraryId != null)
+                IconButton(
+                  icon: const Icon(Icons.shuffle),
+                  tooltip: AppLocalizations.of(context)!.shufflePlay,
+                  onPressed: () {
+                    final client = GraphQLProvider.of(context).value;
+                    MediaPlayerHandler.instance.startLibraryShuffle(
+                      client,
+                      widget.serverName,
+                      _selectedLibraryId!,
+                    );
+                  },
+                ),
               if (libraries.isNotEmpty)
                 MenuAnchor(
                   menuChildren: libraries.map((lib) => MenuItemButton(
