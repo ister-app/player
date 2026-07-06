@@ -11,6 +11,7 @@ import 'package:player/utils/AppMessenger.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
+import 'package:player/utils/PlatformService.dart';
 
 import 'l10n/app_localizations.dart';
 
@@ -26,6 +27,8 @@ Future<void> main() async {
   ClientManager.instance;
   await ClientManager.ensureInitialized();
   final initialServer = ClientManager.instance.lastClientUsed;
+  // Detect Android TV up front so the UI can branch synchronously in build().
+  await PlatformService.ensureInitialized();
   // Necessary initialization for package:media_kit.
   MediaKit.ensureInitialized();
 

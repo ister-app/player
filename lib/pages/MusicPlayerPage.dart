@@ -6,6 +6,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:player/components/PlayPauseButton.dart';
+import 'package:player/components/TvFocusable.dart';
 import 'package:player/dto/MediaItemId.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/DurationUtil.dart';
@@ -108,7 +109,10 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
 
   Widget _buildTab(String label, int index) {
     final selected = _selectedTab == index;
-    return GestureDetector(
+    return TvFocusable(
+      onTap: () => setState(() => _selectedTab = index),
+      borderRadius: BorderRadius.circular(4),
+      child: GestureDetector(
       onTap: () => setState(() => _selectedTab = index),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -129,6 +133,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
             letterSpacing: 1.5,
           ),
         ),
+      ),
       ),
     );
   }
@@ -635,7 +640,10 @@ class _QueueItemState extends State<_QueueItem> {
   @override
   Widget build(BuildContext context) {
     final artUri = widget.item.artUri?.toString();
-    return MouseRegion(
+    return TvFocusable(
+      onTap: widget.onTap,
+      borderRadius: BorderRadius.circular(4),
+      child: MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       cursor: SystemMouseCursors.click,
@@ -685,6 +693,7 @@ class _QueueItemState extends State<_QueueItem> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

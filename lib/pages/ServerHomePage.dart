@@ -1,8 +1,4 @@
-import 'dart:io';
-
 import 'package:auto_route/auto_route.dart';
-import 'package:device_info_plus/device_info_plus.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:oidc/oidc.dart';
@@ -15,6 +11,7 @@ import '../components/MiniPlayer.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/LoggerService.dart';
 import '../utils/LoginManager.dart';
+import '../utils/PlatformService.dart';
 import '../utils/StreamTokenService.dart';
 import '../utils/TabNavigationNotifier.dart';
 
@@ -39,12 +36,6 @@ class _ServerHomePageState extends State<ServerHomePage> {
 
   static Future<void> startLogin(String serverUrl) async {
     await LoginManager.startLogin(serverUrl);
-  }
-
-  static Future<bool> _isAndroidTv() async {
-    if (kIsWeb || !Platform.isAndroid) return false;
-    final info = await DeviceInfoPlugin().androidInfo;
-    return info.systemFeatures.contains('android.software.leanback');
   }
 
   @override
@@ -218,7 +209,8 @@ class _ServerHomePageState extends State<ServerHomePage> {
                               if (_deviceAuthResponse == null)
                                 ElevatedButton.icon(
                                   onPressed: () async {
-                                    final isTV = await _isAndroidTv();
+                                    final isTV =
+                                        await PlatformService.isAndroidTv();
                                     if (isTV) {
                                       try {
                                         await LoginManager.startDeviceLogin(

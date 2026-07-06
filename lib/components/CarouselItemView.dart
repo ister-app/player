@@ -1,6 +1,7 @@
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
+import 'package:player/components/TvFocusable.dart';
 class CarouselItemView extends StatelessWidget {
   const CarouselItemView(
       {super.key,
@@ -13,7 +14,8 @@ class CarouselItemView extends StatelessWidget {
       this.onTap,
       this.onLongPress,
       this.onSecondaryTapDown,
-      this.placeholderIcon});
+      this.placeholderIcon,
+      this.autofocus = false});
 
   final String serverName;
   final String title;
@@ -29,6 +31,10 @@ class CarouselItemView extends StatelessWidget {
   /// cover art. When null the tile keeps its plain tinted background.
   final IconData? placeholderIcon;
 
+  /// Grabs D-pad/keyboard focus when first shown. Set on the first tile of a
+  /// landing screen so a TV remote has somewhere to start.
+  final bool autofocus;
+
   @override
   Widget build(BuildContext context) {
     final double width = MediaQuery.sizeOf(context).width;
@@ -40,7 +46,13 @@ class CarouselItemView extends StatelessWidget {
         : Container();
     return Padding(
         padding: EdgeInsets.all(5.0),
-        child: ClipRRect(
+        child: TvFocusable(
+          onTap: onTap,
+          onLongPress: onLongPress,
+          autofocus: autofocus,
+          scale: 1.06,
+          borderRadius: BorderRadius.circular(25.0),
+          child: ClipRRect(
             borderRadius: BorderRadius.circular(25.0),
             child: Stack(
               alignment: AlignmentDirectional.bottomStart,
@@ -111,11 +123,15 @@ class CarouselItemView extends StatelessWidget {
                 Material(
                     color: Colors.transparent,
                     child: InkWell(
+                        // Focus lives on the surrounding TvFocusable so there's
+                        // a single D-pad target; the InkWell only handles
+                        // pointer tap / long-press / secondary tap.
+                        canRequestFocus: false,
                         borderRadius: BorderRadius.circular(25.0),
                         onLongPress: onLongPress,
                         onSecondaryTapDown: onSecondaryTapDown,
                         onTap: onTap))
               ],
-            )));
+            ))));
   }
 }

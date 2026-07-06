@@ -3,6 +3,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:player/components/PlayPauseButton.dart';
+import 'package:player/components/TvFocusable.dart';
 import 'package:player/dto/IsterMediaItem.dart';
 import 'package:player/dto/MediaItemId.dart';
 import 'package:player/routes/AppRouter.gr.dart';
@@ -187,7 +188,12 @@ class _MiniPlayerState extends State<MiniPlayer> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Row(
                 children: [
-                  GestureDetector(
+                  TvFocusable(
+                    onTap: () => isVideo
+                        ? _openVideoPage(context)
+                        : _openAlbumPage(context),
+                    borderRadius: BorderRadius.circular(4),
+                    child: GestureDetector(
                     onTap: () => isVideo
                         ? _openVideoPage(context)
                         : _openAlbumPage(context),
@@ -208,8 +214,12 @@ class _MiniPlayerState extends State<MiniPlayer> {
                       ),
                     ),
                   ),
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
+                    child: TvFocusable(
+                    onTap: () =>
+                        isVideo ? _openVideoPage(context) : _openPlayerPage(context),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,6 +240,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                       ],
+                    ),
                     ),
                   ),
                   const PlayPauseButton(iconSize: 32),
