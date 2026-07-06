@@ -517,6 +517,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Shuffle play'**
   String get shufflePlay;
+
+  /// Shown when the user tries to play a track that has no media file
+  ///
+  /// In en, this message translates to:
+  /// **'This track can\'t be played yet — it hasn\'t been analysed'**
+  String get trackNotPlayable;
+
+  /// Toast shown when an unplayable track is auto-skipped in the queue
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped ‘{title}’ — not analysed yet'**
+  String skippedTrackNoFile(String title);
+
+  /// Toast shown when a track is auto-skipped because its stream failed to start (e.g. a server-side transcode that never delivers segments)
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped ‘{title}’ — could not be played'**
+  String skippedTrackPlaybackFailed(String title);
 }
 
 class _AppLocalizationsDelegate

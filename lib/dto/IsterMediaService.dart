@@ -42,6 +42,13 @@ class IsterMediaService {
   /// degrade (and transfers slow down) far before this.
   static const int maxItemsPerNode = 500;
 
+  /// How long to wait on one server while building a multi-server list. An
+  /// unreachable or not-logged-in server must not hang the whole picker: the
+  /// surrounding try/catch only catches *errors*, not a login that never
+  /// completes (getClient → waitForToken → OIDC init has no timeout of its
+  /// own), so we bound each server here and skip the ones that stall.
+  static const Duration perServerTimeout = Duration(seconds: 8);
+
   // androidx.media content-style hints: render children of a node as a grid
   // (2) instead of the default list (1).
   static const String contentStyleBrowsableHint =
@@ -100,27 +107,33 @@ class IsterMediaService {
   /// empty the whole picker.
   Future<List<IsterMediaItem>> getMusicLibraries() async {
     final servers = await WellKnownService.getServers();
-    final items = <IsterMediaItem>[];
-    for (final server in servers) {
+    final multiServer = servers.length > 1;
+    // Query every server concurrently and independently. A slow or unreachable
+    // server times out and is skipped instead of blocking the others, so a
+    // single dead server can no longer hang the "switch library" node forever.
+    final perServer = await Future.wait(servers.map((server) async {
       try {
-        final libraries = await getMusicLibrariesForServer(server);
-        final serverLabel =
-            servers.length > 1 ? WellKnownService.getCached(server)?.name ?? server : null;
-        for (final library in libraries) {
-          items.add(IsterMediaItem(
-            id: "library:${library.id}",
-            serverName: server,
-            isterMediaType: IsterMediaTypes.list,
-            title: serverLabel != null
-                ? '${library.name} ($serverLabel)'
-                : library.name,
-          ));
-        }
+        final libraries =
+            await getMusicLibrariesForServer(server).timeout(perServerTimeout);
+        final serverLabel = multiServer
+            ? WellKnownService.getCached(server)?.name ?? server
+            : null;
+        return libraries
+            .map((library) => IsterMediaItem(
+                  id: "library:${library.id}",
+                  serverName: server,
+                  isterMediaType: IsterMediaTypes.list,
+                  title: serverLabel != null
+                      ? '${library.name} ($serverLabel)'
+                      : library.name,
+                ))
+            .toList();
       } catch (e) {
         LoggerService().logger.w('getMusicLibraries: skipping $server: $e');
+        return <IsterMediaItem>[];
       }
-    }
-    return items;
+    }));
+    return perServer.expand((libraries) => libraries).toList();
   }
 
   Future<List<Query$libraries$libraries>> getMusicLibrariesForServer(

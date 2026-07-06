@@ -313,19 +313,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
             body: Stack(
               fit: StackFit.expand,
               children: [
-                if (artUri != null)
-                  Positioned(
-                    left: -40,
-                    top: -40,
-                    right: -40,
-                    bottom: -40,
-                    child: ImageFiltered(
-                      imageFilter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
-                      child: Image.network(artUri, fit: BoxFit.cover),
-                    ),
-                  )
-                else
-                  ColoredBox(color: Colors.grey[900]!),
+                _BlurredBackground(artUri: artUri),
                 const ColoredBox(color: Color(0xAA000000)),
                 SafeArea(
                   child: LayoutBuilder(
@@ -538,6 +526,82 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
           },
         );
       },
+    );
+  }
+}
+
+/// Blurred album-art backdrop that only swaps once the new artwork is fully
+/// loaded, cross-fading into place. While the next track's art is still
+/// loading (or briefly null mid-switch) the previous backdrop stays up, so the
+/// background never flashes to grey when skipping tracks.
+class _BlurredBackground extends StatefulWidget {
+  const _BlurredBackground({required this.artUri});
+
+  final String? artUri;
+
+  @override
+  State<_BlurredBackground> createState() => _BlurredBackgroundState();
+}
+
+class _BlurredBackgroundState extends State<_BlurredBackground> {
+  String? _shownUri; // uri currently painted as the backdrop
+  ImageProvider? _shown; // its provider, kept until the next one is ready
+  String? _loadingUri; // uri whose precache is in flight, to dedupe rebuilds
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _maybeLoad();
+  }
+
+  @override
+  void didUpdateWidget(covariant _BlurredBackground old) {
+    super.didUpdateWidget(old);
+    if (old.artUri != widget.artUri) _maybeLoad();
+  }
+
+  void _maybeLoad() {
+    final uri = widget.artUri;
+    // Keep the current backdrop if the incoming track has no art yet or its
+    // art is unchanged / already loading — avoids a mid-switch flash to grey.
+    if (uri == null || uri == _shownUri || uri == _loadingUri) return;
+    _loadingUri = uri;
+    final provider = NetworkImage(uri);
+    precacheImage(provider, context).then((_) {
+      // A newer switch may have superseded this load; only swap if still current.
+      if (mounted && widget.artUri == uri) {
+        setState(() {
+          _shownUri = uri;
+          _shown = provider;
+        });
+      }
+      if (_loadingUri == uri) _loadingUri = null;
+    }).catchError((_) {
+      // Keep the old backdrop on failure rather than clearing it.
+      if (_loadingUri == uri) _loadingUri = null;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 500),
+      child: _shown == null
+          ? ColoredBox(key: const ValueKey('empty'), color: Colors.grey[900]!)
+          : SizedBox.expand(
+              key: ValueKey(_shownUri),
+              child: ClipRect(
+                // Scale up slightly so the blur samples image pixels at the
+                // edges instead of bleeding transparency in.
+                child: Transform.scale(
+                  scale: 1.2,
+                  child: ImageFiltered(
+                    imageFilter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+                    child: Image(image: _shown!, fit: BoxFit.cover),
+                  ),
+                ),
+              ),
+            ),
     );
   }
 }

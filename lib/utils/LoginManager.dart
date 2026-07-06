@@ -80,7 +80,12 @@ class LoginManager {
         try {
           final info = await WellKnownService.fetch(serverUrl);
           if (info != null) {
-            await initIfNotExists(serverUrl, info.oidcUrl);
+            // OIDC discovery has no timeout of its own; against an unreachable
+            // server manager.init() can hang indefinitely, and the deadline
+            // below only binds between awaits. Bound the bootstrap so a dead
+            // server falls through to the deadline instead of hanging forever.
+            await initIfNotExists(serverUrl, info.oidcUrl)
+                .timeout(const Duration(seconds: 15));
           }
         } catch (e) {
           LoggerService()

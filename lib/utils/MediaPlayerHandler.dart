@@ -7,6 +7,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:player/dto/IsterMediaItem.dart';
 import 'package:player/dto/IsterMediaService.dart';
+import 'package:player/utils/AppMessenger.dart';
 import 'package:player/dto/MediaItemId.dart';
 import 'package:flutter/foundation.dart';
 import 'package:player/utils/AutoPreferences.dart';
@@ -174,6 +175,9 @@ class MediaPlayerHandler extends BaseAudioHandler
 
     if (shouldRefresh) {
       _syncGeneration++;
+      // Silence the previous item immediately so it doesn't keep playing
+      // during the getOrCreatePlayQueue round-trip below.
+      await _player.stop();
       final playQueueObject = await _playQueueService.getOrCreatePlayQueue(
         client,
         playQueueId,
@@ -274,6 +278,9 @@ class MediaPlayerHandler extends BaseAudioHandler
 
     if (shouldRefresh) {
       _syncGeneration++;
+      // Silence the previous item immediately so it doesn't keep playing
+      // during the getOrCreatePlayQueue round-trip below.
+      await _player.stop();
       final playQueueObject = await _playQueueService.getOrCreatePlayQueueForMovie(
         client,
         playQueueId,
@@ -348,6 +355,9 @@ class MediaPlayerHandler extends BaseAudioHandler
 
     if (shouldRefresh) {
       _syncGeneration++;
+      // Silence the previous item immediately so it doesn't keep playing
+      // during the getOrCreatePlayQueue round-trip below.
+      await _player.stop();
       final playQueueObject =
           await _playQueueService.getOrCreatePlayQueueForAlbum(
         client,
@@ -557,6 +567,10 @@ class MediaPlayerHandler extends BaseAudioHandler
     try {
       _audioPreferenceApplied = false;
       _subtitlePreferenceApplied = false;
+      // Silence the currently-playing stream right away so it doesn't keep
+      // playing while the new (HLS) stream loads — otherwise there's audible
+      // overlap until _player.open() finishes buffering the next item.
+      await _player.stop();
       await _player.open(media);
       // setVideoTrack throws UnsupportedError on web (media_kit); skipping it
       // there would otherwise abort _openMedia before mediaItem is published,
@@ -736,6 +750,26 @@ class MediaPlayerHandler extends BaseAudioHandler
         client, null, album, firstTrack.id, mediaItemId.serverName);
   }
 
+  /// Whether [item] has an (analyzed) media file for any of its media types —
+  /// the precondition for opening it in the player.
+  bool _itemHasMediaFile(Fragment$fragmentPlayQueue$playQueueItems item) =>
+      item.track?.mediaFile?.firstOrNull != null ||
+      item.movie?.mediaFile?.firstOrNull != null ||
+      item.episode?.mediaFile?.firstOrNull != null;
+
+  /// Index of the first queue item at or after [from] that has a playable media
+  /// file, or -1 when none remain. Used to skip over not-yet-analyzed items.
+  int _nextPlayableIndex(int from) {
+    final q = queue.value;
+    for (var i = from; i < q.length; i++) {
+      final id = MediaItemId.byStringId(q[i].id).id;
+      final item =
+          playQueue?.playQueueItems?.where((e) => e.id == id).firstOrNull;
+      if (item != null && _itemHasMediaFile(item)) return i;
+    }
+    return -1;
+  }
+
   @override
   Future<void> skipToQueueItem(int index) async {
     if (index < 0 || index >= queue.value.length) return;
@@ -755,12 +789,16 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (newEpisodeList != null && newEpisodeList.isNotEmpty) {
       final queueItem = newEpisodeList.first;
 
-      // An item without an (analyzed) media file cannot be opened — bail out
-      // before flipping any local state to it.
-      final hasMediaFile = queueItem.track?.mediaFile?.firstOrNull != null ||
-          queueItem.movie?.mediaFile?.firstOrNull != null ||
-          queueItem.episode?.mediaFile?.firstOrNull != null;
-      if (!hasMediaFile) return;
+      // An item without an (analyzed) media file cannot be opened. Instead of
+      // silently stalling (the previous item just keeps playing), tell the user
+      // and jump to the next playable item in the queue.
+      if (!_itemHasMediaFile(queueItem)) {
+        showAppSnackBar(IsterMediaService.loc
+            .skippedTrackNoFile(queue.value[index].title));
+        final nextPlayable = _nextPlayableIndex(index + 1);
+        if (nextPlayable != -1) await skipToQueueItem(nextPlayable);
+        return;
+      }
 
       // Make the tapped item current locally, before any player or network
       // work. The server update below is only a sync — the UI must not wait
@@ -1025,8 +1063,9 @@ class MediaPlayerHandler extends BaseAudioHandler
     final saved = await AutoPreferences.getDefaultLibrary();
     if (saved != null) {
       try {
-        final libraries =
-            await service.getMusicLibrariesForServer(saved.serverName);
+        final libraries = await service
+            .getMusicLibrariesForServer(saved.serverName)
+            .timeout(IsterMediaService.perServerTimeout);
         if (libraries.any((library) => library.id == saved.libraryId)) {
           return saved;
         }
@@ -1046,8 +1085,9 @@ class MediaPlayerHandler extends BaseAudioHandler
     var count = 0;
     for (final server in servers) {
       try {
-        for (final library
-            in await service.getMusicLibrariesForServer(server)) {
+        for (final library in await service
+            .getMusicLibrariesForServer(server)
+            .timeout(IsterMediaService.perServerTimeout)) {
           count++;
           onlyLibrary = AutoLibrary(serverName: server, libraryId: library.id);
         }
@@ -1398,6 +1438,9 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// the mpv reconnect options handle softer drops, this handles a full hang.
   void _maybeRecoverStalledLoad() {
     if (!_intendsToPlay) return;
+    // A skip is already in flight for a failed load — don't re-open the old
+    // (failing) stream in the window before the next item takes over.
+    if (_handlingFailedLoad) return;
     if (_player.state.playing) return;
     final openedAt = _mediaOpenedAt;
     if (openedAt == null) return;
@@ -1420,7 +1463,15 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
     final url = _currentMediaUrl;
     if (url == null || serverName == null) return;
-    if (_loadRetries >= 5) return;
+    // Re-opening the same stream never got it playing — the load has
+    // definitively failed (commonly a server-side transcode that emits a valid
+    // manifest but never delivers segments). Skip the item and tell the user
+    // instead of buffering forever.
+    if (_loadRetries >= 5) {
+      _loadRetries = 0;
+      unawaited(_skipFailedLoad());
+      return;
+    }
     _loadRetries++;
     LoggerService().logger.w(
         '[LOADSTALL] Stream not playing 12s+ after open — re-opening (retry $_loadRetries)');
@@ -1430,6 +1481,36 @@ class MediaPlayerHandler extends BaseAudioHandler
       startTimeInMilliseconds: _streamOpenPositionMs,
       mediaType: _currentMediaType,
     );
+  }
+
+  /// Called when a stream never started playing after the bounded re-opens in
+  /// [_maybeRecoverStalledLoad] — the load has failed for good. Skips to the
+  /// next playable queue item and tells the user why, or stops when nothing
+  /// playable remains. The item's media file exists (this isn't the
+  /// not-yet-analysed case), so [_nextPlayableIndex] simply advances past it.
+  Future<void> _skipFailedLoad() async {
+    if (_handlingFailedLoad) return;
+    _handlingFailedLoad = true;
+    try {
+      final index = playbackState.value.queueIndex;
+      final title = mediaItem.valueOrNull?.title ??
+          (index != null && index >= 0 && index < queue.value.length
+              ? queue.value[index].title
+              : '');
+      LoggerService()
+          .logger
+          .w('[LOADSTALL] Load failed after retries — skipping ‘$title’');
+      showAppSnackBar(IsterMediaService.loc.skippedTrackPlaybackFailed(title));
+      final nextPlayable =
+          index == null ? -1 : _nextPlayableIndex(index + 1);
+      if (nextPlayable != -1) {
+        await skipToQueueItem(nextPlayable);
+      } else {
+        await stop();
+      }
+    } finally {
+      _handlingFailedLoad = false;
+    }
   }
 
   void _maybeAutoAdvanceOnStall() {
@@ -1535,6 +1616,9 @@ class MediaPlayerHandler extends BaseAudioHandler
   Duration _lastObservedPosition = Duration.zero;
   DateTime _lastPositionAdvance = DateTime.now();
   DateTime? _lastAutoAdvance;
+  // Guards the skip-on-failed-load path so the watchdog doesn't re-open the
+  // failing stream while the skip to the next item is still in flight.
+  bool _handlingFailedLoad = false;
   // Whether playback is supposed to be running. Lets the load watchdog tell a
   // failed background load apart from a deliberate pause.
   bool _intendsToPlay = false;

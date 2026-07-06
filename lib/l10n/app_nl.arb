@@ -69,5 +69,8 @@
   "addToQueue": "Aan wachtrij toevoegen",
   "removeFromQueue": "Uit wachtrij verwijderen",
   "shuffle": "Shuffle",
-  "shufflePlay": "Shuffle afspelen"
+  "shufflePlay": "Shuffle afspelen",
+  "trackNotPlayable": "Dit nummer kan nog niet worden afgespeeld — het is niet geanalyseerd",
+  "skippedTrackNoFile": "‘{title}’ overgeslagen — nog niet geanalyseerd",
+  "skippedTrackPlaybackFailed": "‘{title}’ overgeslagen — kon niet worden afgespeeld"
 }

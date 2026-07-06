@@ -234,4 +234,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shufflePlay => 'Shuffle play';
+
+  @override
+  String get trackNotPlayable =>
+      'This track can\'t be played yet — it hasn\'t been analysed';
+
+  @override
+  String skippedTrackNoFile(String title) {
+    return 'Skipped ‘$title’ — not analysed yet';
+  }
+
+  @override
+  String skippedTrackPlaybackFailed(String title) {
+    return 'Skipped ‘$title’ — could not be played';
+  }
 }

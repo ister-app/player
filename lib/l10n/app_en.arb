@@ -273,5 +273,27 @@
   "shufflePlay": "Shuffle play",
   "@shufflePlay": {
     "description": "Action to play an entire library in shuffled order"
+  },
+  "trackNotPlayable": "This track can't be played yet — it hasn't been analysed",
+  "@trackNotPlayable": {
+    "description": "Shown when the user tries to play a track that has no media file"
+  },
+  "skippedTrackNoFile": "Skipped ‘{title}’ — not analysed yet",
+  "@skippedTrackNoFile": {
+    "description": "Toast shown when an unplayable track is auto-skipped in the queue",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "skippedTrackPlaybackFailed": "Skipped ‘{title}’ — could not be played",
+  "@skippedTrackPlaybackFailed": {
+    "description": "Toast shown when a track is auto-skipped because its stream failed to start (e.g. a server-side transcode that never delivers segments)",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -234,4 +234,18 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get shufflePlay => 'Shuffle afspelen';
+
+  @override
+  String get trackNotPlayable =>
+      'Dit nummer kan nog niet worden afgespeeld — het is niet geanalyseerd';
+
+  @override
+  String skippedTrackNoFile(String title) {
+    return '‘$title’ overgeslagen — nog niet geanalyseerd';
+  }
+
+  @override
+  String skippedTrackPlaybackFailed(String title) {
+    return '‘$title’ overgeslagen — kon niet worden afgespeeld';
+  }
 }

@@ -57,6 +57,10 @@ class _AlbumPageState extends State<AlbumPage> {
     }
   }
 
+  /// A track can only be played/queued once it has an analyzed media file.
+  static bool _trackHasFile(Fragment$fragmentTrack track) =>
+      track.mediaFile?.isNotEmpty == true;
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
@@ -143,8 +147,12 @@ class _AlbumPageState extends State<AlbumPage> {
                   children: [
                     Expanded(
                       child: FilledButton.icon(
-                        onPressed: album != null && tracks.isNotEmpty
-                            ? () => _playTrack(context, album, tracks.first.id)
+                        onPressed: album != null &&
+                                tracks.any(_trackHasFile)
+                            ? () => _playTrack(
+                                context,
+                                album,
+                                tracks.firstWhere(_trackHasFile).id)
                             : null,
                         icon: const Icon(Icons.play_arrow),
                         label: Text(loc.play),
@@ -253,13 +261,19 @@ class _AlbumPageState extends State<AlbumPage> {
                 itemCount: tracks.length,
                 itemBuilder: (context, index) {
                   final track = tracks[index];
+                  final hasFile = _trackHasFile(track);
                   final trackTitle =
                       MetadataUtil.getTitle(track.metadata) ?? '${track.number}';
                   final durationMs = track.mediaFile?.firstOrNull?.durationInMilliseconds;
                   final durationText = durationMs != null
                       ? DurationUtil.format(Duration(milliseconds: durationMs))
                       : null;
-                  return ListTile(
+                  // Not-yet-analyzed tracks have no playable file: mute them and
+                  // steer the user to "Analyze media" instead of a dead tap.
+                  final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
+                  return Opacity(
+                    opacity: hasFile ? 1.0 : 0.5,
+                    child: ListTile(
                     dense: true,
                     visualDensity: VisualDensity.compact,
                     leading: SizedBox(
@@ -268,7 +282,7 @@ class _AlbumPageState extends State<AlbumPage> {
                         '${track.number}',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: mutedColor,
                             ),
                       ),
                     ),
@@ -280,14 +294,21 @@ class _AlbumPageState extends State<AlbumPage> {
                         Text(
                           track.artist.name,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                color: mutedColor,
                               ),
                         ),
                         if (durationText != null)
                           Text(
                             durationText,
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  color: mutedColor,
+                                ),
+                          )
+                        else if (!hasFile)
+                          Text(
+                            loc.trackNotPlayable,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: mutedColor,
                                 ),
                           ),
                       ],
@@ -295,7 +316,9 @@ class _AlbumPageState extends State<AlbumPage> {
                     trailing: MenuAnchor(
                       menuChildren: [
                         MenuItemButton(
-                          onPressed: () => _addTrackToQueue(context, track.id),
+                          onPressed: hasFile
+                              ? () => _addTrackToQueue(context, track.id)
+                              : null,
                           child: ListTile(
                             leading: const Icon(Icons.playlist_add),
                             title: Text(loc.addToQueue),
@@ -326,8 +349,17 @@ class _AlbumPageState extends State<AlbumPage> {
                       },
                     ),
                     onTap: album != null
-                        ? () => _playTrack(context, album, track.id)
+                        ? () {
+                            if (!hasFile) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(loc.trackNotPlayable)),
+                              );
+                              return;
+                            }
+                            _playTrack(context, album, track.id);
+                          }
                         : null,
+                  ),
                   );
                 },
               ),

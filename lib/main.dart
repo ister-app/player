@@ -7,6 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:player/routes/AppRouter.dart';
+import 'package:player/utils/AppMessenger.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
@@ -86,6 +87,7 @@ class _MainState extends State<Main> {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Ister',
+      scaffoldMessengerKey: rootScaffoldMessengerKey,
       localizationsDelegates: [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
