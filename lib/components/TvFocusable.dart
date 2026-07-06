@@ -111,13 +111,29 @@ class _TvFocusableState extends State<TvFocusable> {
           duration: const Duration(milliseconds: 150),
           decoration: BoxDecoration(
             borderRadius: widget.borderRadius,
+            color: _focused
+                ? scheme.primary.withValues(alpha: 0.18)
+                : Colors.transparent,
+            // A soft glow so the focused item reads clearly from across a room.
+            boxShadow: _focused
+                ? <BoxShadow>[
+                    BoxShadow(
+                      color: scheme.primary.withValues(alpha: 0.6),
+                      blurRadius: 12,
+                      spreadRadius: 1,
+                    ),
+                  ]
+                : null,
+          ),
+          // Border goes in the foreground so it paints over edge-to-edge
+          // children (e.g. a poster image that fills the whole tile) instead of
+          // being hidden behind them.
+          foregroundDecoration: BoxDecoration(
+            borderRadius: widget.borderRadius,
             border: Border.all(
               color: _focused ? scheme.primary : Colors.transparent,
-              width: 2,
+              width: 3,
             ),
-            color: _focused
-                ? scheme.primary.withValues(alpha: 0.12)
-                : Colors.transparent,
           ),
           child: widget.child,
         ),

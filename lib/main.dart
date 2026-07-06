@@ -29,6 +29,14 @@ Future<void> main() async {
   final initialServer = ClientManager.instance.lastClientUsed;
   // Detect Android TV up front so the UI can branch synchronously in build().
   await PlatformService.ensureInitialized();
+  if (PlatformService.isAndroidTvSync) {
+    // Android defaults to "touch" focus-highlight mode and doesn't reliably
+    // flip to "traditional" for a D-pad remote, leaving focus rings invisible.
+    // Force traditional so every focusable (buttons, tiles, nav) shows where
+    // the selection is.
+    FocusManager.instance.highlightStrategy =
+        FocusHighlightStrategy.alwaysTraditional;
+  }
   // Necessary initialization for package:media_kit.
   MediaKit.ensureInitialized();
 
