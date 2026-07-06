@@ -129,6 +129,10 @@ class MediaPlayerHandler extends BaseAudioHandler
   // navigating from one video page straight to another.
   final ValueNotifier<int> videoPageOpen = ValueNotifier(0);
 
+  /// True while a video is showing fullscreen. Guards the auto-fullscreen
+  /// trigger in [IsterPlayer] against re-entering while already fullscreen.
+  bool videoFullscreen = false;
+
   Fragment$fragmentEpisode? episode;
   Fragment$fragmentMovie? movie;
   Fragment$fragmentAlbum? album;
