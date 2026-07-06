@@ -99,6 +99,16 @@ class _MainState extends State<Main> {
     return MaterialApp.router(
       title: 'Ister',
       scaffoldMessengerKey: rootScaffoldMessengerKey,
+      // On Android TV use directional navigation mode. Among other things it
+      // tells widgets like Slider to only bind left/right to adjustment and let
+      // up/down move focus out — so the progress bar no longer traps the D-pad.
+      builder: PlatformService.isAndroidTvSync
+          ? (context, child) => MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(navigationMode: NavigationMode.directional),
+                child: child ?? const SizedBox.shrink(),
+              )
+          : null,
       localizationsDelegates: [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
