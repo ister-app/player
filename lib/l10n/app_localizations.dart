@@ -470,6 +470,12 @@ abstract class AppLocalizations {
   /// **'Appears in'**
   String get appearsIn;
 
+  /// Number of episodes a person appears in, shown on the show tile in their filmography
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 episode} other{{count} episodes}}'**
+  String episodeCount(int count);
+
   /// Search field hint and page title
   ///
   /// In en, this message translates to:
@@ -499,6 +505,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Artist'**
   String get artist;
+
+  /// Type label (badge) for an episode search result
+  ///
+  /// In en, this message translates to:
+  /// **'Episode'**
+  String get typeEpisode;
+
+  /// Type label (badge) for a person search result
+  ///
+  /// In en, this message translates to:
+  /// **'Person'**
+  String get typePerson;
+
+  /// Type label (badge) for an album search result
+  ///
+  /// In en, this message translates to:
+  /// **'Album'**
+  String get typeAlbum;
+
+  /// Type label (badge) for a track search result
+  ///
+  /// In en, this message translates to:
+  /// **'Track'**
+  String get typeTrack;
+
+  /// Small hint on a search result when the query matched the description rather than the title
+  ///
+  /// In en, this message translates to:
+  /// **'In description'**
+  String get searchInDescription;
+
+  /// Toggle option to limit search to the current library
+  ///
+  /// In en, this message translates to:
+  /// **'This library'**
+  String get searchThisLibrary;
+
+  /// Toggle option to search across every library
+  ///
+  /// In en, this message translates to:
+  /// **'All libraries'**
+  String get searchAllLibraries;
 
   /// Context menu action to append an item to the play queue
   ///

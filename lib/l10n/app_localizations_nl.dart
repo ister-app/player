@@ -212,6 +212,17 @@ class AppLocalizationsNl extends AppLocalizations {
   String get appearsIn => 'Verschijnt in';
 
   @override
+  String episodeCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count afleveringen',
+      one: '1 aflevering',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get search => 'Zoeken';
 
   @override
@@ -225,6 +236,27 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get artist => 'Artiest';
+
+  @override
+  String get typeEpisode => 'Aflevering';
+
+  @override
+  String get typePerson => 'Persoon';
+
+  @override
+  String get typeAlbum => 'Album';
+
+  @override
+  String get typeTrack => 'Nummer';
+
+  @override
+  String get searchInDescription => 'In beschrijving';
+
+  @override
+  String get searchThisLibrary => 'Deze bibliotheek';
+
+  @override
+  String get searchAllLibraries => 'Alle bibliotheken';
 
   @override
   String get addToQueue => 'Aan wachtrij toevoegen';

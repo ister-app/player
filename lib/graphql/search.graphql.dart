@@ -387,6 +387,27 @@ const documentNodeQuerysearch = DocumentNode(
                         ),
                       ),
                       FieldNode(
+                        name: NameNode(value: 'metadata'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: SelectionSetNode(
+                          selections: [
+                            FragmentSpreadNode(
+                              name: NameNode(value: 'fragmentMetadata'),
+                              directives: [],
+                            ),
+                            FieldNode(
+                              name: NameNode(value: '__typename'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                          ],
+                        ),
+                      ),
+                      FieldNode(
                         name: NameNode(value: '__typename'),
                         alias: null,
                         arguments: [],
@@ -436,6 +457,27 @@ const documentNodeQuerysearch = DocumentNode(
                           selections: [
                             FragmentSpreadNode(
                               name: NameNode(value: 'fragmentImages'),
+                              directives: [],
+                            ),
+                            FieldNode(
+                              name: NameNode(value: '__typename'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                          ],
+                        ),
+                      ),
+                      FieldNode(
+                        name: NameNode(value: 'metadata'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: SelectionSetNode(
+                          selections: [
+                            FragmentSpreadNode(
+                              name: NameNode(value: 'fragmentMetadata'),
                               directives: [],
                             ),
                             FieldNode(
@@ -642,6 +684,27 @@ const documentNodeQuerysearch = DocumentNode(
                         ),
                       ),
                       FieldNode(
+                        name: NameNode(value: 'metadata'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: SelectionSetNode(
+                          selections: [
+                            FragmentSpreadNode(
+                              name: NameNode(value: 'fragmentMetadata'),
+                              directives: [],
+                            ),
+                            FieldNode(
+                              name: NameNode(value: '__typename'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                          ],
+                        ),
+                      ),
+                      FieldNode(
                         name: NameNode(value: '__typename'),
                         alias: null,
                         arguments: [],
@@ -722,6 +785,27 @@ const documentNodeQuerysearch = DocumentNode(
                           selections: [
                             FragmentSpreadNode(
                               name: NameNode(value: 'fragmentImages'),
+                              directives: [],
+                            ),
+                            FieldNode(
+                              name: NameNode(value: '__typename'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                          ],
+                        ),
+                      ),
+                      FieldNode(
+                        name: NameNode(value: 'metadata'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: SelectionSetNode(
+                          selections: [
+                            FragmentSpreadNode(
+                              name: NameNode(value: 'fragmentMetadata'),
                               directives: [],
                             ),
                             FieldNode(
@@ -1109,6 +1193,7 @@ class Query$search$search$$Movie implements Query$search$search {
     required this.name,
     required this.releaseYear,
     this.images,
+    this.metadata,
     this.$__typename = 'Movie',
   });
 
@@ -1117,6 +1202,7 @@ class Query$search$search$$Movie implements Query$search$search {
     final l$name = json['name'];
     final l$releaseYear = json['releaseYear'];
     final l$images = json['images'];
+    final l$metadata = json['metadata'];
     final l$$__typename = json['__typename'];
     return Query$search$search$$Movie(
       id: (l$id as String),
@@ -1126,6 +1212,12 @@ class Query$search$search$$Movie implements Query$search$search {
           ?.map(
             (e) =>
                 Fragment$fragmentImages.fromJson((e as Map<String, dynamic>)),
+          )
+          .toList(),
+      metadata: (l$metadata as List<dynamic>?)
+          ?.map(
+            (e) =>
+                Fragment$fragmentMetadata.fromJson((e as Map<String, dynamic>)),
           )
           .toList(),
       $__typename: (l$$__typename as String),
@@ -1140,6 +1232,8 @@ class Query$search$search$$Movie implements Query$search$search {
 
   final List<Fragment$fragmentImages>? images;
 
+  final List<Fragment$fragmentMetadata>? metadata;
+
   final String $__typename;
 
   Map<String, dynamic> toJson() {
@@ -1152,6 +1246,8 @@ class Query$search$search$$Movie implements Query$search$search {
     _resultData['releaseYear'] = l$releaseYear;
     final l$images = images;
     _resultData['images'] = l$images?.map((e) => e.toJson()).toList();
+    final l$metadata = metadata;
+    _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -1163,12 +1259,14 @@ class Query$search$search$$Movie implements Query$search$search {
     final l$name = name;
     final l$releaseYear = releaseYear;
     final l$images = images;
+    final l$metadata = metadata;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
       l$name,
       l$releaseYear,
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
+      l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$$__typename,
     ]);
   }
@@ -1213,6 +1311,22 @@ class Query$search$search$$Movie implements Query$search$search {
     } else if (l$images != lOther$images) {
       return false;
     }
+    final l$metadata = metadata;
+    final lOther$metadata = other.metadata;
+    if (l$metadata != null && lOther$metadata != null) {
+      if (l$metadata.length != lOther$metadata.length) {
+        return false;
+      }
+      for (int i = 0; i < l$metadata.length; i++) {
+        final l$metadata$entry = l$metadata[i];
+        final lOther$metadata$entry = lOther$metadata[i];
+        if (l$metadata$entry != lOther$metadata$entry) {
+          return false;
+        }
+      }
+    } else if (l$metadata != lOther$metadata) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -1242,11 +1356,18 @@ abstract class CopyWith$Query$search$search$$Movie<TRes> {
     String? name,
     int? releaseYear,
     List<Fragment$fragmentImages>? images,
+    List<Fragment$fragmentMetadata>? metadata,
     String? $__typename,
   });
   TRes images(
     Iterable<Fragment$fragmentImages>? Function(
       Iterable<CopyWith$Fragment$fragmentImages<Fragment$fragmentImages>>?,
+    )
+    _fn,
+  );
+  TRes metadata(
+    Iterable<Fragment$fragmentMetadata>? Function(
+      Iterable<CopyWith$Fragment$fragmentMetadata<Fragment$fragmentMetadata>>?,
     )
     _fn,
   );
@@ -1267,6 +1388,7 @@ class _CopyWithImpl$Query$search$search$$Movie<TRes>
     Object? name = _undefined,
     Object? releaseYear = _undefined,
     Object? images = _undefined,
+    Object? metadata = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Query$search$search$$Movie(
@@ -1280,6 +1402,9 @@ class _CopyWithImpl$Query$search$search$$Movie<TRes>
       images: images == _undefined
           ? _instance.images
           : (images as List<Fragment$fragmentImages>?),
+      metadata: metadata == _undefined
+          ? _instance.metadata
+          : (metadata as List<Fragment$fragmentMetadata>?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -1298,6 +1423,19 @@ class _CopyWithImpl$Query$search$search$$Movie<TRes>
       ),
     )?.toList(),
   );
+
+  TRes metadata(
+    Iterable<Fragment$fragmentMetadata>? Function(
+      Iterable<CopyWith$Fragment$fragmentMetadata<Fragment$fragmentMetadata>>?,
+    )
+    _fn,
+  ) => call(
+    metadata: _fn(
+      _instance.metadata?.map(
+        (e) => CopyWith$Fragment$fragmentMetadata(e, (i) => i),
+      ),
+    )?.toList(),
+  );
 }
 
 class _CopyWithStubImpl$Query$search$search$$Movie<TRes>
@@ -1311,10 +1449,13 @@ class _CopyWithStubImpl$Query$search$search$$Movie<TRes>
     String? name,
     int? releaseYear,
     List<Fragment$fragmentImages>? images,
+    List<Fragment$fragmentMetadata>? metadata,
     String? $__typename,
   }) => _res;
 
   images(_fn) => _res;
+
+  metadata(_fn) => _res;
 }
 
 class Query$search$search$$Show implements Query$search$search {
@@ -1323,6 +1464,7 @@ class Query$search$search$$Show implements Query$search$search {
     required this.name,
     required this.releaseYear,
     this.images,
+    this.metadata,
     this.$__typename = 'Show',
   });
 
@@ -1331,6 +1473,7 @@ class Query$search$search$$Show implements Query$search$search {
     final l$name = json['name'];
     final l$releaseYear = json['releaseYear'];
     final l$images = json['images'];
+    final l$metadata = json['metadata'];
     final l$$__typename = json['__typename'];
     return Query$search$search$$Show(
       id: (l$id as String),
@@ -1340,6 +1483,12 @@ class Query$search$search$$Show implements Query$search$search {
           ?.map(
             (e) =>
                 Fragment$fragmentImages.fromJson((e as Map<String, dynamic>)),
+          )
+          .toList(),
+      metadata: (l$metadata as List<dynamic>?)
+          ?.map(
+            (e) =>
+                Fragment$fragmentMetadata.fromJson((e as Map<String, dynamic>)),
           )
           .toList(),
       $__typename: (l$$__typename as String),
@@ -1354,6 +1503,8 @@ class Query$search$search$$Show implements Query$search$search {
 
   final List<Fragment$fragmentImages>? images;
 
+  final List<Fragment$fragmentMetadata>? metadata;
+
   final String $__typename;
 
   Map<String, dynamic> toJson() {
@@ -1366,6 +1517,8 @@ class Query$search$search$$Show implements Query$search$search {
     _resultData['releaseYear'] = l$releaseYear;
     final l$images = images;
     _resultData['images'] = l$images?.map((e) => e.toJson()).toList();
+    final l$metadata = metadata;
+    _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -1377,12 +1530,14 @@ class Query$search$search$$Show implements Query$search$search {
     final l$name = name;
     final l$releaseYear = releaseYear;
     final l$images = images;
+    final l$metadata = metadata;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
       l$name,
       l$releaseYear,
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
+      l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$$__typename,
     ]);
   }
@@ -1427,6 +1582,22 @@ class Query$search$search$$Show implements Query$search$search {
     } else if (l$images != lOther$images) {
       return false;
     }
+    final l$metadata = metadata;
+    final lOther$metadata = other.metadata;
+    if (l$metadata != null && lOther$metadata != null) {
+      if (l$metadata.length != lOther$metadata.length) {
+        return false;
+      }
+      for (int i = 0; i < l$metadata.length; i++) {
+        final l$metadata$entry = l$metadata[i];
+        final lOther$metadata$entry = lOther$metadata[i];
+        if (l$metadata$entry != lOther$metadata$entry) {
+          return false;
+        }
+      }
+    } else if (l$metadata != lOther$metadata) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -1456,11 +1627,18 @@ abstract class CopyWith$Query$search$search$$Show<TRes> {
     String? name,
     int? releaseYear,
     List<Fragment$fragmentImages>? images,
+    List<Fragment$fragmentMetadata>? metadata,
     String? $__typename,
   });
   TRes images(
     Iterable<Fragment$fragmentImages>? Function(
       Iterable<CopyWith$Fragment$fragmentImages<Fragment$fragmentImages>>?,
+    )
+    _fn,
+  );
+  TRes metadata(
+    Iterable<Fragment$fragmentMetadata>? Function(
+      Iterable<CopyWith$Fragment$fragmentMetadata<Fragment$fragmentMetadata>>?,
     )
     _fn,
   );
@@ -1481,6 +1659,7 @@ class _CopyWithImpl$Query$search$search$$Show<TRes>
     Object? name = _undefined,
     Object? releaseYear = _undefined,
     Object? images = _undefined,
+    Object? metadata = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Query$search$search$$Show(
@@ -1494,6 +1673,9 @@ class _CopyWithImpl$Query$search$search$$Show<TRes>
       images: images == _undefined
           ? _instance.images
           : (images as List<Fragment$fragmentImages>?),
+      metadata: metadata == _undefined
+          ? _instance.metadata
+          : (metadata as List<Fragment$fragmentMetadata>?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -1512,6 +1694,19 @@ class _CopyWithImpl$Query$search$search$$Show<TRes>
       ),
     )?.toList(),
   );
+
+  TRes metadata(
+    Iterable<Fragment$fragmentMetadata>? Function(
+      Iterable<CopyWith$Fragment$fragmentMetadata<Fragment$fragmentMetadata>>?,
+    )
+    _fn,
+  ) => call(
+    metadata: _fn(
+      _instance.metadata?.map(
+        (e) => CopyWith$Fragment$fragmentMetadata(e, (i) => i),
+      ),
+    )?.toList(),
+  );
 }
 
 class _CopyWithStubImpl$Query$search$search$$Show<TRes>
@@ -1525,10 +1720,13 @@ class _CopyWithStubImpl$Query$search$search$$Show<TRes>
     String? name,
     int? releaseYear,
     List<Fragment$fragmentImages>? images,
+    List<Fragment$fragmentMetadata>? metadata,
     String? $__typename,
   }) => _res;
 
   images(_fn) => _res;
+
+  metadata(_fn) => _res;
 }
 
 class Query$search$search$$Episode implements Query$search$search {
@@ -2117,6 +2315,7 @@ class Query$search$search$$Person implements Query$search$search {
     required this.id,
     required this.name,
     this.images,
+    this.metadata,
     this.$__typename = 'Person',
   });
 
@@ -2124,6 +2323,7 @@ class Query$search$search$$Person implements Query$search$search {
     final l$id = json['id'];
     final l$name = json['name'];
     final l$images = json['images'];
+    final l$metadata = json['metadata'];
     final l$$__typename = json['__typename'];
     return Query$search$search$$Person(
       id: (l$id as String),
@@ -2132,6 +2332,12 @@ class Query$search$search$$Person implements Query$search$search {
           ?.map(
             (e) =>
                 Fragment$fragmentImages.fromJson((e as Map<String, dynamic>)),
+          )
+          .toList(),
+      metadata: (l$metadata as List<dynamic>?)
+          ?.map(
+            (e) =>
+                Fragment$fragmentMetadata.fromJson((e as Map<String, dynamic>)),
           )
           .toList(),
       $__typename: (l$$__typename as String),
@@ -2144,6 +2350,8 @@ class Query$search$search$$Person implements Query$search$search {
 
   final List<Fragment$fragmentImages>? images;
 
+  final List<Fragment$fragmentMetadata>? metadata;
+
   final String $__typename;
 
   Map<String, dynamic> toJson() {
@@ -2154,6 +2362,8 @@ class Query$search$search$$Person implements Query$search$search {
     _resultData['name'] = l$name;
     final l$images = images;
     _resultData['images'] = l$images?.map((e) => e.toJson()).toList();
+    final l$metadata = metadata;
+    _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -2164,11 +2374,13 @@ class Query$search$search$$Person implements Query$search$search {
     final l$id = id;
     final l$name = name;
     final l$images = images;
+    final l$metadata = metadata;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
       l$name,
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
+      l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$$__typename,
     ]);
   }
@@ -2208,6 +2420,22 @@ class Query$search$search$$Person implements Query$search$search {
     } else if (l$images != lOther$images) {
       return false;
     }
+    final l$metadata = metadata;
+    final lOther$metadata = other.metadata;
+    if (l$metadata != null && lOther$metadata != null) {
+      if (l$metadata.length != lOther$metadata.length) {
+        return false;
+      }
+      for (int i = 0; i < l$metadata.length; i++) {
+        final l$metadata$entry = l$metadata[i];
+        final lOther$metadata$entry = lOther$metadata[i];
+        if (l$metadata$entry != lOther$metadata$entry) {
+          return false;
+        }
+      }
+    } else if (l$metadata != lOther$metadata) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -2236,11 +2464,18 @@ abstract class CopyWith$Query$search$search$$Person<TRes> {
     String? id,
     String? name,
     List<Fragment$fragmentImages>? images,
+    List<Fragment$fragmentMetadata>? metadata,
     String? $__typename,
   });
   TRes images(
     Iterable<Fragment$fragmentImages>? Function(
       Iterable<CopyWith$Fragment$fragmentImages<Fragment$fragmentImages>>?,
+    )
+    _fn,
+  );
+  TRes metadata(
+    Iterable<Fragment$fragmentMetadata>? Function(
+      Iterable<CopyWith$Fragment$fragmentMetadata<Fragment$fragmentMetadata>>?,
     )
     _fn,
   );
@@ -2260,6 +2495,7 @@ class _CopyWithImpl$Query$search$search$$Person<TRes>
     Object? id = _undefined,
     Object? name = _undefined,
     Object? images = _undefined,
+    Object? metadata = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Query$search$search$$Person(
@@ -2270,6 +2506,9 @@ class _CopyWithImpl$Query$search$search$$Person<TRes>
       images: images == _undefined
           ? _instance.images
           : (images as List<Fragment$fragmentImages>?),
+      metadata: metadata == _undefined
+          ? _instance.metadata
+          : (metadata as List<Fragment$fragmentMetadata>?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -2288,6 +2527,19 @@ class _CopyWithImpl$Query$search$search$$Person<TRes>
       ),
     )?.toList(),
   );
+
+  TRes metadata(
+    Iterable<Fragment$fragmentMetadata>? Function(
+      Iterable<CopyWith$Fragment$fragmentMetadata<Fragment$fragmentMetadata>>?,
+    )
+    _fn,
+  ) => call(
+    metadata: _fn(
+      _instance.metadata?.map(
+        (e) => CopyWith$Fragment$fragmentMetadata(e, (i) => i),
+      ),
+    )?.toList(),
+  );
 }
 
 class _CopyWithStubImpl$Query$search$search$$Person<TRes>
@@ -2300,10 +2552,13 @@ class _CopyWithStubImpl$Query$search$search$$Person<TRes>
     String? id,
     String? name,
     List<Fragment$fragmentImages>? images,
+    List<Fragment$fragmentMetadata>? metadata,
     String? $__typename,
   }) => _res;
 
   images(_fn) => _res;
+
+  metadata(_fn) => _res;
 }
 
 class Query$search$search$$Album implements Query$search$search {
@@ -2313,6 +2568,7 @@ class Query$search$search$$Album implements Query$search$search {
     required this.releaseYear,
     required this.artist,
     this.images,
+    this.metadata,
     this.$__typename = 'Album',
   });
 
@@ -2322,6 +2578,7 @@ class Query$search$search$$Album implements Query$search$search {
     final l$releaseYear = json['releaseYear'];
     final l$artist = json['artist'];
     final l$images = json['images'];
+    final l$metadata = json['metadata'];
     final l$$__typename = json['__typename'];
     return Query$search$search$$Album(
       id: (l$id as String),
@@ -2334,6 +2591,12 @@ class Query$search$search$$Album implements Query$search$search {
           ?.map(
             (e) =>
                 Fragment$fragmentImages.fromJson((e as Map<String, dynamic>)),
+          )
+          .toList(),
+      metadata: (l$metadata as List<dynamic>?)
+          ?.map(
+            (e) =>
+                Fragment$fragmentMetadata.fromJson((e as Map<String, dynamic>)),
           )
           .toList(),
       $__typename: (l$$__typename as String),
@@ -2350,6 +2613,8 @@ class Query$search$search$$Album implements Query$search$search {
 
   final List<Fragment$fragmentImages>? images;
 
+  final List<Fragment$fragmentMetadata>? metadata;
+
   final String $__typename;
 
   Map<String, dynamic> toJson() {
@@ -2364,6 +2629,8 @@ class Query$search$search$$Album implements Query$search$search {
     _resultData['artist'] = l$artist.toJson();
     final l$images = images;
     _resultData['images'] = l$images?.map((e) => e.toJson()).toList();
+    final l$metadata = metadata;
+    _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -2376,6 +2643,7 @@ class Query$search$search$$Album implements Query$search$search {
     final l$releaseYear = releaseYear;
     final l$artist = artist;
     final l$images = images;
+    final l$metadata = metadata;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
@@ -2383,6 +2651,7 @@ class Query$search$search$$Album implements Query$search$search {
       l$releaseYear,
       l$artist,
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
+      l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$$__typename,
     ]);
   }
@@ -2432,6 +2701,22 @@ class Query$search$search$$Album implements Query$search$search {
     } else if (l$images != lOther$images) {
       return false;
     }
+    final l$metadata = metadata;
+    final lOther$metadata = other.metadata;
+    if (l$metadata != null && lOther$metadata != null) {
+      if (l$metadata.length != lOther$metadata.length) {
+        return false;
+      }
+      for (int i = 0; i < l$metadata.length; i++) {
+        final l$metadata$entry = l$metadata[i];
+        final lOther$metadata$entry = lOther$metadata[i];
+        if (l$metadata$entry != lOther$metadata$entry) {
+          return false;
+        }
+      }
+    } else if (l$metadata != lOther$metadata) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -2462,12 +2747,19 @@ abstract class CopyWith$Query$search$search$$Album<TRes> {
     int? releaseYear,
     Query$search$search$$Album$artist? artist,
     List<Fragment$fragmentImages>? images,
+    List<Fragment$fragmentMetadata>? metadata,
     String? $__typename,
   });
   CopyWith$Query$search$search$$Album$artist<TRes> get artist;
   TRes images(
     Iterable<Fragment$fragmentImages>? Function(
       Iterable<CopyWith$Fragment$fragmentImages<Fragment$fragmentImages>>?,
+    )
+    _fn,
+  );
+  TRes metadata(
+    Iterable<Fragment$fragmentMetadata>? Function(
+      Iterable<CopyWith$Fragment$fragmentMetadata<Fragment$fragmentMetadata>>?,
     )
     _fn,
   );
@@ -2489,6 +2781,7 @@ class _CopyWithImpl$Query$search$search$$Album<TRes>
     Object? releaseYear = _undefined,
     Object? artist = _undefined,
     Object? images = _undefined,
+    Object? metadata = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Query$search$search$$Album(
@@ -2505,6 +2798,9 @@ class _CopyWithImpl$Query$search$search$$Album<TRes>
       images: images == _undefined
           ? _instance.images
           : (images as List<Fragment$fragmentImages>?),
+      metadata: metadata == _undefined
+          ? _instance.metadata
+          : (metadata as List<Fragment$fragmentMetadata>?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -2531,6 +2827,19 @@ class _CopyWithImpl$Query$search$search$$Album<TRes>
       ),
     )?.toList(),
   );
+
+  TRes metadata(
+    Iterable<Fragment$fragmentMetadata>? Function(
+      Iterable<CopyWith$Fragment$fragmentMetadata<Fragment$fragmentMetadata>>?,
+    )
+    _fn,
+  ) => call(
+    metadata: _fn(
+      _instance.metadata?.map(
+        (e) => CopyWith$Fragment$fragmentMetadata(e, (i) => i),
+      ),
+    )?.toList(),
+  );
 }
 
 class _CopyWithStubImpl$Query$search$search$$Album<TRes>
@@ -2545,6 +2854,7 @@ class _CopyWithStubImpl$Query$search$search$$Album<TRes>
     int? releaseYear,
     Query$search$search$$Album$artist? artist,
     List<Fragment$fragmentImages>? images,
+    List<Fragment$fragmentMetadata>? metadata,
     String? $__typename,
   }) => _res;
 
@@ -2552,6 +2862,8 @@ class _CopyWithStubImpl$Query$search$search$$Album<TRes>
       CopyWith$Query$search$search$$Album$artist.stub(_res);
 
   images(_fn) => _res;
+
+  metadata(_fn) => _res;
 }
 
 class Query$search$search$$Album$artist {

@@ -4,13 +4,16 @@ import 'dart:ui';
 import 'package:audio_service/audio_service.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:palette_generator/palette_generator.dart';
 import 'package:player/components/PlayPauseButton.dart';
 import 'package:player/components/TvFocusable.dart';
 import 'package:player/dto/MediaItemId.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/DurationUtil.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 @RoutePage()
 class MusicPlayerPage extends StatefulWidget {
@@ -31,6 +34,50 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
   /// Optimistic queue order held during a reorder so the list doesn't snap back
   /// while the server move is in flight. Cleared once the move round-trips.
   List<MediaItem>? _localQueue;
+
+  /// Accent colour extracted from the current album art. Drives the progress
+  /// bar, play button and background glow so each track carries its own mood.
+  /// Falls back to a neutral grey while nothing is loaded.
+  static const Color _defaultAccent = Color(0xFF6C6C74);
+  final ValueNotifier<Color> _accent = ValueNotifier(_defaultAccent);
+  String? _accentUri;
+
+  /// Extracts an accent from [uri]'s artwork. Deduped on the uri so track skips
+  /// don't re-run the (relatively costly) quantisation for art already shown.
+  void _updateAccent(String? uri) {
+    if (uri == _accentUri) return;
+    _accentUri = uri;
+    if (uri == null) {
+      _accent.value = _defaultAccent;
+      return;
+    }
+    PaletteGenerator.fromImageProvider(
+      CachedNetworkImageProvider(uri),
+      size: const Size(180, 180),
+      maximumColorCount: 12,
+    ).then((palette) {
+      // A newer skip may have superseded this load; only apply if still current.
+      if (!mounted || _accentUri != uri) return;
+      _accent.value = _pickAccent(palette);
+    }).catchError((_) {
+      if (mounted && _accentUri == uri) _accent.value = _defaultAccent;
+    });
+  }
+
+  /// Picks the liveliest available swatch, then nudges it into a range that
+  /// reads well both as a thin progress fill on a dark backdrop and as a filled
+  /// button that carries black text.
+  Color _pickAccent(PaletteGenerator palette) {
+    final color = palette.vibrantColor?.color ??
+        palette.lightVibrantColor?.color ??
+        palette.dominantColor?.color ??
+        _defaultAccent;
+    var hsl = HSLColor.fromColor(color);
+    if (hsl.lightness < 0.45) hsl = hsl.withLightness(0.55);
+    if (hsl.lightness > 0.78) hsl = hsl.withLightness(0.7);
+    if (hsl.saturation < 0.3) hsl = hsl.withSaturation(0.45);
+    return hsl.toColor();
+  }
 
   @override
   void initState() {
@@ -54,6 +101,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
     Future.microtask(() => MediaPlayerHandler.instance.musicPlayerOpen.value = false);
     _controller.dispose();
     _scrollController.dispose();
+    _accent.dispose();
     super.dispose();
   }
 
@@ -310,40 +358,107 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
         stream: MediaPlayerHandler.instance.mediaItem,
         initialData: MediaPlayerHandler.instance.mediaItem.valueOrNull,
         builder: (context, mediaSnapshot) {
-          final item = mediaSnapshot.data;
-          final artUri = item?.artUri?.toString();
+          return ValueListenableBuilder<bool>(
+            valueListenable: MediaPlayerHandler.instance.mediaLoading,
+            builder: (context, loading, _) {
+              // While a freshly-tapped track loads, show a skeleton with mock
+              // text instead of the previous track's cover/title/album.
+              final item = loading ? _boneItem : mediaSnapshot.data;
+              final artUri = loading ? null : item?.artUri?.toString();
+              // Refresh the accent after this frame so we never mutate the
+              // notifier mid-build; deduped inside on the uri.
+              WidgetsBinding.instance
+                  .addPostFrameCallback((_) => _updateAccent(artUri));
 
-          return Scaffold(
-            backgroundColor: Colors.transparent,
-            body: Stack(
-              fit: StackFit.expand,
-              children: [
-                _BlurredBackground(artUri: artUri),
-                const ColoredBox(color: Color(0xAA000000)),
-                SafeArea(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final isLandscape = constraints.maxWidth > constraints.maxHeight * 1.2;
-                      return isLandscape
-                          ? _buildLandscape(context, item, artUri, constraints)
-                          : _buildPortrait(context, item, artUri, constraints);
-                    },
-                  ),
+              return Scaffold(
+                backgroundColor: Colors.transparent,
+                body: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Drop the previous blurred cover while loading — a neutral
+                    // backdrop reads as "new track incoming".
+                    if (loading)
+                      const ColoredBox(color: Color(0xFF101014))
+                    else
+                      _BlurredBackground(artUri: artUri),
+                    ValueListenableBuilder<Color>(
+                      valueListenable: _accent,
+                      builder: (context, accent, _) => DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Color.alphaBlend(
+                                  accent.withValues(alpha: 0.28), Colors.black)
+                                .withValues(alpha: 0.62),
+                              const Color(0xE6000000),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    SafeArea(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isLandscape = constraints.maxWidth > constraints.maxHeight * 1.2;
+                          return isLandscape
+                              ? _buildLandscape(context, item, artUri, constraints, loading)
+                              : _buildPortrait(context, item, artUri, constraints, loading);
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           );
         },
       ),
     );
   }
 
+  /// Mock metadata rendered under the skeleton so title/artist/album bones have
+  /// text to size themselves against while the real track loads.
+  static final MediaItem _boneItem = MediaItem(
+    id: 'bone',
+    title: 'Loading track title',
+    artist: 'Artist name',
+    album: 'Album name here',
+  );
+
   /// Album artwork, or the same music-note placeholder the queue list uses
   /// when a track has no (loadable) artwork.
-  Widget _artworkOrPlaceholder(String? artUri, double size) {
-    return SizedBox(
-      width: size,
-      height: size,
+  Widget _artworkOrPlaceholder(String? artUri, double size, {bool loading = false}) {
+    return Skeletonizer(
+      enabled: loading,
+      child: ValueListenableBuilder<Color>(
+      valueListenable: _accent,
+      builder: (context, accent, child) => Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: loading
+              ? const []
+              : [
+            // Deep neutral drop shadow for lift…
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.55),
+              blurRadius: 40,
+              offset: const Offset(0, 18),
+            ),
+            // …plus a faint accent glow so the art feels lit by its own colour.
+            BoxShadow(
+              color: accent.withValues(alpha: 0.30),
+              blurRadius: 60,
+              spreadRadius: -12,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: child,
+      ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: artUri != null
@@ -353,6 +468,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
                 errorBuilder: (_, __, ___) => _artPlaceholder(size),
               )
             : _artPlaceholder(size),
+      ),
       ),
     );
   }
@@ -364,7 +480,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
     );
   }
 
-  Widget _buildPortrait(BuildContext context, MediaItem? item, String? artUri, BoxConstraints constraints) {
+  Widget _buildPortrait(BuildContext context, MediaItem? item, String? artUri, BoxConstraints constraints, bool loading) {
     final maxImageSize = min(constraints.maxWidth - 80, constraints.maxHeight - 340).clamp(80.0, 400.0);
 
     return StreamBuilder<List<MediaItem>>(
@@ -403,11 +519,11 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
                           ),
                         ),
                         const Spacer(),
-                        _artworkOrPlaceholder(artUri, maxImageSize),
+                        _artworkOrPlaceholder(artUri, maxImageSize, loading: loading),
                         const Spacer(),
                         Padding(
                           padding: EdgeInsets.fromLTRB(24, 0, 24, hasQueue ? 4 : 32),
-                          child: _Controls(item: item),
+                          child: _Controls(item: item, accent: _accent, loading: loading),
                         ),
                         if (hasQueue)
                           IconButton(
@@ -435,8 +551,15 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
     );
   }
 
-  Widget _buildLandscape(BuildContext context, MediaItem? item, String? artUri, BoxConstraints constraints) {
-    final imageSize = min(constraints.maxHeight - 32, constraints.maxWidth * 0.45);
+  Widget _buildLandscape(BuildContext context, MediaItem? item, String? artUri, BoxConstraints constraints, bool loading) {
+    // Leave a side margin inside the 45%-wide art column so the cover doesn't
+    // touch the screen edge and its drop shadow/accent glow has room to fall.
+    const artSideMargin = 40.0;
+    const artBottomMargin = 32.0;
+    final imageSize = min(
+      constraints.maxHeight - 48 - artBottomMargin,
+      constraints.maxWidth * 0.45 - artSideMargin * 2,
+    );
 
     return StreamBuilder<List<MediaItem>>(
       stream: MediaPlayerHandler.instance.queue,
@@ -472,8 +595,11 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
                         ),
                       ),
                       Expanded(
-                        child: Center(
-                          child: _artworkOrPlaceholder(artUri, imageSize),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: artBottomMargin),
+                          child: Center(
+                            child: _artworkOrPlaceholder(artUri, imageSize, loading: loading),
+                          ),
                         ),
                       ),
                     ],
@@ -494,9 +620,14 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
                             children: [
                               Expanded(
                                 child: Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.fromLTRB(16, 16, 32, 4),
-                                    child: _Controls(item: item),
+                                  child: ConstrainedBox(
+                                    constraints:
+                                        const BoxConstraints(maxWidth: 560),
+                                    child: Padding(
+                                      padding:
+                                          const EdgeInsets.fromLTRB(32, 16, 32, 4),
+                                      child: _Controls(item: item, accent: _accent, loading: loading),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -700,9 +831,11 @@ class _QueueItemState extends State<_QueueItem> {
 }
 
 class _Controls extends StatelessWidget {
-  const _Controls({this.item});
+  const _Controls({this.item, required this.accent, this.loading = false});
 
   final MediaItem? item;
+  final ValueListenable<Color> accent;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) {
@@ -710,30 +843,38 @@ class _Controls extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (item != null) ...[
-          Text(
-            item!.artist ?? '',
-            style: const TextStyle(color: Colors.white70, fontSize: 14),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+        if (item != null)
+          Skeletonizer(
+            enabled: loading,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  item!.artist ?? '',
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  item!.title,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 24),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  item!.album ?? '',
+                  style: const TextStyle(color: Colors.white60, fontSize: 13),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            item!.title,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            item!.album ?? '',
-            style: const TextStyle(color: Colors.white60, fontSize: 13),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-        const SizedBox(height: 16),
-        _SeekBar(),
+        const SizedBox(height: 20),
+        _SeekBar(accent: accent),
         const SizedBox(height: 8),
         StreamBuilder<List<MediaItem>>(
           stream: MediaPlayerHandler.instance.queue,
@@ -745,11 +886,18 @@ class _Controls extends StatelessWidget {
               builder: (context, stateSnapshot) {
                 final queueIndex = stateSnapshot.data?.queueIndex ?? -1;
                 final queueLength = queueSnapshot.data?.length ?? 0;
-                final hasPrevious = queueIndex > 0;
-                final hasNext = queueIndex >= 0 && queueIndex < queueLength - 1;
+                final repeatMode =
+                    stateSnapshot.data?.repeatMode ?? AudioServiceRepeatMode.none;
+                final repeatAll = repeatMode == AudioServiceRepeatMode.all;
+                // With repeat-all the queue is a loop, so the ends are reachable.
+                final hasPrevious =
+                    queueIndex > 0 || (repeatAll && queueLength > 1);
+                final hasNext = (queueIndex >= 0 && queueIndex < queueLength - 1) ||
+                    (repeatAll && queueLength > 1);
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
+                    _RepeatButton(repeatMode: repeatMode, accent: accent),
                     IconButton(
                       icon: Icon(Icons.skip_previous,
                           color: hasPrevious ? Colors.white : Colors.white30),
@@ -758,13 +906,26 @@ class _Controls extends StatelessWidget {
                           ? () => MediaPlayerHandler.instance.skipToPrevious()
                           : null,
                     ),
-                    Container(
-                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                      child: const PlayPauseButton(
-                        iconSize: 48,
-                        iconColor: Colors.black,
-                        spinnerColor: Colors.black,
-                        spinnerStrokeWidth: 3,
+                    ValueListenableBuilder<Color>(
+                      valueListenable: accent,
+                      builder: (context, color, _) => Container(
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: color.withValues(alpha: 0.45),
+                              blurRadius: 24,
+                              spreadRadius: -4,
+                            ),
+                          ],
+                        ),
+                        child: const PlayPauseButton(
+                          iconSize: 48,
+                          iconColor: Colors.black,
+                          spinnerColor: Colors.black,
+                          spinnerStrokeWidth: 3,
+                        ),
                       ),
                     ),
                     IconButton(
@@ -775,6 +936,9 @@ class _Controls extends StatelessWidget {
                           ? () => MediaPlayerHandler.instance.skipToNext()
                           : null,
                     ),
+                    // Balances the row so the play button stays centred now that
+                    // a repeat toggle sits on the far left.
+                    const SizedBox(width: 48),
                   ],
                 );
               },
@@ -786,7 +950,39 @@ class _Controls extends StatelessWidget {
   }
 }
 
+/// Repeat toggle cycling none → all → one. Tinted with the album accent when
+/// active; the "one" state carries a small badge on the loop icon.
+class _RepeatButton extends StatelessWidget {
+  const _RepeatButton({required this.repeatMode, required this.accent});
+
+  final AudioServiceRepeatMode repeatMode;
+  final ValueListenable<Color> accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final active = repeatMode != AudioServiceRepeatMode.none;
+    return ValueListenableBuilder<Color>(
+      valueListenable: accent,
+      builder: (context, color, _) => IconButton(
+        icon: Icon(
+          repeatMode == AudioServiceRepeatMode.one
+              ? Icons.repeat_one
+              : Icons.repeat,
+          color: active ? color : Colors.white54,
+        ),
+        iconSize: 24,
+        tooltip: 'Repeat',
+        onPressed: () => MediaPlayerHandler.instance.cycleRepeatMode(),
+      ),
+    );
+  }
+}
+
 class _SeekBar extends StatefulWidget {
+  const _SeekBar({required this.accent});
+
+  final ValueListenable<Color> accent;
+
   @override
   State<_SeekBar> createState() => _SeekBarState();
 }
@@ -796,6 +992,13 @@ class _SeekBarState extends State<_SeekBar> {
 
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<Color>(
+      valueListenable: widget.accent,
+      builder: (context, accent, _) => _buildBar(context, accent),
+    );
+  }
+
+  Widget _buildBar(BuildContext context, Color accent) {
     return StreamBuilder<Duration>(
       stream: MediaPlayerHandler.instance.positionSecondsStream,
       initialData: MediaPlayerHandler.instance.player.state.position,
@@ -821,9 +1024,10 @@ class _SeekBarState extends State<_SeekBar> {
                   children: [
                     SliderTheme(
                       data: SliderTheme.of(context).copyWith(
-                        trackShape: _BufferedTrackShape(bufferedFraction),
+                        trackShape:
+                            _BufferedTrackShape(bufferedFraction, accent),
                         thumbColor: Colors.white,
-                        overlayColor: Colors.white24,
+                        overlayColor: accent.withValues(alpha: 0.2),
                       ),
                       child: Slider(
                         value: currentMs,
@@ -869,9 +1073,10 @@ class _SeekBarState extends State<_SeekBar> {
 }
 
 class _BufferedTrackShape extends SliderTrackShape {
-  const _BufferedTrackShape(this.bufferedFraction);
+  const _BufferedTrackShape(this.bufferedFraction, this.playedColor);
 
   final double bufferedFraction;
+  final Color playedColor;
 
   @override
   Rect getPreferredRect({
@@ -922,12 +1127,12 @@ class _BufferedTrackShape extends SliderTrackShape {
       );
     }
 
-    // played portion (white)
+    // played portion (accent)
     final playedRight = thumbCenter.dx.clamp(rect.left, rect.right);
     if (playedRight > rect.left) {
       canvas.drawRRect(
         RRect.fromRectAndRadius(Rect.fromLTRB(rect.left, rect.top, playedRight, rect.bottom), r),
-        Paint()..color = Colors.white,
+        Paint()..color = playedColor,
       );
     }
   }

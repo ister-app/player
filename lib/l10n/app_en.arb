@@ -238,6 +238,16 @@
   "@appearsIn": {
     "description": "Section header on a person page listing the movies and shows they appear in"
   },
+  "episodeCount": "{count, plural, =1{1 episode} other{{count} episodes}}",
+  "@episodeCount": {
+    "description": "Number of episodes a person appears in, shown on the show tile in their filmography",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
   "search": "Search",
   "@search": {
     "description": "Search field hint and page title"
@@ -257,6 +267,34 @@
   "artist": "Artist",
   "@artist": {
     "description": "Label for a person/artist search result"
+  },
+  "typeEpisode": "Episode",
+  "@typeEpisode": {
+    "description": "Type label (badge) for an episode search result"
+  },
+  "typePerson": "Person",
+  "@typePerson": {
+    "description": "Type label (badge) for a person search result"
+  },
+  "typeAlbum": "Album",
+  "@typeAlbum": {
+    "description": "Type label (badge) for an album search result"
+  },
+  "typeTrack": "Track",
+  "@typeTrack": {
+    "description": "Type label (badge) for a track search result"
+  },
+  "searchInDescription": "In description",
+  "@searchInDescription": {
+    "description": "Small hint on a search result when the query matched the description rather than the title"
+  },
+  "searchThisLibrary": "This library",
+  "@searchThisLibrary": {
+    "description": "Toggle option to limit search to the current library"
+  },
+  "searchAllLibraries": "All libraries",
+  "@searchAllLibraries": {
+    "description": "Toggle option to search across every library"
   },
   "addToQueue": "Add to queue",
   "@addToQueue": {

@@ -245,6 +245,70 @@ class ArtistPage extends StatelessWidget {
 
   Widget _buildFilmography(BuildContext context, AppLocalizations loc,
       List<Fragment$fragmentPersonCredit> credits) {
+    // A person can hold several credits for the same title — a show-level credit
+    // (with a role) plus one credit per episode. Merge everything per title so a
+    // show shows up exactly once, with its episode count and role combined.
+    final movies = <String, _MovieEntry>{};
+    final shows = <String, _ShowEntry>{};
+
+    for (final credit in credits) {
+      final movie = credit.movie;
+      final show = credit.$show;
+      final episode = credit.episode;
+      if (movie != null) {
+        movies.putIfAbsent(
+          movie.id,
+          () => _MovieEntry(
+            id: movie.id,
+            name: movie.name,
+            images: movie.images,
+            role: credit.characterName,
+          ),
+        );
+      } else if (show != null) {
+        final entry = shows.putIfAbsent(show.id, () => _ShowEntry(show.id));
+        entry.name = show.name;
+        entry.images ??= show.images;
+        entry.showRole ??= credit.characterName;
+      } else if (episode != null && episode.$show != null) {
+        final s = episode.$show!;
+        final entry = shows.putIfAbsent(s.id, () => _ShowEntry(s.id));
+        entry.name = s.name;
+        entry.images ??= s.images;
+        entry.addEpisode(episode, credit.characterName);
+      }
+      // Credits without a resolvable media reference are skipped.
+    }
+
+    final rows = <Widget>[
+      ...movies.values.map((m) => _entryRow(
+            context,
+            name: m.name,
+            subtitle: _subtitle(loc, role: m.role),
+            images: m.images,
+            onTap: () =>
+                AutoRouter.of(context).push(MovieRoute(movieId: m.id)),
+          )),
+      ...shows.values.map((s) => _entryRow(
+            context,
+            name: s.name,
+            subtitle: _subtitle(
+              loc,
+              episodeCount: s.episodeCount > 0 ? s.episodeCount : null,
+              role: s.role,
+            ),
+            images: s.images,
+            onTap: s.episodeCount > 0
+                ? () => _showEpisodesSheet(context, s)
+                : () => AutoRouter.of(context)
+                    .push(ShowOverviewRoute(showId: s.showId)),
+          )),
+    ];
+
+    if (rows.isEmpty) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+
     return SliverToBoxAdapter(
       child: Center(
         child: Container(
@@ -260,16 +324,8 @@ class ArtistPage extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
-              SizedBox(
-                height: 260,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemCount: credits.length,
-                  itemBuilder: (context, index) =>
-                      _buildFilmographyTile(context, credits[index]),
-                ),
-              ),
+              ...rows,
+              const SizedBox(height: 8),
             ],
           ),
         ),
@@ -277,98 +333,117 @@ class ArtistPage extends StatelessWidget {
     );
   }
 
-  Widget _buildFilmographyTile(
-      BuildContext context, Fragment$fragmentPersonCredit credit) {
-    String? title;
-    String? subtitle = credit.characterName;
-    List<Fragment$fragmentImages>? images;
-    VoidCallback? onTap;
+  /// Joins the episode count and role into a single subtitle line, e.g.
+  /// "65 afleveringen · Johnny Lawrence". Either part may be absent.
+  String? _subtitle(AppLocalizations loc, {int? episodeCount, String? role}) {
+    final parts = <String>[
+      if (episodeCount != null) loc.episodeCount(episodeCount),
+      if ((role ?? '').isNotEmpty) role!,
+    ];
+    return parts.isEmpty ? null : parts.join(' · ');
+  }
 
-    final movie = credit.movie;
-    final show = credit.$show;
-    final episode = credit.episode;
-    if (movie != null) {
-      title = movie.name;
-      images = movie.images;
-      onTap = () =>
-          AutoRouter.of(context).push(MovieRoute(movieId: movie.id));
-    } else if (show != null) {
-      title = show.name;
-      images = show.images;
-      onTap = () =>
-          AutoRouter.of(context).push(ShowOverviewRoute(showId: show.id));
-    } else if (episode != null) {
-      title = episode.$show?.name;
-      subtitle = AppLocalizations.of(context)!.episode(episode.number ?? 0);
-      images = episode.images;
-      onTap = episode.$show != null
-          ? () => AutoRouter.of(context).push(
-                ShowEpisodeRoute(showId: episode.$show!.id, episodeId: episode.id),
-              )
-          : null;
-    } else {
-      // Credit without a resolvable media reference — skip it.
-      return const SizedBox.shrink();
-    }
-
-    final img = ImageUtil.getImageByType(images, ImageTypes.cover) ??
-        ImageUtil.getImageByType(images, ImageTypes.background);
+  Widget _entryRow(
+    BuildContext context, {
+    required String name,
+    String? subtitle,
+    List<Fragment$fragmentImages>? images,
+    required VoidCallback? onTap,
+  }) {
+    // Prefer the wide background art; fall back to the poster/cover.
+    final img = ImageUtil.getImageByType(images, ImageTypes.background) ??
+        ImageUtil.getImageByType(images, ImageTypes.cover);
     final imageUrl =
         ImageUtil.buildUrl(img, token: StreamTokenService.getToken(serverName));
     final placeholder = Icon(
       Icons.movie,
-      size: 40,
+      size: 32,
       color: Theme.of(context).colorScheme.onSurfaceVariant,
     );
 
-    return SizedBox(
-      width: 140,
-      child: InkWell(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Material(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Row(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: AspectRatio(
-                  aspectRatio: 2 / 3,
-                  child: Container(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    child: (imageUrl != null && imageUrl != '')
-                        ? CachedNetworkImage(
-                            imageUrl: imageUrl,
-                            fit: BoxFit.cover,
-                            fadeInDuration: Duration.zero,
-                            fadeOutDuration: Duration.zero,
-                            errorBuilder: (_, __, ___) =>
-                                Center(child: placeholder),
-                          )
-                        : Center(child: placeholder),
+              SizedBox(
+                width: 160,
+                height: 90,
+                child: Container(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  child: (imageUrl != null && imageUrl != '')
+                      ? CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.cover,
+                          fadeInDuration: Duration.zero,
+                          fadeOutDuration: Duration.zero,
+                          errorBuilder: (_, __, ___) =>
+                              Center(child: placeholder),
+                        )
+                      : Center(child: placeholder),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      if ((subtitle ?? '').isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitle!,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 6),
-              Text(
-                title ?? '',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              if ((subtitle ?? '').isNotEmpty)
-                Text(
-                  subtitle!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
+              const SizedBox(width: 8),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showEpisodesSheet(BuildContext context, _ShowEntry entry) {
+    // Capture the router from the page context; inside the modal the sheet's
+    // own context can't resolve the server-scoped route tree reliably.
+    final router = AutoRouter.of(context);
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _PersonShowEpisodesSheet(
+        serverName: serverName,
+        router: router,
+        showName: entry.name,
+        episodes: entry.episodes,
       ),
     );
   }
@@ -402,6 +477,214 @@ class ArtistPage extends StatelessWidget {
           : null,
       backgroundAlignment: Alignment.topCenter,
       placeholderIcon: Icons.person,
+    );
+  }
+}
+
+/// A movie a person is credited in.
+class _MovieEntry {
+  _MovieEntry({
+    required this.id,
+    required this.name,
+    required this.images,
+    required this.role,
+  });
+
+  final String id;
+  final String name;
+  final List<Fragment$fragmentImages>? images;
+  final String? role;
+}
+
+/// All of a person's credits for one show, merged: a show-level credit (with a
+/// role) and any per-episode credits. Episodes are de-duplicated by id (a person
+/// can hold more than one credit on the same episode, e.g. cast + guest star).
+class _ShowEntry {
+  _ShowEntry(this.showId);
+
+  final String showId;
+  String name = '';
+  List<Fragment$fragmentImages>? images;
+
+  /// Role from a show-level credit; wins over per-episode roles when present.
+  String? showRole;
+  String? _episodeRole;
+  final Map<String, Fragment$fragmentPersonCredit$episode> _episodesById = {};
+
+  void addEpisode(
+      Fragment$fragmentPersonCredit$episode episode, String? character) {
+    _episodesById[episode.id] = episode;
+    if ((_episodeRole ?? '').isEmpty && (character ?? '').isNotEmpty) {
+      _episodeRole = character;
+    }
+  }
+
+  List<Fragment$fragmentPersonCredit$episode> get episodes =>
+      _episodesById.values.toList();
+
+  int get episodeCount => _episodesById.length;
+
+  String? get role =>
+      (showRole ?? '').isNotEmpty ? showRole : _episodeRole;
+}
+
+/// One season's worth of a person's episodes, ready to render in the sheet.
+class _SeasonBucket {
+  _SeasonBucket({required this.id, this.number});
+
+  final String id;
+  final int? number;
+  final List<Fragment$fragmentPersonCredit$episode> episodes = [];
+}
+
+/// Bottom sheet listing the episodes a person appears in for one show, grouped
+/// under the same expandable season bar used on the show overview page.
+class _PersonShowEpisodesSheet extends StatefulWidget {
+  const _PersonShowEpisodesSheet({
+    required this.serverName,
+    required this.router,
+    required this.showName,
+    required this.episodes,
+  });
+
+  final String serverName;
+  final StackRouter router;
+  final String showName;
+  final List<Fragment$fragmentPersonCredit$episode> episodes;
+
+  @override
+  State<_PersonShowEpisodesSheet> createState() =>
+      _PersonShowEpisodesSheetState();
+}
+
+class _PersonShowEpisodesSheetState extends State<_PersonShowEpisodesSheet> {
+  late final List<_SeasonBucket> _seasons;
+  String? _expandedSeasonId;
+
+  @override
+  void initState() {
+    super.initState();
+    _seasons = _groupBySeason(widget.episodes);
+    // Auto-expand when there is only a single season to save a tap.
+    if (_seasons.length == 1) {
+      _expandedSeasonId = _seasons.first.id;
+    }
+  }
+
+  List<_SeasonBucket> _groupBySeason(
+      List<Fragment$fragmentPersonCredit$episode> episodes) {
+    const noSeasonKey = '__none__';
+    final buckets = <String, _SeasonBucket>{};
+    for (final episode in episodes) {
+      final season = episode.season;
+      final key = season?.id ?? noSeasonKey;
+      buckets
+          .putIfAbsent(key, () => _SeasonBucket(id: key, number: season?.number))
+          .episodes
+          .add(episode);
+    }
+    // Unknown seasons sort last; episodes within a season sort by number.
+    const last = 1 << 30;
+    final ordered = buckets.values.toList()
+      ..sort((a, b) => (a.number ?? last).compareTo(b.number ?? last));
+    for (final bucket in ordered) {
+      bucket.episodes.sort((a, b) => (a.number ?? 0).compareTo(b.number ?? 0));
+    }
+    return ordered;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.6,
+      minChildSize: 0.4,
+      maxChildSize: 0.95,
+      builder: (context, scrollController) {
+        return SingleChildScrollView(
+          controller: scrollController,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: Text(
+                  widget.showName,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ),
+              ExpansionPanelList(
+                expansionCallback: (index, isExpanded) {
+                  setState(() {
+                    _expandedSeasonId =
+                        isExpanded ? _seasons[index].id : null;
+                  });
+                },
+                children: _seasons.map<ExpansionPanel>((bucket) {
+                  return ExpansionPanel(
+                    canTapOnHeader: true,
+                    headerBuilder: (context, isExpanded) => ListTile(
+                      title: Text(bucket.number != null
+                          ? loc.season(bucket.number!)
+                          : widget.showName),
+                      subtitle: Text(loc.episodeCount(bucket.episodes.length)),
+                    ),
+                    body: Column(
+                      children: bucket.episodes
+                          .map((episode) => _episodeTile(context, loc, episode))
+                          .toList(),
+                    ),
+                    isExpanded: _expandedSeasonId == bucket.id,
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _episodeTile(BuildContext context, AppLocalizations loc,
+      Fragment$fragmentPersonCredit$episode episode) {
+    final metaTitle = MetadataUtil.getTitle(episode.metadata);
+    final title = metaTitle ?? loc.episode(episode.number ?? 0);
+    final img = ImageUtil.getImageByType(episode.images, ImageTypes.background) ??
+        ImageUtil.getImageByType(episode.images, ImageTypes.cover);
+    final imageUrl = ImageUtil.buildUrl(img,
+        token: StreamTokenService.getToken(widget.serverName));
+    final showId = episode.$show?.id;
+
+    return ListTile(
+      leading: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          width: 80,
+          height: 56,
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          child: (imageUrl != null && imageUrl != '')
+              ? CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  fadeInDuration: Duration.zero,
+                  fadeOutDuration: Duration.zero,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                )
+              : const SizedBox.shrink(),
+        ),
+      ),
+      title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle:
+          metaTitle != null ? Text(loc.episode(episode.number ?? 0)) : null,
+      onTap: showId == null
+          ? null
+          : () {
+              Navigator.of(context).pop();
+              widget.router
+                  .push(ShowEpisodeRoute(showId: showId, episodeId: episode.id));
+            },
     );
   }
 }

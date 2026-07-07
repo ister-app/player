@@ -23,6 +23,27 @@ class _MiniPlayerState extends State<MiniPlayer> {
   double? _dragStartY;
   bool _playerOpened = false;
 
+  @override
+  void initState() {
+    super.initState();
+    MediaPlayerHandler.instance.openMusicPlayerRequest
+        .addListener(_onOpenPlayerRequested);
+  }
+
+  @override
+  void dispose() {
+    MediaPlayerHandler.instance.openMusicPlayerRequest
+        .removeListener(_onOpenPlayerRequested);
+    super.dispose();
+  }
+
+  /// Fired when playback of a music track starts from a browse surface — open
+  /// the full player directly rather than waiting for a mini-player tap.
+  void _onOpenPlayerRequested() {
+    if (!mounted) return;
+    _openPlayerPage(context);
+  }
+
   void _openAlbumPage(BuildContext context) {
     final handler = MediaPlayerHandler.instance;
     final album = handler.album;

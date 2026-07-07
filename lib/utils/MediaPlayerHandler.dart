@@ -61,6 +61,14 @@ class MediaPlayerHandler extends BaseAudioHandler
     // Set up listeners once – they survive for the lifetime of the singleton
     if (!_listenersAdded) {
       _player.stream.playing.listen(_onPlayingChanged);
+      // Drop the loading skeleton exactly when new metadata is delivered to the
+      // UI stream — same event the music player's StreamBuilder rebuilds on — so
+      // the previous track's cover/title can't flash in between.
+      mediaItem.listen((item) {
+        if (mediaLoading.value && item != _loadingFromItem) {
+          mediaLoading.value = false;
+        }
+      });
       _listenToBuffering();
       _listenToTracks();
       _listenToPosition();
@@ -122,6 +130,32 @@ class MediaPlayerHandler extends BaseAudioHandler
   double playerInitialControllerValue = 0.0;
   VoidCallback? dismissMusicPlayer;
   final ValueNotifier<bool> musicPlayerOpen = ValueNotifier(false);
+
+  /// Bumped whenever the user starts a music track from a browse surface (album
+  /// tap, album/library shuffle). A globally-mounted listener — the mini player
+  /// — pushes the full [MusicPlayerRoute] so playback opens the player directly
+  /// instead of leaving the user to tap the mini player.
+  final ValueNotifier<int> openMusicPlayerRequest = ValueNotifier(0);
+
+  /// True from the moment a user-initiated new track begins loading until its
+  /// [mediaItem] metadata is published. The music player shows a skeleton while
+  /// this is set so it never displays the *previous* track's cover/title.
+  final ValueNotifier<bool> mediaLoading = ValueNotifier(false);
+
+  /// The item that was showing when the current load started. The skeleton is
+  /// dropped only once [mediaItem] actually *emits* something different — see
+  /// the `mediaItem.listen` in the constructor. Clearing [mediaLoading] on the
+  /// same stream event that delivers the new item (rather than synchronously in
+  /// `_openMedia`) avoids a one-frame flash of the old metadata: otherwise the
+  /// flag flips before the `StreamBuilder<MediaItem>` receives the new value.
+  MediaItem? _loadingFromItem;
+
+  /// Begins a skeletonised load: remembers what was on screen so the listener
+  /// can tell when genuinely new metadata has arrived.
+  void _beginMediaLoading() {
+    _loadingFromItem = mediaItem.valueOrNull;
+    mediaLoading.value = true;
+  }
   // Number of video pages (episode/movie) currently mounted. The mini player
   // hides its video bar while the item's own page is on screen — the full
   // player is already visible there, so the bar would only duplicate it.
@@ -132,6 +166,14 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// True while a video is showing fullscreen. Guards the auto-fullscreen
   /// trigger in [IsterPlayer] against re-entering while already fullscreen.
   bool videoFullscreen = false;
+
+  /// Repeat mode for the queue. Persisted in [playbackState] so notification
+  /// controls and the music UI stay in sync. `one` replays the current track on
+  /// completion; `all` wraps past the ends of the queue. The backend play queue
+  /// has no repeat concept, so this is enforced entirely client-side in
+  /// [skipToNext]/[skipToPrevious] and the completion/stall auto-advance.
+  AudioServiceRepeatMode _repeatMode = AudioServiceRepeatMode.none;
+  AudioServiceRepeatMode get repeatMode => _repeatMode;
 
   Fragment$fragmentEpisode? episode;
   Fragment$fragmentMovie? movie;
@@ -349,6 +391,11 @@ class MediaPlayerHandler extends BaseAudioHandler
         serverName != newServerName ||
         currentTrackId != trackId;
 
+    // Open the full player immediately; show a skeleton (not the previous
+    // track) while the new track's metadata loads.
+    if (shouldRefresh) _beginMediaLoading();
+    openMusicPlayerRequest.value++;
+
     album = newAlbum;
     currentTrackId = trackId;
     episode = null;
@@ -423,6 +470,10 @@ class MediaPlayerHandler extends BaseAudioHandler
               '',
           mediaType: IsterMediaTypes.track,
         );
+      } else {
+        // No playable file — _openMedia never ran, so no new item will arrive.
+        // Clear here rather than leave the player stuck on a skeleton.
+        mediaLoading.value = false;
       }
     } else {
       await _resumeCurrentItem();
@@ -477,8 +528,16 @@ class MediaPlayerHandler extends BaseAudioHandler
     serverName = srv;
     graphQLClient = client;
 
+    // Shuffle always starts a fresh track — open the player and skeletonise
+    // until the first shuffled item's metadata is published.
+    _beginMediaLoading();
+    openMusicPlayerRequest.value++;
+
     final items = PlayQueueService.sortedItems(pq);
-    if (items.isEmpty) return;
+    if (items.isEmpty) {
+      mediaLoading.value = false;
+      return;
+    }
     final current = PlayQueueService.getCurrentPlayQueueItem(pq) ?? items.first;
     playQueue =
         pq.currentItemId == null ? pq.copyWith(currentItemId: current.id) : pq;
@@ -584,15 +643,24 @@ class MediaPlayerHandler extends BaseAudioHandler
             mediaType == IsterMediaTypes.track ? VideoTrack.no() : VideoTrack.auto());
       }
       final currentItemId = playQueue?.currentItemId;
-      if (currentItemId != null) {
-        final found = queue.value.where((e) =>
-            e.id == MediaItemId(serverName, mediaType, currentItemId).toString()
-        ).firstOrNull;
-        if (found != null && mediaItem.valueOrNull != found) {
-          mediaItem.add(found);
-        }
+      final found = currentItemId != null
+          ? queue.value
+              .where((e) =>
+                  e.id ==
+                  MediaItemId(serverName, mediaType, currentItemId).toString())
+              .firstOrNull
+          : null;
+      if (found != null && mediaItem.valueOrNull != found) {
+        // The mediaItem listener drops the skeleton on delivery of this event,
+        // in lock-step with the UI's StreamBuilder — no old-metadata flash.
+        mediaItem.add(found);
+      } else {
+        // Already the right item (or unresolved) — no new emission is coming,
+        // so clear here; there's no stream event to race against.
+        mediaLoading.value = false;
       }
     } catch (e) {
+      mediaLoading.value = false;
       LoggerService().logger.e('Failed to open media: $e');
     }
   }
@@ -660,7 +728,13 @@ class MediaPlayerHandler extends BaseAudioHandler
     final index = playbackState.value.queueIndex;
     if (index == null) return;
     final next = index + 1;
-    if (next < q.length) await skipToQueueItem(next);
+    if (next < q.length) {
+      await skipToQueueItem(next);
+    } else if (_repeatMode == AudioServiceRepeatMode.all && q.isNotEmpty) {
+      // Wrap to the top of the queue. `repeat one` is deliberately ignored for a
+      // manual next — the user asked to move on — and only loops on auto-advance.
+      await skipToQueueItem(0);
+    }
   }
 
   @override
@@ -668,7 +742,36 @@ class MediaPlayerHandler extends BaseAudioHandler
     final index = playbackState.value.queueIndex;
     if (index == null) return;
     final prev = index - 1;
-    if (prev >= 0) await skipToQueueItem(prev);
+    if (prev >= 0) {
+      await skipToQueueItem(prev);
+    } else if (_repeatMode == AudioServiceRepeatMode.all) {
+      final q = queue.value;
+      if (q.isNotEmpty) await skipToQueueItem(q.length - 1);
+    }
+  }
+
+  @override
+  Future<void> setRepeatMode(AudioServiceRepeatMode repeatMode) async {
+    _repeatMode = repeatMode;
+    playbackState.add(playbackState.value.copyWith(repeatMode: repeatMode));
+  }
+
+  /// Cycles repeat none → all → one → none, for a single UI toggle button.
+  Future<void> cycleRepeatMode() async {
+    const order = [
+      AudioServiceRepeatMode.none,
+      AudioServiceRepeatMode.all,
+      AudioServiceRepeatMode.one,
+    ];
+    final next = order[(order.indexOf(_repeatMode) + 1) % order.length];
+    await setRepeatMode(next);
+  }
+
+  /// Replays the current track from the start — used by the completion/stall
+  /// handlers when [AudioServiceRepeatMode.one] is active.
+  Future<void> _repeatCurrent() async {
+    await _player.seek(Duration.zero);
+    await _player.play();
   }
 
   @override
@@ -1539,7 +1642,11 @@ class MediaPlayerHandler extends BaseAudioHandler
     _lastAutoAdvance = DateTime.now();
     LoggerService().logger.w(
         '[STALL] Near-end stall detected (remaining=${dur - pos}, stalledFor=$stalledFor) — advancing to next');
-    skipToNext();
+    if (_repeatMode == AudioServiceRepeatMode.one) {
+      _repeatCurrent();
+    } else {
+      skipToNext();
+    }
   }
 
   void _listenToCompletion() {
@@ -1571,7 +1678,11 @@ class MediaPlayerHandler extends BaseAudioHandler
         }
         // Mark so the stall watchdog doesn't double-advance.
         _lastAutoAdvance = DateTime.now();
-        skipToNext();
+        if (_repeatMode == AudioServiceRepeatMode.one) {
+          _repeatCurrent();
+        } else {
+          skipToNext();
+        }
       }
     });
   }

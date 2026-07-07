@@ -32,6 +32,8 @@ fragment fragmentPersonCredit on Credit {
         id
         number
         images { ...fragmentImages }
-        show { id name }
+        metadata { ...fragmentMetadata }
+        season { id number }
+        show { id name images { ...fragmentImages } }
     }
 }

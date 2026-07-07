@@ -414,7 +414,7 @@ class ServerHomeOverviewRouteArgs {
 /// [_i9.ServerHomePage]
 class ServerHomeRoute extends _i18.PageRouteInfo<ServerHomeRouteArgs> {
   ServerHomeRoute({
-    _i20.Key? key,
+    _i19.Key? key,
     required String serverName,
     List<_i18.PageRouteInfo>? children,
   }) : super(
@@ -442,7 +442,7 @@ class ServerHomeRoute extends _i18.PageRouteInfo<ServerHomeRouteArgs> {
 class ServerHomeRouteArgs {
   const ServerHomeRouteArgs({this.key, required this.serverName});
 
-  final _i20.Key? key;
+  final _i19.Key? key;
 
   final String serverName;
 
