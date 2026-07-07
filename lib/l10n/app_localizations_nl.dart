@@ -55,6 +55,25 @@ class AppLocalizationsNl extends AppLocalizations {
   String get analyzeLibrary => 'Analyseer bibliotheek';
 
   @override
+  String get reindexSearch => 'Zoekindex herbouwen';
+
+  @override
+  String get analyzeAllLibraries => 'Alle bibliotheken';
+
+  @override
+  String get management => 'Beheer';
+
+  @override
+  String taskStarted(String task) {
+    return 'Gestart: $task';
+  }
+
+  @override
+  String taskFailed(String task) {
+    return 'Mislukt: $task';
+  }
+
+  @override
   String get goToShow => 'Ga naar show';
 
   @override

@@ -182,6 +182,36 @@ abstract class AppLocalizations {
   /// **'Analyze library'**
   String get analyzeLibrary;
 
+  /// Management action that rebuilds the search index on the server.
+  ///
+  /// In en, this message translates to:
+  /// **'Reindex search'**
+  String get reindexSearch;
+
+  /// Option in the analyze picker that analyzes every library at once (the overarching analyzeLibrary action).
+  ///
+  /// In en, this message translates to:
+  /// **'All libraries'**
+  String get analyzeAllLibraries;
+
+  /// Section header for administrative server actions (scan, analyze, reindex).
+  ///
+  /// In en, this message translates to:
+  /// **'Management'**
+  String get management;
+
+  /// Confirmation toast shown when a management task was triggered on the server.
+  ///
+  /// In en, this message translates to:
+  /// **'Started: {task}'**
+  String taskStarted(String task);
+
+  /// Toast shown when a management task could not be triggered on the server.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed: {task}'**
+  String taskFailed(String task);
+
   /// In menu archor an item when clicked go to show of that item.
   ///
   /// In en, this message translates to:

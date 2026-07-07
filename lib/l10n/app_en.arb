@@ -37,6 +37,36 @@
   "@analyzeLibrary": {
     "description": "Text in list tile when clicked it will trigger a analyze scan."
   },
+  "reindexSearch": "Reindex search",
+  "@reindexSearch": {
+    "description": "Management action that rebuilds the search index on the server."
+  },
+  "analyzeAllLibraries": "All libraries",
+  "@analyzeAllLibraries": {
+    "description": "Option in the analyze picker that analyzes every library at once (the overarching analyzeLibrary action)."
+  },
+  "management": "Management",
+  "@management": {
+    "description": "Section header for administrative server actions (scan, analyze, reindex)."
+  },
+  "taskStarted": "Started: {task}",
+  "@taskStarted": {
+    "description": "Confirmation toast shown when a management task was triggered on the server.",
+    "placeholders": {
+      "task": {
+        "type": "String"
+      }
+    }
+  },
+  "taskFailed": "Failed: {task}",
+  "@taskFailed": {
+    "description": "Toast shown when a management task could not be triggered on the server.",
+    "placeholders": {
+      "task": {
+        "type": "String"
+      }
+    }
+  },
   "goToShow": "Go to show",
   "@goToShow": {
     "description": "In menu archor an item when clicked go to show of that item."

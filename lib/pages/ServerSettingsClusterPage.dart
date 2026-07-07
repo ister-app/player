@@ -1,11 +1,19 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:gql/ast.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/graphql/analyzeDataForLibrary.graphql.dart';
+import 'package:player/graphql/analyzeLibrary.graphql.dart';
 import 'package:player/graphql/getServerInfo.graphql.dart';
+import 'package:player/graphql/libraries.graphql.dart';
+import 'package:player/graphql/reindexSearch.graphql.dart';
+import 'package:player/graphql/scanLibrary.graphql.dart';
+import 'package:player/graphql/schema.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../l10n/app_localizations.dart';
 import '../utils/ClientManager.dart';
+import '../utils/LoggerService.dart';
 
 @RoutePage()
 class ServerSettingsClusterPage extends StatelessWidget {
@@ -28,6 +36,148 @@ class ServerSettingsClusterPage extends StatelessWidget {
     );
   }
 
+  Future<void> _runManagementTask(
+    BuildContext context,
+    DocumentNode document,
+    String label, {
+    Map<String, dynamic>? variables,
+  }) async {
+    final loc = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final client = GraphQLProvider.of(context).value;
+
+    final result = await client.mutate(MutationOptions(
+      document: document,
+      variables: variables ?? const {},
+    ));
+
+    if (!context.mounted) return;
+    if (result.hasException) {
+      LoggerService().logger.e(result.exception);
+      messenger.showSnackBar(
+        SnackBar(content: Text(loc.taskFailed(label))),
+      );
+      return;
+    }
+    messenger.showSnackBar(
+      SnackBar(content: Text(loc.taskStarted(label))),
+    );
+  }
+
+  IconData _libraryIcon(Enum$LibraryType type) {
+    switch (type) {
+      case Enum$LibraryType.SHOW:
+        return Icons.tv;
+      case Enum$LibraryType.MUSIC:
+        return Icons.library_music;
+      default:
+        return Icons.movie;
+    }
+  }
+
+  Future<void> _showAnalyzeOptions(BuildContext context) async {
+    final loc = AppLocalizations.of(context)!;
+    final client = GraphQLProvider.of(context).value;
+
+    final result = await client.query(QueryOptions(
+      document: documentNodeQuerylibraries,
+      fetchPolicy: FetchPolicy.cacheAndNetwork,
+    ));
+
+    if (!context.mounted) return;
+    final libraries = result.data == null
+        ? <Query$libraries$libraries>[]
+        : (Query$libraries.fromJson(result.data!).libraries ??
+            <Query$libraries$libraries>[]);
+
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) {
+        final mutedColor = Theme.of(sheetContext).colorScheme.onSurfaceVariant;
+        return SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: Icon(Icons.analytics_outlined, color: mutedColor),
+                  title: Text(loc.analyzeAllLibraries),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _runManagementTask(
+                      context,
+                      documentNodeMutationanalyzeLibrary,
+                      loc.analyzeAllLibraries,
+                    );
+                  },
+                ),
+                if (libraries.isNotEmpty) const Divider(height: 1),
+                for (final library in libraries)
+                  ListTile(
+                    leading: Icon(_libraryIcon(library.type), color: mutedColor),
+                    title: Text(library.name),
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      _runManagementTask(
+                        context,
+                        documentNodeMutationanalyzeDataForLibraryMutation,
+                        library.name,
+                        variables: {'libraryId': library.id},
+                      );
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _managementSection(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _sectionLabel(context, loc.management),
+        Card(
+          child: Column(
+            children: [
+              ListTile(
+                leading: Icon(Icons.loop, color: mutedColor),
+                title: Text(loc.scanLibrary),
+                onTap: () => _runManagementTask(
+                  context,
+                  documentNodeMutationscanLibrary,
+                  loc.scanLibrary,
+                ),
+              ),
+              const Divider(height: 1, indent: 56),
+              ListTile(
+                leading: Icon(Icons.analytics_outlined, color: mutedColor),
+                title: Text(loc.analyzeLibrary),
+                trailing: Icon(Icons.chevron_right, color: mutedColor),
+                onTap: () => _showAnalyzeOptions(context),
+              ),
+              const Divider(height: 1, indent: 56),
+              ListTile(
+                leading: Icon(Icons.manage_search, color: mutedColor),
+                title: Text(loc.reindexSearch),
+                onTap: () => _runManagementTask(
+                  context,
+                  documentNodeMutationreindexSearch,
+                  loc.reindexSearch,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
@@ -44,7 +194,13 @@ class ServerSettingsClusterPage extends StatelessWidget {
           builder: (QueryResult result,
               {VoidCallback? refetch, FetchMore? fetchMore}) {
             if (result.hasException) {
-              return Center(child: Text(result.exception.toString()));
+              return ListView(
+                padding: const EdgeInsets.all(16.0),
+                children: [
+                  Center(child: Text(result.exception.toString())),
+                  _managementSection(context),
+                ],
+              );
             }
 
             if (result.data == null || result.isLoading) {
@@ -82,6 +238,7 @@ class ServerSettingsClusterPage extends StatelessWidget {
                         ),
                       ),
                     ),
+                    _managementSection(context),
                   ],
                 ),
               );
@@ -143,6 +300,7 @@ class ServerSettingsClusterPage extends StatelessWidget {
                     ),
                   ),
                 ],
+                _managementSection(context),
               ],
             );
           },

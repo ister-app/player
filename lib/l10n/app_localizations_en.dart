@@ -55,6 +55,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get analyzeLibrary => 'Analyze library';
 
   @override
+  String get reindexSearch => 'Reindex search';
+
+  @override
+  String get analyzeAllLibraries => 'All libraries';
+
+  @override
+  String get management => 'Management';
+
+  @override
+  String taskStarted(String task) {
+    return 'Started: $task';
+  }
+
+  @override
+  String taskFailed(String task) {
+    return 'Failed: $task';
+  }
+
+  @override
   String get goToShow => 'Go to show';
 
   @override

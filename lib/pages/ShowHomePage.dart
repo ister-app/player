@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:player/graphql/analyzeDataForLibrary.graphql.dart';
 import 'package:player/graphql/libraries.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
@@ -175,36 +174,6 @@ class _ShowHomePageState extends State<ShowHomePage> {
                 icon: const Icon(Icons.refresh),
                 onPressed: triggerRefresh,
               ),
-              if (_selectedLibraryId != null)
-                MenuAnchor(
-                  menuChildren: <Widget>[
-                    MenuItemButton(
-                      onPressed: () async {
-                        final client = GraphQLProvider.of(context).value;
-                        await client.mutate(MutationOptions(
-                          document: documentNodeMutationanalyzeDataForLibraryMutation,
-                          variables: {'libraryId': _selectedLibraryId},
-                        ));
-                      },
-                      child: ListTile(
-                        leading: const Icon(Icons.analytics),
-                        title: Text(AppLocalizations.of(context)!.analyzeLibrary),
-                      ),
-                    ),
-                  ],
-                  builder: (_, MenuController controller, Widget? child) {
-                    return IconButton(
-                      onPressed: () {
-                        if (controller.isOpen) {
-                          controller.close();
-                        } else {
-                          controller.open();
-                        }
-                      },
-                      icon: const Icon(Icons.more_vert),
-                    );
-                  },
-                ),
             ],
           ),
           body: RefreshIndicator(

@@ -5,13 +5,11 @@ import 'package:player/components/AlbumSlide.dart';
 import 'package:player/components/MovieSlide.dart';
 import 'package:player/components/TvShowSlide.dart';
 import 'package:player/graphql/libraries.graphql.dart';
-import 'package:player/graphql/scanLibrary.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
 
 import '../components/RecentCarouselView.dart';
-import '../graphql/analyzeLibrary.graphql.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/LoggerService.dart';
 
@@ -73,7 +71,6 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
 
   @override
   Widget build(BuildContext context) {
-    GraphQLClient graphQLClient = GraphQLProvider.of(context).value;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.serverName),
@@ -85,22 +82,6 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                   child: ListTile(
                     leading: const Icon(Icons.refresh),
                     title: Text(AppLocalizations.of(context)!.refreshPage),
-                  )),
-              MenuItemButton(
-                  onPressed: () {
-                    scanLibrary(graphQLClient);
-                  },
-                  child: ListTile(
-                    leading: const Icon(Icons.loop),
-                    title: Text(AppLocalizations.of(context)!.scanLibrary),
-                  )),
-              MenuItemButton(
-                  onPressed: () {
-                    analyzeLibrary(graphQLClient);
-                  },
-                  child: ListTile(
-                    leading: const Icon(Icons.loop),
-                    title: Text(AppLocalizations.of(context)!.analyzeLibrary),
                   )),
               MenuItemButton(
                   onPressed: () {
@@ -208,31 +189,5 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
             },
           )),
     );
-  }
-
-  Future<void> scanLibrary(GraphQLClient graphQLClient) async {
-    LoggerService().logger.i("scanLibrary");
-    final MutationOptions options = MutationOptions(
-      document: documentNodeMutationscanLibrary,
-    );
-    final QueryResult result = await graphQLClient.mutate(options);
-
-    if (result.hasException) {
-      LoggerService().logger.e(result.exception);
-      return;
-    }
-  }
-
-  Future<void> analyzeLibrary(GraphQLClient graphQLClient) async {
-    LoggerService().logger.i("analyzeLibrary");
-    final MutationOptions options = MutationOptions(
-      document: documentNodeMutationanalyzeLibrary,
-    );
-    final QueryResult result = await graphQLClient.mutate(options);
-
-    if (result.hasException) {
-      LoggerService().logger.e(result.exception);
-      return;
-    }
   }
 }
