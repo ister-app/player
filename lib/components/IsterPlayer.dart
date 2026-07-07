@@ -80,32 +80,27 @@ class _IsterVideoControlsState extends State<_IsterVideoControls> {
   }
 
   /// Enter fullscreen the first time playback becomes active after this view is
-  /// shown, so a video that starts playing goes fullscreen on its own.
+  /// shown, so a video that starts playing goes fullscreen on its own. Guarded
+  /// to once per mount (and skipped if we're already fullscreen, e.g. when the
+  /// queue auto-advances to the next episode).
   void _maybeAutoEnter(bool playing) {
     if (_autoEnterDone || !playing || !mounted) return;
     _autoEnterDone = true;
-    _enterFullscreen();
-  }
-
-  void _enterFullscreen() {
     if (_handler.videoFullscreen) return;
-    // Set the guard synchronously so a burst of playing-events can't push the
-    // fullscreen route more than once.
-    _handler.videoFullscreen = true;
-    // Defer the route push out of the build/dependency phase (the initial
-    // auto-enter can fire while dependencies are being resolved).
+    // Defer the push out of the build/dependency phase (this can first run
+    // during didChangeDependencies).
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
+      if (mounted && !_handler.videoFullscreen && !isFullscreen(context)) {
         enterFullscreen(context);
-      } else {
-        _handler.videoFullscreen = false;
       }
     });
   }
 
   void _onTapEmbedded() {
     _handler.play();
-    _enterFullscreen();
+    // No global-flag guard here: tapping should always re-enter, and media_kit
+    // itself ignores a duplicate enter for the same view.
+    if (!isFullscreen(context)) enterFullscreen(context);
   }
 
   @override
