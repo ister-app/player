@@ -464,7 +464,7 @@ class _SearchPageState extends State<SearchPage> {
       final showId = item.$show?.id;
       return _ResultView(
         title: MetadataUtil.getTitle(item.metadata) ??
-            loc.episode(item.number ?? 0),
+            loc.episode(item.number),
         typeLabel: loc.typeEpisode,
         subtitle: item.$show?.name,
         description: MetadataUtil.getDescription(item.metadata),

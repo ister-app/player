@@ -808,7 +808,7 @@ class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched<TRes>
 class Query$recentlyWatched$recentlyWatched$episode {
   Query$recentlyWatched$recentlyWatched$episode({
     required this.id,
-    this.number,
+    required this.number,
     this.$show,
     this.season,
     this.watchStatus,
@@ -832,7 +832,7 @@ class Query$recentlyWatched$recentlyWatched$episode {
     final l$$__typename = json['__typename'];
     return Query$recentlyWatched$recentlyWatched$episode(
       id: (l$id as String),
-      number: (l$number as int?),
+      number: (l$number as int),
       $show: l$$show == null
           ? null
           : Query$recentlyWatched$recentlyWatched$episode$show.fromJson(
@@ -877,7 +877,7 @@ class Query$recentlyWatched$recentlyWatched$episode {
 
   final String id;
 
-  final int? number;
+  final int number;
 
   final Query$recentlyWatched$recentlyWatched$episode$show? $show;
 
@@ -1141,7 +1141,9 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$episode<TRes>
   }) => _then(
     Query$recentlyWatched$recentlyWatched$episode(
       id: id == _undefined || id == null ? _instance.id : (id as String),
-      number: number == _undefined ? _instance.number : (number as int?),
+      number: number == _undefined || number == null
+          ? _instance.number
+          : (number as int),
       $show: $show == _undefined
           ? _instance.$show
           : ($show as Query$recentlyWatched$recentlyWatched$episode$show?),

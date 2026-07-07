@@ -1732,7 +1732,7 @@ class _CopyWithStubImpl$Query$search$search$$Show<TRes>
 class Query$search$search$$Episode implements Query$search$search {
   Query$search$search$$Episode({
     required this.id,
-    this.number,
+    required this.number,
     this.$show,
     this.season,
     this.images,
@@ -1750,7 +1750,7 @@ class Query$search$search$$Episode implements Query$search$search {
     final l$$__typename = json['__typename'];
     return Query$search$search$$Episode(
       id: (l$id as String),
-      number: (l$number as int?),
+      number: (l$number as int),
       $show: l$$show == null
           ? null
           : Query$search$search$$Episode$show.fromJson(
@@ -1779,7 +1779,7 @@ class Query$search$search$$Episode implements Query$search$search {
 
   final String id;
 
-  final int? number;
+  final int number;
 
   final Query$search$search$$Episode$show? $show;
 
@@ -1961,7 +1961,9 @@ class _CopyWithImpl$Query$search$search$$Episode<TRes>
   }) => _then(
     Query$search$search$$Episode(
       id: id == _undefined || id == null ? _instance.id : (id as String),
-      number: number == _undefined ? _instance.number : (number as int?),
+      number: number == _undefined || number == null
+          ? _instance.number
+          : (number as int),
       $show: $show == _undefined
           ? _instance.$show
           : ($show as Query$search$search$$Episode$show?),

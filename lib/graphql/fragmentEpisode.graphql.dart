@@ -7,7 +7,7 @@ import 'package:gql/ast.dart';
 class Fragment$fragmentEpisode {
   Fragment$fragmentEpisode({
     required this.id,
-    this.number,
+    required this.number,
     this.$show,
     this.season,
     this.metadata,
@@ -31,7 +31,7 @@ class Fragment$fragmentEpisode {
     final l$$__typename = json['__typename'];
     return Fragment$fragmentEpisode(
       id: (l$id as String),
-      number: (l$number as int?),
+      number: (l$number as int),
       $show: l$$show == null
           ? null
           : Fragment$fragmentEpisode$show.fromJson(
@@ -81,7 +81,7 @@ class Fragment$fragmentEpisode {
 
   final String id;
 
-  final int? number;
+  final int number;
 
   final Fragment$fragmentEpisode$show? $show;
 
@@ -363,7 +363,9 @@ class _CopyWithImpl$Fragment$fragmentEpisode<TRes>
   }) => _then(
     Fragment$fragmentEpisode(
       id: id == _undefined || id == null ? _instance.id : (id as String),
-      number: number == _undefined ? _instance.number : (number as int?),
+      number: number == _undefined || number == null
+          ? _instance.number
+          : (number as int),
       $show: $show == _undefined
           ? _instance.$show
           : ($show as Fragment$fragmentEpisode$show?),

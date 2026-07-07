@@ -131,7 +131,7 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
                       serverName: widget.serverName,
                       title: MetadataUtil.getTitle(episode.metadata) ??
                           AppLocalizations.of(context)!
-                              .episode(episode.number ?? 0),
+                              .episode(episode.number),
                       subTitle:
                           MetadataUtil.getDescription(episode.metadata) ?? "",
                       imageUrl: ImageUtil.buildUrl(imageByType, token: StreamTokenService.getToken(widget.serverName)),

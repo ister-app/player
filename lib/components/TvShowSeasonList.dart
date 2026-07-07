@@ -67,10 +67,10 @@ class TvShowSeasonList extends StatelessWidget {
                             context,
                             MetadataUtil.getTitle(episode.metadata) ??
                                 AppLocalizations.of(context)!
-                                    .episode(episode.number ?? 0),
+                                    .episode(episode.number),
                             MetadataUtil.getDescription(episode.metadata) ?? "",
                             isWatched(episode),
-                            episode.number ?? 0,
+                            episode.number,
                             episode.$show?.id ?? '',
                             episode.id,
                             ImageUtil.buildUrl(imageByType, token: StreamTokenService.getToken(serverName)),

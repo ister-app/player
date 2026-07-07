@@ -1138,7 +1138,7 @@ class _CopyWithStubImpl$Query$shows$shows$content<TRes>
 
 class Query$shows$shows$content$episodes {
   Query$shows$shows$content$episodes({
-    this.number,
+    required this.number,
     this.$__typename = 'Episode',
   });
 
@@ -1148,12 +1148,12 @@ class Query$shows$shows$content$episodes {
     final l$number = json['number'];
     final l$$__typename = json['__typename'];
     return Query$shows$shows$content$episodes(
-      number: (l$number as int?),
+      number: (l$number as int),
       $__typename: (l$$__typename as String),
     );
   }
 
-  final int? number;
+  final int number;
 
   final String $__typename;
 
@@ -1229,7 +1229,9 @@ class _CopyWithImpl$Query$shows$shows$content$episodes<TRes>
   TRes call({Object? number = _undefined, Object? $__typename = _undefined}) =>
       _then(
         Query$shows$shows$content$episodes(
-          number: number == _undefined ? _instance.number : (number as int?),
+          number: number == _undefined || number == null
+              ? _instance.number
+              : (number as int),
           $__typename: $__typename == _undefined || $__typename == null
               ? _instance.$__typename
               : ($__typename as String),

@@ -620,7 +620,7 @@ class _CopyWithStubImpl$Query$seasonById$seasonById<TRes>
 class Query$seasonById$seasonById$episodes {
   Query$seasonById$seasonById$episodes({
     required this.id,
-    this.number,
+    required this.number,
     this.metadata,
     this.$show,
     this.images,
@@ -642,7 +642,7 @@ class Query$seasonById$seasonById$episodes {
     final l$$__typename = json['__typename'];
     return Query$seasonById$seasonById$episodes(
       id: (l$id as String),
-      number: (l$number as int?),
+      number: (l$number as int),
       metadata: (l$metadata as List<dynamic>?)
           ?.map(
             (e) =>
@@ -680,7 +680,7 @@ class Query$seasonById$seasonById$episodes {
 
   final String id;
 
-  final int? number;
+  final int number;
 
   final List<Fragment$fragmentMetadata>? metadata;
 
@@ -923,7 +923,9 @@ class _CopyWithImpl$Query$seasonById$seasonById$episodes<TRes>
   }) => _then(
     Query$seasonById$seasonById$episodes(
       id: id == _undefined || id == null ? _instance.id : (id as String),
-      number: number == _undefined ? _instance.number : (number as int?),
+      number: number == _undefined || number == null
+          ? _instance.number
+          : (number as int),
       metadata: metadata == _undefined
           ? _instance.metadata
           : (metadata as List<Fragment$fragmentMetadata>?),

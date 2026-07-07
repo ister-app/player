@@ -1521,7 +1521,7 @@ class _CopyWithStubImpl$Fragment$fragmentPersonCredit$show<TRes>
 class Fragment$fragmentPersonCredit$episode {
   Fragment$fragmentPersonCredit$episode({
     required this.id,
-    this.number,
+    required this.number,
     this.images,
     this.metadata,
     this.season,
@@ -1541,7 +1541,7 @@ class Fragment$fragmentPersonCredit$episode {
     final l$$__typename = json['__typename'];
     return Fragment$fragmentPersonCredit$episode(
       id: (l$id as String),
-      number: (l$number as int?),
+      number: (l$number as int),
       images: (l$images as List<dynamic>?)
           ?.map(
             (e) =>
@@ -1570,7 +1570,7 @@ class Fragment$fragmentPersonCredit$episode {
 
   final String id;
 
-  final int? number;
+  final int number;
 
   final List<Fragment$fragmentImages>? images;
 
@@ -1758,7 +1758,9 @@ class _CopyWithImpl$Fragment$fragmentPersonCredit$episode<TRes>
   }) => _then(
     Fragment$fragmentPersonCredit$episode(
       id: id == _undefined || id == null ? _instance.id : (id as String),
-      number: number == _undefined ? _instance.number : (number as int?),
+      number: number == _undefined || number == null
+          ? _instance.number
+          : (number as int),
       images: images == _undefined
           ? _instance.images
           : (images as List<Fragment$fragmentImages>?),

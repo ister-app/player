@@ -588,7 +588,7 @@ class _PersonShowEpisodesSheetState extends State<_PersonShowEpisodesSheet> {
     final ordered = buckets.values.toList()
       ..sort((a, b) => (a.number ?? last).compareTo(b.number ?? last));
     for (final bucket in ordered) {
-      bucket.episodes.sort((a, b) => (a.number ?? 0).compareTo(b.number ?? 0));
+      bucket.episodes.sort((a, b) => a.number.compareTo(b.number));
     }
     return ordered;
   }
@@ -650,7 +650,7 @@ class _PersonShowEpisodesSheetState extends State<_PersonShowEpisodesSheet> {
   Widget _episodeTile(BuildContext context, AppLocalizations loc,
       Fragment$fragmentPersonCredit$episode episode) {
     final metaTitle = MetadataUtil.getTitle(episode.metadata);
-    final title = metaTitle ?? loc.episode(episode.number ?? 0);
+    final title = metaTitle ?? loc.episode(episode.number);
     final img = ImageUtil.getImageByType(episode.images, ImageTypes.background) ??
         ImageUtil.getImageByType(episode.images, ImageTypes.cover);
     final imageUrl = ImageUtil.buildUrl(img,
@@ -677,7 +677,7 @@ class _PersonShowEpisodesSheetState extends State<_PersonShowEpisodesSheet> {
       ),
       title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle:
-          metaTitle != null ? Text(loc.episode(episode.number ?? 0)) : null,
+          metaTitle != null ? Text(loc.episode(episode.number)) : null,
       onTap: showId == null
           ? null
           : () {
