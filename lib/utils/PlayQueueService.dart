@@ -264,18 +264,22 @@ class PlayQueueService {
     return sorted;
   }
 
+  /// [streamSettings] tells the server what format the client is playing
+  /// with, so it can prefetch the next queue item in the same format.
   Future<Fragment$fragmentPlayQueue?> updateProgress(
       GraphQLClient graphQLClient,
       String playQueueId,
       String playQueueItemId,
-      Duration duration) async {
+      Duration duration,
+      {Input$StreamSettingsInput? streamSettings}) async {
     final MutationOptions options = MutationOptions(
         document: documentNodeMutationupdatePlayQueue,
-        variables: Map.of({
-          "id": playQueueId,
-          "playQueueItemId": playQueueItemId,
-          "progressInMilliseconds": duration.inMilliseconds
-        }));
+        variables: Variables$Mutation$updatePlayQueue(
+          id: playQueueId,
+          playQueueItemId: playQueueItemId,
+          progressInMilliseconds: duration.inMilliseconds,
+          streamSettings: streamSettings,
+        ).toJson());
     final QueryResult result = await graphQLClient.mutate(options);
 
     if (result.hasException) {

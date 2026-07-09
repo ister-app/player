@@ -29,10 +29,12 @@ class ImageUtil {
     return token != null ? '$base?token=$token' : base;
   }
 
+  /// Subtitle format requested on the HLS master playlist; keep in sync with
+  /// the StreamSettingsInput sent on progress updates (prefetching).
+  static const String subtitleFormat = kIsWeb ? 'WEBVTT' : 'SRT';
+
   static String? buildMediaFileUrl(Fragment$fragmentMediaFiles? mediaFile, {String? token, bool direct = true, bool transcode = true}) {
     if (mediaFile == null) return null;
-    // final subtitleFormat = kIsWeb ? 'WEBVTT' : 'WEBVTT';
-    final subtitleFormat = kIsWeb ? 'WEBVTT' : 'SRT';
     final base = '${mediaFile.directory.node.url}/hls/${mediaFile.id}/master.m3u8?direct=$direct&transcode=$transcode&subtitleFormat=$subtitleFormat';
     return token != null ? '$base&token=$token' : base;
   }

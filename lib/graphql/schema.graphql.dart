@@ -1,3 +1,154 @@
+class Input$StreamSettingsInput {
+  factory Input$StreamSettingsInput({
+    required bool direct,
+    required bool transcode,
+    Enum$SubtitleFormat? subtitleFormat,
+  }) => Input$StreamSettingsInput._({
+    r'direct': direct,
+    r'transcode': transcode,
+    if (subtitleFormat != null) r'subtitleFormat': subtitleFormat,
+  });
+
+  Input$StreamSettingsInput._(this._$data);
+
+  factory Input$StreamSettingsInput.fromJson(Map<String, dynamic> data) {
+    final result$data = <String, dynamic>{};
+    final l$direct = data['direct'];
+    result$data['direct'] = (l$direct as bool);
+    final l$transcode = data['transcode'];
+    result$data['transcode'] = (l$transcode as bool);
+    if (data.containsKey('subtitleFormat')) {
+      final l$subtitleFormat = data['subtitleFormat'];
+      result$data['subtitleFormat'] = l$subtitleFormat == null
+          ? null
+          : fromJson$Enum$SubtitleFormat((l$subtitleFormat as String));
+    }
+    return Input$StreamSettingsInput._(result$data);
+  }
+
+  Map<String, dynamic> _$data;
+
+  bool get direct => (_$data['direct'] as bool);
+
+  bool get transcode => (_$data['transcode'] as bool);
+
+  Enum$SubtitleFormat? get subtitleFormat =>
+      (_$data['subtitleFormat'] as Enum$SubtitleFormat?);
+
+  Map<String, dynamic> toJson() {
+    final result$data = <String, dynamic>{};
+    final l$direct = direct;
+    result$data['direct'] = l$direct;
+    final l$transcode = transcode;
+    result$data['transcode'] = l$transcode;
+    if (_$data.containsKey('subtitleFormat')) {
+      final l$subtitleFormat = subtitleFormat;
+      result$data['subtitleFormat'] = l$subtitleFormat == null
+          ? null
+          : toJson$Enum$SubtitleFormat(l$subtitleFormat);
+    }
+    return result$data;
+  }
+
+  CopyWith$Input$StreamSettingsInput<Input$StreamSettingsInput> get copyWith =>
+      CopyWith$Input$StreamSettingsInput(this, (i) => i);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Input$StreamSettingsInput ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$direct = direct;
+    final lOther$direct = other.direct;
+    if (l$direct != lOther$direct) {
+      return false;
+    }
+    final l$transcode = transcode;
+    final lOther$transcode = other.transcode;
+    if (l$transcode != lOther$transcode) {
+      return false;
+    }
+    final l$subtitleFormat = subtitleFormat;
+    final lOther$subtitleFormat = other.subtitleFormat;
+    if (_$data.containsKey('subtitleFormat') !=
+        other._$data.containsKey('subtitleFormat')) {
+      return false;
+    }
+    if (l$subtitleFormat != lOther$subtitleFormat) {
+      return false;
+    }
+    return true;
+  }
+
+  @override
+  int get hashCode {
+    final l$direct = direct;
+    final l$transcode = transcode;
+    final l$subtitleFormat = subtitleFormat;
+    return Object.hashAll([
+      l$direct,
+      l$transcode,
+      _$data.containsKey('subtitleFormat') ? l$subtitleFormat : const {},
+    ]);
+  }
+}
+
+abstract class CopyWith$Input$StreamSettingsInput<TRes> {
+  factory CopyWith$Input$StreamSettingsInput(
+    Input$StreamSettingsInput instance,
+    TRes Function(Input$StreamSettingsInput) then,
+  ) = _CopyWithImpl$Input$StreamSettingsInput;
+
+  factory CopyWith$Input$StreamSettingsInput.stub(TRes res) =
+      _CopyWithStubImpl$Input$StreamSettingsInput;
+
+  TRes call({
+    bool? direct,
+    bool? transcode,
+    Enum$SubtitleFormat? subtitleFormat,
+  });
+}
+
+class _CopyWithImpl$Input$StreamSettingsInput<TRes>
+    implements CopyWith$Input$StreamSettingsInput<TRes> {
+  _CopyWithImpl$Input$StreamSettingsInput(this._instance, this._then);
+
+  final Input$StreamSettingsInput _instance;
+
+  final TRes Function(Input$StreamSettingsInput) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? direct = _undefined,
+    Object? transcode = _undefined,
+    Object? subtitleFormat = _undefined,
+  }) => _then(
+    Input$StreamSettingsInput._({
+      ..._instance._$data,
+      if (direct != _undefined && direct != null) 'direct': (direct as bool),
+      if (transcode != _undefined && transcode != null)
+        'transcode': (transcode as bool),
+      if (subtitleFormat != _undefined)
+        'subtitleFormat': (subtitleFormat as Enum$SubtitleFormat?),
+    }),
+  );
+}
+
+class _CopyWithStubImpl$Input$StreamSettingsInput<TRes>
+    implements CopyWith$Input$StreamSettingsInput<TRes> {
+  _CopyWithStubImpl$Input$StreamSettingsInput(this._res);
+
+  TRes _res;
+
+  call({bool? direct, bool? transcode, Enum$SubtitleFormat? subtitleFormat}) =>
+      _res;
+}
+
 class Input$CreatePlayQueueInput {
   factory Input$CreatePlayQueueInput({
     required Enum$PlayQueueSourceType sourceType,
@@ -357,6 +508,39 @@ Enum$PlayQueueSourceType fromJson$Enum$PlayQueueSourceType(String value) {
       return Enum$PlayQueueSourceType.LIBRARY;
     default:
       return Enum$PlayQueueSourceType.$unknown;
+  }
+}
+
+enum Enum$SubtitleFormat {
+  WEBVTT,
+  SRT,
+  $unknown;
+
+  factory Enum$SubtitleFormat.fromJson(String value) =>
+      fromJson$Enum$SubtitleFormat(value);
+
+  String toJson() => toJson$Enum$SubtitleFormat(this);
+}
+
+String toJson$Enum$SubtitleFormat(Enum$SubtitleFormat e) {
+  switch (e) {
+    case Enum$SubtitleFormat.WEBVTT:
+      return r'WEBVTT';
+    case Enum$SubtitleFormat.SRT:
+      return r'SRT';
+    case Enum$SubtitleFormat.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$SubtitleFormat fromJson$Enum$SubtitleFormat(String value) {
+  switch (value) {
+    case r'WEBVTT':
+      return Enum$SubtitleFormat.WEBVTT;
+    case r'SRT':
+      return Enum$SubtitleFormat.SRT;
+    default:
+      return Enum$SubtitleFormat.$unknown;
   }
 }
 

@@ -1453,14 +1453,27 @@ class MediaPlayerHandler extends BaseAudioHandler
   // skip just set.
   Future<void> _progressChain = Future.value();
 
+  /// The stream settings media URLs are built with, so the server can
+  /// prefetch the next queue item in the same format.
+  Future<Input$StreamSettingsInput> _currentStreamSettings() async {
+    final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay();
+    final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode();
+    return Input$StreamSettingsInput(
+      direct: directPlay,
+      transcode: transcode,
+      subtitleFormat: fromJson$Enum$SubtitleFormat(ImageUtil.subtitleFormat),
+    );
+  }
+
   Future<Fragment$fragmentPlayQueue?> _sendProgressUpdate(
     GraphQLClient client,
     String playQueueId,
     String playQueueItemId,
     Duration position,
   ) {
-    final send = _progressChain.then((_) => _playQueueService.updateProgress(
-        client, playQueueId, playQueueItemId, position));
+    final send = _progressChain.then((_) async => _playQueueService
+        .updateProgress(client, playQueueId, playQueueItemId, position,
+            streamSettings: await _currentStreamSettings()));
     _progressChain = send.then((_) {}, onError: (_) {});
     return send;
   }

@@ -6,16 +6,19 @@ import 'fragmentMetadata.graphql.dart';
 import 'fragmentMovie.graphql.dart';
 import 'fragmentPlayQueue.graphql.dart';
 import 'package:gql/ast.dart';
+import 'schema.graphql.dart';
 
 class Variables$Mutation$updatePlayQueue {
   factory Variables$Mutation$updatePlayQueue({
     required String id,
     required String playQueueItemId,
     required int progressInMilliseconds,
+    Input$StreamSettingsInput? streamSettings,
   }) => Variables$Mutation$updatePlayQueue._({
     r'id': id,
     r'playQueueItemId': playQueueItemId,
     r'progressInMilliseconds': progressInMilliseconds,
+    if (streamSettings != null) r'streamSettings': streamSettings,
   });
 
   Variables$Mutation$updatePlayQueue._(this._$data);
@@ -30,6 +33,14 @@ class Variables$Mutation$updatePlayQueue {
     result$data['playQueueItemId'] = (l$playQueueItemId as String);
     final l$progressInMilliseconds = data['progressInMilliseconds'];
     result$data['progressInMilliseconds'] = (l$progressInMilliseconds as int);
+    if (data.containsKey('streamSettings')) {
+      final l$streamSettings = data['streamSettings'];
+      result$data['streamSettings'] = l$streamSettings == null
+          ? null
+          : Input$StreamSettingsInput.fromJson(
+              (l$streamSettings as Map<String, dynamic>),
+            );
+    }
     return Variables$Mutation$updatePlayQueue._(result$data);
   }
 
@@ -41,6 +52,9 @@ class Variables$Mutation$updatePlayQueue {
 
   int get progressInMilliseconds => (_$data['progressInMilliseconds'] as int);
 
+  Input$StreamSettingsInput? get streamSettings =>
+      (_$data['streamSettings'] as Input$StreamSettingsInput?);
+
   Map<String, dynamic> toJson() {
     final result$data = <String, dynamic>{};
     final l$id = id;
@@ -49,6 +63,10 @@ class Variables$Mutation$updatePlayQueue {
     result$data['playQueueItemId'] = l$playQueueItemId;
     final l$progressInMilliseconds = progressInMilliseconds;
     result$data['progressInMilliseconds'] = l$progressInMilliseconds;
+    if (_$data.containsKey('streamSettings')) {
+      final l$streamSettings = streamSettings;
+      result$data['streamSettings'] = l$streamSettings?.toJson();
+    }
     return result$data;
   }
 
@@ -81,6 +99,15 @@ class Variables$Mutation$updatePlayQueue {
     if (l$progressInMilliseconds != lOther$progressInMilliseconds) {
       return false;
     }
+    final l$streamSettings = streamSettings;
+    final lOther$streamSettings = other.streamSettings;
+    if (_$data.containsKey('streamSettings') !=
+        other._$data.containsKey('streamSettings')) {
+      return false;
+    }
+    if (l$streamSettings != lOther$streamSettings) {
+      return false;
+    }
     return true;
   }
 
@@ -89,7 +116,13 @@ class Variables$Mutation$updatePlayQueue {
     final l$id = id;
     final l$playQueueItemId = playQueueItemId;
     final l$progressInMilliseconds = progressInMilliseconds;
-    return Object.hashAll([l$id, l$playQueueItemId, l$progressInMilliseconds]);
+    final l$streamSettings = streamSettings;
+    return Object.hashAll([
+      l$id,
+      l$playQueueItemId,
+      l$progressInMilliseconds,
+      _$data.containsKey('streamSettings') ? l$streamSettings : const {},
+    ]);
   }
 }
 
@@ -102,7 +135,12 @@ abstract class CopyWith$Variables$Mutation$updatePlayQueue<TRes> {
   factory CopyWith$Variables$Mutation$updatePlayQueue.stub(TRes res) =
       _CopyWithStubImpl$Variables$Mutation$updatePlayQueue;
 
-  TRes call({String? id, String? playQueueItemId, int? progressInMilliseconds});
+  TRes call({
+    String? id,
+    String? playQueueItemId,
+    int? progressInMilliseconds,
+    Input$StreamSettingsInput? streamSettings,
+  });
 }
 
 class _CopyWithImpl$Variables$Mutation$updatePlayQueue<TRes>
@@ -119,6 +157,7 @@ class _CopyWithImpl$Variables$Mutation$updatePlayQueue<TRes>
     Object? id = _undefined,
     Object? playQueueItemId = _undefined,
     Object? progressInMilliseconds = _undefined,
+    Object? streamSettings = _undefined,
   }) => _then(
     Variables$Mutation$updatePlayQueue._({
       ..._instance._$data,
@@ -128,6 +167,8 @@ class _CopyWithImpl$Variables$Mutation$updatePlayQueue<TRes>
       if (progressInMilliseconds != _undefined &&
           progressInMilliseconds != null)
         'progressInMilliseconds': (progressInMilliseconds as int),
+      if (streamSettings != _undefined)
+        'streamSettings': (streamSettings as Input$StreamSettingsInput?),
     }),
   );
 }
@@ -138,8 +179,12 @@ class _CopyWithStubImpl$Variables$Mutation$updatePlayQueue<TRes>
 
   TRes _res;
 
-  call({String? id, String? playQueueItemId, int? progressInMilliseconds}) =>
-      _res;
+  call({
+    String? id,
+    String? playQueueItemId,
+    int? progressInMilliseconds,
+    Input$StreamSettingsInput? streamSettings,
+  }) => _res;
 }
 
 class Mutation$updatePlayQueue {
@@ -297,6 +342,15 @@ const documentNodeMutationupdatePlayQueue = DocumentNode(
           defaultValue: DefaultValueNode(value: null),
           directives: [],
         ),
+        VariableDefinitionNode(
+          variable: VariableNode(name: NameNode(value: 'streamSettings')),
+          type: NamedTypeNode(
+            name: NameNode(value: 'StreamSettingsInput'),
+            isNonNull: false,
+          ),
+          defaultValue: DefaultValueNode(value: null),
+          directives: [],
+        ),
       ],
       directives: [],
       selectionSet: SelectionSetNode(
@@ -318,6 +372,10 @@ const documentNodeMutationupdatePlayQueue = DocumentNode(
                 value: VariableNode(
                   name: NameNode(value: 'progressInMilliseconds'),
                 ),
+              ),
+              ArgumentNode(
+                name: NameNode(value: 'streamSettings'),
+                value: VariableNode(name: NameNode(value: 'streamSettings')),
               ),
             ],
             directives: [],
