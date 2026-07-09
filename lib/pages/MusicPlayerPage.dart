@@ -6,7 +6,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:palette_generator/palette_generator.dart';
 import 'package:player/components/PlayPauseButton.dart';
 import 'package:player/components/TvFocusable.dart';
 import 'package:player/dto/MediaItemId.dart';
@@ -51,28 +50,26 @@ class _MusicPlayerPageState extends State<MusicPlayerPage>
       _accent.value = _defaultAccent;
       return;
     }
-    PaletteGenerator.fromImageProvider(
-      CachedNetworkImageProvider(uri),
-      size: const Size(180, 180),
-      maximumColorCount: 12,
-    ).then((palette) {
+    // `content` keeps the source artwork's hue and chroma instead of pulling it
+    // towards a muted tonal palette, which is what we want for an accent.
+    ColorScheme.fromImageProvider(
+      provider: CachedNetworkImageProvider(uri),
+      brightness: Brightness.dark,
+      dynamicSchemeVariant: DynamicSchemeVariant.content,
+    ).then((scheme) {
       // A newer skip may have superseded this load; only apply if still current.
       if (!mounted || _accentUri != uri) return;
-      _accent.value = _pickAccent(palette);
+      _accent.value = _pickAccent(scheme);
     }).catchError((_) {
       if (mounted && _accentUri == uri) _accent.value = _defaultAccent;
     });
   }
 
-  /// Picks the liveliest available swatch, then nudges it into a range that
-  /// reads well both as a thin progress fill on a dark backdrop and as a filled
-  /// button that carries black text.
-  Color _pickAccent(PaletteGenerator palette) {
-    final color = palette.vibrantColor?.color ??
-        palette.lightVibrantColor?.color ??
-        palette.dominantColor?.color ??
-        _defaultAccent;
-    var hsl = HSLColor.fromColor(color);
+  /// Nudges the extracted colour into a range that reads well both as a thin
+  /// progress fill on a dark backdrop and as a filled button that carries black
+  /// text.
+  Color _pickAccent(ColorScheme scheme) {
+    var hsl = HSLColor.fromColor(scheme.primary);
     if (hsl.lightness < 0.45) hsl = hsl.withLightness(0.55);
     if (hsl.lightness > 0.78) hsl = hsl.withLightness(0.7);
     if (hsl.saturation < 0.3) hsl = hsl.withSaturation(0.45);
