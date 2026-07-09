@@ -7,10 +7,16 @@ import '../utils/MediaPlayerHandler.dart';
 import '../utils/PlatformService.dart';
 import 'TvFocusable.dart';
 
-/// The video surface for an episode/movie page. Video always plays fullscreen:
-/// when playback starts the embedded view auto-enters fullscreen, the back
-/// button leaves fullscreen and pauses, and tapping the embedded view (the
-/// paused frame) re-enters fullscreen and resumes.
+/// The video surface for an episode/movie page.
+///
+/// On a normal device the video plays both embedded and fullscreen, with the
+/// standard media_kit controls (including a fullscreen toggle) shown in both;
+/// leaving fullscreen keeps playing.
+///
+/// On Android TV playback is fullscreen-only: when playback starts the embedded
+/// view auto-enters fullscreen, the back button leaves fullscreen and pauses,
+/// and tapping the embedded view (the paused frame) re-enters fullscreen and
+/// resumes.
 class IsterPlayer extends StatefulWidget {
   const IsterPlayer({
     super.key,
@@ -35,16 +41,20 @@ class _IsterPlayerState extends State<IsterPlayer> {
       onExitFullscreen: () async {
         _handler.videoFullscreen = false;
         await defaultExitNativeFullscreen();
-        // Leaving fullscreen (e.g. the back button) pauses right away.
-        _handler.pause();
+        // On TV, fullscreen is the only playback surface, so leaving it (e.g.
+        // the back button) pauses right away. Elsewhere the embedded view keeps
+        // playing.
+        if (PlatformService.isAndroidTvSync) _handler.pause();
       },
     );
   }
 }
 
 /// Controls for [IsterPlayer]. In fullscreen it shows the normal media_kit
-/// controls (desktop/D-pad ones on TV); embedded it's just a tap target that
-/// enters fullscreen, and it auto-enters once playback becomes active.
+/// controls (desktop/D-pad ones on TV). Embedded on a normal device it shows
+/// the standard controls too (with a fullscreen toggle); on TV it's just a tap
+/// target that enters fullscreen, and it auto-enters once playback becomes
+/// active.
 class _IsterVideoControls extends StatefulWidget {
   const _IsterVideoControls({required this.state});
 
@@ -64,9 +74,14 @@ class _IsterVideoControlsState extends State<_IsterVideoControls> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Only the embedded instance drives auto-fullscreen; the fullscreen copy of
-    // these controls just renders the playback UI.
-    if (_initialised || isFullscreen(context)) return;
+    // Auto-fullscreen is TV-only. Elsewhere the embedded view stays embedded
+    // until the user hits the fullscreen button. Only the embedded instance
+    // drives it; the fullscreen copy of these controls just renders the UI.
+    if (_initialised ||
+        isFullscreen(context) ||
+        !PlatformService.isAndroidTvSync) {
+      return;
+    }
     _initialised = true;
     final player = widget.state.widget.controller.player;
     _maybeAutoEnter(player.state.playing);
@@ -110,8 +125,13 @@ class _IsterVideoControlsState extends State<_IsterVideoControls> {
           ? MaterialDesktopVideoControls(widget.state)
           : AdaptiveVideoControls(widget.state);
     }
-    // Embedded: transparent tap target over the (paused) video frame, with a
-    // hint icon. Focusable so a TV remote can select it.
+    // Embedded on a normal device: the standard controls, which include a
+    // fullscreen button so the user can go fullscreen (and come back) at will.
+    if (!PlatformService.isAndroidTvSync) {
+      return AdaptiveVideoControls(widget.state);
+    }
+    // Embedded on TV: transparent tap target over the (paused) video frame,
+    // with a hint icon. Focusable so a TV remote can select it.
     return TvFocusable(
       onTap: _onTapEmbedded,
       child: GestureDetector(
