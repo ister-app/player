@@ -28,28 +28,32 @@ class ShowOverviewPage extends StatelessWidget {
           variables: Map.of({"id": showId})),
       builder: (QueryResult result,
           {VoidCallback? refetch, FetchMore? fetchMore}) {
-        Widget title = Text("Show");
-        Widget body = Text("Body");
-
         if (result.hasException) {
           LoggerService().logger.e(result.exception);
-          body = Text(result.exception.toString());
         }
 
-        if (result.data == null || result.isLoading) {
+        // Only show the skeleton on a cold load. With the default
+        // cacheAndNetwork policy `isLoading` stays true while cached data is
+        // already available, and skeletonizing that would flash the layout.
+        final loading = result.data == null && result.isLoading;
+        final show = (!loading && result.data != null)
+            ? Query$showById.fromJson(result.data!).showById
+            : null;
+
+        Widget title;
+        Widget body;
+        if (loading) {
           title = Skeletonizer(enabled: true, child: Text(BoneMock.name));
-          body = Skeletonizer(enabled: true, child: getContent(false, null));
+          body = getContent(null);
+        } else if (result.hasException) {
+          title = Text("Show");
+          body = Text(result.exception.toString());
+        } else if (show == null) {
+          title = Text("Show");
+          body = Text(AppLocalizations.of(context)!.noShowFound);
         } else {
-          final parsedData = Query$showById.fromJson(result.data!);
-
-          Query$showById$showById? show = parsedData.showById;
-
-          if (show == null) {
-            body = Text(AppLocalizations.of(context)!.noShowFound);
-          } else {
-            title = Text(show.name);
-            body = getContent(true, show.seasons);
-          }
+          title = Text(show.name);
+          body = getContent(show.seasons);
         }
 
         return Scaffold(
@@ -63,8 +67,19 @@ class ShowOverviewPage extends StatelessWidget {
     );
   }
 
+  /// The nested [AutoRouter] (ShowOverviewContentPage) is always mounted, so
+  /// the hero image, title, description and cast own their own single
+  /// skeleton→content transition. Only the season column is skeletonized here,
+  /// with placeholder seasons so it keeps its size while loading.
   SingleChildScrollView getContent(
-      bool showAutoRouter, List<Query$showById$showById$seasons>? seasons) {
+      List<Query$showById$showById$seasons>? seasons) {
+    final loading = seasons == null;
+    final displaySeasons = seasons ??
+        List.generate(
+          _skeletonSeasonCount,
+          (i) => Query$showById$showById$seasons(id: 'skeleton-$i', number: i + 1),
+        );
+
     return SingleChildScrollView(
         child: Center(
             child: Container(
@@ -78,26 +93,23 @@ class ShowOverviewPage extends StatelessWidget {
                             maxWidth: constraints.maxWidth < 1280
                                 ? constraints.maxWidth
                                 : constraints.maxWidth - 480),
-                        child: showAutoRouter
-                            ? AutoRouter()
-                            : Container(
-                                height: constraints.maxWidth < 1280 ? 300 : 500,
-                                width: constraints.maxWidth,
-                                decoration: BoxDecoration(color: Colors.grey),
-                              )),
+                        child: AutoRouter()),
                     Container(
                         padding: EdgeInsets.all(10),
                         constraints: BoxConstraints(
                             maxWidth: constraints.maxWidth < 1280
                                 ? constraints.maxWidth
                                 : 480),
-                        child: seasons != null
-                            ? TvShowSeasonExpansionPanelList(
-                                serverName: serverName,
-                                seasons: seasons,
-                              )
-                            : Container())
+                        child: Skeletonizer(
+                          enabled: loading,
+                          child: TvShowSeasonExpansionPanelList(
+                            serverName: serverName,
+                            seasons: displaySeasons,
+                          ),
+                        ))
                   ]);
                 }))));
   }
 }
+
+const _skeletonSeasonCount = 3;

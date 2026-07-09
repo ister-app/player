@@ -6,6 +6,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/components/CastRow.dart';
 import 'package:player/graphql/analyzeDataForShow.graphql.dart';
 import 'package:player/graphql/fragmentCredit.graphql.dart';
+import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/graphql/showById.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/ImageTypes.dart';
@@ -13,6 +14,22 @@ import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MetadataUtil.dart';
 import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+
+/// Placeholder cast so the skeleton reserves the same height as the real
+/// [CastRow]; without it the page grows by a whole row once data lands.
+final _skeletonCast = List.generate(
+  6,
+  (i) => Fragment$fragmentCastMember(
+    id: 'skeleton-$i',
+    characterName: BoneMock.name,
+    creditType: Enum$CreditType.CAST,
+    castOrder: i,
+    person: Fragment$fragmentCastMember$person(
+      id: 'skeleton-person-$i',
+      name: BoneMock.name,
+    ),
+  ),
+);
 
 @RoutePage()
 class ShowOverviewContentPage extends StatelessWidget {
@@ -36,14 +53,17 @@ class ShowOverviewContentPage extends StatelessWidget {
           {VoidCallback? refetch, FetchMore? fetchMore}) {
         Widget body = Text("Body");
 
-        if (result.hasException) {
-          body = Text(result.exception.toString());
-        } else if (result.data == null || result.isLoading) {
+        // `isLoading` alone would re-skeletonize whenever cacheAndNetwork
+        // revalidates on top of cached data, which makes the page jump.
+        final loading = result.data == null && result.isLoading;
+
+        if (loading) {
           body = Skeletonizer(
               enabled: true,
-              child: _buildContent(
-                  null, null, BoneMock.name, BoneMock.words(15), context, null, null));
-          // Skeletonizer(enabled: true, child: Text(BoneMock.name));
+              child: _buildContent(null, null, BoneMock.name,
+                  BoneMock.paragraph, context, '', _skeletonCast));
+        } else if (result.hasException) {
+          body = Text(result.exception.toString());
         } else {
           final parsedData = Query$showById.fromJson(result.data!);
 
