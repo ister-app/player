@@ -506,6 +506,24 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 episode} other{{count} episodes}}'**
   String episodeCount(int count);
 
+  /// Number of albums by a person, shown in the person page hero subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 album} other{{count} albums}}'**
+  String albumCount(int count);
+
+  /// Number of movies a person appears in, shown in the person page hero subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 movie} other{{count} movies}}'**
+  String movieCount(int count);
+
+  /// Number of shows a person appears in, shown in the person page hero subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 show} other{{count} shows}}'**
+  String showCount(int count);
+
   /// Search field hint and page title
   ///
   /// In en, this message translates to:

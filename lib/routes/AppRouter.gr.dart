@@ -13,10 +13,10 @@ import 'package:auto_route/auto_route.dart' as _i18;
 import 'package:flutter/foundation.dart' as _i20;
 import 'package:flutter/material.dart' as _i19;
 import 'package:player/pages/AlbumPage.dart' as _i1;
-import 'package:player/pages/ArtistPage.dart' as _i2;
-import 'package:player/pages/HomePage.dart' as _i3;
-import 'package:player/pages/MoviePage.dart' as _i4;
-import 'package:player/pages/MusicPlayerPage.dart' as _i5;
+import 'package:player/pages/HomePage.dart' as _i2;
+import 'package:player/pages/MoviePage.dart' as _i3;
+import 'package:player/pages/MusicPlayerPage.dart' as _i4;
+import 'package:player/pages/PersonPage.dart' as _i5;
 import 'package:player/pages/SearchPage.dart' as _i6;
 import 'package:player/pages/ServerHomeContentPage.dart' as _i7;
 import 'package:player/pages/ServerHomeOverviewPage.dart' as _i8;
@@ -101,63 +101,7 @@ class AlbumRouteArgs {
 }
 
 /// generated route for
-/// [_i2.ArtistPage]
-class ArtistRoute extends _i18.PageRouteInfo<ArtistRouteArgs> {
-  ArtistRoute({
-    _i19.Key? key,
-    required String artistId,
-    List<_i18.PageRouteInfo>? children,
-  }) : super(
-          ArtistRoute.name,
-          args: ArtistRouteArgs(key: key, artistId: artistId),
-          rawPathParams: {'artistId': artistId},
-          initialChildren: children,
-        );
-
-  static const String name = 'ArtistRoute';
-
-  static _i18.PageInfo page = _i18.PageInfo(
-    name,
-    builder: (data) {
-      final pathParams = data.inheritedPathParams;
-      final args = data.argsAs<ArtistRouteArgs>(
-        orElse: () =>
-            ArtistRouteArgs(artistId: pathParams.getString('artistId')),
-      );
-      return _i2.ArtistPage(
-        key: args.key,
-        serverName: pathParams.getString('serverName'),
-        artistId: args.artistId,
-      );
-    },
-  );
-}
-
-class ArtistRouteArgs {
-  const ArtistRouteArgs({this.key, required this.artistId});
-
-  final _i19.Key? key;
-
-  final String artistId;
-
-  @override
-  String toString() {
-    return 'ArtistRouteArgs{key: $key, artistId: $artistId}';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    if (other is! ArtistRouteArgs) return false;
-    return key == other.key && artistId == other.artistId;
-  }
-
-  @override
-  int get hashCode => key.hashCode ^ artistId.hashCode;
-}
-
-/// generated route for
-/// [_i3.HomePage]
+/// [_i2.HomePage]
 class HomeRoute extends _i18.PageRouteInfo<void> {
   const HomeRoute({List<_i18.PageRouteInfo>? children})
       : super(HomeRoute.name, initialChildren: children);
@@ -167,13 +111,13 @@ class HomeRoute extends _i18.PageRouteInfo<void> {
   static _i18.PageInfo page = _i18.PageInfo(
     name,
     builder: (data) {
-      return const _i3.HomePage();
+      return const _i2.HomePage();
     },
   );
 }
 
 /// generated route for
-/// [_i4.MoviePage]
+/// [_i3.MoviePage]
 class MovieRoute extends _i18.PageRouteInfo<MovieRouteArgs> {
   MovieRoute({
     _i19.Key? key,
@@ -205,7 +149,7 @@ class MovieRoute extends _i18.PageRouteInfo<MovieRouteArgs> {
           playQueueId: queryParams.optString('playQueueId'),
         ),
       );
-      return _i4.MoviePage(
+      return _i3.MoviePage(
         key: args.key,
         serverName: pathParams.getString('serverName'),
         movieId: args.movieId,
@@ -243,7 +187,7 @@ class MovieRouteArgs {
 }
 
 /// generated route for
-/// [_i5.MusicPlayerPage]
+/// [_i4.MusicPlayerPage]
 class MusicPlayerRoute extends _i18.PageRouteInfo<void> {
   const MusicPlayerRoute({List<_i18.PageRouteInfo>? children})
       : super(MusicPlayerRoute.name, initialChildren: children);
@@ -253,9 +197,65 @@ class MusicPlayerRoute extends _i18.PageRouteInfo<void> {
   static _i18.PageInfo page = _i18.PageInfo(
     name,
     builder: (data) {
-      return const _i5.MusicPlayerPage();
+      return const _i4.MusicPlayerPage();
     },
   );
+}
+
+/// generated route for
+/// [_i5.PersonPage]
+class PersonRoute extends _i18.PageRouteInfo<PersonRouteArgs> {
+  PersonRoute({
+    _i19.Key? key,
+    required String personId,
+    List<_i18.PageRouteInfo>? children,
+  }) : super(
+          PersonRoute.name,
+          args: PersonRouteArgs(key: key, personId: personId),
+          rawPathParams: {'personId': personId},
+          initialChildren: children,
+        );
+
+  static const String name = 'PersonRoute';
+
+  static _i18.PageInfo page = _i18.PageInfo(
+    name,
+    builder: (data) {
+      final pathParams = data.inheritedPathParams;
+      final args = data.argsAs<PersonRouteArgs>(
+        orElse: () =>
+            PersonRouteArgs(personId: pathParams.getString('personId')),
+      );
+      return _i5.PersonPage(
+        key: args.key,
+        serverName: pathParams.getString('serverName'),
+        personId: args.personId,
+      );
+    },
+  );
+}
+
+class PersonRouteArgs {
+  const PersonRouteArgs({this.key, required this.personId});
+
+  final _i19.Key? key;
+
+  final String personId;
+
+  @override
+  String toString() {
+    return 'PersonRouteArgs{key: $key, personId: $personId}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! PersonRouteArgs) return false;
+    return key == other.key && personId == other.personId;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ personId.hashCode;
 }
 
 /// generated route for

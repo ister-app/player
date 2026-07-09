@@ -242,6 +242,39 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String albumCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count albums',
+      one: '1 album',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String movieCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count films',
+      one: '1 film',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String showCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count series',
+      one: '1 serie',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get search => 'Zoeken';
 
   @override

@@ -7,6 +7,7 @@ import 'package:player/graphql/analyzeDataForTrack.graphql.dart';
 import 'package:player/graphql/fragmentAlbum.graphql.dart';
 import 'package:player/graphql/fragmentTrack.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
+import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/DurationUtil.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
@@ -133,7 +134,7 @@ class _AlbumPageState extends State<AlbumPage> {
           ],
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
-            background: _buildHeader(album),
+            background: _buildHeader(context, album),
           ),
         ),
         SliverToBoxAdapter(
@@ -370,7 +371,7 @@ class _AlbumPageState extends State<AlbumPage> {
     );
   }
 
-  Widget _buildHeader(Fragment$fragmentAlbum? album) {
+  Widget _buildHeader(BuildContext context, Fragment$fragmentAlbum? album) {
     final img = album != null
         ? ImageUtil.getImageByType(album.images, ImageTypes.cover)
         : null;
@@ -386,6 +387,10 @@ class _AlbumPageState extends State<AlbumPage> {
           ? (MetadataUtil.getTitle(album.metadata) ?? album.name)
           : null,
       subtitle: album?.artist.name,
+      onSubtitleTap: album != null
+          ? () => AutoRouter.of(context)
+              .push(PersonRoute(personId: album.artist.id))
+          : null,
     );
   }
 }

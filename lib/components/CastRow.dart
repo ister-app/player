@@ -10,8 +10,8 @@ import 'package:player/utils/StreamTokenService.dart';
 import '../l10n/app_localizations.dart';
 
 /// Horizontal strip of the people credited on a movie, show or episode.
-/// Each avatar taps through to that person's page (reusing [ArtistRoute],
-/// which is backed by `personById`). Sorted by [Credit.castOrder] with
+/// Each avatar taps through to that person's page ([PersonRoute], which is
+/// backed by `personById`). Sorted by [Credit.castOrder] with
 /// unordered entries pushed to the end.
 class CastRow extends StatelessWidget {
   const CastRow({
@@ -37,6 +37,23 @@ class CastRow extends StatelessWidget {
         return ao.compareTo(bo);
       });
 
+    // A person can be credited more than once (several characters, or one
+    // character across several episodes). Show them once, listing every
+    // character they play.
+    final merged = <String, _CastEntry>{};
+    for (final credit in sorted) {
+      final entry = merged.putIfAbsent(
+        credit.person.id,
+        () => _CastEntry(credit.person),
+      );
+      final character = (credit.characterName ?? '').trim();
+      if (character.isNotEmpty && !entry.characters.contains(character)) {
+        entry.characters.add(character);
+      }
+    }
+
+    final entries = merged.values.toList();
+
     return Center(
       child: Container(
         width: double.infinity,
@@ -45,20 +62,21 @@ class CastRow extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
               child: Text(
                 loc.cast,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
-            SizedBox(
-              height: 170,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                itemCount: sorted.length,
-                itemBuilder: (context, index) =>
-                    _CastMemberTile(serverName: serverName, credit: sorted[index]),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final entry in entries)
+                    _CastMemberTile(serverName: serverName, entry: entry),
+                ],
               ),
             ),
           ],
@@ -68,39 +86,48 @@ class CastRow extends StatelessWidget {
   }
 }
 
+class _CastEntry {
+  _CastEntry(this.person);
+
+  final Fragment$fragmentCastMember$person person;
+  final List<String> characters = [];
+}
+
 class _CastMemberTile extends StatelessWidget {
-  const _CastMemberTile({required this.serverName, required this.credit});
+  const _CastMemberTile({required this.serverName, required this.entry});
 
   final String serverName;
-  final Fragment$fragmentCastMember credit;
+  final _CastEntry entry;
 
   @override
   Widget build(BuildContext context) {
-    final person = credit.person;
+    final theme = Theme.of(context);
+    final person = entry.person;
     final img = ImageUtil.getImageByType(person.images, ImageTypes.cover);
     final imageUrl =
         ImageUtil.buildUrl(img, token: StreamTokenService.getToken(serverName));
     final placeholder = Icon(
       Icons.person,
       size: 40,
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
+      color: theme.colorScheme.onSurfaceVariant,
     );
 
     return SizedBox(
-      width: 96,
+      width: 104,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () =>
-            AutoRouter.of(context).push(ArtistRoute(artistId: person.id)),
+            AutoRouter.of(context).push(PersonRoute(personId: person.id)),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               ClipOval(
                 child: Container(
-                  width: 72,
-                  height: 72,
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  width: 76,
+                  height: 76,
+                  color: theme.colorScheme.surfaceContainerHighest,
                   child: (imageUrl != null && imageUrl != '')
                       ? CachedNetworkImage(
                           imageUrl: imageUrl,
@@ -112,24 +139,31 @@ class _CastMemberTile extends StatelessWidget {
                       : Center(child: placeholder),
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Text(
                 person.name,
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  height: 1.2,
+                ),
               ),
-              if ((credit.characterName ?? '').isNotEmpty)
+              if (entry.characters.isNotEmpty) ...[
+                const SizedBox(height: 2),
                 Text(
-                  credit.characterName!,
-                  maxLines: 1,
+                  entry.characters.join(' · '),
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontStyle: FontStyle.italic,
+                    height: 1.2,
+                  ),
                 ),
+              ],
             ],
           ),
         ),

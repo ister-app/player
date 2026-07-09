@@ -21,11 +21,13 @@ fragment fragmentPersonCredit on Credit {
     movie {
         id
         name
+        releaseYear
         images { ...fragmentImages }
     }
     show {
         id
         name
+        releaseYear
         images { ...fragmentImages }
     }
     episode {
@@ -34,6 +36,6 @@ fragment fragmentPersonCredit on Credit {
         images { ...fragmentImages }
         metadata { ...fragmentMetadata }
         season { id number }
-        show { id name images { ...fragmentImages } }
+        show { id name releaseYear images { ...fragmentImages } }
     }
 }

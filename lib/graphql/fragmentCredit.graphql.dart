@@ -866,6 +866,13 @@ const fragmentDefinitionfragmentPersonCredit = FragmentDefinitionNode(
               selectionSet: null,
             ),
             FieldNode(
+              name: NameNode(value: 'releaseYear'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
               name: NameNode(value: 'images'),
               alias: null,
               arguments: [],
@@ -912,6 +919,13 @@ const fragmentDefinitionfragmentPersonCredit = FragmentDefinitionNode(
             ),
             FieldNode(
               name: NameNode(value: 'name'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'releaseYear'),
               alias: null,
               arguments: [],
               directives: [],
@@ -1064,6 +1078,13 @@ const fragmentDefinitionfragmentPersonCredit = FragmentDefinitionNode(
                     selectionSet: null,
                   ),
                   FieldNode(
+                    name: NameNode(value: 'releaseYear'),
+                    alias: null,
+                    arguments: [],
+                    directives: [],
+                    selectionSet: null,
+                  ),
+                  FieldNode(
                     name: NameNode(value: 'images'),
                     alias: null,
                     arguments: [],
@@ -1126,6 +1147,7 @@ class Fragment$fragmentPersonCredit$movie {
   Fragment$fragmentPersonCredit$movie({
     required this.id,
     required this.name,
+    required this.releaseYear,
     this.images,
     this.$__typename = 'Movie',
   });
@@ -1135,11 +1157,13 @@ class Fragment$fragmentPersonCredit$movie {
   ) {
     final l$id = json['id'];
     final l$name = json['name'];
+    final l$releaseYear = json['releaseYear'];
     final l$images = json['images'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentPersonCredit$movie(
       id: (l$id as String),
       name: (l$name as String),
+      releaseYear: (l$releaseYear as int),
       images: (l$images as List<dynamic>?)
           ?.map(
             (e) =>
@@ -1154,6 +1178,8 @@ class Fragment$fragmentPersonCredit$movie {
 
   final String name;
 
+  final int releaseYear;
+
   final List<Fragment$fragmentImages>? images;
 
   final String $__typename;
@@ -1164,6 +1190,8 @@ class Fragment$fragmentPersonCredit$movie {
     _resultData['id'] = l$id;
     final l$name = name;
     _resultData['name'] = l$name;
+    final l$releaseYear = releaseYear;
+    _resultData['releaseYear'] = l$releaseYear;
     final l$images = images;
     _resultData['images'] = l$images?.map((e) => e.toJson()).toList();
     final l$$__typename = $__typename;
@@ -1175,11 +1203,13 @@ class Fragment$fragmentPersonCredit$movie {
   int get hashCode {
     final l$id = id;
     final l$name = name;
+    final l$releaseYear = releaseYear;
     final l$images = images;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
       l$name,
+      l$releaseYear,
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
       l$$__typename,
     ]);
@@ -1202,6 +1232,11 @@ class Fragment$fragmentPersonCredit$movie {
     final l$name = name;
     final lOther$name = other.name;
     if (l$name != lOther$name) {
+      return false;
+    }
+    final l$releaseYear = releaseYear;
+    final lOther$releaseYear = other.releaseYear;
+    if (l$releaseYear != lOther$releaseYear) {
       return false;
     }
     final l$images = images;
@@ -1249,6 +1284,7 @@ abstract class CopyWith$Fragment$fragmentPersonCredit$movie<TRes> {
   TRes call({
     String? id,
     String? name,
+    int? releaseYear,
     List<Fragment$fragmentImages>? images,
     String? $__typename,
   });
@@ -1273,6 +1309,7 @@ class _CopyWithImpl$Fragment$fragmentPersonCredit$movie<TRes>
   TRes call({
     Object? id = _undefined,
     Object? name = _undefined,
+    Object? releaseYear = _undefined,
     Object? images = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
@@ -1281,6 +1318,9 @@ class _CopyWithImpl$Fragment$fragmentPersonCredit$movie<TRes>
       name: name == _undefined || name == null
           ? _instance.name
           : (name as String),
+      releaseYear: releaseYear == _undefined || releaseYear == null
+          ? _instance.releaseYear
+          : (releaseYear as int),
       images: images == _undefined
           ? _instance.images
           : (images as List<Fragment$fragmentImages>?),
@@ -1313,6 +1353,7 @@ class _CopyWithStubImpl$Fragment$fragmentPersonCredit$movie<TRes>
   call({
     String? id,
     String? name,
+    int? releaseYear,
     List<Fragment$fragmentImages>? images,
     String? $__typename,
   }) => _res;
@@ -1324,6 +1365,7 @@ class Fragment$fragmentPersonCredit$show {
   Fragment$fragmentPersonCredit$show({
     required this.id,
     required this.name,
+    required this.releaseYear,
     this.images,
     this.$__typename = 'Show',
   });
@@ -1333,11 +1375,13 @@ class Fragment$fragmentPersonCredit$show {
   ) {
     final l$id = json['id'];
     final l$name = json['name'];
+    final l$releaseYear = json['releaseYear'];
     final l$images = json['images'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentPersonCredit$show(
       id: (l$id as String),
       name: (l$name as String),
+      releaseYear: (l$releaseYear as int),
       images: (l$images as List<dynamic>?)
           ?.map(
             (e) =>
@@ -1352,6 +1396,8 @@ class Fragment$fragmentPersonCredit$show {
 
   final String name;
 
+  final int releaseYear;
+
   final List<Fragment$fragmentImages>? images;
 
   final String $__typename;
@@ -1362,6 +1408,8 @@ class Fragment$fragmentPersonCredit$show {
     _resultData['id'] = l$id;
     final l$name = name;
     _resultData['name'] = l$name;
+    final l$releaseYear = releaseYear;
+    _resultData['releaseYear'] = l$releaseYear;
     final l$images = images;
     _resultData['images'] = l$images?.map((e) => e.toJson()).toList();
     final l$$__typename = $__typename;
@@ -1373,11 +1421,13 @@ class Fragment$fragmentPersonCredit$show {
   int get hashCode {
     final l$id = id;
     final l$name = name;
+    final l$releaseYear = releaseYear;
     final l$images = images;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
       l$name,
+      l$releaseYear,
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
       l$$__typename,
     ]);
@@ -1400,6 +1450,11 @@ class Fragment$fragmentPersonCredit$show {
     final l$name = name;
     final lOther$name = other.name;
     if (l$name != lOther$name) {
+      return false;
+    }
+    final l$releaseYear = releaseYear;
+    final lOther$releaseYear = other.releaseYear;
+    if (l$releaseYear != lOther$releaseYear) {
       return false;
     }
     final l$images = images;
@@ -1447,6 +1502,7 @@ abstract class CopyWith$Fragment$fragmentPersonCredit$show<TRes> {
   TRes call({
     String? id,
     String? name,
+    int? releaseYear,
     List<Fragment$fragmentImages>? images,
     String? $__typename,
   });
@@ -1471,6 +1527,7 @@ class _CopyWithImpl$Fragment$fragmentPersonCredit$show<TRes>
   TRes call({
     Object? id = _undefined,
     Object? name = _undefined,
+    Object? releaseYear = _undefined,
     Object? images = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
@@ -1479,6 +1536,9 @@ class _CopyWithImpl$Fragment$fragmentPersonCredit$show<TRes>
       name: name == _undefined || name == null
           ? _instance.name
           : (name as String),
+      releaseYear: releaseYear == _undefined || releaseYear == null
+          ? _instance.releaseYear
+          : (releaseYear as int),
       images: images == _undefined
           ? _instance.images
           : (images as List<Fragment$fragmentImages>?),
@@ -1511,6 +1571,7 @@ class _CopyWithStubImpl$Fragment$fragmentPersonCredit$show<TRes>
   call({
     String? id,
     String? name,
+    int? releaseYear,
     List<Fragment$fragmentImages>? images,
     String? $__typename,
   }) => _res;
@@ -1994,6 +2055,7 @@ class Fragment$fragmentPersonCredit$episode$show {
   Fragment$fragmentPersonCredit$episode$show({
     required this.id,
     required this.name,
+    required this.releaseYear,
     this.images,
     this.$__typename = 'Show',
   });
@@ -2003,11 +2065,13 @@ class Fragment$fragmentPersonCredit$episode$show {
   ) {
     final l$id = json['id'];
     final l$name = json['name'];
+    final l$releaseYear = json['releaseYear'];
     final l$images = json['images'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentPersonCredit$episode$show(
       id: (l$id as String),
       name: (l$name as String),
+      releaseYear: (l$releaseYear as int),
       images: (l$images as List<dynamic>?)
           ?.map(
             (e) =>
@@ -2022,6 +2086,8 @@ class Fragment$fragmentPersonCredit$episode$show {
 
   final String name;
 
+  final int releaseYear;
+
   final List<Fragment$fragmentImages>? images;
 
   final String $__typename;
@@ -2032,6 +2098,8 @@ class Fragment$fragmentPersonCredit$episode$show {
     _resultData['id'] = l$id;
     final l$name = name;
     _resultData['name'] = l$name;
+    final l$releaseYear = releaseYear;
+    _resultData['releaseYear'] = l$releaseYear;
     final l$images = images;
     _resultData['images'] = l$images?.map((e) => e.toJson()).toList();
     final l$$__typename = $__typename;
@@ -2043,11 +2111,13 @@ class Fragment$fragmentPersonCredit$episode$show {
   int get hashCode {
     final l$id = id;
     final l$name = name;
+    final l$releaseYear = releaseYear;
     final l$images = images;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
       l$name,
+      l$releaseYear,
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
       l$$__typename,
     ]);
@@ -2070,6 +2140,11 @@ class Fragment$fragmentPersonCredit$episode$show {
     final l$name = name;
     final lOther$name = other.name;
     if (l$name != lOther$name) {
+      return false;
+    }
+    final l$releaseYear = releaseYear;
+    final lOther$releaseYear = other.releaseYear;
+    if (l$releaseYear != lOther$releaseYear) {
       return false;
     }
     final l$images = images;
@@ -2118,6 +2193,7 @@ abstract class CopyWith$Fragment$fragmentPersonCredit$episode$show<TRes> {
   TRes call({
     String? id,
     String? name,
+    int? releaseYear,
     List<Fragment$fragmentImages>? images,
     String? $__typename,
   });
@@ -2145,6 +2221,7 @@ class _CopyWithImpl$Fragment$fragmentPersonCredit$episode$show<TRes>
   TRes call({
     Object? id = _undefined,
     Object? name = _undefined,
+    Object? releaseYear = _undefined,
     Object? images = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
@@ -2153,6 +2230,9 @@ class _CopyWithImpl$Fragment$fragmentPersonCredit$episode$show<TRes>
       name: name == _undefined || name == null
           ? _instance.name
           : (name as String),
+      releaseYear: releaseYear == _undefined || releaseYear == null
+          ? _instance.releaseYear
+          : (releaseYear as int),
       images: images == _undefined
           ? _instance.images
           : (images as List<Fragment$fragmentImages>?),
@@ -2185,6 +2265,7 @@ class _CopyWithStubImpl$Fragment$fragmentPersonCredit$episode$show<TRes>
   call({
     String? id,
     String? name,
+    int? releaseYear,
     List<Fragment$fragmentImages>? images,
     String? $__typename,
   }) => _res;

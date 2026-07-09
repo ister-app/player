@@ -32,7 +32,7 @@ class AlbumCarouselTile extends StatelessWidget {
       menuChildren: <Widget>[
         MenuItemButton(
           onPressed: () => AutoRouter.of(context)
-              .push(ArtistRoute(artistId: album.artist.id)),
+              .push(PersonRoute(personId: album.artist.id)),
           child: ListTile(
             leading: const Icon(Icons.person),
             title: Text(AppLocalizations.of(context)!.goToArtist),

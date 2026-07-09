@@ -14,6 +14,7 @@ class MusicDetailHero extends StatelessWidget {
     required this.blurHash,
     required this.title,
     this.subtitle,
+    this.onSubtitleTap,
     this.backgroundAlignment = Alignment.center,
     this.placeholderIcon = Icons.music_note,
   });
@@ -28,6 +29,10 @@ class MusicDetailHero extends StatelessWidget {
   /// while the page is still loading and only the backdrop should show.
   final String? title;
   final String? subtitle;
+
+  /// When set, the subtitle becomes tappable (e.g. an album's artist name links
+  /// to that person's page).
+  final VoidCallback? onSubtitleTap;
 
   /// Alignment for the blurred backdrop image (artist pages anchor to the top).
   final Alignment backgroundAlignment;
@@ -130,12 +135,30 @@ class MusicDetailHero extends StatelessWidget {
                       ),
                       if (subtitle != null) ...[
                         const SizedBox(height: 8),
-                        Text(
-                          subtitle!,
-                          style: const TextStyle(color: Colors.white70, fontSize: 14),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        if (onSubtitleTap != null)
+                          InkWell(
+                            onTap: onSubtitleTap,
+                            child: Text(
+                              subtitle!,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.underline,
+                                decorationColor: Colors.white70,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          )
+                        else
+                          Text(
+                            subtitle!,
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 14),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                       ],
                     ],
                   ),

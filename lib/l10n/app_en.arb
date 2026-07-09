@@ -278,6 +278,36 @@
       }
     }
   },
+  "albumCount": "{count, plural, =1{1 album} other{{count} albums}}",
+  "@albumCount": {
+    "description": "Number of albums by a person, shown in the person page hero subtitle",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "movieCount": "{count, plural, =1{1 movie} other{{count} movies}}",
+  "@movieCount": {
+    "description": "Number of movies a person appears in, shown in the person page hero subtitle",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "showCount": "{count, plural, =1{1 show} other{{count} shows}}",
+  "@showCount": {
+    "description": "Number of shows a person appears in, shown in the person page hero subtitle",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
   "search": "Search",
   "@search": {
     "description": "Search field hint and page title"

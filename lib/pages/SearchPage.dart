@@ -486,7 +486,7 @@ class _SearchPageState extends State<SearchPage> {
         icon: Icons.person,
         images: item.images,
         imageType: ImageTypes.cover,
-        onTap: () => AutoRouter.of(context).push(ArtistRoute(artistId: item.id)),
+        onTap: () => AutoRouter.of(context).push(PersonRoute(personId: item.id)),
       );
     }
     if (item is Query$search$search$$Album) {

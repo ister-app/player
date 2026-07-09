@@ -23,15 +23,15 @@ import '../l10n/app_localizations.dart';
 final _random = Random();
 
 @RoutePage()
-class ArtistPage extends StatelessWidget {
-  const ArtistPage({
+class PersonPage extends StatelessWidget {
+  const PersonPage({
     super.key,
     @PathParam.inherit('serverName') required this.serverName,
-    @PathParam('artistId') required this.artistId,
+    @PathParam('personId') required this.personId,
   });
 
   final String serverName;
-  final String artistId;
+  final String personId;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +44,7 @@ class ArtistPage extends StatelessWidget {
       child: Query(
         options: QueryOptions(
           document: documentNodeQueryartistById,
-          variables: {'id': artistId},
+          variables: {'id': personId},
           fetchPolicy: FetchPolicy.cacheAndNetwork,
         ),
       builder: (QueryResult result,
@@ -106,7 +106,7 @@ class ArtistPage extends StatelessWidget {
           ],
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
-            background: _buildHero(context, artist),
+            background: _buildHero(context, loc, artist),
           ),
         ),
         if (hasAlbums)
@@ -261,6 +261,7 @@ class ArtistPage extends StatelessWidget {
           () => _MovieEntry(
             id: movie.id,
             name: movie.name,
+            releaseYear: movie.releaseYear,
             images: movie.images,
             role: credit.characterName,
           ),
@@ -268,42 +269,55 @@ class ArtistPage extends StatelessWidget {
       } else if (show != null) {
         final entry = shows.putIfAbsent(show.id, () => _ShowEntry(show.id));
         entry.name = show.name;
+        entry.releaseYear = show.releaseYear;
         entry.images ??= show.images;
         entry.showRole ??= credit.characterName;
       } else if (episode != null && episode.$show != null) {
         final s = episode.$show!;
         final entry = shows.putIfAbsent(s.id, () => _ShowEntry(s.id));
         entry.name = s.name;
+        entry.releaseYear = s.releaseYear;
         entry.images ??= s.images;
         entry.addEpisode(episode, credit.characterName);
       }
       // Credits without a resolvable media reference are skipped.
     }
 
-    final rows = <Widget>[
-      ...movies.values.map((m) => _entryRow(
+    // Movies and shows share one list, sorted by release date (newest first).
+    // Tapping a movie opens the movie; tapping a show opens a sheet listing its
+    // episodes, whose header links to the show and whose rows link to episodes.
+    final entries = <({int releaseYear, Widget row})>[
+      for (final m in movies.values)
+        (
+          releaseYear: m.releaseYear,
+          row: _entryRow(
             context,
             name: m.name,
-            subtitle: _subtitle(loc, role: m.role),
+            subtitle: _subtitle(loc, year: m.releaseYear, role: m.role),
             images: m.images,
             onTap: () =>
                 AutoRouter.of(context).push(MovieRoute(movieId: m.id)),
-          )),
-      ...shows.values.map((s) => _entryRow(
+          ),
+        ),
+      for (final s in shows.values)
+        (
+          releaseYear: s.releaseYear,
+          row: _entryRow(
             context,
             name: s.name,
             subtitle: _subtitle(
               loc,
+              year: s.releaseYear,
               episodeCount: s.episodeCount > 0 ? s.episodeCount : null,
               role: s.role,
             ),
             images: s.images,
-            onTap: s.episodeCount > 0
-                ? () => _showEpisodesSheet(context, s)
-                : () => AutoRouter.of(context)
-                    .push(ShowOverviewRoute(showId: s.showId)),
-          )),
-    ];
+            onTap: () => _showEpisodesSheet(context, s),
+          ),
+        ),
+    ]..sort((a, b) => b.releaseYear.compareTo(a.releaseYear));
+
+    final rows = [for (final e in entries) e.row];
 
     if (rows.isEmpty) {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
@@ -333,10 +347,13 @@ class ArtistPage extends StatelessWidget {
     );
   }
 
-  /// Joins the episode count and role into a single subtitle line, e.g.
-  /// "65 afleveringen · Johnny Lawrence". Either part may be absent.
-  String? _subtitle(AppLocalizations loc, {int? episodeCount, String? role}) {
+  /// Joins the release year, episode count and role into a single subtitle
+  /// line, e.g. "1984 · 65 afleveringen · Johnny Lawrence". Any part may be
+  /// absent (a year of 0 means unknown and is dropped).
+  String? _subtitle(AppLocalizations loc,
+      {int? year, int? episodeCount, String? role}) {
     final parts = <String>[
+      if (year != null && year > 0) '$year',
       if (episodeCount != null) loc.episodeCount(episodeCount),
       if ((role ?? '').isNotEmpty) role!,
     ];
@@ -442,22 +459,29 @@ class ArtistPage extends StatelessWidget {
       builder: (_) => _PersonShowEpisodesSheet(
         serverName: serverName,
         router: router,
+        showId: entry.showId,
         showName: entry.name,
         episodes: entry.episodes,
       ),
     );
   }
 
-  Widget _buildHero(
-      BuildContext context, Query$artistById$artistById? artist) {
+  Widget _buildHero(BuildContext context, AppLocalizations loc,
+      Query$artistById$artistById? artist) {
     final backgroundImg = artist != null
         ? ImageUtil.getImageByType(artist.images, ImageTypes.background)
+        : null;
+    // Actors have no background art and no albums — their photo is a COVER
+    // image (the TMDB profile). Fall back to that so the person still gets a
+    // portrait in the hero instead of the placeholder icon.
+    final personCoverImg = artist != null
+        ? ImageUtil.getImageByType(artist.images, ImageTypes.cover)
         : null;
     final firstAlbum = artist?.albums?.isNotEmpty == true ? artist!.albums!.first : null;
     final firstAlbumCoverImg = firstAlbum != null
         ? ImageUtil.getImageByType(firstAlbum.images, ImageTypes.cover)
         : null;
-    final heroImg = backgroundImg ?? firstAlbumCoverImg;
+    final heroImg = backgroundImg ?? personCoverImg ?? firstAlbumCoverImg;
     final imageUrl = heroImg != null
         ? ImageUtil.buildUrl(heroImg,
             token: StreamTokenService.getToken(serverName))
@@ -466,18 +490,46 @@ class ArtistPage extends StatelessWidget {
     final name = artist != null
         ? MetadataUtil.getTitle(artist.metadata) ?? artist.name
         : null;
-    final albumCount = artist?.albums?.length;
 
     return MusicDetailHero(
       imageUrl: imageUrl,
       blurHash: heroImg?.blurHash,
       title: name,
-      subtitle: albumCount != null
-          ? '$albumCount ${albumCount == 1 ? 'album' : 'albums'}'
-          : null,
+      subtitle: artist != null ? _heroSubtitle(loc, artist) : null,
       backgroundAlignment: Alignment.topCenter,
       placeholderIcon: Icons.person,
     );
+  }
+
+  /// Summarises what a person has, showing only the categories they actually
+  /// appear in — e.g. "2 films" or "3 albums · 1 serie", never "0 albums".
+  String? _heroSubtitle(
+      AppLocalizations loc, Query$artistById$artistById artist) {
+    final albumCount = artist.albums?.length ?? 0;
+
+    // Count distinct movies and shows across the credits, mirroring how the
+    // filmography merges episode credits back onto their show.
+    final movieIds = <String>{};
+    final showIds = <String>{};
+    for (final credit in artist.credits ?? const []) {
+      final movie = credit.movie;
+      final show = credit.$show;
+      final episode = credit.episode;
+      if (movie != null) {
+        movieIds.add(movie.id);
+      } else if (show != null) {
+        showIds.add(show.id);
+      } else if (episode?.$show != null) {
+        showIds.add(episode!.$show!.id);
+      }
+    }
+
+    final parts = <String>[
+      if (albumCount > 0) loc.albumCount(albumCount),
+      if (movieIds.isNotEmpty) loc.movieCount(movieIds.length),
+      if (showIds.isNotEmpty) loc.showCount(showIds.length),
+    ];
+    return parts.isEmpty ? null : parts.join(' · ');
   }
 }
 
@@ -486,12 +538,14 @@ class _MovieEntry {
   _MovieEntry({
     required this.id,
     required this.name,
+    required this.releaseYear,
     required this.images,
     required this.role,
   });
 
   final String id;
   final String name;
+  final int releaseYear;
   final List<Fragment$fragmentImages>? images;
   final String? role;
 }
@@ -504,6 +558,7 @@ class _ShowEntry {
 
   final String showId;
   String name = '';
+  int releaseYear = 0;
   List<Fragment$fragmentImages>? images;
 
   /// Role from a show-level credit; wins over per-episode roles when present.
@@ -543,12 +598,14 @@ class _PersonShowEpisodesSheet extends StatefulWidget {
   const _PersonShowEpisodesSheet({
     required this.serverName,
     required this.router,
+    required this.showId,
     required this.showName,
     required this.episodes,
   });
 
   final String serverName;
   final StackRouter router;
+  final String showId;
   final String showName;
   final List<Fragment$fragmentPersonCredit$episode> episodes;
 
@@ -607,11 +664,26 @@ class _PersonShowEpisodesSheetState extends State<_PersonShowEpisodesSheet> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                child: Text(
-                  widget.showName,
-                  style: Theme.of(context).textTheme.titleLarge,
+              // The header links to the show itself; episodes below link to
+              // their episode. Pop the sheet first so the page can navigate.
+              InkWell(
+                onTap: () {
+                  Navigator.of(context).pop();
+                  widget.router.push(ShowOverviewRoute(showId: widget.showId));
+                },
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          widget.showName,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right),
+                    ],
+                  ),
                 ),
               ),
               ExpansionPanelList(
