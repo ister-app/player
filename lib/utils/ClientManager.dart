@@ -54,9 +54,12 @@ class ClientManager {
     }
   }
 
+  static final Map<String, WebSocketLink> _webSocketLinks = {};
+
   /// Drops all per-server state for [url] (used when a server is deleted).
   static void removeClient(String url) {
     clients.remove(url);
+    _webSocketLinks.remove(url)?.dispose();
     if (instance._lastClientUsed == url) {
       instance.lastClientUsed = null;
     }
@@ -83,7 +86,37 @@ class ClientManager {
     final AuthLink authLink =
         AuthLink(getToken: () => LoginManager.getToken(url));
 
-    final Link link = authLink.concat(httpLink);
+    // Subscriptions go over graphql-transport-ws on the same /graphql path.
+    // serverUrl already carries a scheme, so http→ws / https→wss. The server
+    // authenticates the connection via the connection_init payload; passing
+    // initialPayload as a function makes every reconnect pick up a fresh
+    // token. The socket only opens once something actually subscribes.
+    final wsUrl =
+        '${cachedInfo.serverUrl}/graphql'.replaceFirst(RegExp(r'^http'), 'ws');
+    final WebSocketLink wsLink = WebSocketLink(
+      wsUrl,
+      subProtocol: GraphQLProtocol.graphqlTransportWs,
+      config: SocketClientConfig(
+        autoReconnect: true,
+        delayBetweenReconnectionAttempts: const Duration(seconds: 5),
+        initialPayload: () async {
+          // A null Authorization guarantees the server closes with 4401, so
+          // wait for a token rather than burning the connect attempt. The key
+          // is omitted entirely when no token can be had.
+          final token = await LoginManager.getToken(url) ??
+              await LoginManager.waitForToken(url);
+          return {if (token != null) 'Authorization': token};
+        },
+      ),
+    );
+    _webSocketLinks[url]?.dispose();
+    _webSocketLinks[url] = wsLink;
+
+    final Link link = Link.split(
+      (request) => request.isSubscription,
+      wsLink,
+      authLink.concat(httpLink),
+    );
     ValueNotifier<GraphQLClient> client = ValueNotifier(
       GraphQLClient(link: link, cache: GraphQLCache(store: InMemoryStore()), queryRequestTimeout: Duration(seconds: 30)),
     );

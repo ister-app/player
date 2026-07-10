@@ -207,6 +207,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   ) async {
     _intendsToPlay = true;
     _loadRetries = 0;
+    _startHeartbeat();
     final shouldRefresh = episode == null ||
         episode!.id != newEpisode.id ||
         serverName != newServerName;
@@ -310,6 +311,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   ) async {
     _intendsToPlay = true;
     _loadRetries = 0;
+    _startHeartbeat();
     final shouldRefresh = movie == null ||
         movie!.id != newMovie.id ||
         serverName != newServerName;
@@ -386,6 +388,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   ) async {
     _intendsToPlay = true;
     _loadRetries = 0;
+    _startHeartbeat();
     final shouldRefresh = album == null ||
         album!.id != newAlbum.id ||
         serverName != newServerName ||
@@ -524,6 +527,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       GraphQLClient client, Fragment$fragmentPlayQueue pq, String srv) async {
     _intendsToPlay = true;
     _loadRetries = 0;
+    _startHeartbeat();
     _syncGeneration++;
     serverName = srv;
     graphQLClient = client;
@@ -669,20 +673,35 @@ class MediaPlayerHandler extends BaseAudioHandler
   @override
   Future<void> play() {
     _intendsToPlay = true;
-    return _player.play();
+    // Resuming after stop() must restart the heartbeat the stop cancelled.
+    if (playQueue != null) _startHeartbeat();
+    final result = _player.play();
+    // Tell the server we resumed right away. playState is passed explicitly
+    // because _player.state.playing hasn't flipped to true yet at this point.
+    unawaited(_syncProgress(_player.state.position,
+        force: true, playState: Enum$PlayState.PLAYING));
+    return result;
   }
 
   @override
   Future<void> pause() {
     _intendsToPlay = false;
-    unawaited(_syncProgress(_player.state.position, force: true));
+    // playState is passed explicitly: _player.state.playing is still true here
+    // (pause() below hasn't taken effect), so deriving it would report PLAYING.
+    unawaited(_syncProgress(_player.state.position,
+        force: true, playState: Enum$PlayState.PAUSED));
     return _player.pause();
   }
 
   @override
   Future<void> stop() async {
     _intendsToPlay = false;
-    unawaited(_syncProgress(_player.state.position, force: true));
+    // There is no explicit stop mutation: ending the heartbeat is the stop
+    // signal. The final flush below records the resume position; the server
+    // expires the session 60s after this last update.
+    _stopHeartbeat();
+    unawaited(_syncProgress(_player.state.position,
+        force: true, playState: Enum$PlayState.PAUSED));
     await _player.pause();
     // Explicit stop is the only place we release audio focus.
     final session = await AudioSession.instance;
@@ -882,6 +901,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (index < 0 || index >= queue.value.length) return;
     _intendsToPlay = true;
     _loadRetries = 0;
+    _startHeartbeat();
     _syncGeneration++;
     final generation = _syncGeneration;
     // Publish the target index immediately so a second next/previous tap
@@ -1469,11 +1489,22 @@ class MediaPlayerHandler extends BaseAudioHandler
     GraphQLClient client,
     String playQueueId,
     String playQueueItemId,
-    Duration position,
-  ) {
+    Duration position, {
+    Enum$PlayState? playState,
+  }) {
+    // When [playState] is null it is read inside the chained closure so it
+    // reflects the state at the moment the request is actually sent, not when
+    // it was queued. It comes from the player itself (not _intendsToPlay)
+    // because the in-video controls can pause without going through pause().
+    // play()/pause()/stop() pass it explicitly because the player state hasn't
+    // flipped yet when they fire the update.
     final send = _progressChain.then((_) async => _playQueueService
         .updateProgress(client, playQueueId, playQueueItemId, position,
-            streamSettings: await _currentStreamSettings()));
+            streamSettings: await _currentStreamSettings(),
+            playState: playState ??
+                (_player.state.playing
+                    ? Enum$PlayState.PLAYING
+                    : Enum$PlayState.PAUSED)));
     _progressChain = send.then((_) {}, onError: (_) {});
     return send;
   }
@@ -1492,7 +1523,8 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// Syncs the playback position of the current item to the server. Throttled
   /// to ~10s of position delta unless [force] is set (pause/stop flush the
   /// final position so resume points don't lag behind).
-  Future<void> _syncProgress(Duration pos, {bool force = false}) async {
+  Future<void> _syncProgress(Duration pos,
+      {bool force = false, Enum$PlayState? playState}) async {
     if (!force &&
         _lastProgress != null &&
         (pos - _lastProgress!).inMilliseconds.abs() <= 10 * 1000) {
@@ -1515,8 +1547,9 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (itemId == null) return;
 
     final generation = _syncGeneration;
+    _lastSyncSentAt = DateTime.now();
     final playQueueObject =
-        await _sendProgressUpdate(client, pq.id, itemId, pos);
+        await _sendProgressUpdate(client, pq.id, itemId, pos, playState: playState);
     // Drop the response if the queue or current item changed while this
     // request was in flight — a slow response must not revert a skip.
     if (playQueueObject != null && generation == _syncGeneration) {
@@ -1531,6 +1564,34 @@ class MediaPlayerHandler extends BaseAudioHandler
         PlayQueueService().playQueueChanged(playQueue!);
       }
     }
+  }
+
+  /// The server treats updatePlayQueue as the playback heartbeat: a session
+  /// with no update for 60s counts as stopped. While playing, the position
+  /// stream drives ~10s updates; while paused the position stops advancing,
+  /// so this wall-clock timer keeps the session alive with PAUSED updates.
+  /// The 10s gate keeps it silent whenever position-driven syncs already
+  /// went out recently, so nothing is sent twice.
+  ///
+  /// When the queue plays out without an explicit stop() the heartbeat keeps
+  /// reporting PAUSED and the session stays visible server-side; only stop()
+  /// (or the app dying) lets the server expire the session.
+  void _startHeartbeat() {
+    _heartbeat?.cancel();
+    _heartbeat = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (playQueue == null || graphQLClient == null) return;
+      final last = _lastSyncSentAt;
+      if (last != null &&
+          DateTime.now().difference(last) < const Duration(seconds: 10)) {
+        return;
+      }
+      unawaited(_syncProgress(_player.state.position, force: true));
+    });
+  }
+
+  void _stopHeartbeat() {
+    _heartbeat?.cancel();
+    _heartbeat = null;
   }
 
   /// Watchdog for streams that stall just before the end without ever firing
@@ -1737,6 +1798,12 @@ class MediaPlayerHandler extends BaseAudioHandler
   bool _audioPreferenceApplied = false;
   bool _subtitlePreferenceApplied = false;
   DateTime? _mediaOpenedAt;
+
+  // Playback-heartbeat state: keeps the server-side session alive (also while
+  // paused); _lastSyncSentAt tracks the last actual send so the heartbeat
+  // stays quiet while position-driven syncs are flowing.
+  Timer? _heartbeat;
+  DateTime? _lastSyncSentAt;
 
   // Stall-watchdog state: tracks real forward progress so we can detect a
   // stream that froze near the end without firing `completed`.

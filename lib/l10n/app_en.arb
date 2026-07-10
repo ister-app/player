@@ -393,5 +393,47 @@
         "type": "String"
       }
     }
-  }
+  },
+  "nowPlaying": "Now playing",
+  "serverActivity": "Server activity",
+  "noActiveSessions": "No active playback sessions",
+  "queues": "Queues",
+  "queueDepth": "Depth {depth}",
+  "@queueDepth": {
+    "placeholders": {
+      "depth": {
+        "type": "int"
+      }
+    }
+  },
+  "consumers": "{count} consumers",
+  "@consumers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recentFailures": "Recent failures",
+  "noRecentFailures": "No recent failures",
+  "processedCount": "{count} processed",
+  "@processedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "failedCount": "{count} failed",
+  "@failedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "idle": "Idle",
+  "statePlaying": "Playing",
+  "statePaused": "Paused",
+  "liveUpdatesUnavailable": "Live updates interrupted — reconnecting"
 }

@@ -88,5 +88,19 @@
   "shufflePlay": "Shuffle afspelen",
   "trackNotPlayable": "Dit nummer kan nog niet worden afgespeeld — het is niet geanalyseerd",
   "skippedTrackNoFile": "‘{title}’ overgeslagen — nog niet geanalyseerd",
-  "skippedTrackPlaybackFailed": "‘{title}’ overgeslagen — kon niet worden afgespeeld"
+  "skippedTrackPlaybackFailed": "‘{title}’ overgeslagen — kon niet worden afgespeeld",
+  "nowPlaying": "Speelt nu",
+  "serverActivity": "Serveractiviteit",
+  "noActiveSessions": "Geen actieve afspeelsessies",
+  "queues": "Wachtrijen",
+  "queueDepth": "Diepte {depth}",
+  "consumers": "{count} consumers",
+  "recentFailures": "Recente fouten",
+  "noRecentFailures": "Geen recente fouten",
+  "processedCount": "{count} verwerkt",
+  "failedCount": "{count} mislukt",
+  "idle": "Inactief",
+  "statePlaying": "Speelt af",
+  "statePaused": "Gepauzeerd",
+  "liveUpdatesUnavailable": "Live updates onderbroken — opnieuw verbinden"
 }

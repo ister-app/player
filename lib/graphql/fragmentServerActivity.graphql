@@ -1,0 +1,48 @@
+fragment fragmentQueueStat on QueueStat {
+    queue
+    depth
+    consumers
+}
+
+fragment fragmentEventFailure on EventFailure {
+    nodeName
+    queue
+    eventType
+    errorMessage
+    occurredAt
+}
+
+fragment fragmentServerActivityEvent on ServerActivityEvent {
+    type
+    nodeName
+    timestamp
+    processing {
+        queue
+        eventType
+        startedAt
+    }
+    processedCount
+    failedCount
+    queueStats {
+        ...fragmentQueueStat
+    }
+    failure {
+        ...fragmentEventFailure
+    }
+}
+
+fragment fragmentPlaybackSession on PlaybackSession {
+    playQueueId
+    playQueueItemId
+    userId
+    userName
+    mediaType
+    mediaId
+    title
+    durationInMilliseconds
+    artworkImageId
+    progressInMilliseconds
+    playState
+    nodeName
+    updatedAt
+}

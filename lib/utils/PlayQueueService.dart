@@ -266,12 +266,16 @@ class PlayQueueService {
 
   /// [streamSettings] tells the server what format the client is playing
   /// with, so it can prefetch the next queue item in the same format.
+  /// [playState] marks the update as PLAYING (also when null) or PAUSED; the
+  /// server treats this mutation as the playback heartbeat and considers the
+  /// session stopped when no update arrives for 60s.
   Future<Fragment$fragmentPlayQueue?> updateProgress(
       GraphQLClient graphQLClient,
       String playQueueId,
       String playQueueItemId,
       Duration duration,
-      {Input$StreamSettingsInput? streamSettings}) async {
+      {Input$StreamSettingsInput? streamSettings,
+      Enum$PlayState? playState}) async {
     final MutationOptions options = MutationOptions(
         document: documentNodeMutationupdatePlayQueue,
         variables: Variables$Mutation$updatePlayQueue(
@@ -279,6 +283,7 @@ class PlayQueueService {
           playQueueItemId: playQueueItemId,
           progressInMilliseconds: duration.inMilliseconds,
           streamSettings: streamSettings,
+          playState: playState,
         ).toJson());
     final QueryResult result = await graphQLClient.mutate(options);
 

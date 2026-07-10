@@ -1,0 +1,13 @@
+targets:
+  $default:
+    builders:
+      graphql_codegen:
+        options:
+          # graphql_codegen injects __typename into every selection set, including
+          # the operation root. For subscriptions that produces two root fields
+          # (the field + __typename), which the server rejects with
+          # SubscriptionMultipleRootFields ("must have exactly one root field").
+          # Excluding the `subscription` path skips __typename only at the
+          # subscription root; nested selection sets still get it.
+          addTypenameExcludedPaths:
+            - subscription

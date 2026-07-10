@@ -326,6 +326,79 @@ class _CopyWithStubImpl$Input$CreatePlayQueueInput<TRes>
   }) => _res;
 }
 
+enum Enum$PlayState {
+  PLAYING,
+  PAUSED,
+  $unknown;
+
+  factory Enum$PlayState.fromJson(String value) =>
+      fromJson$Enum$PlayState(value);
+
+  String toJson() => toJson$Enum$PlayState(this);
+}
+
+String toJson$Enum$PlayState(Enum$PlayState e) {
+  switch (e) {
+    case Enum$PlayState.PLAYING:
+      return r'PLAYING';
+    case Enum$PlayState.PAUSED:
+      return r'PAUSED';
+    case Enum$PlayState.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$PlayState fromJson$Enum$PlayState(String value) {
+  switch (value) {
+    case r'PLAYING':
+      return Enum$PlayState.PLAYING;
+    case r'PAUSED':
+      return Enum$PlayState.PAUSED;
+    default:
+      return Enum$PlayState.$unknown;
+  }
+}
+
+enum Enum$ServerActivityEventType {
+  NODE_ACTIVITY,
+  QUEUE_STATS,
+  FAILURE,
+  $unknown;
+
+  factory Enum$ServerActivityEventType.fromJson(String value) =>
+      fromJson$Enum$ServerActivityEventType(value);
+
+  String toJson() => toJson$Enum$ServerActivityEventType(this);
+}
+
+String toJson$Enum$ServerActivityEventType(Enum$ServerActivityEventType e) {
+  switch (e) {
+    case Enum$ServerActivityEventType.NODE_ACTIVITY:
+      return r'NODE_ACTIVITY';
+    case Enum$ServerActivityEventType.QUEUE_STATS:
+      return r'QUEUE_STATS';
+    case Enum$ServerActivityEventType.FAILURE:
+      return r'FAILURE';
+    case Enum$ServerActivityEventType.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$ServerActivityEventType fromJson$Enum$ServerActivityEventType(
+  String value,
+) {
+  switch (value) {
+    case r'NODE_ACTIVITY':
+      return Enum$ServerActivityEventType.NODE_ACTIVITY;
+    case r'QUEUE_STATS':
+      return Enum$ServerActivityEventType.QUEUE_STATS;
+    case r'FAILURE':
+      return Enum$ServerActivityEventType.FAILURE;
+    default:
+      return Enum$ServerActivityEventType.$unknown;
+  }
+}
+
 enum Enum$SortingEnum {
   DATE_CREATED,
   NAME,

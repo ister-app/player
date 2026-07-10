@@ -631,6 +631,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Skipped ‘{title}’ — could not be played'**
   String skippedTrackPlaybackFailed(String title);
+
+  /// No description provided for @nowPlaying.
+  ///
+  /// In en, this message translates to:
+  /// **'Now playing'**
+  String get nowPlaying;
+
+  /// No description provided for @serverActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Server activity'**
+  String get serverActivity;
+
+  /// No description provided for @noActiveSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'No active playback sessions'**
+  String get noActiveSessions;
+
+  /// No description provided for @queues.
+  ///
+  /// In en, this message translates to:
+  /// **'Queues'**
+  String get queues;
+
+  /// No description provided for @queueDepth.
+  ///
+  /// In en, this message translates to:
+  /// **'Depth {depth}'**
+  String queueDepth(int depth);
+
+  /// No description provided for @consumers.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} consumers'**
+  String consumers(int count);
+
+  /// No description provided for @recentFailures.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent failures'**
+  String get recentFailures;
+
+  /// No description provided for @noRecentFailures.
+  ///
+  /// In en, this message translates to:
+  /// **'No recent failures'**
+  String get noRecentFailures;
+
+  /// No description provided for @processedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} processed'**
+  String processedCount(int count);
+
+  /// No description provided for @failedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} failed'**
+  String failedCount(int count);
+
+  /// No description provided for @idle.
+  ///
+  /// In en, this message translates to:
+  /// **'Idle'**
+  String get idle;
+
+  /// No description provided for @statePlaying.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing'**
+  String get statePlaying;
+
+  /// No description provided for @statePaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get statePaused;
+
+  /// No description provided for @liveUpdatesUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Live updates interrupted — reconnecting'**
+  String get liveUpdatesUnavailable;
 }
 
 class _AppLocalizationsDelegate

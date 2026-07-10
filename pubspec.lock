@@ -60,10 +60,11 @@ packages:
   audio_service:
     dependency: "direct main"
     description:
-      name: audio_service
-      sha256: "95f3267f3449eb5cf71c8fcf1d556f57af1e898e2dc5815fb168d1843653edb7"
-      url: "https://pub.dev"
-    source: hosted
+      path: audio_service
+      ref: "fix/restore-listener-on-service-recreate"
+      resolved-ref: "14f126c4347fe43be8e3414226cfa6073f0a722b"
+      url: "https://github.com/ister-app/audio_service"
+    source: git
     version: "0.18.19"
   audio_service_mpris:
     dependency: "direct main"

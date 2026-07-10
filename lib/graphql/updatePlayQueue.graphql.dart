@@ -14,11 +14,13 @@ class Variables$Mutation$updatePlayQueue {
     required String playQueueItemId,
     required int progressInMilliseconds,
     Input$StreamSettingsInput? streamSettings,
+    Enum$PlayState? playState,
   }) => Variables$Mutation$updatePlayQueue._({
     r'id': id,
     r'playQueueItemId': playQueueItemId,
     r'progressInMilliseconds': progressInMilliseconds,
     if (streamSettings != null) r'streamSettings': streamSettings,
+    if (playState != null) r'playState': playState,
   });
 
   Variables$Mutation$updatePlayQueue._(this._$data);
@@ -41,6 +43,12 @@ class Variables$Mutation$updatePlayQueue {
               (l$streamSettings as Map<String, dynamic>),
             );
     }
+    if (data.containsKey('playState')) {
+      final l$playState = data['playState'];
+      result$data['playState'] = l$playState == null
+          ? null
+          : fromJson$Enum$PlayState((l$playState as String));
+    }
     return Variables$Mutation$updatePlayQueue._(result$data);
   }
 
@@ -55,6 +63,8 @@ class Variables$Mutation$updatePlayQueue {
   Input$StreamSettingsInput? get streamSettings =>
       (_$data['streamSettings'] as Input$StreamSettingsInput?);
 
+  Enum$PlayState? get playState => (_$data['playState'] as Enum$PlayState?);
+
   Map<String, dynamic> toJson() {
     final result$data = <String, dynamic>{};
     final l$id = id;
@@ -66,6 +76,12 @@ class Variables$Mutation$updatePlayQueue {
     if (_$data.containsKey('streamSettings')) {
       final l$streamSettings = streamSettings;
       result$data['streamSettings'] = l$streamSettings?.toJson();
+    }
+    if (_$data.containsKey('playState')) {
+      final l$playState = playState;
+      result$data['playState'] = l$playState == null
+          ? null
+          : toJson$Enum$PlayState(l$playState);
     }
     return result$data;
   }
@@ -108,6 +124,15 @@ class Variables$Mutation$updatePlayQueue {
     if (l$streamSettings != lOther$streamSettings) {
       return false;
     }
+    final l$playState = playState;
+    final lOther$playState = other.playState;
+    if (_$data.containsKey('playState') !=
+        other._$data.containsKey('playState')) {
+      return false;
+    }
+    if (l$playState != lOther$playState) {
+      return false;
+    }
     return true;
   }
 
@@ -117,11 +142,13 @@ class Variables$Mutation$updatePlayQueue {
     final l$playQueueItemId = playQueueItemId;
     final l$progressInMilliseconds = progressInMilliseconds;
     final l$streamSettings = streamSettings;
+    final l$playState = playState;
     return Object.hashAll([
       l$id,
       l$playQueueItemId,
       l$progressInMilliseconds,
       _$data.containsKey('streamSettings') ? l$streamSettings : const {},
+      _$data.containsKey('playState') ? l$playState : const {},
     ]);
   }
 }
@@ -140,6 +167,7 @@ abstract class CopyWith$Variables$Mutation$updatePlayQueue<TRes> {
     String? playQueueItemId,
     int? progressInMilliseconds,
     Input$StreamSettingsInput? streamSettings,
+    Enum$PlayState? playState,
   });
 }
 
@@ -158,6 +186,7 @@ class _CopyWithImpl$Variables$Mutation$updatePlayQueue<TRes>
     Object? playQueueItemId = _undefined,
     Object? progressInMilliseconds = _undefined,
     Object? streamSettings = _undefined,
+    Object? playState = _undefined,
   }) => _then(
     Variables$Mutation$updatePlayQueue._({
       ..._instance._$data,
@@ -169,6 +198,7 @@ class _CopyWithImpl$Variables$Mutation$updatePlayQueue<TRes>
         'progressInMilliseconds': (progressInMilliseconds as int),
       if (streamSettings != _undefined)
         'streamSettings': (streamSettings as Input$StreamSettingsInput?),
+      if (playState != _undefined) 'playState': (playState as Enum$PlayState?),
     }),
   );
 }
@@ -184,6 +214,7 @@ class _CopyWithStubImpl$Variables$Mutation$updatePlayQueue<TRes>
     String? playQueueItemId,
     int? progressInMilliseconds,
     Input$StreamSettingsInput? streamSettings,
+    Enum$PlayState? playState,
   }) => _res;
 }
 
@@ -351,6 +382,15 @@ const documentNodeMutationupdatePlayQueue = DocumentNode(
           defaultValue: DefaultValueNode(value: null),
           directives: [],
         ),
+        VariableDefinitionNode(
+          variable: VariableNode(name: NameNode(value: 'playState')),
+          type: NamedTypeNode(
+            name: NameNode(value: 'PlayState'),
+            isNonNull: false,
+          ),
+          defaultValue: DefaultValueNode(value: null),
+          directives: [],
+        ),
       ],
       directives: [],
       selectionSet: SelectionSetNode(
@@ -376,6 +416,10 @@ const documentNodeMutationupdatePlayQueue = DocumentNode(
               ArgumentNode(
                 name: NameNode(value: 'streamSettings'),
                 value: VariableNode(name: NameNode(value: 'streamSettings')),
+              ),
+              ArgumentNode(
+                name: NameNode(value: 'playState'),
+                value: VariableNode(name: NameNode(value: 'playState')),
               ),
             ],
             directives: [],

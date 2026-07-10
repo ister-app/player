@@ -332,4 +332,55 @@ class AppLocalizationsNl extends AppLocalizations {
   String skippedTrackPlaybackFailed(String title) {
     return '‘$title’ overgeslagen — kon niet worden afgespeeld';
   }
+
+  @override
+  String get nowPlaying => 'Speelt nu';
+
+  @override
+  String get serverActivity => 'Serveractiviteit';
+
+  @override
+  String get noActiveSessions => 'Geen actieve afspeelsessies';
+
+  @override
+  String get queues => 'Wachtrijen';
+
+  @override
+  String queueDepth(int depth) {
+    return 'Diepte $depth';
+  }
+
+  @override
+  String consumers(int count) {
+    return '$count consumers';
+  }
+
+  @override
+  String get recentFailures => 'Recente fouten';
+
+  @override
+  String get noRecentFailures => 'Geen recente fouten';
+
+  @override
+  String processedCount(int count) {
+    return '$count verwerkt';
+  }
+
+  @override
+  String failedCount(int count) {
+    return '$count mislukt';
+  }
+
+  @override
+  String get idle => 'Inactief';
+
+  @override
+  String get statePlaying => 'Speelt af';
+
+  @override
+  String get statePaused => 'Gepauzeerd';
+
+  @override
+  String get liveUpdatesUnavailable =>
+      'Live updates onderbroken — opnieuw verbinden';
 }

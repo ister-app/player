@@ -332,4 +332,55 @@ class AppLocalizationsEn extends AppLocalizations {
   String skippedTrackPlaybackFailed(String title) {
     return 'Skipped ‘$title’ — could not be played';
   }
+
+  @override
+  String get nowPlaying => 'Now playing';
+
+  @override
+  String get serverActivity => 'Server activity';
+
+  @override
+  String get noActiveSessions => 'No active playback sessions';
+
+  @override
+  String get queues => 'Queues';
+
+  @override
+  String queueDepth(int depth) {
+    return 'Depth $depth';
+  }
+
+  @override
+  String consumers(int count) {
+    return '$count consumers';
+  }
+
+  @override
+  String get recentFailures => 'Recent failures';
+
+  @override
+  String get noRecentFailures => 'No recent failures';
+
+  @override
+  String processedCount(int count) {
+    return '$count processed';
+  }
+
+  @override
+  String failedCount(int count) {
+    return '$count failed';
+  }
+
+  @override
+  String get idle => 'Idle';
+
+  @override
+  String get statePlaying => 'Playing';
+
+  @override
+  String get statePaused => 'Paused';
+
+  @override
+  String get liveUpdatesUnavailable =>
+      'Live updates interrupted — reconnecting';
 }

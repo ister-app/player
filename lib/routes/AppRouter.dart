@@ -75,6 +75,8 @@ class AppRouter extends RootStackRouter {
           AutoRoute(path: 'settings/languages', page: ServerSettingsLanguageRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/cluster', page: ServerSettingsClusterRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/playback', page: ServerSettingsPlaybackRoute.page, guards: [_deepLinkGuard]),
+          AutoRoute(path: 'settings/nowplaying', page: ServerNowPlayingRoute.page, guards: [_deepLinkGuard]),
+          AutoRoute(path: 'settings/activity', page: ServerActivityRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'shows/:showId', page: ShowOverviewRoute.page,
             guards: [_deepLinkGuard],
             children: [
