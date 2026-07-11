@@ -61,7 +61,8 @@ class ShowOverviewContentPage extends StatelessWidget {
           body = Skeletonizer(
               enabled: true,
               child: _buildContent(null, null, BoneMock.name,
-                  BoneMock.paragraph, context, '', _skeletonCast));
+                  BoneMock.paragraph, context, '',
+                  CastRow(serverName: serverName, cast: _skeletonCast)));
         } else if (result.hasException) {
           body = Text(result.exception.toString());
         } else {
@@ -81,7 +82,7 @@ class ShowOverviewContentPage extends StatelessWidget {
                 MetadataUtil.getDescription(show.metadata) ?? "",
                 context,
                 show.toJson().toString(),
-                show.cast);
+                PagedCastRow(serverName: serverName, showId: showId));
           }
         }
 
@@ -97,7 +98,7 @@ class ShowOverviewContentPage extends StatelessWidget {
       String description,
       BuildContext context,
       String? rawJson,
-      List<Fragment$fragmentCastMember>? cast) {
+      Widget castRow) {
     return SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       LayoutBuilder(builder: (context, constraints) {
@@ -175,8 +176,7 @@ class ShowOverviewContentPage extends StatelessWidget {
             ),
             Text(description),
           ])),
-      if (cast != null && cast.isNotEmpty)
-        CastRow(serverName: serverName, cast: cast),
+      castRow,
     ]));
   }
 

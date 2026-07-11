@@ -220,8 +220,7 @@ class _MoviePageState extends State<MoviePage> {
               ),
             Text(description),
           ])),
-      if (movie?.cast != null && movie!.cast!.isNotEmpty)
-        CastRow(serverName: widget.serverName, cast: movie.cast!),
+      PagedCastRow(serverName: widget.serverName, movieId: widget.movieId),
       if (loadComplete && movie != null && movie.mediaFile != null && movie.mediaFile!.isNotEmpty)
         const TrackSelectionWidget(),
     ]);

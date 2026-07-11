@@ -1,0 +1,11 @@
+query castByParent($showId: ID, $movieId: ID, $episodeId: ID, $page: Int, $size: Int) {
+    cast(showId: $showId, movieId: $movieId, episodeId: $episodeId, page: $page, size: $size) {
+        number
+        size
+        totalElements
+        totalPages
+        content {
+            ...fragmentCastMember
+        }
+    }
+}

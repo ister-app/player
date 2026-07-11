@@ -257,8 +257,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
               ),
             Text(description),
           ])),
-      if (episode?.cast != null && episode!.cast!.isNotEmpty)
-        CastRow(serverName: widget.serverName, cast: episode.cast!),
+      PagedCastRow(serverName: widget.serverName, episodeId: widget.episodeId),
       if (loadComplete && episode != null && episode.mediaFile != null && episode.mediaFile!.isNotEmpty)
         const TrackSelectionWidget(),
     ]);
