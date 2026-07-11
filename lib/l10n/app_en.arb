@@ -456,5 +456,19 @@
   "idle": "Idle",
   "statePlaying": "Playing",
   "statePaused": "Paused",
-  "liveUpdatesUnavailable": "Live updates interrupted — reconnecting"
+  "liveUpdatesUnavailable": "Live updates interrupted — reconnecting",
+  "sessionEnded": "Session ended",
+  "addToSession": "Add to session",
+  "chooseSession": "Choose a session",
+  "playNext": "Play next",
+  "addToEndOfQueue": "Add to end of queue",
+  "addedToSession": "Added to session",
+  "addToSessionFailed": "Adding to session failed",
+  "remotePlay": "Resumed via remote control",
+  "remotePause": "Paused via remote control",
+  "remoteNext": "Next via remote control",
+  "remotePrevious": "Previous via remote control",
+  "remoteSeek": "Position changed via remote control",
+  "remoteSkipToItem": "Queue item selected via remote control",
+  "remoteQueueChanged": "Queue updated via remote control"
 }

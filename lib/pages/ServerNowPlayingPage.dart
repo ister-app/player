@@ -8,6 +8,7 @@ import 'package:player/graphql/fragmentServerActivity.graphql.dart';
 import 'package:player/graphql/nowPlayingSubscription.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/graphql/serverActivitySnapshot.graphql.dart';
+import 'package:player/routes/AppRouter.gr.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/LiveFeedBanner.dart';
@@ -207,6 +208,9 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
               artworkUrl: _artworkUrl(session),
               mediaIcon: _mediaIcon(session.mediaType),
               formatProgress: _formatProgress,
+              // Party mode: open the remote control for this session.
+              onTap: () => context.router
+                  .push(RemoteControlRoute(playQueueId: session.playQueueId)),
             ),
         ],
       );
@@ -227,6 +231,7 @@ class _SessionCard extends StatelessWidget {
   final String? artworkUrl;
   final IconData mediaIcon;
   final String Function(int) formatProgress;
+  final VoidCallback? onTap;
 
   const _SessionCard({
     required this.session,
@@ -234,6 +239,7 @@ class _SessionCard extends StatelessWidget {
     required this.artworkUrl,
     required this.mediaIcon,
     required this.formatProgress,
+    this.onTap,
   });
 
   @override
@@ -253,7 +259,9 @@ class _SessionCard extends StatelessWidget {
 
     return Card(
       clipBehavior: Clip.antiAlias,
-      child: Padding(
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,6 +330,7 @@ class _SessionCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
       ),
     );

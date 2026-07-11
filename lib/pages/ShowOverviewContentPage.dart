@@ -3,9 +3,11 @@ import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/components/AddToSessionSheet.dart';
 import 'package:player/components/CastRow.dart';
 import 'package:player/components/RatingStars.dart';
 import 'package:player/graphql/analyzeDataForShow.graphql.dart';
+import 'package:player/graphql/seasonById.graphql.dart';
 import 'package:player/graphql/fragmentCredit.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/graphql/showById.graphql.dart';
@@ -165,6 +167,17 @@ class ShowOverviewContentPage extends StatelessWidget {
                           title: Text(AppLocalizations.of(context)!.analyzeMedia),
                         ),
                       ),
+                      MenuItemButton(
+                        onPressed: () => showAddToSessionSheet(
+                          context,
+                          serverName: serverName,
+                          loadItems: _loadShowEpisodes,
+                        ),
+                        child: ListTile(
+                          leading: const Icon(Icons.playlist_add),
+                          title: Text(AppLocalizations.of(context)!.addToSession),
+                        ),
+                      ),
                     ],
                     builder: (_, MenuController controller, Widget? child) {
                       return IconButton(
@@ -190,6 +203,38 @@ class ShowOverviewContentPage extends StatelessWidget {
           ])),
       castRow,
     ]));
+  }
+
+  /// All playable episodes of the show in season/episode order, for "add to
+  /// session". showById only carries season ids, so the episodes are fetched
+  /// per season — sequentially, seasons in order — once a session was chosen.
+  Future<List<AddToSessionItem>> _loadShowEpisodes(GraphQLClient client) async {
+    final showResult = await client.query(QueryOptions(
+        document: documentNodeQueryshowById, variables: {'id': showId}));
+    if (showResult.hasException) throw showResult.exception!;
+    final seasons = List.of(
+        Query$showById.fromJson(showResult.data!).showById?.seasons ?? [])
+      ..sort((a, b) => a.number.compareTo(b.number));
+
+    final items = <AddToSessionItem>[];
+    for (final season in seasons) {
+      final seasonResult = await client.query(QueryOptions(
+          document: documentNodeQueryseasonById,
+          variables: {'id': season.id}));
+      if (seasonResult.hasException) throw seasonResult.exception!;
+      final episodes = List.of(Query$seasonById
+              .fromJson(seasonResult.data!)
+              .seasonById
+              ?.episodes ??
+          [])
+        ..sort((a, b) => a.number.compareTo(b.number));
+      for (final episode in episodes) {
+        if (episode.mediaFile != null && episode.mediaFile!.isNotEmpty) {
+          items.add((Enum$MediaType.EPISODE, episode.id));
+        }
+      }
+    }
+    return items;
   }
 
   Future<void> _dialogBuilder(BuildContext context, String json) {

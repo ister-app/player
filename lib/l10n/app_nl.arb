@@ -106,5 +106,19 @@
   "idle": "Inactief",
   "statePlaying": "Speelt af",
   "statePaused": "Gepauzeerd",
-  "liveUpdatesUnavailable": "Live updates onderbroken — opnieuw verbinden"
+  "liveUpdatesUnavailable": "Live updates onderbroken — opnieuw verbinden",
+  "sessionEnded": "Sessie beëindigd",
+  "addToSession": "Toevoegen aan sessie",
+  "chooseSession": "Kies een sessie",
+  "playNext": "Hierna afspelen",
+  "addToEndOfQueue": "Achteraan toevoegen",
+  "addedToSession": "Toegevoegd aan sessie",
+  "addToSessionFailed": "Toevoegen aan sessie mislukt",
+  "remotePlay": "Hervat via afstandsbediening",
+  "remotePause": "Gepauzeerd via afstandsbediening",
+  "remoteNext": "Volgende via afstandsbediening",
+  "remotePrevious": "Vorige via afstandsbediening",
+  "remoteSeek": "Positie gewijzigd via afstandsbediening",
+  "remoteSkipToItem": "Ander item gekozen via afstandsbediening",
+  "remoteQueueChanged": "Wachtrij bijgewerkt via afstandsbediening"
 }

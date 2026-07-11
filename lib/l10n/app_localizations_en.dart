@@ -397,4 +397,46 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get liveUpdatesUnavailable =>
       'Live updates interrupted — reconnecting';
+
+  @override
+  String get sessionEnded => 'Session ended';
+
+  @override
+  String get addToSession => 'Add to session';
+
+  @override
+  String get chooseSession => 'Choose a session';
+
+  @override
+  String get playNext => 'Play next';
+
+  @override
+  String get addToEndOfQueue => 'Add to end of queue';
+
+  @override
+  String get addedToSession => 'Added to session';
+
+  @override
+  String get addToSessionFailed => 'Adding to session failed';
+
+  @override
+  String get remotePlay => 'Resumed via remote control';
+
+  @override
+  String get remotePause => 'Paused via remote control';
+
+  @override
+  String get remoteNext => 'Next via remote control';
+
+  @override
+  String get remotePrevious => 'Previous via remote control';
+
+  @override
+  String get remoteSeek => 'Position changed via remote control';
+
+  @override
+  String get remoteSkipToItem => 'Queue item selected via remote control';
+
+  @override
+  String get remoteQueueChanged => 'Queue updated via remote control';
 }

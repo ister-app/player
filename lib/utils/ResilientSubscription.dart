@@ -18,11 +18,13 @@ class ResilientSubscription {
   ResilientSubscription({
     required GraphQLClient client,
     required DocumentNode document,
+    Map<String, dynamic>? variables,
     required void Function(QueryResult result) onData,
     required void Function(Object error) onFailure,
     this.retryDelay = const Duration(seconds: 5),
   })  : _client = client,
         _document = document,
+        _variables = variables,
         _onData = onData,
         _onFailure = onFailure {
     _connect();
@@ -30,6 +32,7 @@ class ResilientSubscription {
 
   final GraphQLClient _client;
   final DocumentNode _document;
+  final Map<String, dynamic>? _variables;
   final void Function(QueryResult result) _onData;
   final void Function(Object error) _onFailure;
   final Duration retryDelay;
@@ -42,7 +45,8 @@ class ResilientSubscription {
     if (_disposed) return;
     _subscription?.cancel();
     _subscription = _client
-        .subscribe(SubscriptionOptions(document: _document))
+        .subscribe(SubscriptionOptions(
+            document: _document, variables: _variables ?? const {}))
         .listen(
           _handleResult,
           // A transport failure surfaces as an error rather than a result.

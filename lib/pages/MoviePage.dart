@@ -6,6 +6,7 @@ import 'package:player/graphql/movieById.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../components/AddToSessionSheet.dart';
 import '../components/CastRow.dart';
 import '../components/IsterPlayer.dart';
 import '../components/RatingStars.dart';
@@ -192,6 +193,19 @@ class _MoviePageState extends State<MoviePage> {
                         child: ListTile(
                           leading: const Icon(Icons.analytics),
                           title: Text(AppLocalizations.of(context)!.analyzeMedia),
+                        ),
+                      ),
+                    if (movie != null)
+                      MenuItemButton(
+                        onPressed: () => showAddToSessionSheet(
+                          context,
+                          serverName: widget.serverName,
+                          loadItems: (_) async =>
+                              [(Enum$MediaType.MOVIE, movie.id)],
+                        ),
+                        child: ListTile(
+                          leading: const Icon(Icons.playlist_add),
+                          title: Text(AppLocalizations.of(context)!.addToSession),
                         ),
                       ),
                   ],

@@ -397,4 +397,46 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get liveUpdatesUnavailable =>
       'Live updates onderbroken — opnieuw verbinden';
+
+  @override
+  String get sessionEnded => 'Sessie beëindigd';
+
+  @override
+  String get addToSession => 'Toevoegen aan sessie';
+
+  @override
+  String get chooseSession => 'Kies een sessie';
+
+  @override
+  String get playNext => 'Hierna afspelen';
+
+  @override
+  String get addToEndOfQueue => 'Achteraan toevoegen';
+
+  @override
+  String get addedToSession => 'Toegevoegd aan sessie';
+
+  @override
+  String get addToSessionFailed => 'Toevoegen aan sessie mislukt';
+
+  @override
+  String get remotePlay => 'Hervat via afstandsbediening';
+
+  @override
+  String get remotePause => 'Gepauzeerd via afstandsbediening';
+
+  @override
+  String get remoteNext => 'Volgende via afstandsbediening';
+
+  @override
+  String get remotePrevious => 'Vorige via afstandsbediening';
+
+  @override
+  String get remoteSeek => 'Positie gewijzigd via afstandsbediening';
+
+  @override
+  String get remoteSkipToItem => 'Ander item gekozen via afstandsbediening';
+
+  @override
+  String get remoteQueueChanged => 'Wachtrij bijgewerkt via afstandsbediening';
 }

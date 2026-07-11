@@ -1,0 +1,9 @@
+subscription playbackCommands($playQueueId: ID!) {
+    playbackCommands(playQueueId: $playQueueId) {
+        playQueueId
+        command
+        positionInMilliseconds
+        playQueueItemId
+        timestamp
+    }
+}

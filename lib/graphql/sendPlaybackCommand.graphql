@@ -1,0 +1,3 @@
+mutation sendPlaybackCommand($playQueueId: ID!, $command: PlaybackCommandType!, $positionInMilliseconds: Int, $playQueueItemId: ID) {
+    sendPlaybackCommand(playQueueId: $playQueueId, command: $command, positionInMilliseconds: $positionInMilliseconds, playQueueItemId: $playQueueItemId)
+}

@@ -16,6 +16,7 @@ import 'package:player/utils/MetadataUtil.dart';
 import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../components/AddToSessionSheet.dart';
 import '../components/MusicDetailHero.dart';
 import '../components/RatingStars.dart';
 import '../l10n/app_localizations.dart';
@@ -129,6 +130,20 @@ class _AlbumPageState extends State<AlbumPage> {
           stretch: true,
           foregroundColor: Colors.white,
           actions: [
+            if (album != null && tracks.any(_trackHasFile))
+              IconButton(
+                icon: const Icon(Icons.queue_music),
+                tooltip: loc.addToSession,
+                onPressed: () => showAddToSessionSheet(
+                  context,
+                  serverName: widget.serverName,
+                  // Whole album, in the page's disc/track order.
+                  loadItems: (_) async => [
+                    for (final track in tracks.where(_trackHasFile))
+                      (Enum$MediaType.TRACK, track.id),
+                  ],
+                ),
+              ),
             if (album != null)
               IconButton(
                 icon: const Icon(Icons.analytics),
@@ -367,6 +382,20 @@ class _AlbumPageState extends State<AlbumPage> {
                           child: ListTile(
                             leading: const Icon(Icons.playlist_add),
                             title: Text(loc.addToQueue),
+                          ),
+                        ),
+                        MenuItemButton(
+                          onPressed: hasFile
+                              ? () => showAddToSessionSheet(
+                                    context,
+                                    serverName: widget.serverName,
+                                    loadItems: (_) async =>
+                                        [(Enum$MediaType.TRACK, track.id)],
+                                  )
+                              : null,
+                          child: ListTile(
+                            leading: const Icon(Icons.queue_music),
+                            title: Text(loc.addToSession),
                           ),
                         ),
                         MenuItemButton(

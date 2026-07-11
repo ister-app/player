@@ -16,6 +16,7 @@ import 'package:player/utils/LanguagePreferences.dart';
 import 'package:player/utils/LanguageService.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/PlaybackPreferences.dart';
+import 'package:player/utils/ResilientSubscription.dart';
 import 'package:player/utils/StreamTokenService.dart';
 import 'package:player/utils/WellKnownService.dart';
 import 'package:rxdart/rxdart.dart';
@@ -25,6 +26,7 @@ import '../graphql/fragmentEpisode.graphql.dart';
 import '../graphql/fragmentImages.graphql.dart';
 import '../graphql/fragmentMovie.graphql.dart';
 import '../graphql/fragmentPlayQueue.graphql.dart';
+import '../graphql/playbackCommandsSubscription.graphql.dart';
 import '../graphql/schema.graphql.dart';
 import 'ImageTypes.dart';
 import 'ImageUtil.dart';
@@ -197,6 +199,13 @@ class MediaPlayerHandler extends BaseAudioHandler
   // Bumped whenever the current item or queue changes; in-flight progress
   // responses from before the bump are dropped instead of applied.
   int _syncGeneration = 0;
+  // Remote-control ("party mode"): commands for the active queue arrive over
+  // this subscription and are executed as if the user tapped the controls.
+  ResilientSubscription? _commandSubscription;
+  String? _commandQueueId;
+  // When this client last edited its own queue; the QUEUE_CHANGED echo of that
+  // edit should not toast as if someone else changed the queue.
+  DateTime? _lastLocalQueueEdit;
 
   // ── Public API used by the widget ─────────────────────────────────────
   Future<void> startPlayQueue(
@@ -263,6 +272,7 @@ class MediaPlayerHandler extends BaseAudioHandler
           []);
 
       playQueue = playQueueObject;
+      _ensureCommandSubscription();
       currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
       final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay();
@@ -363,6 +373,7 @@ class MediaPlayerHandler extends BaseAudioHandler
           []);
 
       playQueue = playQueueObject;
+      _ensureCommandSubscription();
       currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
       final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay();
@@ -452,6 +463,7 @@ class MediaPlayerHandler extends BaseAudioHandler
           []);
 
       playQueue = playQueueObject;
+      _ensureCommandSubscription();
       currentPlayQueueItem =
           PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
@@ -545,6 +557,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     final current = PlayQueueService.getCurrentPlayQueueItem(pq) ?? items.first;
     playQueue =
         pq.currentItemId == null ? pq.copyWith(currentItemId: current.id) : pq;
+    _ensureCommandSubscription();
 
     queueTitle.add("Now Playing");
     queue.add(_buildQueueItems(playQueue!, srv));
@@ -700,6 +713,8 @@ class MediaPlayerHandler extends BaseAudioHandler
     // signal. The final flush below records the resume position; the server
     // expires the session 60s after this last update.
     _stopHeartbeat();
+    // A stopped session can no longer be remote-controlled.
+    _stopCommandSubscription();
     unawaited(_syncProgress(_player.state.position,
         force: true, playState: Enum$PlayState.PAUSED));
     await _player.pause();
@@ -1026,6 +1041,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     final items = PlayQueueService.sortedItems(pq);
     final afterId = items.isNotEmpty ? items.last.id : null;
     final client = ClientManager.getClientForUrl(srv).value;
+    _lastLocalQueueEdit = DateTime.now();
     final updated = await _playQueueService.addPlayQueueItem(
       client,
       pq.id,
@@ -1047,6 +1063,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (pq == null || srv == null) return;
     if (pq.currentItemId == playQueueItemId) return;
     final client = ClientManager.getClientForUrl(srv).value;
+    _lastLocalQueueEdit = DateTime.now();
     final updated =
         await _playQueueService.removePlayQueueItem(client, pq.id, playQueueItemId);
     if (updated == null) return;
@@ -1062,6 +1079,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     final srv = serverName;
     if (pq == null || srv == null) return;
     final client = ClientManager.getClientForUrl(srv).value;
+    _lastLocalQueueEdit = DateTime.now();
     final updated = await _playQueueService.movePlayQueueItem(
         client, pq.id, playQueueItemId, afterPlayQueueItemId);
     if (updated == null) return;
@@ -1580,6 +1598,9 @@ class MediaPlayerHandler extends BaseAudioHandler
     _heartbeat?.cancel();
     _heartbeat = Timer.periodic(const Duration(seconds: 5), (_) {
       if (playQueue == null || graphQLClient == null) return;
+      // Safety net: any path that (re)activated a queue without explicitly
+      // subscribing still becomes remote-controllable within one tick.
+      _ensureCommandSubscription();
       final last = _lastSyncSentAt;
       if (last != null &&
           DateTime.now().difference(last) < const Duration(seconds: 10)) {
@@ -1592,6 +1613,135 @@ class MediaPlayerHandler extends BaseAudioHandler
   void _stopHeartbeat() {
     _heartbeat?.cancel();
     _heartbeat = null;
+  }
+
+  // ── Remote control ("party mode") ────────────────────────────────────────
+
+  /// Subscribes to remote-control commands for the active queue. Idempotent:
+  /// only (re)subscribes when the queue id changed since the last call.
+  void _ensureCommandSubscription() {
+    final pq = playQueue;
+    final client = graphQLClient;
+    if (pq == null || client == null) return;
+    if (_commandQueueId == pq.id && _commandSubscription != null) return;
+    _commandSubscription?.dispose();
+    _commandQueueId = pq.id;
+    _commandSubscription = ResilientSubscription(
+      client: client,
+      document: documentNodeSubscriptionplaybackCommands,
+      variables: {'playQueueId': pq.id},
+      onData: (result) {
+        final command =
+            Subscription$playbackCommands.fromJson(result.data!).playbackCommands;
+        unawaited(_onRemoteCommand(command));
+      },
+      // ResilientSubscription retries by itself; missed commands are simply
+      // not executed, which is the right failure mode for remote control.
+      onFailure: (_) {},
+    );
+  }
+
+  void _stopCommandSubscription() {
+    _commandSubscription?.dispose();
+    _commandSubscription = null;
+    _commandQueueId = null;
+  }
+
+  Future<void> _onRemoteCommand(
+      Subscription$playbackCommands$playbackCommands command) async {
+    _showRemoteCommandToast(command.command);
+    switch (command.command) {
+      case Enum$PlaybackCommandType.PLAY:
+        await play();
+      case Enum$PlaybackCommandType.PAUSE:
+        await pause();
+      case Enum$PlaybackCommandType.NEXT:
+        await skipToNext();
+      case Enum$PlaybackCommandType.PREVIOUS:
+        await skipToPrevious();
+      case Enum$PlaybackCommandType.SEEK:
+        final ms = command.positionInMilliseconds;
+        if (ms != null) await seek(Duration(milliseconds: ms));
+      case Enum$PlaybackCommandType.SKIP_TO_ITEM:
+        final itemId = command.playQueueItemId;
+        if (itemId != null) await _skipToItemId(itemId);
+      case Enum$PlaybackCommandType.QUEUE_CHANGED:
+        await _reloadPlayQueueFromServer();
+      case Enum$PlaybackCommandType.$unknown:
+        break;
+    }
+  }
+
+  /// Tells the user on this client that someone took the controls. Suppressed
+  /// for the QUEUE_CHANGED echo of the client's own queue edits — those fan
+  /// out over the same subscription and would toast on every local action.
+  void _showRemoteCommandToast(Enum$PlaybackCommandType command) {
+    final loc = IsterMediaService.loc;
+    final String? message;
+    switch (command) {
+      case Enum$PlaybackCommandType.PLAY:
+        message = loc.remotePlay;
+      case Enum$PlaybackCommandType.PAUSE:
+        message = loc.remotePause;
+      case Enum$PlaybackCommandType.NEXT:
+        message = loc.remoteNext;
+      case Enum$PlaybackCommandType.PREVIOUS:
+        message = loc.remotePrevious;
+      case Enum$PlaybackCommandType.SEEK:
+        message = loc.remoteSeek;
+      case Enum$PlaybackCommandType.SKIP_TO_ITEM:
+        message = loc.remoteSkipToItem;
+      case Enum$PlaybackCommandType.QUEUE_CHANGED:
+        final lastLocalEdit = _lastLocalQueueEdit;
+        message = lastLocalEdit != null &&
+                DateTime.now().difference(lastLocalEdit) <
+                    const Duration(seconds: 3)
+            ? null
+            : loc.remoteQueueChanged;
+      case Enum$PlaybackCommandType.$unknown:
+        message = null;
+    }
+    if (message != null) showAppSnackBar(message);
+  }
+
+  /// Skips to the queue item with [playQueueItemId]. The item may sit outside
+  /// the materialized window the queue was last fetched with — refetch once
+  /// and retry before giving up.
+  Future<void> _skipToItemId(String playQueueItemId) async {
+    int indexOf() => queue.value.indexWhere(
+        (m) => MediaItemId.byStringId(m.id).id == playQueueItemId);
+    var index = indexOf();
+    if (index == -1) {
+      await _reloadPlayQueueFromServer();
+      index = indexOf();
+    }
+    if (index != -1) await skipToQueueItem(index);
+  }
+
+  /// Refetches the active queue after a QUEUE_CHANGED notification (someone —
+  /// possibly another user — edited it) and rebuilds the visible queue. When
+  /// the locally playing item was removed remotely, the server has already
+  /// picked a new current item; adopt it and open it.
+  Future<void> _reloadPlayQueueFromServer() async {
+    final pq = playQueue;
+    final client = graphQLClient;
+    if (pq == null || client == null) return;
+    final generation = _syncGeneration;
+    final fresh = await _playQueueService.getPlayQueue(client, pq.id);
+    // Drop the response when a skip happened while the fetch was in flight.
+    if (fresh == null || generation != _syncGeneration) return;
+
+    final localItemStillExists = fresh.playQueueItems
+            ?.any((e) => e.id == playQueue?.currentItemId) ??
+        false;
+    _applyServerPlayQueue(fresh);
+    if (!localItemStillExists) {
+      playQueue = playQueue?.copyWith(currentItemId: fresh.currentItemId);
+    }
+    _refreshQueueFromPlayQueue();
+    if (!localItemStillExists && fresh.currentItemId != null) {
+      await _skipToItemId(fresh.currentItemId!);
+    }
   }
 
   /// Watchdog for streams that stall just before the end without ever firing

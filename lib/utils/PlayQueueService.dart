@@ -8,6 +8,7 @@ import 'package:player/graphql/getPlayQueue.graphql.dart';
 import 'package:player/graphql/movePlayQueueItem.graphql.dart';
 import 'package:player/graphql/removePlayQueueItem.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
+import 'package:player/graphql/sendPlaybackCommand.graphql.dart';
 import 'package:player/utils/LoggerService.dart';
 
 import '../graphql/updatePlayQueue.graphql.dart';
@@ -34,7 +35,7 @@ class PlayQueueService {
     if (playQueueId == null) {
       return await _createPlayQueue(graphQLClient, episodeId, showId);
     } else {
-      var playQueue = await _getPlayQueue(graphQLClient, playQueueId);
+      var playQueue = await getPlayQueue(graphQLClient, playQueueId);
       if (playQueue != null) {
         String? currentItemId = getPlayQueueItemId(playQueue, episodeId);
         if (currentItemId != null) {
@@ -69,7 +70,7 @@ class PlayQueueService {
     if (playQueueId == null) {
       return await _createPlayQueueForMovie(graphQLClient, movieId);
     } else {
-      var playQueue = await _getPlayQueue(graphQLClient, playQueueId);
+      var playQueue = await getPlayQueue(graphQLClient, playQueueId);
       if (playQueue != null) {
         String? currentItemId = getMoviePlayQueueItemId(playQueue, movieId);
         if (currentItemId != null) {
@@ -90,7 +91,7 @@ class PlayQueueService {
     if (playQueueId == null) {
       return await _createPlayQueueForAlbum(graphQLClient, albumId, trackId);
     } else {
-      var playQueue = await _getPlayQueue(graphQLClient, playQueueId);
+      var playQueue = await getPlayQueue(graphQLClient, playQueueId);
       if (playQueue != null) {
         String? currentItemId = getTrackPlayQueueItemId(playQueue, trackId);
         if (currentItemId != null && currentItemId != playQueue.currentItemId) {
@@ -169,10 +170,13 @@ class PlayQueueService {
     return Mutation$createPlayQueue.fromJson(result.data!).createPlayQueue;
   }
 
-  Future<Fragment$fragmentPlayQueue?> _getPlayQueue(
+  /// Fetches a play queue by id; also used for queues owned by another user
+  /// (remote control), which the server allows for any authenticated user.
+  Future<Fragment$fragmentPlayQueue?> getPlayQueue(
       GraphQLClient graphQLClient, String playQueueId) async {
     final QueryResult result = await graphQLClient.query(QueryOptions(
         document: documentNodeQuerygetPlayQueue,
+        fetchPolicy: FetchPolicy.networkOnly,
         variables: Map.of({
           "id": playQueueId,
         })));
@@ -182,6 +186,33 @@ class PlayQueueService {
       return null;
     }
     return Query$getPlayQueue.fromJson(result.data!).getPlayQueue;
+  }
+
+  /// Sends a remote-control command to the client playing [playQueueId].
+  /// Returns whether the server knew an active session for the queue, or null
+  /// when the mutation itself failed.
+  Future<bool?> sendPlaybackCommand(
+    GraphQLClient graphQLClient,
+    String playQueueId,
+    Enum$PlaybackCommandType command, {
+    Duration? position,
+    String? playQueueItemId,
+  }) async {
+    final QueryResult result = await graphQLClient.mutate(MutationOptions(
+        document: documentNodeMutationsendPlaybackCommand,
+        variables: Variables$Mutation$sendPlaybackCommand(
+          playQueueId: playQueueId,
+          command: command,
+          positionInMilliseconds: position?.inMilliseconds,
+          playQueueItemId: playQueueItemId,
+        ).toJson()));
+
+    if (result.hasException) {
+      LoggerService().logger.e(result.exception);
+      return null;
+    }
+    return Mutation$sendPlaybackCommand.fromJson(result.data!)
+        .sendPlaybackCommand;
   }
 
   /// Appends [mediaId] to the queue, optionally right after

@@ -374,6 +374,64 @@ Enum$RatingMediaType fromJson$Enum$RatingMediaType(String value) {
   }
 }
 
+enum Enum$PlaybackCommandType {
+  PLAY,
+  PAUSE,
+  NEXT,
+  PREVIOUS,
+  SEEK,
+  SKIP_TO_ITEM,
+  QUEUE_CHANGED,
+  $unknown;
+
+  factory Enum$PlaybackCommandType.fromJson(String value) =>
+      fromJson$Enum$PlaybackCommandType(value);
+
+  String toJson() => toJson$Enum$PlaybackCommandType(this);
+}
+
+String toJson$Enum$PlaybackCommandType(Enum$PlaybackCommandType e) {
+  switch (e) {
+    case Enum$PlaybackCommandType.PLAY:
+      return r'PLAY';
+    case Enum$PlaybackCommandType.PAUSE:
+      return r'PAUSE';
+    case Enum$PlaybackCommandType.NEXT:
+      return r'NEXT';
+    case Enum$PlaybackCommandType.PREVIOUS:
+      return r'PREVIOUS';
+    case Enum$PlaybackCommandType.SEEK:
+      return r'SEEK';
+    case Enum$PlaybackCommandType.SKIP_TO_ITEM:
+      return r'SKIP_TO_ITEM';
+    case Enum$PlaybackCommandType.QUEUE_CHANGED:
+      return r'QUEUE_CHANGED';
+    case Enum$PlaybackCommandType.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$PlaybackCommandType fromJson$Enum$PlaybackCommandType(String value) {
+  switch (value) {
+    case r'PLAY':
+      return Enum$PlaybackCommandType.PLAY;
+    case r'PAUSE':
+      return Enum$PlaybackCommandType.PAUSE;
+    case r'NEXT':
+      return Enum$PlaybackCommandType.NEXT;
+    case r'PREVIOUS':
+      return Enum$PlaybackCommandType.PREVIOUS;
+    case r'SEEK':
+      return Enum$PlaybackCommandType.SEEK;
+    case r'SKIP_TO_ITEM':
+      return Enum$PlaybackCommandType.SKIP_TO_ITEM;
+    case r'QUEUE_CHANGED':
+      return Enum$PlaybackCommandType.QUEUE_CHANGED;
+    default:
+      return Enum$PlaybackCommandType.$unknown;
+  }
+}
+
 enum Enum$PlayState {
   PLAYING,
   PAUSED,

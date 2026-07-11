@@ -9,6 +9,7 @@ import 'package:player/graphql/analyzeDataForEpisode.graphql.dart';
 import 'package:player/graphql/episodeById.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../components/AddToSessionSheet.dart';
 import '../components/CastRow.dart';
 import '../components/IsterPlayer.dart';
 import '../components/RatingStars.dart';
@@ -229,6 +230,19 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                         child: ListTile(
                           leading: const Icon(Icons.analytics),
                           title: Text(AppLocalizations.of(context)!.analyzeMedia),
+                        ),
+                      ),
+                    if (episode != null)
+                      MenuItemButton(
+                        onPressed: () => showAddToSessionSheet(
+                          context,
+                          serverName: widget.serverName,
+                          loadItems: (_) async =>
+                              [(Enum$MediaType.EPISODE, episode.id)],
+                        ),
+                        child: ListTile(
+                          leading: const Icon(Icons.playlist_add),
+                          title: Text(AppLocalizations.of(context)!.addToSession),
                         ),
                       ),
                   ],

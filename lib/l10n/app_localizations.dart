@@ -739,6 +739,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Live updates interrupted — reconnecting'**
   String get liveUpdatesUnavailable;
+
+  /// No description provided for @sessionEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Session ended'**
+  String get sessionEnded;
+
+  /// No description provided for @addToSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to session'**
+  String get addToSession;
+
+  /// No description provided for @chooseSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a session'**
+  String get chooseSession;
+
+  /// No description provided for @playNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Play next'**
+  String get playNext;
+
+  /// No description provided for @addToEndOfQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to end of queue'**
+  String get addToEndOfQueue;
+
+  /// No description provided for @addedToSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to session'**
+  String get addedToSession;
+
+  /// No description provided for @addToSessionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding to session failed'**
+  String get addToSessionFailed;
+
+  /// No description provided for @remotePlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Resumed via remote control'**
+  String get remotePlay;
+
+  /// No description provided for @remotePause.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused via remote control'**
+  String get remotePause;
+
+  /// No description provided for @remoteNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next via remote control'**
+  String get remoteNext;
+
+  /// No description provided for @remotePrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous via remote control'**
+  String get remotePrevious;
+
+  /// No description provided for @remoteSeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Position changed via remote control'**
+  String get remoteSeek;
+
+  /// No description provided for @remoteSkipToItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Queue item selected via remote control'**
+  String get remoteSkipToItem;
+
+  /// No description provided for @remoteQueueChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Queue updated via remote control'**
+  String get remoteQueueChanged;
 }
 
 class _AppLocalizationsDelegate
