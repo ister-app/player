@@ -9,6 +9,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:player/routes/AppRouter.dart';
 import 'package:player/utils/AppMessenger.dart';
 import 'package:player/utils/ClientManager.dart';
+import 'package:player/utils/WellKnownService.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:player/utils/PlatformService.dart';
@@ -26,6 +27,13 @@ Future<void> main() async {
   // Init the client manager and wait until lastClientUsed is loaded
   ClientManager.instance;
   await ClientManager.ensureInitialized();
+  // Populate the in-memory well-known cache before the first frame. A cold web
+  // load can land straight on a root deep link (e.g. a restored `/remote/...`
+  // URL) that reaches ClientManager.createClient synchronously in initState,
+  // before any page has run WellKnownService.fetch — without this the missing
+  // cache entry throws and a release web build renders the crash as a grey
+  // screen.
+  await WellKnownService.hydrateCacheFromPrefs();
   final initialServer = ClientManager.instance.lastClientUsed;
   // Detect Android TV up front so the UI can branch synchronously in build().
   await PlatformService.ensureInitialized();

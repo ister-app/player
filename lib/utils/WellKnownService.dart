@@ -36,6 +36,18 @@ class WellKnownService {
     return await _prefs.getStringList('servers') ?? [];
   }
 
+  /// Populates the in-memory [_cache] from SharedPreferences for every
+  /// configured server. Call this during startup, before [runApp], so that a
+  /// cold load which lands directly on a route that reaches for
+  /// [ClientManager.createClient] (e.g. a restored `/remote/...` deep link,
+  /// which has no well-known guard of its own) finds the info already cached
+  /// instead of throwing. A later [fetch] still refreshes each entry.
+  static Future<void> hydrateCacheFromPrefs() async {
+    for (final server in await getServers()) {
+      await _loadFromPrefs(server);
+    }
+  }
+
   /// Always fetches /.well-known/ister from the network.
   /// Updates in-memory cache and SharedPreferences on success.
   /// Falls back to SharedPreferences if network fails.
