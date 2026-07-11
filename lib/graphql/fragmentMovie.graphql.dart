@@ -14,6 +14,7 @@ class Fragment$fragmentMovie {
     this.watchStatus,
     this.mediaFile,
     this.cast,
+    this.rating,
     this.$__typename = 'Movie',
   });
 
@@ -26,6 +27,7 @@ class Fragment$fragmentMovie {
     final l$watchStatus = json['watchStatus'];
     final l$mediaFile = json['mediaFile'];
     final l$cast = json['cast'];
+    final l$rating = json['rating'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentMovie(
       id: (l$id as String),
@@ -64,6 +66,7 @@ class Fragment$fragmentMovie {
             ),
           )
           .toList(),
+      rating: (l$rating as int?),
       $__typename: (l$$__typename as String),
     );
   }
@@ -83,6 +86,8 @@ class Fragment$fragmentMovie {
   final List<Fragment$fragmentMediaFiles>? mediaFile;
 
   final List<Fragment$fragmentCastMember>? cast;
+
+  final int? rating;
 
   final String $__typename;
 
@@ -104,6 +109,8 @@ class Fragment$fragmentMovie {
     _resultData['mediaFile'] = l$mediaFile?.map((e) => e.toJson()).toList();
     final l$cast = cast;
     _resultData['cast'] = l$cast?.map((e) => e.toJson()).toList();
+    final l$rating = rating;
+    _resultData['rating'] = l$rating;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -119,6 +126,7 @@ class Fragment$fragmentMovie {
     final l$watchStatus = watchStatus;
     final l$mediaFile = mediaFile;
     final l$cast = cast;
+    final l$rating = rating;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
@@ -131,6 +139,7 @@ class Fragment$fragmentMovie {
           : Object.hashAll(l$watchStatus.map((v) => v)),
       l$mediaFile == null ? null : Object.hashAll(l$mediaFile.map((v) => v)),
       l$cast == null ? null : Object.hashAll(l$cast.map((v) => v)),
+      l$rating,
       l$$__typename,
     ]);
   }
@@ -238,6 +247,11 @@ class Fragment$fragmentMovie {
     } else if (l$cast != lOther$cast) {
       return false;
     }
+    final l$rating = rating;
+    final lOther$rating = other.rating;
+    if (l$rating != lOther$rating) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -270,6 +284,7 @@ abstract class CopyWith$Fragment$fragmentMovie<TRes> {
     List<Fragment$fragmentMovie$watchStatus>? watchStatus,
     List<Fragment$fragmentMediaFiles>? mediaFile,
     List<Fragment$fragmentCastMember>? cast,
+    int? rating,
     String? $__typename,
   });
   TRes images(
@@ -331,6 +346,7 @@ class _CopyWithImpl$Fragment$fragmentMovie<TRes>
     Object? watchStatus = _undefined,
     Object? mediaFile = _undefined,
     Object? cast = _undefined,
+    Object? rating = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentMovie(
@@ -356,6 +372,7 @@ class _CopyWithImpl$Fragment$fragmentMovie<TRes>
       cast: cast == _undefined
           ? _instance.cast
           : (cast as List<Fragment$fragmentCastMember>?),
+      rating: rating == _undefined ? _instance.rating : (rating as int?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -451,6 +468,7 @@ class _CopyWithStubImpl$Fragment$fragmentMovie<TRes>
     List<Fragment$fragmentMovie$watchStatus>? watchStatus,
     List<Fragment$fragmentMediaFiles>? mediaFile,
     List<Fragment$fragmentCastMember>? cast,
+    int? rating,
     String? $__typename,
   }) => _res;
 
@@ -622,6 +640,13 @@ const fragmentDefinitionfragmentMovie = FragmentDefinitionNode(
             ),
           ],
         ),
+      ),
+      FieldNode(
+        name: NameNode(value: 'rating'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
       ),
       FieldNode(
         name: NameNode(value: '__typename'),

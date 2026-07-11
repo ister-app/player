@@ -228,6 +228,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cast => 'Cast';
 
   @override
+  String get rate => 'Rate';
+
+  @override
+  String get yourRating => 'Your rating';
+
+  @override
+  String ratingValue(int value) {
+    return '$value/10';
+  }
+
+  @override
+  String get ratingFailed => 'Could not save your rating';
+
+  @override
   String get appearsIn => 'Appears in';
 
   @override

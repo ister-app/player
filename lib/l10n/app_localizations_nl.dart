@@ -228,6 +228,20 @@ class AppLocalizationsNl extends AppLocalizations {
   String get cast => 'Cast';
 
   @override
+  String get rate => 'Beoordelen';
+
+  @override
+  String get yourRating => 'Jouw beoordeling';
+
+  @override
+  String ratingValue(int value) {
+    return '$value/10';
+  }
+
+  @override
+  String get ratingFailed => 'Kon je beoordeling niet opslaan';
+
+  @override
   String get appearsIn => 'Verschijnt in';
 
   @override

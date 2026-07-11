@@ -17,6 +17,7 @@ import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/MusicDetailHero.dart';
+import '../components/RatingStars.dart';
 import '../l10n/app_localizations.dart';
 
 @RoutePage()
@@ -37,6 +38,15 @@ class AlbumPage extends StatefulWidget {
 }
 
 class _AlbumPageState extends State<AlbumPage> {
+  // Live overrides for track ratings changed this session, so a rating set via
+  // the per-track dialog shows immediately without waiting for a refetch.
+  final Map<String, int?> _trackRatingOverrides = {};
+
+  int? _trackRating(Fragment$fragmentTrack track) =>
+      _trackRatingOverrides.containsKey(track.id)
+          ? _trackRatingOverrides[track.id]
+          : track.rating;
+
   void _playTrack(BuildContext context, Fragment$fragmentAlbum album, String trackId) {
     final client = GraphQLProvider.of(context).value;
     MediaPlayerHandler.instance.startPlayQueueForAlbum(
@@ -213,6 +223,23 @@ class _AlbumPageState extends State<AlbumPage> {
               ),
             ),
           ),
+        if (album != null)
+          SliverToBoxAdapter(
+            child: Center(
+              child: Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(maxWidth: 1600),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                  child: RatingStars(
+                    mediaType: Enum$RatingMediaType.ALBUM,
+                    mediaId: album.id,
+                    rating: album.rating,
+                  ),
+                ),
+              ),
+            ),
+          ),
         if (description != null)
           SliverToBoxAdapter(
             child: Center(
@@ -269,6 +296,7 @@ class _AlbumPageState extends State<AlbumPage> {
                   final durationText = durationMs != null
                       ? DurationUtil.format(Duration(milliseconds: durationMs))
                       : null;
+                  final trackRating = _trackRating(track);
                   // Not-yet-analyzed tracks have no playable file: mute them and
                   // steer the user to "Analyze media" instead of a dead tap.
                   final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
@@ -312,6 +340,22 @@ class _AlbumPageState extends State<AlbumPage> {
                                   color: mutedColor,
                                 ),
                           ),
+                        if (trackRating != null)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.star_rounded,
+                                size: 14,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              const SizedBox(width: 2),
+                              Text(
+                                loc.ratingValue(trackRating),
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
                       ],
                     ),
                     trailing: MenuAnchor(
@@ -323,6 +367,21 @@ class _AlbumPageState extends State<AlbumPage> {
                           child: ListTile(
                             leading: const Icon(Icons.playlist_add),
                             title: Text(loc.addToQueue),
+                          ),
+                        ),
+                        MenuItemButton(
+                          onPressed: () => showRatingDialog(
+                            context,
+                            mediaType: Enum$RatingMediaType.TRACK,
+                            mediaId: track.id,
+                            rating: trackRating,
+                            title: trackTitle,
+                            onChanged: (value) => setState(
+                                () => _trackRatingOverrides[track.id] = value),
+                          ),
+                          child: ListTile(
+                            leading: const Icon(Icons.star_outline_rounded),
+                            title: Text(loc.rate),
                           ),
                         ),
                         MenuItemButton(

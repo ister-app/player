@@ -25,4 +25,5 @@ fragment fragmentEpisode on Episode {
     cast {
         ...fragmentCastMember
     }
+    rating
 }

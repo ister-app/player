@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/components/CastRow.dart';
+import 'package:player/components/RatingStars.dart';
 import 'package:player/graphql/analyzeDataForShow.graphql.dart';
 import 'package:player/graphql/fragmentCredit.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
@@ -62,7 +63,7 @@ class ShowOverviewContentPage extends StatelessWidget {
               enabled: true,
               child: _buildContent(null, null, BoneMock.name,
                   BoneMock.paragraph, context, '',
-                  CastRow(serverName: serverName, cast: _skeletonCast)));
+                  CastRow(serverName: serverName, cast: _skeletonCast), null));
         } else if (result.hasException) {
           body = Text(result.exception.toString());
         } else {
@@ -82,7 +83,12 @@ class ShowOverviewContentPage extends StatelessWidget {
                 MetadataUtil.getDescription(show.metadata) ?? "",
                 context,
                 show.toJson().toString(),
-                PagedCastRow(serverName: serverName, showId: showId));
+                PagedCastRow(serverName: serverName, showId: showId),
+                RatingStars(
+                  mediaType: Enum$RatingMediaType.SHOW,
+                  mediaId: show.id,
+                  rating: show.rating,
+                ));
           }
         }
 
@@ -98,7 +104,8 @@ class ShowOverviewContentPage extends StatelessWidget {
       String description,
       BuildContext context,
       String? rawJson,
-      Widget castRow) {
+      Widget castRow,
+      Widget? ratingRow) {
     return SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       LayoutBuilder(builder: (context, constraints) {
@@ -174,6 +181,11 @@ class ShowOverviewContentPage extends StatelessWidget {
                   ),
               ],
             ),
+            if (ratingRow != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4, bottom: 8),
+                child: ratingRow,
+              ),
             Text(description),
           ])),
       castRow,

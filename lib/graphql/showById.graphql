@@ -16,5 +16,6 @@ query showById($id: ID!) {
         cast {
             ...fragmentCastMember
         }
+        rating
     }
 }

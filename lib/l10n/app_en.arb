@@ -264,6 +264,27 @@
   "@cast": {
     "description": "Section header for the list of actors in a movie, show or episode"
   },
+  "rate": "Rate",
+  "@rate": {
+    "description": "Menu item / dialog title for setting a personal 1-10 rating on a media item"
+  },
+  "yourRating": "Your rating",
+  "@yourRating": {
+    "description": "Label shown above the star rating control on a detail page"
+  },
+  "ratingValue": "{value}/10",
+  "@ratingValue": {
+    "description": "Compact display of a 1-10 rating next to the stars",
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "ratingFailed": "Could not save your rating",
+  "@ratingFailed": {
+    "description": "Toast shown when saving a rating to the server fails"
+  },
   "appearsIn": "Appears in",
   "@appearsIn": {
     "description": "Section header on a person page listing the movies and shows they appear in"

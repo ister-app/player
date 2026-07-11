@@ -10,6 +10,7 @@ class Fragment$fragmentAlbum {
     required this.artist,
     this.images,
     this.metadata,
+    this.rating,
     this.$__typename = 'Album',
   });
 
@@ -20,6 +21,7 @@ class Fragment$fragmentAlbum {
     final l$artist = json['artist'];
     final l$images = json['images'];
     final l$metadata = json['metadata'];
+    final l$rating = json['rating'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentAlbum(
       id: (l$id as String),
@@ -40,6 +42,7 @@ class Fragment$fragmentAlbum {
                 Fragment$fragmentMetadata.fromJson((e as Map<String, dynamic>)),
           )
           .toList(),
+      rating: (l$rating as int?),
       $__typename: (l$$__typename as String),
     );
   }
@@ -55,6 +58,8 @@ class Fragment$fragmentAlbum {
   final List<Fragment$fragmentImages>? images;
 
   final List<Fragment$fragmentMetadata>? metadata;
+
+  final int? rating;
 
   final String $__typename;
 
@@ -72,6 +77,8 @@ class Fragment$fragmentAlbum {
     _resultData['images'] = l$images?.map((e) => e.toJson()).toList();
     final l$metadata = metadata;
     _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
+    final l$rating = rating;
+    _resultData['rating'] = l$rating;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -85,6 +92,7 @@ class Fragment$fragmentAlbum {
     final l$artist = artist;
     final l$images = images;
     final l$metadata = metadata;
+    final l$rating = rating;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
@@ -93,6 +101,7 @@ class Fragment$fragmentAlbum {
       l$artist,
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
+      l$rating,
       l$$__typename,
     ]);
   }
@@ -157,6 +166,11 @@ class Fragment$fragmentAlbum {
     } else if (l$metadata != lOther$metadata) {
       return false;
     }
+    final l$rating = rating;
+    final lOther$rating = other.rating;
+    if (l$rating != lOther$rating) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -187,6 +201,7 @@ abstract class CopyWith$Fragment$fragmentAlbum<TRes> {
     Fragment$fragmentAlbum$artist? artist,
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
+    int? rating,
     String? $__typename,
   });
   CopyWith$Fragment$fragmentAlbum$artist<TRes> get artist;
@@ -221,6 +236,7 @@ class _CopyWithImpl$Fragment$fragmentAlbum<TRes>
     Object? artist = _undefined,
     Object? images = _undefined,
     Object? metadata = _undefined,
+    Object? rating = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentAlbum(
@@ -240,6 +256,7 @@ class _CopyWithImpl$Fragment$fragmentAlbum<TRes>
       metadata: metadata == _undefined
           ? _instance.metadata
           : (metadata as List<Fragment$fragmentMetadata>?),
+      rating: rating == _undefined ? _instance.rating : (rating as int?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -294,6 +311,7 @@ class _CopyWithStubImpl$Fragment$fragmentAlbum<TRes>
     Fragment$fragmentAlbum$artist? artist,
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
+    int? rating,
     String? $__typename,
   }) => _res;
 
@@ -406,6 +424,13 @@ const fragmentDefinitionfragmentAlbum = FragmentDefinitionNode(
             ),
           ],
         ),
+      ),
+      FieldNode(
+        name: NameNode(value: 'rating'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
       ),
       FieldNode(
         name: NameNode(value: '__typename'),

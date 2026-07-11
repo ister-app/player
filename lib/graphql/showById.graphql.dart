@@ -360,6 +360,13 @@ const documentNodeQueryshowById = DocumentNode(
                   ),
                 ),
                 FieldNode(
+                  name: NameNode(value: 'rating'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
                   name: NameNode(value: '__typename'),
                   alias: null,
                   arguments: [],
@@ -394,6 +401,7 @@ class Query$showById$showById {
     this.metadata,
     this.seasons,
     this.cast,
+    this.rating,
     this.$__typename = 'Show',
   });
 
@@ -405,6 +413,7 @@ class Query$showById$showById {
     final l$metadata = json['metadata'];
     final l$seasons = json['seasons'];
     final l$cast = json['cast'];
+    final l$rating = json['rating'];
     final l$$__typename = json['__typename'];
     return Query$showById$showById(
       id: (l$id as String),
@@ -436,6 +445,7 @@ class Query$showById$showById {
             ),
           )
           .toList(),
+      rating: (l$rating as int?),
       $__typename: (l$$__typename as String),
     );
   }
@@ -453,6 +463,8 @@ class Query$showById$showById {
   final List<Query$showById$showById$seasons>? seasons;
 
   final List<Fragment$fragmentCastMember>? cast;
+
+  final int? rating;
 
   final String $__typename;
 
@@ -472,6 +484,8 @@ class Query$showById$showById {
     _resultData['seasons'] = l$seasons?.map((e) => e.toJson()).toList();
     final l$cast = cast;
     _resultData['cast'] = l$cast?.map((e) => e.toJson()).toList();
+    final l$rating = rating;
+    _resultData['rating'] = l$rating;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -486,6 +500,7 @@ class Query$showById$showById {
     final l$metadata = metadata;
     final l$seasons = seasons;
     final l$cast = cast;
+    final l$rating = rating;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
@@ -495,6 +510,7 @@ class Query$showById$showById {
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$seasons == null ? null : Object.hashAll(l$seasons.map((v) => v)),
       l$cast == null ? null : Object.hashAll(l$cast.map((v) => v)),
+      l$rating,
       l$$__typename,
     ]);
   }
@@ -586,6 +602,11 @@ class Query$showById$showById {
     } else if (l$cast != lOther$cast) {
       return false;
     }
+    final l$rating = rating;
+    final lOther$rating = other.rating;
+    if (l$rating != lOther$rating) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -617,6 +638,7 @@ abstract class CopyWith$Query$showById$showById<TRes> {
     List<Fragment$fragmentMetadata>? metadata,
     List<Query$showById$showById$seasons>? seasons,
     List<Fragment$fragmentCastMember>? cast,
+    int? rating,
     String? $__typename,
   });
   TRes images(
@@ -669,6 +691,7 @@ class _CopyWithImpl$Query$showById$showById<TRes>
     Object? metadata = _undefined,
     Object? seasons = _undefined,
     Object? cast = _undefined,
+    Object? rating = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Query$showById$showById(
@@ -691,6 +714,7 @@ class _CopyWithImpl$Query$showById$showById<TRes>
       cast: cast == _undefined
           ? _instance.cast
           : (cast as List<Fragment$fragmentCastMember>?),
+      rating: rating == _undefined ? _instance.rating : (rating as int?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -770,6 +794,7 @@ class _CopyWithStubImpl$Query$showById$showById<TRes>
     List<Fragment$fragmentMetadata>? metadata,
     List<Query$showById$showById$seasons>? seasons,
     List<Fragment$fragmentCastMember>? cast,
+    int? rating,
     String? $__typename,
   }) => _res;
 

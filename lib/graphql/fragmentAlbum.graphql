@@ -3,4 +3,5 @@ fragment fragmentAlbum on Album {
     artist { id name }
     images { ...fragmentImages }
     metadata { ...fragmentMetadata }
+    rating
 }

@@ -7,4 +7,5 @@ fragment fragmentMovie on Movie {
     watchStatus { id playQueueItemId progressInMilliseconds watched }
     mediaFile { ...fragmentMediaFiles }
     cast { ...fragmentCastMember }
+    rating
 }

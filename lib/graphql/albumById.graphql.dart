@@ -312,6 +312,7 @@ class Query$albumById$albumById implements Fragment$fragmentAlbum {
     required this.artist,
     this.images,
     this.metadata,
+    this.rating,
     this.$__typename = 'Album',
     this.tracks,
   });
@@ -323,6 +324,7 @@ class Query$albumById$albumById implements Fragment$fragmentAlbum {
     final l$artist = json['artist'];
     final l$images = json['images'];
     final l$metadata = json['metadata'];
+    final l$rating = json['rating'];
     final l$$__typename = json['__typename'];
     final l$tracks = json['tracks'];
     return Query$albumById$albumById(
@@ -344,6 +346,7 @@ class Query$albumById$albumById implements Fragment$fragmentAlbum {
                 Fragment$fragmentMetadata.fromJson((e as Map<String, dynamic>)),
           )
           .toList(),
+      rating: (l$rating as int?),
       $__typename: (l$$__typename as String),
       tracks: (l$tracks as List<dynamic>?)
           ?.map(
@@ -365,6 +368,8 @@ class Query$albumById$albumById implements Fragment$fragmentAlbum {
 
   final List<Fragment$fragmentMetadata>? metadata;
 
+  final int? rating;
+
   final String $__typename;
 
   final List<Fragment$fragmentTrack>? tracks;
@@ -383,6 +388,8 @@ class Query$albumById$albumById implements Fragment$fragmentAlbum {
     _resultData['images'] = l$images?.map((e) => e.toJson()).toList();
     final l$metadata = metadata;
     _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
+    final l$rating = rating;
+    _resultData['rating'] = l$rating;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     final l$tracks = tracks;
@@ -398,6 +405,7 @@ class Query$albumById$albumById implements Fragment$fragmentAlbum {
     final l$artist = artist;
     final l$images = images;
     final l$metadata = metadata;
+    final l$rating = rating;
     final l$$__typename = $__typename;
     final l$tracks = tracks;
     return Object.hashAll([
@@ -407,6 +415,7 @@ class Query$albumById$albumById implements Fragment$fragmentAlbum {
       l$artist,
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
+      l$rating,
       l$$__typename,
       l$tracks == null ? null : Object.hashAll(l$tracks.map((v) => v)),
     ]);
@@ -473,6 +482,11 @@ class Query$albumById$albumById implements Fragment$fragmentAlbum {
     } else if (l$metadata != lOther$metadata) {
       return false;
     }
+    final l$rating = rating;
+    final lOther$rating = other.rating;
+    if (l$rating != lOther$rating) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -520,6 +534,7 @@ abstract class CopyWith$Query$albumById$albumById<TRes> {
     Query$albumById$albumById$artist? artist,
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
+    int? rating,
     String? $__typename,
     List<Fragment$fragmentTrack>? tracks,
   });
@@ -561,6 +576,7 @@ class _CopyWithImpl$Query$albumById$albumById<TRes>
     Object? artist = _undefined,
     Object? images = _undefined,
     Object? metadata = _undefined,
+    Object? rating = _undefined,
     Object? $__typename = _undefined,
     Object? tracks = _undefined,
   }) => _then(
@@ -581,6 +597,7 @@ class _CopyWithImpl$Query$albumById$albumById<TRes>
       metadata: metadata == _undefined
           ? _instance.metadata
           : (metadata as List<Fragment$fragmentMetadata>?),
+      rating: rating == _undefined ? _instance.rating : (rating as int?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -651,6 +668,7 @@ class _CopyWithStubImpl$Query$albumById$albumById<TRes>
     Query$albumById$albumById$artist? artist,
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
+    int? rating,
     String? $__typename,
     List<Fragment$fragmentTrack>? tracks,
   }) => _res;

@@ -494,6 +494,30 @@ abstract class AppLocalizations {
   /// **'Cast'**
   String get cast;
 
+  /// Menu item / dialog title for setting a personal 1-10 rating on a media item
+  ///
+  /// In en, this message translates to:
+  /// **'Rate'**
+  String get rate;
+
+  /// Label shown above the star rating control on a detail page
+  ///
+  /// In en, this message translates to:
+  /// **'Your rating'**
+  String get yourRating;
+
+  /// Compact display of a 1-10 rating next to the stars
+  ///
+  /// In en, this message translates to:
+  /// **'{value}/10'**
+  String ratingValue(int value);
+
+  /// Toast shown when saving a rating to the server fails
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save your rating'**
+  String get ratingFailed;
+
   /// Section header on a person page listing the movies and shows they appear in
   ///
   /// In en, this message translates to:

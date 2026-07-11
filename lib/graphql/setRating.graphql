@@ -1,0 +1,3 @@
+mutation setRating($mediaType: RatingMediaType!, $mediaId: ID!, $rating: Int) {
+    setRating(mediaType: $mediaType, mediaId: $mediaId, rating: $rating)
+}

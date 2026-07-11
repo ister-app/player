@@ -8,7 +8,9 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/CastRow.dart';
 import '../components/IsterPlayer.dart';
+import '../components/RatingStars.dart';
 import '../components/TrackSelectionWidget.dart';
+import '../graphql/schema.graphql.dart';
 import '../graphql/fragmentMovie.graphql.dart';
 import '../utils/ImageTypes.dart';
 import '../utils/ImageUtil.dart';
@@ -208,6 +210,15 @@ class _MoviePageState extends State<MoviePage> {
                 ),
               ],
             ),
+            if (movie != null && loadComplete)
+              Padding(
+                padding: const EdgeInsets.only(top: 4, bottom: 8),
+                child: RatingStars(
+                  mediaType: Enum$RatingMediaType.MOVIE,
+                  mediaId: movie.id,
+                  rating: movie.rating,
+                ),
+              ),
             if (MetadataUtil.getMetaLine(movie?.metadata) != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 6),

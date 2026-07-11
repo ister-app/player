@@ -9,6 +9,7 @@ class Fragment$fragmentTrack {
     required this.artist,
     this.metadata,
     this.mediaFile,
+    this.rating,
     this.$__typename = 'Track',
   });
 
@@ -19,6 +20,7 @@ class Fragment$fragmentTrack {
     final l$artist = json['artist'];
     final l$metadata = json['metadata'];
     final l$mediaFile = json['mediaFile'];
+    final l$rating = json['rating'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentTrack(
       id: (l$id as String),
@@ -40,6 +42,7 @@ class Fragment$fragmentTrack {
             ),
           )
           .toList(),
+      rating: (l$rating as int?),
       $__typename: (l$$__typename as String),
     );
   }
@@ -55,6 +58,8 @@ class Fragment$fragmentTrack {
   final List<Fragment$fragmentMetadata>? metadata;
 
   final List<Fragment$fragmentTrack$mediaFile>? mediaFile;
+
+  final int? rating;
 
   final String $__typename;
 
@@ -72,6 +77,8 @@ class Fragment$fragmentTrack {
     _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
     final l$mediaFile = mediaFile;
     _resultData['mediaFile'] = l$mediaFile?.map((e) => e.toJson()).toList();
+    final l$rating = rating;
+    _resultData['rating'] = l$rating;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -85,6 +92,7 @@ class Fragment$fragmentTrack {
     final l$artist = artist;
     final l$metadata = metadata;
     final l$mediaFile = mediaFile;
+    final l$rating = rating;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
@@ -93,6 +101,7 @@ class Fragment$fragmentTrack {
       l$artist,
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$mediaFile == null ? null : Object.hashAll(l$mediaFile.map((v) => v)),
+      l$rating,
       l$$__typename,
     ]);
   }
@@ -157,6 +166,11 @@ class Fragment$fragmentTrack {
     } else if (l$mediaFile != lOther$mediaFile) {
       return false;
     }
+    final l$rating = rating;
+    final lOther$rating = other.rating;
+    if (l$rating != lOther$rating) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -187,6 +201,7 @@ abstract class CopyWith$Fragment$fragmentTrack<TRes> {
     Fragment$fragmentTrack$artist? artist,
     List<Fragment$fragmentMetadata>? metadata,
     List<Fragment$fragmentTrack$mediaFile>? mediaFile,
+    int? rating,
     String? $__typename,
   });
   CopyWith$Fragment$fragmentTrack$artist<TRes> get artist;
@@ -225,6 +240,7 @@ class _CopyWithImpl$Fragment$fragmentTrack<TRes>
     Object? artist = _undefined,
     Object? metadata = _undefined,
     Object? mediaFile = _undefined,
+    Object? rating = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentTrack(
@@ -244,6 +260,7 @@ class _CopyWithImpl$Fragment$fragmentTrack<TRes>
       mediaFile: mediaFile == _undefined
           ? _instance.mediaFile
           : (mediaFile as List<Fragment$fragmentTrack$mediaFile>?),
+      rating: rating == _undefined ? _instance.rating : (rating as int?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -302,6 +319,7 @@ class _CopyWithStubImpl$Fragment$fragmentTrack<TRes>
     Fragment$fragmentTrack$artist? artist,
     List<Fragment$fragmentMetadata>? metadata,
     List<Fragment$fragmentTrack$mediaFile>? mediaFile,
+    int? rating,
     String? $__typename,
   }) => _res;
 
@@ -417,6 +435,13 @@ const fragmentDefinitionfragmentTrack = FragmentDefinitionNode(
             ),
           ],
         ),
+      ),
+      FieldNode(
+        name: NameNode(value: 'rating'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
       ),
       FieldNode(
         name: NameNode(value: '__typename'),

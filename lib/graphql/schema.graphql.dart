@@ -326,6 +326,54 @@ class _CopyWithStubImpl$Input$CreatePlayQueueInput<TRes>
   }) => _res;
 }
 
+enum Enum$RatingMediaType {
+  MOVIE,
+  SHOW,
+  EPISODE,
+  ALBUM,
+  TRACK,
+  $unknown;
+
+  factory Enum$RatingMediaType.fromJson(String value) =>
+      fromJson$Enum$RatingMediaType(value);
+
+  String toJson() => toJson$Enum$RatingMediaType(this);
+}
+
+String toJson$Enum$RatingMediaType(Enum$RatingMediaType e) {
+  switch (e) {
+    case Enum$RatingMediaType.MOVIE:
+      return r'MOVIE';
+    case Enum$RatingMediaType.SHOW:
+      return r'SHOW';
+    case Enum$RatingMediaType.EPISODE:
+      return r'EPISODE';
+    case Enum$RatingMediaType.ALBUM:
+      return r'ALBUM';
+    case Enum$RatingMediaType.TRACK:
+      return r'TRACK';
+    case Enum$RatingMediaType.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$RatingMediaType fromJson$Enum$RatingMediaType(String value) {
+  switch (value) {
+    case r'MOVIE':
+      return Enum$RatingMediaType.MOVIE;
+    case r'SHOW':
+      return Enum$RatingMediaType.SHOW;
+    case r'EPISODE':
+      return Enum$RatingMediaType.EPISODE;
+    case r'ALBUM':
+      return Enum$RatingMediaType.ALBUM;
+    case r'TRACK':
+      return Enum$RatingMediaType.TRACK;
+    default:
+      return Enum$RatingMediaType.$unknown;
+  }
+}
+
 enum Enum$PlayState {
   PLAYING,
   PAUSED,

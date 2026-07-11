@@ -3,4 +3,5 @@ fragment fragmentTrack on Track {
     artist { id name }
     metadata { ...fragmentMetadata }
     mediaFile { durationInMilliseconds }
+    rating
 }

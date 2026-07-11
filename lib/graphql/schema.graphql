@@ -21,6 +21,14 @@ type Query {
     search(term: String!, size: Int, libraryId: ID): [SearchResult!]!
 }
 
+enum RatingMediaType {
+    MOVIE
+    SHOW
+    EPISODE
+    ALBUM
+    TRACK
+}
+
 union SearchResult = Movie | Show | Episode | Person | Album | Track
 
 type Mutation {
@@ -45,6 +53,8 @@ type Mutation {
     analyzeDataForAlbum(albumId: ID!): Boolean!
     analyzeDataForTrack(trackId: ID!): Boolean!
     reindexSearch: Boolean!
+    "Sets the calling user's rating (1-10) for a media item. Pass rating: null to clear it. Returns true."
+    setRating(mediaType: RatingMediaType!, mediaId: ID!, rating: Int): Boolean!
 }
 
 type Subscription {
@@ -209,6 +219,8 @@ type Episode {
     watchStatus: [WatchStatus!]
     mediaFile: [MediaFile!]
     cast: [Credit!]
+    "The calling user's rating (1-10), or null if unrated."
+    rating: Int
 }
 
 type Image {
@@ -278,6 +290,8 @@ type Movie {
     watchStatus: [WatchStatus!]
     mediaFile: [MediaFile!]
     cast: [Credit!]
+    "The calling user's rating (1-10), or null if unrated."
+    rating: Int
 }
 
 type PlayQueue {
@@ -358,6 +372,8 @@ type Album {
     tracks: [Track!]
     images: [Image!]
     metadata: [Metadata!]
+    "The calling user's rating (1-10), or null if unrated."
+    rating: Int
 }
 
 type Track {
@@ -368,6 +384,8 @@ type Track {
     album: Album!
     metadata: [Metadata!]
     mediaFile: [MediaFile!]
+    "The calling user's rating (1-10), or null if unrated."
+    rating: Int
 }
 
 type PersonPage {
@@ -403,6 +421,8 @@ type Show {
     images: [Image!]
     metadata: [Metadata!]
     cast: [Credit!]
+    "The calling user's rating (1-10), or null if unrated."
+    rating: Int
 }
 
 type RecentlyWatched {

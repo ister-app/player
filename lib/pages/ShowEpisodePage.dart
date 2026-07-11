@@ -11,8 +11,10 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/CastRow.dart';
 import '../components/IsterPlayer.dart';
+import '../components/RatingStars.dart';
 import '../components/TrackSelectionWidget.dart';
 import '../graphql/fragmentEpisode.graphql.dart';
+import '../graphql/schema.graphql.dart';
 import '../graphql/fragmentPlayQueue.graphql.dart';
 import '../l10n/app_localizations.dart';
 import '../routes/AppRouter.gr.dart';
@@ -245,6 +247,15 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                 ),
               ],
             ),
+            if (episode != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4, bottom: 8),
+                child: RatingStars(
+                  mediaType: Enum$RatingMediaType.EPISODE,
+                  mediaId: episode.id,
+                  rating: episode.rating,
+                ),
+              ),
             if (MetadataUtil.getMetaLine(episode?.metadata) != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 6),
