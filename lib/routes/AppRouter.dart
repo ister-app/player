@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:player/components/PlayerView.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/routes/ServerChildDeepLinkGuard.dart';
-import 'package:player/utils/MediaPlayerHandler.dart';
 
 class _MusicPlayerAwareDelegate extends AutoRouterDelegate {
   _MusicPlayerAwareDelegate(
@@ -18,11 +18,11 @@ class _MusicPlayerAwareDelegate extends AutoRouterDelegate {
 
   @override
   Future<bool> popRoute() async {
-    final hasMusicPlayer = controller.stack.any((p) => p.routeData.name == MusicPlayerRoute.name);
-    final dismiss = MediaPlayerHandler.instance.dismissMusicPlayer;
-    // Only intercept back when we actually have a dismiss handler to run;
-    // otherwise fall through so the back button isn't silently swallowed.
-    if (hasMusicPlayer && dismiss != null) {
+    // A player overlay (music player or party-mode remote) is dismissed with
+    // its slide-down animation instead of an instant pop; only intercept back
+    // when one is actually open so the button isn't silently swallowed.
+    final dismiss = PlayerView.activeBackHandler;
+    if (dismiss != null) {
       dismiss();
       return true;
     }
@@ -62,6 +62,9 @@ class AppRouter extends RootStackRouter {
   List<AutoRoute> get routes => [
     AutoRoute(path: "/", page: HomeRoute.page),
     CustomRoute(path: '/player', page: MusicPlayerRoute.page, opaque: false, barrierColor: Colors.transparent, duration: Duration.zero, reverseDuration: Duration.zero),
+    // Party-mode remote control: the same full-screen overlay presentation as
+    // the music player, so it sits above nested server routes and mini player.
+    CustomRoute(path: '/remote/:serverName/:playQueueId', page: RemoteControlRoute.page, opaque: false, barrierColor: Colors.transparent, duration: Duration.zero, reverseDuration: Duration.zero),
     AutoRoute(path: "/server/:serverName", page: ServerHomeRoute.page,
         children: [
           AutoRoute(path: '', page: ServerHomeOverviewRoute.page, initial: true,
@@ -76,7 +79,6 @@ class AppRouter extends RootStackRouter {
           AutoRoute(path: 'settings/cluster', page: ServerSettingsClusterRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/playback', page: ServerSettingsPlaybackRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/nowplaying', page: ServerNowPlayingRoute.page, guards: [_deepLinkGuard]),
-          AutoRoute(path: 'settings/nowplaying/:playQueueId', page: RemoteControlRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/activity', page: ServerActivityRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'shows/:showId', page: ShowOverviewRoute.page,
             guards: [_deepLinkGuard],

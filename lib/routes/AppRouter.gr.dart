@@ -266,12 +266,17 @@ class PersonRouteArgs {
 class RemoteControlRoute extends _i21.PageRouteInfo<RemoteControlRouteArgs> {
   RemoteControlRoute({
     _i22.Key? key,
+    required String serverName,
     required String playQueueId,
     List<_i21.PageRouteInfo>? children,
   }) : super(
           RemoteControlRoute.name,
-          args: RemoteControlRouteArgs(key: key, playQueueId: playQueueId),
-          rawPathParams: {'playQueueId': playQueueId},
+          args: RemoteControlRouteArgs(
+            key: key,
+            serverName: serverName,
+            playQueueId: playQueueId,
+          ),
+          rawPathParams: {'serverName': serverName, 'playQueueId': playQueueId},
           initialChildren: children,
         );
 
@@ -283,12 +288,13 @@ class RemoteControlRoute extends _i21.PageRouteInfo<RemoteControlRouteArgs> {
       final pathParams = data.inheritedPathParams;
       final args = data.argsAs<RemoteControlRouteArgs>(
         orElse: () => RemoteControlRouteArgs(
+          serverName: pathParams.getString('serverName'),
           playQueueId: pathParams.getString('playQueueId'),
         ),
       );
       return _i6.RemoteControlPage(
         key: args.key,
-        serverName: pathParams.getString('serverName'),
+        serverName: args.serverName,
         playQueueId: args.playQueueId,
       );
     },
@@ -296,26 +302,34 @@ class RemoteControlRoute extends _i21.PageRouteInfo<RemoteControlRouteArgs> {
 }
 
 class RemoteControlRouteArgs {
-  const RemoteControlRouteArgs({this.key, required this.playQueueId});
+  const RemoteControlRouteArgs({
+    this.key,
+    required this.serverName,
+    required this.playQueueId,
+  });
 
   final _i22.Key? key;
+
+  final String serverName;
 
   final String playQueueId;
 
   @override
   String toString() {
-    return 'RemoteControlRouteArgs{key: $key, playQueueId: $playQueueId}';
+    return 'RemoteControlRouteArgs{key: $key, serverName: $serverName, playQueueId: $playQueueId}';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! RemoteControlRouteArgs) return false;
-    return key == other.key && playQueueId == other.playQueueId;
+    return key == other.key &&
+        serverName == other.serverName &&
+        playQueueId == other.playQueueId;
   }
 
   @override
-  int get hashCode => key.hashCode ^ playQueueId.hashCode;
+  int get hashCode => key.hashCode ^ serverName.hashCode ^ playQueueId.hashCode;
 }
 
 /// generated route for

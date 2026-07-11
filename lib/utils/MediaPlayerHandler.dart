@@ -130,7 +130,6 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   // ── State ───────────────────────────────────────────────────────────
   double playerInitialControllerValue = 0.0;
-  VoidCallback? dismissMusicPlayer;
   final ValueNotifier<bool> musicPlayerOpen = ValueNotifier(false);
 
   /// Bumped whenever the user starts a music track from a browse surface (album
