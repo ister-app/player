@@ -220,16 +220,20 @@ class _LocalPlayerController extends PlayerViewController {
     // Only tracks carry a per-track rating; episodes/movies don't.
     if (mediaItemId.isterMediaType != IsterMediaTypes.track) return null;
 
-    final trackId = mediaItemId.id;
-    // Resolve the current server-side rating from the queue item for this
-    // exact track; RatingStars then owns the optimistic edit state.
+    // MediaItem.id encodes the play-queue *item* id, not the track id. Look the
+    // item up to get the real track id (setRating needs it) and its current
+    // server-side rating; RatingStars then owns the optimistic edit state.
+    final queueItemId = mediaItemId.id;
+    String? trackId;
     int? rating;
     for (final queueItem in _handler.playQueue?.playQueueItems ?? const []) {
-      if (queueItem.track?.id == trackId) {
+      if (queueItem.id == queueItemId) {
+        trackId = queueItem.track?.id;
         rating = queueItem.track?.rating;
         break;
       }
     }
+    if (trackId == null) return null;
 
     return RatingStars(
       // Re-key per track so switching songs adopts the new rating instead of
