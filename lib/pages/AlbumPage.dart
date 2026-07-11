@@ -342,11 +342,20 @@ class _AlbumPageState extends State<AlbumPage> {
                               ),
                         ),
                         if (durationText != null)
-                          Text(
-                            durationText,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: mutedColor,
-                                ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                durationText,
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: mutedColor,
+                                    ),
+                              ),
+                              if (trackRating != null) ...[
+                                const SizedBox(width: 8),
+                                RatingStarsDisplay(rating: trackRating),
+                              ],
+                            ],
                           )
                         else if (!hasFile)
                           Text(
@@ -354,23 +363,9 @@ class _AlbumPageState extends State<AlbumPage> {
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                   color: mutedColor,
                                 ),
-                          ),
-                        if (trackRating != null)
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.star_rounded,
-                                size: 14,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                              const SizedBox(width: 2),
-                              Text(
-                                loc.ratingValue(trackRating),
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ],
-                          ),
+                          )
+                        else if (trackRating != null)
+                          RatingStarsDisplay(rating: trackRating),
                       ],
                     ),
                     trailing: MenuAnchor(

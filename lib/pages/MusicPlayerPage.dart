@@ -5,7 +5,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:player/components/PlayPauseButton.dart';
 import 'package:player/components/PlayerView.dart';
+import 'package:player/components/RatingStars.dart';
+import 'package:player/dto/IsterMediaItem.dart';
 import 'package:player/dto/MediaItemId.dart';
+import 'package:player/graphql/schema.graphql.dart';
+import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 
 /// Full-screen player for local playback: a [PlayerView] driven by
@@ -202,6 +206,43 @@ class _LocalPlayerController extends PlayerViewController {
         spinnerColor: Colors.black,
         spinnerStrokeWidth: 3,
       );
+
+  @override
+  Widget? buildRating(BuildContext context) {
+    final item = _item;
+    if (item == null) return null;
+    final MediaItemId mediaItemId;
+    try {
+      mediaItemId = MediaItemId.byStringId(item.id);
+    } catch (_) {
+      return null;
+    }
+    // Only tracks carry a per-track rating; episodes/movies don't.
+    if (mediaItemId.isterMediaType != IsterMediaTypes.track) return null;
+
+    final trackId = mediaItemId.id;
+    // Resolve the current server-side rating from the queue item for this
+    // exact track; RatingStars then owns the optimistic edit state.
+    int? rating;
+    for (final queueItem in _handler.playQueue?.playQueueItems ?? const []) {
+      if (queueItem.track?.id == trackId) {
+        rating = queueItem.track?.rating;
+        break;
+      }
+    }
+
+    return RatingStars(
+      // Re-key per track so switching songs adopts the new rating instead of
+      // keeping the previous track's optimistic value.
+      key: ValueKey('player_rating_$trackId'),
+      mediaType: Enum$RatingMediaType.TRACK,
+      mediaId: trackId,
+      rating: rating,
+      client: ClientManager.getClientForUrl(mediaItemId.serverName).value,
+      size: 28,
+      showValue: false,
+    );
+  }
 
   @override
   void skipToPrevious() => _handler.skipToPrevious();

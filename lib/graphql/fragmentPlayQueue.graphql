@@ -19,6 +19,7 @@ fragment fragmentPlayQueue on PlayQueue {
             album { id name images { ...fragmentImages } }
             metadata { ...fragmentMetadata }
             mediaFile { ...fragmentMediaFiles }
+            rating
         }
     }
 }

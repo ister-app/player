@@ -146,6 +146,58 @@ class _RatingStarsState extends State<RatingStars> {
   }
 }
 
+/// Non-interactive rendering of a 1-10 rating as five half-step stars, for
+/// surfaces that display a rating without editing it (e.g. a track list row
+/// next to the duration). Sized to sit inline with small body text.
+class RatingStarsDisplay extends StatelessWidget {
+  const RatingStarsDisplay({
+    super.key,
+    required this.rating,
+    this.size = 14,
+    this.color,
+    this.emptyColor,
+  });
+
+  /// Current rating (1-10), or null when unrated.
+  final int? rating;
+
+  /// Star icon size.
+  final double size;
+
+  /// Filled-star colour (defaults to the theme primary).
+  final Color? color;
+
+  /// Empty-star colour (defaults to onSurfaceVariant).
+  final Color? emptyColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final value = rating ?? 0;
+    final filled = color ?? theme.colorScheme.primary;
+    final empty = emptyColor ?? theme.colorScheme.onSurfaceVariant;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < 5; i++)
+          _StarIcon(
+            size: size,
+            filled: filled,
+            empty: empty,
+            // 0 = empty, 1 = half, 2 = full
+            fill: value >= (i + 1) * 2
+                ? 2
+                : value == i * 2 + 1
+                    ? 1
+                    : 0,
+            onTapHalf: null,
+          ),
+      ],
+    );
+  }
+}
+
 class _StarIcon extends StatelessWidget {
   const _StarIcon({
     required this.size,

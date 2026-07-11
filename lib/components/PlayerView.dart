@@ -70,6 +70,12 @@ abstract class PlayerViewController extends ChangeNotifier {
   /// the remote a plain toggle driven by the session state.
   Widget buildPlayPauseButton(BuildContext context);
 
+  /// Optional rating control rendered centred under the album line, so the
+  /// playing track can be rated in place. Null when rating isn't applicable
+  /// (non-track media) or unsupported (e.g. the remote controller). Local
+  /// playback plugs in a [RatingStars] for the current track.
+  Widget? buildRating(BuildContext context) => null;
+
   void skipToPrevious();
   void skipToNext();
   void seek(Duration position);
@@ -863,21 +869,26 @@ class _Controls extends StatelessWidget {
     final enabled = controller.enabled;
     final hasPrevious = controller.hasPrevious && enabled;
     final hasNext = controller.hasNext && enabled;
+    // Rating for the playing track (local playback only); rendered under the
+    // album line like the reference design. Hidden while loading so the
+    // skeleton doesn't flash empty stars.
+    final rating = loading ? null : controller.buildRating(context);
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
         Skeletonizer(
           enabled: loading,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
               if (artist != null)
                 Text(
                   artist,
                   style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  textAlign: TextAlign.center,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -885,6 +896,7 @@ class _Controls extends StatelessWidget {
               Text(
                 title ?? '',
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 24),
+                textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -893,6 +905,7 @@ class _Controls extends StatelessWidget {
                 Text(
                   album,
                   style: const TextStyle(color: Colors.white60, fontSize: 13),
+                  textAlign: TextAlign.center,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -900,6 +913,10 @@ class _Controls extends StatelessWidget {
             ],
           ),
         ),
+        if (rating != null) ...[
+          const SizedBox(height: 12),
+          rating,
+        ],
         const SizedBox(height: 20),
         _SeekBar(controller: controller, accent: accent),
         const SizedBox(height: 8),

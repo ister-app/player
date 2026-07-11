@@ -539,6 +539,13 @@ const fragmentDefinitionfragmentPlayQueue = FragmentDefinitionNode(
                     ),
                   ),
                   FieldNode(
+                    name: NameNode(value: 'rating'),
+                    alias: null,
+                    arguments: [],
+                    directives: [],
+                    selectionSet: null,
+                  ),
+                  FieldNode(
                     name: NameNode(value: '__typename'),
                     alias: null,
                     arguments: [],
@@ -845,6 +852,7 @@ class Fragment$fragmentPlayQueue$playQueueItems$track {
     required this.album,
     this.metadata,
     this.mediaFile,
+    this.rating,
     this.$__typename = 'Track',
   });
 
@@ -858,6 +866,7 @@ class Fragment$fragmentPlayQueue$playQueueItems$track {
     final l$album = json['album'];
     final l$metadata = json['metadata'];
     final l$mediaFile = json['mediaFile'];
+    final l$rating = json['rating'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentPlayQueue$playQueueItems$track(
       id: (l$id as String),
@@ -882,6 +891,7 @@ class Fragment$fragmentPlayQueue$playQueueItems$track {
             ),
           )
           .toList(),
+      rating: (l$rating as int?),
       $__typename: (l$$__typename as String),
     );
   }
@@ -899,6 +909,8 @@ class Fragment$fragmentPlayQueue$playQueueItems$track {
   final List<Fragment$fragmentMetadata>? metadata;
 
   final List<Fragment$fragmentMediaFiles>? mediaFile;
+
+  final int? rating;
 
   final String $__typename;
 
@@ -918,6 +930,8 @@ class Fragment$fragmentPlayQueue$playQueueItems$track {
     _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
     final l$mediaFile = mediaFile;
     _resultData['mediaFile'] = l$mediaFile?.map((e) => e.toJson()).toList();
+    final l$rating = rating;
+    _resultData['rating'] = l$rating;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -932,6 +946,7 @@ class Fragment$fragmentPlayQueue$playQueueItems$track {
     final l$album = album;
     final l$metadata = metadata;
     final l$mediaFile = mediaFile;
+    final l$rating = rating;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
@@ -941,6 +956,7 @@ class Fragment$fragmentPlayQueue$playQueueItems$track {
       l$album,
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$mediaFile == null ? null : Object.hashAll(l$mediaFile.map((v) => v)),
+      l$rating,
       l$$__typename,
     ]);
   }
@@ -1011,6 +1027,11 @@ class Fragment$fragmentPlayQueue$playQueueItems$track {
     } else if (l$mediaFile != lOther$mediaFile) {
       return false;
     }
+    final l$rating = rating;
+    final lOther$rating = other.rating;
+    if (l$rating != lOther$rating) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -1047,6 +1068,7 @@ abstract class CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track<TRes> {
     Fragment$fragmentPlayQueue$playQueueItems$track$album? album,
     List<Fragment$fragmentMetadata>? metadata,
     List<Fragment$fragmentMediaFiles>? mediaFile,
+    int? rating,
     String? $__typename,
   });
   CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artist<TRes>
@@ -1090,6 +1112,7 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$track<TRes>
     Object? album = _undefined,
     Object? metadata = _undefined,
     Object? mediaFile = _undefined,
+    Object? rating = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentPlayQueue$playQueueItems$track(
@@ -1112,6 +1135,7 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$track<TRes>
       mediaFile: mediaFile == _undefined
           ? _instance.mediaFile
           : (mediaFile as List<Fragment$fragmentMediaFiles>?),
+      rating: rating == _undefined ? _instance.rating : (rating as int?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -1179,6 +1203,7 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$track<TRes>
     Fragment$fragmentPlayQueue$playQueueItems$track$album? album,
     List<Fragment$fragmentMetadata>? metadata,
     List<Fragment$fragmentMediaFiles>? mediaFile,
+    int? rating,
     String? $__typename,
   }) => _res;
 
