@@ -92,6 +92,15 @@ class AppLocalizationsNl extends AppLocalizations {
   String get readAloud => 'Meelezen';
 
   @override
+  String get howDoYouWantToRead => 'Hoe wil je dit lezen?';
+
+  @override
+  String get startReading => 'Start met lezen';
+
+  @override
+  String get continueReading => 'Ga verder met lezen';
+
+  @override
   String get chapters => 'Hoofdstukken';
 
   @override

@@ -18,6 +18,23 @@ import '../components/MusicDetailHero.dart';
 import '../components/RatingStars.dart';
 import '../l10n/app_localizations.dart';
 
+/// How the user wants to consume a book: audiobook, epub, or epub with read-aloud audio.
+enum _ReadMode {
+  listen(Icons.headphones),
+  read(Icons.menu_book),
+  readAloud(Icons.record_voice_over);
+
+  const _ReadMode(this.icon);
+
+  final IconData icon;
+
+  String label(AppLocalizations loc) => switch (this) {
+        _ReadMode.listen => loc.listen,
+        _ReadMode.read => loc.read,
+        _ReadMode.readAloud => loc.readAloud,
+      };
+}
+
 @RoutePage()
 class BookPage extends StatefulWidget {
   const BookPage({
@@ -62,6 +79,76 @@ class _BookPageState extends State<BookPage> {
       .firstOrNull
       ?.readingProgress;
 
+  /// Started reading in any form — an epub position or a (partly) played chapter.
+  bool get _hasProgress {
+    if ((_readingProgress ?? 0) > 0) return true;
+    return _chapters.any((chapter) {
+      final status = chapter.watchStatus?.firstOrNull;
+      if (status == null) return false;
+      return status.watched || status.progressInMilliseconds > 0;
+    });
+  }
+
+  /// Asks how the book should be consumed, then starts that mode.
+  ///
+  /// [chapter] is the tapped chapter, or null to resume/start the book as a whole. Modes the book
+  /// has no files for are left out; when only one mode remains there is nothing to ask.
+  Future<void> _startReading(BuildContext context,
+      {Fragment$fragmentChapter? chapter}) async {
+    final loc = AppLocalizations.of(context)!;
+    final canListen = chapter != null
+        ? chapter.mediaFile?.isNotEmpty == true
+        : _hasListenableChapter;
+    final epubFile = _epubFile;
+    final readAloudFile = _readAloudEpubFile;
+
+    final modes = <_ReadMode>[
+      if (canListen) _ReadMode.listen,
+      if (epubFile != null) _ReadMode.read,
+      if (readAloudFile != null) _ReadMode.readAloud,
+    ];
+    if (modes.isEmpty) return;
+
+    final mode = modes.length == 1
+        ? modes.first
+        : await showModalBottomSheet<_ReadMode>(
+            context: context,
+            showDragHandle: true,
+            builder: (context) => SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                    child: Text(
+                      loc.howDoYouWantToRead,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  for (final mode in modes)
+                    ListTile(
+                      leading: Icon(mode.icon),
+                      title: Text(mode.label(loc)),
+                      onTap: () => Navigator.of(context).pop(mode),
+                    ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            ),
+          );
+    if (mode == null || !context.mounted) return;
+
+    switch (mode) {
+      case _ReadMode.listen:
+        _listen(context, chapterId: chapter?.id);
+      case _ReadMode.read:
+        await _read(context, epubFile!, chapter: chapter);
+      case _ReadMode.readAloud:
+        await _read(context, readAloudFile!, chapter: chapter, readAloud: true);
+    }
+  }
+
   void _listen(BuildContext context, {String? chapterId}) {
     final client = GraphQLProvider.of(context).value;
     // Resume at the first unfinished chapter when none was tapped explicitly.
@@ -87,10 +174,17 @@ class _BookPageState extends State<BookPage> {
         ?.id;
   }
 
-  Future<void> _read(BuildContext context,
-      Query$bookById$bookById$epubFiles epubFile) async {
+  Future<void> _read(
+    BuildContext context,
+    Query$bookById$bookById$epubFiles epubFile, {
+    Fragment$fragmentChapter? chapter,
+    bool readAloud = false,
+  }) async {
     final messenger = ScaffoldMessenger.of(context);
     final loc = AppLocalizations.of(context)!;
+    // No chapter means resuming: the reader then opens at the saved reading position itself.
+    final chapterIndex =
+        chapter != null ? _chapters.indexOf(chapter) : -1;
     final opened = await ReaderLauncher.open(
       nodeUrl: epubFile.directory.node.url,
       epubMediaFileId: epubFile.id,
@@ -99,6 +193,8 @@ class _BookPageState extends State<BookPage> {
       title: _book != null
           ? (MetadataUtil.getTitle(_book!.metadata) ?? _book!.name)
           : null,
+      chapterIndex: chapterIndex >= 0 ? chapterIndex : null,
+      readAloud: readAloud,
     );
     if (!opened) {
       messenger.showSnackBar(SnackBar(content: Text(loc.couldNotOpenReader)));
@@ -146,6 +242,7 @@ class _BookPageState extends State<BookPage> {
     final epubFile = _epubFile;
     final readAloudFile = _readAloudEpubFile;
     final readingProgress = _readingProgress;
+    final hasProgress = _hasProgress;
 
     return CustomScrollView(
       slivers: [
@@ -159,60 +256,31 @@ class _BookPageState extends State<BookPage> {
             background: _buildHeader(context, book),
           ),
         ),
-        SliverToBoxAdapter(
-          child: _constrained(
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Wrap(
-                spacing: 12,
-                runSpacing: 8,
-                children: [
-                  if (_hasListenableChapter)
-                    FilledButton.icon(
-                      onPressed: book != null ? () => _listen(context) : null,
-                      icon: const Icon(Icons.headphones),
-                      label: Text(loc.listen),
-                      style: FilledButton.styleFrom(
-                        shape: const StadiumBorder(),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 14, horizontal: 20),
-                      ),
+        if (_hasListenableChapter || epubFile != null || readAloudFile != null)
+          SliverToBoxAdapter(
+            child: _constrained(
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: FilledButton.icon(
+                    onPressed:
+                        book != null ? () => _startReading(context) : null,
+                    icon: Icon(hasProgress
+                        ? Icons.play_arrow
+                        : Icons.auto_stories_outlined),
+                    label: Text(
+                        hasProgress ? loc.continueReading : loc.startReading),
+                    style: FilledButton.styleFrom(
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 14, horizontal: 20),
                     ),
-                  if (epubFile != null)
-                    FilledButton.icon(
-                      onPressed:
-                          book != null ? () => _read(context, epubFile) : null,
-                      icon: const Icon(Icons.menu_book),
-                      label: Text(loc.read),
-                      style: FilledButton.styleFrom(
-                        shape: const StadiumBorder(),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 14, horizontal: 20),
-                      ),
-                    ),
-                  if (readAloudFile != null)
-                    FilledButton.icon(
-                      onPressed: book != null
-                          ? () => _read(context, readAloudFile)
-                          : null,
-                      icon: const Icon(Icons.record_voice_over),
-                      label: Text(loc.readAloud),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest,
-                        foregroundColor:
-                            Theme.of(context).colorScheme.onSurface,
-                        shape: const StadiumBorder(),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 14, horizontal: 20),
-                      ),
-                    ),
-                ],
+                  ),
+                ),
               ),
             ),
           ),
-        ),
         if (readingProgress != null && readingProgress > 0)
           SliverToBoxAdapter(
             child: _constrained(
@@ -327,6 +395,9 @@ class _BookPageState extends State<BookPage> {
         : null;
     final status = chapter.watchStatus?.firstOrNull;
     final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    // Without an audio file the chapter can still be read, as long as the book has an epub.
+    final canStart =
+        hasFile || _epubFile != null || _readAloudEpubFile != null;
 
     return Opacity(
       opacity: hasFile ? 1.0 : 0.5,
@@ -356,7 +427,7 @@ class _BookPageState extends State<BookPage> {
                     ?.copyWith(color: mutedColor),
               )
             : null,
-        onTap: hasFile ? () => _listen(context, chapterId: chapter.id) : null,
+        onTap: canStart ? () => _startReading(context, chapter: chapter) : null,
       ),
     );
   }

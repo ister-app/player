@@ -91,6 +91,18 @@
   "@readAloud": {
     "description": "Button on the book page that opens the reader with read-aloud audio."
   },
+  "howDoYouWantToRead": "How do you want to read this?",
+  "@howDoYouWantToRead": {
+    "description": "Title of the sheet asking whether to listen, read or read along."
+  },
+  "startReading": "Start reading",
+  "@startReading": {
+    "description": "Button on the book page for a book that hasn't been started yet."
+  },
+  "continueReading": "Continue reading",
+  "@continueReading": {
+    "description": "Button on the book page for a book that is already in progress."
+  },
   "chapters": "Chapters",
   "@chapters": {
     "description": "Heading above the audiobook chapter list."

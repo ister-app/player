@@ -92,6 +92,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get readAloud => 'Read aloud';
 
   @override
+  String get howDoYouWantToRead => 'How do you want to read this?';
+
+  @override
+  String get startReading => 'Start reading';
+
+  @override
+  String get continueReading => 'Continue reading';
+
+  @override
   String get chapters => 'Chapters';
 
   @override

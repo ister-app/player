@@ -248,6 +248,24 @@ abstract class AppLocalizations {
   /// **'Read aloud'**
   String get readAloud;
 
+  /// Title of the sheet asking whether to listen, read or read along.
+  ///
+  /// In en, this message translates to:
+  /// **'How do you want to read this?'**
+  String get howDoYouWantToRead;
+
+  /// Button on the book page for a book that hasn't been started yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Start reading'**
+  String get startReading;
+
+  /// Button on the book page for a book that is already in progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue reading'**
+  String get continueReading;
+
   /// Heading above the audiobook chapter list.
   ///
   /// In en, this message translates to:

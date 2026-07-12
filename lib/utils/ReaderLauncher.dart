@@ -17,12 +17,18 @@ class ReaderLauncher {
   ReaderLauncher._();
 
   /// Builds the reader URL on the node that owns [epubMediaFileId].
+  ///
+  /// [chapterIndex] is the chapter's position in the book's chapter list; the reader matches it
+  /// against the epub's table of contents and opens there instead of at the saved reading
+  /// position. [readAloud] makes it start the media-overlay audio right away.
   static Uri buildReaderUrl({
     required String nodeUrl,
     required String epubMediaFileId,
     required String bookId,
     required String serverName,
     String? title,
+    int? chapterIndex,
+    bool readAloud = false,
   }) {
     final token = StreamTokenService.getToken(serverName);
     final base = nodeUrl.endsWith('/')
@@ -33,6 +39,8 @@ class ReaderLauncher {
       'bookId': bookId,
       if (token != null) 'token': token,
       if (title != null) 'title': title,
+      if (chapterIndex != null) 'chapter': '$chapterIndex',
+      if (readAloud) 'readAloud': '1',
     });
   }
 
@@ -42,6 +50,8 @@ class ReaderLauncher {
     required String bookId,
     required String serverName,
     String? title,
+    int? chapterIndex,
+    bool readAloud = false,
   }) async {
     final url = buildReaderUrl(
       nodeUrl: nodeUrl,
@@ -49,6 +59,8 @@ class ReaderLauncher {
       bookId: bookId,
       serverName: serverName,
       title: title,
+      chapterIndex: chapterIndex,
+      readAloud: readAloud,
     );
     try {
       final mode = kIsWeb
