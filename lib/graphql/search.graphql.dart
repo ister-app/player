@@ -1014,6 +1014,12 @@ class Query$search$search {
       case "Track":
         return Query$search$search$$Track.fromJson(json);
 
+      case "Book":
+        return Query$search$search$$Book.fromJson(json);
+
+      case "Podcast":
+        return Query$search$search$$Podcast.fromJson(json);
+
       default:
         final l$$__typename = json['__typename'];
         return Query$search$search($__typename: (l$$__typename as String));
@@ -1063,6 +1069,8 @@ extension UtilityExtension$Query$search$search on Query$search$search {
     required _T Function(Query$search$search$$Person) person,
     required _T Function(Query$search$search$$Album) album,
     required _T Function(Query$search$search$$Track) track,
+    required _T Function(Query$search$search$$Book) book,
+    required _T Function(Query$search$search$$Podcast) podcast,
     required _T Function() orElse,
   }) {
     switch ($__typename) {
@@ -1084,6 +1092,12 @@ extension UtilityExtension$Query$search$search on Query$search$search {
       case "Track":
         return track(this as Query$search$search$$Track);
 
+      case "Book":
+        return book(this as Query$search$search$$Book);
+
+      case "Podcast":
+        return podcast(this as Query$search$search$$Podcast);
+
       default:
         return orElse();
     }
@@ -1096,6 +1110,8 @@ extension UtilityExtension$Query$search$search on Query$search$search {
     _T Function(Query$search$search$$Person)? person,
     _T Function(Query$search$search$$Album)? album,
     _T Function(Query$search$search$$Track)? track,
+    _T Function(Query$search$search$$Book)? book,
+    _T Function(Query$search$search$$Podcast)? podcast,
     required _T Function() orElse,
   }) {
     switch ($__typename) {
@@ -1137,6 +1153,20 @@ extension UtilityExtension$Query$search$search on Query$search$search {
       case "Track":
         if (track != null) {
           return track(this as Query$search$search$$Track);
+        } else {
+          return orElse();
+        }
+
+      case "Book":
+        if (book != null) {
+          return book(this as Query$search$search$$Book);
+        } else {
+          return orElse();
+        }
+
+      case "Podcast":
+        if (podcast != null) {
+          return podcast(this as Query$search$search$$Podcast);
         } else {
           return orElse();
         }
@@ -3596,4 +3626,178 @@ class _CopyWithStubImpl$Query$search$search$$Track$album<TRes>
   }) => _res;
 
   images(_fn) => _res;
+}
+
+class Query$search$search$$Book implements Query$search$search {
+  Query$search$search$$Book({this.$__typename = 'Book'});
+
+  factory Query$search$search$$Book.fromJson(Map<String, dynamic> json) {
+    final l$$__typename = json['__typename'];
+    return Query$search$search$$Book($__typename: (l$$__typename as String));
+  }
+
+  final String $__typename;
+
+  Map<String, dynamic> toJson() {
+    final _resultData = <String, dynamic>{};
+    final l$$__typename = $__typename;
+    _resultData['__typename'] = l$$__typename;
+    return _resultData;
+  }
+
+  @override
+  int get hashCode {
+    final l$$__typename = $__typename;
+    return Object.hashAll([l$$__typename]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Query$search$search$$Book ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$$__typename = $__typename;
+    final lOther$$__typename = other.$__typename;
+    if (l$$__typename != lOther$$__typename) {
+      return false;
+    }
+    return true;
+  }
+}
+
+extension UtilityExtension$Query$search$search$$Book
+    on Query$search$search$$Book {
+  CopyWith$Query$search$search$$Book<Query$search$search$$Book> get copyWith =>
+      CopyWith$Query$search$search$$Book(this, (i) => i);
+}
+
+abstract class CopyWith$Query$search$search$$Book<TRes> {
+  factory CopyWith$Query$search$search$$Book(
+    Query$search$search$$Book instance,
+    TRes Function(Query$search$search$$Book) then,
+  ) = _CopyWithImpl$Query$search$search$$Book;
+
+  factory CopyWith$Query$search$search$$Book.stub(TRes res) =
+      _CopyWithStubImpl$Query$search$search$$Book;
+
+  TRes call({String? $__typename});
+}
+
+class _CopyWithImpl$Query$search$search$$Book<TRes>
+    implements CopyWith$Query$search$search$$Book<TRes> {
+  _CopyWithImpl$Query$search$search$$Book(this._instance, this._then);
+
+  final Query$search$search$$Book _instance;
+
+  final TRes Function(Query$search$search$$Book) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({Object? $__typename = _undefined}) => _then(
+    Query$search$search$$Book(
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
+}
+
+class _CopyWithStubImpl$Query$search$search$$Book<TRes>
+    implements CopyWith$Query$search$search$$Book<TRes> {
+  _CopyWithStubImpl$Query$search$search$$Book(this._res);
+
+  TRes _res;
+
+  call({String? $__typename}) => _res;
+}
+
+class Query$search$search$$Podcast implements Query$search$search {
+  Query$search$search$$Podcast({this.$__typename = 'Podcast'});
+
+  factory Query$search$search$$Podcast.fromJson(Map<String, dynamic> json) {
+    final l$$__typename = json['__typename'];
+    return Query$search$search$$Podcast($__typename: (l$$__typename as String));
+  }
+
+  final String $__typename;
+
+  Map<String, dynamic> toJson() {
+    final _resultData = <String, dynamic>{};
+    final l$$__typename = $__typename;
+    _resultData['__typename'] = l$$__typename;
+    return _resultData;
+  }
+
+  @override
+  int get hashCode {
+    final l$$__typename = $__typename;
+    return Object.hashAll([l$$__typename]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Query$search$search$$Podcast ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$$__typename = $__typename;
+    final lOther$$__typename = other.$__typename;
+    if (l$$__typename != lOther$$__typename) {
+      return false;
+    }
+    return true;
+  }
+}
+
+extension UtilityExtension$Query$search$search$$Podcast
+    on Query$search$search$$Podcast {
+  CopyWith$Query$search$search$$Podcast<Query$search$search$$Podcast>
+  get copyWith => CopyWith$Query$search$search$$Podcast(this, (i) => i);
+}
+
+abstract class CopyWith$Query$search$search$$Podcast<TRes> {
+  factory CopyWith$Query$search$search$$Podcast(
+    Query$search$search$$Podcast instance,
+    TRes Function(Query$search$search$$Podcast) then,
+  ) = _CopyWithImpl$Query$search$search$$Podcast;
+
+  factory CopyWith$Query$search$search$$Podcast.stub(TRes res) =
+      _CopyWithStubImpl$Query$search$search$$Podcast;
+
+  TRes call({String? $__typename});
+}
+
+class _CopyWithImpl$Query$search$search$$Podcast<TRes>
+    implements CopyWith$Query$search$search$$Podcast<TRes> {
+  _CopyWithImpl$Query$search$search$$Podcast(this._instance, this._then);
+
+  final Query$search$search$$Podcast _instance;
+
+  final TRes Function(Query$search$search$$Podcast) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({Object? $__typename = _undefined}) => _then(
+    Query$search$search$$Podcast(
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
+}
+
+class _CopyWithStubImpl$Query$search$search$$Podcast<TRes>
+    implements CopyWith$Query$search$search$$Podcast<TRes> {
+  _CopyWithStubImpl$Query$search$search$$Podcast(this._res);
+
+  TRes _res;
+
+  call({String? $__typename}) => _res;
 }

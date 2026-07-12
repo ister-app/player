@@ -2,6 +2,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/components/AlbumSlide.dart';
+import 'package:player/components/BookSlide.dart';
+import 'package:player/components/PodcastSlide.dart';
 import 'package:player/components/MovieSlide.dart';
 import 'package:player/components/TvShowSlide.dart';
 import 'package:player/graphql/libraries.graphql.dart';
@@ -177,13 +179,29 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                                             if (r != null) _refetchSlides[library.id] = r;
                                           },
                                         )
-                                      : MovieSlide(
-                                          serverName: widget.serverName,
-                                          libraryId: library.id,
-                                          onRefetch: (r) {
-                                            if (r != null) _refetchSlides[library.id] = r;
-                                          },
-                                        )),
+                                      : library.type == Enum$LibraryType.BOOK
+                                          ? BookSlide(
+                                              serverName: widget.serverName,
+                                              libraryId: library.id,
+                                              onRefetch: (r) {
+                                                if (r != null) _refetchSlides[library.id] = r;
+                                              },
+                                            )
+                                          : library.type == Enum$LibraryType.PODCAST
+                                          ? PodcastSlide(
+                                              serverName: widget.serverName,
+                                              libraryId: library.id,
+                                              onRefetch: (r) {
+                                                if (r != null) _refetchSlides[library.id] = r;
+                                              },
+                                            )
+                                          : MovieSlide(
+                                              serverName: widget.serverName,
+                                              libraryId: library.id,
+                                              onRefetch: (r) {
+                                                if (r != null) _refetchSlides[library.id] = r;
+                                              },
+                                            )),
                         ]),
                   ]);
             },

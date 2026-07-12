@@ -1,0 +1,63 @@
+import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/graphql/booksQuery.graphql.dart';
+import 'package:player/graphql/schema.graphql.dart';
+
+import '../graphql/fragmentBook.graphql.dart';
+import 'BookCarouselTile.dart';
+import 'PagedContentView.dart';
+
+/// Scrollable grid of all books in a book library, loaded page by page.
+class BookScroll extends StatelessWidget {
+  final String serverName;
+  final String? libraryId;
+  final void Function(Refetch?)? onRefetch;
+
+  const BookScroll({
+    super.key,
+    required this.serverName,
+    this.libraryId,
+    this.onRefetch,
+  });
+
+  static const int _pageSize = 15;
+
+  @override
+  Widget build(BuildContext context) {
+    return PagedContentView<Fragment$fragmentBook>(
+      document: documentNodeQuerybooks,
+      rootField: 'books',
+      fromJson: Fragment$fragmentBook.fromJson,
+      sorting: Enum$SortingEnum.NAME,
+      sortingOrder: Enum$SortingOrder.ASCENDING,
+      libraryId: libraryId,
+      onRefetch: onRefetch,
+      pageSize: _pageSize,
+      builder: (context, data, requestPage) {
+        final itemCount = data.totalItems ?? (_pageSize * 2);
+
+        return GridView.builder(
+          padding: const EdgeInsets.all(8),
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 300,
+            childAspectRatio: 1.0,
+            mainAxisSpacing: 0,
+            crossAxisSpacing: 0,
+          ),
+          itemCount: itemCount,
+          itemBuilder: (context, index) {
+            final book = data.itemAt(index);
+            if (book != null) {
+              return BookCarouselTile(serverName: serverName, book: book);
+            }
+
+            return pagedSkeletonSlot(
+              key: ValueKey('book-scroll-skeleton-$index'),
+              onVisible: () => requestPage(index ~/ _pageSize),
+            );
+          },
+        );
+      },
+    );
+  }
+}

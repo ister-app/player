@@ -1,0 +1,3 @@
+mutation downloadPodcastEpisode($episodeId: ID!) {
+    downloadPodcastEpisode(episodeId: $episodeId)
+}

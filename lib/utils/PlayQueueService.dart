@@ -112,6 +112,73 @@ class PlayQueueService {
         ?.id;
   }
 
+  Future<Fragment$fragmentPlayQueue?> getOrCreatePlayQueueForBook(
+      GraphQLClient graphQLClient,
+      String? playQueueId,
+      String bookId,
+      String? chapterId) async {
+    if (playQueueId == null) {
+      return createPlayQueue(
+        graphQLClient,
+        sourceType: Enum$PlayQueueSourceType.BOOK,
+        sourceId: bookId,
+        startId: chapterId,
+      );
+    }
+    var playQueue = await getPlayQueue(graphQLClient, playQueueId);
+    if (playQueue != null && chapterId != null) {
+      String? currentItemId = getChapterPlayQueueItemId(playQueue, chapterId);
+      if (currentItemId != null && currentItemId != playQueue.currentItemId) {
+        final updated = await updateProgress(
+            graphQLClient, playQueue.id, currentItemId, Duration.zero);
+        if (updated != null) playQueue = updated;
+      }
+    }
+    return playQueue;
+  }
+
+  String? getChapterPlayQueueItemId(
+      Fragment$fragmentPlayQueue playQueue, String chapterId) {
+    return playQueue.playQueueItems
+        ?.where((element) => element.chapter?.id == chapterId)
+        .firstOrNull
+        ?.id;
+  }
+
+  Future<Fragment$fragmentPlayQueue?> getOrCreatePlayQueueForPodcast(
+      GraphQLClient graphQLClient,
+      String? playQueueId,
+      String podcastId,
+      String? episodeId) async {
+    if (playQueueId == null) {
+      return createPlayQueue(
+        graphQLClient,
+        sourceType: Enum$PlayQueueSourceType.PODCAST,
+        sourceId: podcastId,
+        startId: episodeId,
+      );
+    }
+    var playQueue = await getPlayQueue(graphQLClient, playQueueId);
+    if (playQueue != null && episodeId != null) {
+      String? currentItemId =
+          getPodcastEpisodePlayQueueItemId(playQueue, episodeId);
+      if (currentItemId != null && currentItemId != playQueue.currentItemId) {
+        final updated = await updateProgress(
+            graphQLClient, playQueue.id, currentItemId, Duration.zero);
+        if (updated != null) playQueue = updated;
+      }
+    }
+    return playQueue;
+  }
+
+  String? getPodcastEpisodePlayQueueItemId(
+      Fragment$fragmentPlayQueue playQueue, String episodeId) {
+    return playQueue.playQueueItems
+        ?.where((element) => element.podcastEpisode?.id == episodeId)
+        .firstOrNull
+        ?.id;
+  }
+
   Future<Fragment$fragmentPlayQueue?> _createPlayQueueForAlbum(
       GraphQLClient graphQLClient, String albumId, String trackId) async {
     return createPlayQueue(

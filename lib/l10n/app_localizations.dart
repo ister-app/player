@@ -224,6 +224,96 @@ abstract class AppLocalizations {
   /// **'Go to artist'**
   String get goToArtist;
 
+  /// In context menu of a book, navigates to the author page.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to author'**
+  String get goToAuthor;
+
+  /// Button on the book page that starts audiobook playback.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen'**
+  String get listen;
+
+  /// Button on the book page that opens the epub reader.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get read;
+
+  /// Button on the book page that opens the reader with read-aloud audio.
+  ///
+  /// In en, this message translates to:
+  /// **'Read aloud'**
+  String get readAloud;
+
+  /// Heading above the audiobook chapter list.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapters'**
+  String get chapters;
+
+  /// Fallback chapter title prefix, e.g. 'Chapter 5'.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter'**
+  String get chapter;
+
+  /// Snackbar when launching the epub reader failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the reader'**
+  String get couldNotOpenReader;
+
+  /// Heading above the podcast episode list.
+  ///
+  /// In en, this message translates to:
+  /// **'Episodes'**
+  String get episodes;
+
+  /// Title of the add-podcast sheet and its toolbar action.
+  ///
+  /// In en, this message translates to:
+  /// **'Add podcast'**
+  String get addPodcast;
+
+  /// Hint text in the add-podcast input field.
+  ///
+  /// In en, this message translates to:
+  /// **'Search, or paste a feed URL'**
+  String get addPodcastHint;
+
+  /// Snackbar when the subscribe mutation failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not subscribe to this feed'**
+  String get subscribeFailed;
+
+  /// Menu item on the podcast page.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsubscribe'**
+  String get unsubscribe;
+
+  /// Tooltip on the episode download button.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get download;
+
+  /// Snackbar after requesting an episode download.
+  ///
+  /// In en, this message translates to:
+  /// **'Download started — the episode appears shortly'**
+  String get downloadStarted;
+
+  /// Snackbar when requesting an episode download failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download request failed'**
+  String get downloadFailed;
+
   /// Text above recently watched media
   ///
   /// In en, this message translates to:

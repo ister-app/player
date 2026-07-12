@@ -8,6 +8,9 @@ import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../components/AlbumScroll.dart';
+import '../components/BookScroll.dart';
+import '../components/AddPodcastSheet.dart';
+import '../components/PodcastScroll.dart';
 import '../components/MovieScroll.dart';
 import '../components/TvShowScroll.dart';
 import '../l10n/app_localizations.dart';
@@ -135,7 +138,17 @@ class _ShowHomePageState extends State<ShowHomePage> {
                   SearchRoute(libraryId: _selectedLibraryId),
                 ),
               ),
-              if (_selectedLibraryId != null)
+              if (_selectedLibraryType == Enum$LibraryType.PODCAST)
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  tooltip: AppLocalizations.of(context)!.addPodcast,
+                  onPressed: () => showAddPodcastSheet(
+                    context,
+                    onSubscribed: triggerRefresh,
+                  ),
+                ),
+              if (_selectedLibraryId != null &&
+                  _selectedLibraryType != Enum$LibraryType.PODCAST)
                 IconButton(
                   icon: const Icon(Icons.shuffle),
                   tooltip: AppLocalizations.of(context)!.shufflePlay,
@@ -201,6 +214,18 @@ class _ShowHomePageState extends State<ShowHomePage> {
       );
     } else if (_selectedLibraryType == Enum$LibraryType.MUSIC) {
       return AlbumScroll(
+        key: key,
+        serverName: widget.serverName,
+        libraryId: _selectedLibraryId,
+      );
+    } else if (_selectedLibraryType == Enum$LibraryType.BOOK) {
+      return BookScroll(
+        key: key,
+        serverName: widget.serverName,
+        libraryId: _selectedLibraryId,
+      );
+    } else if (_selectedLibraryType == Enum$LibraryType.PODCAST) {
+      return PodcastScroll(
         key: key,
         serverName: widget.serverName,
         libraryId: _selectedLibraryId,

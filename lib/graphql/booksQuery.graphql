@@ -1,0 +1,6 @@
+query books($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $authorId: ID, $libraryId: ID) {
+    books(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, authorId: $authorId, libraryId: $libraryId) {
+        content { ...fragmentBook }
+        totalPages totalElements number size
+    }
+}

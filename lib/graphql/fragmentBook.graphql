@@ -1,0 +1,7 @@
+fragment fragmentBook on Book {
+    id name releaseYear
+    author { id name }
+    images { ...fragmentImages }
+    metadata { ...fragmentMetadata }
+    rating
+}

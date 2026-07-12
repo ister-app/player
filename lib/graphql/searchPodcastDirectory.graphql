@@ -1,0 +1,5 @@
+query searchPodcastDirectory($term: String!) {
+    searchPodcastDirectory(term: $term) {
+        name author feedUrl artworkUrl
+    }
+}

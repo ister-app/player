@@ -21,5 +21,18 @@ fragment fragmentPlayQueue on PlayQueue {
             mediaFile { ...fragmentMediaFiles }
             rating
         }
+        chapter {
+            id number
+            author { id name }
+            book { id name images { ...fragmentImages } }
+            metadata { ...fragmentMetadata }
+            mediaFile { ...fragmentMediaFiles }
+        }
+        podcastEpisode {
+            id publishedAt
+            podcast { id title author images { ...fragmentImages } }
+            metadata { ...fragmentMetadata }
+            mediaFile { ...fragmentMediaFiles }
+        }
     }
 }

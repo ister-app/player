@@ -1,0 +1,5 @@
+mutation subscribePodcast($feedUrl: String!) {
+    subscribePodcast(feedUrl: $feedUrl) {
+        ...fragmentPodcast
+    }
+}

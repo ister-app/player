@@ -1,0 +1,6 @@
+query podcasts($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $libraryId: ID) {
+    podcasts(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, libraryId: $libraryId) {
+        content { ...fragmentPodcast }
+        totalPages totalElements number size
+    }
+}

@@ -205,6 +205,93 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
                           : menuController.open(),
                       onTap: () => AutoRouter.of(context)
                           .push(MovieRoute(movieId: mv.id))));
+            } else if (item.type == Enum$MediaType.CHAPTER &&
+                item.chapter != null) {
+              // Continue listening: the next unfinished audiobook chapter.
+              final chapter = item.chapter!;
+              final book = chapter.book;
+              List<Fragment$fragmentImages>? images = book.images
+                  ?.map((e) => Fragment$fragmentImages.fromJson(e.toJson()))
+                  .toList();
+              var imageByType =
+                  ImageUtil.getImageByType(images, ImageTypes.cover);
+              final chapterTitle = MetadataUtil.getTitle(chapter.metadata) ??
+                  '${AppLocalizations.of(context)!.chapter} ${chapter.number}';
+              return CarouselItemView(
+                  serverName: widget.serverName,
+                  title: MetadataUtil.getTitle(book.metadata) ?? book.name,
+                  subTitle: chapterTitle,
+                  imageUrl: ImageUtil.buildUrl(imageByType,
+                      token: StreamTokenService.getToken(widget.serverName)),
+                  blurHash: imageByType?.blurHash,
+                  placeholderIcon: Icons.headphones,
+                  progress: chapter.watchStatus != null &&
+                          chapter.watchStatus!.isNotEmpty &&
+                          chapter.watchStatus!.first.watched != true &&
+                          (chapter.mediaFile?.firstOrNull
+                                      ?.durationInMilliseconds ??
+                                  0) >
+                              0
+                      ? chapter.watchStatus!.first.progressInMilliseconds /
+                          chapter.mediaFile!.first.durationInMilliseconds!
+                      : null,
+                  onTap: () => AutoRouter.of(context)
+                      .push(BookRoute(bookId: book.id)));
+            } else if (item.type == Enum$MediaType.PODCAST_EPISODE &&
+                item.podcastEpisode != null) {
+              // Continue listening: a partially played podcast episode.
+              final episode = item.podcastEpisode!;
+              final podcast = episode.podcast;
+              List<Fragment$fragmentImages>? images = podcast.images
+                  ?.map((e) => Fragment$fragmentImages.fromJson(e.toJson()))
+                  .toList();
+              var imageByType =
+                  ImageUtil.getImageByType(images, ImageTypes.cover);
+              return CarouselItemView(
+                  serverName: widget.serverName,
+                  title: podcast.title,
+                  subTitle: MetadataUtil.getTitle(episode.metadata) ?? '',
+                  imageUrl: ImageUtil.buildUrl(imageByType,
+                      token: StreamTokenService.getToken(widget.serverName)),
+                  blurHash: imageByType?.blurHash,
+                  placeholderIcon: Icons.podcasts,
+                  progress: episode.watchStatus != null &&
+                          episode.watchStatus!.isNotEmpty &&
+                          episode.watchStatus!.first.watched != true &&
+                          (episode.mediaFile?.firstOrNull
+                                      ?.durationInMilliseconds ??
+                                  0) >
+                              0
+                      ? episode.watchStatus!.first.progressInMilliseconds /
+                          episode.mediaFile!.first.durationInMilliseconds!
+                      : null,
+                  onTap: () => AutoRouter.of(context)
+                      .push(PodcastRoute(podcastId: podcast.id)));
+            } else if (item.type == Enum$MediaType.BOOK && item.book != null) {
+              // Continue reading: an epub with saved progress.
+              final book = item.book!;
+              List<Fragment$fragmentImages>? images = book.images
+                  ?.map((e) => Fragment$fragmentImages.fromJson(e.toJson()))
+                  .toList();
+              var imageByType =
+                  ImageUtil.getImageByType(images, ImageTypes.cover);
+              final readingProgress = book.watchStatus
+                  ?.where((status) => status.readingProgress != null)
+                  .firstOrNull
+                  ?.readingProgress;
+              return CarouselItemView(
+                  serverName: widget.serverName,
+                  title: MetadataUtil.getTitle(book.metadata) ?? book.name,
+                  subTitle: MetadataUtil.getDescription(book.metadata) ?? "",
+                  imageUrl: ImageUtil.buildUrl(imageByType,
+                      token: StreamTokenService.getToken(widget.serverName)),
+                  blurHash: imageByType?.blurHash,
+                  placeholderIcon: Icons.menu_book,
+                  progress: readingProgress != null && readingProgress > 0
+                      ? readingProgress.clamp(0.0, 1.0)
+                      : null,
+                  onTap: () => AutoRouter.of(context)
+                      .push(BookRoute(bookId: book.id)));
             } else {
               return const SizedBox.shrink();
             }

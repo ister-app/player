@@ -1,0 +1,3 @@
+mutation unsubscribePodcast($id: ID!) {
+    unsubscribePodcast(id: $id)
+}

@@ -19,5 +19,29 @@ query recentlyWatched {
             watchStatus { id playQueueItemId progressInMilliseconds watched }
             mediaFile { id durationInMilliseconds }
         }
+        chapter {
+            id
+            number
+            book { id name images { ...fragmentImages } metadata { ...fragmentMetadata } }
+            metadata { ...fragmentMetadata }
+            watchStatus { id playQueueItemId progressInMilliseconds watched }
+            mediaFile { id durationInMilliseconds }
+        }
+        book {
+            id
+            name
+            images { ...fragmentImages }
+            metadata { ...fragmentMetadata }
+            watchStatus { id watched readingLocation readingProgress }
+            epubFiles { id path mediaOverlays directory { node { url } } }
+        }
+        podcastEpisode {
+            id
+            publishedAt
+            podcast { id title images { ...fragmentImages } }
+            metadata { ...fragmentMetadata }
+            watchStatus { id playQueueItemId progressInMilliseconds watched }
+            mediaFile { id durationInMilliseconds }
+        }
     }
 }

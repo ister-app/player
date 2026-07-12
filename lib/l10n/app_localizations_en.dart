@@ -80,6 +80,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goToArtist => 'Go to artist';
 
   @override
+  String get goToAuthor => 'Go to author';
+
+  @override
+  String get listen => 'Listen';
+
+  @override
+  String get read => 'Read';
+
+  @override
+  String get readAloud => 'Read aloud';
+
+  @override
+  String get chapters => 'Chapters';
+
+  @override
+  String get chapter => 'Chapter';
+
+  @override
+  String get couldNotOpenReader => 'Could not open the reader';
+
+  @override
+  String get episodes => 'Episodes';
+
+  @override
+  String get addPodcast => 'Add podcast';
+
+  @override
+  String get addPodcastHint => 'Search, or paste a feed URL';
+
+  @override
+  String get subscribeFailed => 'Could not subscribe to this feed';
+
+  @override
+  String get unsubscribe => 'Unsubscribe';
+
+  @override
+  String get download => 'Download';
+
+  @override
+  String get downloadStarted =>
+      'Download started — the episode appears shortly';
+
+  @override
+  String get downloadFailed => 'Download request failed';
+
+  @override
   String get watchNext => 'Continue watching';
 
   @override

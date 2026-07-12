@@ -1,0 +1,6 @@
+fragment fragmentPodcastEpisode on PodcastEpisode {
+    id publishedAt episodeNumber seasonNumber downloaded durationInMilliseconds
+    metadata { ...fragmentMetadata }
+    mediaFile { ...fragmentMediaFiles }
+    watchStatus { id playQueueItemId progressInMilliseconds watched }
+}

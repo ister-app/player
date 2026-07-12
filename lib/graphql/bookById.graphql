@@ -1,0 +1,11 @@
+query bookById($id: ID) {
+    bookById(id: $id) {
+        ...fragmentBook
+        chapters { ...fragmentChapter }
+        epubFiles {
+            id path mediaOverlays
+            directory { node { url } }
+        }
+        watchStatus { id watched readingLocation readingProgress }
+    }
+}

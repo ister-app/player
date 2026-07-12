@@ -75,6 +75,66 @@
   "@goToArtist": {
     "description": "In context menu an item when clicked navigates to the artist page."
   },
+  "goToAuthor": "Go to author",
+  "@goToAuthor": {
+    "description": "In context menu of a book, navigates to the author page."
+  },
+  "listen": "Listen",
+  "@listen": {
+    "description": "Button on the book page that starts audiobook playback."
+  },
+  "read": "Read",
+  "@read": {
+    "description": "Button on the book page that opens the epub reader."
+  },
+  "readAloud": "Read aloud",
+  "@readAloud": {
+    "description": "Button on the book page that opens the reader with read-aloud audio."
+  },
+  "chapters": "Chapters",
+  "@chapters": {
+    "description": "Heading above the audiobook chapter list."
+  },
+  "chapter": "Chapter",
+  "@chapter": {
+    "description": "Fallback chapter title prefix, e.g. 'Chapter 5'."
+  },
+  "couldNotOpenReader": "Could not open the reader",
+  "@couldNotOpenReader": {
+    "description": "Snackbar when launching the epub reader failed."
+  },
+  "episodes": "Episodes",
+  "@episodes": {
+    "description": "Heading above the podcast episode list."
+  },
+  "addPodcast": "Add podcast",
+  "@addPodcast": {
+    "description": "Title of the add-podcast sheet and its toolbar action."
+  },
+  "addPodcastHint": "Search, or paste a feed URL",
+  "@addPodcastHint": {
+    "description": "Hint text in the add-podcast input field."
+  },
+  "subscribeFailed": "Could not subscribe to this feed",
+  "@subscribeFailed": {
+    "description": "Snackbar when the subscribe mutation failed."
+  },
+  "unsubscribe": "Unsubscribe",
+  "@unsubscribe": {
+    "description": "Menu item on the podcast page."
+  },
+  "download": "Download",
+  "@download": {
+    "description": "Tooltip on the episode download button."
+  },
+  "downloadStarted": "Download started — the episode appears shortly",
+  "@downloadStarted": {
+    "description": "Snackbar after requesting an episode download."
+  },
+  "downloadFailed": "Download request failed",
+  "@downloadFailed": {
+    "description": "Snackbar when requesting an episode download failed."
+  },
   "watchNext": "Continue watching",
   "@watchNext": {
     "description": "Text above recently watched media"

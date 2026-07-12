@@ -326,54 +326,6 @@ class _CopyWithStubImpl$Input$CreatePlayQueueInput<TRes>
   }) => _res;
 }
 
-enum Enum$RatingMediaType {
-  MOVIE,
-  SHOW,
-  EPISODE,
-  ALBUM,
-  TRACK,
-  $unknown;
-
-  factory Enum$RatingMediaType.fromJson(String value) =>
-      fromJson$Enum$RatingMediaType(value);
-
-  String toJson() => toJson$Enum$RatingMediaType(this);
-}
-
-String toJson$Enum$RatingMediaType(Enum$RatingMediaType e) {
-  switch (e) {
-    case Enum$RatingMediaType.MOVIE:
-      return r'MOVIE';
-    case Enum$RatingMediaType.SHOW:
-      return r'SHOW';
-    case Enum$RatingMediaType.EPISODE:
-      return r'EPISODE';
-    case Enum$RatingMediaType.ALBUM:
-      return r'ALBUM';
-    case Enum$RatingMediaType.TRACK:
-      return r'TRACK';
-    case Enum$RatingMediaType.$unknown:
-      return r'$unknown';
-  }
-}
-
-Enum$RatingMediaType fromJson$Enum$RatingMediaType(String value) {
-  switch (value) {
-    case r'MOVIE':
-      return Enum$RatingMediaType.MOVIE;
-    case r'SHOW':
-      return Enum$RatingMediaType.SHOW;
-    case r'EPISODE':
-      return Enum$RatingMediaType.EPISODE;
-    case r'ALBUM':
-      return Enum$RatingMediaType.ALBUM;
-    case r'TRACK':
-      return Enum$RatingMediaType.TRACK;
-    default:
-      return Enum$RatingMediaType.$unknown;
-  }
-}
-
 enum Enum$PlaybackCommandType {
   PLAY,
   PAUSE,
@@ -575,6 +527,8 @@ enum Enum$LibraryType {
   MOVIE,
   SHOW,
   MUSIC,
+  BOOK,
+  PODCAST,
   $unknown;
 
   factory Enum$LibraryType.fromJson(String value) =>
@@ -591,6 +545,10 @@ String toJson$Enum$LibraryType(Enum$LibraryType e) {
       return r'SHOW';
     case Enum$LibraryType.MUSIC:
       return r'MUSIC';
+    case Enum$LibraryType.BOOK:
+      return r'BOOK';
+    case Enum$LibraryType.PODCAST:
+      return r'PODCAST';
     case Enum$LibraryType.$unknown:
       return r'$unknown';
   }
@@ -604,6 +562,10 @@ Enum$LibraryType fromJson$Enum$LibraryType(String value) {
       return Enum$LibraryType.SHOW;
     case r'MUSIC':
       return Enum$LibraryType.MUSIC;
+    case r'BOOK':
+      return Enum$LibraryType.BOOK;
+    case r'PODCAST':
+      return Enum$LibraryType.PODCAST;
     default:
       return Enum$LibraryType.$unknown;
   }
@@ -613,6 +575,9 @@ enum Enum$MediaType {
   MOVIE,
   EPISODE,
   TRACK,
+  CHAPTER,
+  BOOK,
+  PODCAST_EPISODE,
   $unknown;
 
   factory Enum$MediaType.fromJson(String value) =>
@@ -629,6 +594,12 @@ String toJson$Enum$MediaType(Enum$MediaType e) {
       return r'EPISODE';
     case Enum$MediaType.TRACK:
       return r'TRACK';
+    case Enum$MediaType.CHAPTER:
+      return r'CHAPTER';
+    case Enum$MediaType.BOOK:
+      return r'BOOK';
+    case Enum$MediaType.PODCAST_EPISODE:
+      return r'PODCAST_EPISODE';
     case Enum$MediaType.$unknown:
       return r'$unknown';
   }
@@ -642,8 +613,72 @@ Enum$MediaType fromJson$Enum$MediaType(String value) {
       return Enum$MediaType.EPISODE;
     case r'TRACK':
       return Enum$MediaType.TRACK;
+    case r'CHAPTER':
+      return Enum$MediaType.CHAPTER;
+    case r'BOOK':
+      return Enum$MediaType.BOOK;
+    case r'PODCAST_EPISODE':
+      return Enum$MediaType.PODCAST_EPISODE;
     default:
       return Enum$MediaType.$unknown;
+  }
+}
+
+enum Enum$RatingMediaType {
+  MOVIE,
+  SHOW,
+  EPISODE,
+  ALBUM,
+  TRACK,
+  BOOK,
+  PODCAST,
+  $unknown;
+
+  factory Enum$RatingMediaType.fromJson(String value) =>
+      fromJson$Enum$RatingMediaType(value);
+
+  String toJson() => toJson$Enum$RatingMediaType(this);
+}
+
+String toJson$Enum$RatingMediaType(Enum$RatingMediaType e) {
+  switch (e) {
+    case Enum$RatingMediaType.MOVIE:
+      return r'MOVIE';
+    case Enum$RatingMediaType.SHOW:
+      return r'SHOW';
+    case Enum$RatingMediaType.EPISODE:
+      return r'EPISODE';
+    case Enum$RatingMediaType.ALBUM:
+      return r'ALBUM';
+    case Enum$RatingMediaType.TRACK:
+      return r'TRACK';
+    case Enum$RatingMediaType.BOOK:
+      return r'BOOK';
+    case Enum$RatingMediaType.PODCAST:
+      return r'PODCAST';
+    case Enum$RatingMediaType.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$RatingMediaType fromJson$Enum$RatingMediaType(String value) {
+  switch (value) {
+    case r'MOVIE':
+      return Enum$RatingMediaType.MOVIE;
+    case r'SHOW':
+      return Enum$RatingMediaType.SHOW;
+    case r'EPISODE':
+      return Enum$RatingMediaType.EPISODE;
+    case r'ALBUM':
+      return Enum$RatingMediaType.ALBUM;
+    case r'TRACK':
+      return Enum$RatingMediaType.TRACK;
+    case r'BOOK':
+      return Enum$RatingMediaType.BOOK;
+    case r'PODCAST':
+      return Enum$RatingMediaType.PODCAST;
+    default:
+      return Enum$RatingMediaType.$unknown;
   }
 }
 
@@ -652,6 +687,8 @@ enum Enum$PlayQueueSourceType {
   SHOW,
   ALBUM,
   LIBRARY,
+  BOOK,
+  PODCAST,
   $unknown;
 
   factory Enum$PlayQueueSourceType.fromJson(String value) =>
@@ -670,6 +707,10 @@ String toJson$Enum$PlayQueueSourceType(Enum$PlayQueueSourceType e) {
       return r'ALBUM';
     case Enum$PlayQueueSourceType.LIBRARY:
       return r'LIBRARY';
+    case Enum$PlayQueueSourceType.BOOK:
+      return r'BOOK';
+    case Enum$PlayQueueSourceType.PODCAST:
+      return r'PODCAST';
     case Enum$PlayQueueSourceType.$unknown:
       return r'$unknown';
   }
@@ -685,6 +726,10 @@ Enum$PlayQueueSourceType fromJson$Enum$PlayQueueSourceType(String value) {
       return Enum$PlayQueueSourceType.ALBUM;
     case r'LIBRARY':
       return Enum$PlayQueueSourceType.LIBRARY;
+    case r'BOOK':
+      return Enum$PlayQueueSourceType.BOOK;
+    case r'PODCAST':
+      return Enum$PlayQueueSourceType.PODCAST;
     default:
       return Enum$PlayQueueSourceType.$unknown;
   }
@@ -971,5 +1016,14 @@ Enum$__DirectiveLocation fromJson$Enum$__DirectiveLocation(String value) {
 }
 
 const possibleTypesMap = <String, Set<String>>{
-  'SearchResult': {'Movie', 'Show', 'Episode', 'Person', 'Album', 'Track'},
+  'SearchResult': {
+    'Movie',
+    'Show',
+    'Episode',
+    'Person',
+    'Album',
+    'Track',
+    'Book',
+    'Podcast',
+  },
 };

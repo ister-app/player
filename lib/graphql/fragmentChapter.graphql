@@ -1,0 +1,6 @@
+fragment fragmentChapter on Chapter {
+    id number
+    metadata { ...fragmentMetadata }
+    mediaFile { durationInMilliseconds }
+    watchStatus { id playQueueItemId progressInMilliseconds watched }
+}

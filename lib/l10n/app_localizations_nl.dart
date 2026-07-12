@@ -80,6 +80,52 @@ class AppLocalizationsNl extends AppLocalizations {
   String get goToArtist => 'Ga naar artiest';
 
   @override
+  String get goToAuthor => 'Ga naar auteur';
+
+  @override
+  String get listen => 'Luisteren';
+
+  @override
+  String get read => 'Lezen';
+
+  @override
+  String get readAloud => 'Meelezen';
+
+  @override
+  String get chapters => 'Hoofdstukken';
+
+  @override
+  String get chapter => 'Hoofdstuk';
+
+  @override
+  String get couldNotOpenReader => 'Kon de reader niet openen';
+
+  @override
+  String get episodes => 'Afleveringen';
+
+  @override
+  String get addPodcast => 'Podcast toevoegen';
+
+  @override
+  String get addPodcastHint => 'Zoek, of plak een feed-URL';
+
+  @override
+  String get subscribeFailed => 'Abonneren op deze feed is mislukt';
+
+  @override
+  String get unsubscribe => 'Abonnement opzeggen';
+
+  @override
+  String get download => 'Downloaden';
+
+  @override
+  String get downloadStarted =>
+      'Download gestart — de aflevering verschijnt zo';
+
+  @override
+  String get downloadFailed => 'Downloadverzoek mislukt';
+
+  @override
   String get watchNext => 'Blijf kijken';
 
   @override

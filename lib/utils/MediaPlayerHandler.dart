@@ -519,6 +519,42 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (pq != null) await _startFromPlayQueue(client, pq, srv);
   }
 
+  /// Starts (or resumes) an audiobook: creates a BOOK play queue of the book's
+  /// chapters in order, starting at [chapterId] (or the first chapter).
+  Future<void> startPlayQueueForBook(
+    GraphQLClient client,
+    String? playQueueId,
+    String bookId,
+    String? chapterId,
+    String srv,
+  ) async {
+    final pq = await _playQueueService.getOrCreatePlayQueueForBook(
+      client,
+      playQueueId,
+      bookId,
+      chapterId,
+    );
+    if (pq != null) await _startFromPlayQueue(client, pq, srv);
+  }
+
+  /// Starts (or resumes) a podcast: creates a PODCAST play queue of the
+  /// episodes newest-first, starting at [episodeId] (or the newest episode).
+  Future<void> startPlayQueueForPodcast(
+    GraphQLClient client,
+    String? playQueueId,
+    String podcastId,
+    String? episodeId,
+    String srv,
+  ) async {
+    final pq = await _playQueueService.getOrCreatePlayQueueForPodcast(
+      client,
+      playQueueId,
+      podcastId,
+      episodeId,
+    );
+    if (pq != null) await _startFromPlayQueue(client, pq, srv);
+  }
+
   /// Creates a shuffled queue for [albumId] and starts playback.
   Future<void> startAlbumShuffle(
       GraphQLClient client, String srv, String albumId) async {
@@ -591,6 +627,38 @@ class MediaPlayerHandler extends BaseAudioHandler
         mediaType: IsterMediaTypes.track,
       );
       _rememberLastPlayed(srv, t.album.id, t.id);
+    } else if (item.chapter != null) {
+      // Audiobook chapters behave exactly like tracks: audio-only HLS.
+      episode = null;
+      movie = null;
+      album = null;
+      currentTrackId = null;
+      _currentMediaType = IsterMediaTypes.track;
+      final mf = item.chapter?.mediaFile?.firstOrNull;
+      if (mf == null) return;
+      await _openMedia(
+        serverName: srv,
+        mediaUrl: ImageUtil.buildMediaFileUrl(mf,
+                token: token, direct: directPlay, transcode: transcode) ??
+            '',
+        mediaType: IsterMediaTypes.track,
+      );
+    } else if (item.podcastEpisode != null) {
+      // Podcast episodes behave exactly like tracks once downloaded.
+      episode = null;
+      movie = null;
+      album = null;
+      currentTrackId = null;
+      _currentMediaType = IsterMediaTypes.track;
+      final mf = item.podcastEpisode?.mediaFile?.firstOrNull;
+      if (mf == null) return;
+      await _openMedia(
+        serverName: srv,
+        mediaUrl: ImageUtil.buildMediaFileUrl(mf,
+                token: token, direct: directPlay, transcode: transcode) ??
+            '',
+        mediaType: IsterMediaTypes.track,
+      );
     } else if (item.movie != null) {
       movie = item.movie;
       episode = null;
@@ -894,6 +962,8 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// the precondition for opening it in the player.
   bool _itemHasMediaFile(Fragment$fragmentPlayQueue$playQueueItems item) =>
       item.track?.mediaFile?.firstOrNull != null ||
+      item.chapter?.mediaFile?.firstOrNull != null ||
+      item.podcastEpisode?.mediaFile?.firstOrNull != null ||
       item.movie?.mediaFile?.firstOrNull != null ||
       item.episode?.mediaFile?.firstOrNull != null;
 
@@ -964,6 +1034,36 @@ class MediaPlayerHandler extends BaseAudioHandler
         movie = null;
         _currentMediaType = IsterMediaTypes.track;
         final mediaFile = track.mediaFile?.firstOrNull;
+        if (mediaFile == null) return;
+        await _openMedia(
+          serverName: mediaItemId.serverName,
+          mediaUrl: ImageUtil.buildMediaFileUrl(mediaFile, token: StreamTokenService.getToken(mediaItemId.serverName), direct: directPlay, transcode: transcode) ?? '',
+          startTimeInMilliseconds: 0,
+          mediaType: IsterMediaTypes.track,
+        );
+      } else if (queueItem.chapter != null) {
+        // Audiobook chapter: same audio-only handling as a track.
+        episode = null;
+        movie = null;
+        album = null;
+        currentTrackId = null;
+        _currentMediaType = IsterMediaTypes.track;
+        final mediaFile = queueItem.chapter?.mediaFile?.firstOrNull;
+        if (mediaFile == null) return;
+        await _openMedia(
+          serverName: mediaItemId.serverName,
+          mediaUrl: ImageUtil.buildMediaFileUrl(mediaFile, token: StreamTokenService.getToken(mediaItemId.serverName), direct: directPlay, transcode: transcode) ?? '',
+          startTimeInMilliseconds: 0,
+          mediaType: IsterMediaTypes.track,
+        );
+      } else if (queueItem.podcastEpisode != null) {
+        // Podcast episode: same audio-only handling as a track.
+        episode = null;
+        movie = null;
+        album = null;
+        currentTrackId = null;
+        _currentMediaType = IsterMediaTypes.track;
+        final mediaFile = queueItem.podcastEpisode?.mediaFile?.firstOrNull;
         if (mediaFile == null) return;
         await _openMedia(
           serverName: mediaItemId.serverName,
@@ -1118,6 +1218,31 @@ class MediaPlayerHandler extends BaseAudioHandler
               milliseconds:
                   t.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0),
           artUri: artFor(ImageUtil.getImageByType(t.album.images, ImageTypes.cover)),
+        );
+      } else if (e.chapter != null) {
+        final c = e.chapter!;
+        return MediaItem(
+          id: MediaItemId(srv, IsterMediaTypes.track, e.id).toString(),
+          title: MetadataUtil.getTitle(c.metadata) ?? 'Chapter ${c.number}',
+          artist: c.author.name,
+          album: c.book.name,
+          duration: Duration(
+              milliseconds:
+                  c.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0),
+          artUri: artFor(ImageUtil.getImageByType(c.book.images, ImageTypes.cover)),
+        );
+      } else if (e.podcastEpisode != null) {
+        final pe = e.podcastEpisode!;
+        return MediaItem(
+          id: MediaItemId(srv, IsterMediaTypes.track, e.id).toString(),
+          title: MetadataUtil.getTitle(pe.metadata) ?? pe.podcast.title,
+          artist: pe.podcast.author ?? pe.podcast.title,
+          album: pe.podcast.title,
+          duration: Duration(
+              milliseconds:
+                  pe.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0),
+          artUri: artFor(
+              ImageUtil.getImageByType(pe.podcast.images, ImageTypes.cover)),
         );
       } else if (e.movie != null) {
         final m = e.movie!;

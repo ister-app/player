@@ -1,0 +1,6 @@
+query podcastEpisodes($podcastId: ID!, $page: Int, $size: Int) {
+    podcastEpisodes(podcastId: $podcastId, page: $page, size: $size) {
+        content { ...fragmentPodcastEpisode }
+        totalPages totalElements number size
+    }
+}

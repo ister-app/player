@@ -1,0 +1,6 @@
+fragment fragmentPodcast on Podcast {
+    id title author feedUrl active
+    images { ...fragmentImages }
+    metadata { ...fragmentMetadata }
+    rating
+}
