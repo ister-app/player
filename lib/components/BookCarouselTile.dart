@@ -23,6 +23,10 @@ class BookCarouselTile extends StatelessWidget {
   final String serverName;
   final Fragment$fragmentBook book;
 
+  /// Book covers are portrait, roughly 2:3 — grids and carousels size their
+  /// slots with this so the cover isn't cropped into a square.
+  static const double coverAspectRatio = 2 / 3;
+
   @override
   Widget build(BuildContext context) {
     final img = ImageUtil.getImageByType(book.images, ImageTypes.cover);
@@ -47,6 +51,7 @@ class BookCarouselTile extends StatelessWidget {
             token: StreamTokenService.getToken(serverName)),
         blurHash: img?.blurHash,
         placeholderIcon: Icons.menu_book,
+        portraitArtwork: true,
         onTap: () => AutoRouter.of(context).push(BookRoute(bookId: book.id)),
         onLongPress: () => menuController.isOpen
             ? menuController.close()

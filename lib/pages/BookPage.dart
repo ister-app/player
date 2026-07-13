@@ -14,6 +14,7 @@ import 'package:player/utils/ReaderLauncher.dart';
 import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../components/BookCarouselTile.dart';
 import '../components/MusicDetailHero.dart';
 import '../components/RatingStars.dart';
 import '../l10n/app_localizations.dart';
@@ -482,6 +483,8 @@ class _BookPageState extends State<BookPage> with WidgetsBindingObserver {
     return MusicDetailHero(
       imageUrl: imageUrl,
       blurHash: img?.blurHash,
+      placeholderIcon: Icons.menu_book,
+      coverAspectRatio: BookCarouselTile.coverAspectRatio,
       title: book != null
           ? (MetadataUtil.getTitle(book.metadata) ?? book.name)
           : null,

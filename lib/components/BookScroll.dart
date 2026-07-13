@@ -40,7 +40,7 @@ class BookScroll extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
             maxCrossAxisExtent: 300,
-            childAspectRatio: 1.0,
+            childAspectRatio: BookCarouselTile.coverAspectRatio,
             mainAxisSpacing: 0,
             crossAxisSpacing: 0,
           ),

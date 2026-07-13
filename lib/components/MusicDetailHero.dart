@@ -17,6 +17,7 @@ class MusicDetailHero extends StatelessWidget {
     this.onSubtitleTap,
     this.backgroundAlignment = Alignment.center,
     this.placeholderIcon = Icons.music_note,
+    this.coverAspectRatio = 1.0,
   });
 
   final String? imageUrl;
@@ -36,6 +37,10 @@ class MusicDetailHero extends StatelessWidget {
 
   /// Alignment for the blurred backdrop image (artist pages anchor to the top).
   final Alignment backgroundAlignment;
+
+  /// Width/height of the cover card. Square for albums and podcasts, 2:3 for
+  /// book covers. The card keeps its 110 height either way.
+  final double coverAspectRatio;
 
   Widget _coverPlaceholder() => Container(
         color: Colors.grey[900],
@@ -102,7 +107,7 @@ class MusicDetailHero extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: SizedBox(
-                    width: 110,
+                    width: 110 * coverAspectRatio,
                     height: 110,
                     child: imageUrl != null
                         ? CachedNetworkImage(

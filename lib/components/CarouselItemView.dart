@@ -15,6 +15,7 @@ class CarouselItemView extends StatelessWidget {
       this.onLongPress,
       this.onSecondaryTapDown,
       this.placeholderIcon,
+      this.portraitArtwork = false,
       this.autofocus = false});
 
   final String serverName;
@@ -31,6 +32,11 @@ class CarouselItemView extends StatelessWidget {
   /// cover art. When null the tile keeps its plain tinted background.
   final IconData? placeholderIcon;
 
+  /// Set for portrait artwork (book covers): the image fills the tile as-is
+  /// instead of being blown up past the tile's edges, which is what landscape
+  /// backdrops need to cover a square tile.
+  final bool portraitArtwork;
+
   /// Grabs D-pad/keyboard focus when first shown. Set on the first tile of a
   /// landing screen so a TV remote has somewhere to start.
   final bool autofocus;
@@ -44,6 +50,23 @@ class CarouselItemView extends StatelessWidget {
                 size: 64,
                 color: Theme.of(context).colorScheme.onSurfaceVariant))
         : Container();
+    final Widget image = (imageUrl != null && imageUrl != '')
+        ? CachedNetworkImage(
+            placeholder: (context, url) => blurHash != null
+                ? BlurHash(
+                    hash: blurHash!,
+                    optimizationMode: BlurHashOptimizationMode.standard,
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    duration: Duration.zero,
+                  )
+                : Container(),
+            imageUrl: imageUrl!,
+            fit: portraitArtwork ? BoxFit.cover : BoxFit.fitHeight,
+            fadeOutDuration: Duration.zero,
+            fadeInDuration: Duration.zero,
+            errorBuilder: (_, __, ___) => placeholder,
+          )
+        : placeholder;
     return Padding(
         padding: EdgeInsets.all(5.0),
         child: TvFocusable(
@@ -60,26 +83,13 @@ class CarouselItemView extends StatelessWidget {
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
-                    child: OverflowBox(
-                      maxWidth: width * 7 / 8,
-                      minWidth: width * 7 / 8,
-                      child: (imageUrl != null && imageUrl != '')
-                          ? CachedNetworkImage(
-                              placeholder: (context, url) => blurHash != null ? BlurHash(
-                                hash: blurHash!,
-                                optimizationMode:
-                                    BlurHashOptimizationMode.standard,
-                                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                                duration: Duration.zero,
-                              ) : Container(),
-                              imageUrl: imageUrl!,
-                              fit: BoxFit.fitHeight,
-                              fadeOutDuration: Duration.zero,
-                              fadeInDuration: Duration.zero,
-                              errorBuilder: (_, __, ___) => placeholder,
-                            )
-                          : placeholder,
-                    ),
+                    child: portraitArtwork
+                        ? image
+                        : OverflowBox(
+                            maxWidth: width * 7 / 8,
+                            minWidth: width * 7 / 8,
+                            child: image,
+                          ),
                   ),
                 ),
                 Opacity(

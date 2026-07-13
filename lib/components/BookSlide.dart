@@ -41,7 +41,8 @@ class BookSlide extends StatelessWidget {
 
         return ListView.builder(
           scrollDirection: Axis.horizontal,
-          itemExtent: 200.0,
+          // The row is 200 tall, so a 2:3 cover needs ~133 of width.
+          itemExtent: 200.0 * BookCarouselTile.coverAspectRatio,
           itemCount: items.length + placeholderCount,
           itemBuilder: (context, index) {
             if (index < items.length) {
