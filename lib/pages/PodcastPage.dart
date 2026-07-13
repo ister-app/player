@@ -49,9 +49,8 @@ class _PodcastPageState extends State<PodcastPage> {
 
   bool get _hasMoreEpisodes => _totalPages == null || _nextPage < _totalPages!;
 
-  @override
-  void initState() {
-    super.initState();
+  void _scheduleLoadMoreEpisodes() {
+    if (_loadingEpisodes || !_hasMoreEpisodes) return;
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadMoreEpisodes());
   }
 
@@ -258,7 +257,7 @@ class _PodcastPageState extends State<PodcastPage> {
             itemCount: _episodes.length + (_hasMoreEpisodes ? 1 : 0),
             itemBuilder: (context, index) {
               if (index >= _episodes.length) {
-                _loadMoreEpisodes();
+                _scheduleLoadMoreEpisodes();
                 return const Center(
                   child: Padding(
                     padding: EdgeInsets.all(16),
