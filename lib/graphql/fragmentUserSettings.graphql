@@ -1,0 +1,7 @@
+fragment fragmentUserSettings on UserSettings {
+    preferredAudioLanguages
+    preferredSubtitleLanguages
+    directPlay
+    transcode
+    maxVideoHeight
+}

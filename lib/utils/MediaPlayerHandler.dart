@@ -275,8 +275,8 @@ class MediaPlayerHandler extends BaseAudioHandler
       _ensureCommandSubscription();
       currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
-      final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay();
-      final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode();
+      final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay(serverName: newServerName);
+      final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode(serverName: newServerName);
       await _openMedia(
         serverName: newServerName,
         mediaUrl: ImageUtil.buildMediaFileUrl(newEpisode.mediaFile!.first, token: StreamTokenService.getToken(newServerName), direct: directPlay, transcode: transcode) ?? '',
@@ -387,8 +387,8 @@ class MediaPlayerHandler extends BaseAudioHandler
       _ensureCommandSubscription();
       currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
-      final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay();
-      final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode();
+      final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay(serverName: newServerName);
+      final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode(serverName: newServerName);
       await _openMedia(
         serverName: newServerName,
         mediaUrl: ImageUtil.buildMediaFileUrl(newMovie.mediaFile!.first, token: StreamTokenService.getToken(newServerName), direct: directPlay, transcode: transcode) ?? '',
@@ -485,8 +485,8 @@ class MediaPlayerHandler extends BaseAudioHandler
 
       if (currentTrack?.mediaFile != null &&
           currentTrack!.mediaFile!.isNotEmpty) {
-        final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay();
-        final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode();
+        final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay(serverName: newServerName);
+        final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode(serverName: newServerName);
         await _openMedia(
           serverName: newServerName,
           mediaUrl: ImageUtil.buildMediaFileUrl(currentTrack.mediaFile!.first,
@@ -619,8 +619,8 @@ class MediaPlayerHandler extends BaseAudioHandler
   Future<void> _openQueueItem(
       Fragment$fragmentPlayQueue$playQueueItems item, String srv) async {
     currentPlayQueueItem = item;
-    final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay();
-    final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode();
+    final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay(serverName: srv);
+    final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode(serverName: srv);
     final token = StreamTokenService.getToken(srv);
 
     if (item.track != null) {
@@ -1039,8 +1039,8 @@ class MediaPlayerHandler extends BaseAudioHandler
         PlayQueueService().playQueueChanged(playQueue!);
       }
 
-      final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay();
-      final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode();
+      final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay(serverName: mediaItemId.serverName);
+      final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode(serverName: mediaItemId.serverName);
 
       if (queueItem.track != null) {
         final track = queueItem.track!;
@@ -1546,7 +1546,7 @@ class MediaPlayerHandler extends BaseAudioHandler
           debugPrint('[TRACKS_HANDLER] applying audio preference');
           await _selectPreferredTrack<AudioTrack>(
             tracks.audio,
-            LanguagePreferences.getSpokenLanguages,
+            () => LanguagePreferences.getSpokenLanguages(serverName: serverName),
             (t) => _player.setAudioTrack(t),
           );
         }
@@ -1575,7 +1575,7 @@ class MediaPlayerHandler extends BaseAudioHandler
           debugPrint('[TRACKS_HANDLER] applying subtitle preference');
           await _selectPreferredTrack<SubtitleTrack>(
             tracks.subtitle,
-            LanguagePreferences.getSubtitleLanguages,
+            () => LanguagePreferences.getSubtitleLanguages(serverName: serverName),
             (t) => _player.setSubtitleTrack(t),
           );
         }
@@ -1633,8 +1633,8 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// The stream settings media URLs are built with, so the server can
   /// prefetch the next queue item in the same format.
   Future<Input$StreamSettingsInput> _currentStreamSettings() async {
-    final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay();
-    final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode();
+    final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay(serverName: serverName);
+    final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode(serverName: serverName);
     return Input$StreamSettingsInput(
       direct: directPlay,
       transcode: transcode,

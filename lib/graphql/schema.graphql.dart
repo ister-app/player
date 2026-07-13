@@ -149,6 +149,231 @@ class _CopyWithStubImpl$Input$StreamSettingsInput<TRes>
       _res;
 }
 
+class Input$UserSettingsInput {
+  factory Input$UserSettingsInput({
+    required List<String> preferredAudioLanguages,
+    required List<String> preferredSubtitleLanguages,
+    required bool directPlay,
+    required bool transcode,
+    int? maxVideoHeight,
+  }) => Input$UserSettingsInput._({
+    r'preferredAudioLanguages': preferredAudioLanguages,
+    r'preferredSubtitleLanguages': preferredSubtitleLanguages,
+    r'directPlay': directPlay,
+    r'transcode': transcode,
+    if (maxVideoHeight != null) r'maxVideoHeight': maxVideoHeight,
+  });
+
+  Input$UserSettingsInput._(this._$data);
+
+  factory Input$UserSettingsInput.fromJson(Map<String, dynamic> data) {
+    final result$data = <String, dynamic>{};
+    final l$preferredAudioLanguages = data['preferredAudioLanguages'];
+    result$data['preferredAudioLanguages'] =
+        (l$preferredAudioLanguages as List<dynamic>)
+            .map((e) => (e as String))
+            .toList();
+    final l$preferredSubtitleLanguages = data['preferredSubtitleLanguages'];
+    result$data['preferredSubtitleLanguages'] =
+        (l$preferredSubtitleLanguages as List<dynamic>)
+            .map((e) => (e as String))
+            .toList();
+    final l$directPlay = data['directPlay'];
+    result$data['directPlay'] = (l$directPlay as bool);
+    final l$transcode = data['transcode'];
+    result$data['transcode'] = (l$transcode as bool);
+    if (data.containsKey('maxVideoHeight')) {
+      final l$maxVideoHeight = data['maxVideoHeight'];
+      result$data['maxVideoHeight'] = (l$maxVideoHeight as int?);
+    }
+    return Input$UserSettingsInput._(result$data);
+  }
+
+  Map<String, dynamic> _$data;
+
+  List<String> get preferredAudioLanguages =>
+      (_$data['preferredAudioLanguages'] as List<String>);
+
+  List<String> get preferredSubtitleLanguages =>
+      (_$data['preferredSubtitleLanguages'] as List<String>);
+
+  bool get directPlay => (_$data['directPlay'] as bool);
+
+  bool get transcode => (_$data['transcode'] as bool);
+
+  int? get maxVideoHeight => (_$data['maxVideoHeight'] as int?);
+
+  Map<String, dynamic> toJson() {
+    final result$data = <String, dynamic>{};
+    final l$preferredAudioLanguages = preferredAudioLanguages;
+    result$data['preferredAudioLanguages'] = l$preferredAudioLanguages
+        .map((e) => e)
+        .toList();
+    final l$preferredSubtitleLanguages = preferredSubtitleLanguages;
+    result$data['preferredSubtitleLanguages'] = l$preferredSubtitleLanguages
+        .map((e) => e)
+        .toList();
+    final l$directPlay = directPlay;
+    result$data['directPlay'] = l$directPlay;
+    final l$transcode = transcode;
+    result$data['transcode'] = l$transcode;
+    if (_$data.containsKey('maxVideoHeight')) {
+      final l$maxVideoHeight = maxVideoHeight;
+      result$data['maxVideoHeight'] = l$maxVideoHeight;
+    }
+    return result$data;
+  }
+
+  CopyWith$Input$UserSettingsInput<Input$UserSettingsInput> get copyWith =>
+      CopyWith$Input$UserSettingsInput(this, (i) => i);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Input$UserSettingsInput || runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$preferredAudioLanguages = preferredAudioLanguages;
+    final lOther$preferredAudioLanguages = other.preferredAudioLanguages;
+    if (l$preferredAudioLanguages.length !=
+        lOther$preferredAudioLanguages.length) {
+      return false;
+    }
+    for (int i = 0; i < l$preferredAudioLanguages.length; i++) {
+      final l$preferredAudioLanguages$entry = l$preferredAudioLanguages[i];
+      final lOther$preferredAudioLanguages$entry =
+          lOther$preferredAudioLanguages[i];
+      if (l$preferredAudioLanguages$entry !=
+          lOther$preferredAudioLanguages$entry) {
+        return false;
+      }
+    }
+    final l$preferredSubtitleLanguages = preferredSubtitleLanguages;
+    final lOther$preferredSubtitleLanguages = other.preferredSubtitleLanguages;
+    if (l$preferredSubtitleLanguages.length !=
+        lOther$preferredSubtitleLanguages.length) {
+      return false;
+    }
+    for (int i = 0; i < l$preferredSubtitleLanguages.length; i++) {
+      final l$preferredSubtitleLanguages$entry =
+          l$preferredSubtitleLanguages[i];
+      final lOther$preferredSubtitleLanguages$entry =
+          lOther$preferredSubtitleLanguages[i];
+      if (l$preferredSubtitleLanguages$entry !=
+          lOther$preferredSubtitleLanguages$entry) {
+        return false;
+      }
+    }
+    final l$directPlay = directPlay;
+    final lOther$directPlay = other.directPlay;
+    if (l$directPlay != lOther$directPlay) {
+      return false;
+    }
+    final l$transcode = transcode;
+    final lOther$transcode = other.transcode;
+    if (l$transcode != lOther$transcode) {
+      return false;
+    }
+    final l$maxVideoHeight = maxVideoHeight;
+    final lOther$maxVideoHeight = other.maxVideoHeight;
+    if (_$data.containsKey('maxVideoHeight') !=
+        other._$data.containsKey('maxVideoHeight')) {
+      return false;
+    }
+    if (l$maxVideoHeight != lOther$maxVideoHeight) {
+      return false;
+    }
+    return true;
+  }
+
+  @override
+  int get hashCode {
+    final l$preferredAudioLanguages = preferredAudioLanguages;
+    final l$preferredSubtitleLanguages = preferredSubtitleLanguages;
+    final l$directPlay = directPlay;
+    final l$transcode = transcode;
+    final l$maxVideoHeight = maxVideoHeight;
+    return Object.hashAll([
+      Object.hashAll(l$preferredAudioLanguages.map((v) => v)),
+      Object.hashAll(l$preferredSubtitleLanguages.map((v) => v)),
+      l$directPlay,
+      l$transcode,
+      _$data.containsKey('maxVideoHeight') ? l$maxVideoHeight : const {},
+    ]);
+  }
+}
+
+abstract class CopyWith$Input$UserSettingsInput<TRes> {
+  factory CopyWith$Input$UserSettingsInput(
+    Input$UserSettingsInput instance,
+    TRes Function(Input$UserSettingsInput) then,
+  ) = _CopyWithImpl$Input$UserSettingsInput;
+
+  factory CopyWith$Input$UserSettingsInput.stub(TRes res) =
+      _CopyWithStubImpl$Input$UserSettingsInput;
+
+  TRes call({
+    List<String>? preferredAudioLanguages,
+    List<String>? preferredSubtitleLanguages,
+    bool? directPlay,
+    bool? transcode,
+    int? maxVideoHeight,
+  });
+}
+
+class _CopyWithImpl$Input$UserSettingsInput<TRes>
+    implements CopyWith$Input$UserSettingsInput<TRes> {
+  _CopyWithImpl$Input$UserSettingsInput(this._instance, this._then);
+
+  final Input$UserSettingsInput _instance;
+
+  final TRes Function(Input$UserSettingsInput) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? preferredAudioLanguages = _undefined,
+    Object? preferredSubtitleLanguages = _undefined,
+    Object? directPlay = _undefined,
+    Object? transcode = _undefined,
+    Object? maxVideoHeight = _undefined,
+  }) => _then(
+    Input$UserSettingsInput._({
+      ..._instance._$data,
+      if (preferredAudioLanguages != _undefined &&
+          preferredAudioLanguages != null)
+        'preferredAudioLanguages': (preferredAudioLanguages as List<String>),
+      if (preferredSubtitleLanguages != _undefined &&
+          preferredSubtitleLanguages != null)
+        'preferredSubtitleLanguages':
+            (preferredSubtitleLanguages as List<String>),
+      if (directPlay != _undefined && directPlay != null)
+        'directPlay': (directPlay as bool),
+      if (transcode != _undefined && transcode != null)
+        'transcode': (transcode as bool),
+      if (maxVideoHeight != _undefined)
+        'maxVideoHeight': (maxVideoHeight as int?),
+    }),
+  );
+}
+
+class _CopyWithStubImpl$Input$UserSettingsInput<TRes>
+    implements CopyWith$Input$UserSettingsInput<TRes> {
+  _CopyWithStubImpl$Input$UserSettingsInput(this._res);
+
+  TRes _res;
+
+  call({
+    List<String>? preferredAudioLanguages,
+    List<String>? preferredSubtitleLanguages,
+    bool? directPlay,
+    bool? transcode,
+    int? maxVideoHeight,
+  }) => _res;
+}
+
 class Input$CreatePlayQueueInput {
   factory Input$CreatePlayQueueInput({
     required Enum$PlayQueueSourceType sourceType,

@@ -9,8 +9,10 @@ import '../utils/LanguagePreferences.dart';
 class ServerSettingsLanguagePage extends StatefulWidget {
   const ServerSettingsLanguagePage({
     super.key,
-    @PathParam.inherit('serverName') required String serverName,
+    @PathParam.inherit('serverName') required this.serverName,
   });
+
+  final String serverName;
 
   @override
   State<ServerSettingsLanguagePage> createState() =>
@@ -30,8 +32,10 @@ class _ServerSettingsLanguagePageState
   }
 
   Future<void> _loadSavedPreferences() async {
-    final spoken = await LanguagePreferences.getSpokenLanguages();
-    final subtitle = await LanguagePreferences.getSubtitleLanguages();
+    final spoken =
+        await LanguagePreferences.getSpokenLanguages(serverName: widget.serverName);
+    final subtitle =
+        await LanguagePreferences.getSubtitleLanguages(serverName: widget.serverName);
 
     _spokenLanguages
       ..clear()
@@ -42,14 +46,14 @@ class _ServerSettingsLanguagePageState
   }
 
   void _handleSpokenChanged(List<String> newList) {
-    LanguagePreferences.setSpokenLanguages(newList);
+    LanguagePreferences.setSpokenLanguages(newList, serverName: widget.serverName);
     setState(() => _spokenLanguages
       ..clear()
       ..addAll(newList));
   }
 
   void _handleSubtitleChanged(List<String> newList) {
-    LanguagePreferences.setSubtitleLanguages(newList);
+    LanguagePreferences.setSubtitleLanguages(newList, serverName: widget.serverName);
     setState(() => _subtitleLanguages
       ..clear()
       ..addAll(newList));

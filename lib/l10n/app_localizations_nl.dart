@@ -247,6 +247,16 @@ class AppLocalizationsNl extends AppLocalizations {
       'Stream server-side hercoderen (altijd aan voor web)';
 
   @override
+  String get maxQuality => 'Maximale kwaliteit';
+
+  @override
+  String get maxQualityDescription =>
+      'Hoogste kwaliteit die de server voor je klaarzet';
+
+  @override
+  String get qualityAuto => 'Automatisch';
+
+  @override
   String get play => 'Afspelen';
 
   @override

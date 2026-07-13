@@ -530,6 +530,24 @@ abstract class AppLocalizations {
   /// **'Re-encode the stream server-side (always on for web)'**
   String get transcodeDescription;
 
+  /// Title of the maximum video quality picker
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum quality'**
+  String get maxQuality;
+
+  /// Subtitle for the maximum video quality picker
+  ///
+  /// In en, this message translates to:
+  /// **'Highest quality the server prepares for you'**
+  String get maxQualityDescription;
+
+  /// Value of the quality picker meaning: no cap
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic'**
+  String get qualityAuto;
+
   /// Button label to start playback
   ///
   /// In en, this message translates to:

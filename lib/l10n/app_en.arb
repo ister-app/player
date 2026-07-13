@@ -288,6 +288,18 @@
   "@transcodeDescription": {
     "description": "Subtitle for the transcode toggle"
   },
+  "maxQuality": "Maximum quality",
+  "@maxQuality": {
+    "description": "Title of the maximum video quality picker"
+  },
+  "maxQualityDescription": "Highest quality the server prepares for you",
+  "@maxQualityDescription": {
+    "description": "Subtitle for the maximum video quality picker"
+  },
+  "qualityAuto": "Automatic",
+  "@qualityAuto": {
+    "description": "Value of the quality picker meaning: no cap"
+  },
   "play": "Play",
   "@play": {
     "description": "Button label to start playback"

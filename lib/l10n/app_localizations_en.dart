@@ -247,6 +247,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Re-encode the stream server-side (always on for web)';
 
   @override
+  String get maxQuality => 'Maximum quality';
+
+  @override
+  String get maxQualityDescription =>
+      'Highest quality the server prepares for you';
+
+  @override
+  String get qualityAuto => 'Automatic';
+
+  @override
   String get play => 'Play';
 
   @override
