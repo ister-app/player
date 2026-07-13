@@ -560,6 +560,24 @@ abstract class AppLocalizations {
   /// **'Books'**
   String get books;
 
+  /// Podcast overflow menu: sort the episode list newest to oldest
+  ///
+  /// In en, this message translates to:
+  /// **'Newest first'**
+  String get newestFirst;
+
+  /// Podcast overflow menu: sort the episode list oldest to newest
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest first'**
+  String get oldestFirst;
+
+  /// Snackbar shown when saving the podcast episode sort order failed
+  ///
+  /// In en, this message translates to:
+  /// **'Could not change the sort order'**
+  String get sortOrderFailed;
+
   /// Browse category for the artists in a music library (also used in Android Auto)
   ///
   /// In en, this message translates to:

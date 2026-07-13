@@ -1,0 +1,3 @@
+mutation setPodcastEpisodeOrder($podcastId: ID!, $order: SortingOrder!) {
+    setPodcastEpisodeOrder(podcastId: $podcastId, order: $order)
+}

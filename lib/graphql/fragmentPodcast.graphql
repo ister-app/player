@@ -3,4 +3,5 @@ fragment fragmentPodcast on Podcast {
     images { ...fragmentImages }
     metadata { ...fragmentMetadata }
     rating
+    episodeOrder
 }

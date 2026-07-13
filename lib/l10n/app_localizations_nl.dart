@@ -262,6 +262,15 @@ class AppLocalizationsNl extends AppLocalizations {
   String get books => 'Boeken';
 
   @override
+  String get newestFirst => 'Nieuwste eerst';
+
+  @override
+  String get oldestFirst => 'Oudste eerst';
+
+  @override
+  String get sortOrderFailed => 'Kon de sorteervolgorde niet wijzigen';
+
+  @override
   String get artists => 'Artiesten';
 
   @override

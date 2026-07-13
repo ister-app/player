@@ -1,6 +1,7 @@
 import 'fragmentImages.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
 import 'package:gql/ast.dart';
+import 'schema.graphql.dart';
 
 class Fragment$fragmentPodcast {
   Fragment$fragmentPodcast({
@@ -12,6 +13,7 @@ class Fragment$fragmentPodcast {
     this.images,
     this.metadata,
     this.rating,
+    required this.episodeOrder,
     this.$__typename = 'Podcast',
   });
 
@@ -24,6 +26,7 @@ class Fragment$fragmentPodcast {
     final l$images = json['images'];
     final l$metadata = json['metadata'];
     final l$rating = json['rating'];
+    final l$episodeOrder = json['episodeOrder'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentPodcast(
       id: (l$id as String),
@@ -44,6 +47,7 @@ class Fragment$fragmentPodcast {
           )
           .toList(),
       rating: (l$rating as int?),
+      episodeOrder: fromJson$Enum$SortingOrder((l$episodeOrder as String)),
       $__typename: (l$$__typename as String),
     );
   }
@@ -63,6 +67,8 @@ class Fragment$fragmentPodcast {
   final List<Fragment$fragmentMetadata>? metadata;
 
   final int? rating;
+
+  final Enum$SortingOrder episodeOrder;
 
   final String $__typename;
 
@@ -84,6 +90,8 @@ class Fragment$fragmentPodcast {
     _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
     final l$rating = rating;
     _resultData['rating'] = l$rating;
+    final l$episodeOrder = episodeOrder;
+    _resultData['episodeOrder'] = toJson$Enum$SortingOrder(l$episodeOrder);
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -99,6 +107,7 @@ class Fragment$fragmentPodcast {
     final l$images = images;
     final l$metadata = metadata;
     final l$rating = rating;
+    final l$episodeOrder = episodeOrder;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
@@ -109,6 +118,7 @@ class Fragment$fragmentPodcast {
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$rating,
+      l$episodeOrder,
       l$$__typename,
     ]);
   }
@@ -184,6 +194,11 @@ class Fragment$fragmentPodcast {
     if (l$rating != lOther$rating) {
       return false;
     }
+    final l$episodeOrder = episodeOrder;
+    final lOther$episodeOrder = other.episodeOrder;
+    if (l$episodeOrder != lOther$episodeOrder) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -217,6 +232,7 @@ abstract class CopyWith$Fragment$fragmentPodcast<TRes> {
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
     int? rating,
+    Enum$SortingOrder? episodeOrder,
     String? $__typename,
   });
   TRes images(
@@ -252,6 +268,7 @@ class _CopyWithImpl$Fragment$fragmentPodcast<TRes>
     Object? images = _undefined,
     Object? metadata = _undefined,
     Object? rating = _undefined,
+    Object? episodeOrder = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentPodcast(
@@ -273,6 +290,9 @@ class _CopyWithImpl$Fragment$fragmentPodcast<TRes>
           ? _instance.metadata
           : (metadata as List<Fragment$fragmentMetadata>?),
       rating: rating == _undefined ? _instance.rating : (rating as int?),
+      episodeOrder: episodeOrder == _undefined || episodeOrder == null
+          ? _instance.episodeOrder
+          : (episodeOrder as Enum$SortingOrder),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -321,6 +341,7 @@ class _CopyWithStubImpl$Fragment$fragmentPodcast<TRes>
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
     int? rating,
+    Enum$SortingOrder? episodeOrder,
     String? $__typename,
   }) => _res;
 
@@ -416,6 +437,13 @@ const fragmentDefinitionfragmentPodcast = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'rating'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'episodeOrder'),
         alias: null,
         arguments: [],
         directives: [],

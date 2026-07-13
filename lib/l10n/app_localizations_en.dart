@@ -262,6 +262,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get books => 'Books';
 
   @override
+  String get newestFirst => 'Newest first';
+
+  @override
+  String get oldestFirst => 'Oldest first';
+
+  @override
+  String get sortOrderFailed => 'Could not change the sort order';
+
+  @override
   String get artists => 'Artists';
 
   @override

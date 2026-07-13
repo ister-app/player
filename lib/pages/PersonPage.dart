@@ -239,7 +239,7 @@ class PersonPage extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                     maxCrossAxisExtent: 300,
-                    childAspectRatio: 1.0,
+                    childAspectRatio: BookCarouselTile.coverAspectRatio,
                     mainAxisSpacing: 0,
                     crossAxisSpacing: 0,
                   ),

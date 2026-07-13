@@ -2,16 +2,19 @@ import 'fragmentMediafiles.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
 import 'fragmentPodcastEpisode.graphql.dart';
 import 'package:gql/ast.dart';
+import 'schema.graphql.dart';
 
 class Variables$Query$podcastEpisodes {
   factory Variables$Query$podcastEpisodes({
     required String podcastId,
     int? page,
     int? size,
+    Enum$SortingOrder? sortingOrder,
   }) => Variables$Query$podcastEpisodes._({
     r'podcastId': podcastId,
     if (page != null) r'page': page,
     if (size != null) r'size': size,
+    if (sortingOrder != null) r'sortingOrder': sortingOrder,
   });
 
   Variables$Query$podcastEpisodes._(this._$data);
@@ -28,6 +31,12 @@ class Variables$Query$podcastEpisodes {
       final l$size = data['size'];
       result$data['size'] = (l$size as int?);
     }
+    if (data.containsKey('sortingOrder')) {
+      final l$sortingOrder = data['sortingOrder'];
+      result$data['sortingOrder'] = l$sortingOrder == null
+          ? null
+          : fromJson$Enum$SortingOrder((l$sortingOrder as String));
+    }
     return Variables$Query$podcastEpisodes._(result$data);
   }
 
@@ -38,6 +47,9 @@ class Variables$Query$podcastEpisodes {
   int? get page => (_$data['page'] as int?);
 
   int? get size => (_$data['size'] as int?);
+
+  Enum$SortingOrder? get sortingOrder =>
+      (_$data['sortingOrder'] as Enum$SortingOrder?);
 
   Map<String, dynamic> toJson() {
     final result$data = <String, dynamic>{};
@@ -50,6 +62,12 @@ class Variables$Query$podcastEpisodes {
     if (_$data.containsKey('size')) {
       final l$size = size;
       result$data['size'] = l$size;
+    }
+    if (_$data.containsKey('sortingOrder')) {
+      final l$sortingOrder = sortingOrder;
+      result$data['sortingOrder'] = l$sortingOrder == null
+          ? null
+          : toJson$Enum$SortingOrder(l$sortingOrder);
     }
     return result$data;
   }
@@ -87,6 +105,15 @@ class Variables$Query$podcastEpisodes {
     if (l$size != lOther$size) {
       return false;
     }
+    final l$sortingOrder = sortingOrder;
+    final lOther$sortingOrder = other.sortingOrder;
+    if (_$data.containsKey('sortingOrder') !=
+        other._$data.containsKey('sortingOrder')) {
+      return false;
+    }
+    if (l$sortingOrder != lOther$sortingOrder) {
+      return false;
+    }
     return true;
   }
 
@@ -95,10 +122,12 @@ class Variables$Query$podcastEpisodes {
     final l$podcastId = podcastId;
     final l$page = page;
     final l$size = size;
+    final l$sortingOrder = sortingOrder;
     return Object.hashAll([
       l$podcastId,
       _$data.containsKey('page') ? l$page : const {},
       _$data.containsKey('size') ? l$size : const {},
+      _$data.containsKey('sortingOrder') ? l$sortingOrder : const {},
     ]);
   }
 }
@@ -112,7 +141,12 @@ abstract class CopyWith$Variables$Query$podcastEpisodes<TRes> {
   factory CopyWith$Variables$Query$podcastEpisodes.stub(TRes res) =
       _CopyWithStubImpl$Variables$Query$podcastEpisodes;
 
-  TRes call({String? podcastId, int? page, int? size});
+  TRes call({
+    String? podcastId,
+    int? page,
+    int? size,
+    Enum$SortingOrder? sortingOrder,
+  });
 }
 
 class _CopyWithImpl$Variables$Query$podcastEpisodes<TRes>
@@ -129,6 +163,7 @@ class _CopyWithImpl$Variables$Query$podcastEpisodes<TRes>
     Object? podcastId = _undefined,
     Object? page = _undefined,
     Object? size = _undefined,
+    Object? sortingOrder = _undefined,
   }) => _then(
     Variables$Query$podcastEpisodes._({
       ..._instance._$data,
@@ -136,6 +171,8 @@ class _CopyWithImpl$Variables$Query$podcastEpisodes<TRes>
         'podcastId': (podcastId as String),
       if (page != _undefined) 'page': (page as int?),
       if (size != _undefined) 'size': (size as int?),
+      if (sortingOrder != _undefined)
+        'sortingOrder': (sortingOrder as Enum$SortingOrder?),
     }),
   );
 }
@@ -146,7 +183,12 @@ class _CopyWithStubImpl$Variables$Query$podcastEpisodes<TRes>
 
   TRes _res;
 
-  call({String? podcastId, int? page, int? size}) => _res;
+  call({
+    String? podcastId,
+    int? page,
+    int? size,
+    Enum$SortingOrder? sortingOrder,
+  }) => _res;
 }
 
 class Query$podcastEpisodes {
@@ -301,6 +343,15 @@ const documentNodeQuerypodcastEpisodes = DocumentNode(
           defaultValue: DefaultValueNode(value: null),
           directives: [],
         ),
+        VariableDefinitionNode(
+          variable: VariableNode(name: NameNode(value: 'sortingOrder')),
+          type: NamedTypeNode(
+            name: NameNode(value: 'SortingOrder'),
+            isNonNull: false,
+          ),
+          defaultValue: DefaultValueNode(value: null),
+          directives: [],
+        ),
       ],
       directives: [],
       selectionSet: SelectionSetNode(
@@ -320,6 +371,10 @@ const documentNodeQuerypodcastEpisodes = DocumentNode(
               ArgumentNode(
                 name: NameNode(value: 'size'),
                 value: VariableNode(name: NameNode(value: 'size')),
+              ),
+              ArgumentNode(
+                name: NameNode(value: 'sortingOrder'),
+                value: VariableNode(name: NameNode(value: 'sortingOrder')),
               ),
             ],
             directives: [],

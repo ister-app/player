@@ -7,6 +7,7 @@ import 'package:player/graphql/fragmentPodcastEpisode.graphql.dart';
 import 'package:player/graphql/podcastById.graphql.dart';
 import 'package:player/graphql/podcastEpisodesQuery.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
+import 'package:player/graphql/setPodcastEpisodeOrder.graphql.dart';
 import 'package:player/graphql/unsubscribePodcast.graphql.dart';
 import 'package:player/utils/DurationUtil.dart';
 import 'package:player/utils/ImageTypes.dart';
@@ -47,6 +48,12 @@ class _PodcastPageState extends State<PodcastPage> {
   int? _totalPages;
   bool _loadingEpisodes = false;
 
+  /// The user's episode order, as stored on the server. Null until the podcast query answers;
+  /// the episode query then falls back to the same stored order, so the first page is right
+  /// either way. A local choice wins over a later server value while its save is in flight.
+  Enum$SortingOrder? _order;
+  bool _savingOrder = false;
+
   bool get _hasMoreEpisodes => _totalPages == null || _nextPage < _totalPages!;
 
   void _scheduleLoadMoreEpisodes() {
@@ -60,7 +67,12 @@ class _PodcastPageState extends State<PodcastPage> {
     final client = GraphQLProvider.of(context).value;
     final result = await client.query(QueryOptions(
       document: documentNodeQuerypodcastEpisodes,
-      variables: {'podcastId': widget.podcastId, 'page': _nextPage, 'size': _pageSize},
+      variables: {
+        'podcastId': widget.podcastId,
+        'page': _nextPage,
+        'size': _pageSize,
+        'sortingOrder': _order?.name,
+      },
       fetchPolicy: FetchPolicy.networkOnly,
     ));
     if (!mounted) return;
@@ -85,6 +97,40 @@ class _PodcastPageState extends State<PodcastPage> {
       _totalPages = null;
     });
     await _loadMoreEpisodes();
+  }
+
+  /// Stores the order on the server (so every client of this user follows it) and reloads the
+  /// list from page 0 — [_refreshEpisodes] clears the accumulated pages, which it has to: pages
+  /// in the old and the new order must never end up in the same list.
+  Future<void> _setOrder(BuildContext context, Enum$SortingOrder order) async {
+    if (order == _order) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final loc = AppLocalizations.of(context)!;
+    final client = GraphQLProvider.of(context).value;
+    final previous = _order;
+
+    setState(() {
+      _order = order;
+      _savingOrder = true;
+    });
+    await _refreshEpisodes();
+
+    final result = await client.mutate(MutationOptions(
+      document: documentNodeMutationsetPodcastEpisodeOrder,
+      variables: {'podcastId': widget.podcastId, 'order': order.name},
+    ));
+    if (!mounted) return;
+    if (result.hasException) {
+      LoggerService().logger.e(result.exception);
+      setState(() {
+        _order = previous;
+        _savingOrder = false;
+      });
+      messenger.showSnackBar(SnackBar(content: Text(loc.sortOrderFailed)));
+      await _refreshEpisodes();
+      return;
+    }
+    setState(() => _savingOrder = false);
   }
 
   void _play(BuildContext context, {String? episodeId}) {
@@ -147,6 +193,10 @@ class _PodcastPageState extends State<PodcastPage> {
         }
 
         _podcast = Query$podcastById.fromJson(result.data!).podcastById;
+        // Adopt the stored order, unless the user just picked one that is still being saved.
+        if (!_savingOrder) {
+          _order = _podcast?.episodeOrder ?? _order;
+        }
         return Scaffold(body: _buildContent());
       },
     );
@@ -171,6 +221,10 @@ class _PodcastPageState extends State<PodcastPage> {
               if (podcast != null)
                 MenuAnchor(
                   menuChildren: [
+                    _orderMenuItem(
+                        context, loc.newestFirst, Enum$SortingOrder.DESCENDING),
+                    _orderMenuItem(
+                        context, loc.oldestFirst, Enum$SortingOrder.ASCENDING),
                     MenuItemButton(
                       onPressed: () => _unsubscribe(context),
                       child: ListTile(
@@ -274,6 +328,17 @@ class _PodcastPageState extends State<PodcastPage> {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _orderMenuItem(
+      BuildContext context, String label, Enum$SortingOrder order) {
+    return MenuItemButton(
+      onPressed: () => _setOrder(context, order),
+      child: ListTile(
+        leading: Icon(_order == order ? Icons.check : Icons.sort),
+        title: Text(label),
       ),
     );
   }

@@ -308,6 +308,18 @@
   "@books": {
     "description": "Section header for the list of books on a person page"
   },
+  "newestFirst": "Newest first",
+  "@newestFirst": {
+    "description": "Podcast overflow menu: sort the episode list newest to oldest"
+  },
+  "oldestFirst": "Oldest first",
+  "@oldestFirst": {
+    "description": "Podcast overflow menu: sort the episode list oldest to newest"
+  },
+  "sortOrderFailed": "Could not change the sort order",
+  "@sortOrderFailed": {
+    "description": "Snackbar shown when saving the podcast episode sort order failed"
+  },
   "artists": "Artists",
   "@artists": {
     "description": "Browse category for the artists in a music library (also used in Android Auto)"
