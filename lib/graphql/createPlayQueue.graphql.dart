@@ -5,6 +5,7 @@ import 'fragmentMediafiles.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
 import 'fragmentMovie.graphql.dart';
 import 'fragmentPlayQueue.graphql.dart';
+import 'fragmentWatchStatus.graphql.dart';
 import 'package:gql/ast.dart';
 import 'schema.graphql.dart';
 
@@ -294,5 +295,6 @@ const documentNodeMutationcreatePlayQueue = DocumentNode(
     fragmentDefinitionfragmentMediaFiles,
     fragmentDefinitionfragmentCastMember,
     fragmentDefinitionfragmentMovie,
+    fragmentDefinitionfragmentWatchStatus,
   ],
 );

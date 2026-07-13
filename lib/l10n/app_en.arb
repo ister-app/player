@@ -304,6 +304,10 @@
   "@albums": {
     "description": "Section header for the list of albums on an artist page"
   },
+  "books": "Books",
+  "@books": {
+    "description": "Section header for the list of books on a person page"
+  },
   "artists": "Artists",
   "@artists": {
     "description": "Browse category for the artists in a music library (also used in Android Auto)"
@@ -374,6 +378,16 @@
   "albumCount": "{count, plural, =1{1 album} other{{count} albums}}",
   "@albumCount": {
     "description": "Number of albums by a person, shown in the person page hero subtitle",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "bookCount": "{count, plural, =1{1 book} other{{count} books}}",
+  "@bookCount": {
+    "description": "Number of books by a person, shown in the person page hero subtitle",
     "placeholders": {
       "count": {
         "type": "int",

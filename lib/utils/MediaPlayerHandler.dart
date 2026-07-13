@@ -25,6 +25,7 @@ import '../graphql/fragmentAlbum.graphql.dart';
 import '../graphql/fragmentEpisode.graphql.dart';
 import '../graphql/fragmentImages.graphql.dart';
 import '../graphql/fragmentMovie.graphql.dart';
+import '../graphql/fragmentWatchStatus.graphql.dart';
 import '../graphql/fragmentPlayQueue.graphql.dart';
 import '../graphql/playbackCommandsSubscription.graphql.dart';
 import '../graphql/schema.graphql.dart';
@@ -306,6 +307,17 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   int? get _movieStartTimeMs {
     final ws = movie?.watchStatus;
+    if (ws != null && ws.isNotEmpty && !ws.first.watched) {
+      return ws.first.progressInMilliseconds;
+    }
+    return null;
+  }
+
+  /// Resume position for a long-form audio item (podcast episode, audiobook
+  /// chapter): the recorded progress, unless it already played to the end.
+  /// Music tracks intentionally have no resume — they always start at zero.
+  static int? _resumeMs(List<Fragment$fragmentWatchStatus>? watchStatus) {
+    final ws = watchStatus;
     if (ws != null && ws.isNotEmpty && !ws.first.watched) {
       return ws.first.progressInMilliseconds;
     }
@@ -606,6 +618,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// movie / track) to match. Mirrors the per-type open in [skipToQueueItem].
   Future<void> _openQueueItem(
       Fragment$fragmentPlayQueue$playQueueItems item, String srv) async {
+    currentPlayQueueItem = item;
     final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay();
     final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode();
     final token = StreamTokenService.getToken(srv);
@@ -641,6 +654,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         mediaUrl: ImageUtil.buildMediaFileUrl(mf,
                 token: token, direct: directPlay, transcode: transcode) ??
             '',
+        startTimeInMilliseconds: _resumeMs(item.chapter?.watchStatus),
         mediaType: IsterMediaTypes.track,
       );
     } else if (item.podcastEpisode != null) {
@@ -657,6 +671,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         mediaUrl: ImageUtil.buildMediaFileUrl(mf,
                 token: token, direct: directPlay, transcode: transcode) ??
             '',
+        startTimeInMilliseconds: _resumeMs(item.podcastEpisode?.watchStatus),
         mediaType: IsterMediaTypes.track,
       );
     } else if (item.movie != null) {
@@ -1053,7 +1068,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         await _openMedia(
           serverName: mediaItemId.serverName,
           mediaUrl: ImageUtil.buildMediaFileUrl(mediaFile, token: StreamTokenService.getToken(mediaItemId.serverName), direct: directPlay, transcode: transcode) ?? '',
-          startTimeInMilliseconds: 0,
+          startTimeInMilliseconds: _resumeMs(queueItem.chapter?.watchStatus),
           mediaType: IsterMediaTypes.track,
         );
       } else if (queueItem.podcastEpisode != null) {
@@ -1068,7 +1083,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         await _openMedia(
           serverName: mediaItemId.serverName,
           mediaUrl: ImageUtil.buildMediaFileUrl(mediaFile, token: StreamTokenService.getToken(mediaItemId.serverName), direct: directPlay, transcode: transcode) ?? '',
-          startTimeInMilliseconds: 0,
+          startTimeInMilliseconds: _resumeMs(queueItem.podcastEpisode?.watchStatus),
           mediaType: IsterMediaTypes.track,
         );
       } else if (queueItem.movie != null) {
@@ -1678,13 +1693,18 @@ class MediaPlayerHandler extends BaseAudioHandler
     final pq = playQueue;
     if (pq == null || client == null) return;
 
-    String? itemId;
-    if (episode != null) {
-      itemId = _playQueueService.getPlayQueueItemId(pq, episode!.id);
-    } else if (movie != null) {
-      itemId = _playQueueService.getMoviePlayQueueItemId(pq, movie!.id);
-    } else if (currentTrackId != null) {
-      itemId = _playQueueService.getTrackPlayQueueItemId(pq, currentTrackId!);
+    // The current queue item is the item id; chapters and podcast episodes have
+    // no typed handler field to reconstruct it from (episode/movie/track are all
+    // null for them), so they would never sync at all if we went by media type.
+    String? itemId = currentPlayQueueItem?.id;
+    if (itemId == null) {
+      if (episode != null) {
+        itemId = _playQueueService.getPlayQueueItemId(pq, episode!.id);
+      } else if (movie != null) {
+        itemId = _playQueueService.getMoviePlayQueueItemId(pq, movie!.id);
+      } else if (currentTrackId != null) {
+        itemId = _playQueueService.getTrackPlayQueueItemId(pq, currentTrackId!);
+      }
     }
     if (itemId == null) return;
 

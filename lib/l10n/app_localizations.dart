@@ -554,6 +554,12 @@ abstract class AppLocalizations {
   /// **'Albums'**
   String get albums;
 
+  /// Section header for the list of books on a person page
+  ///
+  /// In en, this message translates to:
+  /// **'Books'**
+  String get books;
+
   /// Browse category for the artists in a music library (also used in Android Auto)
   ///
   /// In en, this message translates to:
@@ -643,6 +649,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 album} other{{count} albums}}'**
   String albumCount(int count);
+
+  /// Number of books by a person, shown in the person page hero subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 book} other{{count} books}}'**
+  String bookCount(int count);
 
   /// Number of movies a person appears in, shown in the person page hero subtitle
   ///

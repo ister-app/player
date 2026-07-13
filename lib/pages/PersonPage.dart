@@ -16,6 +16,7 @@ import 'package:player/utils/MetadataUtil.dart';
 import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../components/BookCarouselTile.dart';
 import '../components/CarouselItemView.dart';
 import '../components/MusicDetailHero.dart';
 import '../l10n/app_localizations.dart';
@@ -79,9 +80,11 @@ class PersonPage extends StatelessWidget {
       BuildContext context, Query$artistById$artistById? artist) {
     final loc = AppLocalizations.of(context)!;
     final albums = artist?.albums ?? [];
+    final books = artist?.books ?? [];
     final credits = artist?.credits ?? [];
     final description = artist != null ? MetadataUtil.getDescription(artist.metadata) : null;
     final hasAlbums = albums.isNotEmpty;
+    final hasBooks = books.isNotEmpty;
 
     return CustomScrollView(
       slivers: [
@@ -185,22 +188,7 @@ class PersonPage extends StatelessWidget {
               ),
             ),
           ),
-        if (hasAlbums)
-        SliverToBoxAdapter(
-          child: Center(
-            child: Container(
-              width: double.infinity,
-              constraints: const BoxConstraints(maxWidth: 1600),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                child: Text(
-                  loc.albums,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ),
-            ),
-          ),
-        ),
+        if (hasAlbums) _sectionHeader(context, loc.albums),
         if (hasAlbums)
         SliverToBoxAdapter(
           child: Center(
@@ -238,8 +226,53 @@ class PersonPage extends StatelessWidget {
             ),
           ),
         ),
+        if (hasBooks) ...[
+          _sectionHeader(context, loc.books),
+          SliverToBoxAdapter(
+            child: Center(
+              child: Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(maxWidth: 1600),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.zero,
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 300,
+                    childAspectRatio: 1.0,
+                    mainAxisSpacing: 0,
+                    crossAxisSpacing: 0,
+                  ),
+                  itemCount: books.length,
+                  itemBuilder: (context, index) => BookCarouselTile(
+                    serverName: serverName,
+                    book: books[index],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
         if (credits.isNotEmpty) _buildFilmography(context, loc, credits),
       ],
+    );
+  }
+
+  Widget _sectionHeader(BuildContext context, String title) {
+    return SliverToBoxAdapter(
+      child: Center(
+        child: Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(maxWidth: 1600),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -506,6 +539,7 @@ class PersonPage extends StatelessWidget {
   String? _heroSubtitle(
       AppLocalizations loc, Query$artistById$artistById artist) {
     final albumCount = artist.albums?.length ?? 0;
+    final bookCount = artist.books?.length ?? 0;
 
     // Count distinct movies and shows across the credits, mirroring how the
     // filmography merges episode credits back onto their show.
@@ -526,6 +560,7 @@ class PersonPage extends StatelessWidget {
 
     final parts = <String>[
       if (albumCount > 0) loc.albumCount(albumCount),
+      if (bookCount > 0) loc.bookCount(bookCount),
       if (movieIds.isNotEmpty) loc.movieCount(movieIds.length),
       if (showIds.isNotEmpty) loc.showCount(showIds.length),
     ];

@@ -4,6 +4,7 @@ query artistById($id: ID) {
         images { ...fragmentImages }
         metadata { ...fragmentMetadata }
         albums { ...fragmentAlbum }
+        books { ...fragmentBook }
         credits { ...fragmentPersonCredit }
     }
 }

@@ -52,8 +52,33 @@ class BookPage extends StatefulWidget {
   State<BookPage> createState() => _BookPageState();
 }
 
-class _BookPageState extends State<BookPage> {
+class _BookPageState extends State<BookPage> with WidgetsBindingObserver {
   Query$bookById$bookById? _book;
+  VoidCallback? _refetch;
+  // The reader runs outside this app (in-app browser view / external browser),
+  // so it writes the new position while this page is backgrounded. Refetch when
+  // we come back, or the reading bar and the listening resume point stay stale.
+  bool _readerOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _readerOpen) {
+      _readerOpen = false;
+      _refetch?.call();
+    }
+  }
 
   List<Fragment$fragmentChapter> get _chapters => _book?.chapters ?? [];
 
@@ -198,7 +223,9 @@ class _BookPageState extends State<BookPage> {
     );
     if (!opened) {
       messenger.showSnackBar(SnackBar(content: Text(loc.couldNotOpenReader)));
+      return;
     }
+    _readerOpen = true;
   }
 
   @override
@@ -211,6 +238,7 @@ class _BookPageState extends State<BookPage> {
       ),
       builder: (QueryResult result,
           {VoidCallback? refetch, FetchMore? fetchMore}) {
+        _refetch = refetch;
         if (result.hasException) {
           return Scaffold(
             appBar: AppBar(),

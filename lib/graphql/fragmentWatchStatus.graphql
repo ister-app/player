@@ -1,0 +1,3 @@
+fragment fragmentWatchStatus on WatchStatus {
+    id playQueueItemId progressInMilliseconds watched
+}

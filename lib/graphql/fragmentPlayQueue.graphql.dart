@@ -4,6 +4,7 @@ import 'fragmentImages.graphql.dart';
 import 'fragmentMediafiles.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
 import 'fragmentMovie.graphql.dart';
+import 'fragmentWatchStatus.graphql.dart';
 import 'package:gql/ast.dart';
 import 'schema.graphql.dart';
 
@@ -702,6 +703,27 @@ const fragmentDefinitionfragmentPlayQueue = FragmentDefinitionNode(
                     ),
                   ),
                   FieldNode(
+                    name: NameNode(value: 'watchStatus'),
+                    alias: null,
+                    arguments: [],
+                    directives: [],
+                    selectionSet: SelectionSetNode(
+                      selections: [
+                        FragmentSpreadNode(
+                          name: NameNode(value: 'fragmentWatchStatus'),
+                          directives: [],
+                        ),
+                        FieldNode(
+                          name: NameNode(value: '__typename'),
+                          alias: null,
+                          arguments: [],
+                          directives: [],
+                          selectionSet: null,
+                        ),
+                      ],
+                    ),
+                  ),
+                  FieldNode(
                     name: NameNode(value: '__typename'),
                     alias: null,
                     arguments: [],
@@ -834,6 +856,27 @@ const fragmentDefinitionfragmentPlayQueue = FragmentDefinitionNode(
                     ),
                   ),
                   FieldNode(
+                    name: NameNode(value: 'watchStatus'),
+                    alias: null,
+                    arguments: [],
+                    directives: [],
+                    selectionSet: SelectionSetNode(
+                      selections: [
+                        FragmentSpreadNode(
+                          name: NameNode(value: 'fragmentWatchStatus'),
+                          directives: [],
+                        ),
+                        FieldNode(
+                          name: NameNode(value: '__typename'),
+                          alias: null,
+                          arguments: [],
+                          directives: [],
+                          selectionSet: null,
+                        ),
+                      ],
+                    ),
+                  ),
+                  FieldNode(
                     name: NameNode(value: '__typename'),
                     alias: null,
                     arguments: [],
@@ -872,6 +915,7 @@ const documentNodeFragmentfragmentPlayQueue = DocumentNode(
     fragmentDefinitionfragmentMediaFiles,
     fragmentDefinitionfragmentCastMember,
     fragmentDefinitionfragmentMovie,
+    fragmentDefinitionfragmentWatchStatus,
   ],
 );
 
@@ -1967,6 +2011,7 @@ class Fragment$fragmentPlayQueue$playQueueItems$chapter {
     required this.book,
     this.metadata,
     this.mediaFile,
+    this.watchStatus,
     this.$__typename = 'Chapter',
   });
 
@@ -1979,6 +2024,7 @@ class Fragment$fragmentPlayQueue$playQueueItems$chapter {
     final l$book = json['book'];
     final l$metadata = json['metadata'];
     final l$mediaFile = json['mediaFile'];
+    final l$watchStatus = json['watchStatus'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentPlayQueue$playQueueItems$chapter(
       id: (l$id as String),
@@ -2002,6 +2048,13 @@ class Fragment$fragmentPlayQueue$playQueueItems$chapter {
             ),
           )
           .toList(),
+      watchStatus: (l$watchStatus as List<dynamic>?)
+          ?.map(
+            (e) => Fragment$fragmentWatchStatus.fromJson(
+              (e as Map<String, dynamic>),
+            ),
+          )
+          .toList(),
       $__typename: (l$$__typename as String),
     );
   }
@@ -2017,6 +2070,8 @@ class Fragment$fragmentPlayQueue$playQueueItems$chapter {
   final List<Fragment$fragmentMetadata>? metadata;
 
   final List<Fragment$fragmentMediaFiles>? mediaFile;
+
+  final List<Fragment$fragmentWatchStatus>? watchStatus;
 
   final String $__typename;
 
@@ -2034,6 +2089,8 @@ class Fragment$fragmentPlayQueue$playQueueItems$chapter {
     _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
     final l$mediaFile = mediaFile;
     _resultData['mediaFile'] = l$mediaFile?.map((e) => e.toJson()).toList();
+    final l$watchStatus = watchStatus;
+    _resultData['watchStatus'] = l$watchStatus?.map((e) => e.toJson()).toList();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -2047,6 +2104,7 @@ class Fragment$fragmentPlayQueue$playQueueItems$chapter {
     final l$book = book;
     final l$metadata = metadata;
     final l$mediaFile = mediaFile;
+    final l$watchStatus = watchStatus;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
@@ -2055,6 +2113,9 @@ class Fragment$fragmentPlayQueue$playQueueItems$chapter {
       l$book,
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$mediaFile == null ? null : Object.hashAll(l$mediaFile.map((v) => v)),
+      l$watchStatus == null
+          ? null
+          : Object.hashAll(l$watchStatus.map((v) => v)),
       l$$__typename,
     ]);
   }
@@ -2120,6 +2181,22 @@ class Fragment$fragmentPlayQueue$playQueueItems$chapter {
     } else if (l$mediaFile != lOther$mediaFile) {
       return false;
     }
+    final l$watchStatus = watchStatus;
+    final lOther$watchStatus = other.watchStatus;
+    if (l$watchStatus != null && lOther$watchStatus != null) {
+      if (l$watchStatus.length != lOther$watchStatus.length) {
+        return false;
+      }
+      for (int i = 0; i < l$watchStatus.length; i++) {
+        final l$watchStatus$entry = l$watchStatus[i];
+        final lOther$watchStatus$entry = lOther$watchStatus[i];
+        if (l$watchStatus$entry != lOther$watchStatus$entry) {
+          return false;
+        }
+      }
+    } else if (l$watchStatus != lOther$watchStatus) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -2159,6 +2236,7 @@ abstract class CopyWith$Fragment$fragmentPlayQueue$playQueueItems$chapter<
     Fragment$fragmentPlayQueue$playQueueItems$chapter$book? book,
     List<Fragment$fragmentMetadata>? metadata,
     List<Fragment$fragmentMediaFiles>? mediaFile,
+    List<Fragment$fragmentWatchStatus>? watchStatus,
     String? $__typename,
   });
   CopyWith$Fragment$fragmentPlayQueue$playQueueItems$chapter$author<TRes>
@@ -2175,6 +2253,14 @@ abstract class CopyWith$Fragment$fragmentPlayQueue$playQueueItems$chapter<
     Iterable<Fragment$fragmentMediaFiles>? Function(
       Iterable<
         CopyWith$Fragment$fragmentMediaFiles<Fragment$fragmentMediaFiles>
+      >?,
+    )
+    _fn,
+  );
+  TRes watchStatus(
+    Iterable<Fragment$fragmentWatchStatus>? Function(
+      Iterable<
+        CopyWith$Fragment$fragmentWatchStatus<Fragment$fragmentWatchStatus>
       >?,
     )
     _fn,
@@ -2202,6 +2288,7 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$chapter<TRes>
     Object? book = _undefined,
     Object? metadata = _undefined,
     Object? mediaFile = _undefined,
+    Object? watchStatus = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentPlayQueue$playQueueItems$chapter(
@@ -2222,6 +2309,9 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$chapter<TRes>
       mediaFile: mediaFile == _undefined
           ? _instance.mediaFile
           : (mediaFile as List<Fragment$fragmentMediaFiles>?),
+      watchStatus: watchStatus == _undefined
+          ? _instance.watchStatus
+          : (watchStatus as List<Fragment$fragmentWatchStatus>?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -2273,6 +2363,21 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$chapter<TRes>
       ),
     )?.toList(),
   );
+
+  TRes watchStatus(
+    Iterable<Fragment$fragmentWatchStatus>? Function(
+      Iterable<
+        CopyWith$Fragment$fragmentWatchStatus<Fragment$fragmentWatchStatus>
+      >?,
+    )
+    _fn,
+  ) => call(
+    watchStatus: _fn(
+      _instance.watchStatus?.map(
+        (e) => CopyWith$Fragment$fragmentWatchStatus(e, (i) => i),
+      ),
+    )?.toList(),
+  );
 }
 
 class _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$chapter<TRes>
@@ -2291,6 +2396,7 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$chapter<TRes>
     Fragment$fragmentPlayQueue$playQueueItems$chapter$book? book,
     List<Fragment$fragmentMetadata>? metadata,
     List<Fragment$fragmentMediaFiles>? mediaFile,
+    List<Fragment$fragmentWatchStatus>? watchStatus,
     String? $__typename,
   }) => _res;
 
@@ -2309,6 +2415,8 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$chapter<TRes>
   metadata(_fn) => _res;
 
   mediaFile(_fn) => _res;
+
+  watchStatus(_fn) => _res;
 }
 
 class Fragment$fragmentPlayQueue$playQueueItems$chapter$author {
@@ -2686,6 +2794,7 @@ class Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode {
     required this.podcast,
     this.metadata,
     this.mediaFile,
+    this.watchStatus,
     this.$__typename = 'PodcastEpisode',
   });
 
@@ -2697,6 +2806,7 @@ class Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode {
     final l$podcast = json['podcast'];
     final l$metadata = json['metadata'];
     final l$mediaFile = json['mediaFile'];
+    final l$watchStatus = json['watchStatus'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode(
       id: (l$id as String),
@@ -2718,6 +2828,13 @@ class Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode {
             ),
           )
           .toList(),
+      watchStatus: (l$watchStatus as List<dynamic>?)
+          ?.map(
+            (e) => Fragment$fragmentWatchStatus.fromJson(
+              (e as Map<String, dynamic>),
+            ),
+          )
+          .toList(),
       $__typename: (l$$__typename as String),
     );
   }
@@ -2733,6 +2850,8 @@ class Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode {
 
   final List<Fragment$fragmentMediaFiles>? mediaFile;
 
+  final List<Fragment$fragmentWatchStatus>? watchStatus;
+
   final String $__typename;
 
   Map<String, dynamic> toJson() {
@@ -2747,6 +2866,8 @@ class Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode {
     _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
     final l$mediaFile = mediaFile;
     _resultData['mediaFile'] = l$mediaFile?.map((e) => e.toJson()).toList();
+    final l$watchStatus = watchStatus;
+    _resultData['watchStatus'] = l$watchStatus?.map((e) => e.toJson()).toList();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -2759,6 +2880,7 @@ class Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode {
     final l$podcast = podcast;
     final l$metadata = metadata;
     final l$mediaFile = mediaFile;
+    final l$watchStatus = watchStatus;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
@@ -2766,6 +2888,9 @@ class Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode {
       l$podcast,
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$mediaFile == null ? null : Object.hashAll(l$mediaFile.map((v) => v)),
+      l$watchStatus == null
+          ? null
+          : Object.hashAll(l$watchStatus.map((v) => v)),
       l$$__typename,
     ]);
   }
@@ -2826,6 +2951,22 @@ class Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode {
     } else if (l$mediaFile != lOther$mediaFile) {
       return false;
     }
+    final l$watchStatus = watchStatus;
+    final lOther$watchStatus = other.watchStatus;
+    if (l$watchStatus != null && lOther$watchStatus != null) {
+      if (l$watchStatus.length != lOther$watchStatus.length) {
+        return false;
+      }
+      for (int i = 0; i < l$watchStatus.length; i++) {
+        final l$watchStatus$entry = l$watchStatus[i];
+        final lOther$watchStatus$entry = lOther$watchStatus[i];
+        if (l$watchStatus$entry != lOther$watchStatus$entry) {
+          return false;
+        }
+      }
+    } else if (l$watchStatus != lOther$watchStatus) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -2866,6 +3007,7 @@ abstract class CopyWith$Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode
     Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode$podcast? podcast,
     List<Fragment$fragmentMetadata>? metadata,
     List<Fragment$fragmentMediaFiles>? mediaFile,
+    List<Fragment$fragmentWatchStatus>? watchStatus,
     String? $__typename,
   });
   CopyWith$Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode$podcast<
@@ -2882,6 +3024,14 @@ abstract class CopyWith$Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode
     Iterable<Fragment$fragmentMediaFiles>? Function(
       Iterable<
         CopyWith$Fragment$fragmentMediaFiles<Fragment$fragmentMediaFiles>
+      >?,
+    )
+    _fn,
+  );
+  TRes watchStatus(
+    Iterable<Fragment$fragmentWatchStatus>? Function(
+      Iterable<
+        CopyWith$Fragment$fragmentWatchStatus<Fragment$fragmentWatchStatus>
       >?,
     )
     _fn,
@@ -2913,6 +3063,7 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode<
     Object? podcast = _undefined,
     Object? metadata = _undefined,
     Object? mediaFile = _undefined,
+    Object? watchStatus = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode(
@@ -2930,6 +3081,9 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode<
       mediaFile: mediaFile == _undefined
           ? _instance.mediaFile
           : (mediaFile as List<Fragment$fragmentMediaFiles>?),
+      watchStatus: watchStatus == _undefined
+          ? _instance.watchStatus
+          : (watchStatus as List<Fragment$fragmentWatchStatus>?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -2974,6 +3128,21 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode<
       ),
     )?.toList(),
   );
+
+  TRes watchStatus(
+    Iterable<Fragment$fragmentWatchStatus>? Function(
+      Iterable<
+        CopyWith$Fragment$fragmentWatchStatus<Fragment$fragmentWatchStatus>
+      >?,
+    )
+    _fn,
+  ) => call(
+    watchStatus: _fn(
+      _instance.watchStatus?.map(
+        (e) => CopyWith$Fragment$fragmentWatchStatus(e, (i) => i),
+      ),
+    )?.toList(),
+  );
 }
 
 class _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode<
@@ -2995,6 +3164,7 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode
     Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode$podcast? podcast,
     List<Fragment$fragmentMetadata>? metadata,
     List<Fragment$fragmentMediaFiles>? mediaFile,
+    List<Fragment$fragmentWatchStatus>? watchStatus,
     String? $__typename,
   }) => _res;
 
@@ -3009,6 +3179,8 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode
   metadata(_fn) => _res;
 
   mediaFile(_fn) => _res;
+
+  watchStatus(_fn) => _res;
 }
 
 class Fragment$fragmentPlayQueue$playQueueItems$podcastEpisode$podcast {

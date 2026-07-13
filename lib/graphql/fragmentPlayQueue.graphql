@@ -27,12 +27,14 @@ fragment fragmentPlayQueue on PlayQueue {
             book { id name images { ...fragmentImages } }
             metadata { ...fragmentMetadata }
             mediaFile { ...fragmentMediaFiles }
+            watchStatus { ...fragmentWatchStatus }
         }
         podcastEpisode {
             id publishedAt
             podcast { id title author images { ...fragmentImages } }
             metadata { ...fragmentMetadata }
             mediaFile { ...fragmentMediaFiles }
+            watchStatus { ...fragmentWatchStatus }
         }
     }
 }

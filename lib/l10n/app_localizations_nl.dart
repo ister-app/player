@@ -259,6 +259,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get albums => 'Albums';
 
   @override
+  String get books => 'Boeken';
+
+  @override
   String get artists => 'Artiesten';
 
   @override
@@ -317,6 +320,17 @@ class AppLocalizationsNl extends AppLocalizations {
       locale: localeName,
       other: '$count albums',
       one: '1 album',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bookCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count boeken',
+      one: '1 boek',
     );
     return '$_temp0';
   }
