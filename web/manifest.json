@@ -3,10 +3,10 @@
     "short_name": "player",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
+    "background_color": "#000000",
+    "theme_color": "#000000",
     "description": "A media player for Ister",
-    "orientation": "portrait-primary",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

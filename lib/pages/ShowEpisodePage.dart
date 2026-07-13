@@ -156,8 +156,17 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       LayoutBuilder(
         builder: (context, constraints) {
+          final hasVideo = episode != null &&
+              loadComplete &&
+              episode.mediaFile != null &&
+              episode.mediaFile!.isNotEmpty;
           return Container(
-            decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
+            // Black behind the player, so the video's letterbox bars don't glow
+            // in the (light) surface colour.
+            decoration: BoxDecoration(
+                color: hasVideo
+                    ? Colors.black
+                    : Theme.of(context).colorScheme.surfaceContainerHighest),
             height: constraints.maxWidth < 800 ? 300 : 500,
             child: episode != null && loadComplete
                 ? episode.mediaFile == null ||
