@@ -105,8 +105,19 @@ class _BookPageState extends State<BookPage> with WidgetsBindingObserver {
       .firstOrNull
       ?.readingProgress;
 
+  /// The epub position the reader last saved, if any.
+  String? get _readingLocation => _book?.watchStatus
+      ?.where((status) => status.readingLocation != null)
+      .firstOrNull
+      ?.readingLocation;
+
   /// Started reading in any form — an epub position or a (partly) played chapter.
+  ///
+  /// A saved reading location counts on its own: early in a book the progress
+  /// fraction still rounds to 0, and a location written before the reader
+  /// started reporting one has no progress at all.
   bool get _hasProgress {
+    if (_readingLocation != null) return true;
     if ((_readingProgress ?? 0) > 0) return true;
     return _chapters.any((chapter) {
       final status = chapter.watchStatus?.firstOrNull;
