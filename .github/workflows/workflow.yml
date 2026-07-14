@@ -12,7 +12,35 @@ on:
     branches: [ "main" ]
 
 jobs:
+  # Conventional commits are what release.yml derives the version bump and the release-note
+  # sections from, so a subject that does not follow them silently costs a release its notes.
+  commit-lint:
+    name: Commit messages
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check the subjects against the convention
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          bad=$(git log --no-merges --pretty='%s' "${BASE}..${HEAD}" |
+                grep -vP '^[a-z]+(\(.+\))?!?: .+' || true)
+          if [ -n "$bad" ]; then
+            echo "::error::These commit subjects are not conventional commits:"
+            printf '  %s\n' "$bad"
+            echo "Expected: <type>[(scope)][!]: <description>  — see CONTRIBUTING.md"
+            exit 1
+          fi
+          echo "all commit subjects follow the convention"
+
   build:
+    # Skip the commit release.yml pushes: it is version bookkeeping, already built green as the
+    # commit it was cut from, and rebuilding it would only race the release's own image.
+    if: ${{ github.event_name == 'pull_request' || !startsWith(github.event.head_commit.message, 'chore(release):') }}
     runs-on: ubuntu-latest
 
     steps:

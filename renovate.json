@@ -1,0 +1,39 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits"
+  ],
+  "timezone": "Europe/Amsterdam",
+  "schedule": ["* 0-2 * * *"],
+
+  "semanticCommitType": "fix",
+  "semanticCommitScope": "deps",
+
+  "packageRules": [
+    {
+      "description": "Patch and digest bumps are automerged. They land before the 03:00 release run, so they ship the same night.",
+      "matchUpdateTypes": ["patch", "digest"],
+      "automerge": true
+    },
+    {
+      "description": "GitHub Actions. Grouped, and chore(deps) rather than fix(deps): a bumped action does not change the shipped app, so it should not cut a release on its own.",
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions",
+      "semanticCommitType": "chore",
+      "automerge": true
+    },
+    {
+      "description": "media_kit and friends carry the playback stack. A minor bump there is a real change to how video plays, so it gets a human.",
+      "matchUpdateTypes": ["minor"],
+      "matchPackageNames": ["media_kit{/,}**", "audio_service{/,}**", "flutter"],
+      "automerge": false
+    },
+    {
+      "description": "Majors are never automerged. They land on the dependency dashboard and wait for a human.",
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    }
+  ]
+}

@@ -45,3 +45,5 @@ app.*.map.json
 
 # Flatpak dirs
 .flatpak-builder
+# Written by ci/release-notes.sh; only CHANGELOG.md is committed.
+RELEASE_NOTES.md
