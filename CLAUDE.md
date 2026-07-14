@@ -23,6 +23,7 @@ flutter analyze
 # Build
 flutter build linux --release
 flutter build apk --release
+flutter build web --release
 
 # Linux flatpak
 flutter build linux
@@ -34,9 +35,13 @@ Localizations (en/nl) are generated from `lib/l10n/app_*.arb` via `l10n.yaml` du
 
 Do not remove the `analyzer.exclude` entries in `analysis_options.yaml` — without them the flatpak build dirs and plugin symlinks pull a vendored Flutter SDK into analysis and `flutter analyze` takes hours instead of seconds.
 
+## Commits and releases
+
+Commit subjects must follow [Conventional Commits](https://www.conventionalcommits.org/) (see `CONTRIBUTING.md`); a `commit-lint` job enforces it, and the nightly release workflow derives the version bump and release notes from the subjects. `feat` → minor, `fix`/`perf`/`refactor`/`test`/`docs`/`build`/`ci`/`chore` → patch, `!` or a `BREAKING CHANGE:` body → major. Never hand-edit `version` in `pubspec.yaml` — the release workflow writes it (`<semver>+<commit count>`).
+
 ## Architecture Overview
 
-This is a Flutter media player app for the "Ister" media management system. It supports multiple servers with OIDC authentication, episode/movie/music browsing, and audio/video playback with language preferences and watch progress tracking.
+This is a Flutter media player app for the "Ister" media management system. It supports multiple servers with OIDC authentication; browsing and playback of episodes, movies, music, podcasts and audiobooks/epubs; and language preferences and watch-progress tracking. It ships for Android (incl. Android TV and Android Auto), Linux (flatpak) and web.
 
 ### Layer Structure
 
@@ -50,8 +55,13 @@ This is a Flutter media player app for the "Ister" media management system. It s
 - `LoginManager` — Per-server OIDC state (static, `Map`-keyed). Each `OidcUserManager` gets `id: serverUrl` so servers don't share token storage. Init is deduplicated via a futures map and retryable after failure; token refresh is deduplicated per server (refresh-token rotation).
 - `StreamTokenService` — Short-lived per-server stream tokens appended to media/image URLs; self-refreshing timers with a minimum delay and retry-on-failure so the chain never dies silently.
 - `PlayQueueService` — Fetches/creates/updates play queues on the server. Exposes a broadcast `StreamController<Fragment$fragmentPlayQueue>` for subscribers. Lookup helpers use `.where(...).firstOrNull` — items may legitimately be absent from a queue.
-- `MediaPlayerHandler` — Singleton extending `BaseAudioHandler` (audio_service). Wraps the `media_kit` `Player`, handles episodes, movies and album tracks (`IsterMediaTypes` discriminates). Manages track selection (language preferences), a stall watchdog that re-opens hung HLS loads at the stream-open position, and progress sync: throttled to ~10s of position delta, flushed on pause/stop, and guarded by a generation counter (`_syncGeneration`) so in-flight responses can't revert a skip. UI must go through `handler.play()/pause()` — the in-video controls bypass this, which the watchdog compensates for.
-- `LanguageService` / `LanguagePreferences` — Preferred audio/subtitle languages (global, not per server); language data comes from the ISO 639-3 table in `assets/`.
+- `MediaPlayerHandler` — Singleton extending `BaseAudioHandler` (audio_service). Wraps the `media_kit` `Player` and handles every playable kind: episodes, movies, album tracks, podcast episodes and audiobook chapters (each has its own `startPlayQueueFor…`, and the queue item's non-null field discriminates). Long-form audio (podcasts, audiobooks) resumes at its recorded progress unless it already played to the end. Manages track selection (language preferences), a stall watchdog that re-opens hung HLS loads at the stream-open position, and progress sync: throttled to ~10s of position delta, flushed on pause/stop, and guarded by a generation counter (`_syncGeneration`) so in-flight responses can't revert a skip. UI must go through `handler.play()/pause()` — the in-video controls bypass this, which the watchdog compensates for.
+- `UserSettingsService` — The user's playback settings (spoken/subtitle languages, direct play, transcode, max video height) as the **server** stores them, per user per server, with a local cache. `LanguagePreferences` and `PlaybackPreferences` are thin read/write facades over it — call those, not the GraphQL mutation. `LanguageService` supplies the ISO 639-3 language table from `assets/`.
+- `SearchService` — Wraps the `search` query; the server ranks across movies, shows, episodes, persons, albums and tracks and returns a union, so results are matched on `Query$search$search` subtypes.
+- `ResilientSubscription` — Use this for GraphQL subscriptions instead of `client.subscribe` directly. `graphql`'s socket client only re-subscribes when the *socket* drops; a server-sent `complete`/`error` frame silently closes the Dart stream forever. This re-opens it with backoff.
+- `PlatformService` — Cached Android TV (leanback) detection. The UI branches on it for focus highlights and remote-friendly controls; `TvFocusable` wraps tappable widgets for D-pad/keyboard reach.
+- `ReaderLauncher` — Opens the server-hosted epub reader as a browser surface (Custom Tab / new tab / default browser). The reader fetches epub files and syncs reading position itself over HTTP — there is no Flutter↔JS bridge to maintain.
+- `AppMessenger` — `showAppSnackBar` for context-less singletons (e.g. `MediaPlayerHandler`); a no-op when no messenger is mounted, so it's safe during headless audio-service startup.
 
 **GraphQL** (`lib/graphql/`) — `.graphql` source files + auto-generated `.graphql.dart` counterparts. `build_runner` + `graphql_codegen` produces typed classes: `Query$name`, `Mutation$name`, `Fragment$name`. The schema is at `lib/graphql/schema.graphql`. Do not edit `*.graphql.dart` (or `*.gr.dart`) files manually. Many schema fields are nullable (`durationInMilliseconds`, `show`, `episodes`, media file lists) — guard them; a media file that hasn't been analyzed yet has no duration.
 
@@ -66,3 +76,4 @@ This is a Flutter media player app for the "Ister" media management system. It s
 - **Background audio (Android):** `audio_service` provides notification controls and `MediaSession` integration; the foreground service stays alive while paused (`androidStopForegroundOnPause: false`) and audio focus is held across track gaps — Android 16 blocks re-acquiring either from the background. mpv gets reconnect/network-timeout options for backgrounded HLS.
 - **Code generation:** Two generators run together — `graphql_codegen` (GraphQL types) and `auto_route_generator` (routing). Always run `build_runner build` after changing `.graphql` files, adding `@RoutePage()` to a new page, or modifying `AppRouter.dart`.
 - **Artwork placeholders:** every album-cover surface falls back to a music-note placeholder (and uses `errorBuilder` on `CachedNetworkImage`, from the `cached_network_image_ce` fork — `errorWidget` is deprecated there).
+- **Android TV:** the same widget tree serves touch and D-pad. Wrap tappable items in `TvFocusable` (it adds the focus node, maps select/enter to `onTap`, and only draws the highlight during directional navigation) rather than branching the layout on `PlatformService.isAndroidTv`.
