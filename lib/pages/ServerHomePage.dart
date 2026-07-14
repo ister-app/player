@@ -308,11 +308,15 @@ class _ServerHomePageState extends State<ServerHomePage> {
                   if (LoginManager.isLoggedIn(widget.serverName)) {
                     _tokenFuture ??=
                         StreamTokenService.ensureToken(widget.serverName);
-                    return FutureBuilder(
-                      future: _tokenFuture,
-                      builder: (context, tokenSnapshot) {
-                        if (tokenSnapshot.connectionState ==
-                            ConnectionState.waiting) {
+                    // Every image URL embeds the stream token, so a shell built
+                    // before the token lands renders tokenless (401) URLs that
+                    // nothing would rebuild. Wait for it instead; a failed fetch
+                    // retries and bumps tokenRevision.
+                    return ValueListenableBuilder<int>(
+                      valueListenable: StreamTokenService.tokenRevision,
+                      builder: (context, _, __) {
+                        if (StreamTokenService.getToken(widget.serverName) ==
+                            null) {
                           return Scaffold(
                             appBar: AppBar(title: Text(info.name)),
                             body: const Center(

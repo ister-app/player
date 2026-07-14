@@ -49,6 +49,13 @@ class LoginManager {
           const OidcClientAuthentication.none(clientId: 'ister'),
       store: OidcDefaultStore(),
       settings: OidcUserManagerSettings(
+        // oidc 2.0 made cacheFirst the default: init() completes with a
+        // locally-restored, unverified user whose access token may be expired,
+        // and refreshes in the background. Everything downstream (stream token,
+        // GraphQL) treats "logged in" as "has a usable token" and would race
+        // that background refresh — with refresh-token rotation both refreshes
+        // fight over the same token.
+        initMode: OidcInitMode.blockingValidate,
         redirectUri: kIsWeb
             ? Uri.base.replace(path: "/redirect.html")
             : Platform.isIOS || Platform.isMacOS || Platform.isAndroid

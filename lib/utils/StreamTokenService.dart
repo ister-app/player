@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/createStreamToken.graphql.dart';
 import 'package:player/utils/ClientManager.dart';
@@ -14,6 +15,13 @@ class StreamTokenService {
   // Lower bound on the refresh timer so a token that lives shorter than
   // [_refreshBefore] cannot cause a tight fetch loop.
   static const Duration _minRefreshDelay = Duration(minutes: 1);
+  static const Duration _retryDelay = Duration(seconds: 5);
+
+  /// Bumped whenever a server goes from "no usable token" to "token available".
+  /// Image URLs embed the token, so a widget built during that gap renders a
+  /// tokenless (401) URL; listeners rebuild once the token lands instead of
+  /// staying broken until the next app start.
+  static final ValueNotifier<int> tokenRevision = ValueNotifier(0);
 
   static String? getToken(String serverName) {
     final exp = _expiry[serverName];
@@ -27,6 +35,7 @@ class StreamTokenService {
   }
 
   static Future<String?> _fetchToken(String serverName) async {
+    final hadToken = getToken(serverName) != null;
     final client = ClientManager.getClientForUrl(serverName).value;
     final result = await client.mutate(
       MutationOptions(document: documentNodeMutationcreateStreamTokenMutation),
@@ -55,6 +64,7 @@ class StreamTokenService {
     _expiry[serverName] = expiry;
     LoggerService().logger.d('Stream token fetched for $serverName, expires $expiry');
     _scheduleRefresh(serverName, expiry);
+    if (!hadToken) tokenRevision.value++;
     return token;
   }
 
@@ -69,10 +79,11 @@ class StreamTokenService {
   }
 
   /// Keeps the refresh chain alive after a failed fetch; without this a single
-  /// network error would silently stop all future refreshes.
+  /// network error would silently stop all future refreshes. Retries quickly:
+  /// until a token exists every image on screen renders a tokenless URL.
   static void _scheduleRetry(String serverName) {
     _refreshTimers[serverName]?.cancel();
-    _refreshTimers[serverName] = Timer(_minRefreshDelay, () {
+    _refreshTimers[serverName] = Timer(_retryDelay, () {
       LoggerService().logger.d('Retrying stream token fetch for $serverName');
       unawaited(_fetchToken(serverName));
     });

@@ -14,8 +14,8 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   auto_route: ^11.0.0
-  oidc: ^0.14.0+2
-  oidc_default_store: ^0.6.0+2
+  oidc: ^2.0.0
+  oidc_default_store: ^1.1.0
   graphql_flutter: ^5.1.2
   gql: ^1.0.1 # DocumentNode type for the shared PagedContentView
   media_kit: ^1.2.6 # Primary package.
