@@ -4,6 +4,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/addPlayQueueItem.graphql.dart';
 import 'package:player/graphql/createPlayQueue.graphql.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
+import 'package:player/graphql/fragmentWatchStatus.graphql.dart';
 import 'package:player/graphql/getPlayQueue.graphql.dart';
 import 'package:player/graphql/movePlayQueueItem.graphql.dart';
 import 'package:player/graphql/removePlayQueueItem.graphql.dart';
@@ -127,22 +128,28 @@ class PlayQueueService {
     }
     var playQueue = await getPlayQueue(graphQLClient, playQueueId);
     if (playQueue != null && chapterId != null) {
-      String? currentItemId = getChapterPlayQueueItemId(playQueue, chapterId);
-      if (currentItemId != null && currentItemId != playQueue.currentItemId) {
-        final updated = await updateProgress(
-            graphQLClient, playQueue.id, currentItemId, Duration.zero);
+      final item = _chapterPlayQueueItem(playQueue, chapterId);
+      if (item != null && item.id != playQueue.currentItemId) {
+        // Moving the queue's current item goes through updateProgress, so re-send the chapter's
+        // own saved position: writing zero here would wipe the very spot we came to resume.
+        final updated = await updateProgress(graphQLClient, playQueue.id, item.id,
+            _chapterProgress(item.chapter?.watchStatus?.firstOrNull));
         if (updated != null) playQueue = updated;
       }
     }
     return playQueue;
   }
 
-  String? getChapterPlayQueueItemId(
+  Duration _chapterProgress(Fragment$fragmentWatchStatus? status) =>
+      status == null || status.watched
+          ? Duration.zero
+          : Duration(milliseconds: status.progressInMilliseconds);
+
+  Fragment$fragmentPlayQueue$playQueueItems? _chapterPlayQueueItem(
       Fragment$fragmentPlayQueue playQueue, String chapterId) {
     return playQueue.playQueueItems
         ?.where((element) => element.chapter?.id == chapterId)
-        .firstOrNull
-        ?.id;
+        .firstOrNull;
   }
 
   Future<Fragment$fragmentPlayQueue?> getOrCreatePlayQueueForPodcast(

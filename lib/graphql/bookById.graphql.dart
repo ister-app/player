@@ -278,6 +278,30 @@ const documentNodeQuerybookById = DocumentNode(
                   ),
                 ),
                 FieldNode(
+                  name: NameNode(value: 'resumeChapter'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: SelectionSetNode(
+                    selections: [
+                      FieldNode(
+                        name: NameNode(value: 'id'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                      FieldNode(
+                        name: NameNode(value: '__typename'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                    ],
+                  ),
+                ),
+                FieldNode(
                   name: NameNode(value: 'epubFiles'),
                   alias: null,
                   arguments: [],
@@ -439,6 +463,7 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
     this.rating,
     this.$__typename = 'Book',
     this.chapters,
+    this.resumeChapter,
     this.epubFiles,
     this.watchStatus,
   });
@@ -453,6 +478,7 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
     final l$rating = json['rating'];
     final l$$__typename = json['__typename'];
     final l$chapters = json['chapters'];
+    final l$resumeChapter = json['resumeChapter'];
     final l$epubFiles = json['epubFiles'];
     final l$watchStatus = json['watchStatus'];
     return Query$bookById$bookById(
@@ -482,6 +508,11 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
                 Fragment$fragmentChapter.fromJson((e as Map<String, dynamic>)),
           )
           .toList(),
+      resumeChapter: l$resumeChapter == null
+          ? null
+          : Query$bookById$bookById$resumeChapter.fromJson(
+              (l$resumeChapter as Map<String, dynamic>),
+            ),
       epubFiles: (l$epubFiles as List<dynamic>?)
           ?.map(
             (e) => Query$bookById$bookById$epubFiles.fromJson(
@@ -517,6 +548,8 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
 
   final List<Fragment$fragmentChapter>? chapters;
 
+  final Query$bookById$bookById$resumeChapter? resumeChapter;
+
   final List<Query$bookById$bookById$epubFiles>? epubFiles;
 
   final List<Query$bookById$bookById$watchStatus>? watchStatus;
@@ -541,6 +574,8 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
     _resultData['__typename'] = l$$__typename;
     final l$chapters = chapters;
     _resultData['chapters'] = l$chapters?.map((e) => e.toJson()).toList();
+    final l$resumeChapter = resumeChapter;
+    _resultData['resumeChapter'] = l$resumeChapter?.toJson();
     final l$epubFiles = epubFiles;
     _resultData['epubFiles'] = l$epubFiles?.map((e) => e.toJson()).toList();
     final l$watchStatus = watchStatus;
@@ -559,6 +594,7 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
     final l$rating = rating;
     final l$$__typename = $__typename;
     final l$chapters = chapters;
+    final l$resumeChapter = resumeChapter;
     final l$epubFiles = epubFiles;
     final l$watchStatus = watchStatus;
     return Object.hashAll([
@@ -571,6 +607,7 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
       l$rating,
       l$$__typename,
       l$chapters == null ? null : Object.hashAll(l$chapters.map((v) => v)),
+      l$resumeChapter,
       l$epubFiles == null ? null : Object.hashAll(l$epubFiles.map((v) => v)),
       l$watchStatus == null
           ? null
@@ -664,6 +701,11 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
     } else if (l$chapters != lOther$chapters) {
       return false;
     }
+    final l$resumeChapter = resumeChapter;
+    final lOther$resumeChapter = other.resumeChapter;
+    if (l$resumeChapter != lOther$resumeChapter) {
+      return false;
+    }
     final l$epubFiles = epubFiles;
     final lOther$epubFiles = other.epubFiles;
     if (l$epubFiles != null && lOther$epubFiles != null) {
@@ -724,6 +766,7 @@ abstract class CopyWith$Query$bookById$bookById<TRes> {
     int? rating,
     String? $__typename,
     List<Fragment$fragmentChapter>? chapters,
+    Query$bookById$bookById$resumeChapter? resumeChapter,
     List<Query$bookById$bookById$epubFiles>? epubFiles,
     List<Query$bookById$bookById$watchStatus>? watchStatus,
   });
@@ -746,6 +789,7 @@ abstract class CopyWith$Query$bookById$bookById<TRes> {
     )
     _fn,
   );
+  CopyWith$Query$bookById$bookById$resumeChapter<TRes> get resumeChapter;
   TRes epubFiles(
     Iterable<Query$bookById$bookById$epubFiles>? Function(
       Iterable<
@@ -788,6 +832,7 @@ class _CopyWithImpl$Query$bookById$bookById<TRes>
     Object? rating = _undefined,
     Object? $__typename = _undefined,
     Object? chapters = _undefined,
+    Object? resumeChapter = _undefined,
     Object? epubFiles = _undefined,
     Object? watchStatus = _undefined,
   }) => _then(
@@ -815,6 +860,9 @@ class _CopyWithImpl$Query$bookById$bookById<TRes>
       chapters: chapters == _undefined
           ? _instance.chapters
           : (chapters as List<Fragment$fragmentChapter>?),
+      resumeChapter: resumeChapter == _undefined
+          ? _instance.resumeChapter
+          : (resumeChapter as Query$bookById$bookById$resumeChapter?),
       epubFiles: epubFiles == _undefined
           ? _instance.epubFiles
           : (epubFiles as List<Query$bookById$bookById$epubFiles>?),
@@ -871,6 +919,16 @@ class _CopyWithImpl$Query$bookById$bookById<TRes>
     )?.toList(),
   );
 
+  CopyWith$Query$bookById$bookById$resumeChapter<TRes> get resumeChapter {
+    final local$resumeChapter = _instance.resumeChapter;
+    return local$resumeChapter == null
+        ? CopyWith$Query$bookById$bookById$resumeChapter.stub(_then(_instance))
+        : CopyWith$Query$bookById$bookById$resumeChapter(
+            local$resumeChapter,
+            (e) => call(resumeChapter: e),
+          );
+  }
+
   TRes epubFiles(
     Iterable<Query$bookById$bookById$epubFiles>? Function(
       Iterable<
@@ -922,6 +980,7 @@ class _CopyWithStubImpl$Query$bookById$bookById<TRes>
     int? rating,
     String? $__typename,
     List<Fragment$fragmentChapter>? chapters,
+    Query$bookById$bookById$resumeChapter? resumeChapter,
     List<Query$bookById$bookById$epubFiles>? epubFiles,
     List<Query$bookById$bookById$watchStatus>? watchStatus,
   }) => _res;
@@ -934,6 +993,9 @@ class _CopyWithStubImpl$Query$bookById$bookById<TRes>
   metadata(_fn) => _res;
 
   chapters(_fn) => _res;
+
+  CopyWith$Query$bookById$bookById$resumeChapter<TRes> get resumeChapter =>
+      CopyWith$Query$bookById$bookById$resumeChapter.stub(_res);
 
   epubFiles(_fn) => _res;
 
@@ -1063,6 +1125,120 @@ class _CopyWithStubImpl$Query$bookById$bookById$author<TRes>
   TRes _res;
 
   call({String? id, String? name, String? $__typename}) => _res;
+}
+
+class Query$bookById$bookById$resumeChapter {
+  Query$bookById$bookById$resumeChapter({
+    required this.id,
+    this.$__typename = 'Chapter',
+  });
+
+  factory Query$bookById$bookById$resumeChapter.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final l$id = json['id'];
+    final l$$__typename = json['__typename'];
+    return Query$bookById$bookById$resumeChapter(
+      id: (l$id as String),
+      $__typename: (l$$__typename as String),
+    );
+  }
+
+  final String id;
+
+  final String $__typename;
+
+  Map<String, dynamic> toJson() {
+    final _resultData = <String, dynamic>{};
+    final l$id = id;
+    _resultData['id'] = l$id;
+    final l$$__typename = $__typename;
+    _resultData['__typename'] = l$$__typename;
+    return _resultData;
+  }
+
+  @override
+  int get hashCode {
+    final l$id = id;
+    final l$$__typename = $__typename;
+    return Object.hashAll([l$id, l$$__typename]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Query$bookById$bookById$resumeChapter ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$id = id;
+    final lOther$id = other.id;
+    if (l$id != lOther$id) {
+      return false;
+    }
+    final l$$__typename = $__typename;
+    final lOther$$__typename = other.$__typename;
+    if (l$$__typename != lOther$$__typename) {
+      return false;
+    }
+    return true;
+  }
+}
+
+extension UtilityExtension$Query$bookById$bookById$resumeChapter
+    on Query$bookById$bookById$resumeChapter {
+  CopyWith$Query$bookById$bookById$resumeChapter<
+    Query$bookById$bookById$resumeChapter
+  >
+  get copyWith =>
+      CopyWith$Query$bookById$bookById$resumeChapter(this, (i) => i);
+}
+
+abstract class CopyWith$Query$bookById$bookById$resumeChapter<TRes> {
+  factory CopyWith$Query$bookById$bookById$resumeChapter(
+    Query$bookById$bookById$resumeChapter instance,
+    TRes Function(Query$bookById$bookById$resumeChapter) then,
+  ) = _CopyWithImpl$Query$bookById$bookById$resumeChapter;
+
+  factory CopyWith$Query$bookById$bookById$resumeChapter.stub(TRes res) =
+      _CopyWithStubImpl$Query$bookById$bookById$resumeChapter;
+
+  TRes call({String? id, String? $__typename});
+}
+
+class _CopyWithImpl$Query$bookById$bookById$resumeChapter<TRes>
+    implements CopyWith$Query$bookById$bookById$resumeChapter<TRes> {
+  _CopyWithImpl$Query$bookById$bookById$resumeChapter(
+    this._instance,
+    this._then,
+  );
+
+  final Query$bookById$bookById$resumeChapter _instance;
+
+  final TRes Function(Query$bookById$bookById$resumeChapter) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({Object? id = _undefined, Object? $__typename = _undefined}) =>
+      _then(
+        Query$bookById$bookById$resumeChapter(
+          id: id == _undefined || id == null ? _instance.id : (id as String),
+          $__typename: $__typename == _undefined || $__typename == null
+              ? _instance.$__typename
+              : ($__typename as String),
+        ),
+      );
+}
+
+class _CopyWithStubImpl$Query$bookById$bookById$resumeChapter<TRes>
+    implements CopyWith$Query$bookById$bookById$resumeChapter<TRes> {
+  _CopyWithStubImpl$Query$bookById$bookById$resumeChapter(this._res);
+
+  TRes _res;
+
+  call({String? id, String? $__typename}) => _res;
 }
 
 class Query$bookById$bookById$epubFiles {

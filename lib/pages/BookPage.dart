@@ -188,8 +188,10 @@ class _BookPageState extends State<BookPage> with WidgetsBindingObserver {
 
   void _listen(BuildContext context, {String? chapterId}) {
     final client = GraphQLProvider.of(context).value;
-    // Resume at the first unfinished chapter when none was tapped explicitly.
-    final startChapter = chapterId ?? _firstUnfinishedChapterId();
+    // Resume where the listener left off (the server knows which chapter that is) when none was
+    // tapped explicitly; a book that was never started begins at its first chapter.
+    final startChapter =
+        chapterId ?? _book?.resumeChapter?.id ?? _firstPlayableChapterId();
     MediaPlayerHandler.instance.startPlayQueueForBook(
       client,
       widget.playQueueId,
@@ -199,17 +201,10 @@ class _BookPageState extends State<BookPage> with WidgetsBindingObserver {
     );
   }
 
-  String? _firstUnfinishedChapterId() {
-    for (final chapter in _chapters) {
-      if (chapter.mediaFile?.isNotEmpty != true) continue;
-      final status = chapter.watchStatus?.firstOrNull;
-      if (status == null || !status.watched) return chapter.id;
-    }
-    return _chapters
-        .where((chapter) => chapter.mediaFile?.isNotEmpty == true)
-        .firstOrNull
-        ?.id;
-  }
+  String? _firstPlayableChapterId() => _chapters
+      .where((chapter) => chapter.mediaFile?.isNotEmpty == true)
+      .firstOrNull
+      ?.id;
 
   Future<void> _read(
     BuildContext context,
