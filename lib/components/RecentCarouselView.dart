@@ -269,7 +269,9 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
           onTap: () =>
               AutoRouter.of(context).push(PodcastRoute(podcastId: podcast.id)));
     } else if (item.type == Enum$MediaType.BOOK && item.book != null) {
-      // Continue reading: an epub with saved progress.
+      // One entry per book, carrying a reading target (epub) and/or a listening target (chapter).
+      // Show whichever format the user is actually in: reading if there is reading progress,
+      // otherwise the audiobook chapter they were listening to.
       final book = item.book!;
       List<Fragment$fragmentImages>? images = book.images
           ?.map((e) => Fragment$fragmentImages.fromJson(e.toJson()))
@@ -279,18 +281,34 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
           ?.where((status) => status.readingProgress != null)
           .firstOrNull
           ?.readingProgress;
+      final bool reading = readingProgress != null && readingProgress > 0;
+
+      final chapter = item.chapter;
+      final double? chapterProgress = !reading &&
+              chapter != null &&
+              chapter.watchStatus != null &&
+              chapter.watchStatus!.isNotEmpty &&
+              chapter.watchStatus!.first.watched != true &&
+              (chapter.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0) > 0
+          ? chapter.watchStatus!.first.progressInMilliseconds /
+              chapter.mediaFile!.first.durationInMilliseconds!
+          : null;
+      final bool listening = chapterProgress != null;
+
+      final subTitle = listening
+          ? (MetadataUtil.getTitle(chapter!.metadata) ??
+              '${AppLocalizations.of(context)!.chapter} ${chapter.number}')
+          : (MetadataUtil.getDescription(book.metadata) ?? "");
       return CarouselItemView(
           serverName: widget.serverName,
           title: MetadataUtil.getTitle(book.metadata) ?? book.name,
-          subTitle: MetadataUtil.getDescription(book.metadata) ?? "",
+          subTitle: subTitle,
           imageUrl: ImageUtil.buildUrl(imageByType,
               token: StreamTokenService.getToken(widget.serverName)),
           blurHash: imageByType?.blurHash,
-          placeholderIcon: Icons.menu_book,
+          placeholderIcon: listening ? Icons.headphones : Icons.menu_book,
           portraitArtwork: true,
-          progress: readingProgress != null && readingProgress > 0
-              ? readingProgress.clamp(0.0, 1.0)
-              : null,
+          progress: reading ? readingProgress.clamp(0.0, 1.0) : chapterProgress,
           onTap: () => AutoRouter.of(context).push(BookRoute(bookId: book.id)));
     } else {
       return const SizedBox.shrink();
