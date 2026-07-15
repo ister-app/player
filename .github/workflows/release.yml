@@ -146,14 +146,20 @@ jobs:
 
       - run: flutter pub get
 
+      # The commit the artifacts are built from, shown next to the version in the
+      # app's settings. Fed to every build via --dart-define below.
+      - name: Work out the commit hash
+        id: commit
+        run: echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
       - name: Build Linux
-        run: flutter build linux --release
+        run: flutter build linux --release --dart-define=GIT_COMMIT=${{ steps.commit.outputs.sha }}
 
       - name: Build Android
-        run: flutter build apk --release
+        run: flutter build apk --release --dart-define=GIT_COMMIT=${{ steps.commit.outputs.sha }}
 
       - name: Build Web
-        run: flutter build web --release --wasm --no-web-resources-cdn
+        run: flutter build web --release --wasm --no-web-resources-cdn --dart-define=GIT_COMMIT=${{ steps.commit.outputs.sha }}
 
       - name: Package the web build
         env:

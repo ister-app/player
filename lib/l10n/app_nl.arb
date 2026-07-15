@@ -2,6 +2,7 @@
   "home": "Home",
   "library": "Bibliotheek",
   "settings": "Instellingen",
+  "appVersion": "Versie {version}",
   "preferredSpoken": "Voorkeurstaal voor gesproken audio:",
   "preferredSubtitle": "Voorkeurstaal voor ondertiteling:",
   "loadError": "Kan voorkeuren niet laden: {error}",

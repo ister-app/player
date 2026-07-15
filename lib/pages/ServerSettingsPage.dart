@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 
 import '../l10n/app_localizations.dart';
@@ -68,6 +69,30 @@ class ServerSettingsPage extends StatelessWidget {
                   ),
                 ],
               ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: FutureBuilder<PackageInfo>(
+              future: PackageInfo.fromPlatform(),
+              builder: (context, snapshot) {
+                final info = snapshot.data;
+                if (info == null) {
+                  return const SizedBox.shrink();
+                }
+                const commit =
+                    String.fromEnvironment('GIT_COMMIT', defaultValue: '');
+                var version = '${info.version}+${info.buildNumber}';
+                if (commit.isNotEmpty) {
+                  version = '$version ($commit)';
+                }
+                return Text(
+                  loc.appVersion(version),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).disabledColor,
+                      ),
+                );
+              },
             ),
           ),
         ],

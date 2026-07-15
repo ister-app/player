@@ -18,6 +18,11 @@ class AppLocalizationsNl extends AppLocalizations {
   String get settings => 'Instellingen';
 
   @override
+  String appVersion(String version) {
+    return 'Versie $version';
+  }
+
+  @override
   String get preferredSpoken => 'Voorkeurstaal voor gesproken audio:';
 
   @override

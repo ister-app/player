@@ -11,6 +11,15 @@
   "@settings": {
     "description": "Title of the settings page"
   },
+  "appVersion": "Version {version}",
+  "@appVersion": {
+    "description": "App version shown in settings",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "preferredSpoken": "Preferred spoken languages:",
   "preferredSubtitle": "Preferred subtitle languages:",
   "loadError": "Failed to load preferences: {error}",

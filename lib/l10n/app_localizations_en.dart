@@ -18,6 +18,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings => 'Settings';
 
   @override
+  String appVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
   String get preferredSpoken => 'Preferred spoken languages:';
 
   @override

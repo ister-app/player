@@ -116,6 +116,12 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settings;
 
+  /// App version shown in settings
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String appVersion(String version);
+
   /// No description provided for @preferredSpoken.
   ///
   /// In en, this message translates to:
