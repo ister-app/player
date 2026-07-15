@@ -492,7 +492,9 @@ class _BookPageState extends State<BookPage> with WidgetsBindingObserver {
       placeholderIcon: Icons.menu_book,
       coverAspectRatio: BookCarouselTile.coverAspectRatio,
       title: book != null
-          ? (MetadataUtil.getTitle(book.metadata) ?? book.name)
+          ? MetadataUtil.titleWithYear(
+              MetadataUtil.getTitle(book.metadata) ?? book.name,
+              book.releaseYear)
           : null,
       subtitle: book?.author.name,
       onSubtitleTap: book != null

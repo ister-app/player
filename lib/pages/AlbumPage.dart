@@ -467,7 +467,9 @@ class _AlbumPageState extends State<AlbumPage> {
       imageUrl: imageUrl,
       blurHash: img?.blurHash,
       title: album != null
-          ? (MetadataUtil.getTitle(album.metadata) ?? album.name)
+          ? MetadataUtil.titleWithYear(
+              MetadataUtil.getTitle(album.metadata) ?? album.name,
+              album.releaseYear)
           : null,
       subtitle: album?.artist.name,
       onSubtitleTap: album != null

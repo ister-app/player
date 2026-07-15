@@ -95,7 +95,9 @@ class _MoviePageState extends State<MoviePage> {
               widget.serverName,
             );
           }
-          final title = MetadataUtil.getTitle(movie?.metadata) ?? movie?.name ?? '';
+          final title = MetadataUtil.titleWithYear(
+              MetadataUtil.getTitle(movie?.metadata) ?? movie?.name ?? '',
+              movie?.releaseYear);
           return Scaffold(
             appBar: AppBar(title: Text(title)),
             body: SingleChildScrollView(

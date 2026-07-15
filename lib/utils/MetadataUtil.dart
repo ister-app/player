@@ -36,6 +36,12 @@ class MetadataUtil {
     }
   }
 
+  /// Appends a release/birth year in parentheses to [title], e.g.
+  /// "Blade Runner (1982)". A year of 0 or null counts as unknown and is
+  /// dropped, so the bare title is returned unchanged.
+  static String titleWithYear(String title, int? year) =>
+      (year != null && year > 0) ? '$title ($year)' : title;
+
   /// Get the genre from the metadata.
   static String? getGenre(List<Fragment$fragmentMetadata>? metadataList) {
     try {

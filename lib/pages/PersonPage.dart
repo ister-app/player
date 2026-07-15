@@ -579,7 +579,9 @@ class PersonPage extends StatelessWidget {
         : null;
 
     final name = artist != null
-        ? MetadataUtil.getTitle(artist.metadata) ?? artist.name
+        ? MetadataUtil.titleWithYear(
+            MetadataUtil.getTitle(artist.metadata) ?? artist.name,
+            artist.birthYear)
         : null;
 
     return MusicDetailHero(

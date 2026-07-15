@@ -81,7 +81,9 @@ class ShowOverviewContentPage extends StatelessWidget {
             body = _buildContent(
                 ImageUtil.buildUrl(imageByType, token: StreamTokenService.getToken(serverName)),
                 imageByType?.blurHash,
-                MetadataUtil.getTitle(show.metadata) ?? "",
+                MetadataUtil.titleWithYear(
+                    MetadataUtil.getTitle(show.metadata) ?? "",
+                    show.releaseYear),
                 MetadataUtil.getDescription(show.metadata) ?? "",
                 context,
                 show.toJson().toString(),
