@@ -16,12 +16,16 @@ import 'PagedContentView.dart';
 class MovieScroll extends StatelessWidget {
   final String serverName;
   final String? libraryId;
+  final Enum$SortingEnum sorting;
+  final Enum$SortingOrder sortingOrder;
   final void Function(Refetch?)? onRefetch;
 
   const MovieScroll({
     super.key,
     required this.serverName,
     this.libraryId,
+    this.sorting = Enum$SortingEnum.NAME,
+    this.sortingOrder = Enum$SortingOrder.ASCENDING,
     this.onRefetch,
   });
 
@@ -33,8 +37,8 @@ class MovieScroll extends StatelessWidget {
       document: documentNodeQuerymovies,
       rootField: 'movies',
       fromJson: Query$movies$movies$content.fromJson,
-      sorting: Enum$SortingEnum.NAME,
-      sortingOrder: Enum$SortingOrder.ASCENDING,
+      sorting: sorting,
+      sortingOrder: sortingOrder,
       libraryId: libraryId,
       onRefetch: onRefetch,
       pageSize: _pageSize,

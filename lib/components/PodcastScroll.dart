@@ -11,12 +11,16 @@ import 'PodcastCarouselTile.dart';
 class PodcastScroll extends StatelessWidget {
   final String serverName;
   final String? libraryId;
+  final Enum$SortingEnum sorting;
+  final Enum$SortingOrder sortingOrder;
   final void Function(Refetch?)? onRefetch;
 
   const PodcastScroll({
     super.key,
     required this.serverName,
     this.libraryId,
+    this.sorting = Enum$SortingEnum.NAME,
+    this.sortingOrder = Enum$SortingOrder.ASCENDING,
     this.onRefetch,
   });
 
@@ -28,8 +32,8 @@ class PodcastScroll extends StatelessWidget {
       document: documentNodeQuerypodcasts,
       rootField: 'podcasts',
       fromJson: Fragment$fragmentPodcast.fromJson,
-      sorting: Enum$SortingEnum.NAME,
-      sortingOrder: Enum$SortingOrder.ASCENDING,
+      sorting: sorting,
+      sortingOrder: sortingOrder,
       libraryId: libraryId,
       onRefetch: onRefetch,
       pageSize: _pageSize,

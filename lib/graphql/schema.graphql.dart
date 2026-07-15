@@ -685,6 +685,7 @@ Enum$ServerActivityEventType fromJson$Enum$ServerActivityEventType(
 enum Enum$SortingEnum {
   DATE_CREATED,
   NAME,
+  RELEASE_YEAR,
   $unknown;
 
   factory Enum$SortingEnum.fromJson(String value) =>
@@ -699,6 +700,8 @@ String toJson$Enum$SortingEnum(Enum$SortingEnum e) {
       return r'DATE_CREATED';
     case Enum$SortingEnum.NAME:
       return r'NAME';
+    case Enum$SortingEnum.RELEASE_YEAR:
+      return r'RELEASE_YEAR';
     case Enum$SortingEnum.$unknown:
       return r'$unknown';
   }
@@ -710,6 +713,8 @@ Enum$SortingEnum fromJson$Enum$SortingEnum(String value) {
       return Enum$SortingEnum.DATE_CREATED;
     case r'NAME':
       return Enum$SortingEnum.NAME;
+    case r'RELEASE_YEAR':
+      return Enum$SortingEnum.RELEASE_YEAR;
     default:
       return Enum$SortingEnum.$unknown;
   }

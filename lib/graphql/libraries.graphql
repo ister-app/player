@@ -3,5 +3,7 @@ query libraries {
         id
         name
         type
+        sorting
+        sortingOrder
     }
 }

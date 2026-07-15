@@ -286,6 +286,27 @@ class AppLocalizationsNl extends AppLocalizations {
   String get sortOrderFailed => 'Kon de sorteervolgorde niet wijzigen';
 
   @override
+  String get sortBy => 'Sorteren op';
+
+  @override
+  String get sortNameAsc => 'Naam (A–Z)';
+
+  @override
+  String get sortNameDesc => 'Naam (Z–A)';
+
+  @override
+  String get sortDateAddedNewest => 'Toegevoegd (nieuwste eerst)';
+
+  @override
+  String get sortDateAddedOldest => 'Toegevoegd (oudste eerst)';
+
+  @override
+  String get sortReleaseYearNewest => 'Releasejaar (nieuwste eerst)';
+
+  @override
+  String get sortReleaseYearOldest => 'Releasejaar (oudste eerst)';
+
+  @override
   String get artists => 'Artiesten';
 
   @override

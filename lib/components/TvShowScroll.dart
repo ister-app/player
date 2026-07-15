@@ -16,6 +16,8 @@ import 'CarouselItemView.dart';
 class TvShowScroll extends StatefulWidget {
   final String serverName;
   final String? libraryId;
+  final Enum$SortingEnum sorting;
+  final Enum$SortingOrder sortingOrder;
   final Function(Refetch?)? onRefetch;
   final VoidCallback? onEmptyView;
 
@@ -23,6 +25,8 @@ class TvShowScroll extends StatefulWidget {
     super.key,
     required this.serverName,
     this.libraryId,
+    this.sorting = Enum$SortingEnum.NAME,
+    this.sortingOrder = Enum$SortingOrder.ASCENDING,
     this.onRefetch,
     this.onEmptyView,
   });
@@ -77,8 +81,8 @@ class _TvShowScrollState extends State<TvShowScroll> {
         variables: {
           'page': 0,
           'size': _pageSize,
-          'sorting': Enum$SortingEnum.NAME,
-          'sortingOrder': Enum$SortingOrder.ASCENDING,
+          'sorting': widget.sorting,
+          'sortingOrder': widget.sortingOrder,
           if (widget.libraryId != null) 'libraryId': widget.libraryId,
         },
         fetchPolicy: FetchPolicy.cacheAndNetwork,

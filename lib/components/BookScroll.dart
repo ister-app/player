@@ -11,12 +11,16 @@ import 'PagedContentView.dart';
 class BookScroll extends StatelessWidget {
   final String serverName;
   final String? libraryId;
+  final Enum$SortingEnum sorting;
+  final Enum$SortingOrder sortingOrder;
   final void Function(Refetch?)? onRefetch;
 
   const BookScroll({
     super.key,
     required this.serverName,
     this.libraryId,
+    this.sorting = Enum$SortingEnum.NAME,
+    this.sortingOrder = Enum$SortingOrder.ASCENDING,
     this.onRefetch,
   });
 
@@ -28,8 +32,8 @@ class BookScroll extends StatelessWidget {
       document: documentNodeQuerybooks,
       rootField: 'books',
       fromJson: Fragment$fragmentBook.fromJson,
-      sorting: Enum$SortingEnum.NAME,
-      sortingOrder: Enum$SortingOrder.ASCENDING,
+      sorting: sorting,
+      sortingOrder: sortingOrder,
       libraryId: libraryId,
       onRefetch: onRefetch,
       pageSize: _pageSize,

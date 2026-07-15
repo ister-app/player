@@ -185,6 +185,20 @@ const documentNodeQuerylibraries = DocumentNode(
                   selectionSet: null,
                 ),
                 FieldNode(
+                  name: NameNode(value: 'sorting'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'sortingOrder'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
                   name: NameNode(value: '__typename'),
                   alias: null,
                   arguments: [],
@@ -212,6 +226,8 @@ class Query$libraries$libraries {
     required this.id,
     required this.name,
     required this.type,
+    required this.sorting,
+    required this.sortingOrder,
     this.$__typename = 'Library',
   });
 
@@ -219,11 +235,15 @@ class Query$libraries$libraries {
     final l$id = json['id'];
     final l$name = json['name'];
     final l$type = json['type'];
+    final l$sorting = json['sorting'];
+    final l$sortingOrder = json['sortingOrder'];
     final l$$__typename = json['__typename'];
     return Query$libraries$libraries(
       id: (l$id as String),
       name: (l$name as String),
       type: fromJson$Enum$LibraryType((l$type as String)),
+      sorting: fromJson$Enum$SortingEnum((l$sorting as String)),
+      sortingOrder: fromJson$Enum$SortingOrder((l$sortingOrder as String)),
       $__typename: (l$$__typename as String),
     );
   }
@@ -233,6 +253,10 @@ class Query$libraries$libraries {
   final String name;
 
   final Enum$LibraryType type;
+
+  final Enum$SortingEnum sorting;
+
+  final Enum$SortingOrder sortingOrder;
 
   final String $__typename;
 
@@ -244,6 +268,10 @@ class Query$libraries$libraries {
     _resultData['name'] = l$name;
     final l$type = type;
     _resultData['type'] = toJson$Enum$LibraryType(l$type);
+    final l$sorting = sorting;
+    _resultData['sorting'] = toJson$Enum$SortingEnum(l$sorting);
+    final l$sortingOrder = sortingOrder;
+    _resultData['sortingOrder'] = toJson$Enum$SortingOrder(l$sortingOrder);
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -254,8 +282,17 @@ class Query$libraries$libraries {
     final l$id = id;
     final l$name = name;
     final l$type = type;
+    final l$sorting = sorting;
+    final l$sortingOrder = sortingOrder;
     final l$$__typename = $__typename;
-    return Object.hashAll([l$id, l$name, l$type, l$$__typename]);
+    return Object.hashAll([
+      l$id,
+      l$name,
+      l$type,
+      l$sorting,
+      l$sortingOrder,
+      l$$__typename,
+    ]);
   }
 
   @override
@@ -280,6 +317,16 @@ class Query$libraries$libraries {
     final l$type = type;
     final lOther$type = other.type;
     if (l$type != lOther$type) {
+      return false;
+    }
+    final l$sorting = sorting;
+    final lOther$sorting = other.sorting;
+    if (l$sorting != lOther$sorting) {
+      return false;
+    }
+    final l$sortingOrder = sortingOrder;
+    final lOther$sortingOrder = other.sortingOrder;
+    if (l$sortingOrder != lOther$sortingOrder) {
       return false;
     }
     final l$$__typename = $__typename;
@@ -310,6 +357,8 @@ abstract class CopyWith$Query$libraries$libraries<TRes> {
     String? id,
     String? name,
     Enum$LibraryType? type,
+    Enum$SortingEnum? sorting,
+    Enum$SortingOrder? sortingOrder,
     String? $__typename,
   });
 }
@@ -328,6 +377,8 @@ class _CopyWithImpl$Query$libraries$libraries<TRes>
     Object? id = _undefined,
     Object? name = _undefined,
     Object? type = _undefined,
+    Object? sorting = _undefined,
+    Object? sortingOrder = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Query$libraries$libraries(
@@ -338,6 +389,12 @@ class _CopyWithImpl$Query$libraries$libraries<TRes>
       type: type == _undefined || type == null
           ? _instance.type
           : (type as Enum$LibraryType),
+      sorting: sorting == _undefined || sorting == null
+          ? _instance.sorting
+          : (sorting as Enum$SortingEnum),
+      sortingOrder: sortingOrder == _undefined || sortingOrder == null
+          ? _instance.sortingOrder
+          : (sortingOrder as Enum$SortingOrder),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -355,6 +412,8 @@ class _CopyWithStubImpl$Query$libraries$libraries<TRes>
     String? id,
     String? name,
     Enum$LibraryType? type,
+    Enum$SortingEnum? sorting,
+    Enum$SortingOrder? sortingOrder,
     String? $__typename,
   }) => _res;
 }

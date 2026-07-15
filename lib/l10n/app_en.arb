@@ -341,6 +341,34 @@
   "@sortOrderFailed": {
     "description": "Snackbar shown when saving the podcast episode sort order failed"
   },
+  "sortBy": "Sort by",
+  "@sortBy": {
+    "description": "Tooltip for the library grid sort menu button"
+  },
+  "sortNameAsc": "Name (A–Z)",
+  "@sortNameAsc": {
+    "description": "Library sort option: by name, ascending"
+  },
+  "sortNameDesc": "Name (Z–A)",
+  "@sortNameDesc": {
+    "description": "Library sort option: by name, descending"
+  },
+  "sortDateAddedNewest": "Date added (newest first)",
+  "@sortDateAddedNewest": {
+    "description": "Library sort option: by date added, newest first"
+  },
+  "sortDateAddedOldest": "Date added (oldest first)",
+  "@sortDateAddedOldest": {
+    "description": "Library sort option: by date added, oldest first"
+  },
+  "sortReleaseYearNewest": "Release year (newest first)",
+  "@sortReleaseYearNewest": {
+    "description": "Library sort option: by release year, newest first"
+  },
+  "sortReleaseYearOldest": "Release year (oldest first)",
+  "@sortReleaseYearOldest": {
+    "description": "Library sort option: by release year, oldest first"
+  },
   "artists": "Artists",
   "@artists": {
     "description": "Browse category for the artists in a music library (also used in Android Auto)"

@@ -1,0 +1,3 @@
+mutation setLibrarySorting($libraryId: ID!, $sorting: SortingEnum!, $sortingOrder: SortingOrder!) {
+    setLibrarySorting(libraryId: $libraryId, sorting: $sorting, sortingOrder: $sortingOrder)
+}

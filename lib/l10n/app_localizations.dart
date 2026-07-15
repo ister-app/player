@@ -602,6 +602,48 @@ abstract class AppLocalizations {
   /// **'Could not change the sort order'**
   String get sortOrderFailed;
 
+  /// Tooltip for the library grid sort menu button
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by'**
+  String get sortBy;
+
+  /// Library sort option: by name, ascending
+  ///
+  /// In en, this message translates to:
+  /// **'Name (A–Z)'**
+  String get sortNameAsc;
+
+  /// Library sort option: by name, descending
+  ///
+  /// In en, this message translates to:
+  /// **'Name (Z–A)'**
+  String get sortNameDesc;
+
+  /// Library sort option: by date added, newest first
+  ///
+  /// In en, this message translates to:
+  /// **'Date added (newest first)'**
+  String get sortDateAddedNewest;
+
+  /// Library sort option: by date added, oldest first
+  ///
+  /// In en, this message translates to:
+  /// **'Date added (oldest first)'**
+  String get sortDateAddedOldest;
+
+  /// Library sort option: by release year, newest first
+  ///
+  /// In en, this message translates to:
+  /// **'Release year (newest first)'**
+  String get sortReleaseYearNewest;
+
+  /// Library sort option: by release year, oldest first
+  ///
+  /// In en, this message translates to:
+  /// **'Release year (oldest first)'**
+  String get sortReleaseYearOldest;
+
   /// Browse category for the artists in a music library (also used in Android Auto)
   ///
   /// In en, this message translates to:
