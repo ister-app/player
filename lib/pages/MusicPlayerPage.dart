@@ -112,6 +112,9 @@ class _LocalPlayerController extends PlayerViewController {
   String? get artUri => _item?.artUri?.toString();
 
   @override
+  bool get portraitArtwork => _item?.extras?['portraitArtwork'] == true;
+
+  @override
   String? get artistLine => _item?.artist ?? '';
 
   @override

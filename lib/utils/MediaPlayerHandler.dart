@@ -1245,6 +1245,9 @@ class MediaPlayerHandler extends BaseAudioHandler
               milliseconds:
                   c.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0),
           artUri: artFor(ImageUtil.getImageByType(c.book.images, ImageTypes.cover)),
+          // Book covers are portrait — flag it so the player shows the cover
+          // in its true 2:3 aspect ratio instead of cropping it square.
+          extras: const {'portraitArtwork': true},
         );
       } else if (e.podcastEpisode != null) {
         final pe = e.podcastEpisode!;

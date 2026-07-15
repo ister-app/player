@@ -439,6 +439,9 @@ class _RemotePlayerController extends PlayerViewController {
   }
 
   @override
+  bool get portraitArtwork => _currentItem?.chapter != null;
+
+  @override
   String? get artistLine =>
       _currentItem == null ? null : _itemDisplay(_currentItem!).subtitle;
 

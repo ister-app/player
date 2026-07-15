@@ -46,6 +46,12 @@ abstract class PlayerViewController extends ChangeNotifier {
   bool get enabled => true;
 
   String? get artUri;
+
+  /// True when the current item's artwork is a portrait cover (audiobook/book)
+  /// rather than a square album cover, so the view renders it 2:3 instead of
+  /// cropping it into a square.
+  bool get portraitArtwork => false;
+
   String? get artistLine;
   String? get titleLine;
   String? get albumLine;
@@ -497,13 +503,18 @@ class _PlayerViewState extends State<PlayerView>
   /// Artwork, or the same music-note placeholder the queue list uses when an
   /// item has no (loadable) artwork.
   Widget _artworkOrPlaceholder(String? artUri, double size, {bool loading = false}) {
+    // Audiobook/book covers are portrait (~2:3); fit them inside the same
+    // `size` budget as a square cover rather than cropping them square.
+    final bool portrait = widget.controller.portraitArtwork;
+    final double width = portrait ? size * 2 / 3 : size;
+    final double height = size;
     return Skeletonizer(
       enabled: loading,
       child: ValueListenableBuilder<Color>(
       valueListenable: _accent,
       builder: (context, accent, child) => Container(
-        width: size,
-        height: size,
+        width: width,
+        height: height,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           boxShadow: loading
