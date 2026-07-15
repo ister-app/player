@@ -4,10 +4,15 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/graphql/albumsQuery.graphql.dart';
 import 'package:player/graphql/analyzeDataForPerson.graphql.dart';
 import 'package:player/graphql/artistById.graphql.dart';
+import 'package:player/graphql/booksQuery.graphql.dart';
+import 'package:player/graphql/fragmentAlbum.graphql.dart';
+import 'package:player/graphql/fragmentBook.graphql.dart';
 import 'package:player/graphql/fragmentCredit.graphql.dart';
 import 'package:player/graphql/fragmentImages.graphql.dart';
+import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
@@ -48,39 +53,84 @@ class PersonPage extends StatelessWidget {
           variables: {'id': personId},
           fetchPolicy: FetchPolicy.cacheAndNetwork,
         ),
-      builder: (QueryResult result,
-          {VoidCallback? refetch, FetchMore? fetchMore}) {
-        if (result.hasException) {
-          return Scaffold(
-            appBar: AppBar(),
-            body: Center(child: Text(result.exception.toString())),
-          );
-        }
+        builder: (QueryResult result,
+            {VoidCallback? refetch, FetchMore? fetchMore}) {
+          if (result.hasException) {
+            return Scaffold(
+              appBar: AppBar(),
+              body: Center(child: Text(result.exception.toString())),
+            );
+          }
 
-        if (result.data == null) {
-          return Scaffold(
-            body: Skeletonizer(
-              enabled: true,
-              child: _buildContent(context, null),
+          final artist = result.data == null
+              ? null
+              : Query$artistById.fromJson(result.data!).artistById;
+
+          // Albums and books are fetched through their own top-level, server-sorted
+          // queries (newest first) instead of the person's unsorted association.
+          // All three queries key off personId, which is known up-front, so these
+          // nested Query widgets fire their network requests in parallel.
+          return Query(
+            options: QueryOptions(
+              document: documentNodeQueryalbums,
+              variables: {
+                'artistId': personId,
+                'sorting': Enum$SortingEnum.RELEASE_YEAR,
+                'sortingOrder': Enum$SortingOrder.DESCENDING,
+                'page': 0,
+                'size': 200,
+              },
+              fetchPolicy: FetchPolicy.cacheAndNetwork,
             ),
+            builder: (QueryResult albumsResult,
+                {VoidCallback? refetch, FetchMore? fetchMore}) {
+              final albums = albumsResult.data == null
+                  ? const <Fragment$fragmentAlbum>[]
+                  : (Query$albums.fromJson(albumsResult.data!).albums?.content ??
+                      const <Fragment$fragmentAlbum>[]);
+
+              return Query(
+                options: QueryOptions(
+                  document: documentNodeQuerybooks,
+                  variables: {
+                    'authorId': personId,
+                    'sorting': Enum$SortingEnum.RELEASE_YEAR,
+                    'sortingOrder': Enum$SortingOrder.DESCENDING,
+                    'page': 0,
+                    'size': 200,
+                  },
+                  fetchPolicy: FetchPolicy.cacheAndNetwork,
+                ),
+                builder: (QueryResult booksResult,
+                    {VoidCallback? refetch, FetchMore? fetchMore}) {
+                  final books = booksResult.data == null
+                      ? const <Fragment$fragmentBook>[]
+                      : (Query$books.fromJson(booksResult.data!).books?.content ??
+                          const <Fragment$fragmentBook>[]);
+
+                  final content =
+                      _buildContent(context, artist, albums, books);
+
+                  return Scaffold(
+                    body: artist == null
+                        ? Skeletonizer(enabled: true, child: content)
+                        : content,
+                  );
+                },
+              );
+            },
           );
-        }
-
-        final artist = Query$artistById.fromJson(result.data!).artistById;
-
-        return Scaffold(
-          body: _buildContent(context, artist),
-        );
-      },
+        },
       ),
     );
   }
 
   Widget _buildContent(
-      BuildContext context, Query$artistById$artistById? artist) {
+      BuildContext context,
+      Query$artistById$artistById? artist,
+      List<Fragment$fragmentAlbum> albums,
+      List<Fragment$fragmentBook> books) {
     final loc = AppLocalizations.of(context)!;
-    final albums = artist?.albums ?? [];
-    final books = artist?.books ?? [];
     final credits = artist?.credits ?? [];
     final description = artist != null ? MetadataUtil.getDescription(artist.metadata) : null;
     final hasAlbums = albums.isNotEmpty;
@@ -109,7 +159,7 @@ class PersonPage extends StatelessWidget {
           ],
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
-            background: _buildHero(context, loc, artist),
+            background: _buildHero(context, loc, artist, albums, books),
           ),
         ),
         if (hasAlbums)
@@ -316,7 +366,11 @@ class PersonPage extends StatelessWidget {
       // Credits without a resolvable media reference are skipped.
     }
 
-    // Movies and shows share one list, sorted by release date (newest first).
+    // Movies and shows share one list, sorted by release year (newest first).
+    // This client-side sort is the authoritative filmography ordering: the server
+    // returns credits by castOrder, but episode credits collapse into their show
+    // here, so raw credit order can't express chronology. Unknown year (0) sorts
+    // last under descending, matching the newest-first albums/books sections.
     // Tapping a movie opens the movie; tapping a show opens a sheet listing its
     // episodes, whose header links to the show and whose rows link to episodes.
     final entries = <({int releaseYear, Widget row})>[
@@ -499,8 +553,12 @@ class PersonPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHero(BuildContext context, AppLocalizations loc,
-      Query$artistById$artistById? artist) {
+  Widget _buildHero(
+      BuildContext context,
+      AppLocalizations loc,
+      Query$artistById$artistById? artist,
+      List<Fragment$fragmentAlbum> albums,
+      List<Fragment$fragmentBook> books) {
     final backgroundImg = artist != null
         ? ImageUtil.getImageByType(artist.images, ImageTypes.background)
         : null;
@@ -510,7 +568,7 @@ class PersonPage extends StatelessWidget {
     final personCoverImg = artist != null
         ? ImageUtil.getImageByType(artist.images, ImageTypes.cover)
         : null;
-    final firstAlbum = artist?.albums?.isNotEmpty == true ? artist!.albums!.first : null;
+    final firstAlbum = albums.isNotEmpty ? albums.first : null;
     final firstAlbumCoverImg = firstAlbum != null
         ? ImageUtil.getImageByType(firstAlbum.images, ImageTypes.cover)
         : null;
@@ -528,7 +586,9 @@ class PersonPage extends StatelessWidget {
       imageUrl: imageUrl,
       blurHash: heroImg?.blurHash,
       title: name,
-      subtitle: artist != null ? _heroSubtitle(loc, artist) : null,
+      subtitle: artist != null
+          ? _heroSubtitle(loc, artist, albums.length, books.length)
+          : null,
       backgroundAlignment: Alignment.topCenter,
       placeholderIcon: Icons.person,
     );
@@ -536,11 +596,8 @@ class PersonPage extends StatelessWidget {
 
   /// Summarises what a person has, showing only the categories they actually
   /// appear in — e.g. "2 films" or "3 albums · 1 serie", never "0 albums".
-  String? _heroSubtitle(
-      AppLocalizations loc, Query$artistById$artistById artist) {
-    final albumCount = artist.albums?.length ?? 0;
-    final bookCount = artist.books?.length ?? 0;
-
+  String? _heroSubtitle(AppLocalizations loc,
+      Query$artistById$artistById artist, int albumCount, int bookCount) {
     // Count distinct movies and shows across the credits, mirroring how the
     // filmography merges episode credits back onto their show.
     final movieIds = <String>{};

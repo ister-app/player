@@ -3,8 +3,6 @@ query artistById($id: ID) {
         id name birthYear
         images { ...fragmentImages }
         metadata { ...fragmentMetadata }
-        albums { ...fragmentAlbum }
-        books { ...fragmentBook }
         credits { ...fragmentPersonCredit }
     }
 }
