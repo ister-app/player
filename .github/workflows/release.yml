@@ -9,7 +9,11 @@ name: Release
 # apart from a release.
 on:
   schedule:
-    - cron: '0 3 * * *'   # 03:00 UTC, an hour after the server, so the two do not fight over runners
+    # 04:00 UTC, two hours after the server's release (02:00). The order matters: the pins
+    # gate below verifies the pinned server version exists as a release image, so the
+    # server's release — including its slow native build — must have finished publishing
+    # before this one starts. Two hours also keeps them from fighting over runners.
+    - cron: '0 4 * * *'
   workflow_dispatch:
     inputs:
       bump:
@@ -70,6 +74,38 @@ jobs:
 
           echo "release=true" >> "$GITHUB_OUTPUT"
           echo "::notice::$sha is green; releasing (previous tag: ${prev:-none})."
+
+      # A release must be replayable: the e2e pins have to be hard (a chart release tag, a
+      # testdata commit) and the server version they resolve to must exist as a *release*
+      # image — a -SNAPSHOT tag is mutable and is stripped first. If the stripped version
+      # was never released, this fails loudly: release the server first, then the player.
+      - name: Validate the e2e pins
+        id: pins
+        if: steps.check.outputs.release == 'true'
+        run: |
+          source ci/e2e-pins.env
+
+          [[ "$CHART_REF" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] \
+            || { echo "::error::CHART_REF ($CHART_REF) must be a chart release tag (vX.Y.Z) for a release."; exit 1; }
+          [[ "$TESTDATA_REF" =~ ^[0-9a-f]{40}$ ]] \
+            || { echo "::error::TESTDATA_REF ($TESTDATA_REF) must be a full commit sha for a release."; exit 1; }
+
+          # The effective server version: the explicit pin, or the chart's own appVersion.
+          server_tag="$SERVER_IMAGE_TAG"
+          if [ -z "$server_tag" ]; then
+            server_tag=$(curl -fsS "https://raw.githubusercontent.com/ister-app/chart/$CHART_REF/Chart.yaml" \
+              | grep -oP '^appVersion:\s*"?\K[0-9][^"\s]*')
+            [ -n "$server_tag" ] || { echo "::error::could not read appVersion from chart $CHART_REF"; exit 1; }
+          fi
+
+          release_tag="${server_tag%-SNAPSHOT}"
+          for image in ghcr.io/ister-app/server ghcr.io/ister-app/migrations; do
+            docker manifest inspect "$image:$release_tag" >/dev/null 2>&1 \
+              || { echo "::error::$image:$release_tag does not exist — the pinned server version ($server_tag) has no release. Release the server first, then bump the pins."; exit 1; }
+          done
+
+          echo "server_release_tag=$release_tag" >> "$GITHUB_OUTPUT"
+          echo "::notice::e2e pins OK: chart $CHART_REF, testdata $TESTDATA_REF, server $release_tag"
 
       - name: Work out the release version
         id: version
@@ -274,6 +310,15 @@ jobs:
           grep -qx "version: ${VERSION}+${BUILD}" pubspec.yaml \
             || { echo "version not written to pubspec.yaml" >&2; exit 1; }
 
+      # The gate proved the stripped server version exists as a release, so the release
+      # commit pins that real version — main never releases while pointing at a mutable
+      # -SNAPSHOT tag. A no-op when the pin was empty (chart-managed) or already clean.
+      - name: Strip -SNAPSHOT from the e2e pins
+        run: |
+          sed -i -E 's|^(SERVER_IMAGE_TAG=.*)-SNAPSHOT$|\1|' ci/e2e-pins.env
+          ! grep -q -- '-SNAPSHOT' ci/e2e-pins.env \
+            || { echo "a -SNAPSHOT survived in ci/e2e-pins.env" >&2; exit 1; }
+
       - name: Generate the release notes
         run: ./ci/release-notes.sh "${{ needs.gate.outputs.version }}" "${{ needs.gate.outputs.prev }}"
 
@@ -283,7 +328,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add pubspec.yaml CHANGELOG.md
+          git add pubspec.yaml CHANGELOG.md ci/e2e-pins.env
           git commit -m "chore(release): v${VERSION}"
 
           # Annotated on purpose: --follow-tags below pushes annotated tags only, and a

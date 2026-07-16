@@ -49,6 +49,15 @@ jobs:
         with:
           channel: stable
           flutter-version-file: pubspec.yaml
+          # Caches the Flutter SDK download (~1 min per run).
+          cache: true
+
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
       - uses: actions/setup-java@v4
         with:
           java-version: 21
@@ -104,6 +113,109 @@ jobs:
         with:
           name: android-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+
+  # End-to-end: the real app against a real server in kind (deployed with the chart
+  # repo's ci/up.sh, media from the testdata repo). Non-blocking while it beds in —
+  # remove continue-on-error once it has proven stable.
+  integration-e2e:
+    name: Integration tests on kind
+    if: ${{ github.event_name == 'pull_request' || !startsWith(github.event.head_commit.message, 'chore(release):') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: player
+
+      # ci/e2e-pins.env pins which chart, testdata and server build this player commit
+      # is tested against — bump it there, not here.
+      - name: Read the e2e pins
+        run: cat player/ci/e2e-pins.env >> "$GITHUB_ENV"
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ister-app/chart
+          ref: ${{ env.CHART_REF }}
+          path: chart
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ister-app/testdata
+          ref: ${{ env.TESTDATA_REF }}
+          path: testdata
+
+      - name: Resolve the testdata revision (for the cache key)
+        id: testdata
+        run: echo "sha=$(git -C testdata rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      # Same cache key scheme as the chart repo's CI, so both share the fixtures.
+      - name: Restore media fixtures
+        uses: actions/cache@v4
+        with:
+          path: |
+            testdata/node1/disk1
+            testdata/podcast-feed
+          key: fixtures-${{ steps.testdata.outputs.sha }}-${{ hashFiles('testdata/create_mkv.sh', 'testdata/create_books.sh', 'testdata/create_comics.sh', 'testdata/create_podcast_feed.sh') }}
+
+      - name: Trim testdata to what the cluster mounts
+        run: rm -rf testdata/node2 testdata/node1/disk2
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: player/pubspec.yaml
+          cache: true
+
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('player/pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
+
+      - name: Install dependencies from Apt
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg zip curl git unzip xz-utils libglu1-mesa clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libmpv-dev mpv libsecret-1-0 libsecret-1-dev libjsoncpp25 libjsoncpp-dev xvfb dbus-x11
+
+      - uses: azure/setup-helm@v4
+
+      - name: Install kind
+        uses: helm/kind-action@v1
+        with:
+          install_only: true
+
+      - name: Bring up the cluster
+        run: TESTDATA_DIR="$PWD/testdata" SERVER_IMAGE_TAG="$SERVER_IMAGE_TAG" chart/ci/up.sh
+
+      - name: Start port-forwards
+        run: |
+          chart/ci/e2e/forward-for-player.sh ister ister &
+          sleep 5
+          curl -fsS http://localhost:8080/api/.well-known/ister
+
+      - name: Scan the libraries (the tests need indexed media)
+        working-directory: chart
+        run: E2E_ONLY='10-*' ./ci/e2e.sh ister ister
+
+      - name: Run the integration tests
+        working-directory: player
+        run: |
+          flutter pub get
+          # xvfb for the Linux desktop embedder, dbus for audio_service's MPRIS backend.
+          xvfb-run -a dbus-run-session -- \
+            flutter test integration_test -d linux --dart-define=ISTER_TEST_MODE=true
+
+      - name: Diagnostics
+        if: failure()
+        run: |
+          kubectl get pods -n ister -o wide || true
+          kubectl get events -n ister --sort-by=.lastTimestamp | tail -40 || true
+          kubectl get pods -n ister -o name | while read -r p; do
+            echo "----- $p"
+            kubectl logs -n ister "$p" --all-containers --prefix --tail=100 || true
+          done
 
   flatpak:
     needs: build

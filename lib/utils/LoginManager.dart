@@ -13,7 +13,19 @@ class LoginManager {
   static final Map<String, Future<void>> _initFutures = {};
   static final Map<String, Future<void>> _refreshFutures = {};
 
+  /// Test seam: supplies a raw access token per server, bypassing the
+  /// interactive OIDC flow (which cannot run headless). Only consulted when the
+  /// app was built with --dart-define=ISTER_TEST_MODE=true, so it is inert in
+  /// production builds even if something were to set it.
+  @visibleForTesting
+  static Future<String?> Function(String serverUrl)? testTokenProvider;
+
+  static const bool _testMode = bool.fromEnvironment('ISTER_TEST_MODE');
+
+  static bool get _testTokenActive => _testMode && testTokenProvider != null;
+
   static bool isLoggedIn(String serverUrl) {
+    if (_testTokenActive) return true;
     return managers[serverUrl]?.currentUser != null;
   }
 
@@ -23,6 +35,9 @@ class LoginManager {
 
   static Future<void> initIfNotExists(
       String serverUrl, String discoveryDocumentUri) {
+    // The test token provider replaces the whole OIDC session; skip discovery
+    // so the tests do not depend on the issuer being reachable from the app.
+    if (_testTokenActive) return Future.value();
     return _initFutures.putIfAbsent(serverUrl, () async {
       try {
         await _init(serverUrl, discoveryDocumentUri);
@@ -75,6 +90,7 @@ class LoginManager {
   }
 
   static Future<String?> waitForToken(String serverUrl) async {
+    if (_testTokenActive) return getToken(serverUrl);
     const pollInterval = Duration(seconds: 5);
     final deadline = DateTime.now().add(const Duration(minutes: 1));
 
@@ -170,6 +186,10 @@ class LoginManager {
   }
 
   static Future<String?> getToken(String serverUrl) async {
+    if (_testTokenActive) {
+      final token = await testTokenProvider!(serverUrl);
+      return token == null ? null : "Bearer $token";
+    }
     final manager = managers[serverUrl];
     if (manager == null) return null;
 
