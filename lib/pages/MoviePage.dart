@@ -40,17 +40,26 @@ class _MoviePageState extends State<MoviePage> {
   bool loadComplete = false;
   Fragment$fragmentMovie? movie;
   bool _playQueueStarted = false;
+  bool _videoPageOpenCounted = false;
 
   @override
   void initState() {
     super.initState();
     // Hide the mini player's video bar while this page (the full player) shows.
-    MediaPlayerHandler.instance.videoPageOpen.value++;
+    // Post-frame: the mini player is an ancestor listening to this notifier, and
+    // notifying it while this page is being mounted mid-build throws
+    // "markNeedsBuild called during build".
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      MediaPlayerHandler.instance.videoPageOpen.value++;
+      _videoPageOpenCounted = true;
+    });
   }
 
   @override
   void dispose() {
-    MediaPlayerHandler.instance.videoPageOpen.value--;
+    if (_videoPageOpenCounted) {
+      MediaPlayerHandler.instance.videoPageOpen.value--;
+    }
     super.dispose();
   }
 

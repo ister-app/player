@@ -49,6 +49,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
   bool loadComplete = false;
   Fragment$fragmentEpisode? episode;
   bool _playQueueStarted = false;
+  bool _videoPageOpenCounted = false;
 
   late final PlayQueueService playQueueService;
   late StreamSubscription _playQueueSubscription;
@@ -59,7 +60,13 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
     playQueueService = PlayQueueService();
 
     // Hide the mini player's video bar while this page (the full player) shows.
-    MediaPlayerHandler.instance.videoPageOpen.value++;
+    // Post-frame: the mini player is an ancestor listening to this notifier, and
+    // notifying it while this page is being mounted mid-build throws
+    // "markNeedsBuild called during build".
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      MediaPlayerHandler.instance.videoPageOpen.value++;
+      _videoPageOpenCounted = true;
+    });
 
     // Subscribe to the playqueue changed stream
     _playQueueSubscription = playQueueService
@@ -85,7 +92,9 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
 
   @override
   void dispose() {
-    MediaPlayerHandler.instance.videoPageOpen.value--;
+    if (_videoPageOpenCounted) {
+      MediaPlayerHandler.instance.videoPageOpen.value--;
+    }
     _playQueueSubscription.cancel();
     super.dispose();
   }
