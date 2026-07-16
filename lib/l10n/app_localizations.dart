@@ -1112,6 +1112,12 @@ abstract class AppLocalizations {
   /// **'Read right-to-left (manga)'**
   String get readingDirectionRtl;
 
+  /// No description provided for @pageRangeOfPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {from}-{to} of {total}'**
+  String pageRangeOfPages(int from, int to, int total);
+
   /// No description provided for @goToSeries.
   ///
   /// In en, this message translates to:

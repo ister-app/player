@@ -478,6 +478,16 @@ class _ComicReaderPageState extends State<ComicReaderPage>
     );
   }
 
+  /// "Page 4-5 of 10" when a spread shows two pages, "Page 4 of 10" otherwise.
+  String _pageLabel(AppLocalizations loc) {
+    if (_spreads.isEmpty) return loc.pageOfPages(1, _pageCount);
+    final spread = _spreads[_spreadIndex.clamp(0, _spreads.length - 1)];
+    return spread.length > 1
+        ? loc.pageRangeOfPages(
+            spread.first + 1, spread.last + 1, _pageCount)
+        : loc.pageOfPages(spread.first + 1, _pageCount);
+  }
+
   /* -------------------------------- build -------------------------------- */
 
   @override
@@ -542,7 +552,7 @@ class _ComicReaderPageState extends State<ComicReaderPage>
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Text(
-                      loc.pageOfPages(_currentPage + 1, _pageCount),
+                      _pageLabel(loc),
                       style: const TextStyle(color: Colors.white70),
                     ),
                   ),

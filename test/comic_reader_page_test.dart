@@ -10,6 +10,7 @@ import 'package:http/testing.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/pages/ComicReaderPage.dart';
 import 'package:player/utils/comic/ComicPageSource.dart';
+import 'package:player/utils/comic/ComicPreferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
@@ -193,6 +194,40 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Page 3 of 10'), findsOneWidget);
+    }, () => _fakeServer([]));
+  });
+
+  testWidgets(
+      'a wide viewport shows spreads and labels them as a page range',
+      (tester) async {
+    tester.view.physicalSize = const Size(1600, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    // ComicPreferences holds the first test's in-memory store (static
+    // SharedPreferencesAsync), so the RTL test's toggle leaks in here.
+    await ComicPreferences.setRightToLeft('series-1', false);
+
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+
+      // The cover stands alone; then pages pair up.
+      expect(find.text('Page 1 of 10'), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.pumpAndSettle();
+      expect(find.text('Page 2-3 of 10'), findsOneWidget);
+
+      // The last spread is reachable and shows the final pair.
+      for (var i = 0; i < 3; i++) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+        await tester.pumpAndSettle();
+      }
+      expect(find.text('Page 8-9 of 10'), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.pumpAndSettle();
+      expect(find.text('Page 10 of 10'), findsOneWidget);
     }, () => _fakeServer([]));
   });
 

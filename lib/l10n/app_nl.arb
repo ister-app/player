@@ -169,6 +169,7 @@
   "couldNotLoadComic": "Kon de strip niet laden",
   "pageOfPages": "Pagina {current} van {total}",
   "readingDirectionRtl": "Van rechts naar links lezen (manga)",
+  "pageRangeOfPages": "Pagina {from}-{to} van {total}",
   "goToSeries": "Ga naar serie",
   "volumes": "Delen",
   "fitWidth": "Breedte passend",

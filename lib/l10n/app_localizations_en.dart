@@ -600,6 +600,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get readingDirectionRtl => 'Read right-to-left (manga)';
 
   @override
+  String pageRangeOfPages(int from, int to, int total) {
+    return 'Page $from-$to of $total';
+  }
+
+  @override
   String get goToSeries => 'Go to series';
 
   @override

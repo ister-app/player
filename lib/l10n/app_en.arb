@@ -635,6 +635,14 @@
     }
   },
   "readingDirectionRtl": "Read right-to-left (manga)",
+  "pageRangeOfPages": "Page {from}-{to} of {total}",
+  "@pageRangeOfPages": {
+    "placeholders": {
+      "from": {"type": "int"},
+      "to": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
   "goToSeries": "Go to series",
   "volumes": "Volumes",
   "fitWidth": "Fit width",
