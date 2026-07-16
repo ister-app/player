@@ -1,5 +1,39 @@
 # Changelog
 
+## player v1.1.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.1.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat: show release year / birth year next to the title on detail pages ([`da86724`](https://github.com/ister-app/player/commit/da86724))
+- feat(recent): render one book tile for the merged continue-watching entry ([`1b11c4f`](https://github.com/ister-app/player/commit/1b11c4f))
+- feat(person): sort albums, books and filmography newest-first ([`0ba49ab`](https://github.com/ister-app/player/commit/0ba49ab))
+- feat: sort the library grid by name, date added or release year ([`c5912e9`](https://github.com/ister-app/player/commit/c5912e9))
+- feat: show app version and commit hash in settings ([`a730ed4`](https://github.com/ister-app/player/commit/a730ed4))
+
+### Fixes
+
+- fix: show audiobook cover in its 2:3 aspect ratio in the player ([`b31dd73`](https://github.com/ister-app/player/commit/b31dd73))
+
+### Dependency updates
+
+- chore(deps): bump connectivity_plus, package_info_plus and uuid ([`71271fd`](https://github.com/ister-app/player/commit/71271fd))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.1.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.0.0...v1.1.0
+
 ## player v1.0.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
