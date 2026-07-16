@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:player/components/TvFocusable.dart';
@@ -12,6 +13,7 @@ import 'package:player/utils/comic/ComicPageSource.dart';
 import 'package:player/utils/comic/ComicPreferences.dart';
 import 'package:player/utils/comic/ComicResourceClient.dart';
 import 'package:player/utils/comic/ComicSyncService.dart';
+import 'package:player/utils/comic/PdfPageSource.dart';
 
 /// The comic reader: page images in a swiping [PageView], one *spread* per
 /// view — a single page, or two side by side on a wide viewport. Handles
@@ -144,6 +146,8 @@ class _ComicReaderPageState extends State<ComicReaderPage>
       final manifest = await client.manifest();
       final source = switch (manifest.format) {
         'CBZ' => CbzPageSource(client: client, manifest: manifest),
+        // pdfrx has no custom-read source on web; cbz works everywhere.
+        'PDF' when !kIsWeb => await PdfPageSource.open(client),
         _ => null,
       };
       if (source == null || source.pageCount <= 0) {
@@ -339,16 +343,14 @@ class _ComicReaderPageState extends State<ComicReaderPage>
     }
   }
 
-  /// Decode capped at what the viewport can show, so a 4000-px scan doesn't
-  /// blow the image cache on a 1080p screen.
+  /// Decode/render capped at what the viewport can show, so a 4000-px scan
+  /// doesn't blow the image cache on a 1080p screen.
   ImageProvider _resized(int pageIndex, int pagesInSpread) {
-    final source = _source!;
     final media = MediaQuery.of(context);
     final width = (media.size.width * media.devicePixelRatio / pagesInSpread)
         .round()
         .clamp(240, 4096);
-    return ResizeImage(source.pageImage(pageIndex),
-        width: width, allowUpscaling: false);
+    return _source!.pageImage(pageIndex, targetWidth: width);
   }
 
   void _goToPage(int pageIndex) {

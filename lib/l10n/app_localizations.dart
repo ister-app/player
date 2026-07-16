@@ -1093,6 +1093,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next chapter'**
   String get nextChapter;
+
+  /// No description provided for @couldNotLoadComic.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the comic'**
+  String get couldNotLoadComic;
+
+  /// No description provided for @pageOfPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {current} of {total}'**
+  String pageOfPages(int current, int total);
+
+  /// No description provided for @readingDirectionRtl.
+  ///
+  /// In en, this message translates to:
+  /// **'Read right-to-left (manga)'**
+  String get readingDirectionRtl;
+
+  /// No description provided for @fitWidth.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit width'**
+  String get fitWidth;
+
+  /// No description provided for @fitPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit page'**
+  String get fitPage;
+
+  /// No description provided for @pageOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages'**
+  String get pageOverview;
 }
 
 class _AppLocalizationsDelegate

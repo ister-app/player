@@ -587,4 +587,24 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get nextChapter => 'Volgend hoofdstuk';
+
+  @override
+  String get couldNotLoadComic => 'Kon de strip niet laden';
+
+  @override
+  String pageOfPages(int current, int total) {
+    return 'Pagina $current van $total';
+  }
+
+  @override
+  String get readingDirectionRtl => 'Van rechts naar links lezen (manga)';
+
+  @override
+  String get fitWidth => 'Breedte passend';
+
+  @override
+  String get fitPage => 'Pagina passend';
+
+  @override
+  String get pageOverview => 'Pagina\'s';
 }

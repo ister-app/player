@@ -10,8 +10,10 @@ import 'package:player/utils/comic/ComicResourceClient.dart';
 abstract class ComicPageSource {
   int get pageCount;
 
-  /// Full-resolution page image, zero-based reading order.
-  ImageProvider pageImage(int index);
+  /// Page image in zero-based reading order. [targetWidth] caps the decoded
+  /// (cbz) or rendered (pdf) width to what the viewport can show, so a
+  /// 4000-px scan doesn't blow the image cache on a 1080p screen.
+  ImageProvider pageImage(int index, {int? targetWidth});
 
   /// Strip-sized thumbnail of a page.
   ImageProvider thumbnail(int index);
@@ -44,10 +46,15 @@ class CbzPageSource implements ComicPageSource {
   final int pageCount;
 
   @override
-  ImageProvider pageImage(int index) => _provider(
-        client.pageUrl(index),
-        client.pageCacheKey(index),
-      );
+  ImageProvider pageImage(int index, {int? targetWidth}) {
+    final provider = _provider(
+      client.pageUrl(index),
+      client.pageCacheKey(index),
+    );
+    return targetWidth == null
+        ? provider
+        : ResizeImage(provider, width: targetWidth, allowUpscaling: false);
+  }
 
   @override
   ImageProvider thumbnail(int index) => _provider(
