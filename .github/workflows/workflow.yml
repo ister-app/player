@@ -129,9 +129,10 @@ jobs:
           path: player
 
       # ci/e2e-pins.env pins which chart, testdata and server build this player commit
-      # is tested against — bump it there, not here.
+      # is tested against — bump it there, not here. Only KEY=value lines may reach
+      # GITHUB_ENV: it rejects the file's comment lines.
       - name: Read the e2e pins
-        run: cat player/ci/e2e-pins.env >> "$GITHUB_ENV"
+        run: grep -E '^[A-Z_]+=' player/ci/e2e-pins.env >> "$GITHUB_ENV"
 
       - uses: actions/checkout@v4
         with:
