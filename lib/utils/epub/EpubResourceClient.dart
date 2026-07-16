@@ -63,13 +63,28 @@ class EpubResourceClient {
     final uri = Uri.parse(
         '$_base/epub/$mediaFileId/resource/${_encodeEntryPath(entryPath)}'
         '${token != null ? '?token=${Uri.encodeQueryComponent(token)}' : ''}');
-    final response = await _http.get(uri);
+    final response = await _getWithRetry(uri);
     if (response.statusCode != 200) {
       throw EpubResourceException(entryPath, response.statusCode);
     }
     final body = response.bodyBytes;
     _store(entryPath, body);
     return body;
+  }
+
+  /// One entry fetch shouldn't kill the whole book on a transient socket
+  /// error (a keep-alive connection the server or a proxy already closed), so
+  /// retry a couple of times. Only [http.ClientException]s are retried; HTTP
+  /// error statuses are handled by the caller.
+  Future<http.Response> _getWithRetry(Uri uri) async {
+    for (var attempt = 0; ; attempt++) {
+      try {
+        return await _http.get(uri);
+      } on http.ClientException {
+        if (attempt >= 2) rethrow;
+        await Future.delayed(Duration(milliseconds: 250 * (attempt + 1)));
+      }
+    }
   }
 
   Future<String> text(String entryPath) async =>
