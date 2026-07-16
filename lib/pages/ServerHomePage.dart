@@ -87,6 +87,20 @@ class _ServerHomePageState extends State<ServerHomePage> {
     await LoginManager.startLogin(serverUrl);
   }
 
+  /// Escape hatch for the pre-shell states (loading, login): without it the
+  /// page is the root of the stack and there is no way back to the server
+  /// overview to pick another server.
+  Widget _backToServers(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      tooltip: AppLocalizations.of(context)!.backToServerOverview,
+      onPressed: () {
+        ClientManager.instance.lastClientUsed = null;
+        AutoRouter.of(context).replace(HomeRoute());
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -252,7 +266,10 @@ class _ServerHomePageState extends State<ServerHomePage> {
       builder: (context, infoSnapshot) {
         if (infoSnapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
-            appBar: AppBar(title: Text(widget.serverName)),
+            appBar: AppBar(
+              leading: _backToServers(context),
+              title: Text(widget.serverName),
+            ),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
@@ -295,7 +312,10 @@ class _ServerHomePageState extends State<ServerHomePage> {
           builder: (context, initSnapshot) {
             if (initSnapshot.connectionState == ConnectionState.waiting) {
               return Scaffold(
-                appBar: AppBar(title: Text(info.name)),
+                appBar: AppBar(
+                  leading: _backToServers(context),
+                  title: Text(info.name),
+                ),
                 body: const Center(child: CircularProgressIndicator()),
               );
             }
@@ -318,7 +338,10 @@ class _ServerHomePageState extends State<ServerHomePage> {
                         if (StreamTokenService.getToken(widget.serverName) ==
                             null) {
                           return Scaffold(
-                            appBar: AppBar(title: Text(info.name)),
+                            appBar: AppBar(
+                              leading: _backToServers(context),
+                              title: Text(info.name),
+                            ),
                             body: const Center(
                                 child: CircularProgressIndicator()),
                           );
@@ -329,7 +352,10 @@ class _ServerHomePageState extends State<ServerHomePage> {
                   } else {
                     final loc = AppLocalizations.of(context)!;
                     return Scaffold(
-                      appBar: AppBar(title: Text(info.name)),
+                      appBar: AppBar(
+                        leading: _backToServers(context),
+                        title: Text(info.name),
+                      ),
                       body: Center(
                         child: SingleChildScrollView(
                           child: Column(
