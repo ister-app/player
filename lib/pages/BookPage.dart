@@ -276,6 +276,7 @@ class _BookPageState extends State<BookPage> {
         book != null ? MetadataUtil.getDescription(book.metadata) : null;
     final metaLine = book != null ? MetadataUtil.getMetaLine(book.metadata) : null;
     final epubFile = _epubFile;
+    final comicFile = _comicFile;
     final readAloudFile = _readAloudEpubFile;
     final readingProgress = _readingProgress;
     final hasProgress = _hasProgress;
@@ -292,7 +293,10 @@ class _BookPageState extends State<BookPage> {
             background: _buildHeader(context, book),
           ),
         ),
-        if (_hasListenableChapter || epubFile != null || readAloudFile != null)
+        if (_hasListenableChapter ||
+            epubFile != null ||
+            comicFile != null ||
+            readAloudFile != null)
           SliverToBoxAdapter(
             child: _constrained(
               Padding(
