@@ -1,4 +1,5 @@
 import 'package:cached_network_image_ce/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:player/utils/comic/ComicManifest.dart';
 import 'package:player/utils/comic/ComicResourceClient.dart';
@@ -30,19 +31,28 @@ class CbzPageSource implements ComicPageSource {
   /// Width bucket the server downscales thumbnails to.
   static const int thumbnailWidth = 240;
 
+  /// Widget tests swap this out: the cached-image pipeline uses its own
+  /// dart:io client, which `http.runWithClient` fixtures can't intercept.
+  @visibleForTesting
+  static ImageProvider Function(String url, String cacheKey)? providerFactory;
+
+  static ImageProvider _provider(String url, String cacheKey) =>
+      providerFactory?.call(url, cacheKey) ??
+      CachedNetworkImageProvider(url, cacheKey: cacheKey);
+
   @override
   final int pageCount;
 
   @override
-  ImageProvider pageImage(int index) => CachedNetworkImageProvider(
+  ImageProvider pageImage(int index) => _provider(
         client.pageUrl(index),
-        cacheKey: client.pageCacheKey(index),
+        client.pageCacheKey(index),
       );
 
   @override
-  ImageProvider thumbnail(int index) => CachedNetworkImageProvider(
+  ImageProvider thumbnail(int index) => _provider(
         client.pageUrl(index, width: thumbnailWidth),
-        cacheKey: client.pageCacheKey(index, width: thumbnailWidth),
+        client.pageCacheKey(index, width: thumbnailWidth),
       );
 
   @override

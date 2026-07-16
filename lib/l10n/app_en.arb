@@ -625,5 +625,17 @@
   "noReadAloudForChapter": "This chapter has no read-aloud audio",
   "bookMayNotDisplayCorrectly": "This book has a fixed layout and may not display correctly",
   "previousChapter": "Previous chapter",
-  "nextChapter": "Next chapter"
+  "nextChapter": "Next chapter",
+  "couldNotLoadComic": "Could not load the comic",
+  "pageOfPages": "Page {current} of {total}",
+  "@pageOfPages": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "readingDirectionRtl": "Read right-to-left (manga)",
+  "fitWidth": "Fit width",
+  "fitPage": "Fit page",
+  "pageOverview": "Pages"
 }

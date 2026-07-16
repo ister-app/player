@@ -165,5 +165,11 @@
   "noReadAloudForChapter": "Dit hoofdstuk heeft geen voorleesaudio",
   "bookMayNotDisplayCorrectly": "Dit boek heeft een vaste opmaak en wordt mogelijk niet goed weergegeven",
   "previousChapter": "Vorig hoofdstuk",
-  "nextChapter": "Volgend hoofdstuk"
+  "nextChapter": "Volgend hoofdstuk",
+  "couldNotLoadComic": "Kon de strip niet laden",
+  "pageOfPages": "Pagina {current} van {total}",
+  "readingDirectionRtl": "Van rechts naar links lezen (manga)",
+  "fitWidth": "Breedte passend",
+  "fitPage": "Pagina passend",
+  "pageOverview": "Pagina's"
 }
