@@ -801,6 +801,44 @@ const documentNodeQueryrecentlyWatched = DocumentNode(
                         selectionSet: null,
                       ),
                       FieldNode(
+                        name: NameNode(value: 'title'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                      FieldNode(
+                        name: NameNode(value: 'series'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: SelectionSetNode(
+                          selections: [
+                            FieldNode(
+                              name: NameNode(value: 'id'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                            FieldNode(
+                              name: NameNode(value: 'name'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                            FieldNode(
+                              name: NameNode(value: '__typename'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                          ],
+                        ),
+                      ),
+                      FieldNode(
                         name: NameNode(value: 'images'),
                         alias: null,
                         arguments: [],
@@ -903,6 +941,13 @@ const documentNodeQueryrecentlyWatched = DocumentNode(
                             ),
                             FieldNode(
                               name: NameNode(value: 'path'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                            FieldNode(
+                              name: NameNode(value: 'format'),
                               alias: null,
                               arguments: [],
                               directives: [],
@@ -4513,6 +4558,8 @@ class Query$recentlyWatched$recentlyWatched$book {
   Query$recentlyWatched$recentlyWatched$book({
     required this.id,
     required this.name,
+    required this.title,
+    this.series,
     this.images,
     this.metadata,
     this.watchStatus,
@@ -4525,6 +4572,8 @@ class Query$recentlyWatched$recentlyWatched$book {
   ) {
     final l$id = json['id'];
     final l$name = json['name'];
+    final l$title = json['title'];
+    final l$series = json['series'];
     final l$images = json['images'];
     final l$metadata = json['metadata'];
     final l$watchStatus = json['watchStatus'];
@@ -4533,6 +4582,12 @@ class Query$recentlyWatched$recentlyWatched$book {
     return Query$recentlyWatched$recentlyWatched$book(
       id: (l$id as String),
       name: (l$name as String),
+      title: (l$title as String),
+      series: l$series == null
+          ? null
+          : Query$recentlyWatched$recentlyWatched$book$series.fromJson(
+              (l$series as Map<String, dynamic>),
+            ),
       images: (l$images as List<dynamic>?)
           ?.map(
             (e) =>
@@ -4569,6 +4624,10 @@ class Query$recentlyWatched$recentlyWatched$book {
 
   final String name;
 
+  final String title;
+
+  final Query$recentlyWatched$recentlyWatched$book$series? series;
+
   final List<Fragment$fragmentImages>? images;
 
   final List<Fragment$fragmentMetadata>? metadata;
@@ -4586,6 +4645,10 @@ class Query$recentlyWatched$recentlyWatched$book {
     _resultData['id'] = l$id;
     final l$name = name;
     _resultData['name'] = l$name;
+    final l$title = title;
+    _resultData['title'] = l$title;
+    final l$series = series;
+    _resultData['series'] = l$series?.toJson();
     final l$images = images;
     _resultData['images'] = l$images?.map((e) => e.toJson()).toList();
     final l$metadata = metadata;
@@ -4603,6 +4666,8 @@ class Query$recentlyWatched$recentlyWatched$book {
   int get hashCode {
     final l$id = id;
     final l$name = name;
+    final l$title = title;
+    final l$series = series;
     final l$images = images;
     final l$metadata = metadata;
     final l$watchStatus = watchStatus;
@@ -4611,6 +4676,8 @@ class Query$recentlyWatched$recentlyWatched$book {
     return Object.hashAll([
       l$id,
       l$name,
+      l$title,
+      l$series,
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$watchStatus == null
@@ -4638,6 +4705,16 @@ class Query$recentlyWatched$recentlyWatched$book {
     final l$name = name;
     final lOther$name = other.name;
     if (l$name != lOther$name) {
+      return false;
+    }
+    final l$title = title;
+    final lOther$title = other.title;
+    if (l$title != lOther$title) {
+      return false;
+    }
+    final l$series = series;
+    final lOther$series = other.series;
+    if (l$series != lOther$series) {
       return false;
     }
     final l$images = images;
@@ -4734,12 +4811,15 @@ abstract class CopyWith$Query$recentlyWatched$recentlyWatched$book<TRes> {
   TRes call({
     String? id,
     String? name,
+    String? title,
+    Query$recentlyWatched$recentlyWatched$book$series? series,
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
     List<Query$recentlyWatched$recentlyWatched$book$watchStatus>? watchStatus,
     List<Query$recentlyWatched$recentlyWatched$book$epubFiles>? epubFiles,
     String? $__typename,
   });
+  CopyWith$Query$recentlyWatched$recentlyWatched$book$series<TRes> get series;
   TRes images(
     Iterable<Fragment$fragmentImages>? Function(
       Iterable<CopyWith$Fragment$fragmentImages<Fragment$fragmentImages>>?,
@@ -4790,6 +4870,8 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book<TRes>
   TRes call({
     Object? id = _undefined,
     Object? name = _undefined,
+    Object? title = _undefined,
+    Object? series = _undefined,
     Object? images = _undefined,
     Object? metadata = _undefined,
     Object? watchStatus = _undefined,
@@ -4801,6 +4883,12 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book<TRes>
       name: name == _undefined || name == null
           ? _instance.name
           : (name as String),
+      title: title == _undefined || title == null
+          ? _instance.title
+          : (title as String),
+      series: series == _undefined
+          ? _instance.series
+          : (series as Query$recentlyWatched$recentlyWatched$book$series?),
       images: images == _undefined
           ? _instance.images
           : (images as List<Fragment$fragmentImages>?),
@@ -4822,6 +4910,18 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book<TRes>
           : ($__typename as String),
     ),
   );
+
+  CopyWith$Query$recentlyWatched$recentlyWatched$book$series<TRes> get series {
+    final local$series = _instance.series;
+    return local$series == null
+        ? CopyWith$Query$recentlyWatched$recentlyWatched$book$series.stub(
+            _then(_instance),
+          )
+        : CopyWith$Query$recentlyWatched$recentlyWatched$book$series(
+            local$series,
+            (e) => call(series: e),
+          );
+  }
 
   TRes images(
     Iterable<Fragment$fragmentImages>? Function(
@@ -4899,12 +4999,17 @@ class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$book<TRes>
   call({
     String? id,
     String? name,
+    String? title,
+    Query$recentlyWatched$recentlyWatched$book$series? series,
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
     List<Query$recentlyWatched$recentlyWatched$book$watchStatus>? watchStatus,
     List<Query$recentlyWatched$recentlyWatched$book$epubFiles>? epubFiles,
     String? $__typename,
   }) => _res;
+
+  CopyWith$Query$recentlyWatched$recentlyWatched$book$series<TRes> get series =>
+      CopyWith$Query$recentlyWatched$recentlyWatched$book$series.stub(_res);
 
   images(_fn) => _res;
 
@@ -4913,6 +5018,148 @@ class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$book<TRes>
   watchStatus(_fn) => _res;
 
   epubFiles(_fn) => _res;
+}
+
+class Query$recentlyWatched$recentlyWatched$book$series {
+  Query$recentlyWatched$recentlyWatched$book$series({
+    required this.id,
+    required this.name,
+    this.$__typename = 'Series',
+  });
+
+  factory Query$recentlyWatched$recentlyWatched$book$series.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final l$id = json['id'];
+    final l$name = json['name'];
+    final l$$__typename = json['__typename'];
+    return Query$recentlyWatched$recentlyWatched$book$series(
+      id: (l$id as String),
+      name: (l$name as String),
+      $__typename: (l$$__typename as String),
+    );
+  }
+
+  final String id;
+
+  final String name;
+
+  final String $__typename;
+
+  Map<String, dynamic> toJson() {
+    final _resultData = <String, dynamic>{};
+    final l$id = id;
+    _resultData['id'] = l$id;
+    final l$name = name;
+    _resultData['name'] = l$name;
+    final l$$__typename = $__typename;
+    _resultData['__typename'] = l$$__typename;
+    return _resultData;
+  }
+
+  @override
+  int get hashCode {
+    final l$id = id;
+    final l$name = name;
+    final l$$__typename = $__typename;
+    return Object.hashAll([l$id, l$name, l$$__typename]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Query$recentlyWatched$recentlyWatched$book$series ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$id = id;
+    final lOther$id = other.id;
+    if (l$id != lOther$id) {
+      return false;
+    }
+    final l$name = name;
+    final lOther$name = other.name;
+    if (l$name != lOther$name) {
+      return false;
+    }
+    final l$$__typename = $__typename;
+    final lOther$$__typename = other.$__typename;
+    if (l$$__typename != lOther$$__typename) {
+      return false;
+    }
+    return true;
+  }
+}
+
+extension UtilityExtension$Query$recentlyWatched$recentlyWatched$book$series
+    on Query$recentlyWatched$recentlyWatched$book$series {
+  CopyWith$Query$recentlyWatched$recentlyWatched$book$series<
+    Query$recentlyWatched$recentlyWatched$book$series
+  >
+  get copyWith => CopyWith$Query$recentlyWatched$recentlyWatched$book$series(
+    this,
+    (i) => i,
+  );
+}
+
+abstract class CopyWith$Query$recentlyWatched$recentlyWatched$book$series<
+  TRes
+> {
+  factory CopyWith$Query$recentlyWatched$recentlyWatched$book$series(
+    Query$recentlyWatched$recentlyWatched$book$series instance,
+    TRes Function(Query$recentlyWatched$recentlyWatched$book$series) then,
+  ) = _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book$series;
+
+  factory CopyWith$Query$recentlyWatched$recentlyWatched$book$series.stub(
+    TRes res,
+  ) = _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$book$series;
+
+  TRes call({String? id, String? name, String? $__typename});
+}
+
+class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book$series<TRes>
+    implements
+        CopyWith$Query$recentlyWatched$recentlyWatched$book$series<TRes> {
+  _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book$series(
+    this._instance,
+    this._then,
+  );
+
+  final Query$recentlyWatched$recentlyWatched$book$series _instance;
+
+  final TRes Function(Query$recentlyWatched$recentlyWatched$book$series) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? id = _undefined,
+    Object? name = _undefined,
+    Object? $__typename = _undefined,
+  }) => _then(
+    Query$recentlyWatched$recentlyWatched$book$series(
+      id: id == _undefined || id == null ? _instance.id : (id as String),
+      name: name == _undefined || name == null
+          ? _instance.name
+          : (name as String),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
+}
+
+class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$book$series<TRes>
+    implements
+        CopyWith$Query$recentlyWatched$recentlyWatched$book$series<TRes> {
+  _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$book$series(
+    this._res,
+  );
+
+  TRes _res;
+
+  call({String? id, String? name, String? $__typename}) => _res;
 }
 
 class Query$recentlyWatched$recentlyWatched$book$watchStatus {
@@ -5117,6 +5364,7 @@ class Query$recentlyWatched$recentlyWatched$book$epubFiles {
   Query$recentlyWatched$recentlyWatched$book$epubFiles({
     required this.id,
     required this.path,
+    this.format,
     this.mediaOverlays,
     required this.directory,
     this.$__typename = 'MediaFile',
@@ -5127,12 +5375,14 @@ class Query$recentlyWatched$recentlyWatched$book$epubFiles {
   ) {
     final l$id = json['id'];
     final l$path = json['path'];
+    final l$format = json['format'];
     final l$mediaOverlays = json['mediaOverlays'];
     final l$directory = json['directory'];
     final l$$__typename = json['__typename'];
     return Query$recentlyWatched$recentlyWatched$book$epubFiles(
       id: (l$id as String),
       path: (l$path as String),
+      format: (l$format as String?),
       mediaOverlays: (l$mediaOverlays as bool?),
       directory:
           Query$recentlyWatched$recentlyWatched$book$epubFiles$directory.fromJson(
@@ -5145,6 +5395,8 @@ class Query$recentlyWatched$recentlyWatched$book$epubFiles {
   final String id;
 
   final String path;
+
+  final String? format;
 
   final bool? mediaOverlays;
 
@@ -5159,6 +5411,8 @@ class Query$recentlyWatched$recentlyWatched$book$epubFiles {
     _resultData['id'] = l$id;
     final l$path = path;
     _resultData['path'] = l$path;
+    final l$format = format;
+    _resultData['format'] = l$format;
     final l$mediaOverlays = mediaOverlays;
     _resultData['mediaOverlays'] = l$mediaOverlays;
     final l$directory = directory;
@@ -5172,12 +5426,14 @@ class Query$recentlyWatched$recentlyWatched$book$epubFiles {
   int get hashCode {
     final l$id = id;
     final l$path = path;
+    final l$format = format;
     final l$mediaOverlays = mediaOverlays;
     final l$directory = directory;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
       l$path,
+      l$format,
       l$mediaOverlays,
       l$directory,
       l$$__typename,
@@ -5201,6 +5457,11 @@ class Query$recentlyWatched$recentlyWatched$book$epubFiles {
     final l$path = path;
     final lOther$path = other.path;
     if (l$path != lOther$path) {
+      return false;
+    }
+    final l$format = format;
+    final lOther$format = other.format;
+    if (l$format != lOther$format) {
       return false;
     }
     final l$mediaOverlays = mediaOverlays;
@@ -5248,6 +5509,7 @@ abstract class CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles<
   TRes call({
     String? id,
     String? path,
+    String? format,
     bool? mediaOverlays,
     Query$recentlyWatched$recentlyWatched$book$epubFiles$directory? directory,
     String? $__typename,
@@ -5274,6 +5536,7 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles<TRes>
   TRes call({
     Object? id = _undefined,
     Object? path = _undefined,
+    Object? format = _undefined,
     Object? mediaOverlays = _undefined,
     Object? directory = _undefined,
     Object? $__typename = _undefined,
@@ -5283,6 +5546,7 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles<TRes>
       path: path == _undefined || path == null
           ? _instance.path
           : (path as String),
+      format: format == _undefined ? _instance.format : (format as String?),
       mediaOverlays: mediaOverlays == _undefined
           ? _instance.mediaOverlays
           : (mediaOverlays as bool?),
@@ -5320,6 +5584,7 @@ class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles<
   call({
     String? id,
     String? path,
+    String? format,
     bool? mediaOverlays,
     Query$recentlyWatched$recentlyWatched$book$epubFiles$directory? directory,
     String? $__typename,

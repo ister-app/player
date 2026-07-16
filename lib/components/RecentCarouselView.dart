@@ -107,7 +107,8 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
           scrollDirection: Axis.horizontal,
           children: items.map((item) {
             final bool portraitCover = item.type == Enum$MediaType.BOOK ||
-                item.type == Enum$MediaType.CHAPTER;
+                item.type == Enum$MediaType.CHAPTER ||
+                item.type == Enum$MediaType.COMIC;
             // Square, like the tiles in the podcast library carousel.
             final bool squareCover =
                 item.type == Enum$MediaType.PODCAST_EPISODE;
@@ -317,6 +318,56 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
           portraitArtwork: true,
           progress: reading ? readingProgress.clamp(0.0, 1.0) : chapterProgress,
           onTap: () => AutoRouter.of(context).push(BookRoute(bookId: book.id)));
+    } else if (item.type == Enum$MediaType.COMIC && item.book != null) {
+      // One entry per comic series, pointing at the next unfinished volume.
+      final book = item.book!;
+      List<Fragment$fragmentImages>? images = book.images
+          ?.map((e) => Fragment$fragmentImages.fromJson(e.toJson()))
+          .toList();
+      var imageByType = ImageUtil.getImageByType(images, ImageTypes.cover);
+      final status = book.watchStatus
+          ?.where((status) => (status.readingProgress ?? 0) > 0)
+          .firstOrNull;
+      final progress = status?.watched != true
+          ? status?.readingProgress?.clamp(0.0, 1.0)
+          : null;
+      final seriesId = book.series?.id;
+      var menuController = MenuController();
+      return MenuAnchor(
+          controller: menuController,
+          menuChildren: <Widget>[
+            if (seriesId != null)
+              MenuItemButton(
+                  onPressed: () {
+                    AutoRouter.of(context)
+                        .push(SeriesRoute(seriesId: seriesId));
+                  },
+                  child: ListTile(
+                    leading: const Icon(Icons.auto_stories),
+                    title: Text(AppLocalizations.of(context)!.goToSeries),
+                  )),
+          ],
+          child: CarouselItemView(
+              serverName: widget.serverName,
+              title: book.series?.name ??
+                  MetadataUtil.getTitle(book.metadata) ??
+                  book.title,
+              subTitle: MetadataUtil.getTitle(book.metadata) ?? book.title,
+              imageUrl: ImageUtil.buildUrl(imageByType,
+                  token: StreamTokenService.getToken(widget.serverName)),
+              blurHash: imageByType?.blurHash,
+              placeholderIcon: Icons.auto_stories,
+              portraitArtwork: true,
+              progress: progress,
+              onSecondaryTapDown: (TapDownDetails details) =>
+                  menuController.isOpen
+                      ? menuController.close()
+                      : menuController.open(position: details.localPosition),
+              onLongPress: () => menuController.isOpen
+                  ? menuController.close()
+                  : menuController.open(),
+              onTap: () =>
+                  AutoRouter.of(context).push(BookRoute(bookId: book.id))));
     } else {
       return const SizedBox.shrink();
     }

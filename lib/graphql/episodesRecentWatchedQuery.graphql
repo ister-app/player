@@ -30,10 +30,12 @@ query recentlyWatched {
         book {
             id
             name
+            title
+            series { id name }
             images { ...fragmentImages }
             metadata { ...fragmentMetadata }
             watchStatus { id watched readingLocation readingProgress }
-            epubFiles { id path mediaOverlays directory { node { url } } }
+            epubFiles { id path format mediaOverlays directory { node { url } } }
         }
         podcastEpisode {
             id
