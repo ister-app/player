@@ -17,6 +17,11 @@ dart run build_runner watch
 # Run tests (single file: flutter test test/widget_test.dart)
 flutter test
 
+# Integration tests (integration_test/) — need the chart's kind deployment running and
+# its port-forwards active (chart repo: `make up`, then ci/e2e/forward-for-player.sh,
+# or `make player-e2e` from the chart repo does all of it):
+flutter test integration_test -d linux --dart-define=ISTER_TEST_MODE=true
+
 # Lint
 flutter analyze
 
@@ -38,6 +43,22 @@ Do not remove the `analyzer.exclude` entries in `analysis_options.yaml` — with
 ## Commits and releases
 
 Commit subjects must follow [Conventional Commits](https://www.conventionalcommits.org/) (see `CONTRIBUTING.md`); a `commit-lint` job enforces it, and the nightly release workflow derives the version bump and release notes from the subjects. `feat` → minor, `fix`/`perf`/`refactor`/`test`/`docs`/`build`/`ci`/`chore` → patch, `!` or a `BREAKING CHANGE:` body → major. Never hand-edit `version` in `pubspec.yaml` — the release workflow writes it (`<semver>+<commit count>`).
+
+## Integration tests and e2e pins
+
+`integration_test/` runs the real app against the chart's kind deployment (server on
+`localhost:8080/api`, mock OIDC issuer on `localhost:18081`): add-server flow, movie playback over
+HLS, audiobook/podcast playback, epub reading with progress sync, read-aloud. The shared harness
+(`integration_test/support/harness.dart`) mints a client-credentials JWT at the mock issuer and
+installs it via `LoginManager.testTokenProvider` — a seam that is only consulted when built with
+`--dart-define=ISTER_TEST_MODE=true`, because the interactive OIDC flow cannot run headless.
+Navigate with `enterServerShell`/`pushRoute` (typed routes), never `pushPath`: a server identifier
+containing a path (`localhost:8080/api`) breaks URL-based deep links.
+
+`ci/e2e-pins.env` pins the chart release tag, testdata commit and (optionally) server version the
+suite runs against; the `integration-e2e` job in `workflow.yml` reads it. The release gate refuses
+to release when the pins are soft (branch refs) or when the pinned server version — stripped of
+`-SNAPSHOT` — was never released; the release commit strips `-SNAPSHOT` from the pins.
 
 ## Architecture Overview
 
