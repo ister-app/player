@@ -112,9 +112,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chapter => 'Chapter';
 
   @override
-  String get couldNotOpenReader => 'Could not open the reader';
-
-  @override
   String get episodes => 'Episodes';
 
   @override
@@ -553,4 +550,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get remoteQueueChanged => 'Queue updated via remote control';
+
+  @override
+  String get tableOfContents => 'Contents';
+
+  @override
+  String get readerSettings => 'Reading settings';
+
+  @override
+  String get fontSize => 'Font size';
+
+  @override
+  String get readerTheme => 'Theme';
+
+  @override
+  String get readerThemeLight => 'Light';
+
+  @override
+  String get readerThemeSepia => 'Sepia';
+
+  @override
+  String get readerThemeDark => 'Dark';
+
+  @override
+  String get couldNotLoadBook => 'Could not load the book';
+
+  @override
+  String get noReadAloudForChapter => 'This chapter has no read-aloud audio';
+
+  @override
+  String get bookMayNotDisplayCorrectly =>
+      'This book has a fixed layout and may not display correctly';
+
+  @override
+  String get previousChapter => 'Previous chapter';
+
+  @override
+  String get nextChapter => 'Next chapter';
 }

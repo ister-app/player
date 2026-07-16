@@ -30,7 +30,6 @@
   "continueReading": "Ga verder met lezen",
   "chapters": "Hoofdstukken",
   "chapter": "Hoofdstuk",
-  "couldNotOpenReader": "Kon de reader niet openen",
   "episodes": "Afleveringen",
   "addPodcast": "Podcast toevoegen",
   "addPodcastHint": "Zoek, of plak een feed-URL",
@@ -154,5 +153,17 @@
   "remotePrevious": "Vorige via afstandsbediening",
   "remoteSeek": "Positie gewijzigd via afstandsbediening",
   "remoteSkipToItem": "Ander item gekozen via afstandsbediening",
-  "remoteQueueChanged": "Wachtrij bijgewerkt via afstandsbediening"
+  "remoteQueueChanged": "Wachtrij bijgewerkt via afstandsbediening",
+  "tableOfContents": "Inhoud",
+  "readerSettings": "Leesinstellingen",
+  "fontSize": "Lettergrootte",
+  "readerTheme": "Thema",
+  "readerThemeLight": "Licht",
+  "readerThemeSepia": "Sepia",
+  "readerThemeDark": "Donker",
+  "couldNotLoadBook": "Het boek kon niet worden geladen",
+  "noReadAloudForChapter": "Dit hoofdstuk heeft geen voorleesaudio",
+  "bookMayNotDisplayCorrectly": "Dit boek heeft een vaste opmaak en wordt mogelijk niet goed weergegeven",
+  "previousChapter": "Vorig hoofdstuk",
+  "nextChapter": "Volgend hoofdstuk"
 }

@@ -112,9 +112,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get chapter => 'Hoofdstuk';
 
   @override
-  String get couldNotOpenReader => 'Kon de reader niet openen';
-
-  @override
   String get episodes => 'Afleveringen';
 
   @override
@@ -553,4 +550,41 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get remoteQueueChanged => 'Wachtrij bijgewerkt via afstandsbediening';
+
+  @override
+  String get tableOfContents => 'Inhoud';
+
+  @override
+  String get readerSettings => 'Leesinstellingen';
+
+  @override
+  String get fontSize => 'Lettergrootte';
+
+  @override
+  String get readerTheme => 'Thema';
+
+  @override
+  String get readerThemeLight => 'Licht';
+
+  @override
+  String get readerThemeSepia => 'Sepia';
+
+  @override
+  String get readerThemeDark => 'Donker';
+
+  @override
+  String get couldNotLoadBook => 'Het boek kon niet worden geladen';
+
+  @override
+  String get noReadAloudForChapter => 'Dit hoofdstuk heeft geen voorleesaudio';
+
+  @override
+  String get bookMayNotDisplayCorrectly =>
+      'Dit boek heeft een vaste opmaak en wordt mogelijk niet goed weergegeven';
+
+  @override
+  String get previousChapter => 'Vorig hoofdstuk';
+
+  @override
+  String get nextChapter => 'Volgend hoofdstuk';
 }

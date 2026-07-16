@@ -120,10 +120,6 @@
   "@chapter": {
     "description": "Fallback chapter title prefix, e.g. 'Chapter 5'."
   },
-  "couldNotOpenReader": "Could not open the reader",
-  "@couldNotOpenReader": {
-    "description": "Snackbar when launching the epub reader failed."
-  },
   "episodes": "Episodes",
   "@episodes": {
     "description": "Heading above the podcast episode list."
@@ -617,5 +613,17 @@
   "remotePrevious": "Previous via remote control",
   "remoteSeek": "Position changed via remote control",
   "remoteSkipToItem": "Queue item selected via remote control",
-  "remoteQueueChanged": "Queue updated via remote control"
+  "remoteQueueChanged": "Queue updated via remote control",
+  "tableOfContents": "Contents",
+  "readerSettings": "Reading settings",
+  "fontSize": "Font size",
+  "readerTheme": "Theme",
+  "readerThemeLight": "Light",
+  "readerThemeSepia": "Sepia",
+  "readerThemeDark": "Dark",
+  "couldNotLoadBook": "Could not load the book",
+  "noReadAloudForChapter": "This chapter has no read-aloud audio",
+  "bookMayNotDisplayCorrectly": "This book has a fixed layout and may not display correctly",
+  "previousChapter": "Previous chapter",
+  "nextChapter": "Next chapter"
 }

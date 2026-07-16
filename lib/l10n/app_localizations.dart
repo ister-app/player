@@ -284,12 +284,6 @@ abstract class AppLocalizations {
   /// **'Chapter'**
   String get chapter;
 
-  /// Snackbar when launching the epub reader failed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not open the reader'**
-  String get couldNotOpenReader;
-
   /// Heading above the podcast episode list.
   ///
   /// In en, this message translates to:
@@ -1027,6 +1021,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Queue updated via remote control'**
   String get remoteQueueChanged;
+
+  /// No description provided for @tableOfContents.
+  ///
+  /// In en, this message translates to:
+  /// **'Contents'**
+  String get tableOfContents;
+
+  /// No description provided for @readerSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading settings'**
+  String get readerSettings;
+
+  /// No description provided for @fontSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Font size'**
+  String get fontSize;
+
+  /// No description provided for @readerTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get readerTheme;
+
+  /// No description provided for @readerThemeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get readerThemeLight;
+
+  /// No description provided for @readerThemeSepia.
+  ///
+  /// In en, this message translates to:
+  /// **'Sepia'**
+  String get readerThemeSepia;
+
+  /// No description provided for @readerThemeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get readerThemeDark;
+
+  /// No description provided for @couldNotLoadBook.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the book'**
+  String get couldNotLoadBook;
+
+  /// No description provided for @noReadAloudForChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'This chapter has no read-aloud audio'**
+  String get noReadAloudForChapter;
+
+  /// No description provided for @bookMayNotDisplayCorrectly.
+  ///
+  /// In en, this message translates to:
+  /// **'This book has a fixed layout and may not display correctly'**
+  String get bookMayNotDisplayCorrectly;
+
+  /// No description provided for @previousChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous chapter'**
+  String get previousChapter;
+
+  /// No description provided for @nextChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Next chapter'**
+  String get nextChapter;
 }
 
 class _AppLocalizationsDelegate

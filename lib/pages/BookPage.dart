@@ -10,7 +10,6 @@ import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:player/utils/MetadataUtil.dart';
-import 'package:player/utils/ReaderLauncher.dart';
 import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -53,33 +52,9 @@ class BookPage extends StatefulWidget {
   State<BookPage> createState() => _BookPageState();
 }
 
-class _BookPageState extends State<BookPage> with WidgetsBindingObserver {
+class _BookPageState extends State<BookPage> {
   Query$bookById$bookById? _book;
   VoidCallback? _refetch;
-  // The reader runs outside this app (in-app browser view / external browser),
-  // so it writes the new position while this page is backgrounded. Refetch when
-  // we come back, or the reading bar and the listening resume point stay stale.
-  bool _readerOpen = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _readerOpen) {
-      _readerOpen = false;
-      _refetch?.call();
-    }
-  }
 
   List<Fragment$fragmentChapter> get _chapters => _book?.chapters ?? [];
 
@@ -212,27 +187,22 @@ class _BookPageState extends State<BookPage> with WidgetsBindingObserver {
     Fragment$fragmentChapter? chapter,
     bool readAloud = false,
   }) async {
-    final messenger = ScaffoldMessenger.of(context);
-    final loc = AppLocalizations.of(context)!;
     // No chapter means resuming: the reader then opens at the saved reading position itself.
     final chapterIndex =
         chapter != null ? _chapters.indexOf(chapter) : -1;
-    final opened = await ReaderLauncher.open(
-      nodeUrl: epubFile.directory.node.url,
-      epubMediaFileId: epubFile.id,
+    await context.router.push(ReaderRoute(
       bookId: widget.bookId,
-      serverName: widget.serverName,
+      mediaFileId: epubFile.id,
+      nodeUrl: epubFile.directory.node.url,
       title: _book != null
           ? (MetadataUtil.getTitle(_book!.metadata) ?? _book!.name)
           : null,
-      chapterIndex: chapterIndex >= 0 ? chapterIndex : null,
+      chapter: chapterIndex >= 0 ? chapterIndex : null,
       readAloud: readAloud,
-    );
-    if (!opened) {
-      messenger.showSnackBar(SnackBar(content: Text(loc.couldNotOpenReader)));
-      return;
-    }
-    _readerOpen = true;
+    ));
+    // The reader saved a new position; refresh the reading bar and the
+    // listening resume point.
+    _refetch?.call();
   }
 
   @override
