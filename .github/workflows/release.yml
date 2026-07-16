@@ -99,6 +99,7 @@ jobs:
           fi
 
           release_tag="${server_tag%-SNAPSHOT}"
+          release_tag="${release_tag%-snapshot}"
           for image in ghcr.io/ister-app/server ghcr.io/ister-app/migrations; do
             docker manifest inspect "$image:$release_tag" >/dev/null 2>&1 \
               || { echo "::error::$image:$release_tag does not exist — the pinned server version ($server_tag) has no release. Release the server first, then bump the pins."; exit 1; }
@@ -313,11 +314,11 @@ jobs:
       # The gate proved the stripped server version exists as a release, so the release
       # commit pins that real version — main never releases while pointing at a mutable
       # -SNAPSHOT tag. A no-op when the pin was empty (chart-managed) or already clean.
-      - name: Strip -SNAPSHOT from the e2e pins
+      - name: Strip -snapshot from the e2e pins
         run: |
-          sed -i -E 's|^(SERVER_IMAGE_TAG=.*)-SNAPSHOT$|\1|' ci/e2e-pins.env
-          ! grep -q -- '-SNAPSHOT' ci/e2e-pins.env \
-            || { echo "a -SNAPSHOT survived in ci/e2e-pins.env" >&2; exit 1; }
+          sed -i -E 's|^(SERVER_IMAGE_TAG=.*)-[Ss][Nn][Aa][Pp][Ss][Hh][Oo][Tt]$|\1|' ci/e2e-pins.env
+          ! grep -qi -- '-snapshot' ci/e2e-pins.env \
+            || { echo "a -snapshot survived in ci/e2e-pins.env" >&2; exit 1; }
 
       - name: Generate the release notes
         run: ./ci/release-notes.sh "${{ needs.gate.outputs.version }}" "${{ needs.gate.outputs.prev }}"
