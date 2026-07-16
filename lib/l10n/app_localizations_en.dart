@@ -600,6 +600,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get readingDirectionRtl => 'Read right-to-left (manga)';
 
   @override
+  String get goToSeries => 'Go to series';
+
+  @override
+  String get volumes => 'Volumes';
+
+  @override
   String get fitWidth => 'Fit width';
 
   @override

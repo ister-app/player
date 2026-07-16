@@ -1,0 +1,6 @@
+query series($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $libraryId: ID) {
+    series(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, libraryId: $libraryId) {
+        content { ...fragmentSeries }
+        totalPages totalElements number size
+    }
+}

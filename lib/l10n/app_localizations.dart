@@ -1112,6 +1112,18 @@ abstract class AppLocalizations {
   /// **'Read right-to-left (manga)'**
   String get readingDirectionRtl;
 
+  /// No description provided for @goToSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to series'**
+  String get goToSeries;
+
+  /// No description provided for @volumes.
+  ///
+  /// In en, this message translates to:
+  /// **'Volumes'**
+  String get volumes;
+
   /// No description provided for @fitWidth.
   ///
   /// In en, this message translates to:

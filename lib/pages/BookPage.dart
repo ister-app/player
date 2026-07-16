@@ -61,13 +61,22 @@ class _BookPageState extends State<BookPage> {
   bool get _hasListenableChapter =>
       _chapters.any((chapter) => chapter.mediaFile?.isNotEmpty == true);
 
+  static const _comicFormats = {'CBZ', 'PDF'};
+
   Query$bookById$bookById$epubFiles? get _epubFile {
-    final files = _book?.epubFiles;
+    final files = _book?.epubFiles
+        ?.where((f) => !_comicFormats.contains(f.format))
+        .toList();
     if (files == null || files.isEmpty) return null;
     // Prefer the plain edition for reading; a read-aloud epub still works.
     return files.where((f) => f.mediaOverlays != true).firstOrNull ??
         files.first;
   }
+
+  /// A cbz/pdf comic volume file; epub comic volumes read like any epub.
+  Query$bookById$bookById$epubFiles? get _comicFile => _book?.epubFiles
+      ?.where((f) => _comicFormats.contains(f.format))
+      .firstOrNull;
 
   Query$bookById$bookById$epubFiles? get _readAloudEpubFile {
     final files = _book?.epubFiles;
@@ -112,11 +121,12 @@ class _BookPageState extends State<BookPage> {
         ? chapter.mediaFile?.isNotEmpty == true
         : _hasListenableChapter;
     final epubFile = _epubFile;
+    final comicFile = _comicFile;
     final readAloudFile = _readAloudEpubFile;
 
     final modes = <_ReadMode>[
       if (canListen) _ReadMode.listen,
-      if (epubFile != null) _ReadMode.read,
+      if (epubFile != null || comicFile != null) _ReadMode.read,
       if (readAloudFile != null) _ReadMode.readAloud,
     ];
     if (modes.isEmpty) return;
@@ -155,7 +165,11 @@ class _BookPageState extends State<BookPage> {
       case _ReadMode.listen:
         _listen(context, chapterId: chapter?.id);
       case _ReadMode.read:
-        await _read(context, epubFile!, chapter: chapter);
+        if (comicFile != null) {
+          await _readComic(context, comicFile);
+        } else {
+          await _read(context, epubFile!, chapter: chapter);
+        }
       case _ReadMode.readAloud:
         await _read(context, readAloudFile!, chapter: chapter, readAloud: true);
     }
@@ -202,6 +216,23 @@ class _BookPageState extends State<BookPage> {
     ));
     // The reader saved a new position; refresh the reading bar and the
     // listening resume point.
+    _refetch?.call();
+  }
+
+  Future<void> _readComic(
+    BuildContext context,
+    Query$bookById$bookById$epubFiles comicFile,
+  ) async {
+    await context.router.push(ComicReaderRoute(
+      bookId: widget.bookId,
+      mediaFileId: comicFile.id,
+      nodeUrl: comicFile.directory.node.url,
+      title: _book != null
+          ? (MetadataUtil.getTitle(_book!.metadata) ?? _book!.title)
+          : null,
+      seriesId: _book?.series?.id,
+    ));
+    // The reader saved a new position; refresh the reading bar.
     _refetch?.call();
   }
 
@@ -470,7 +501,10 @@ class _BookPageState extends State<BookPage> {
       onSubtitleTap: book?.author != null
           ? () => AutoRouter.of(context)
               .push(PersonRoute(personId: book!.author!.id))
-          : null,
+          : book?.series != null
+              ? () => AutoRouter.of(context)
+                  .push(SeriesRoute(seriesId: book!.series!.id))
+              : null,
     );
   }
 }

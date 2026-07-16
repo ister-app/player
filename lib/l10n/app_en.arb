@@ -635,6 +635,8 @@
     }
   },
   "readingDirectionRtl": "Read right-to-left (manga)",
+  "goToSeries": "Go to series",
+  "volumes": "Volumes",
   "fitWidth": "Fit width",
   "fitPage": "Fit page",
   "pageOverview": "Pages"

@@ -43,6 +43,15 @@ class BookCarouselTile extends StatelessWidget {
               title: Text(AppLocalizations.of(context)!.goToAuthor),
             ),
           ),
+        if (book.series != null)
+          MenuItemButton(
+            onPressed: () => AutoRouter.of(context)
+                .push(SeriesRoute(seriesId: book.series!.id)),
+            child: ListTile(
+              leading: const Icon(Icons.auto_stories),
+              title: Text(AppLocalizations.of(context)!.goToSeries),
+            ),
+          ),
       ],
       child: CarouselItemView(
         serverName: serverName,

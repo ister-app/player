@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../components/AlbumScroll.dart';
 import '../components/BookScroll.dart';
+import '../components/SeriesScroll.dart';
 import '../components/AddPodcastSheet.dart';
 import '../components/PodcastScroll.dart';
 import '../components/MovieScroll.dart';
@@ -300,6 +301,14 @@ class _ShowHomePageState extends State<ShowHomePage> {
       );
     } else if (_selectedLibraryType == Enum$LibraryType.BOOK) {
       return BookScroll(
+        key: key,
+        serverName: widget.serverName,
+        libraryId: _selectedLibraryId,
+        sorting: _sorting,
+        sortingOrder: _sortingOrder,
+      );
+    } else if (_selectedLibraryType == Enum$LibraryType.COMIC) {
+      return SeriesScroll(
         key: key,
         serverName: widget.serverName,
         libraryId: _selectedLibraryId,

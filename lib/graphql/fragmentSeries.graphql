@@ -1,0 +1,6 @@
+fragment fragmentSeries on Series {
+    id name startYear
+    cover { ...fragmentImages }
+    images { ...fragmentImages }
+    metadata { ...fragmentMetadata }
+}
