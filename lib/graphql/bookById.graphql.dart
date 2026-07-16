@@ -323,6 +323,20 @@ const documentNodeQuerybookById = DocumentNode(
                         selectionSet: null,
                       ),
                       FieldNode(
+                        name: NameNode(value: 'format'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                      FieldNode(
+                        name: NameNode(value: 'pageCount'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                      FieldNode(
                         name: NameNode(value: 'mediaOverlays'),
                         alias: null,
                         arguments: [],
@@ -456,8 +470,11 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
   Query$bookById$bookById({
     required this.id,
     required this.name,
+    required this.title,
     required this.releaseYear,
-    required this.author,
+    this.seriesIndex,
+    this.author,
+    this.series,
     this.images,
     this.metadata,
     this.rating,
@@ -471,8 +488,11 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
   factory Query$bookById$bookById.fromJson(Map<String, dynamic> json) {
     final l$id = json['id'];
     final l$name = json['name'];
+    final l$title = json['title'];
     final l$releaseYear = json['releaseYear'];
+    final l$seriesIndex = json['seriesIndex'];
     final l$author = json['author'];
+    final l$series = json['series'];
     final l$images = json['images'];
     final l$metadata = json['metadata'];
     final l$rating = json['rating'];
@@ -484,10 +504,19 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
     return Query$bookById$bookById(
       id: (l$id as String),
       name: (l$name as String),
+      title: (l$title as String),
       releaseYear: (l$releaseYear as int),
-      author: Query$bookById$bookById$author.fromJson(
-        (l$author as Map<String, dynamic>),
-      ),
+      seriesIndex: (l$seriesIndex as num?)?.toDouble(),
+      author: l$author == null
+          ? null
+          : Query$bookById$bookById$author.fromJson(
+              (l$author as Map<String, dynamic>),
+            ),
+      series: l$series == null
+          ? null
+          : Query$bookById$bookById$series.fromJson(
+              (l$series as Map<String, dynamic>),
+            ),
       images: (l$images as List<dynamic>?)
           ?.map(
             (e) =>
@@ -534,9 +563,15 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
 
   final String name;
 
+  final String title;
+
   final int releaseYear;
 
-  final Query$bookById$bookById$author author;
+  final double? seriesIndex;
+
+  final Query$bookById$bookById$author? author;
+
+  final Query$bookById$bookById$series? series;
 
   final List<Fragment$fragmentImages>? images;
 
@@ -560,10 +595,16 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
     _resultData['id'] = l$id;
     final l$name = name;
     _resultData['name'] = l$name;
+    final l$title = title;
+    _resultData['title'] = l$title;
     final l$releaseYear = releaseYear;
     _resultData['releaseYear'] = l$releaseYear;
+    final l$seriesIndex = seriesIndex;
+    _resultData['seriesIndex'] = l$seriesIndex;
     final l$author = author;
-    _resultData['author'] = l$author.toJson();
+    _resultData['author'] = l$author?.toJson();
+    final l$series = series;
+    _resultData['series'] = l$series?.toJson();
     final l$images = images;
     _resultData['images'] = l$images?.map((e) => e.toJson()).toList();
     final l$metadata = metadata;
@@ -587,8 +628,11 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
   int get hashCode {
     final l$id = id;
     final l$name = name;
+    final l$title = title;
     final l$releaseYear = releaseYear;
+    final l$seriesIndex = seriesIndex;
     final l$author = author;
+    final l$series = series;
     final l$images = images;
     final l$metadata = metadata;
     final l$rating = rating;
@@ -600,8 +644,11 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
     return Object.hashAll([
       l$id,
       l$name,
+      l$title,
       l$releaseYear,
+      l$seriesIndex,
       l$author,
+      l$series,
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$rating,
@@ -633,14 +680,29 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
     if (l$name != lOther$name) {
       return false;
     }
+    final l$title = title;
+    final lOther$title = other.title;
+    if (l$title != lOther$title) {
+      return false;
+    }
     final l$releaseYear = releaseYear;
     final lOther$releaseYear = other.releaseYear;
     if (l$releaseYear != lOther$releaseYear) {
       return false;
     }
+    final l$seriesIndex = seriesIndex;
+    final lOther$seriesIndex = other.seriesIndex;
+    if (l$seriesIndex != lOther$seriesIndex) {
+      return false;
+    }
     final l$author = author;
     final lOther$author = other.author;
     if (l$author != lOther$author) {
+      return false;
+    }
+    final l$series = series;
+    final lOther$series = other.series;
+    if (l$series != lOther$series) {
       return false;
     }
     final l$images = images;
@@ -759,8 +821,11 @@ abstract class CopyWith$Query$bookById$bookById<TRes> {
   TRes call({
     String? id,
     String? name,
+    String? title,
     int? releaseYear,
+    double? seriesIndex,
     Query$bookById$bookById$author? author,
+    Query$bookById$bookById$series? series,
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
     int? rating,
@@ -771,6 +836,7 @@ abstract class CopyWith$Query$bookById$bookById<TRes> {
     List<Query$bookById$bookById$watchStatus>? watchStatus,
   });
   CopyWith$Query$bookById$bookById$author<TRes> get author;
+  CopyWith$Query$bookById$bookById$series<TRes> get series;
   TRes images(
     Iterable<Fragment$fragmentImages>? Function(
       Iterable<CopyWith$Fragment$fragmentImages<Fragment$fragmentImages>>?,
@@ -825,8 +891,11 @@ class _CopyWithImpl$Query$bookById$bookById<TRes>
   TRes call({
     Object? id = _undefined,
     Object? name = _undefined,
+    Object? title = _undefined,
     Object? releaseYear = _undefined,
+    Object? seriesIndex = _undefined,
     Object? author = _undefined,
+    Object? series = _undefined,
     Object? images = _undefined,
     Object? metadata = _undefined,
     Object? rating = _undefined,
@@ -841,12 +910,21 @@ class _CopyWithImpl$Query$bookById$bookById<TRes>
       name: name == _undefined || name == null
           ? _instance.name
           : (name as String),
+      title: title == _undefined || title == null
+          ? _instance.title
+          : (title as String),
       releaseYear: releaseYear == _undefined || releaseYear == null
           ? _instance.releaseYear
           : (releaseYear as int),
-      author: author == _undefined || author == null
+      seriesIndex: seriesIndex == _undefined
+          ? _instance.seriesIndex
+          : (seriesIndex as double?),
+      author: author == _undefined
           ? _instance.author
-          : (author as Query$bookById$bookById$author),
+          : (author as Query$bookById$bookById$author?),
+      series: series == _undefined
+          ? _instance.series
+          : (series as Query$bookById$bookById$series?),
       images: images == _undefined
           ? _instance.images
           : (images as List<Fragment$fragmentImages>?),
@@ -874,10 +952,22 @@ class _CopyWithImpl$Query$bookById$bookById<TRes>
 
   CopyWith$Query$bookById$bookById$author<TRes> get author {
     final local$author = _instance.author;
-    return CopyWith$Query$bookById$bookById$author(
-      local$author,
-      (e) => call(author: e),
-    );
+    return local$author == null
+        ? CopyWith$Query$bookById$bookById$author.stub(_then(_instance))
+        : CopyWith$Query$bookById$bookById$author(
+            local$author,
+            (e) => call(author: e),
+          );
+  }
+
+  CopyWith$Query$bookById$bookById$series<TRes> get series {
+    final local$series = _instance.series;
+    return local$series == null
+        ? CopyWith$Query$bookById$bookById$series.stub(_then(_instance))
+        : CopyWith$Query$bookById$bookById$series(
+            local$series,
+            (e) => call(series: e),
+          );
   }
 
   TRes images(
@@ -973,8 +1063,11 @@ class _CopyWithStubImpl$Query$bookById$bookById<TRes>
   call({
     String? id,
     String? name,
+    String? title,
     int? releaseYear,
+    double? seriesIndex,
     Query$bookById$bookById$author? author,
+    Query$bookById$bookById$series? series,
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
     int? rating,
@@ -987,6 +1080,9 @@ class _CopyWithStubImpl$Query$bookById$bookById<TRes>
 
   CopyWith$Query$bookById$bookById$author<TRes> get author =>
       CopyWith$Query$bookById$bookById$author.stub(_res);
+
+  CopyWith$Query$bookById$bookById$series<TRes> get series =>
+      CopyWith$Query$bookById$bookById$series.stub(_res);
 
   images(_fn) => _res;
 
@@ -1127,6 +1223,131 @@ class _CopyWithStubImpl$Query$bookById$bookById$author<TRes>
   call({String? id, String? name, String? $__typename}) => _res;
 }
 
+class Query$bookById$bookById$series implements Fragment$fragmentBook$series {
+  Query$bookById$bookById$series({
+    required this.id,
+    required this.name,
+    this.$__typename = 'Series',
+  });
+
+  factory Query$bookById$bookById$series.fromJson(Map<String, dynamic> json) {
+    final l$id = json['id'];
+    final l$name = json['name'];
+    final l$$__typename = json['__typename'];
+    return Query$bookById$bookById$series(
+      id: (l$id as String),
+      name: (l$name as String),
+      $__typename: (l$$__typename as String),
+    );
+  }
+
+  final String id;
+
+  final String name;
+
+  final String $__typename;
+
+  Map<String, dynamic> toJson() {
+    final _resultData = <String, dynamic>{};
+    final l$id = id;
+    _resultData['id'] = l$id;
+    final l$name = name;
+    _resultData['name'] = l$name;
+    final l$$__typename = $__typename;
+    _resultData['__typename'] = l$$__typename;
+    return _resultData;
+  }
+
+  @override
+  int get hashCode {
+    final l$id = id;
+    final l$name = name;
+    final l$$__typename = $__typename;
+    return Object.hashAll([l$id, l$name, l$$__typename]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Query$bookById$bookById$series ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$id = id;
+    final lOther$id = other.id;
+    if (l$id != lOther$id) {
+      return false;
+    }
+    final l$name = name;
+    final lOther$name = other.name;
+    if (l$name != lOther$name) {
+      return false;
+    }
+    final l$$__typename = $__typename;
+    final lOther$$__typename = other.$__typename;
+    if (l$$__typename != lOther$$__typename) {
+      return false;
+    }
+    return true;
+  }
+}
+
+extension UtilityExtension$Query$bookById$bookById$series
+    on Query$bookById$bookById$series {
+  CopyWith$Query$bookById$bookById$series<Query$bookById$bookById$series>
+  get copyWith => CopyWith$Query$bookById$bookById$series(this, (i) => i);
+}
+
+abstract class CopyWith$Query$bookById$bookById$series<TRes> {
+  factory CopyWith$Query$bookById$bookById$series(
+    Query$bookById$bookById$series instance,
+    TRes Function(Query$bookById$bookById$series) then,
+  ) = _CopyWithImpl$Query$bookById$bookById$series;
+
+  factory CopyWith$Query$bookById$bookById$series.stub(TRes res) =
+      _CopyWithStubImpl$Query$bookById$bookById$series;
+
+  TRes call({String? id, String? name, String? $__typename});
+}
+
+class _CopyWithImpl$Query$bookById$bookById$series<TRes>
+    implements CopyWith$Query$bookById$bookById$series<TRes> {
+  _CopyWithImpl$Query$bookById$bookById$series(this._instance, this._then);
+
+  final Query$bookById$bookById$series _instance;
+
+  final TRes Function(Query$bookById$bookById$series) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? id = _undefined,
+    Object? name = _undefined,
+    Object? $__typename = _undefined,
+  }) => _then(
+    Query$bookById$bookById$series(
+      id: id == _undefined || id == null ? _instance.id : (id as String),
+      name: name == _undefined || name == null
+          ? _instance.name
+          : (name as String),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
+}
+
+class _CopyWithStubImpl$Query$bookById$bookById$series<TRes>
+    implements CopyWith$Query$bookById$bookById$series<TRes> {
+  _CopyWithStubImpl$Query$bookById$bookById$series(this._res);
+
+  TRes _res;
+
+  call({String? id, String? name, String? $__typename}) => _res;
+}
+
 class Query$bookById$bookById$resumeChapter {
   Query$bookById$bookById$resumeChapter({
     required this.id,
@@ -1245,6 +1466,8 @@ class Query$bookById$bookById$epubFiles {
   Query$bookById$bookById$epubFiles({
     required this.id,
     required this.path,
+    this.format,
+    this.pageCount,
     this.mediaOverlays,
     required this.directory,
     this.$__typename = 'MediaFile',
@@ -1255,12 +1478,16 @@ class Query$bookById$bookById$epubFiles {
   ) {
     final l$id = json['id'];
     final l$path = json['path'];
+    final l$format = json['format'];
+    final l$pageCount = json['pageCount'];
     final l$mediaOverlays = json['mediaOverlays'];
     final l$directory = json['directory'];
     final l$$__typename = json['__typename'];
     return Query$bookById$bookById$epubFiles(
       id: (l$id as String),
       path: (l$path as String),
+      format: (l$format as String?),
+      pageCount: (l$pageCount as int?),
       mediaOverlays: (l$mediaOverlays as bool?),
       directory: Query$bookById$bookById$epubFiles$directory.fromJson(
         (l$directory as Map<String, dynamic>),
@@ -1272,6 +1499,10 @@ class Query$bookById$bookById$epubFiles {
   final String id;
 
   final String path;
+
+  final String? format;
+
+  final int? pageCount;
 
   final bool? mediaOverlays;
 
@@ -1285,6 +1516,10 @@ class Query$bookById$bookById$epubFiles {
     _resultData['id'] = l$id;
     final l$path = path;
     _resultData['path'] = l$path;
+    final l$format = format;
+    _resultData['format'] = l$format;
+    final l$pageCount = pageCount;
+    _resultData['pageCount'] = l$pageCount;
     final l$mediaOverlays = mediaOverlays;
     _resultData['mediaOverlays'] = l$mediaOverlays;
     final l$directory = directory;
@@ -1298,12 +1533,16 @@ class Query$bookById$bookById$epubFiles {
   int get hashCode {
     final l$id = id;
     final l$path = path;
+    final l$format = format;
+    final l$pageCount = pageCount;
     final l$mediaOverlays = mediaOverlays;
     final l$directory = directory;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
       l$path,
+      l$format,
+      l$pageCount,
       l$mediaOverlays,
       l$directory,
       l$$__typename,
@@ -1327,6 +1566,16 @@ class Query$bookById$bookById$epubFiles {
     final l$path = path;
     final lOther$path = other.path;
     if (l$path != lOther$path) {
+      return false;
+    }
+    final l$format = format;
+    final lOther$format = other.format;
+    if (l$format != lOther$format) {
+      return false;
+    }
+    final l$pageCount = pageCount;
+    final lOther$pageCount = other.pageCount;
+    if (l$pageCount != lOther$pageCount) {
       return false;
     }
     final l$mediaOverlays = mediaOverlays;
@@ -1366,6 +1615,8 @@ abstract class CopyWith$Query$bookById$bookById$epubFiles<TRes> {
   TRes call({
     String? id,
     String? path,
+    String? format,
+    int? pageCount,
     bool? mediaOverlays,
     Query$bookById$bookById$epubFiles$directory? directory,
     String? $__typename,
@@ -1386,6 +1637,8 @@ class _CopyWithImpl$Query$bookById$bookById$epubFiles<TRes>
   TRes call({
     Object? id = _undefined,
     Object? path = _undefined,
+    Object? format = _undefined,
+    Object? pageCount = _undefined,
     Object? mediaOverlays = _undefined,
     Object? directory = _undefined,
     Object? $__typename = _undefined,
@@ -1395,6 +1648,10 @@ class _CopyWithImpl$Query$bookById$bookById$epubFiles<TRes>
       path: path == _undefined || path == null
           ? _instance.path
           : (path as String),
+      format: format == _undefined ? _instance.format : (format as String?),
+      pageCount: pageCount == _undefined
+          ? _instance.pageCount
+          : (pageCount as int?),
       mediaOverlays: mediaOverlays == _undefined
           ? _instance.mediaOverlays
           : (mediaOverlays as bool?),
@@ -1425,6 +1682,8 @@ class _CopyWithStubImpl$Query$bookById$bookById$epubFiles<TRes>
   call({
     String? id,
     String? path,
+    String? format,
+    int? pageCount,
     bool? mediaOverlays,
     Query$bookById$bookById$epubFiles$directory? directory,
     String? $__typename,

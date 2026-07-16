@@ -34,19 +34,20 @@ class BookCarouselTile extends StatelessWidget {
     return MenuAnchor(
       controller: menuController,
       menuChildren: <Widget>[
-        MenuItemButton(
-          onPressed: () => AutoRouter.of(context)
-              .push(PersonRoute(personId: book.author.id)),
-          child: ListTile(
-            leading: const Icon(Icons.person),
-            title: Text(AppLocalizations.of(context)!.goToAuthor),
+        if (book.author != null)
+          MenuItemButton(
+            onPressed: () => AutoRouter.of(context)
+                .push(PersonRoute(personId: book.author!.id)),
+            child: ListTile(
+              leading: const Icon(Icons.person),
+              title: Text(AppLocalizations.of(context)!.goToAuthor),
+            ),
           ),
-        ),
       ],
       child: CarouselItemView(
         serverName: serverName,
         title: MetadataUtil.getTitle(book.metadata) ?? book.name,
-        subTitle: book.author.name,
+        subTitle: book.author?.name ?? book.series?.name ?? '',
         imageUrl: ImageUtil.buildUrl(img,
             token: StreamTokenService.getToken(serverName)),
         blurHash: img?.blurHash,

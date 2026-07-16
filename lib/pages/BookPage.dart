@@ -466,10 +466,10 @@ class _BookPageState extends State<BookPage> {
               MetadataUtil.getTitle(book.metadata) ?? book.name,
               book.releaseYear)
           : null,
-      subtitle: book?.author.name,
-      onSubtitleTap: book != null
+      subtitle: book?.author?.name ?? book?.series?.name,
+      onSubtitleTap: book?.author != null
           ? () => AutoRouter.of(context)
-              .push(PersonRoute(personId: book.author.id))
+              .push(PersonRoute(personId: book!.author!.id))
           : null,
     );
   }

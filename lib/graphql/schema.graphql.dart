@@ -759,6 +759,7 @@ enum Enum$LibraryType {
   MUSIC,
   BOOK,
   PODCAST,
+  COMIC,
   $unknown;
 
   factory Enum$LibraryType.fromJson(String value) =>
@@ -779,6 +780,8 @@ String toJson$Enum$LibraryType(Enum$LibraryType e) {
       return r'BOOK';
     case Enum$LibraryType.PODCAST:
       return r'PODCAST';
+    case Enum$LibraryType.COMIC:
+      return r'COMIC';
     case Enum$LibraryType.$unknown:
       return r'$unknown';
   }
@@ -796,6 +799,8 @@ Enum$LibraryType fromJson$Enum$LibraryType(String value) {
       return Enum$LibraryType.BOOK;
     case r'PODCAST':
       return Enum$LibraryType.PODCAST;
+    case r'COMIC':
+      return Enum$LibraryType.COMIC;
     default:
       return Enum$LibraryType.$unknown;
   }
@@ -808,6 +813,7 @@ enum Enum$MediaType {
   CHAPTER,
   BOOK,
   PODCAST_EPISODE,
+  COMIC,
   $unknown;
 
   factory Enum$MediaType.fromJson(String value) =>
@@ -830,6 +836,8 @@ String toJson$Enum$MediaType(Enum$MediaType e) {
       return r'BOOK';
     case Enum$MediaType.PODCAST_EPISODE:
       return r'PODCAST_EPISODE';
+    case Enum$MediaType.COMIC:
+      return r'COMIC';
     case Enum$MediaType.$unknown:
       return r'$unknown';
   }
@@ -849,6 +857,8 @@ Enum$MediaType fromJson$Enum$MediaType(String value) {
       return Enum$MediaType.BOOK;
     case r'PODCAST_EPISODE':
       return Enum$MediaType.PODCAST_EPISODE;
+    case r'COMIC':
+      return Enum$MediaType.COMIC;
     default:
       return Enum$MediaType.$unknown;
   }

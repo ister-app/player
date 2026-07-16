@@ -24,6 +24,9 @@ type Query {
     trackById(id: ID): Track
     books(page: Int, size: Int, sorting: SortingEnum, sortingOrder: SortingOrder, authorId: ID, libraryId: ID): BookPage
     bookById(id: ID): Book
+    seriesById(id: ID): Series
+    "Series of a (comic) library: the browse grid for COMIC libraries lists series, not volumes."
+    series(page: Int, size: Int, sorting: SortingEnum, sortingOrder: SortingOrder, libraryId: ID): SeriesPage
     chapterById(id: ID): Chapter
     podcasts(page: Int, size: Int, sorting: SortingEnum, sortingOrder: SortingOrder, libraryId: ID): PodcastPage
     podcastById(id: ID): Podcast
@@ -82,6 +85,10 @@ type Mutation {
     the order it was built with. Returns true.
     """
     setPodcastEpisodeOrder(podcastId: ID!, order: SortingOrder!): Boolean!
+    """
+    Sets the calling user's grid sort key and direction for one library. It applies to every client
+    of that user. Returns true.
+    """
     setLibrarySorting(libraryId: ID!, sorting: SortingEnum!, sortingOrder: SortingOrder!): Boolean!
     "Queues a feed refresh for every active podcast."
     refreshPodcasts: Boolean!
@@ -226,6 +233,8 @@ enum LibraryType {
     MUSIC
     BOOK
     PODCAST
+    "Comics (pdf/cbz/epub); series-first layout: one directory per series."
+    COMIC
 }
 
 enum MediaType {
@@ -238,6 +247,8 @@ enum MediaType {
     BOOK
     "A podcast episode; streams like a track once downloaded."
     PODCAST_EPISODE
+    "A comic volume being read; grouped per series in recently watched."
+    COMIC
 }
 
 enum RatingMediaType {
@@ -359,6 +370,10 @@ type MediaFile {
     directory: Directory!
     "For epub files: true when the epub has EPUB 3 media overlays (read-aloud audio). Null for other files."
     mediaOverlays: Boolean
+    "For comic volumes: the cbz image count or pdf page count. Null for other files."
+    pageCount: Int
+    "The file format taken from the path extension, uppercased (EPUB, CBZ, PDF, MKV, ...). Null when the path has no extension."
+    format: String
 }
 
 type Directory {
@@ -514,9 +529,17 @@ type Track {
 
 type Book {
     id: ID!
+    "Raw name as derived from the file/directory path."
     name: String!
+    "Clean display title: name with a known '{series} - '/'{series}: ' prefix stripped; falls back to name."
+    title: String!
     releaseYear: Int!
-    author: Person!
+    "The author; null for comic volumes (comics are series-first and carry no author)."
+    author: Person
+    "The series this book belongs to, or null for a standalone book."
+    series: Series
+    "Position within the series (calibre allows fractions like 1.5), or null when unknown."
+    seriesIndex: Float
     "Audiobook chapters, in play order; empty when the book only has epub files."
     chapters: [Chapter!]
     """
@@ -549,6 +572,31 @@ type Chapter {
 
 type BookPage {
     content: [Book!]!
+    totalPages: Int!
+    totalElements: Int!
+    number: Int!
+    size: Int!
+}
+
+type Series {
+    id: ID!
+    name: String!
+    "The author; null for comic series."
+    author: Person
+    "Start year from the \"(YYYY)\" suffix on a comic series directory; 0 = unknown."
+    startYear: Int!
+    "Books/volumes in series order: seriesIndex ascending, unknown positions last."
+    books: [Book!]!
+    "Series-level metadata (comic series description per language)."
+    metadata: [Metadata!]
+    "Series-level artwork (folder.jpg or a wiki thumbnail)."
+    images: [Image!]
+    "The series' own artwork when present, else the cover of the first book/volume."
+    cover: Image
+}
+
+type SeriesPage {
+    content: [Series!]!
     totalPages: Int!
     totalElements: Int!
     number: Int!
@@ -650,9 +698,9 @@ type RecentlyWatched {
     type: MediaType!
     episode: Episode
     movie: Movie
-    "Next unfinished audiobook chapter (type CHAPTER)."
+    "Next unfinished audiobook chapter. Set on a type BOOK entry when the user was listening (a book resumes reading and/or listening from one entry), or on a legacy type CHAPTER entry."
     chapter: Chapter
-    "Book being read (type BOOK) or the book of the chapter (type CHAPTER)."
+    "The book to resume (type BOOK). Always set for a book entry, even when only its audiobook was played; also the containing book of a legacy CHAPTER entry."
     book: Book
     "Partially played podcast episode (type PODCAST_EPISODE)."
     podcastEpisode: PodcastEpisode
