@@ -100,16 +100,23 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
           return Text(AppLocalizations.of(context)!.noRecentItems);
         }
 
-        // No itemExtent: book covers are portrait, so their tiles are narrower
-        // than the landscape episode/movie tiles next to them.
+        // No itemExtent: book covers are portrait and podcast covers are
+        // square, so their tiles are narrower than the landscape
+        // episode/movie tiles next to them.
         return ListView(
           scrollDirection: Axis.horizontal,
           children: items.map((item) {
             final bool portraitCover = item.type == Enum$MediaType.BOOK ||
                 item.type == Enum$MediaType.CHAPTER;
+            // Square, like the tiles in the podcast library carousel.
+            final bool squareCover =
+                item.type == Enum$MediaType.PODCAST_EPISODE;
             return SizedBox(
-              width:
-                  portraitCover ? 200 * BookCarouselTile.coverAspectRatio : 300,
+              width: portraitCover
+                  ? 200 * BookCarouselTile.coverAspectRatio
+                  : squareCover
+                      ? 200
+                      : 300,
               child: _buildTile(context, item),
             );
           }).toList(),
