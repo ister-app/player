@@ -34,6 +34,11 @@ flutter build web --release
 flutter build linux
 flatpak-builder --user --force-clean --install-deps-from=flathub builddir app.ister.Player.yaml
 flatpak-builder --run builddir app.ister.Player.yaml ister
+
+# Docs zip (markdown from doc/ + generated screenshots) — needs the same kind deployment
+# and port-forwards as the integration tests, plus an X display (see doc/README.md for a
+# podman Xvfb recipe on Wayland):
+ci/build-docs.sh
 ```
 
 Localizations (en/nl) are generated from `lib/l10n/app_*.arb` via `l10n.yaml` during a normal build; edit the `.arb` files, not `app_localizations*.dart`.
@@ -54,6 +59,16 @@ installs it via `LoginManager.testTokenProvider` — a seam that is only consult
 `--dart-define=ISTER_TEST_MODE=true`, because the interactive OIDC flow cannot run headless.
 Navigate with `enterServerShell`/`pushRoute` (typed routes), never `pushPath`: a server identifier
 containing a path (`localhost:8080/api`) breaks URL-based deep links.
+
+`integration_test/doc_tour_test.dart` is not a functional test but the screenshot tour for the
+user guide: one boot, every documentable screen, a `shot()` per stop. Screenshots are captured
+*externally* with ImageMagick `import` on the app's X11 window (`takeScreenshot` has no Linux
+implementation; X capture also gets the media_kit video texture) into `$DOC_SCREENSHOT_DIR` —
+without that variable the tour runs shot-less. `ci/build-docs.sh` drives it per locale (en/nl via
+`--dart-define=DOC_LOCALE`), validates every markdown image reference, and zips `doc/`; the `docs`
+job in `release.yml` attaches the zip to the release. The fixture movies/episodes carry a silent
+audio track on purpose (testdata `create_mkv.sh`): without one, mpv's only clock is the video
+output and a GL-less player free-runs to EOF instantly.
 
 `ci/e2e-pins.env` pins the chart release tag, testdata commit and (optionally) server version the
 suite runs against; the `integration-e2e` job in `workflow.yml` reads it. The release gate refuses
