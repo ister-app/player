@@ -248,8 +248,132 @@ jobs:
           name: flatpak-bundle
           path: app.ister.Player.flatpak
 
+  # Builds the documentation zip: the doc/ markdown plus screenshots captured by driving
+  # the real app (integration_test/doc_tour_test.dart) against the same pinned kind
+  # deployment the integration e2e uses. Modeled on workflow.yml's integration-e2e job.
+  docs:
+    needs: [gate, build]
+    if: needs.gate.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: player
+
+      # ci/e2e-pins.env pins which chart, testdata and server build the screenshots are
+      # captured against. Only KEY=value lines may reach GITHUB_ENV.
+      - name: Read the e2e pins
+        run: grep -E '^[A-Z_]+=' player/ci/e2e-pins.env >> "$GITHUB_ENV"
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ister-app/chart
+          ref: ${{ env.CHART_REF }}
+          path: chart
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ister-app/testdata
+          ref: ${{ env.TESTDATA_REF }}
+          path: testdata
+
+      # Same guard as the integration e2e: an old pinned chart without ci/up.sh skips the
+      # screenshot capture cleanly (and the release ships without the docs zip) instead of
+      # failing the whole release.
+      - name: Check the pinned chart supports the e2e
+        id: chart-e2e
+        run: |
+          if [ -x chart/ci/up.sh ]; then
+            echo "supported=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "supported=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::chart $CHART_REF predates ci/up.sh — releasing without the docs zip until the pin is bumped"
+          fi
+
+      - name: Resolve the testdata revision (for the cache key)
+        id: testdata
+        run: echo "sha=$(git -C testdata rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore media fixtures
+        uses: actions/cache@v4
+        with:
+          path: |
+            testdata/node1/disk1
+            testdata/podcast-feed
+          key: fixtures-${{ steps.testdata.outputs.sha }}-${{ hashFiles('testdata/create_mkv.sh', 'testdata/create_books.sh', 'testdata/create_comics.sh', 'testdata/create_podcast_feed.sh') }}
+
+      - name: Trim testdata to what the cluster mounts
+        run: rm -rf testdata/node2 testdata/node1/disk2
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: player/pubspec.yaml
+          cache: true
+
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('player/pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
+
+      - name: Install dependencies from Apt
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg zip curl git unzip xz-utils libglu1-mesa clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libmpv-dev mpv libsecret-1-0 libsecret-1-dev libjsoncpp25 libjsoncpp-dev xvfb dbus-x11 pulseaudio imagemagick
+
+      - uses: azure/setup-helm@v4
+
+      - name: Install kind
+        uses: helm/kind-action@v1
+        with:
+          install_only: true
+
+      - name: Bring up the cluster
+        if: steps.chart-e2e.outputs.supported == 'true'
+        run: TESTDATA_DIR="$PWD/testdata" SERVER_IMAGE_TAG="$SERVER_IMAGE_TAG" chart/ci/up.sh
+
+      - name: Start port-forwards
+        if: steps.chart-e2e.outputs.supported == 'true'
+        run: |
+          chart/ci/e2e/forward-for-player.sh ister ister &
+          sleep 5
+          curl -fsS http://localhost:8080/api/.well-known/ister
+
+      - name: Scan the libraries (the tour needs indexed media)
+        if: steps.chart-e2e.outputs.supported == 'true'
+        working-directory: chart
+        run: E2E_ONLY='10-*' ./ci/e2e.sh ister ister
+
+      - name: Build the docs zip
+        if: steps.chart-e2e.outputs.supported == 'true'
+        working-directory: player
+        env:
+          VERSION: ${{ needs.gate.outputs.version }}
+        # The script wraps each tour in xvfb-run itself (and starts PulseAudio's
+        # null sink inside it, so mpv has an audio clock).
+        run: ci/build-docs.sh "$VERSION"
+
+      - uses: actions/upload-artifact@v4
+        if: steps.chart-e2e.outputs.supported == 'true'
+        with:
+          name: docs-zip
+          path: player/player-docs-*.zip
+
+      - name: Diagnostics
+        if: failure() && steps.chart-e2e.outputs.supported == 'true'
+        run: |
+          kubectl get pods -n ister -o wide || true
+          kubectl get events -n ister --sort-by=.lastTimestamp | tail -40 || true
+          kubectl get pods -n ister -o name | while read -r p; do
+            echo "----- $p"
+            kubectl logs -n ister "$p" --all-containers --prefix --tail=100 || true
+          done
+
   publish:
-    needs: [gate, build, flatpak]
+    needs: [gate, build, flatpak, docs]
     runs-on: ubuntu-latest
     permissions:
       contents: write   # commit the bump, push the tag, create the release
@@ -272,6 +396,12 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: flatpak-bundle
+      # Absent when the docs job skipped (a pinned chart too old for the e2e stack);
+      # the release then simply ships without the docs zip.
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: docs-zip
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -344,9 +474,9 @@ jobs:
           VERSION: ${{ needs.gate.outputs.version }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          assets=(app-release.apk app.ister.Player.flatpak "player-web-${VERSION}.tar.gz")
+          [ -f "player-docs-${VERSION}.zip" ] && assets+=("player-docs-${VERSION}.zip")
           gh release create "v${VERSION}" \
             --title "v${VERSION}" \
             --notes-file RELEASE_NOTES.md \
-            app-release.apk \
-            app.ister.Player.flatpak \
-            "player-web-${VERSION}.tar.gz"
+            "${assets[@]}"
