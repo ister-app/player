@@ -151,7 +151,7 @@ class _SeriesPageState extends State<SeriesPage> {
 
     return CarouselItemView(
       serverName: widget.serverName,
-      title: MetadataUtil.getTitle(book.metadata) ?? book.title,
+      title: book.title,
       subTitle: indexLabel,
       imageUrl: ImageUtil.buildUrl(img,
           token: StreamTokenService.getToken(widget.serverName)),

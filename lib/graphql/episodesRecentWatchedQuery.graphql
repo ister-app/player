@@ -22,7 +22,7 @@ query recentlyWatched {
         chapter {
             id
             number
-            book { id name images { ...fragmentImages } metadata { ...fragmentMetadata } }
+            book { id name title images { ...fragmentImages } metadata { ...fragmentMetadata } }
             metadata { ...fragmentMetadata }
             watchStatus { id playQueueItemId progressInMilliseconds watched }
             mediaFile { id durationInMilliseconds }

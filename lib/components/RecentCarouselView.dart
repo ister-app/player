@@ -231,7 +231,7 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
           '${AppLocalizations.of(context)!.chapter} ${chapter.number}';
       return CarouselItemView(
           serverName: widget.serverName,
-          title: MetadataUtil.getTitle(book.metadata) ?? book.name,
+          title: book.title,
           subTitle: chapterTitle,
           imageUrl: ImageUtil.buildUrl(imageByType,
               token: StreamTokenService.getToken(widget.serverName)),
@@ -309,7 +309,7 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
           : (MetadataUtil.getDescription(book.metadata) ?? "");
       return CarouselItemView(
           serverName: widget.serverName,
-          title: MetadataUtil.getTitle(book.metadata) ?? book.name,
+          title: book.title,
           subTitle: subTitle,
           imageUrl: ImageUtil.buildUrl(imageByType,
               token: StreamTokenService.getToken(widget.serverName)),
@@ -349,10 +349,8 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
           ],
           child: CarouselItemView(
               serverName: widget.serverName,
-              title: book.series?.name ??
-                  MetadataUtil.getTitle(book.metadata) ??
-                  book.title,
-              subTitle: MetadataUtil.getTitle(book.metadata) ?? book.title,
+              title: book.series?.name ?? book.title,
+              subTitle: book.title,
               imageUrl: ImageUtil.buildUrl(imageByType,
                   token: StreamTokenService.getToken(widget.serverName)),
               blurHash: imageByType?.blurHash,

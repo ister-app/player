@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
-import 'package:player/utils/MetadataUtil.dart';
 import 'package:player/utils/StreamTokenService.dart';
 
 import '../graphql/fragmentBook.graphql.dart';
@@ -55,7 +54,7 @@ class BookCarouselTile extends StatelessWidget {
       ],
       child: CarouselItemView(
         serverName: serverName,
-        title: MetadataUtil.getTitle(book.metadata) ?? book.name,
+        title: book.title,
         subTitle: book.author?.name ?? book.series?.name ?? '',
         imageUrl: ImageUtil.buildUrl(img,
             token: StreamTokenService.getToken(serverName)),

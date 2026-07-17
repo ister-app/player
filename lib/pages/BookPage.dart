@@ -208,9 +208,7 @@ class _BookPageState extends State<BookPage> {
       bookId: widget.bookId,
       mediaFileId: epubFile.id,
       nodeUrl: epubFile.directory.node.url,
-      title: _book != null
-          ? (MetadataUtil.getTitle(_book!.metadata) ?? _book!.name)
-          : null,
+      title: _book?.title,
       chapter: chapterIndex >= 0 ? chapterIndex : null,
       readAloud: readAloud,
     ));
@@ -227,9 +225,7 @@ class _BookPageState extends State<BookPage> {
       bookId: widget.bookId,
       mediaFileId: comicFile.id,
       nodeUrl: comicFile.directory.node.url,
-      title: _book != null
-          ? (MetadataUtil.getTitle(_book!.metadata) ?? _book!.title)
-          : null,
+      title: _book?.title,
       seriesId: _book?.series?.id,
     ));
     // The reader saved a new position; refresh the reading bar.
@@ -497,9 +493,7 @@ class _BookPageState extends State<BookPage> {
       placeholderIcon: Icons.menu_book,
       coverAspectRatio: BookCarouselTile.coverAspectRatio,
       title: book != null
-          ? MetadataUtil.titleWithYear(
-              MetadataUtil.getTitle(book.metadata) ?? book.name,
-              book.releaseYear)
+          ? MetadataUtil.titleWithYear(book.title, book.releaseYear)
           : null,
       subtitle: book?.author?.name ?? book?.series?.name,
       onSubtitleTap: book?.author != null

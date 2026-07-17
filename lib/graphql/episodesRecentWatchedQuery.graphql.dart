@@ -621,6 +621,13 @@ const documentNodeQueryrecentlyWatched = DocumentNode(
                               selectionSet: null,
                             ),
                             FieldNode(
+                              name: NameNode(value: 'title'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                            FieldNode(
                               name: NameNode(value: 'images'),
                               alias: null,
                               arguments: [],
@@ -3936,6 +3943,7 @@ class Query$recentlyWatched$recentlyWatched$chapter$book {
   Query$recentlyWatched$recentlyWatched$chapter$book({
     required this.id,
     required this.name,
+    required this.title,
     this.images,
     this.metadata,
     this.$__typename = 'Book',
@@ -3946,12 +3954,14 @@ class Query$recentlyWatched$recentlyWatched$chapter$book {
   ) {
     final l$id = json['id'];
     final l$name = json['name'];
+    final l$title = json['title'];
     final l$images = json['images'];
     final l$metadata = json['metadata'];
     final l$$__typename = json['__typename'];
     return Query$recentlyWatched$recentlyWatched$chapter$book(
       id: (l$id as String),
       name: (l$name as String),
+      title: (l$title as String),
       images: (l$images as List<dynamic>?)
           ?.map(
             (e) =>
@@ -3972,6 +3982,8 @@ class Query$recentlyWatched$recentlyWatched$chapter$book {
 
   final String name;
 
+  final String title;
+
   final List<Fragment$fragmentImages>? images;
 
   final List<Fragment$fragmentMetadata>? metadata;
@@ -3984,6 +3996,8 @@ class Query$recentlyWatched$recentlyWatched$chapter$book {
     _resultData['id'] = l$id;
     final l$name = name;
     _resultData['name'] = l$name;
+    final l$title = title;
+    _resultData['title'] = l$title;
     final l$images = images;
     _resultData['images'] = l$images?.map((e) => e.toJson()).toList();
     final l$metadata = metadata;
@@ -3997,12 +4011,14 @@ class Query$recentlyWatched$recentlyWatched$chapter$book {
   int get hashCode {
     final l$id = id;
     final l$name = name;
+    final l$title = title;
     final l$images = images;
     final l$metadata = metadata;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
       l$name,
+      l$title,
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$$__typename,
@@ -4026,6 +4042,11 @@ class Query$recentlyWatched$recentlyWatched$chapter$book {
     final l$name = name;
     final lOther$name = other.name;
     if (l$name != lOther$name) {
+      return false;
+    }
+    final l$title = title;
+    final lOther$title = other.title;
+    if (l$title != lOther$title) {
       return false;
     }
     final l$images = images;
@@ -4095,6 +4116,7 @@ abstract class CopyWith$Query$recentlyWatched$recentlyWatched$chapter$book<
   TRes call({
     String? id,
     String? name,
+    String? title,
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
     String? $__typename,
@@ -4130,6 +4152,7 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$chapter$book<TRes>
   TRes call({
     Object? id = _undefined,
     Object? name = _undefined,
+    Object? title = _undefined,
     Object? images = _undefined,
     Object? metadata = _undefined,
     Object? $__typename = _undefined,
@@ -4139,6 +4162,9 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$chapter$book<TRes>
       name: name == _undefined || name == null
           ? _instance.name
           : (name as String),
+      title: title == _undefined || title == null
+          ? _instance.title
+          : (title as String),
       images: images == _undefined
           ? _instance.images
           : (images as List<Fragment$fragmentImages>?),
@@ -4190,6 +4216,7 @@ class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$chapter$book<TRes>
   call({
     String? id,
     String? name,
+    String? title,
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
     String? $__typename,
