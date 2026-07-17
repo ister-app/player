@@ -146,6 +146,18 @@ jobs:
           ref: ${{ env.TESTDATA_REF }}
           path: testdata
 
+      # The e2e infrastructure (ci/up.sh and friends) only exists in newer charts. With an
+      # older pinned CHART_REF the job skips cleanly instead of failing on a missing script.
+      - name: Check the pinned chart supports the e2e
+        id: chart-e2e
+        run: |
+          if [ -x chart/ci/up.sh ]; then
+            echo "supported=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "supported=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::chart $CHART_REF predates ci/up.sh — skipping the integration e2e until the pin is bumped"
+          fi
+
       - name: Resolve the testdata revision (for the cache key)
         id: testdata
         run: echo "sha=$(git -C testdata rev-parse HEAD)" >> "$GITHUB_OUTPUT"
@@ -188,19 +200,23 @@ jobs:
           install_only: true
 
       - name: Bring up the cluster
+        if: steps.chart-e2e.outputs.supported == 'true'
         run: TESTDATA_DIR="$PWD/testdata" SERVER_IMAGE_TAG="$SERVER_IMAGE_TAG" chart/ci/up.sh
 
       - name: Start port-forwards
+        if: steps.chart-e2e.outputs.supported == 'true'
         run: |
           chart/ci/e2e/forward-for-player.sh ister ister &
           sleep 5
           curl -fsS http://localhost:8080/api/.well-known/ister
 
       - name: Scan the libraries (the tests need indexed media)
+        if: steps.chart-e2e.outputs.supported == 'true'
         working-directory: chart
         run: E2E_ONLY='10-*' ./ci/e2e.sh ister ister
 
       - name: Run the integration tests
+        if: steps.chart-e2e.outputs.supported == 'true'
         working-directory: player
         run: |
           flutter pub get
@@ -209,7 +225,7 @@ jobs:
             flutter test integration_test -d linux --dart-define=ISTER_TEST_MODE=true
 
       - name: Diagnostics
-        if: failure()
+        if: failure() && steps.chart-e2e.outputs.supported == 'true'
         run: |
           kubectl get pods -n ister -o wide || true
           kubectl get events -n ister --sort-by=.lastTimestamp | tail -40 || true
