@@ -220,9 +220,16 @@ jobs:
         working-directory: player
         run: |
           flutter pub get
-          # xvfb for the Linux desktop embedder, dbus for audio_service's MPRIS backend.
-          xvfb-run -a dbus-run-session -- \
-            flutter test integration_test -d linux --dart-define=ISTER_TEST_MODE=true
+          # One flutter-test invocation per file: on the Linux device a single run over the
+          # whole directory fails to relaunch the app for the second file ("Unable to start
+          # the app on the device"). xvfb for the desktop embedder, dbus for MPRIS.
+          status=0
+          for t in integration_test/*_test.dart; do
+            echo "=== $t"
+            xvfb-run -a dbus-run-session -- \
+              flutter test "$t" -d linux --dart-define=ISTER_TEST_MODE=true || status=1
+          done
+          exit $status
 
       - name: Diagnostics
         if: failure() && steps.chart-e2e.outputs.supported == 'true'

@@ -49,8 +49,12 @@ void main() {
     await pumpUntil(tester, () => true,
         timeout: const Duration(seconds: 4), description: 'progress debounce');
 
+    // Scroll again periodically while polling: on a slow CI runner the first drag can land
+    // before the reader restored its position, in which case no location-bearing sync goes
+    // out until a later scroll. 90s because the debounce + POST + poll all share 2 cores.
     dynamic progress;
-    final deadline = DateTime.now().add(const Duration(seconds: 30));
+    final deadline = DateTime.now().add(const Duration(seconds: 90));
+    var iteration = 0;
     while (DateTime.now().isBefore(deadline)) {
       try {
         progress = await restGet('/reading-progress?bookId=$bookId');
@@ -58,10 +62,14 @@ void main() {
       } catch (_) {
         // 404 until the first sync lands.
       }
+      if (iteration++ % 5 == 4) {
+        await tester.drag(find.byType(Scrollable).last, const Offset(0, -200));
+      }
       await tester.pump(const Duration(seconds: 1));
     }
     expect(progress, isNotNull,
         reason: 'reading progress should be synced to the server');
-    expect(progress['location'], isNotEmpty);
+    expect(progress['location'], isNotEmpty,
+        reason: 'the synced progress should carry a reading location');
   });
 }
