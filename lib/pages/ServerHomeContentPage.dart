@@ -4,6 +4,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/components/AlbumSlide.dart';
 import 'package:player/components/BookSlide.dart';
 import 'package:player/components/PodcastSlide.dart';
+import 'package:player/components/SeriesSlide.dart';
 import 'package:player/components/MovieSlide.dart';
 import 'package:player/components/TvShowSlide.dart';
 import 'package:player/graphql/libraries.graphql.dart';
@@ -189,6 +190,14 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                                             )
                                           : library.type == Enum$LibraryType.PODCAST
                                           ? PodcastSlide(
+                                              serverName: widget.serverName,
+                                              libraryId: library.id,
+                                              onRefetch: (r) {
+                                                if (r != null) _refetchSlides[library.id] = r;
+                                              },
+                                            )
+                                          : library.type == Enum$LibraryType.COMIC
+                                          ? SeriesSlide(
                                               serverName: widget.serverName,
                                               libraryId: library.id,
                                               onRefetch: (r) {
