@@ -190,7 +190,7 @@ jobs:
       - name: Install dependencies from Apt
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg zip curl git unzip xz-utils libglu1-mesa clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libmpv-dev mpv libsecret-1-0 libsecret-1-dev libjsoncpp25 libjsoncpp-dev xvfb dbus-x11
+          sudo apt-get install -y ffmpeg zip curl git unzip xz-utils libglu1-mesa clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libmpv-dev mpv libsecret-1-0 libsecret-1-dev libjsoncpp25 libjsoncpp-dev xvfb dbus-x11 pulseaudio
 
       - uses: azure/setup-helm@v4
 
@@ -220,16 +220,19 @@ jobs:
         working-directory: player
         run: |
           flutter pub get
-          # One flutter-test invocation per file: on the Linux device a single run over the
-          # whole directory fails to relaunch the app for the second file ("Unable to start
-          # the app on the device"). xvfb for the desktop embedder, dbus for MPRIS.
-          status=0
-          for t in integration_test/*_test.dart; do
-            echo "=== $t"
-            xvfb-run -a dbus-run-session -- \
+          # One xvfb/dbus session around one flutter-test invocation per file: a single run
+          # over the whole directory fails to relaunch the Linux app for the second file
+          # ("Unable to start the app on the device"). PulseAudio provides a null sink —
+          # without any audio output mpv has no clock for audio-only media, so audiobook and
+          # podcast positions stay at zero forever (video carries its own clock).
+          xvfb-run -a dbus-run-session -- bash -c '
+            pulseaudio --start --exit-idle-time=-1 || true
+            status=0
+            for t in integration_test/*_test.dart; do
+              echo "=== $t"
               flutter test "$t" -d linux --dart-define=ISTER_TEST_MODE=true || status=1
-          done
-          exit $status
+            done
+            exit $status'
 
       - name: Diagnostics
         if: failure() && steps.chart-e2e.outputs.supported == 'true'
