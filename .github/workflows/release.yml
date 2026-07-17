@@ -447,7 +447,7 @@ jobs:
       - name: Strip -snapshot from the e2e pins
         run: |
           sed -i -E 's|^(SERVER_IMAGE_TAG=.*)-[Ss][Nn][Aa][Pp][Ss][Hh][Oo][Tt]$|\1|' ci/e2e-pins.env
-          ! grep -qi -- '-snapshot' ci/e2e-pins.env \
+          ! grep -qiE '^SERVER_IMAGE_TAG=.*-snapshot' ci/e2e-pins.env \
             || { echo "a -snapshot survived in ci/e2e-pins.env" >&2; exit 1; }
 
       - name: Generate the release notes
