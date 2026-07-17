@@ -1,5 +1,68 @@
 # Changelog
 
+## player v1.2.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.2.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat: add user and architecture docs with a screenshot-capture release pipeline ([`c43f19b`](https://github.com/ister-app/player/commit/c43f19b))
+- feat(test): integration e2e suite against the chart deployment in kind ([`e772c2a`](https://github.com/ister-app/player/commit/e772c2a))
+- feat(comic): continue-reading tiles for comic series in the recent carousel ([`80b76a4`](https://github.com/ister-app/player/commit/80b76a4))
+- feat(comic): series browsing — COMIC library grid, series page and reader dispatch ([`904abf1`](https://github.com/ister-app/player/commit/904abf1))
+- feat(comic): PDF volumes via pdfium (pdfrx) in the shared page reader ([`4c03e4d`](https://github.com/ister-app/player/commit/4c03e4d))
+- feat(comic): CBZ reader with zoom, RTL, spreads and page picker ([`58bf8f9`](https://github.com/ister-app/player/commit/58bf8f9))
+- feat(comic): manifest client, locator, progress sync and preferences ([`7fe0375`](https://github.com/ister-app/player/commit/7fe0375))
+- feat(graphql): sync schema for comics — series types, nullable Book.author, MediaFile format/pageCount ([`33c592b`](https://github.com/ister-app/player/commit/33c592b))
+- feat(reader): render epubs natively instead of launching the web reader ([`49f3712`](https://github.com/ister-app/player/commit/49f3712))
+
+### Fixes
+
+- fix: show Book.title everywhere instead of the metadata title ([`bfa1f44`](https://github.com/ister-app/player/commit/bfa1f44))
+- fix(reader): retry epub resource fetches on transient socket errors ([`08861c9`](https://github.com/ister-app/player/commit/08861c9))
+- fix(player): defer the videoPageOpen bump to after the first frame ([`bef21ea`](https://github.com/ister-app/player/commit/bef21ea))
+- fix(comic): label double-page spreads as a page range ([`9cb27a3`](https://github.com/ister-app/player/commit/9cb27a3))
+- fix(comic): show the read button for cbz/pdf-only volumes on the book page ([`cd336d3`](https://github.com/ister-app/player/commit/cd336d3))
+- fix(server-home): back-to-servers escape on the login and loading states ([`377b088`](https://github.com/ister-app/player/commit/377b088))
+- fix(recent): render podcast tiles square like the podcast library carousel ([`616b37e`](https://github.com/ister-app/player/commit/616b37e))
+
+### Dependency updates
+
+- fix(deps): upgrade dependencies (xml 7, flutter_widget_from_html_core 0.17) ([`30f2934`](https://github.com/ister-app/player/commit/30f2934))
+
+### Other
+
+- ci: pin the e2e against server 2.1.0 on chart v0.4.0 ([`d7e2551`](https://github.com/ister-app/player/commit/d7e2551))
+- ci: anchor the e2e-pins -snapshot gate to the value line ([`28ac708`](https://github.com/ister-app/player/commit/28ac708))
+- docs: describe the docs-build pipeline in CLAUDE.md ([`ddb13e3`](https://github.com/ister-app/player/commit/ddb13e3))
+- ci: retry an e2e file when the desktop runner loses the final result event ([`1825476`](https://github.com/ister-app/player/commit/1825476))
+- ci: pin the e2e against testdata with silent audio tracks in the video fixtures ([`c9d184b`](https://github.com/ister-app/player/commit/c9d184b))
+- ci: pin the e2e against the chart release deploying server 2.0.1 ([`679af36`](https://github.com/ister-app/player/commit/679af36))
+- ci: give the integration tests an audio sink ([`82c6052`](https://github.com/ister-app/player/commit/82c6052))
+- test(e2e): make the reader and audio tests deterministic on CI ([`eb78168`](https://github.com/ister-app/player/commit/eb78168))
+- ci: run integration tests per file and harden the reading-progress poll ([`b7a895f`](https://github.com/ister-app/player/commit/b7a895f))
+- ci: pin the e2e against chart v0.3.0 ([`37c94df`](https://github.com/ister-app/player/commit/37c94df))
+- ci: skip the integration e2e cleanly when the pinned chart predates it ([`75d6042`](https://github.com/ister-app/player/commit/75d6042))
+- ci: only feed KEY=value lines from the e2e pins into GITHUB_ENV ([`26c0c2f`](https://github.com/ister-app/player/commit/26c0c2f))
+- ci: accept the lowercase -snapshot suffix in the release gate ([`ef70946`](https://github.com/ister-app/player/commit/ef70946))
+- ci: pin the e2e against chart v0.2.2 and the current testdata commit ([`486bc8a`](https://github.com/ister-app/player/commit/486bc8a))
+- docs: describe the integration e2e suite, test seam and version pins ([`782e71f`](https://github.com/ister-app/player/commit/782e71f))
+- test(comic): cover the COMIC continue-reading tile in the recent carousel ([`12860de`](https://github.com/ister-app/player/commit/12860de))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.2.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.1.0...v1.2.0
+
 ## player v1.1.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
