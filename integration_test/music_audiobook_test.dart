@@ -36,7 +36,9 @@ void main() {
     await pumpUntil(
       tester,
       () => player.state.position - startPosition >= const Duration(seconds: 3),
-      timeout: const Duration(minutes: 1),
+      // Audio goes through an HLS transcode too; a cold pass on a busy 2-core CI
+      // cluster can take minutes before the first segment plays.
+      timeout: const Duration(minutes: 3),
       description: 'the audiobook position to advance 3 seconds',
     );
 

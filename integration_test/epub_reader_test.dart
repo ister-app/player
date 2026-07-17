@@ -15,13 +15,19 @@ void main() {
     await bootApp(tester);
     await enterServerShell(tester);
 
-    // "Winter Sleep" is the plain epub without overlays in the testdata set.
+    // "Winter Sleep": a plain epub without overlays AND without audiobook chapters — a book
+    // with chapters (Night Flight) gets chapter-progress rows from the audiobook bridge,
+    // whose location-less sync would race this test's location assertion. Comic volumes are
+    // Books too (chapterless, but their "epubFiles" are cbz), so require an author: comics
+    // are series-first and carry none.
     final books = await gqlRaw(
-        '{ books(size: 50) { content { id name epubFiles { id mediaOverlays directory { node { url } } } } } }');
+        '{ books(size: 50) { content { id name author { id } chapters { id } epubFiles { id mediaOverlays directory { node { url } } } } } }');
     final book = (books['books']['content'] as List).firstWhere(
-        (b) => (b['epubFiles'] as List? ?? [])
-            .any((f) => f['mediaOverlays'] != true),
-        orElse: () => fail('no plain epub book found'));
+        (b) =>
+            b['author'] != null &&
+            ((b['chapters'] as List? ?? []).isEmpty) &&
+            (b['epubFiles'] as List? ?? []).any((f) => f['mediaOverlays'] != true),
+        orElse: () => fail('no plain epub book without chapters found'));
     final bookId = book['id'] as String;
     final epubFile = (book['epubFiles'] as List)
         .firstWhere((f) => f['mediaOverlays'] != true);
@@ -44,14 +50,13 @@ void main() {
       description: 'the chapter text to render',
     );
 
-    // Read on: scroll the chapter; the sync service debounces ~1.5s then POSTs.
-    await tester.drag(find.byType(Scrollable).last, const Offset(0, -600));
-    await pumpUntil(tester, () => true,
-        timeout: const Duration(seconds: 4), description: 'progress debounce');
+    // Read on to the next chapter: the tiny test chapters fit on one screen, so scrolling
+    // never changes the reading block and the sync service (by design) has nothing to save.
+    // A chapter jump is a guaranteed locator change — but reports are suppressed until the
+    // reader finished weighing every chapter, so keep paging back and forth while polling:
+    // the first jump after the weighing completes is the one that syncs.
+    await pumpUntilFound(tester, find.byIcon(Icons.skip_next));
 
-    // Scroll again periodically while polling: on a slow CI runner the first drag can land
-    // before the reader restored its position, in which case no location-bearing sync goes
-    // out until a later scroll. 90s because the debounce + POST + poll all share 2 cores.
     dynamic progress;
     final deadline = DateTime.now().add(const Duration(seconds: 90));
     var iteration = 0;
@@ -62,9 +67,14 @@ void main() {
       } catch (_) {
         // 404 until the first sync lands.
       }
-      if (iteration++ % 5 == 4) {
-        await tester.drag(find.byType(Scrollable).last, const Offset(0, -200));
+      if (iteration % 4 == 0) {
+        final icon = iteration % 8 == 0 ? Icons.skip_next : Icons.skip_previous;
+        final button = find.byIcon(icon);
+        if (button.evaluate().isNotEmpty) {
+          await tester.tap(button, warnIfMissed: false);
+        }
       }
+      iteration++;
       await tester.pump(const Duration(seconds: 1));
     }
     expect(progress, isNotNull,
