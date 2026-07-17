@@ -480,3 +480,39 @@ jobs:
             --title "v${VERSION}" \
             --notes-file RELEASE_NOTES.md \
             "${assets[@]}"
+
+  # Deploys the released web build to GitHub Pages, served at https://player.ister.app
+  # (the custom domain is configured in the repo's Pages settings; DNS points
+  # player.ister.app at GitHub Pages). Runs after publish so the site only ever serves
+  # a build that actually made it out as a release.
+  pages:
+    needs: [gate, build, publish]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write      # deploy to Pages
+      id-token: write   # verify the deployment's origin
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # Creates the Pages site on first run, so no manual "enable Pages" step is needed.
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: site
+
+      # A single-page app: any deep link (e.g. /server/foo/...) must serve the app shell.
+      # GitHub Pages serves 404.html for unknown paths, so the shell doubles as the 404 page.
+      - name: Add the SPA 404 fallback
+        run: cp site/index.html site/404.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
