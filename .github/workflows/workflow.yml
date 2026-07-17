@@ -225,12 +225,26 @@ jobs:
           # ("Unable to start the app on the device"). PulseAudio provides a null sink —
           # without any audio output mpv has no clock for audio-only media, so audiobook and
           # podcast positions stay at zero forever (video carries its own clock).
+          # "No tests were found." after a ✅ group is the desktop runner losing the final
+          # result event when the app exits right after the last test (the reporter prints
+          # ✅ on "no errors seen", the engine never records the pass) — retry only that.
           xvfb-run -a dbus-run-session -- bash -c '
             pulseaudio --start --exit-idle-time=-1 || true
             status=0
             for t in integration_test/*_test.dart; do
               echo "=== $t"
-              flutter test "$t" -d linux --dart-define=ISTER_TEST_MODE=true || status=1
+              for attempt in 1 2; do
+                log=$(mktemp)
+                flutter test "$t" -d linux --dart-define=ISTER_TEST_MODE=true 2>&1 | tee "$log"
+                code=${PIPESTATUS[0]}
+                [ "$code" -eq 0 ] && break
+                if [ "$attempt" -eq 1 ] && grep -q "No tests were found." "$log"; then
+                  echo "--- result event lost for $t; retrying once"
+                  continue
+                fi
+                status=1
+                break
+              done
             done
             exit $status'
 
