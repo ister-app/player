@@ -19,6 +19,7 @@ import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/MusicDetailHero.dart';
+import '../components/SourceAttribution.dart';
 import '../components/RatingStars.dart';
 import '../l10n/app_localizations.dart';
 
@@ -293,6 +294,10 @@ class _PodcastPageState extends State<PodcastPage> {
                           style: Theme.of(context).textTheme.titleMedium),
                       const SizedBox(height: 8),
                       Text(description),
+                      const SizedBox(height: 6),
+                      SourceAttribution(
+                          metadata: podcast?.metadata,
+                          images: podcast?.images),
                     ],
                   ),
                 ),

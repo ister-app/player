@@ -14,6 +14,7 @@ import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/BookCarouselTile.dart';
+import '../components/SourceAttribution.dart';
 import '../components/MusicDetailHero.dart';
 import '../components/RatingStars.dart';
 import '../l10n/app_localizations.dart';
@@ -382,6 +383,9 @@ class _BookPageState extends State<BookPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(description),
+                    const SizedBox(height: 6),
+                    SourceAttribution(
+                        metadata: book?.metadata, images: book?.images),
                   ],
                 ),
               ),

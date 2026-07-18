@@ -647,4 +647,28 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get couldNotSaveReadingDirection => 'Kon de leesrichting niet opslaan';
+
+  @override
+  String sourceAttribution(String sources) {
+    return 'Bron: $sources';
+  }
+
+  @override
+  String get aboutAttributions => 'Over & bronvermelding';
+
+  @override
+  String get attributionsIntro =>
+      'Metadata en afbeeldingen op deze server zijn afkomstig van de volgende externe bronnen:';
+
+  @override
+  String attributionLicense(String license) {
+    return 'Licentie: $license';
+  }
+
+  @override
+  String get attributionsUnavailable =>
+      'De server meldt zijn bronnen nog niet.';
+
+  @override
+  String get openSourceLicenses => 'Open-source licenties';
 }

@@ -68,6 +68,14 @@ class ServerSettingsPage extends StatelessWidget {
                         .push(ServerSettingsPlaybackRoute()),
                   ),
                 ],
+                const Divider(height: 1, indent: 56),
+                ListTile(
+                  leading: const Icon(Icons.info_outline),
+                  title: Text(loc.aboutAttributions),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () =>
+                      AutoRouter.of(context).push(ServerSettingsAboutRoute()),
+                ),
               ],
             ),
           ),

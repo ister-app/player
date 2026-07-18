@@ -7,6 +7,7 @@ import 'package:player/l10n/app_localizations.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/AddToSessionSheet.dart';
+import '../components/SourceAttribution.dart';
 import '../components/CastRow.dart';
 import '../components/IsterPlayer.dart';
 import '../components/RatingStars.dart';
@@ -268,6 +269,11 @@ class _MoviePageState extends State<MoviePage> {
                 ),
               ),
             Text(description),
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: SourceAttribution(
+                  metadata: movie?.metadata, images: movie?.images),
+            ),
           ])),
       PagedCastRow(serverName: widget.serverName, movieId: widget.movieId),
       if (loadComplete && movie != null && movie.mediaFile != null && movie.mediaFile!.isNotEmpty)

@@ -1,10 +1,12 @@
 import 'package:gql/ast.dart';
+import 'schema.graphql.dart';
 
 class Fragment$fragmentImages {
   Fragment$fragmentImages({
     required this.type,
     required this.id,
     this.language,
+    this.source,
     this.blurHash,
     required this.directory,
     this.$__typename = 'Image',
@@ -14,6 +16,7 @@ class Fragment$fragmentImages {
     final l$type = json['type'];
     final l$id = json['id'];
     final l$language = json['language'];
+    final l$source = json['source'];
     final l$blurHash = json['blurHash'];
     final l$directory = json['directory'];
     final l$$__typename = json['__typename'];
@@ -21,6 +24,9 @@ class Fragment$fragmentImages {
       type: (l$type as String),
       id: (l$id as String),
       language: (l$language as String?),
+      source: l$source == null
+          ? null
+          : fromJson$Enum$MetadataSource((l$source as String)),
       blurHash: (l$blurHash as String?),
       directory: Fragment$fragmentImages$directory.fromJson(
         (l$directory as Map<String, dynamic>),
@@ -34,6 +40,8 @@ class Fragment$fragmentImages {
   final String id;
 
   final String? language;
+
+  final Enum$MetadataSource? source;
 
   final String? blurHash;
 
@@ -49,6 +57,10 @@ class Fragment$fragmentImages {
     _resultData['id'] = l$id;
     final l$language = language;
     _resultData['language'] = l$language;
+    final l$source = source;
+    _resultData['source'] = l$source == null
+        ? null
+        : toJson$Enum$MetadataSource(l$source);
     final l$blurHash = blurHash;
     _resultData['blurHash'] = l$blurHash;
     final l$directory = directory;
@@ -63,6 +75,7 @@ class Fragment$fragmentImages {
     final l$type = type;
     final l$id = id;
     final l$language = language;
+    final l$source = source;
     final l$blurHash = blurHash;
     final l$directory = directory;
     final l$$__typename = $__typename;
@@ -70,6 +83,7 @@ class Fragment$fragmentImages {
       l$type,
       l$id,
       l$language,
+      l$source,
       l$blurHash,
       l$directory,
       l$$__typename,
@@ -97,6 +111,11 @@ class Fragment$fragmentImages {
     final l$language = language;
     final lOther$language = other.language;
     if (l$language != lOther$language) {
+      return false;
+    }
+    final l$source = source;
+    final lOther$source = other.source;
+    if (l$source != lOther$source) {
       return false;
     }
     final l$blurHash = blurHash;
@@ -136,6 +155,7 @@ abstract class CopyWith$Fragment$fragmentImages<TRes> {
     String? type,
     String? id,
     String? language,
+    Enum$MetadataSource? source,
     String? blurHash,
     Fragment$fragmentImages$directory? directory,
     String? $__typename,
@@ -157,6 +177,7 @@ class _CopyWithImpl$Fragment$fragmentImages<TRes>
     Object? type = _undefined,
     Object? id = _undefined,
     Object? language = _undefined,
+    Object? source = _undefined,
     Object? blurHash = _undefined,
     Object? directory = _undefined,
     Object? $__typename = _undefined,
@@ -169,6 +190,9 @@ class _CopyWithImpl$Fragment$fragmentImages<TRes>
       language: language == _undefined
           ? _instance.language
           : (language as String?),
+      source: source == _undefined
+          ? _instance.source
+          : (source as Enum$MetadataSource?),
       blurHash: blurHash == _undefined
           ? _instance.blurHash
           : (blurHash as String?),
@@ -200,6 +224,7 @@ class _CopyWithStubImpl$Fragment$fragmentImages<TRes>
     String? type,
     String? id,
     String? language,
+    Enum$MetadataSource? source,
     String? blurHash,
     Fragment$fragmentImages$directory? directory,
     String? $__typename,
@@ -233,6 +258,13 @@ const fragmentDefinitionfragmentImages = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'language'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'source'),
         alias: null,
         arguments: [],
         directives: [],

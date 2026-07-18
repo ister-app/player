@@ -1,0 +1,9 @@
+query attributionsQuery {
+    attributions {
+        source
+        name
+        url
+        notice
+        license
+    }
+}

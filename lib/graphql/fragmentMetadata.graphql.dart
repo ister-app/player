@@ -1,4 +1,5 @@
 import 'package:gql/ast.dart';
+import 'schema.graphql.dart';
 
 class Fragment$fragmentMetadata {
   Fragment$fragmentMetadata({
@@ -6,6 +7,7 @@ class Fragment$fragmentMetadata {
     required this.id,
     this.language,
     this.sourceUri,
+    this.source,
     this.title,
     this.released,
     this.genre,
@@ -17,6 +19,7 @@ class Fragment$fragmentMetadata {
     final l$id = json['id'];
     final l$language = json['language'];
     final l$sourceUri = json['sourceUri'];
+    final l$source = json['source'];
     final l$title = json['title'];
     final l$released = json['released'];
     final l$genre = json['genre'];
@@ -26,6 +29,9 @@ class Fragment$fragmentMetadata {
       id: (l$id as String),
       language: (l$language as String?),
       sourceUri: (l$sourceUri as String?),
+      source: l$source == null
+          ? null
+          : fromJson$Enum$MetadataSource((l$source as String)),
       title: (l$title as String?),
       released: (l$released as String?),
       genre: (l$genre as String?),
@@ -40,6 +46,8 @@ class Fragment$fragmentMetadata {
   final String? language;
 
   final String? sourceUri;
+
+  final Enum$MetadataSource? source;
 
   final String? title;
 
@@ -59,6 +67,10 @@ class Fragment$fragmentMetadata {
     _resultData['language'] = l$language;
     final l$sourceUri = sourceUri;
     _resultData['sourceUri'] = l$sourceUri;
+    final l$source = source;
+    _resultData['source'] = l$source == null
+        ? null
+        : toJson$Enum$MetadataSource(l$source);
     final l$title = title;
     _resultData['title'] = l$title;
     final l$released = released;
@@ -76,6 +88,7 @@ class Fragment$fragmentMetadata {
     final l$id = id;
     final l$language = language;
     final l$sourceUri = sourceUri;
+    final l$source = source;
     final l$title = title;
     final l$released = released;
     final l$genre = genre;
@@ -85,6 +98,7 @@ class Fragment$fragmentMetadata {
       l$id,
       l$language,
       l$sourceUri,
+      l$source,
       l$title,
       l$released,
       l$genre,
@@ -119,6 +133,11 @@ class Fragment$fragmentMetadata {
     final l$sourceUri = sourceUri;
     final lOther$sourceUri = other.sourceUri;
     if (l$sourceUri != lOther$sourceUri) {
+      return false;
+    }
+    final l$source = source;
+    final lOther$source = other.source;
+    if (l$source != lOther$source) {
       return false;
     }
     final l$title = title;
@@ -165,6 +184,7 @@ abstract class CopyWith$Fragment$fragmentMetadata<TRes> {
     String? id,
     String? language,
     String? sourceUri,
+    Enum$MetadataSource? source,
     String? title,
     String? released,
     String? genre,
@@ -187,6 +207,7 @@ class _CopyWithImpl$Fragment$fragmentMetadata<TRes>
     Object? id = _undefined,
     Object? language = _undefined,
     Object? sourceUri = _undefined,
+    Object? source = _undefined,
     Object? title = _undefined,
     Object? released = _undefined,
     Object? genre = _undefined,
@@ -203,6 +224,9 @@ class _CopyWithImpl$Fragment$fragmentMetadata<TRes>
       sourceUri: sourceUri == _undefined
           ? _instance.sourceUri
           : (sourceUri as String?),
+      source: source == _undefined
+          ? _instance.source
+          : (source as Enum$MetadataSource?),
       title: title == _undefined ? _instance.title : (title as String?),
       released: released == _undefined
           ? _instance.released
@@ -226,6 +250,7 @@ class _CopyWithStubImpl$Fragment$fragmentMetadata<TRes>
     String? id,
     String? language,
     String? sourceUri,
+    Enum$MetadataSource? source,
     String? title,
     String? released,
     String? genre,
@@ -264,6 +289,13 @@ const fragmentDefinitionfragmentMetadata = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'sourceUri'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'source'),
         alias: null,
         arguments: [],
         directives: [],

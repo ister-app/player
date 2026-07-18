@@ -662,5 +662,22 @@
   },
   "readingDirectionLtr": "Left-to-right",
   "readingDirectionRtlShort": "Right-to-left",
-  "couldNotSaveReadingDirection": "Could not save the reading direction"
+  "couldNotSaveReadingDirection": "Could not save the reading direction",
+  "sourceAttribution": "Source: {sources}",
+  "@sourceAttribution": {
+    "description": "Per-item credit line naming the external metadata/artwork providers, e.g. \"Source: TMDB · Wikipedia\".",
+    "placeholders": {
+      "sources": {"type": "String"}
+    }
+  },
+  "aboutAttributions": "About & data sources",
+  "attributionsIntro": "Metadata and artwork on this server are provided by the following external sources:",
+  "attributionLicense": "License: {license}",
+  "@attributionLicense": {
+    "placeholders": {
+      "license": {"type": "String"}
+    }
+  },
+  "attributionsUnavailable": "The server does not report its data sources yet.",
+  "openSourceLicenses": "Open-source licenses"
 }

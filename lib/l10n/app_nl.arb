@@ -183,5 +183,11 @@
   "readingDirectionDefault": "Standaard ({direction})",
   "readingDirectionLtr": "Links naar rechts",
   "readingDirectionRtlShort": "Rechts naar links",
-  "couldNotSaveReadingDirection": "Kon de leesrichting niet opslaan"
+  "couldNotSaveReadingDirection": "Kon de leesrichting niet opslaan",
+  "sourceAttribution": "Bron: {sources}",
+  "aboutAttributions": "Over & bronvermelding",
+  "attributionsIntro": "Metadata en afbeeldingen op deze server zijn afkomstig van de volgende externe bronnen:",
+  "attributionLicense": "Licentie: {license}",
+  "attributionsUnavailable": "De server meldt zijn bronnen nog niet.",
+  "openSourceLicenses": "Open-source licenties"
 }

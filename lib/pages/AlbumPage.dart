@@ -17,6 +17,7 @@ import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/AddToSessionSheet.dart';
+import '../components/SourceAttribution.dart';
 import '../components/MusicDetailHero.dart';
 import '../components/RatingStars.dart';
 import '../l10n/app_localizations.dart';
@@ -272,6 +273,9 @@ class _AlbumPageState extends State<AlbumPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(description),
+                      const SizedBox(height: 6),
+                      SourceAttribution(
+                          metadata: album?.metadata, images: album?.images),
                     ],
                   ),
                 ),

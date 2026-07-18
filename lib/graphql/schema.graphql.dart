@@ -551,6 +551,74 @@ class _CopyWithStubImpl$Input$CreatePlayQueueInput<TRes>
   }) => _res;
 }
 
+enum Enum$MetadataSource {
+  TMDB,
+  MUSICBRAINZ,
+  COVER_ART_ARCHIVE,
+  WIKIMEDIA_COMMONS,
+  WIKIPEDIA,
+  WIKIDATA,
+  OPEN_LIBRARY,
+  PODCAST_FEED,
+  LOCAL_FILE,
+  $unknown;
+
+  factory Enum$MetadataSource.fromJson(String value) =>
+      fromJson$Enum$MetadataSource(value);
+
+  String toJson() => toJson$Enum$MetadataSource(this);
+}
+
+String toJson$Enum$MetadataSource(Enum$MetadataSource e) {
+  switch (e) {
+    case Enum$MetadataSource.TMDB:
+      return r'TMDB';
+    case Enum$MetadataSource.MUSICBRAINZ:
+      return r'MUSICBRAINZ';
+    case Enum$MetadataSource.COVER_ART_ARCHIVE:
+      return r'COVER_ART_ARCHIVE';
+    case Enum$MetadataSource.WIKIMEDIA_COMMONS:
+      return r'WIKIMEDIA_COMMONS';
+    case Enum$MetadataSource.WIKIPEDIA:
+      return r'WIKIPEDIA';
+    case Enum$MetadataSource.WIKIDATA:
+      return r'WIKIDATA';
+    case Enum$MetadataSource.OPEN_LIBRARY:
+      return r'OPEN_LIBRARY';
+    case Enum$MetadataSource.PODCAST_FEED:
+      return r'PODCAST_FEED';
+    case Enum$MetadataSource.LOCAL_FILE:
+      return r'LOCAL_FILE';
+    case Enum$MetadataSource.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$MetadataSource fromJson$Enum$MetadataSource(String value) {
+  switch (value) {
+    case r'TMDB':
+      return Enum$MetadataSource.TMDB;
+    case r'MUSICBRAINZ':
+      return Enum$MetadataSource.MUSICBRAINZ;
+    case r'COVER_ART_ARCHIVE':
+      return Enum$MetadataSource.COVER_ART_ARCHIVE;
+    case r'WIKIMEDIA_COMMONS':
+      return Enum$MetadataSource.WIKIMEDIA_COMMONS;
+    case r'WIKIPEDIA':
+      return Enum$MetadataSource.WIKIPEDIA;
+    case r'WIKIDATA':
+      return Enum$MetadataSource.WIKIDATA;
+    case r'OPEN_LIBRARY':
+      return Enum$MetadataSource.OPEN_LIBRARY;
+    case r'PODCAST_FEED':
+      return Enum$MetadataSource.PODCAST_FEED;
+    case r'LOCAL_FILE':
+      return Enum$MetadataSource.LOCAL_FILE;
+    default:
+      return Enum$MetadataSource.$unknown;
+  }
+}
+
 enum Enum$PlaybackCommandType {
   PLAY,
   PAUSE,

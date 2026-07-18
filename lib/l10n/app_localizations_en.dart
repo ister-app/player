@@ -648,4 +648,28 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get couldNotSaveReadingDirection =>
       'Could not save the reading direction';
+
+  @override
+  String sourceAttribution(String sources) {
+    return 'Source: $sources';
+  }
+
+  @override
+  String get aboutAttributions => 'About & data sources';
+
+  @override
+  String get attributionsIntro =>
+      'Metadata and artwork on this server are provided by the following external sources:';
+
+  @override
+  String attributionLicense(String license) {
+    return 'License: $license';
+  }
+
+  @override
+  String get attributionsUnavailable =>
+      'The server does not report its data sources yet.';
+
+  @override
+  String get openSourceLicenses => 'Open-source licenses';
 }

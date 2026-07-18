@@ -1,4 +1,5 @@
 import 'package:player/graphql/fragmentMetadata.graphql.dart';
+import 'package:player/graphql/schema.graphql.dart';
 
 class MetadataUtil {
   /// Get the description from te metadata.
@@ -63,6 +64,16 @@ class MetadataUtil {
       if ((genre ?? "").isNotEmpty) genre!,
     ];
     return parts.isEmpty ? null : parts.join(' • ');
+  }
+
+  /// Distinct attribution sources of the (language-filtered) metadata rows.
+  static List<Enum$MetadataSource> getSources(
+      List<Fragment$fragmentMetadata>? metadataList) {
+    return (getMetadata(metadataList) ?? [])
+        .map((element) => element.source)
+        .whereType<Enum$MetadataSource>()
+        .toSet()
+        .toList();
   }
 
   /// Return a list with only the metadata for selected lang

@@ -24,6 +24,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../components/BookCarouselTile.dart';
 import '../components/CarouselItemView.dart';
 import '../components/MusicDetailHero.dart';
+import '../components/SourceAttribution.dart';
 import '../l10n/app_localizations.dart';
 
 final _random = Random();
@@ -232,6 +233,9 @@ class PersonPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(description),
+                      const SizedBox(height: 6),
+                      SourceAttribution(
+                          metadata: artist?.metadata, images: artist?.images),
                     ],
                   ),
                 ),

@@ -16,6 +16,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/CarouselItemView.dart';
 import '../components/MusicDetailHero.dart';
+import '../components/SourceAttribution.dart';
 import '../components/SeriesCarouselTile.dart';
 import '../l10n/app_localizations.dart';
 
@@ -117,6 +118,9 @@ class _SeriesPageState extends State<SeriesPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(description),
+                    const SizedBox(height: 6),
+                    SourceAttribution(
+                        metadata: series?.metadata, images: series?.images),
                   ],
                 ),
               ),

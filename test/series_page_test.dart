@@ -32,6 +32,7 @@ Map<String, dynamic> _series({
           'description': 'A young ninja seeks recognition.',
           'language': 'eng',
           'sourceUri': null,
+          'source': null,
           'title': null,
           'released': null,
           'genre': null,

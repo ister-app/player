@@ -10,6 +10,7 @@ import 'package:player/graphql/episodeById.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/AddToSessionSheet.dart';
+import '../components/SourceAttribution.dart';
 import '../components/CastRow.dart';
 import '../components/IsterPlayer.dart';
 import '../components/RatingStars.dart';
@@ -299,6 +300,11 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                 ),
               ),
             Text(description),
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: SourceAttribution(
+                  metadata: episode?.metadata, images: episode?.images),
+            ),
           ])),
       PagedCastRow(serverName: widget.serverName, episodeId: widget.episodeId),
       if (loadComplete && episode != null && episode.mediaFile != null && episode.mediaFile!.isNotEmpty)

@@ -1201,6 +1201,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not save the reading direction'**
   String get couldNotSaveReadingDirection;
+
+  /// Per-item credit line naming the external metadata/artwork providers, e.g. "Source: TMDB · Wikipedia".
+  ///
+  /// In en, this message translates to:
+  /// **'Source: {sources}'**
+  String sourceAttribution(String sources);
+
+  /// No description provided for @aboutAttributions.
+  ///
+  /// In en, this message translates to:
+  /// **'About & data sources'**
+  String get aboutAttributions;
+
+  /// No description provided for @attributionsIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Metadata and artwork on this server are provided by the following external sources:'**
+  String get attributionsIntro;
+
+  /// No description provided for @attributionLicense.
+  ///
+  /// In en, this message translates to:
+  /// **'License: {license}'**
+  String attributionLicense(String license);
+
+  /// No description provided for @attributionsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The server does not report its data sources yet.'**
+  String get attributionsUnavailable;
+
+  /// No description provided for @openSourceLicenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Open-source licenses'**
+  String get openSourceLicenses;
 }
 
 class _AppLocalizationsDelegate
