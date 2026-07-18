@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:player/graphql/fragmentImages.graphql.dart';
 import 'package:player/graphql/fragmentMediafiles.graphql.dart';
+import 'package:player/graphql/schema.graphql.dart';
 
 import 'ImageTypes.dart';
 
@@ -17,7 +18,15 @@ class ImageUtil {
       ImageTypes.values.byName(element.type.toLowerCase()) ==
           backgroundType);
       if (coverImages.isNotEmpty) {
-        return coverImages.first;
+        // Local artwork shipped next to the media files wins over scraped
+        // provider images. Newer servers label it LOCAL_FILE; older ones
+        // leave the source null.
+        return coverImages
+                .where((i) =>
+                    i.source == null ||
+                    i.source == Enum$MetadataSource.LOCAL_FILE)
+                .firstOrNull ??
+            coverImages.first;
       }
     }
     return null;
