@@ -1,0 +1,3 @@
+mutation setUserLibraryAccess($userId: ID!, $libraryId: ID!, $granted: Boolean!) {
+    setUserLibraryAccess(userId: $userId, libraryId: $libraryId, granted: $granted)
+}

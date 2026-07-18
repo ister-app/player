@@ -15,6 +15,7 @@ import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MetadataUtil.dart';
+import 'package:player/utils/PermissionsService.dart';
 import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -35,7 +36,7 @@ final _skeletonCast = List.generate(
 );
 
 @RoutePage()
-class ShowOverviewContentPage extends StatelessWidget {
+class ShowOverviewContentPage extends StatefulWidget {
   const ShowOverviewContentPage({
     super.key,
     @PathParam.inherit('serverName') required this.serverName,
@@ -44,6 +45,27 @@ class ShowOverviewContentPage extends StatelessWidget {
 
   final String serverName;
   final String showId;
+
+  @override
+  State<ShowOverviewContentPage> createState() =>
+      _ShowOverviewContentPageState();
+}
+
+class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
+  String get serverName => widget.serverName;
+  String get showId => widget.showId;
+
+  bool _showAdminActions = true;
+
+  @override
+  void initState() {
+    super.initState();
+    PermissionsService().adminStatusFor(widget.serverName).then((status) {
+      if (mounted && status == AdminStatus.notAdmin) {
+        setState(() => _showAdminActions = false);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -156,19 +178,20 @@ class ShowOverviewContentPage extends StatelessWidget {
                           title: Text(AppLocalizations.of(context)!.rawData),
                         ),
                       ),
-                      MenuItemButton(
-                        onPressed: () async {
-                          final client = GraphQLProvider.of(context).value;
-                          await client.mutate(MutationOptions(
-                            document: documentNodeMutationanalyzeDataForShowMutation,
-                            variables: {'showId': showId},
-                          ));
-                        },
-                        child: ListTile(
-                          leading: const Icon(Icons.analytics),
-                          title: Text(AppLocalizations.of(context)!.analyzeMedia),
+                      if (_showAdminActions)
+                        MenuItemButton(
+                          onPressed: () async {
+                            final client = GraphQLProvider.of(context).value;
+                            await client.mutate(MutationOptions(
+                              document: documentNodeMutationanalyzeDataForShowMutation,
+                              variables: {'showId': showId},
+                            ));
+                          },
+                          child: ListTile(
+                            leading: const Icon(Icons.analytics),
+                            title: Text(AppLocalizations.of(context)!.analyzeMedia),
+                          ),
                         ),
-                      ),
                       MenuItemButton(
                         onPressed: () => showAddToSessionSheet(
                           context,

@@ -81,6 +81,9 @@ class AppRouter extends RootStackRouter {
           AutoRoute(path: 'settings/nowplaying', page: ServerNowPlayingRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/activity', page: ServerActivityRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/about', page: ServerSettingsAboutRoute.page, guards: [_deepLinkGuard]),
+          AutoRoute(path: 'settings/users', page: AdminUsersRoute.page, guards: [_deepLinkGuard]),
+          AutoRoute(path: 'settings/users/:userId', page: AdminUserAccessRoute.page, guards: [_deepLinkGuard]),
+          AutoRoute(path: 'settings/libraries', page: AdminLibrariesRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'shows/:showId', page: ShowOverviewRoute.page,
             guards: [_deepLinkGuard],
             children: [

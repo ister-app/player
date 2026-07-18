@@ -25,6 +25,7 @@ import '../utils/ImageUtil.dart';
 import '../utils/StreamTokenService.dart';
 import '../utils/MediaPlayerHandler.dart';
 import '../utils/MetadataUtil.dart';
+import '../utils/PermissionsService.dart';
 import '../utils/PlayQueueService.dart';
 
 @RoutePage()
@@ -51,6 +52,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
   Fragment$fragmentEpisode? episode;
   bool _playQueueStarted = false;
   bool _videoPageOpenCounted = false;
+  bool _showAdminActions = true;
 
   late final PlayQueueService playQueueService;
   late StreamSubscription _playQueueSubscription;
@@ -59,6 +61,11 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
   void initState() {
     super.initState();
     playQueueService = PlayQueueService();
+    PermissionsService().adminStatusFor(widget.serverName).then((status) {
+      if (mounted && status == AdminStatus.notAdmin) {
+        setState(() => _showAdminActions = false);
+      }
+    });
 
     // Hide the mini player's video bar while this page (the full player) shows.
     // Post-frame: the mini player is an ancestor listening to this notifier, and
@@ -237,7 +244,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                           title: Text(AppLocalizations.of(context)!.rawData),
                         ),
                       ),
-                    if (episode != null)
+                    if (episode != null && _showAdminActions)
                       MenuItemButton(
                         onPressed: () async {
                           final client = GraphQLProvider.of(context).value;

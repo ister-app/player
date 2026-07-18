@@ -13,6 +13,7 @@ import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:player/utils/MetadataUtil.dart';
+import 'package:player/utils/PermissionsService.dart';
 import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -43,6 +44,17 @@ class _AlbumPageState extends State<AlbumPage> {
   // Live overrides for track ratings changed this session, so a rating set via
   // the per-track dialog shows immediately without waiting for a refetch.
   final Map<String, int?> _trackRatingOverrides = {};
+  bool _showAdminActions = true;
+
+  @override
+  void initState() {
+    super.initState();
+    PermissionsService().adminStatusFor(widget.serverName).then((status) {
+      if (mounted && status == AdminStatus.notAdmin) {
+        setState(() => _showAdminActions = false);
+      }
+    });
+  }
 
   int? _trackRating(Fragment$fragmentTrack track) =>
       _trackRatingOverrides.containsKey(track.id)
@@ -145,7 +157,7 @@ class _AlbumPageState extends State<AlbumPage> {
                   ],
                 ),
               ),
-            if (album != null)
+            if (album != null && _showAdminActions)
               IconButton(
                 icon: const Icon(Icons.analytics),
                 tooltip: loc.analyzeMedia,
@@ -412,20 +424,21 @@ class _AlbumPageState extends State<AlbumPage> {
                             title: Text(loc.rate),
                           ),
                         ),
-                        MenuItemButton(
-                          onPressed: () async {
-                            final client = GraphQLProvider.of(context).value;
-                            await client.mutate(MutationOptions(
-                              document:
-                                  documentNodeMutationanalyzeDataForTrackMutation,
-                              variables: {'trackId': track.id},
-                            ));
-                          },
-                          child: ListTile(
-                            leading: const Icon(Icons.analytics),
-                            title: Text(loc.analyzeMedia),
+                        if (_showAdminActions)
+                          MenuItemButton(
+                            onPressed: () async {
+                              final client = GraphQLProvider.of(context).value;
+                              await client.mutate(MutationOptions(
+                                document:
+                                    documentNodeMutationanalyzeDataForTrackMutation,
+                                variables: {'trackId': track.id},
+                              ));
+                            },
+                            child: ListTile(
+                              leading: const Icon(Icons.analytics),
+                              title: Text(loc.analyzeMedia),
+                            ),
                           ),
-                        ),
                       ],
                       builder: (_, MenuController controller, Widget? child) {
                         return IconButton(

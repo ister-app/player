@@ -69,6 +69,33 @@ class AppLocalizationsNl extends AppLocalizations {
   String get management => 'Beheer';
 
   @override
+  String get usersAndAccess => 'Gebruikers & toegang';
+
+  @override
+  String get libraryVisibility => 'Bibliotheek-zichtbaarheid';
+
+  @override
+  String get visibleToEveryone => 'Voor iedereen zichtbaar';
+
+  @override
+  String get restrictedLibrarySubtitle =>
+      'Beperkt — alleen toegewezen gebruikers';
+
+  @override
+  String get adminLabel => 'Admin';
+
+  @override
+  String get noUsersYet =>
+      'Nog geen gebruikers — een gebruiker verschijnt hier na de eerste login.';
+
+  @override
+  String get adminRoleNote =>
+      'Admins zien altijd alle bibliotheken. De adminrol zelf wordt toegekend in de identity provider (bijv. Keycloak).';
+
+  @override
+  String get changeNotSaved => 'Wijziging kon niet worden opgeslagen';
+
+  @override
   String taskStarted(String task) {
     return 'Gestart: $task';
   }

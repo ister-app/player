@@ -19,6 +19,7 @@ import '../utils/ImageUtil.dart';
 import '../utils/MediaPlayerHandler.dart';
 import '../utils/StreamTokenService.dart';
 import '../utils/MetadataUtil.dart';
+import '../utils/PermissionsService.dart';
 
 @RoutePage()
 class MoviePage extends StatefulWidget {
@@ -42,10 +43,16 @@ class _MoviePageState extends State<MoviePage> {
   Fragment$fragmentMovie? movie;
   bool _playQueueStarted = false;
   bool _videoPageOpenCounted = false;
+  bool _showAdminActions = true;
 
   @override
   void initState() {
     super.initState();
+    PermissionsService().adminStatusFor(widget.serverName).then((status) {
+      if (mounted && status == AdminStatus.notAdmin) {
+        setState(() => _showAdminActions = false);
+      }
+    });
     // Hide the mini player's video bar while this page (the full player) shows.
     // Post-frame: the mini player is an ancestor listening to this notifier, and
     // notifying it while this page is being mounted mid-build throws
@@ -206,7 +213,7 @@ class _MoviePageState extends State<MoviePage> {
                           title: Text(AppLocalizations.of(context)!.rawData),
                         ),
                       ),
-                    if (movie != null)
+                    if (movie != null && _showAdminActions)
                       MenuItemButton(
                         onPressed: () async {
                           final client = GraphQLProvider.of(context).value;

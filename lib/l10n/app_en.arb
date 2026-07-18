@@ -58,6 +58,38 @@
   "@management": {
     "description": "Section header for administrative server actions (scan, analyze, reindex)."
   },
+  "usersAndAccess": "Users & access",
+  "@usersAndAccess": {
+    "description": "Settings tile and page title for the admin page that manages users and their library access."
+  },
+  "libraryVisibility": "Library visibility",
+  "@libraryVisibility": {
+    "description": "Settings tile and page title for the admin page that manages which libraries everyone can see."
+  },
+  "visibleToEveryone": "Visible to everyone",
+  "@visibleToEveryone": {
+    "description": "Switch label/subtitle for a library every user may see."
+  },
+  "restrictedLibrarySubtitle": "Restricted — only granted users",
+  "@restrictedLibrarySubtitle": {
+    "description": "Subtitle for a library only visible to explicitly granted users (and admins)."
+  },
+  "adminLabel": "Admin",
+  "@adminLabel": {
+    "description": "Badge on a user row marking that user as an administrator."
+  },
+  "noUsersYet": "No users yet — a user appears here after their first login.",
+  "@noUsersYet": {
+    "description": "Empty state of the admin users list."
+  },
+  "adminRoleNote": "Admins always see every library. The admin role itself is assigned in the identity provider (e.g. Keycloak).",
+  "@adminRoleNote": {
+    "description": "Footnote on the admin pages explaining where the admin role is managed."
+  },
+  "changeNotSaved": "Could not save the change",
+  "@changeNotSaved": {
+    "description": "Toast shown when toggling library access or visibility failed on the server."
+  },
   "taskStarted": "Started: {task}",
   "@taskStarted": {
     "description": "Confirmation toast shown when a management task was triggered on the server.",

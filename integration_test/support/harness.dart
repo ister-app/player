@@ -28,17 +28,19 @@ const String testTokenUrl = String.fromEnvironment('ISTER_TOKEN_URL',
 
 const String _issuerHost = 'mock-oidc:8080';
 
-String? _cachedToken;
-DateTime? _cachedTokenMintedAt;
+final Map<bool, String> _cachedTokens = {};
+final Map<bool, DateTime> _cachedTokenMintedAt = {};
 
-/// Mints a client-credentials JWT with roles=[user] at the mock issuer.
-Future<String> mintToken() async {
-  final cached = _cachedToken;
+/// Mints a client-credentials JWT at the mock issuer: roles=[user] by default,
+/// roles=[user, admin] with [admin] (mock-oidc maps the scope to the claims).
+Future<String> mintToken({bool admin = false}) async {
+  final cached = _cachedTokens[admin];
   if (cached != null &&
-      DateTime.now().difference(_cachedTokenMintedAt!) <
+      DateTime.now().difference(_cachedTokenMintedAt[admin]!) <
           const Duration(minutes: 45)) {
     return cached;
   }
+  final scope = admin ? 'ister-admin' : 'ister';
   final client = HttpClient();
   try {
     final request = await client.postUrl(Uri.parse(testTokenUrl));
@@ -46,7 +48,7 @@ Future<String> mintToken() async {
     request.headers.contentType =
         ContentType('application', 'x-www-form-urlencoded');
     request.write(
-        'grant_type=client_credentials&client_id=e2e&client_secret=e2e-secret&scope=ister');
+        'grant_type=client_credentials&client_id=e2e&client_secret=e2e-secret&scope=$scope');
     final response = await request.close();
     final body = await response.transform(utf8.decoder).join();
     if (response.statusCode != 200) {
@@ -54,8 +56,8 @@ Future<String> mintToken() async {
     }
     final token = jsonDecode(body)['access_token'] as String?;
     if (token == null) throw StateError('no access_token in: $body');
-    _cachedToken = token;
-    _cachedTokenMintedAt = DateTime.now();
+    _cachedTokens[admin] = token;
+    _cachedTokenMintedAt[admin] = DateTime.now();
     return token;
   } finally {
     client.close();

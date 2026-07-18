@@ -1,0 +1,13 @@
+query adminUsers {
+    users {
+        id
+        name
+        email
+        isAdmin
+        grantedLibraries {
+            id
+            name
+            type
+        }
+    }
+}

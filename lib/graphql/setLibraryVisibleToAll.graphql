@@ -1,0 +1,3 @@
+mutation setLibraryVisibleToAll($libraryId: ID!, $visibleToAll: Boolean!) {
+    setLibraryVisibleToAll(libraryId: $libraryId, visibleToAll: $visibleToAll)
+}

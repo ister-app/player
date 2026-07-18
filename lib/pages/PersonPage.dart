@@ -18,6 +18,7 @@ import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:player/utils/MetadataUtil.dart';
+import 'package:player/utils/PermissionsService.dart';
 import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -30,7 +31,7 @@ import '../l10n/app_localizations.dart';
 final _random = Random();
 
 @RoutePage()
-class PersonPage extends StatelessWidget {
+class PersonPage extends StatefulWidget {
   const PersonPage({
     super.key,
     @PathParam.inherit('serverName') required this.serverName,
@@ -39,6 +40,26 @@ class PersonPage extends StatelessWidget {
 
   final String serverName;
   final String personId;
+
+  @override
+  State<PersonPage> createState() => _PersonPageState();
+}
+
+class _PersonPageState extends State<PersonPage> {
+  String get serverName => widget.serverName;
+  String get personId => widget.personId;
+
+  bool _showAdminActions = true;
+
+  @override
+  void initState() {
+    super.initState();
+    PermissionsService().adminStatusFor(widget.serverName).then((status) {
+      if (mounted && status == AdminStatus.notAdmin) {
+        setState(() => _showAdminActions = false);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -145,7 +166,7 @@ class PersonPage extends StatelessWidget {
           stretch: true,
           foregroundColor: Colors.white,
           actions: [
-            if (artist != null)
+            if (artist != null && _showAdminActions)
               IconButton(
                 icon: const Icon(Icons.analytics),
                 tooltip: loc.analyzeMedia,

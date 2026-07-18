@@ -1,0 +1,10 @@
+# Admin-only view of the library list: includes the visibility flag. Kept separate from the
+# shared libraries query so the rest of the app keeps working against servers without it.
+query adminLibraries {
+    libraries {
+        id
+        name
+        type
+        visibleToAll
+    }
+}

@@ -65,7 +65,16 @@ class ClientManager {
     }
   }
 
+  /// Widget-test seam: when set, [getClientForUrl] builds clients through this
+  /// instead of the well-known/OIDC plumbing (which needs a live server).
+  @visibleForTesting
+  static GraphQLClient Function(String url)? testClientBuilder;
+
   static ValueNotifier<GraphQLClient> getClientForUrl(String url) {
+    final builder = testClientBuilder;
+    if (builder != null) {
+      return clients.putIfAbsent(url, () => ValueNotifier(builder(url)));
+    }
     if (clients.containsKey(url)) {
       return clients[url]!;
     } else {

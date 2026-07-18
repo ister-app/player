@@ -12,6 +12,7 @@ import 'package:player/graphql/schema.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../l10n/app_localizations.dart';
+import '../components/AdminGate.dart';
 import '../utils/ClientManager.dart';
 import '../utils/LoggerService.dart';
 
@@ -134,6 +135,16 @@ class ServerSettingsClusterPage extends StatelessWidget {
     );
   }
 
+  /// The management actions are admin-only; on an older server without permissions
+  /// (status unknown) they stay visible, matching what that server enforces.
+  Widget _gatedManagementSection(BuildContext context) {
+    return AdminGate(
+      serverName: serverName,
+      showWhenUnknown: true,
+      child: _managementSection(context),
+    );
+  }
+
   Widget _managementSection(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
@@ -198,7 +209,7 @@ class ServerSettingsClusterPage extends StatelessWidget {
                 padding: const EdgeInsets.all(16.0),
                 children: [
                   Center(child: Text(result.exception.toString())),
-                  _managementSection(context),
+                  _gatedManagementSection(context),
                 ],
               );
             }
@@ -238,7 +249,7 @@ class ServerSettingsClusterPage extends StatelessWidget {
                         ),
                       ),
                     ),
-                    _managementSection(context),
+                    _gatedManagementSection(context),
                   ],
                 ),
               );
@@ -300,7 +311,7 @@ class ServerSettingsClusterPage extends StatelessWidget {
                     ),
                   ),
                 ],
-                _managementSection(context),
+                _gatedManagementSection(context),
               ],
             );
           },

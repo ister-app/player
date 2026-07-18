@@ -206,6 +206,54 @@ abstract class AppLocalizations {
   /// **'Management'**
   String get management;
 
+  /// Settings tile and page title for the admin page that manages users and their library access.
+  ///
+  /// In en, this message translates to:
+  /// **'Users & access'**
+  String get usersAndAccess;
+
+  /// Settings tile and page title for the admin page that manages which libraries everyone can see.
+  ///
+  /// In en, this message translates to:
+  /// **'Library visibility'**
+  String get libraryVisibility;
+
+  /// Switch label/subtitle for a library every user may see.
+  ///
+  /// In en, this message translates to:
+  /// **'Visible to everyone'**
+  String get visibleToEveryone;
+
+  /// Subtitle for a library only visible to explicitly granted users (and admins).
+  ///
+  /// In en, this message translates to:
+  /// **'Restricted — only granted users'**
+  String get restrictedLibrarySubtitle;
+
+  /// Badge on a user row marking that user as an administrator.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get adminLabel;
+
+  /// Empty state of the admin users list.
+  ///
+  /// In en, this message translates to:
+  /// **'No users yet — a user appears here after their first login.'**
+  String get noUsersYet;
+
+  /// Footnote on the admin pages explaining where the admin role is managed.
+  ///
+  /// In en, this message translates to:
+  /// **'Admins always see every library. The admin role itself is assigned in the identity provider (e.g. Keycloak).'**
+  String get adminRoleNote;
+
+  /// Toast shown when toggling library access or visibility failed on the server.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the change'**
+  String get changeNotSaved;
+
   /// Confirmation toast shown when a management task was triggered on the server.
   ///
   /// In en, this message translates to:

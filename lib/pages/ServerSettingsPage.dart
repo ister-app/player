@@ -4,13 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 
+import '../components/AdminGate.dart';
 import '../l10n/app_localizations.dart';
 
 @RoutePage()
 class ServerSettingsPage extends StatelessWidget {
+  final String serverName;
+
   const ServerSettingsPage({
     super.key,
-    @PathParam.inherit('serverName') required String serverName,
+    @PathParam.inherit('serverName') required this.serverName,
   });
 
   @override
@@ -68,6 +71,29 @@ class ServerSettingsPage extends StatelessWidget {
                         .push(ServerSettingsPlaybackRoute()),
                   ),
                 ],
+                AdminGate(
+                  serverName: serverName,
+                  child: Column(
+                    children: [
+                      const Divider(height: 1, indent: 56),
+                      ListTile(
+                        leading: const Icon(Icons.manage_accounts_outlined),
+                        title: Text(loc.usersAndAccess),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () =>
+                            AutoRouter.of(context).push(AdminUsersRoute()),
+                      ),
+                      const Divider(height: 1, indent: 56),
+                      ListTile(
+                        leading: const Icon(Icons.visibility_outlined),
+                        title: Text(loc.libraryVisibility),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () =>
+                            AutoRouter.of(context).push(AdminLibrariesRoute()),
+                      ),
+                    ],
+                  ),
+                ),
                 const Divider(height: 1, indent: 56),
                 ListTile(
                   leading: const Icon(Icons.info_outline),

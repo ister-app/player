@@ -69,6 +69,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get management => 'Management';
 
   @override
+  String get usersAndAccess => 'Users & access';
+
+  @override
+  String get libraryVisibility => 'Library visibility';
+
+  @override
+  String get visibleToEveryone => 'Visible to everyone';
+
+  @override
+  String get restrictedLibrarySubtitle => 'Restricted — only granted users';
+
+  @override
+  String get adminLabel => 'Admin';
+
+  @override
+  String get noUsersYet =>
+      'No users yet — a user appears here after their first login.';
+
+  @override
+  String get adminRoleNote =>
+      'Admins always see every library. The admin role itself is assigned in the identity provider (e.g. Keycloak).';
+
+  @override
+  String get changeNotSaved => 'Could not save the change';
+
+  @override
   String taskStarted(String task) {
     return 'Started: $task';
   }
