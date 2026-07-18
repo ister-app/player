@@ -3,6 +3,7 @@ import 'fragmentImages.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
 import 'fragmentSeries.graphql.dart';
 import 'package:gql/ast.dart';
+import 'schema.graphql.dart';
 
 class Variables$Query$seriesById {
   factory Variables$Query$seriesById({String? id}) =>
@@ -447,6 +448,8 @@ class Query$seriesById$seriesById implements Fragment$fragmentSeries {
     required this.id,
     required this.name,
     required this.startYear,
+    required this.readingDirection,
+    this.userReadingDirection,
     this.cover,
     this.images,
     this.metadata,
@@ -458,6 +461,8 @@ class Query$seriesById$seriesById implements Fragment$fragmentSeries {
     final l$id = json['id'];
     final l$name = json['name'];
     final l$startYear = json['startYear'];
+    final l$readingDirection = json['readingDirection'];
+    final l$userReadingDirection = json['userReadingDirection'];
     final l$cover = json['cover'];
     final l$images = json['images'];
     final l$metadata = json['metadata'];
@@ -467,6 +472,12 @@ class Query$seriesById$seriesById implements Fragment$fragmentSeries {
       id: (l$id as String),
       name: (l$name as String),
       startYear: (l$startYear as int),
+      readingDirection: fromJson$Enum$ReadingDirection(
+        (l$readingDirection as String),
+      ),
+      userReadingDirection: l$userReadingDirection == null
+          ? null
+          : fromJson$Enum$ReadingDirection((l$userReadingDirection as String)),
       cover: l$cover == null
           ? null
           : Fragment$fragmentImages.fromJson((l$cover as Map<String, dynamic>)),
@@ -499,6 +510,10 @@ class Query$seriesById$seriesById implements Fragment$fragmentSeries {
 
   final int startYear;
 
+  final Enum$ReadingDirection readingDirection;
+
+  final Enum$ReadingDirection? userReadingDirection;
+
   final Fragment$fragmentImages? cover;
 
   final List<Fragment$fragmentImages>? images;
@@ -517,6 +532,14 @@ class Query$seriesById$seriesById implements Fragment$fragmentSeries {
     _resultData['name'] = l$name;
     final l$startYear = startYear;
     _resultData['startYear'] = l$startYear;
+    final l$readingDirection = readingDirection;
+    _resultData['readingDirection'] = toJson$Enum$ReadingDirection(
+      l$readingDirection,
+    );
+    final l$userReadingDirection = userReadingDirection;
+    _resultData['userReadingDirection'] = l$userReadingDirection == null
+        ? null
+        : toJson$Enum$ReadingDirection(l$userReadingDirection);
     final l$cover = cover;
     _resultData['cover'] = l$cover?.toJson();
     final l$images = images;
@@ -535,6 +558,8 @@ class Query$seriesById$seriesById implements Fragment$fragmentSeries {
     final l$id = id;
     final l$name = name;
     final l$startYear = startYear;
+    final l$readingDirection = readingDirection;
+    final l$userReadingDirection = userReadingDirection;
     final l$cover = cover;
     final l$images = images;
     final l$metadata = metadata;
@@ -544,6 +569,8 @@ class Query$seriesById$seriesById implements Fragment$fragmentSeries {
       l$id,
       l$name,
       l$startYear,
+      l$readingDirection,
+      l$userReadingDirection,
       l$cover,
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
@@ -574,6 +601,16 @@ class Query$seriesById$seriesById implements Fragment$fragmentSeries {
     final l$startYear = startYear;
     final lOther$startYear = other.startYear;
     if (l$startYear != lOther$startYear) {
+      return false;
+    }
+    final l$readingDirection = readingDirection;
+    final lOther$readingDirection = other.readingDirection;
+    if (l$readingDirection != lOther$readingDirection) {
+      return false;
+    }
+    final l$userReadingDirection = userReadingDirection;
+    final lOther$userReadingDirection = other.userReadingDirection;
+    if (l$userReadingDirection != lOther$userReadingDirection) {
       return false;
     }
     final l$cover = cover;
@@ -653,6 +690,8 @@ abstract class CopyWith$Query$seriesById$seriesById<TRes> {
     String? id,
     String? name,
     int? startYear,
+    Enum$ReadingDirection? readingDirection,
+    Enum$ReadingDirection? userReadingDirection,
     Fragment$fragmentImages? cover,
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
@@ -698,6 +737,8 @@ class _CopyWithImpl$Query$seriesById$seriesById<TRes>
     Object? id = _undefined,
     Object? name = _undefined,
     Object? startYear = _undefined,
+    Object? readingDirection = _undefined,
+    Object? userReadingDirection = _undefined,
     Object? cover = _undefined,
     Object? images = _undefined,
     Object? metadata = _undefined,
@@ -712,6 +753,13 @@ class _CopyWithImpl$Query$seriesById$seriesById<TRes>
       startYear: startYear == _undefined || startYear == null
           ? _instance.startYear
           : (startYear as int),
+      readingDirection:
+          readingDirection == _undefined || readingDirection == null
+          ? _instance.readingDirection
+          : (readingDirection as Enum$ReadingDirection),
+      userReadingDirection: userReadingDirection == _undefined
+          ? _instance.userReadingDirection
+          : (userReadingDirection as Enum$ReadingDirection?),
       cover: cover == _undefined
           ? _instance.cover
           : (cover as Fragment$fragmentImages?),
@@ -791,6 +839,8 @@ class _CopyWithStubImpl$Query$seriesById$seriesById<TRes>
     String? id,
     String? name,
     int? startYear,
+    Enum$ReadingDirection? readingDirection,
+    Enum$ReadingDirection? userReadingDirection,
     Fragment$fragmentImages? cover,
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,

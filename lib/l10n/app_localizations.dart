@@ -1147,6 +1147,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pages'**
   String get pageOverview;
+
+  /// No description provided for @spreadModeAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages per view: automatic'**
+  String get spreadModeAuto;
+
+  /// No description provided for @spreadModeSingle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages per view: single'**
+  String get spreadModeSingle;
+
+  /// No description provided for @spreadModeDouble.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages per view: double'**
+  String get spreadModeDouble;
+
+  /// No description provided for @nextVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Next volume'**
+  String get nextVolume;
+
+  /// No description provided for @readingDirection.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading direction'**
+  String get readingDirection;
+
+  /// Segment label for the series' detected reading direction; {direction} is the LTR/RTL abbreviation.
+  ///
+  /// In en, this message translates to:
+  /// **'Default ({direction})'**
+  String readingDirectionDefault(String direction);
+
+  /// No description provided for @readingDirectionLtr.
+  ///
+  /// In en, this message translates to:
+  /// **'Left-to-right'**
+  String get readingDirectionLtr;
+
+  /// No description provided for @readingDirectionRtlShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Right-to-left'**
+  String get readingDirectionRtlShort;
+
+  /// No description provided for @couldNotSaveReadingDirection.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the reading direction'**
+  String get couldNotSaveReadingDirection;
 }
 
 class _AppLocalizationsDelegate

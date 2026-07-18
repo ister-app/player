@@ -753,6 +753,39 @@ Enum$SortingOrder fromJson$Enum$SortingOrder(String value) {
   }
 }
 
+enum Enum$ReadingDirection {
+  LTR,
+  RTL,
+  $unknown;
+
+  factory Enum$ReadingDirection.fromJson(String value) =>
+      fromJson$Enum$ReadingDirection(value);
+
+  String toJson() => toJson$Enum$ReadingDirection(this);
+}
+
+String toJson$Enum$ReadingDirection(Enum$ReadingDirection e) {
+  switch (e) {
+    case Enum$ReadingDirection.LTR:
+      return r'LTR';
+    case Enum$ReadingDirection.RTL:
+      return r'RTL';
+    case Enum$ReadingDirection.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$ReadingDirection fromJson$Enum$ReadingDirection(String value) {
+  switch (value) {
+    case r'LTR':
+      return Enum$ReadingDirection.LTR;
+    case r'RTL':
+      return Enum$ReadingDirection.RTL;
+    default:
+      return Enum$ReadingDirection.$unknown;
+  }
+}
+
 enum Enum$LibraryType {
   MOVIE,
   SHOW,

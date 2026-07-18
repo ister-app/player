@@ -647,5 +647,20 @@
   "volumes": "Volumes",
   "fitWidth": "Fit width",
   "fitPage": "Fit page",
-  "pageOverview": "Pages"
+  "pageOverview": "Pages",
+  "spreadModeAuto": "Pages per view: automatic",
+  "spreadModeSingle": "Pages per view: single",
+  "spreadModeDouble": "Pages per view: double",
+  "nextVolume": "Next volume",
+  "readingDirection": "Reading direction",
+  "readingDirectionDefault": "Default ({direction})",
+  "@readingDirectionDefault": {
+    "description": "Segment label for the series' detected reading direction; {direction} is the LTR/RTL abbreviation.",
+    "placeholders": {
+      "direction": {"type": "String"}
+    }
+  },
+  "readingDirectionLtr": "Left-to-right",
+  "readingDirectionRtlShort": "Right-to-left",
+  "couldNotSaveReadingDirection": "Could not save the reading direction"
 }

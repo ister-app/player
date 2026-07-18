@@ -1,0 +1,14 @@
+# Light reader-open query: the effective reading direction plus the volume list, so the comic
+# reader resolves its page order and its "next volume" target in one round trip.
+query seriesReadingDirection($id: ID) {
+    seriesById(id: $id) {
+        id readingDirection
+        books {
+            id title seriesIndex
+            epubFiles {
+                id format
+                directory { node { url } }
+            }
+        }
+    }
+}

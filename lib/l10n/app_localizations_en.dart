@@ -618,4 +618,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pageOverview => 'Pages';
+
+  @override
+  String get spreadModeAuto => 'Pages per view: automatic';
+
+  @override
+  String get spreadModeSingle => 'Pages per view: single';
+
+  @override
+  String get spreadModeDouble => 'Pages per view: double';
+
+  @override
+  String get nextVolume => 'Next volume';
+
+  @override
+  String get readingDirection => 'Reading direction';
+
+  @override
+  String readingDirectionDefault(String direction) {
+    return 'Default ($direction)';
+  }
+
+  @override
+  String get readingDirectionLtr => 'Left-to-right';
+
+  @override
+  String get readingDirectionRtlShort => 'Right-to-left';
+
+  @override
+  String get couldNotSaveReadingDirection =>
+      'Could not save the reading direction';
 }

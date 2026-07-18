@@ -1,0 +1,3 @@
+mutation setSeriesReadingDirection($seriesId: ID!, $direction: ReadingDirection) {
+    setSeriesReadingDirection(seriesId: $seriesId, direction: $direction)
+}

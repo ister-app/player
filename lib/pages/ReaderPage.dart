@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:player/components/reader/ChapterView.dart';
+import 'package:player/components/reader/ReaderChrome.dart';
 import 'package:player/components/reader/ReaderSettingsSheet.dart';
 import 'package:player/components/reader/ReaderTocDrawer.dart';
 import 'package:player/l10n/app_localizations.dart';
@@ -17,6 +19,7 @@ import 'package:player/utils/epub/ReaderPreferences.dart';
 import 'package:player/utils/epub/ReadingSyncService.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 /// The native epub reader. Loads the book's structure through the node's
 /// `/epub` resource endpoint, renders one chapter at a time as a scrolling
@@ -99,6 +102,12 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    if (!kIsWeb) {
+      unawaited(
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky));
+    }
+    // Tolerates platforms/tests without the wakelock plugin.
+    unawaited(WakelockPlus.enable().catchError((_) {}));
     _itemPositionsListener.itemPositions.addListener(_onPositionsChanged);
     unawaited(_load());
   }
@@ -106,6 +115,10 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    unawaited(WakelockPlus.disable().catchError((_) {}));
+    if (!kIsWeb) {
+      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
+    }
     _readAloud?.dispose();
     _sync?.dispose(); // flushes the pending position
     _book?.removeListener(_onBookChanged);
@@ -618,108 +631,128 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
                 onEntryTap: _openTocEntry,
               )
             : null,
-        appBar: _chromeVisible
-            ? AppBar(
-                backgroundColor: _theme.background,
-                foregroundColor: _theme.foreground,
-                title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                actions: [
-                  if (_readAloud != null)
-                    IconButton(
-                      tooltip: loc.readAloud,
-                      icon: Icon(_readAloud!.playing
-                          ? Icons.pause_circle_outline
-                          : Icons.record_voice_over),
-                      onPressed: () => unawaited(_toggleReadAloud()),
-                    ),
-                  IconButton(
-                    tooltip: loc.readerSettings,
-                    icon: const Icon(Icons.text_fields),
-                    onPressed: _openSettings,
-                  ),
-                  IconButton(
-                    tooltip: loc.tableOfContents,
-                    icon: const Icon(Icons.toc),
-                    onPressed: () =>
-                        _scaffoldKey.currentState?.openEndDrawer(),
-                  ),
-                ],
-              )
-            : null,
-        bottomNavigationBar: _chromeVisible && book != null
-            ? BottomAppBar(
-                color: _theme.background,
-                child: Row(
-                  children: [
-                    IconButton(
-                      tooltip: loc.previousChapter,
-                      color: _theme.foreground,
-                      icon: const Icon(Icons.skip_previous),
-                      onPressed: _adjacentLinearSpineIndex(-1) != null
-                          ? () => unawaited(_previousChapter())
-                          : null,
-                    ),
-                    Expanded(
-                      child: Text(
-                        '${(_currentBookFraction() * 100).round()}%',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: _theme.foreground),
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: loc.nextChapter,
-                      color: _theme.foreground,
-                      icon: const Icon(Icons.skip_next),
-                      onPressed: _adjacentLinearSpineIndex(1) != null
-                          ? () => unawaited(_nextChapter())
-                          : null,
-                    ),
-                  ],
-                ),
-              )
-            : null,
+        // The bars overlay the text in a Stack (never resizing it); the
+        // system bars are hidden by the immersive mode set in initState. The
+        // endDrawer stays a Scaffold feature and is unaffected.
         body: Focus(
           autofocus: true,
           onKeyEvent: _onKeyEvent,
-          child: Builder(
-            builder: (context) {
-              if (_loading) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (_loadFailed || book == null || content == null) {
-                return Center(
-                  child: Text(
-                    loc.couldNotLoadBook,
-                    style: TextStyle(color: _theme.foreground),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: Builder(
+                  builder: (context) {
+                    if (_loading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (_loadFailed || book == null || content == null) {
+                      return Center(
+                        child: Text(
+                          loc.couldNotLoadBook,
+                          style: TextStyle(color: _theme.foreground),
+                        ),
+                      );
+                    }
+                    return SafeArea(
+                      child: ChapterView(
+                        key: ValueKey('chapter-$_chapterGeneration'),
+                        content: content,
+                        theme: _theme,
+                        fontScale: _fontScale,
+                        resourceUrl: book.client.url,
+                        itemScrollController: _itemScrollController,
+                        itemPositionsListener: _itemPositionsListener,
+                        scrollOffsetController: _scrollOffsetController,
+                        initialBlockIndex: _initialBlockIndex,
+                        highlightFragment: _readAloud?.activeFragment,
+                        onBlockTap: _onBlockTap,
+                        onLinkTap: _openLink,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              ReaderChrome(
+                visible: _chromeVisible,
+                alignment: Alignment.topCenter,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Constrained: outside a Scaffold slot an AppBar expands
+                    // to fill loose constraints and would cover the page.
+                    SizedBox(
+                        height: kToolbarHeight,
+                        child: AppBar(
+                      backgroundColor:
+                          _theme.background.withValues(alpha: 0.85),
+                      foregroundColor: _theme.foreground,
+                      title: Text(title,
+                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                      actions: [
+                        if (_readAloud != null)
+                          IconButton(
+                            tooltip: loc.readAloud,
+                            icon: Icon(_readAloud!.playing
+                                ? Icons.pause_circle_outline
+                                : Icons.record_voice_over),
+                            onPressed: () => unawaited(_toggleReadAloud()),
+                          ),
+                        IconButton(
+                          tooltip: loc.readerSettings,
+                          icon: const Icon(Icons.text_fields),
+                          onPressed: _openSettings,
+                        ),
+                        IconButton(
+                          tooltip: loc.tableOfContents,
+                          icon: const Icon(Icons.toc),
+                          onPressed: () =>
+                              _scaffoldKey.currentState?.openEndDrawer(),
+                        ),
+                      ],
+                    )),
+                    if (book != null && book.package.fixedLayout)
+                      MaterialBanner(
+                        content: Text(loc.bookMayNotDisplayCorrectly),
+                        actions: const [SizedBox.shrink()],
+                      ),
+                  ],
+                ),
+              ),
+              ReaderChrome(
+                visible: _chromeVisible && book != null,
+                alignment: Alignment.bottomCenter,
+                child: BottomAppBar(
+                  color: _theme.background.withValues(alpha: 0.85),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        tooltip: loc.previousChapter,
+                        color: _theme.foreground,
+                        icon: const Icon(Icons.skip_previous),
+                        onPressed: _adjacentLinearSpineIndex(-1) != null
+                            ? () => unawaited(_previousChapter())
+                            : null,
+                      ),
+                      Expanded(
+                        child: Text(
+                          '${(_currentBookFraction() * 100).round()}%',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: _theme.foreground),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: loc.nextChapter,
+                        color: _theme.foreground,
+                        icon: const Icon(Icons.skip_next),
+                        onPressed: _adjacentLinearSpineIndex(1) != null
+                            ? () => unawaited(_nextChapter())
+                            : null,
+                      ),
+                    ],
                   ),
-                );
-              }
-              return Column(
-                children: [
-                  if (book.package.fixedLayout && _chromeVisible)
-                    MaterialBanner(
-                      content: Text(loc.bookMayNotDisplayCorrectly),
-                      actions: const [SizedBox.shrink()],
-                    ),
-                  Expanded(
-                    child: ChapterView(
-                      key: ValueKey('chapter-$_chapterGeneration'),
-                      content: content,
-                      theme: _theme,
-                      fontScale: _fontScale,
-                      resourceUrl: book.client.url,
-                      itemScrollController: _itemScrollController,
-                      itemPositionsListener: _itemPositionsListener,
-                      scrollOffsetController: _scrollOffsetController,
-                      initialBlockIndex: _initialBlockIndex,
-                      highlightFragment: _readAloud?.activeFragment,
-                      onBlockTap: _onBlockTap,
-                      onLinkTap: _openLink,
-                    ),
-                  ),
-                ],
-              );
-            },
+                ),
+              ),
+            ],
           ),
         ),
       ),

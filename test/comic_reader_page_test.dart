@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:player/components/reader/ReaderChrome.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/pages/ComicReaderPage.dart';
 import 'package:player/utils/comic/ComicPageSource.dart';
@@ -62,21 +64,94 @@ MockClient _fakeServer(
       return http.Response('not found', 404);
     });
 
-Widget _app() => const MaterialApp(
-      localizationsDelegates: [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: [Locale('en')],
-      home: ComicReaderPage(
-        serverName: 'test-server',
-        bookId: 'book-1',
-        mediaFileId: 'file-1',
-        nodeUrl: 'https://node.example',
-        title: 'Test Comic',
-        seriesId: 'series-1',
+/// GraphQL responder for the reader's series query: the effective reading
+/// direction plus the volume list (for the next-volume affordance).
+MockClient _fakeGraphQL({
+  String direction = 'LTR',
+  bool withNextVolume = false,
+}) =>
+    MockClient((request) async {
+      return http.Response(
+        json.encode({
+          'data': {
+            '__typename': 'Query',
+            'seriesById': {
+              '__typename': 'Series',
+              'id': 'series-1',
+              'readingDirection': direction,
+              'books': [
+                {
+                  '__typename': 'Book',
+                  'id': 'book-1',
+                  'title': 'Volume 1',
+                  'seriesIndex': 1.0,
+                  'epubFiles': [
+                    {
+                      '__typename': 'EpubFile',
+                      'id': 'file-1',
+                      'format': 'CBZ',
+                      'directory': {
+                        '__typename': 'Directory',
+                        'node': {
+                          '__typename': 'Node',
+                          'url': 'https://node.example'
+                        }
+                      }
+                    }
+                  ],
+                },
+                if (withNextVolume)
+                  {
+                    '__typename': 'Book',
+                    'id': 'book-2',
+                    'title': 'Volume 2',
+                    'seriesIndex': 2.0,
+                    'epubFiles': [
+                      {
+                        '__typename': 'EpubFile',
+                        'id': 'file-2',
+                        'format': 'CBZ',
+                        'directory': {
+                          '__typename': 'Directory',
+                          'node': {
+                            '__typename': 'Node',
+                            'url': 'https://node.example'
+                          }
+                        }
+                      }
+                    ],
+                  },
+              ],
+            }
+          }
+        }),
+        200,
+        headers: {'content-type': 'application/json'},
+      );
+    });
+
+Widget _app({http.Client? graphQLClient}) => GraphQLProvider(
+      client: ValueNotifier(GraphQLClient(
+        link: HttpLink('https://api.example/graphql',
+            httpClient: graphQLClient ?? _fakeGraphQL()),
+        cache: GraphQLCache(),
+      )),
+      child: const MaterialApp(
+        localizationsDelegates: [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: [Locale('en')],
+        home: ComicReaderPage(
+          serverName: 'test-server',
+          bookId: 'book-1',
+          mediaFileId: 'file-1',
+          nodeUrl: 'https://node.example',
+          title: 'Test Comic',
+          seriesId: 'series-1',
+        ),
       ),
     );
 
@@ -152,7 +227,8 @@ void main() {
     expect(posts.first['location'], startsWith('ister-comic:v1;page='));
   });
 
-  testWidgets('the RTL toggle reverses paging and persists', (tester) async {
+  testWidgets('the RTL toggle reverses paging for this session only',
+      (tester) async {
     await http.runWithClient(() async {
       await tester.pumpWidget(_app());
       await tester.pumpAndSettle();
@@ -170,14 +246,180 @@ void main() {
       expect(find.text('Page 2 of 10'), findsOneWidget);
     }, () => _fakeServer([]));
 
-    // Persisted per series: a fresh open starts right-to-left.
+    // Session-only: a fresh open follows the server preference (LTR) again.
     await http.runWithClient(() async {
       await tester.pumpWidget(const SizedBox());
       await tester.pumpAndSettle();
       await tester.pumpWidget(_app());
       await tester.pumpAndSettle();
 
+      expect(
+          tester.widget<PageView>(find.byType(PageView)).reverse, isFalse);
+    }, () => _fakeServer([]));
+  });
+
+  testWidgets('the server-stored series preference opens right-to-left',
+      (tester) async {
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app(graphQLClient: _fakeGraphQL(direction: 'RTL')));
+      await tester.pumpAndSettle();
+
       expect(tester.widget<PageView>(find.byType(PageView)).reverse, isTrue);
+    }, () => _fakeServer([]));
+
+    // And it was written through to the offline cache.
+    expect(await ComicPreferences.getRightToLeft('series-1'), isTrue);
+  });
+
+  testWidgets('an unreachable server falls back to the cached direction',
+      (tester) async {
+    await ComicPreferences.setRightToLeft('series-1', true);
+    final failingGraphQL =
+        MockClient((request) async => http.Response('boom', 500));
+
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app(graphQLClient: failingGraphQL));
+      await tester.pumpAndSettle();
+
+      expect(tester.widget<PageView>(find.byType(PageView)).reverse, isTrue);
+    }, () => _fakeServer([]));
+  });
+
+  testWidgets('tap zones page and the middle toggles the chrome',
+      (tester) async {
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+
+      // Default surface is 800×600: right zone > 576, left zone < 224.
+      await tester.tapAt(const Offset(750, 300));
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+      expect(find.text('Page 2 of 10'), findsOneWidget);
+
+      await tester.tapAt(const Offset(50, 300));
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+      expect(find.text('Page 1 of 10'), findsOneWidget);
+
+      // The middle toggles the overlay chrome without changing the page.
+      bool chromeShown() => tester
+          .widgetList<ReaderChrome>(find.byType(ReaderChrome))
+          .every((chrome) => chrome.visible);
+      expect(chromeShown(), isTrue);
+      await tester.tapAt(const Offset(400, 300));
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+      expect(chromeShown(), isFalse);
+      expect(find.text('Page 1 of 10'), findsOneWidget); // page unchanged
+      await tester.tapAt(const Offset(400, 300));
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+      expect(chromeShown(), isTrue);
+    }, () => _fakeServer([]));
+  });
+
+  testWidgets('tap zones mirror under RTL', (tester) async {
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app(graphQLClient: _fakeGraphQL(direction: 'RTL')));
+      await tester.pumpAndSettle();
+
+      // Right-to-left: the visual *left* edge advances.
+      await tester.tapAt(const Offset(50, 300));
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+      expect(find.text('Page 2 of 10'), findsOneWidget);
+
+      await tester.tapAt(const Offset(750, 300));
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+      expect(find.text('Page 1 of 10'), findsOneWidget);
+    }, () => _fakeServer([]));
+  });
+
+  testWidgets('toggling the chrome does not resize the page area',
+      (tester) async {
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+
+      final withChrome = tester.getSize(find.byType(PageView));
+      await tester.tapAt(const Offset(400, 300));
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pumpAndSettle();
+      final withoutChrome = tester.getSize(find.byType(PageView));
+
+      expect(withoutChrome, withChrome);
+    }, () => _fakeServer([]));
+  });
+
+  testWidgets('the spread-mode button forces single or double pages',
+      (tester) async {
+    tester.view.physicalSize = const Size(1600, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+
+      // Auto on a wide viewport: pages pair up.
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.pumpAndSettle();
+      expect(find.text('Page 2-3 of 10'), findsOneWidget);
+
+      // auto → single: the same page stands alone.
+      await tester.tap(find.byIcon(Icons.auto_awesome_motion));
+      await tester.pumpAndSettle();
+      expect(find.text('Page 2 of 10'), findsOneWidget);
+
+      // single → double: paired again.
+      await tester.tap(find.byIcon(Icons.filter_1));
+      await tester.pumpAndSettle();
+      expect(find.text('Page 2-3 of 10'), findsOneWidget);
+
+      // Back to auto: ComicPreferences holds the first test's in-memory
+      // store (static SharedPreferencesAsync), so a persisted double mode
+      // would leak into the tests that follow.
+      await tester.tap(find.byIcon(Icons.auto_stories));
+      await tester.pumpAndSettle();
+    }, () => _fakeServer([]));
+  });
+
+  testWidgets('the last page offers the next volume of the series',
+      (tester) async {
+    await http.runWithClient(() async {
+      await tester
+          .pumpWidget(_app(graphQLClient: _fakeGraphQL(withNextVolume: true)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Next volume'), findsNothing);
+
+      await tester.tap(find.byIcon(Icons.grid_view));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('10'), 200,
+          scrollable: find.byType(Scrollable).last);
+      await tester.tap(find.text('10'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Next volume'), findsOneWidget);
+    }, () => _fakeServer([]));
+  });
+
+  testWidgets('no next-volume affordance when this is the last volume',
+      (tester) async {
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.grid_view));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('10'), 200,
+          scrollable: find.byType(Scrollable).last);
+      await tester.tap(find.text('10'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Next volume'), findsNothing);
     }, () => _fakeServer([]));
   });
 

@@ -37,6 +37,8 @@ Map<String, dynamic> _seriesPage() => {
             'id': 'series-1',
             'name': 'Rick and Morty',
             'startYear': 2015,
+            'readingDirection': 'LTR',
+            'userReadingDirection': null,
             'cover': null,
             'images': [],
             'metadata': [],

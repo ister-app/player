@@ -5,8 +5,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/components/TvFocusable.dart';
+import 'package:player/components/reader/ReaderChrome.dart';
+import 'package:player/graphql/seriesReadingDirection.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
+import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/comic/ComicLocator.dart';
 import 'package:player/utils/comic/ComicPageSource.dart';
@@ -14,13 +18,17 @@ import 'package:player/utils/comic/ComicPreferences.dart';
 import 'package:player/utils/comic/ComicResourceClient.dart';
 import 'package:player/utils/comic/ComicSyncService.dart';
 import 'package:player/utils/comic/PdfPageSource.dart';
+import 'package:player/utils/comic/SeriesDirectionService.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 /// The comic reader: page images in a swiping [PageView], one *spread* per
 /// view — a single page, or two side by side on a wide viewport. Handles
-/// pinch-zoom, right-to-left reading (persisted per series), a thumbnail
-/// strip, D-pad/keyboard paging and progress sync. Format-blind through
-/// [ComicPageSource]: cbz pages stream off the node, pdf pages are rendered
-/// locally.
+/// pinch-zoom, right-to-left reading (the per-series server preference; the
+/// in-reader toggle only lasts this session), tap zones, a thumbnail strip,
+/// D-pad/keyboard paging and progress sync. Fullscreen: the system bars are
+/// hidden and the app bar/slider overlay the page instead of shrinking it.
+/// Format-blind through [ComicPageSource]: cbz pages stream off the node, pdf
+/// pages are rendered locally.
 @RoutePage()
 class ComicReaderPage extends StatefulWidget {
   const ComicReaderPage({
@@ -63,7 +71,12 @@ class _ComicReaderPageState extends State<ComicReaderPage>
 
   bool _rtl = false;
   ComicFitMode _fit = ComicFitMode.fitPage;
+  ComicSpreadMode _spreadMode = ComicSpreadMode.auto;
   bool _chromeVisible = true;
+  bool _loadStarted = false;
+
+  /// Volumes of the series (from the reading-direction query); null offline.
+  List<Query$seriesReadingDirection$seriesById$books>? _seriesBooks;
 
   /// Spreads in reading order; each is one or two logical page indexes.
   List<List<int>> _spreads = const [];
@@ -93,12 +106,32 @@ class _ComicReaderPageState extends State<ComicReaderPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    unawaited(_load());
+    if (!kIsWeb) {
+      unawaited(
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky));
+    }
+    // Tolerates platforms/tests without the wakelock plugin.
+    unawaited(WakelockPlus.enable().catchError((_) {}));
+  }
+
+  /// The load needs the inherited GraphQL client (series reading direction),
+  /// which is not reachable from initState.
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_loadStarted) {
+      _loadStarted = true;
+      unawaited(_load(GraphQLProvider.of(context).value));
+    }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    unawaited(WakelockPlus.disable().catchError((_) {}));
+    if (!kIsWeb) {
+      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
+    }
     _sync?.dispose(); // flushes the pending position
     _source?.dispose();
     _client?.dispose();
@@ -122,13 +155,27 @@ class _ComicReaderPageState extends State<ComicReaderPage>
     });
   }
 
-  Future<void> _load() async {
-    final rtl = await ComicPreferences.getRightToLeft(_prefsScope);
+  Future<void> _load(GraphQLClient graphQLClient) async {
+    // Server-resolved direction for a series volume (user override > detected
+    // manga default > LTR), with the local key as offline fallback; a
+    // series-less volume only has the local key.
+    final seriesId = widget.seriesId;
+    final bool rtl;
+    if (seriesId != null) {
+      final direction =
+          await SeriesDirectionService.fetch(graphQLClient, seriesId);
+      rtl = direction.rightToLeft;
+      _seriesBooks = direction.books;
+    } else {
+      rtl = await ComicPreferences.getRightToLeft(_prefsScope);
+    }
     final fit = await ComicPreferences.getFitMode(_prefsScope);
+    final spreadMode = await ComicPreferences.getSpreadMode(_prefsScope);
     if (mounted) {
       setState(() {
         _rtl = rtl;
         _fit = fit;
+        _spreadMode = spreadMode;
       });
     }
 
@@ -212,7 +259,11 @@ class _ComicReaderPageState extends State<ComicReaderPage>
 
   /* ------------------------------- spreads ------------------------------- */
 
-  bool _wantsDoublePage(Size size) => size.width > size.height && size.width >= 900;
+  bool _wantsDoublePage(Size size) => switch (_spreadMode) {
+        ComicSpreadMode.single => false,
+        ComicSpreadMode.double => true,
+        ComicSpreadMode.auto => size.width > size.height && size.width >= 900,
+      };
 
   /// Spread 0 is the cover alone; then pairs, except that a page wider than
   /// tall (an already-joined double page) stands alone.
@@ -368,7 +419,58 @@ class _ComicReaderPageState extends State<ComicReaderPage>
     ));
   }
 
+  /* ----------------------------- next volume ----------------------------- */
+
+  /// Same set as BookPage: a volume "is a comic" when it has one of these.
+  static const _comicFormats = {'CBZ', 'PDF'};
+
+  /// The series' next volume that can be read in this reader, or null.
+  Query$seriesReadingDirection$seriesById$books? get _nextVolume {
+    final books = _seriesBooks;
+    if (books == null) return null;
+    final index = books.indexWhere((book) => book.id == widget.bookId);
+    if (index < 0) return null;
+    return books
+        .skip(index + 1)
+        .where((book) => _comicFileOf(book) != null)
+        .firstOrNull;
+  }
+
+  Query$seriesReadingDirection$seriesById$books$epubFiles? _comicFileOf(
+          Query$seriesReadingDirection$seriesById$books book) =>
+      book.epubFiles
+          ?.where((file) => _comicFormats.contains(file.format))
+          .firstOrNull;
+
+  void _openNextVolume(Query$seriesReadingDirection$seriesById$books next) {
+    final file = _comicFileOf(next);
+    if (file == null) return;
+    // Replace: back from volume 5 should not walk through volume 4's reader.
+    // ComicSyncService already marked this volume finished (fraction 1.0).
+    unawaited(context.router.replace(ComicReaderRoute(
+      bookId: next.id,
+      mediaFileId: file.id,
+      nodeUrl: file.directory.node.url,
+      title: next.title,
+      seriesId: widget.seriesId,
+    )));
+  }
+
   /* -------------------------------- input -------------------------------- */
+
+  /// Tap zones: the outer ~28% pages backward/forward (mirrored under RTL,
+  /// the same mapping as the arrow keys); the middle toggles the chrome, as
+  /// does any tap while zoomed in (panning needs the whole surface).
+  void _onSpreadTapUp(TapUpDetails details, bool zoomed) {
+    final width = MediaQuery.of(context).size.width;
+    final x = width <= 0 ? 0.5 : details.globalPosition.dx / width;
+    if (zoomed || (x >= 0.28 && x <= 0.72)) {
+      setState(() => _chromeVisible = !_chromeVisible);
+      return;
+    }
+    final forward = x > 0.72;
+    _step((forward ? 1 : -1) * (_rtl ? -1 : 1));
+  }
 
   KeyEventResult _onKeyEvent(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
@@ -403,9 +505,15 @@ class _ComicReaderPageState extends State<ComicReaderPage>
 
   /* ------------------------------- settings ------------------------------ */
 
+  /// Session-only for a series volume: the persistent choice lives on the
+  /// server (set from the series page) and would be overwritten by the next
+  /// fetch anyway. A series-less volume has no server side, so its local key
+  /// stays authoritative.
   void _toggleRtl() {
     setState(() => _rtl = !_rtl);
-    unawaited(ComicPreferences.setRightToLeft(_prefsScope, _rtl));
+    if (widget.seriesId == null) {
+      unawaited(ComicPreferences.setRightToLeft(_prefsScope, _rtl));
+    }
   }
 
   void _toggleFit() {
@@ -413,6 +521,15 @@ class _ComicReaderPageState extends State<ComicReaderPage>
         ? ComicFitMode.fitWidth
         : ComicFitMode.fitPage);
     unawaited(ComicPreferences.setFitMode(_prefsScope, _fit));
+  }
+
+  /// Cycles auto → single → double and relayouts on the current page.
+  void _cycleSpreadMode() {
+    final next = ComicSpreadMode.values[
+        (_spreadMode.index + 1) % ComicSpreadMode.values.length];
+    setState(() => _spreadMode = next);
+    unawaited(ComicPreferences.setSpreadMode(_prefsScope, next));
+    _updateLayout();
   }
 
   void _openThumbnails() {
@@ -490,133 +607,179 @@ class _ComicReaderPageState extends State<ComicReaderPage>
 
   /* -------------------------------- build -------------------------------- */
 
+  Widget _pageArea(AppLocalizations loc) {
+    final source = _source;
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_loadFailed || source == null || _pageController == null) {
+      return Center(
+        child: Text(loc.couldNotLoadComic,
+            style: const TextStyle(color: Colors.white)),
+      );
+    }
+    return PageView.builder(
+      controller: _pageController,
+      reverse: _rtl,
+      onPageChanged: _onSpreadChanged,
+      itemCount: _spreads.length,
+      itemBuilder: (context, index) {
+        final spread = _spreads[index];
+        final visualOrder = _rtl ? spread.reversed.toList() : spread;
+        return _SpreadView(
+          key: ValueKey('spread-${spread.first}-${spread.length}'),
+          images: [
+            for (final page in visualOrder) _resized(page, spread.length),
+          ],
+          fit: _fit,
+          onTapUp: _onSpreadTapUp,
+        );
+      },
+    );
+  }
+
+  // Constrained: outside a Scaffold slot an AppBar expands to fill loose
+  // constraints, which would cover (and steal taps from) the whole page.
+  Widget _topBar(AppLocalizations loc) => SizedBox(
+      height: kToolbarHeight,
+      child: AppBar(
+        backgroundColor: Colors.black54,
+        foregroundColor: Colors.white,
+        title: Text(widget.title ?? '',
+            maxLines: 1, overflow: TextOverflow.ellipsis),
+        actions: [
+          IconButton(
+            tooltip: loc.readingDirectionRtl,
+            icon: Icon(_rtl
+                ? Icons.format_textdirection_r_to_l
+                : Icons.format_textdirection_l_to_r),
+            isSelected: _rtl,
+            onPressed: _toggleRtl,
+          ),
+          IconButton(
+            tooltip: switch (_spreadMode) {
+              ComicSpreadMode.auto => loc.spreadModeAuto,
+              ComicSpreadMode.single => loc.spreadModeSingle,
+              ComicSpreadMode.double => loc.spreadModeDouble,
+            },
+            icon: Icon(switch (_spreadMode) {
+              ComicSpreadMode.auto => Icons.auto_awesome_motion,
+              ComicSpreadMode.single => Icons.filter_1,
+              ComicSpreadMode.double => Icons.auto_stories,
+            }),
+            onPressed: _cycleSpreadMode,
+          ),
+          IconButton(
+            tooltip: _fit == ComicFitMode.fitPage ? loc.fitWidth : loc.fitPage,
+            icon: Icon(_fit == ComicFitMode.fitPage
+                ? Icons.fit_screen
+                : Icons.fullscreen),
+            onPressed: _toggleFit,
+          ),
+          IconButton(
+            tooltip: loc.pageOverview,
+            icon: const Icon(Icons.grid_view),
+            onPressed: _openThumbnails,
+          ),
+        ],
+      ));
+
+  Widget _bottomBar(AppLocalizations loc) => BottomAppBar(
+        color: Colors.black54,
+        child: Row(
+          children: [
+            Expanded(
+              child: Directionality(
+                textDirection: _rtl ? TextDirection.rtl : TextDirection.ltr,
+                child: Slider(
+                  value: (_currentPage + 1).clamp(1, _pageCount).toDouble(),
+                  min: 1,
+                  max: math.max(1, _pageCount).toDouble(),
+                  divisions: math.max(1, _pageCount - 1),
+                  onChanged: (value) => _goToPage(value.round() - 1),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(
+                _pageLabel(loc),
+                style: const TextStyle(color: Colors.white70),
+              ),
+            ),
+          ],
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final source = _source;
+    final nextVolume =
+        _spreads.isNotEmpty && _spreadIndex == _spreads.length - 1
+            ? _nextVolume
+            : null;
 
+    // The bars overlay the page in a Stack (never resizing it); the system
+    // bars are hidden by the immersive mode set in initState.
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: _chromeVisible
-          ? AppBar(
-              backgroundColor: Colors.black,
-              foregroundColor: Colors.white,
-              title: Text(widget.title ?? '',
-                  maxLines: 1, overflow: TextOverflow.ellipsis),
-              actions: [
-                IconButton(
-                  tooltip: loc.readingDirectionRtl,
-                  icon: Icon(_rtl
-                      ? Icons.format_textdirection_r_to_l
-                      : Icons.format_textdirection_l_to_r),
-                  isSelected: _rtl,
-                  onPressed: _toggleRtl,
-                ),
-                IconButton(
-                  tooltip: _fit == ComicFitMode.fitPage
-                      ? loc.fitWidth
-                      : loc.fitPage,
-                  icon: Icon(_fit == ComicFitMode.fitPage
-                      ? Icons.fit_screen
-                      : Icons.fullscreen),
-                  onPressed: _toggleFit,
-                ),
-                IconButton(
-                  tooltip: loc.pageOverview,
-                  icon: const Icon(Icons.grid_view),
-                  onPressed: _openThumbnails,
-                ),
-              ],
-            )
-          : null,
-      bottomNavigationBar: _chromeVisible && source != null
-          ? BottomAppBar(
-              color: Colors.black,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Directionality(
-                      textDirection:
-                          _rtl ? TextDirection.rtl : TextDirection.ltr,
-                      child: Slider(
-                        value: (_currentPage + 1)
-                            .clamp(1, _pageCount)
-                            .toDouble(),
-                        min: 1,
-                        max: math.max(1, _pageCount).toDouble(),
-                        divisions: math.max(1, _pageCount - 1),
-                        onChanged: (value) => _goToPage(value.round() - 1),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Text(
-                      _pageLabel(loc),
-                      style: const TextStyle(color: Colors.white70),
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : null,
       body: Focus(
         autofocus: true,
         onKeyEvent: _onKeyEvent,
-        child: Builder(
-          builder: (context) {
-            if (_loading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (_loadFailed || source == null || _pageController == null) {
-              return Center(
-                child: Text(loc.couldNotLoadComic,
-                    style: const TextStyle(color: Colors.white)),
-              );
-            }
-            return PageView.builder(
-              controller: _pageController,
-              reverse: _rtl,
-              onPageChanged: _onSpreadChanged,
-              itemCount: _spreads.length,
-              itemBuilder: (context, index) {
-                final spread = _spreads[index];
-                final visualOrder =
-                    _rtl ? spread.reversed.toList() : spread;
-                return _SpreadView(
-                  key: ValueKey('spread-${spread.first}-${spread.length}'),
-                  images: [
-                    for (final page in visualOrder)
-                      _resized(page, spread.length),
-                  ],
-                  fit: _fit,
-                  onTap: () =>
-                      setState(() => _chromeVisible = !_chromeVisible),
-                );
-              },
-            );
-          },
+        child: Stack(
+          children: [
+            Positioned.fill(child: _pageArea(loc)),
+            if (nextVolume != null)
+              Align(
+                alignment: Alignment.bottomRight,
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: FilledButton.icon(
+                      onPressed: () => _openNextVolume(nextVolume),
+                      icon: const Icon(Icons.skip_next),
+                      label: Text(loc.nextVolume),
+                    ),
+                  ),
+                ),
+              ),
+            ReaderChrome(
+              visible: _chromeVisible,
+              alignment: Alignment.topCenter,
+              child: _topBar(loc),
+            ),
+            if (source != null)
+              ReaderChrome(
+                visible: _chromeVisible,
+                alignment: Alignment.bottomCenter,
+                child: _bottomBar(loc),
+              ),
+          ],
         ),
       ),
     );
   }
 }
 
-/// One spread: its page images side by side, tap-to-toggle chrome, and
-/// pinch-zoom/pan. Panning is only enabled while zoomed in, so a horizontal
-/// drag at rest turns the page instead of fighting the [PageView]; in
-/// fit-width mode the spread scrolls vertically instead of zooming.
+/// One spread: its page images side by side, position-aware taps (paging
+/// zones/chrome toggle live in the page state), and pinch-zoom/pan. Panning
+/// is only enabled while zoomed in, so a horizontal drag at rest turns the
+/// page instead of fighting the [PageView]; in fit-width mode the spread
+/// scrolls vertically instead of zooming.
 class _SpreadView extends StatefulWidget {
   const _SpreadView({
     super.key,
     required this.images,
     required this.fit,
-    required this.onTap,
+    required this.onTapUp,
   });
 
   final List<ImageProvider> images;
   final ComicFitMode fit;
-  final VoidCallback onTap;
+
+  /// Reports where the user tapped and whether the spread is zoomed in.
+  final void Function(TapUpDetails details, bool zoomed) onTapUp;
 
   @override
   State<_SpreadView> createState() => _SpreadViewState();
@@ -684,7 +847,9 @@ class _SpreadViewState extends State<_SpreadView> {
 
     if (widget.fit == ComicFitMode.fitWidth) {
       return GestureDetector(
-        onTap: widget.onTap,
+        // Opaque: taps beside the page image (letterbox area) must also land.
+        behavior: HitTestBehavior.opaque,
+        onTapUp: (details) => widget.onTapUp(details, false),
         child: SingleChildScrollView(
           child: Row(
             children: [
@@ -706,7 +871,9 @@ class _SpreadViewState extends State<_SpreadView> {
     }
 
     return GestureDetector(
-      onTap: widget.onTap,
+      // Opaque: taps beside the page image (letterbox area) must also land.
+      behavior: HitTestBehavior.opaque,
+      onTapUp: (details) => widget.onTapUp(details, _zoomed),
       onDoubleTapDown: (details) => _doubleTapDetails = details,
       onDoubleTap: _onDoubleTap,
       child: InteractiveViewer(

@@ -174,5 +174,14 @@
   "volumes": "Delen",
   "fitWidth": "Breedte passend",
   "fitPage": "Pagina passend",
-  "pageOverview": "Pagina's"
+  "pageOverview": "Pagina's",
+  "spreadModeAuto": "Pagina's per weergave: automatisch",
+  "spreadModeSingle": "Pagina's per weergave: één",
+  "spreadModeDouble": "Pagina's per weergave: twee",
+  "nextVolume": "Volgend deel",
+  "readingDirection": "Leesrichting",
+  "readingDirectionDefault": "Standaard ({direction})",
+  "readingDirectionLtr": "Links naar rechts",
+  "readingDirectionRtlShort": "Rechts naar links",
+  "couldNotSaveReadingDirection": "Kon de leesrichting niet opslaan"
 }

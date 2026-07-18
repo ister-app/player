@@ -1,5 +1,5 @@
 fragment fragmentSeries on Series {
-    id name startYear
+    id name startYear readingDirection userReadingDirection
     cover { ...fragmentImages }
     images { ...fragmentImages }
     metadata { ...fragmentMetadata }

@@ -618,4 +618,33 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get pageOverview => 'Pagina\'s';
+
+  @override
+  String get spreadModeAuto => 'Pagina\'s per weergave: automatisch';
+
+  @override
+  String get spreadModeSingle => 'Pagina\'s per weergave: één';
+
+  @override
+  String get spreadModeDouble => 'Pagina\'s per weergave: twee';
+
+  @override
+  String get nextVolume => 'Volgend deel';
+
+  @override
+  String get readingDirection => 'Leesrichting';
+
+  @override
+  String readingDirectionDefault(String direction) {
+    return 'Standaard ($direction)';
+  }
+
+  @override
+  String get readingDirectionLtr => 'Links naar rechts';
+
+  @override
+  String get readingDirectionRtlShort => 'Rechts naar links';
+
+  @override
+  String get couldNotSaveReadingDirection => 'Kon de leesrichting niet opslaan';
 }
