@@ -1,5 +1,45 @@
 # Changelog
 
+## player v1.3.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.3.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat: server-synced reading direction, fullscreen readers and comic reader extras ([`2368cee`](https://github.com/ister-app/player/commit/2368cee))
+
+### Fixes
+
+- fix: defer notifier writes that fire while the widget tree is building or locked ([`ca42496`](https://github.com/ister-app/player/commit/ca42496))
+- fix: keep notification artwork alive after stream-token rotation ([`3928284`](https://github.com/ister-app/player/commit/3928284))
+- fix: render comic libraries on the server home page ([`499862f`](https://github.com/ister-app/player/commit/499862f))
+
+### Other
+
+- ci: survive a commit racing onto main during a release ([`fbf805d`](https://github.com/ister-app/player/commit/fbf805d))
+- ci: push the release commit and tag atomically ([`8aa774c`](https://github.com/ister-app/player/commit/8aa774c))
+- test: capture all doc-tour locales in a single app run ([`7ed5491`](https://github.com/ister-app/player/commit/7ed5491))
+- test: cover comic library rendering on the server home page ([`dd747cc`](https://github.com/ister-app/player/commit/dd747cc))
+- ci: deploy the released web build to GitHub Pages (player.ister.app) ([`290141c`](https://github.com/ister-app/player/commit/290141c))
+
+### Other changes
+
+- Replace default Flutter web icons with the green chair launcher icon ([`ff04f63`](https://github.com/ister-app/player/commit/ff04f63))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.3.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.2.0...v1.3.0
+
 ## player v1.2.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
