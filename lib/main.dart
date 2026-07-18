@@ -128,12 +128,12 @@ class _MainState extends State<Main> {
         Locale('nl'), // Dutch
       ],
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFF4D7C0F)),
         brightness: Brightness.light,
         fontFamily: 'Roboto',
       ),
       darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
+        colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFF4D7C0F), brightness: Brightness.dark),
         brightness: Brightness.dark,
         fontFamily: 'Roboto',
       ),
