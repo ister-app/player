@@ -7,13 +7,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:player/components/PlayerView.dart';
 import 'package:player/routes/AppRouter.gr.dart';
+import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 
 import 'support/harness.dart';
 
-/// The locale the tour renders (and files its screenshots) under; the docs
-/// build runs the tour once per locale.
-const String docLocale = String.fromEnvironment('DOC_LOCALE', defaultValue: 'en');
+/// The locales the tour captures, in order; keep in sync with the app's
+/// supportedLocales. A single app process serves all of them — the tour
+/// switches the platform locale at runtime between passes, so the fragile
+/// part of a cold start (mpv/GL init on a fresh Xvfb) happens only once.
+const List<String> docLocales = ['en', 'nl'];
 
 /// A guided tour along every documentable screen, taking a screenshot at each
 /// stop. Not a functional test — the six feature e2e's assert behaviour; this
@@ -29,6 +32,9 @@ void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   final screenshotDir = Platform.environment['DOC_SCREENSHOT_DIR'];
+
+  // The locale of the pass currently running; shot() files under it.
+  var docLocale = docLocales.first;
 
   Future<void> shot(WidgetTester tester, String name) async {
     // Settle what can settle; live playback never goes idle, hence pump-based.
@@ -57,14 +63,20 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
   }
 
-  testWidgets('screenshot tour for the user guide', (tester) async {
-    binding.platformDispatcher.localeTestValue = Locale(docLocale);
-    binding.platformDispatcher.localesTestValue = [Locale(docLocale)];
-    // No DEBUG ribbon on documentation screenshots.
-    WidgetsApp.debugAllowBannerOverride = false;
+  /// Returns the app to the server overview between locale passes. Popping
+  /// cannot get there: the server card *replaces* the overview with the shell
+  /// (ServerList), so the overview is no longer on the root stack — replace
+  /// the whole stack with a fresh overview instead. The sticky server must be
+  /// cleared first, or the fresh ServerList auto-opens it again in initState.
+  Future<void> resetToServerOverview(WidgetTester tester) async {
+    ClientManager.instance.lastClientUsed = null;
+    final context = tester.element(find.byType(Scaffold).last);
+    await AutoRouter.of(context).root.replaceAll([const HomeRoute()]);
+    await tester.pump(const Duration(milliseconds: 500));
+  }
 
-    await bootApp(tester);
-
+  /// One full pass along every documentable screen in the current locale.
+  Future<void> tour(WidgetTester tester) async {
     // The server overview with the add-server field and the seeded server.
     await pumpUntilFound(tester, find.textContaining('http://'),
         timeout: const Duration(seconds: 30));
@@ -242,7 +254,7 @@ void main() {
     }
 
     // The movie last: HLS transcode + playback leaves the player hot, so no
-    // other stop should follow it.
+    // other stop should follow it within a pass.
     //
     // The test fixtures' movies have no audio track, so mpv's only clock is
     // the video output: without working GL (e.g. X over TCP) the video stays
@@ -292,5 +304,22 @@ void main() {
     await shot(tester, 'movie-playing');
     await mouse.removePointer();
     await MediaPlayerHandler.instance.stop();
+    await tester.pump(const Duration(milliseconds: 500));
+  }
+
+  testWidgets('screenshot tour for the user guide', (tester) async {
+    // No DEBUG ribbon on documentation screenshots.
+    WidgetsApp.debugAllowBannerOverride = false;
+    for (final locale in docLocales) {
+      docLocale = locale;
+      binding.platformDispatcher.localeTestValue = Locale(locale);
+      binding.platformDispatcher.localesTestValue = [Locale(locale)];
+      if (locale == docLocales.first) {
+        await bootApp(tester);
+      } else {
+        await resetToServerOverview(tester);
+      }
+      await tour(tester);
+    }
   });
 }

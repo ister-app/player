@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Builds the documentation zip: runs the screenshot tour (integration_test/doc_tour_test.dart)
-# once per locale against the already-running kind deployment, validates that every image the
-# markdown references was actually captured, and packages doc/ as player-docs-<version>.zip.
+# against the already-running kind deployment, validates that every image the markdown
+# references was actually captured, and packages doc/ as player-docs-<version>.zip.
 #
 # Preconditions (identical to the integration e2e): the chart's kind cluster is up, its
 # port-forwards are active (chart repo: `make up` + ci/e2e/forward-for-player.sh, or
@@ -20,10 +20,12 @@ images_dir="doc/user/images"
 
 flutter pub get
 
-# One tour per locale: the tour renders the UI in that locale and captures its
-# screenshots into doc/user/images/<locale>/ with ImageMagick's `import` (the
-# integration_test plugin has no takeScreenshot on Linux; X capture also gets
-# the media_kit video texture, which an in-tree capture would miss).
+# One app run captures every locale: the tour switches the app's locale at
+# runtime between passes (a second cold start — mpv/GL init on a fresh Xvfb —
+# proved flaky) and files its screenshots into doc/user/images/<locale>/ with
+# ImageMagick's `import` (the integration_test plugin has no takeScreenshot on
+# Linux; X capture also gets the media_kit video texture, which an in-tree
+# capture would miss).
 # GDK_BACKEND=x11 pins the app to an X window `import` can grab. Wayland
 # desktops cannot be captured (X screen grabs are blocked there), so the tour
 # needs a real X display:
@@ -42,22 +44,22 @@ export GDK_BACKEND=x11
 # Headless X has no GPU; force Mesa's software GL so the media_kit video
 # texture renders instead of staying black (harmless where it already works).
 export LIBGL_ALWAYS_SOFTWARE=1
+echo "=== capturing screenshots"
 for locale in en nl; do
-  echo "=== capturing $locale screenshots"
   rm -rf "$images_dir/$locale"
-  tour="flutter test integration_test/doc_tour_test.dart -d linux \
-    --dart-define=ISTER_TEST_MODE=true --dart-define=DOC_LOCALE=$locale"
-  if [ -n "${DOC_DISPLAY:-}" ]; then
-    DISPLAY="$DOC_DISPLAY" $tour
-  elif command -v xvfb-run >/dev/null 2>&1; then
-    # PulseAudio's null sink gives mpv an audio clock — without it, music and
-    # movie positions never advance (same trick as the integration-e2e job).
-    xvfb-run -a -s '-screen 0 1280x720x24' dbus-run-session -- bash -c \
-      "pulseaudio --start --exit-idle-time=-1 >/dev/null 2>&1 || true; $tour"
-  else
-    $tour
-  fi
 done
+tour="flutter test integration_test/doc_tour_test.dart -d linux \
+  --dart-define=ISTER_TEST_MODE=true"
+if [ -n "${DOC_DISPLAY:-}" ]; then
+  DISPLAY="$DOC_DISPLAY" $tour
+elif command -v xvfb-run >/dev/null 2>&1; then
+  # PulseAudio's null sink gives mpv an audio clock — without it, music and
+  # movie positions never advance (same trick as the integration-e2e job).
+  xvfb-run -a -s '-screen 0 1280x720x24' dbus-run-session -- bash -c \
+    "pulseaudio --start --exit-idle-time=-1 >/dev/null 2>&1 || true; $tour"
+else
+  $tour
+fi
 
 # Every image the user guide references must exist and be non-empty — a missing
 # or 0-byte PNG means a capture silently failed, and the docs must not ship a

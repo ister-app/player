@@ -61,11 +61,13 @@ Navigate with `enterServerShell`/`pushRoute` (typed routes), never `pushPath`: a
 containing a path (`localhost:8080/api`) breaks URL-based deep links.
 
 `integration_test/doc_tour_test.dart` is not a functional test but the screenshot tour for the
-user guide: one boot, every documentable screen, a `shot()` per stop. Screenshots are captured
+user guide: one boot, every documentable screen, a `shot()` per stop, run once per locale (en/nl)
+in a single app process — the tour switches the platform locale at runtime between passes, because
+a second cold start (mpv/GL init on a fresh Xvfb) proved flaky. Screenshots are captured
 *externally* with ImageMagick `import` on the app's X11 window (`takeScreenshot` has no Linux
 implementation; X capture also gets the media_kit video texture) into `$DOC_SCREENSHOT_DIR` —
-without that variable the tour runs shot-less. `ci/build-docs.sh` drives it per locale (en/nl via
-`--dart-define=DOC_LOCALE`), validates every markdown image reference, and zips `doc/`; the `docs`
+without that variable the tour runs shot-less. `ci/build-docs.sh` drives it under Xvfb,
+validates every markdown image reference, and zips `doc/`; the `docs`
 job in `release.yml` attaches the zip to the release. The fixture movies/episodes carry a silent
 audio track on purpose (testdata `create_mkv.sh`): without one, mpv's only clock is the video
 output and a GL-less player free-runs to EOF instantly.
