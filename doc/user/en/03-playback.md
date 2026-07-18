@@ -18,7 +18,7 @@ Your position is synced to the server as you watch. Stop on your phone, continue
 
 ## Listening to music
 
-Playing a track or album opens the full music player: artwork, seek bar, and your play queue on its own tab. You can reorder what's coming up, shuffle, and skip.
+Playing a track or album opens the full music player: artwork, seek bar, and your play queue on its own tab. You can reorder what's coming up, shuffle, repeat (the whole queue or a single track), and skip. You can also rate the current track right from the player — see [Ratings](02-browsing.md#ratings).
 
 ![The full music player](../images/en/music-player.png)
 

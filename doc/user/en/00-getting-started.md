@@ -20,7 +20,7 @@ After signing in you arrive at the server's home dashboard: what you were recent
 
 ![The home dashboard after signing in](../images/en/home-dashboard.png)
 
-You can add as many servers as you like; each keeps its own login and settings. Switching between them is covered in [Navigation](01-navigation.md).
+You can add as many servers as you like; each keeps its own login and settings. Switching between them is covered in [Navigation](01-navigation.md). To remove a server, tap the trash icon next to it on the overview — that also forgets its stored sign-in.
 
 ## Where to next
 

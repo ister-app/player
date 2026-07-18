@@ -22,6 +22,17 @@ Omdat deze instellingen op de server staan, reizen ze met je mee tussen apparate
 
 ![De pagina met afspeelinstellingen](../images/nl/settings-playback.png)
 
+## Delen & privacy
+
+Bepaal wie je afspelen mag zien en sturen — de andere kant van [Feestmodus](05-party-mode.md):
+
+- **Nu speelt** — wie mag zien wat je op dit moment afspeelt: iedereen, alleen jij, of bepaalde mensen.
+- **Afstandsbediening** — wie je afspelen vanaf hun apparaat mag bedienen: iedereen, alleen jij, bepaalde mensen, of hetzelfde publiek als bij *Nu speelt*.
+
+Zet je het op *alleen ik*, dan blijven je sessies privé en kan niemand ze zien of sturen. Je kunt nog steeds een uitzondering maken voor één sessie vanuit de speler (**Deze sessie delen**).
+
+![De pagina met instellingen voor delen en privacy](../images/nl/settings-sharing.png)
+
 ## Clusterinformatie
 
 De clusterpagina toont de gezondheid van je Ister-server: op welke nodes hij draait en hoe die ervoor staan. Handig voor een snelle check of alles draait.
@@ -33,6 +44,12 @@ De clusterpagina toont de gezondheid van je Ister-server: op welke nodes hij dra
 De activiteitenpagina toont wat er recent op de server gebeurde — wat er is afgespeeld en wanneer.
 
 ![De activiteitenpagina van de server](../images/nl/activity.png)
+
+## Over & bronvermelding
+
+De pagina **Over & bronvermelding** vermeldt de externe bronnen — zoals leveranciers van metadata en afbeeldingen — waar de beschrijvingen en covers op deze server vandaan komen, met hun licenties waar de server die doorgeeft. Ook staan er de **open-source licenties** van de app en, onderaan, de app-versie (met de build-commit).
+
+![De pagina over en bronvermelding](../images/nl/settings-about.png)
 
 ## Verder lezen
 

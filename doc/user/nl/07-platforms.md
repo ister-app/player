@@ -14,6 +14,8 @@ Muziek, podcasts en luisterboeken spelen door als je van app wisselt of het sche
 
 Op een tv schakelt de app naar een indeling voor de afstandsbediening: de navigatiebalk links, duidelijkere focusmarkering en volledige D-pad-navigatie — verplaats de markering met de pijltjes en druk op select om te openen of af te spelen. Alles wat met aanraken kan, kan ook met de afstandsbediening.
 
+Inloggen vraagt je op de tv geen wachtwoord in te typen. In plaats daarvan toont de app een **QR-code en een korte code**: scan de code met je telefoon (of open het adres en voer de code in) en rond het inloggen daar af — de tv logt vanzelf in zodra je klaar bent.
+
 ### Android Auto
 
 In de auto verschijnt Ister tussen de media-apps van Android Auto. Je krijgt een eenvoudige, in één blik leesbare bladerstructuur — recente items en je bibliotheken — en afspeelknoppen op het autoscherm, terwijl je telefoon in je zak blijft.

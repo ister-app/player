@@ -245,6 +245,8 @@ void main() {
       (ServerSettingsClusterRoute(), 'settings-cluster'),
       (ServerActivityRoute(), 'activity'),
       (ServerNowPlayingRoute(), 'now-playing'),
+      (ServerSettingsSharingRoute(), 'settings-sharing'),
+      (ServerSettingsAboutRoute(), 'settings-about'),
     ];
     for (final (route, name) in settingsStops) {
       await pushRoute(tester, route);

@@ -29,6 +29,10 @@ Admins always see every library, regardless of these switches.
 
 ![Library visibility toggles](../images/en/admin-libraries.png)
 
+## Podcasts
+
+Managing which podcasts the server carries is an admin task. In a podcast library, **Add podcast** subscribes the server to a new feed, and **Unsubscribe** on a podcast's page removes it. Ordinary users can browse, download and play episodes, but never see these controls.
+
 ## Server maintenance
 
 The server page also carries a **Management** section for admins, with the housekeeping actions:

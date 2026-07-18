@@ -14,7 +14,18 @@ Pick a session from the overview and you get a full remote control for it: the s
 
 This is what gives party mode its name: put a device on the speakers, and everyone at the party can queue up the next track from their own phone.
 
+## Adding to a session
+
+You don't have to take over a session to add to it. From a movie, episode, track, album or whole show, use **Add to session**, pick the session you want, and choose whether it should **play next** or go to the **end of the queue**. Perfect for lining up the next few songs on the party speaker without interrupting what's playing.
+
+## Sharing and privacy
+
+Other people only see and control your playback if you let them. By default your sessions follow your account-wide **Sharing & privacy** settings — who can see what you're playing, and who can take the remote — which you set once in [Settings](06-settings.md#sharing--privacy).
+
+You can also override it for a single session: from the player, use **Share this session** to decide, just for this one, who's allowed to control it — your default, only you, everyone, or specific people.
+
 ## Where to next
 
 - The player itself: [Playback](03-playback.md)
+- Set who can see and control your playback: [Settings](06-settings.md#sharing--privacy)
 - See who's been active on the server: [Settings](06-settings.md)

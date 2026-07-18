@@ -14,6 +14,8 @@ Music, podcasts and audiobooks keep playing when you switch apps or lock the scr
 
 On a TV the app switches to a remote-friendly layout: the navigation rail on the left, larger focus highlights, and full D-pad navigation — move the highlight with the directional pad and press select to open or play. Everything reachable by touch is reachable by remote.
 
+Signing in doesn't ask you to type a password on the TV. Instead the app shows a **QR code and a short code**: scan the code with your phone (or open the address and enter the code) and finish the login there — the TV signs in automatically once you're done.
+
 ### Android Auto
 
 In the car, Ister appears in Android Auto's media apps. You get a simple, glanceable browse tree — recent items and your libraries — and playback controls on the car screen, while the phone stays in your pocket.

@@ -18,7 +18,7 @@ Je positie wordt tijdens het kijken naar de server gesynchroniseerd. Stop op je 
 
 ## Muziek luisteren
 
-Speel je een nummer of album, dan opent de volledige muziekspeler: artwork, voortgangsbalk en je wachtrij op een eigen tabblad. Je kunt de wachtrij herschikken, shuffelen en nummers overslaan.
+Speel je een nummer of album, dan opent de volledige muziekspeler: artwork, voortgangsbalk en je wachtrij op een eigen tabblad. Je kunt de wachtrij herschikken, shuffelen, herhalen (de hele wachtrij of één nummer) en nummers overslaan. Je kunt het huidige nummer ook meteen vanuit de speler beoordelen — zie [Beoordelen](02-browsing.md#beoordelen).
 
 ![De volledige muziekspeler](../images/nl/music-player.png)
 

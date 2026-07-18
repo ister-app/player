@@ -4,7 +4,7 @@ Op het tabblad **Bibliotheek** vind je alles wat op de server staat: series, fil
 
 ## Het bibliotheekraster
 
-De bibliotheek toont je media als een raster van covers. Sorteer op titel of op recent toegevoegd en scrol — lange lijsten laden vanzelf bij.
+De bibliotheek toont je media als een raster van covers. Sorteer op titel, op recent toegevoegd of op releasejaar — je keuze wordt per bibliotheek bewaard, dus elke bibliotheek onthoudt hoe je hem het liefst ziet. Scrol om meer te laden; lange lijsten vullen zich vanzelf aan. Met het zoekpictogram beperk je een zoekopdracht tot deze bibliotheek, en met **Shuffle afspelen** start je de hele bibliotheek in willekeurige volgorde.
 
 ![Het bibliotheekraster](../images/nl/library.png)
 
@@ -26,7 +26,7 @@ Albums tonen hun nummers op volgorde. Speel één nummer, het hele album, of zet
 
 ## Podcasts
 
-Podcasts tonen hun afleveringen met de nieuwste bovenaan. Elke aflevering onthoudt hoe ver je bent, dus een half beluisterde aflevering gaat verder waar je stopte.
+Podcasts tonen hun afleveringen met de nieuwste bovenaan — je kunt de volgorde omdraaien naar oudste eerst, en die keuze wordt bewaard. Tik op een aflevering om hem te downloaden; zodra hij op de server staat speelt hij zoals al het andere, en elke aflevering onthoudt hoe ver je bent, dus een half beluisterde aflevering gaat verder waar je stopte. (Hele podcasts toevoegen en verwijderen is een beheertaak — zie [Beheer](08-admin.md).)
 
 ![Een podcast met de afleveringenlijst](../images/nl/podcast.png)
 
@@ -39,6 +39,10 @@ Boeken — luisterboeken, e-boeken of allebei — hebben hun eigen detailpagina.
 ## Personen
 
 Tik ergens in de app op een acteur, auteur of voorlezer en je ziet diens pagina: wie het is en alles van diegene op je server.
+
+## Beoordelen
+
+Bijna alles wat je kunt openen kun je beoordelen: films, series, afleveringen, albums, losse nummers, boeken en podcasts. Tik op de sterren op een detailpagina (of in de muziekspeler) om je beoordeling te geven, en tik nog eens om hem te wissen — de wijziging wordt meteen naar de server bewaard, dus je beoordelingen reizen met je mee tussen apparaten.
 
 ## Zoeken
 

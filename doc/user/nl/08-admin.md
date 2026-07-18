@@ -29,6 +29,10 @@ Beheerders zien altijd alle bibliotheken, ongeacht deze schakelaars.
 
 ![Schakelaars voor bibliotheek-zichtbaarheid](../images/nl/admin-libraries.png)
 
+## Podcasts
+
+Beheren welke podcasts de server bevat is een beheertaak. In een podcastbibliotheek abonneert **Podcast toevoegen** de server op een nieuwe feed, en **Abonnement opzeggen** op de pagina van een podcast verwijdert hem. Gewone gebruikers kunnen afleveringen bekijken, downloaden en afspelen, maar zien deze knoppen nooit.
+
 ## Serveronderhoud
 
 De serverpagina bevat voor beheerders ook een sectie **Beheer** met de onderhoudsacties:

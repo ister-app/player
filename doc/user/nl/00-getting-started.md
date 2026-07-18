@@ -20,7 +20,7 @@ Na het inloggen kom je op het startscherm van de server: waar je onlangs naar ke
 
 ![Het startscherm na het inloggen](../images/nl/home-dashboard.png)
 
-Je kunt zo veel servers toevoegen als je wilt; elke server houdt zijn eigen login en instellingen. Hoe je ertussen wisselt lees je in [Navigatie](01-navigation.md).
+Je kunt zo veel servers toevoegen als je wilt; elke server houdt zijn eigen login en instellingen. Hoe je ertussen wisselt lees je in [Navigatie](01-navigation.md). Wil je een server verwijderen, tik dan op het prullenbakpictogram ernaast op het overzicht — daarmee wordt ook de bewaarde login vergeten.
 
 ## Verder lezen
 
