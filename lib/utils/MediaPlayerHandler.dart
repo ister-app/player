@@ -79,6 +79,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       _listenToSession();
       _applyMpvNetworkOptions();
       _startStallWatchdog();
+      StreamTokenService.tokenVersion.addListener(_refreshArtworkTokens);
       _listenersAdded = true;
     }
   }
@@ -764,10 +765,67 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
   }
 
+  /// Replaces the stream token embedded in [item]'s artUri with [token].
+  /// Returns [item] unchanged when there is no artwork or the token already
+  /// matches. Static and pure so it can be unit-tested without a [Player].
+  static MediaItem restampArtToken(MediaItem item, String token) {
+    final art = item.artUri;
+    if (art == null || art.queryParameters['token'] == token) return item;
+    return item.copyWith(
+      artUri: art.replace(
+          queryParameters: {...art.queryParameters, 'token': token}),
+    );
+  }
+
+  /// Re-publishes queue and current item with the current stream token in
+  /// their artUris. The artUri is built once at queue construction, but
+  /// Android re-downloads notification artwork from it whenever it rebuilds
+  /// the media notification — long after the embedded token has rotated or
+  /// expired, which made the cover silently disappear.
+  void _refreshArtworkTokens() {
+    MediaItem restamp(MediaItem item) {
+      final String serverName;
+      try {
+        serverName = MediaItemId.byStringId(item.id).serverName;
+      } catch (_) {
+        return item;
+      }
+      final token = StreamTokenService.getToken(serverName);
+      return token == null ? item : restampArtToken(item, token);
+    }
+
+    final items = queue.valueOrNull ?? const [];
+    final restamped = items.map(restamp).toList();
+    if (Iterable.generate(items.length)
+        .any((i) => !identical(items[i], restamped[i]))) {
+      queue.add(restamped);
+    }
+    final current = mediaItem.valueOrNull;
+    if (current != null) {
+      final fresh = restamp(current);
+      if (!identical(fresh, current)) mediaItem.add(fresh);
+    }
+  }
+
+  /// While the app sits suspended in the background (Doze), the refresh
+  /// timers in [StreamTokenService] don't fire, so the token can expire
+  /// outright. Fetching one on resume bumps [StreamTokenService.tokenVersion],
+  /// which re-stamps the published artUris via [_refreshArtworkTokens].
+  Future<void> _ensureFreshArtToken() async {
+    final id = mediaItem.valueOrNull?.id;
+    if (id == null) return;
+    try {
+      await StreamTokenService.ensureToken(MediaItemId.byStringId(id).serverName);
+    } catch (e) {
+      LoggerService().logger.w('Stream token refresh on resume failed: $e');
+    }
+  }
+
   // ── AudioService overrides ─────────────────────────────────────────────
   @override
   Future<void> play() {
     _intendsToPlay = true;
+    unawaited(_ensureFreshArtToken());
     // Resuming after stop() must restart the heartbeat the stop cancelled.
     if (playQueue != null) _startHeartbeat();
     final result = _player.play();

@@ -23,6 +23,14 @@ class StreamTokenService {
   /// staying broken until the next app start.
   static final ValueNotifier<int> tokenRevision = ValueNotifier(0);
 
+  /// Bumped on *every* successful fetch, including routine rotations where the
+  /// old token is still valid (unlike [tokenRevision], which only fires when a
+  /// missing token becomes available, so image widgets don't re-download on
+  /// every rotation). [MediaPlayerHandler] listens to re-stamp the token
+  /// embedded in the published artUris — Android re-downloads notification
+  /// artwork from that URL long after the queue was built.
+  static final ValueNotifier<int> tokenVersion = ValueNotifier(0);
+
   static String? getToken(String serverName) {
     final exp = _expiry[serverName];
     if (exp == null || DateTime.now().isAfter(exp)) return null;
@@ -65,6 +73,7 @@ class StreamTokenService {
     LoggerService().logger.d('Stream token fetched for $serverName, expires $expiry');
     _scheduleRefresh(serverName, expiry);
     if (!hadToken) tokenRevision.value++;
+    tokenVersion.value++;
     return token;
   }
 
