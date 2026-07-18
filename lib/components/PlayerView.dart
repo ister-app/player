@@ -4,7 +4,9 @@ import 'dart:ui';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:player/components/SessionSharingSheet.dart';
 import 'package:player/components/TvFocusable.dart';
+import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/DurationUtil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -81,6 +83,20 @@ abstract class PlayerViewController extends ChangeNotifier {
   /// (non-track media) or unsupported (e.g. the remote controller). Local
   /// playback plugs in a [RatingStars] for the current track.
   Widget? buildRating(BuildContext context) => null;
+
+  /// When non-null, the owner is watching their own session and may edit its per-session
+  /// remote-control sharing; the view then shows a "share this session" action. Null for a remote
+  /// controller (you cannot change someone else's session's sharing).
+  String? get sessionSharingQueueId => null;
+
+  /// Server that owns the session referenced by [sessionSharingQueueId].
+  String? get sessionSharingServerName => null;
+
+  /// The session's current per-session remote-control override (null = the account default applies).
+  Enum$RemoteControlScope? get sessionControlOverride => null;
+
+  /// The session's own control allowlist (grantee user ids), used when the override is ALLOWLIST.
+  List<String> get sessionControlAllowedUserIds => const [];
 
   void skipToPrevious();
   void skipToNext();
@@ -469,6 +485,8 @@ class _PlayerViewState extends State<PlayerView>
   }
 
   Widget _buildHeader() {
+    final loc = AppLocalizations.of(context)!;
+    final sessionQueueId = widget.controller.sessionSharingQueueId;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
@@ -477,16 +495,38 @@ class _PlayerViewState extends State<PlayerView>
             icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 32),
             onPressed: dismiss,
           ),
-          if (widget.headerTitle != null)
-            Expanded(
-              child: Text(
-                widget.headerTitle!,
-                style: const TextStyle(color: Colors.white70, fontSize: 14),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+          Expanded(
+            child: widget.headerTitle != null
+                ? Text(
+                    widget.headerTitle!,
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                : const SizedBox.shrink(),
+          ),
+          if (sessionQueueId != null)
+            IconButton(
+              icon: const Icon(Icons.ios_share, color: Colors.white70),
+              tooltip: loc.shareThisSession,
+              onPressed: () => _openSessionSharing(sessionQueueId),
             ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _openSessionSharing(String playQueueId) async {
+    final controller = widget.controller;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => SessionSharingSheet(
+        serverName: controller.sessionSharingServerName,
+        playQueueId: playQueueId,
+        currentOverride: controller.sessionControlOverride,
+        currentAllowedUserIds: controller.sessionControlAllowedUserIds,
       ),
     );
   }

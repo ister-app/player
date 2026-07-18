@@ -711,5 +711,73 @@
     }
   },
   "attributionsUnavailable": "The server does not report its data sources yet.",
-  "openSourceLicenses": "Open-source licenses"
+  "openSourceLicenses": "Open-source licenses",
+  "sharingSettings": "Sharing & privacy",
+  "@sharingSettings": {
+    "description": "Title of the sharing/privacy settings subpage and its tile"
+  },
+  "sharingSettingsSubtitle": "Who can see and control what you play",
+  "@sharingSettingsSubtitle": {
+    "description": "Subtitle for the sharing settings tile"
+  },
+  "nowPlayingVisibility": "Now playing",
+  "@nowPlayingVisibility": {
+    "description": "Section header for who may see your active playback sessions"
+  },
+  "nowPlayingVisibilityDescription": "Who can see what you are currently playing",
+  "@nowPlayingVisibilityDescription": {
+    "description": "Description under the now-playing visibility section"
+  },
+  "remoteControlSharing": "Remote control",
+  "@remoteControlSharing": {
+    "description": "Section header for who may remote-control your sessions"
+  },
+  "remoteControlSharingDescription": "Who can control your playback from their device",
+  "@remoteControlSharingDescription": {
+    "description": "Description under the remote-control sharing section"
+  },
+  "sharingScopeEveryone": "Everyone",
+  "@sharingScopeEveryone": {
+    "description": "Sharing scope: visible to or controllable by every user"
+  },
+  "sharingScopePrivate": "Only me",
+  "@sharingScopePrivate": {
+    "description": "Sharing scope: private, nobody but the owner"
+  },
+  "sharingScopeAllowlist": "Specific people",
+  "@sharingScopeAllowlist": {
+    "description": "Sharing scope: only a chosen list of users"
+  },
+  "sharingScopeSameAsNowPlaying": "Same as now playing",
+  "@sharingScopeSameAsNowPlaying": {
+    "description": "Remote-control scope that mirrors the now-playing audience"
+  },
+  "sharingChoosePeople": "Choose people",
+  "@sharingChoosePeople": {
+    "description": "Header above the user allowlist selector"
+  },
+  "sharingNoOtherUsers": "There are no other users to share with yet.",
+  "@sharingNoOtherUsers": {
+    "description": "Shown when the server has no other users to pick for an allowlist"
+  },
+  "sharingCouldNotLoad": "Could not load sharing settings.",
+  "@sharingCouldNotLoad": {
+    "description": "Error shown when the sharing settings fail to load (e.g. older server)"
+  },
+  "sharingCouldNotSave": "Could not save sharing settings",
+  "@sharingCouldNotSave": {
+    "description": "Error shown when saving sharing settings fails"
+  },
+  "sessionSharingTitle": "Who can control this session",
+  "@sessionSharingTitle": {
+    "description": "Title of the per-session remote-control sharing sheet"
+  },
+  "sessionSharingUseDefault": "Use my default",
+  "@sessionSharingUseDefault": {
+    "description": "Per-session option to fall back to the account-level remote-control setting"
+  },
+  "shareThisSession": "Share this session",
+  "@shareThisSession": {
+    "description": "Menu action opening the per-session sharing sheet"
+  }
 }

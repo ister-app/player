@@ -698,4 +698,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get openSourceLicenses => 'Open-source licenses';
+
+  @override
+  String get sharingSettings => 'Sharing & privacy';
+
+  @override
+  String get sharingSettingsSubtitle => 'Who can see and control what you play';
+
+  @override
+  String get nowPlayingVisibility => 'Now playing';
+
+  @override
+  String get nowPlayingVisibilityDescription =>
+      'Who can see what you are currently playing';
+
+  @override
+  String get remoteControlSharing => 'Remote control';
+
+  @override
+  String get remoteControlSharingDescription =>
+      'Who can control your playback from their device';
+
+  @override
+  String get sharingScopeEveryone => 'Everyone';
+
+  @override
+  String get sharingScopePrivate => 'Only me';
+
+  @override
+  String get sharingScopeAllowlist => 'Specific people';
+
+  @override
+  String get sharingScopeSameAsNowPlaying => 'Same as now playing';
+
+  @override
+  String get sharingChoosePeople => 'Choose people';
+
+  @override
+  String get sharingNoOtherUsers =>
+      'There are no other users to share with yet.';
+
+  @override
+  String get sharingCouldNotLoad => 'Could not load sharing settings.';
+
+  @override
+  String get sharingCouldNotSave => 'Could not save sharing settings';
+
+  @override
+  String get sessionSharingTitle => 'Who can control this session';
+
+  @override
+  String get sessionSharingUseDefault => 'Use my default';
+
+  @override
+  String get shareThisSession => 'Share this session';
 }

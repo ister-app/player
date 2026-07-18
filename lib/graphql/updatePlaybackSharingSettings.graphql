@@ -1,0 +1,5 @@
+mutation updatePlaybackSharingSettings($input: PlaybackSharingSettingsInput!) {
+    updatePlaybackSharingSettings(input: $input) {
+        ...fragmentPlaybackSharingSettings
+    }
+}

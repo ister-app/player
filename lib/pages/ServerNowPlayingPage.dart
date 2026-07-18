@@ -208,10 +208,14 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
               artworkUrl: _artworkUrl(session),
               mediaIcon: _mediaIcon(session.mediaType),
               formatProgress: _formatProgress,
-              // Party mode: open the remote control overlay for this session.
-              onTap: () => context.router.root.push(RemoteControlRoute(
-                  serverName: widget.serverName,
-                  playQueueId: session.playQueueId)),
+              // Party mode: open the remote control overlay for this session — but only when the
+              // owner allows this user to control it (server-computed per viewer). A view-only
+              // session has no tap target.
+              onTap: session.controllable
+                  ? () => context.router.root.push(RemoteControlRoute(
+                      serverName: widget.serverName,
+                      playQueueId: session.playQueueId))
+                  : null,
             ),
         ],
       );

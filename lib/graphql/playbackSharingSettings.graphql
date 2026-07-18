@@ -1,0 +1,5 @@
+query playbackSharingSettings {
+    playbackSharingSettings {
+        ...fragmentPlaybackSharingSettings
+    }
+}

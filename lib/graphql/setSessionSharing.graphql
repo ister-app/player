@@ -1,0 +1,3 @@
+mutation setSessionSharing($playQueueId: ID!, $controlScope: RemoteControlScope, $allowedUserIds: [ID!]) {
+    setSessionSharing(playQueueId: $playQueueId, controlScope: $controlScope, allowedUserIds: $allowedUserIds)
+}

@@ -1,0 +1,6 @@
+fragment fragmentPlaybackSharingSettings on PlaybackSharingSettings {
+    nowPlayingScope
+    controlScope
+    nowPlayingAllowedUserIds
+    controlAllowedUserIds
+}

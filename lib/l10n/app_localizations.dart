@@ -1285,6 +1285,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open-source licenses'**
   String get openSourceLicenses;
+
+  /// Title of the sharing/privacy settings subpage and its tile
+  ///
+  /// In en, this message translates to:
+  /// **'Sharing & privacy'**
+  String get sharingSettings;
+
+  /// Subtitle for the sharing settings tile
+  ///
+  /// In en, this message translates to:
+  /// **'Who can see and control what you play'**
+  String get sharingSettingsSubtitle;
+
+  /// Section header for who may see your active playback sessions
+  ///
+  /// In en, this message translates to:
+  /// **'Now playing'**
+  String get nowPlayingVisibility;
+
+  /// Description under the now-playing visibility section
+  ///
+  /// In en, this message translates to:
+  /// **'Who can see what you are currently playing'**
+  String get nowPlayingVisibilityDescription;
+
+  /// Section header for who may remote-control your sessions
+  ///
+  /// In en, this message translates to:
+  /// **'Remote control'**
+  String get remoteControlSharing;
+
+  /// Description under the remote-control sharing section
+  ///
+  /// In en, this message translates to:
+  /// **'Who can control your playback from their device'**
+  String get remoteControlSharingDescription;
+
+  /// Sharing scope: visible to or controllable by every user
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone'**
+  String get sharingScopeEveryone;
+
+  /// Sharing scope: private, nobody but the owner
+  ///
+  /// In en, this message translates to:
+  /// **'Only me'**
+  String get sharingScopePrivate;
+
+  /// Sharing scope: only a chosen list of users
+  ///
+  /// In en, this message translates to:
+  /// **'Specific people'**
+  String get sharingScopeAllowlist;
+
+  /// Remote-control scope that mirrors the now-playing audience
+  ///
+  /// In en, this message translates to:
+  /// **'Same as now playing'**
+  String get sharingScopeSameAsNowPlaying;
+
+  /// Header above the user allowlist selector
+  ///
+  /// In en, this message translates to:
+  /// **'Choose people'**
+  String get sharingChoosePeople;
+
+  /// Shown when the server has no other users to pick for an allowlist
+  ///
+  /// In en, this message translates to:
+  /// **'There are no other users to share with yet.'**
+  String get sharingNoOtherUsers;
+
+  /// Error shown when the sharing settings fail to load (e.g. older server)
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load sharing settings.'**
+  String get sharingCouldNotLoad;
+
+  /// Error shown when saving sharing settings fails
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save sharing settings'**
+  String get sharingCouldNotSave;
+
+  /// Title of the per-session remote-control sharing sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Who can control this session'**
+  String get sessionSharingTitle;
+
+  /// Per-session option to fall back to the account-level remote-control setting
+  ///
+  /// In en, this message translates to:
+  /// **'Use my default'**
+  String get sessionSharingUseDefault;
+
+  /// Menu action opening the per-session sharing sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Share this session'**
+  String get shareThisSession;
 }
 
 class _AppLocalizationsDelegate

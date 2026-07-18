@@ -71,6 +71,15 @@ class ServerSettingsPage extends StatelessWidget {
                         .push(ServerSettingsPlaybackRoute()),
                   ),
                 ],
+                const Divider(height: 1, indent: 56),
+                ListTile(
+                  leading: const Icon(Icons.shield_outlined),
+                  title: Text(loc.sharingSettings),
+                  subtitle: Text(loc.sharingSettingsSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => AutoRouter.of(context)
+                      .push(ServerSettingsSharingRoute()),
+                ),
                 AdminGate(
                   serverName: serverName,
                   child: Column(

@@ -551,6 +551,213 @@ class _CopyWithStubImpl$Input$CreatePlayQueueInput<TRes>
   }) => _res;
 }
 
+class Input$PlaybackSharingSettingsInput {
+  factory Input$PlaybackSharingSettingsInput({
+    required Enum$SharingScope nowPlayingScope,
+    required Enum$RemoteControlScope controlScope,
+    required List<String> nowPlayingAllowedUserIds,
+    required List<String> controlAllowedUserIds,
+  }) => Input$PlaybackSharingSettingsInput._({
+    r'nowPlayingScope': nowPlayingScope,
+    r'controlScope': controlScope,
+    r'nowPlayingAllowedUserIds': nowPlayingAllowedUserIds,
+    r'controlAllowedUserIds': controlAllowedUserIds,
+  });
+
+  Input$PlaybackSharingSettingsInput._(this._$data);
+
+  factory Input$PlaybackSharingSettingsInput.fromJson(
+    Map<String, dynamic> data,
+  ) {
+    final result$data = <String, dynamic>{};
+    final l$nowPlayingScope = data['nowPlayingScope'];
+    result$data['nowPlayingScope'] = fromJson$Enum$SharingScope(
+      (l$nowPlayingScope as String),
+    );
+    final l$controlScope = data['controlScope'];
+    result$data['controlScope'] = fromJson$Enum$RemoteControlScope(
+      (l$controlScope as String),
+    );
+    final l$nowPlayingAllowedUserIds = data['nowPlayingAllowedUserIds'];
+    result$data['nowPlayingAllowedUserIds'] =
+        (l$nowPlayingAllowedUserIds as List<dynamic>)
+            .map((e) => (e as String))
+            .toList();
+    final l$controlAllowedUserIds = data['controlAllowedUserIds'];
+    result$data['controlAllowedUserIds'] =
+        (l$controlAllowedUserIds as List<dynamic>)
+            .map((e) => (e as String))
+            .toList();
+    return Input$PlaybackSharingSettingsInput._(result$data);
+  }
+
+  Map<String, dynamic> _$data;
+
+  Enum$SharingScope get nowPlayingScope =>
+      (_$data['nowPlayingScope'] as Enum$SharingScope);
+
+  Enum$RemoteControlScope get controlScope =>
+      (_$data['controlScope'] as Enum$RemoteControlScope);
+
+  List<String> get nowPlayingAllowedUserIds =>
+      (_$data['nowPlayingAllowedUserIds'] as List<String>);
+
+  List<String> get controlAllowedUserIds =>
+      (_$data['controlAllowedUserIds'] as List<String>);
+
+  Map<String, dynamic> toJson() {
+    final result$data = <String, dynamic>{};
+    final l$nowPlayingScope = nowPlayingScope;
+    result$data['nowPlayingScope'] = toJson$Enum$SharingScope(
+      l$nowPlayingScope,
+    );
+    final l$controlScope = controlScope;
+    result$data['controlScope'] = toJson$Enum$RemoteControlScope(
+      l$controlScope,
+    );
+    final l$nowPlayingAllowedUserIds = nowPlayingAllowedUserIds;
+    result$data['nowPlayingAllowedUserIds'] = l$nowPlayingAllowedUserIds
+        .map((e) => e)
+        .toList();
+    final l$controlAllowedUserIds = controlAllowedUserIds;
+    result$data['controlAllowedUserIds'] = l$controlAllowedUserIds
+        .map((e) => e)
+        .toList();
+    return result$data;
+  }
+
+  CopyWith$Input$PlaybackSharingSettingsInput<
+    Input$PlaybackSharingSettingsInput
+  >
+  get copyWith => CopyWith$Input$PlaybackSharingSettingsInput(this, (i) => i);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Input$PlaybackSharingSettingsInput ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$nowPlayingScope = nowPlayingScope;
+    final lOther$nowPlayingScope = other.nowPlayingScope;
+    if (l$nowPlayingScope != lOther$nowPlayingScope) {
+      return false;
+    }
+    final l$controlScope = controlScope;
+    final lOther$controlScope = other.controlScope;
+    if (l$controlScope != lOther$controlScope) {
+      return false;
+    }
+    final l$nowPlayingAllowedUserIds = nowPlayingAllowedUserIds;
+    final lOther$nowPlayingAllowedUserIds = other.nowPlayingAllowedUserIds;
+    if (l$nowPlayingAllowedUserIds.length !=
+        lOther$nowPlayingAllowedUserIds.length) {
+      return false;
+    }
+    for (int i = 0; i < l$nowPlayingAllowedUserIds.length; i++) {
+      final l$nowPlayingAllowedUserIds$entry = l$nowPlayingAllowedUserIds[i];
+      final lOther$nowPlayingAllowedUserIds$entry =
+          lOther$nowPlayingAllowedUserIds[i];
+      if (l$nowPlayingAllowedUserIds$entry !=
+          lOther$nowPlayingAllowedUserIds$entry) {
+        return false;
+      }
+    }
+    final l$controlAllowedUserIds = controlAllowedUserIds;
+    final lOther$controlAllowedUserIds = other.controlAllowedUserIds;
+    if (l$controlAllowedUserIds.length != lOther$controlAllowedUserIds.length) {
+      return false;
+    }
+    for (int i = 0; i < l$controlAllowedUserIds.length; i++) {
+      final l$controlAllowedUserIds$entry = l$controlAllowedUserIds[i];
+      final lOther$controlAllowedUserIds$entry =
+          lOther$controlAllowedUserIds[i];
+      if (l$controlAllowedUserIds$entry != lOther$controlAllowedUserIds$entry) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @override
+  int get hashCode {
+    final l$nowPlayingScope = nowPlayingScope;
+    final l$controlScope = controlScope;
+    final l$nowPlayingAllowedUserIds = nowPlayingAllowedUserIds;
+    final l$controlAllowedUserIds = controlAllowedUserIds;
+    return Object.hashAll([
+      l$nowPlayingScope,
+      l$controlScope,
+      Object.hashAll(l$nowPlayingAllowedUserIds.map((v) => v)),
+      Object.hashAll(l$controlAllowedUserIds.map((v) => v)),
+    ]);
+  }
+}
+
+abstract class CopyWith$Input$PlaybackSharingSettingsInput<TRes> {
+  factory CopyWith$Input$PlaybackSharingSettingsInput(
+    Input$PlaybackSharingSettingsInput instance,
+    TRes Function(Input$PlaybackSharingSettingsInput) then,
+  ) = _CopyWithImpl$Input$PlaybackSharingSettingsInput;
+
+  factory CopyWith$Input$PlaybackSharingSettingsInput.stub(TRes res) =
+      _CopyWithStubImpl$Input$PlaybackSharingSettingsInput;
+
+  TRes call({
+    Enum$SharingScope? nowPlayingScope,
+    Enum$RemoteControlScope? controlScope,
+    List<String>? nowPlayingAllowedUserIds,
+    List<String>? controlAllowedUserIds,
+  });
+}
+
+class _CopyWithImpl$Input$PlaybackSharingSettingsInput<TRes>
+    implements CopyWith$Input$PlaybackSharingSettingsInput<TRes> {
+  _CopyWithImpl$Input$PlaybackSharingSettingsInput(this._instance, this._then);
+
+  final Input$PlaybackSharingSettingsInput _instance;
+
+  final TRes Function(Input$PlaybackSharingSettingsInput) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? nowPlayingScope = _undefined,
+    Object? controlScope = _undefined,
+    Object? nowPlayingAllowedUserIds = _undefined,
+    Object? controlAllowedUserIds = _undefined,
+  }) => _then(
+    Input$PlaybackSharingSettingsInput._({
+      ..._instance._$data,
+      if (nowPlayingScope != _undefined && nowPlayingScope != null)
+        'nowPlayingScope': (nowPlayingScope as Enum$SharingScope),
+      if (controlScope != _undefined && controlScope != null)
+        'controlScope': (controlScope as Enum$RemoteControlScope),
+      if (nowPlayingAllowedUserIds != _undefined &&
+          nowPlayingAllowedUserIds != null)
+        'nowPlayingAllowedUserIds': (nowPlayingAllowedUserIds as List<String>),
+      if (controlAllowedUserIds != _undefined && controlAllowedUserIds != null)
+        'controlAllowedUserIds': (controlAllowedUserIds as List<String>),
+    }),
+  );
+}
+
+class _CopyWithStubImpl$Input$PlaybackSharingSettingsInput<TRes>
+    implements CopyWith$Input$PlaybackSharingSettingsInput<TRes> {
+  _CopyWithStubImpl$Input$PlaybackSharingSettingsInput(this._res);
+
+  TRes _res;
+
+  call({
+    Enum$SharingScope? nowPlayingScope,
+    Enum$RemoteControlScope? controlScope,
+    List<String>? nowPlayingAllowedUserIds,
+    List<String>? controlAllowedUserIds,
+  }) => _res;
+}
+
 enum Enum$MetadataSource {
   TMDB,
   MUSICBRAINZ,
@@ -1139,6 +1346,87 @@ Enum$DirectoryType fromJson$Enum$DirectoryType(String value) {
       return Enum$DirectoryType.CACHE;
     default:
       return Enum$DirectoryType.$unknown;
+  }
+}
+
+enum Enum$SharingScope {
+  EVERYONE,
+  ALLOWLIST,
+  PRIVATE,
+  $unknown;
+
+  factory Enum$SharingScope.fromJson(String value) =>
+      fromJson$Enum$SharingScope(value);
+
+  String toJson() => toJson$Enum$SharingScope(this);
+}
+
+String toJson$Enum$SharingScope(Enum$SharingScope e) {
+  switch (e) {
+    case Enum$SharingScope.EVERYONE:
+      return r'EVERYONE';
+    case Enum$SharingScope.ALLOWLIST:
+      return r'ALLOWLIST';
+    case Enum$SharingScope.PRIVATE:
+      return r'PRIVATE';
+    case Enum$SharingScope.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$SharingScope fromJson$Enum$SharingScope(String value) {
+  switch (value) {
+    case r'EVERYONE':
+      return Enum$SharingScope.EVERYONE;
+    case r'ALLOWLIST':
+      return Enum$SharingScope.ALLOWLIST;
+    case r'PRIVATE':
+      return Enum$SharingScope.PRIVATE;
+    default:
+      return Enum$SharingScope.$unknown;
+  }
+}
+
+enum Enum$RemoteControlScope {
+  PRIVATE,
+  EVERYONE,
+  ALLOWLIST,
+  SAME_AS_NOW_PLAYING,
+  $unknown;
+
+  factory Enum$RemoteControlScope.fromJson(String value) =>
+      fromJson$Enum$RemoteControlScope(value);
+
+  String toJson() => toJson$Enum$RemoteControlScope(this);
+}
+
+String toJson$Enum$RemoteControlScope(Enum$RemoteControlScope e) {
+  switch (e) {
+    case Enum$RemoteControlScope.PRIVATE:
+      return r'PRIVATE';
+    case Enum$RemoteControlScope.EVERYONE:
+      return r'EVERYONE';
+    case Enum$RemoteControlScope.ALLOWLIST:
+      return r'ALLOWLIST';
+    case Enum$RemoteControlScope.SAME_AS_NOW_PLAYING:
+      return r'SAME_AS_NOW_PLAYING';
+    case Enum$RemoteControlScope.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$RemoteControlScope fromJson$Enum$RemoteControlScope(String value) {
+  switch (value) {
+    case r'PRIVATE':
+      return Enum$RemoteControlScope.PRIVATE;
+    case r'EVERYONE':
+      return Enum$RemoteControlScope.EVERYONE;
+    case r'ALLOWLIST':
+      return Enum$RemoteControlScope.ALLOWLIST;
+    case r'SAME_AS_NOW_PLAYING':
+      return Enum$RemoteControlScope.SAME_AS_NOW_PLAYING;
+    default:
+      return Enum$RemoteControlScope.$unknown;
   }
 }
 

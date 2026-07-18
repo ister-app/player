@@ -1,0 +1,6 @@
+query shareableUsers {
+    shareableUsers {
+        id
+        name
+    }
+}

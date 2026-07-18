@@ -45,4 +45,5 @@ fragment fragmentPlaybackSession on PlaybackSession {
     playState
     nodeName
     updatedAt
+    controllable
 }

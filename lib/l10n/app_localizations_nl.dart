@@ -698,4 +698,58 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get openSourceLicenses => 'Open-source licenties';
+
+  @override
+  String get sharingSettings => 'Delen & privacy';
+
+  @override
+  String get sharingSettingsSubtitle => 'Wie ziet en bedient wat je afspeelt';
+
+  @override
+  String get nowPlayingVisibility => 'Nu speelt';
+
+  @override
+  String get nowPlayingVisibilityDescription =>
+      'Wie kan zien wat je nu afspeelt';
+
+  @override
+  String get remoteControlSharing => 'Afstandsbediening';
+
+  @override
+  String get remoteControlSharingDescription =>
+      'Wie jouw afspelen kan bedienen vanaf hun apparaat';
+
+  @override
+  String get sharingScopeEveryone => 'Iedereen';
+
+  @override
+  String get sharingScopePrivate => 'Alleen ik';
+
+  @override
+  String get sharingScopeAllowlist => 'Bepaalde mensen';
+
+  @override
+  String get sharingScopeSameAsNowPlaying => 'Zelfde als nu speelt';
+
+  @override
+  String get sharingChoosePeople => 'Kies mensen';
+
+  @override
+  String get sharingNoOtherUsers =>
+      'Er zijn nog geen andere gebruikers om mee te delen.';
+
+  @override
+  String get sharingCouldNotLoad => 'Kon de deelinstellingen niet laden.';
+
+  @override
+  String get sharingCouldNotSave => 'Kon de deelinstellingen niet opslaan';
+
+  @override
+  String get sessionSharingTitle => 'Wie mag deze sessie bedienen';
+
+  @override
+  String get sessionSharingUseDefault => 'Mijn standaard gebruiken';
+
+  @override
+  String get shareThisSession => 'Deze sessie delen';
 }

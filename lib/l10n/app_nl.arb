@@ -197,5 +197,22 @@
   "attributionsIntro": "Metadata en afbeeldingen op deze server zijn afkomstig van de volgende externe bronnen:",
   "attributionLicense": "Licentie: {license}",
   "attributionsUnavailable": "De server meldt zijn bronnen nog niet.",
-  "openSourceLicenses": "Open-source licenties"
+  "openSourceLicenses": "Open-source licenties",
+  "sharingSettings": "Delen & privacy",
+  "sharingSettingsSubtitle": "Wie ziet en bedient wat je afspeelt",
+  "nowPlayingVisibility": "Nu speelt",
+  "nowPlayingVisibilityDescription": "Wie kan zien wat je nu afspeelt",
+  "remoteControlSharing": "Afstandsbediening",
+  "remoteControlSharingDescription": "Wie jouw afspelen kan bedienen vanaf hun apparaat",
+  "sharingScopeEveryone": "Iedereen",
+  "sharingScopePrivate": "Alleen ik",
+  "sharingScopeAllowlist": "Bepaalde mensen",
+  "sharingScopeSameAsNowPlaying": "Zelfde als nu speelt",
+  "sharingChoosePeople": "Kies mensen",
+  "sharingNoOtherUsers": "Er zijn nog geen andere gebruikers om mee te delen.",
+  "sharingCouldNotLoad": "Kon de deelinstellingen niet laden.",
+  "sharingCouldNotSave": "Kon de deelinstellingen niet opslaan",
+  "sessionSharingTitle": "Wie mag deze sessie bedienen",
+  "sessionSharingUseDefault": "Mijn standaard gebruiken",
+  "shareThisSession": "Deze sessie delen"
 }

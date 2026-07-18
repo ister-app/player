@@ -1143,6 +1143,7 @@ class Fragment$fragmentPlaybackSession {
     required this.playState,
     required this.nodeName,
     required this.updatedAt,
+    required this.controllable,
     this.$__typename = 'PlaybackSession',
   });
 
@@ -1160,6 +1161,7 @@ class Fragment$fragmentPlaybackSession {
     final l$playState = json['playState'];
     final l$nodeName = json['nodeName'];
     final l$updatedAt = json['updatedAt'];
+    final l$controllable = json['controllable'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentPlaybackSession(
       playQueueId: (l$playQueueId as String),
@@ -1177,6 +1179,7 @@ class Fragment$fragmentPlaybackSession {
       playState: fromJson$Enum$PlayState((l$playState as String)),
       nodeName: (l$nodeName as String),
       updatedAt: (l$updatedAt as String),
+      controllable: (l$controllable as bool),
       $__typename: (l$$__typename as String),
     );
   }
@@ -1206,6 +1209,8 @@ class Fragment$fragmentPlaybackSession {
   final String nodeName;
 
   final String updatedAt;
+
+  final bool controllable;
 
   final String $__typename;
 
@@ -1239,6 +1244,8 @@ class Fragment$fragmentPlaybackSession {
     _resultData['nodeName'] = l$nodeName;
     final l$updatedAt = updatedAt;
     _resultData['updatedAt'] = l$updatedAt;
+    final l$controllable = controllable;
+    _resultData['controllable'] = l$controllable;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -1259,6 +1266,7 @@ class Fragment$fragmentPlaybackSession {
     final l$playState = playState;
     final l$nodeName = nodeName;
     final l$updatedAt = updatedAt;
+    final l$controllable = controllable;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$playQueueId,
@@ -1274,6 +1282,7 @@ class Fragment$fragmentPlaybackSession {
       l$playState,
       l$nodeName,
       l$updatedAt,
+      l$controllable,
       l$$__typename,
     ]);
   }
@@ -1352,6 +1361,11 @@ class Fragment$fragmentPlaybackSession {
     if (l$updatedAt != lOther$updatedAt) {
       return false;
     }
+    final l$controllable = controllable;
+    final lOther$controllable = other.controllable;
+    if (l$controllable != lOther$controllable) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -1390,6 +1404,7 @@ abstract class CopyWith$Fragment$fragmentPlaybackSession<TRes> {
     Enum$PlayState? playState,
     String? nodeName,
     String? updatedAt,
+    bool? controllable,
     String? $__typename,
   });
 }
@@ -1418,6 +1433,7 @@ class _CopyWithImpl$Fragment$fragmentPlaybackSession<TRes>
     Object? playState = _undefined,
     Object? nodeName = _undefined,
     Object? updatedAt = _undefined,
+    Object? controllable = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentPlaybackSession(
@@ -1457,6 +1473,9 @@ class _CopyWithImpl$Fragment$fragmentPlaybackSession<TRes>
       updatedAt: updatedAt == _undefined || updatedAt == null
           ? _instance.updatedAt
           : (updatedAt as String),
+      controllable: controllable == _undefined || controllable == null
+          ? _instance.controllable
+          : (controllable as bool),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -1484,6 +1503,7 @@ class _CopyWithStubImpl$Fragment$fragmentPlaybackSession<TRes>
     Enum$PlayState? playState,
     String? nodeName,
     String? updatedAt,
+    bool? controllable,
     String? $__typename,
   }) => _res;
 }
@@ -1585,6 +1605,13 @@ const fragmentDefinitionfragmentPlaybackSession = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'updatedAt'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'controllable'),
         alias: null,
         arguments: [],
         directives: [],

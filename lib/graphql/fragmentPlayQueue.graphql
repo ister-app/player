@@ -4,6 +4,8 @@ fragment fragmentPlayQueue on PlayQueue {
     shuffle
     sourceType
     sourceExhausted
+    controlScopeOverride
+    controlAllowedUserIds
     playQueueItems {
         id
         position

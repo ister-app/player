@@ -15,6 +15,8 @@ class Fragment$fragmentPlayQueue {
     required this.shuffle,
     this.sourceType,
     required this.sourceExhausted,
+    this.controlScopeOverride,
+    required this.controlAllowedUserIds,
     this.playQueueItems,
     this.$__typename = 'PlayQueue',
   });
@@ -25,6 +27,8 @@ class Fragment$fragmentPlayQueue {
     final l$shuffle = json['shuffle'];
     final l$sourceType = json['sourceType'];
     final l$sourceExhausted = json['sourceExhausted'];
+    final l$controlScopeOverride = json['controlScopeOverride'];
+    final l$controlAllowedUserIds = json['controlAllowedUserIds'];
     final l$playQueueItems = json['playQueueItems'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentPlayQueue(
@@ -35,6 +39,14 @@ class Fragment$fragmentPlayQueue {
           ? null
           : fromJson$Enum$PlayQueueSourceType((l$sourceType as String)),
       sourceExhausted: (l$sourceExhausted as bool),
+      controlScopeOverride: l$controlScopeOverride == null
+          ? null
+          : fromJson$Enum$RemoteControlScope(
+              (l$controlScopeOverride as String),
+            ),
+      controlAllowedUserIds: (l$controlAllowedUserIds as List<dynamic>)
+          .map((e) => (e as String))
+          .toList(),
       playQueueItems: (l$playQueueItems as List<dynamic>?)
           ?.map(
             (e) => Fragment$fragmentPlayQueue$playQueueItems.fromJson(
@@ -56,6 +68,10 @@ class Fragment$fragmentPlayQueue {
 
   final bool sourceExhausted;
 
+  final Enum$RemoteControlScope? controlScopeOverride;
+
+  final List<String> controlAllowedUserIds;
+
   final List<Fragment$fragmentPlayQueue$playQueueItems>? playQueueItems;
 
   final String $__typename;
@@ -74,6 +90,14 @@ class Fragment$fragmentPlayQueue {
         : toJson$Enum$PlayQueueSourceType(l$sourceType);
     final l$sourceExhausted = sourceExhausted;
     _resultData['sourceExhausted'] = l$sourceExhausted;
+    final l$controlScopeOverride = controlScopeOverride;
+    _resultData['controlScopeOverride'] = l$controlScopeOverride == null
+        ? null
+        : toJson$Enum$RemoteControlScope(l$controlScopeOverride);
+    final l$controlAllowedUserIds = controlAllowedUserIds;
+    _resultData['controlAllowedUserIds'] = l$controlAllowedUserIds
+        .map((e) => e)
+        .toList();
     final l$playQueueItems = playQueueItems;
     _resultData['playQueueItems'] = l$playQueueItems
         ?.map((e) => e.toJson())
@@ -90,6 +114,8 @@ class Fragment$fragmentPlayQueue {
     final l$shuffle = shuffle;
     final l$sourceType = sourceType;
     final l$sourceExhausted = sourceExhausted;
+    final l$controlScopeOverride = controlScopeOverride;
+    final l$controlAllowedUserIds = controlAllowedUserIds;
     final l$playQueueItems = playQueueItems;
     final l$$__typename = $__typename;
     return Object.hashAll([
@@ -98,6 +124,8 @@ class Fragment$fragmentPlayQueue {
       l$shuffle,
       l$sourceType,
       l$sourceExhausted,
+      l$controlScopeOverride,
+      Object.hashAll(l$controlAllowedUserIds.map((v) => v)),
       l$playQueueItems == null
           ? null
           : Object.hashAll(l$playQueueItems.map((v) => v)),
@@ -138,6 +166,24 @@ class Fragment$fragmentPlayQueue {
     final lOther$sourceExhausted = other.sourceExhausted;
     if (l$sourceExhausted != lOther$sourceExhausted) {
       return false;
+    }
+    final l$controlScopeOverride = controlScopeOverride;
+    final lOther$controlScopeOverride = other.controlScopeOverride;
+    if (l$controlScopeOverride != lOther$controlScopeOverride) {
+      return false;
+    }
+    final l$controlAllowedUserIds = controlAllowedUserIds;
+    final lOther$controlAllowedUserIds = other.controlAllowedUserIds;
+    if (l$controlAllowedUserIds.length != lOther$controlAllowedUserIds.length) {
+      return false;
+    }
+    for (int i = 0; i < l$controlAllowedUserIds.length; i++) {
+      final l$controlAllowedUserIds$entry = l$controlAllowedUserIds[i];
+      final lOther$controlAllowedUserIds$entry =
+          lOther$controlAllowedUserIds[i];
+      if (l$controlAllowedUserIds$entry != lOther$controlAllowedUserIds$entry) {
+        return false;
+      }
     }
     final l$playQueueItems = playQueueItems;
     final lOther$playQueueItems = other.playQueueItems;
@@ -185,6 +231,8 @@ abstract class CopyWith$Fragment$fragmentPlayQueue<TRes> {
     bool? shuffle,
     Enum$PlayQueueSourceType? sourceType,
     bool? sourceExhausted,
+    Enum$RemoteControlScope? controlScopeOverride,
+    List<String>? controlAllowedUserIds,
     List<Fragment$fragmentPlayQueue$playQueueItems>? playQueueItems,
     String? $__typename,
   });
@@ -216,6 +264,8 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue<TRes>
     Object? shuffle = _undefined,
     Object? sourceType = _undefined,
     Object? sourceExhausted = _undefined,
+    Object? controlScopeOverride = _undefined,
+    Object? controlAllowedUserIds = _undefined,
     Object? playQueueItems = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
@@ -233,6 +283,13 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue<TRes>
       sourceExhausted: sourceExhausted == _undefined || sourceExhausted == null
           ? _instance.sourceExhausted
           : (sourceExhausted as bool),
+      controlScopeOverride: controlScopeOverride == _undefined
+          ? _instance.controlScopeOverride
+          : (controlScopeOverride as Enum$RemoteControlScope?),
+      controlAllowedUserIds:
+          controlAllowedUserIds == _undefined || controlAllowedUserIds == null
+          ? _instance.controlAllowedUserIds
+          : (controlAllowedUserIds as List<String>),
       playQueueItems: playQueueItems == _undefined
           ? _instance.playQueueItems
           : (playQueueItems
@@ -273,6 +330,8 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue<TRes>
     bool? shuffle,
     Enum$PlayQueueSourceType? sourceType,
     bool? sourceExhausted,
+    Enum$RemoteControlScope? controlScopeOverride,
+    List<String>? controlAllowedUserIds,
     List<Fragment$fragmentPlayQueue$playQueueItems>? playQueueItems,
     String? $__typename,
   }) => _res;
@@ -318,6 +377,20 @@ const fragmentDefinitionfragmentPlayQueue = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'sourceExhausted'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'controlScopeOverride'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'controlAllowedUserIds'),
         alias: null,
         arguments: [],
         directives: [],
