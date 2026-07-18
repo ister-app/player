@@ -23,8 +23,12 @@ class _ServerHomeOverviewPageState extends State<ServerHomeOverviewPage> {
   void initState() {
     super.initState();
     // Reset so a value left over from a previously open server's home page
-    // doesn't briefly select the wrong tab here.
-    tabNavigationNotifier.value = 0;
+    // doesn't select the wrong tab here. Post-frame: the shell above listens
+    // via ValueListenableBuilder, and notifying it while this page mounts
+    // mid-build throws "markNeedsBuild called during build".
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      tabNavigationNotifier.value = 0;
+    });
     tabNavigationNotifier.addListener(_onExternalTabChange);
   }
 

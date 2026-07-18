@@ -58,7 +58,11 @@ class _MoviePageState extends State<MoviePage> {
   @override
   void dispose() {
     if (_videoPageOpenCounted) {
-      MediaPlayerHandler.instance.videoPageOpen.value--;
+      // Post-frame for the same reason as initState: the listening mini player
+      // may be rebuilding (or unmounting) in the same locked-tree phase.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        MediaPlayerHandler.instance.videoPageOpen.value--;
+      });
     }
     super.dispose();
   }
