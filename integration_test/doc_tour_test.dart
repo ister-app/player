@@ -253,6 +253,27 @@ void main() {
       await pop(tester);
     }
 
+    // Admin / beheer screens — reachable because the tour boots with an admin
+    // token (see bootApp(admin: true)). AdminUserAccessRoute needs a real user
+    // id, so ask the server for one first.
+    final users = await gqlRaw('query { users { id name } }');
+    final user = (users['users'] as List).first as Map<String, dynamic>;
+    final adminStops = <(PageRouteInfo, String)>[
+      (AdminUsersRoute(), 'admin-users'),
+      (
+        AdminUserAccessRoute(
+            userId: user['id'] as String, userName: user['name'] as String),
+        'admin-user-access'
+      ),
+      (AdminLibrariesRoute(), 'admin-libraries'),
+    ];
+    for (final (route, name) in adminStops) {
+      await pushRoute(tester, route);
+      await tester.pump(const Duration(seconds: 2));
+      await shot(tester, name);
+      await pop(tester);
+    }
+
     // The movie last: HLS transcode + playback leaves the player hot, so no
     // other stop should follow it within a pass.
     //
@@ -315,7 +336,9 @@ void main() {
       binding.platformDispatcher.localeTestValue = Locale(locale);
       binding.platformDispatcher.localesTestValue = [Locale(locale)];
       if (locale == docLocales.first) {
-        await bootApp(tester);
+        // Admin token: the tour documents the beheer/admin screens, which are
+        // gated behind PermissionsService/AdminGate and hidden for plain users.
+        await bootApp(tester, admin: true);
       } else {
         await resetToServerOverview(tester);
       }

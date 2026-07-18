@@ -37,4 +37,5 @@ De activiteitenpagina toont wat er recent op de server gebeurde — wat er is af
 ## Verder lezen
 
 - Wat deze instellingen doen in de speler: [Afspelen](03-playback.md)
+- Gebruikers en bibliotheken beheren (beheerders): [Beheer](08-admin.md)
 - Platformspecifieke bijzonderheden: [Platforms](07-platforms.md)

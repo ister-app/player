@@ -37,4 +37,5 @@ The activity page shows recent happenings on the server — what has been played
 ## Where to next
 
 - How these settings affect the player: [Playback](03-playback.md)
+- Managing users and libraries (admins): [Administration](08-admin.md)
 - Platform-specific notes: [Platforms](07-platforms.md)

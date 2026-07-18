@@ -73,8 +73,9 @@ bool _appBooted = false;
 Future<void> bootApp(
   WidgetTester tester, {
   bool seedServer = true,
+  bool admin = false,
 }) async {
-  LoginManager.testTokenProvider = (_) => mintToken();
+  LoginManager.testTokenProvider = (_) => mintToken(admin: admin);
   final prefs = SharedPreferencesAsync();
   await prefs.remove('currentServer');
   if (seedServer) {
