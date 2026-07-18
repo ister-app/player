@@ -466,10 +466,28 @@ jobs:
           # and the tag one all-or-nothing push. Without it, a commit landing on main
           # between checkout and push left the tag behind while the branch push was
           # rejected — an orphaned vX.Y.Z pointing at a release commit main never got
-          # (this happened with v1.2.1). Atomically failing both lets a re-run or the
-          # next night redo the release cleanly from the fresh main.
+          # (this happened with v1.2.1).
           git tag -a "v${VERSION}" -m "v${VERSION}"
-          git push --atomic origin HEAD:main "refs/tags/v${VERSION}"
+
+          # A commit racing onto main between checkout and push must not sink the
+          # release: merge the moved main *under* the release commit and retry. The
+          # racer stays out of the tagged content (the binaries were built from this
+          # checkout), the tag stays reachable from main for `git describe`, and the
+          # racer is picked up by the next release — the version-check greps use
+          # --no-merges and skip chore(release) subjects, so the merge is invisible
+          # to them. A merge conflict (someone hand-edited pubspec/CHANGELOG/pins
+          # mid-release) still fails the job, as it should.
+          pushed=false
+          for attempt in 1 2 3; do
+            if git push --atomic origin HEAD:main "refs/tags/v${VERSION}"; then
+              pushed=true
+              break
+            fi
+            echo "push rejected (attempt $attempt): main moved; merging it under the release commit"
+            git fetch origin main
+            git merge --no-edit -m "chore(release): absorb commits that landed during v${VERSION}" origin/main
+          done
+          [ "$pushed" = true ] || { echo "::error::main kept moving; could not push the release"; exit 1; }
 
       - name: Publish the GitHub Release
         env:
