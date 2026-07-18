@@ -462,12 +462,14 @@ jobs:
           git add pubspec.yaml CHANGELOG.md ci/e2e-pins.env
           git commit -m "chore(release): v${VERSION}"
 
-          # Annotated on purpose: --follow-tags below pushes annotated tags only, and a
-          # lightweight one would silently stay behind on the runner — main would carry the
-          # release commit while the tag, the GitHub Release, and the next night's
-          # `git describe` all went missing.
+          # Annotated to match what --follow-tags used to push; --atomic makes the branch
+          # and the tag one all-or-nothing push. Without it, a commit landing on main
+          # between checkout and push left the tag behind while the branch push was
+          # rejected — an orphaned vX.Y.Z pointing at a release commit main never got
+          # (this happened with v1.2.1). Atomically failing both lets a re-run or the
+          # next night redo the release cleanly from the fresh main.
           git tag -a "v${VERSION}" -m "v${VERSION}"
-          git push origin HEAD:main --follow-tags
+          git push --atomic origin HEAD:main "refs/tags/v${VERSION}"
 
       - name: Publish the GitHub Release
         env:
