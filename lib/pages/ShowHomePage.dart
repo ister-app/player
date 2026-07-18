@@ -17,6 +17,7 @@ import '../components/MovieScroll.dart';
 import '../components/TvShowScroll.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/LoggerService.dart';
+import 'package:player/utils/PermissionsService.dart';
 
 @RoutePage()
 class ShowHomePage extends StatefulWidget {
@@ -50,9 +51,16 @@ class _ShowHomePageState extends State<ShowHomePage> {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
 
+  bool _showAdminActions = true;
+
   @override
   void initState() {
     super.initState();
+    PermissionsService().adminStatusFor(widget.serverName).then((status) {
+      if (mounted && status == AdminStatus.notAdmin) {
+        setState(() => _showAdminActions = false);
+      }
+    });
     _loadSavedLibrary();
   }
 
@@ -197,7 +205,8 @@ class _ShowHomePageState extends State<ShowHomePage> {
                   SearchRoute(libraryId: _selectedLibraryId),
                 ),
               ),
-              if (_selectedLibraryType == Enum$LibraryType.PODCAST)
+              if (_selectedLibraryType == Enum$LibraryType.PODCAST &&
+                  _showAdminActions)
                 IconButton(
                   icon: const Icon(Icons.add),
                   tooltip: AppLocalizations.of(context)!.addPodcast,

@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:player/utils/PermissionsService.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/downloadPodcastEpisode.graphql.dart';
 import 'package:player/graphql/fragmentPodcast.graphql.dart';
@@ -42,6 +43,18 @@ class PodcastPage extends StatefulWidget {
 
 class _PodcastPageState extends State<PodcastPage> {
   static const int _pageSize = 25;
+
+  bool _showAdminActions = true;
+
+  @override
+  void initState() {
+    super.initState();
+    PermissionsService().adminStatusFor(widget.serverName).then((status) {
+      if (mounted && status == AdminStatus.notAdmin) {
+        setState(() => _showAdminActions = false);
+      }
+    });
+  }
 
   Fragment$fragmentPodcast? _podcast;
   final List<Fragment$fragmentPodcastEpisode> _episodes = [];
@@ -226,13 +239,14 @@ class _PodcastPageState extends State<PodcastPage> {
                         context, loc.newestFirst, Enum$SortingOrder.DESCENDING),
                     _orderMenuItem(
                         context, loc.oldestFirst, Enum$SortingOrder.ASCENDING),
-                    MenuItemButton(
-                      onPressed: () => _unsubscribe(context),
-                      child: ListTile(
-                        leading: const Icon(Icons.unsubscribe),
-                        title: Text(loc.unsubscribe),
+                    if (_showAdminActions)
+                      MenuItemButton(
+                        onPressed: () => _unsubscribe(context),
+                        child: ListTile(
+                          leading: const Icon(Icons.unsubscribe),
+                          title: Text(loc.unsubscribe),
+                        ),
                       ),
-                    ),
                   ],
                   builder: (_, MenuController controller, Widget? child) {
                     return IconButton(
