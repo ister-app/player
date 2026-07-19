@@ -4,7 +4,7 @@ Ister is er niet alleen om te kijken en te luisteren — de app heeft een volwaa
 
 ## De epub-lezer
 
-Open een e-boek vanaf zijn [boekpagina](02-browsing.md) en het wordt direct in de app weergegeven: rustige typografie, hoofdstuk voor hoofdstuk. Veeg of gebruik de pijltjestoetsen om te bladeren, en open de inhoudsopgave om naar een willekeurig hoofdstuk te springen. Tik één keer om de bediening te tonen of te verbergen.
+Open een e-boek vanaf zijn [boekpagina](03-browsing.md) en het wordt direct in de app weergegeven: rustige typografie, hoofdstuk voor hoofdstuk. Veeg of gebruik de pijltjestoetsen om te bladeren, en open de inhoudsopgave om naar een willekeurig hoofdstuk te springen. Tik één keer om de bediening te tonen of te verbergen.
 
 ![De epub-lezer](../images/nl/epub-reader.png)
 
@@ -28,5 +28,5 @@ De lezer past zich aan de manier waarop de strip gelezen hoort te worden. Zet de
 
 ## Verder lezen
 
-- Liever het luisterboek: [Afspelen](03-playback.md)
-- Voorkeuren rond de lezer: [Instellingen](06-settings.md)
+- Liever het luisterboek: [Afspelen](04-playback.md)
+- Voorkeuren rond de lezer: [Instellingen](07-settings.md)

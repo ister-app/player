@@ -24,7 +24,7 @@ Omdat deze instellingen op de server staan, reizen ze met je mee tussen apparate
 
 ## Delen & privacy
 
-Bepaal wie je afspelen mag zien en sturen — de andere kant van [Feestmodus](05-party-mode.md):
+Bepaal wie je afspelen mag zien en sturen — de andere kant van [Feestmodus](06-party-mode.md):
 
 - **Nu speelt** — wie mag zien wat je op dit moment afspeelt: iedereen, alleen jij, of bepaalde mensen.
 - **Afstandsbediening** — wie je afspelen vanaf hun apparaat mag bedienen: iedereen, alleen jij, bepaalde mensen, of hetzelfde publiek als bij *Nu speelt*.
@@ -53,6 +53,6 @@ De pagina **Over & bronvermelding** vermeldt de externe bronnen — zoals levera
 
 ## Verder lezen
 
-- Wat deze instellingen doen in de speler: [Afspelen](03-playback.md)
-- Gebruikers en bibliotheken beheren (beheerders): [Beheer](08-admin.md)
-- Platformspecifieke bijzonderheden: [Platforms](07-platforms.md)
+- Wat deze instellingen doen in de speler: [Afspelen](04-playback.md)
+- Gebruikers en bibliotheken beheren (beheerders): [Beheer](09-admin.md)
+- Platformspecifieke bijzonderheden: [Platforms](08-platforms.md)

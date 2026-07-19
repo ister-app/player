@@ -30,5 +30,5 @@ De webversie draait in je browser tegen dezelfde servers — niets te installere
 
 ## Verder lezen
 
-- Terug naar het begin: [Aan de slag](00-getting-started.md)
-- De spelerfuncties die deze platforms delen: [Afspelen](03-playback.md)
+- Terug naar het begin: [Aan de slag](01-getting-started.md)
+- De spelerfuncties die deze platforms delen: [Afspelen](04-playback.md)

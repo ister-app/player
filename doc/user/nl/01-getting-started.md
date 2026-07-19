@@ -1,6 +1,6 @@
 # Aan de slag
 
-Ister is je eigen mediaserver, en met deze app kijk, luister en lees je eruit — op je telefoon, tv, desktop of in de browser. Dit hoofdstuk brengt je van een verse installatie naar je eerste startscherm.
+Ister is je eigen mediaserver, en met deze app kijk, luister en lees je eruit — op je telefoon, tv, desktop of in de browser. Heb je de app [geïnstalleerd](00-installation.md), dan brengt dit hoofdstuk je van een verse installatie naar je eerste startscherm.
 
 ## Een server toevoegen
 
@@ -20,10 +20,10 @@ Na het inloggen kom je op het startscherm van de server: waar je onlangs naar ke
 
 ![Het startscherm na het inloggen](../images/nl/home-dashboard.png)
 
-Je kunt zo veel servers toevoegen als je wilt; elke server houdt zijn eigen login en instellingen. Hoe je ertussen wisselt lees je in [Navigatie](01-navigation.md). Wil je een server verwijderen, tik dan op het prullenbakpictogram ernaast op het overzicht — daarmee wordt ook de bewaarde login vergeten.
+Je kunt zo veel servers toevoegen als je wilt; elke server houdt zijn eigen login en instellingen. Hoe je ertussen wisselt lees je in [Navigatie](02-navigation.md). Wil je een server verwijderen, tik dan op het prullenbakpictogram ernaast op het overzicht — daarmee wordt ook de bewaarde login vergeten.
 
 ## Verder lezen
 
-- Vind je weg in [Navigatie](01-navigation.md)
-- Verken je bibliotheken in [Bladeren](02-browsing.md)
-- Begin met kijken of luisteren in [Afspelen](03-playback.md)
+- Vind je weg in [Navigatie](02-navigation.md)
+- Verken je bibliotheken in [Bladeren](03-browsing.md)
+- Begin met kijken of luisteren in [Afspelen](04-playback.md)

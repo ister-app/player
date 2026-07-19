@@ -45,4 +45,4 @@ The server page also carries a **Management** section for admins, with the house
 
 ## Where to next
 
-- The rest of the server settings: [Settings](06-settings.md)
+- The rest of the server settings: [Settings](07-settings.md)

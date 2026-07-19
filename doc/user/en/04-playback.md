@@ -10,7 +10,7 @@ Movies and episodes stream over HLS, which adapts smoothly to your connection. T
 
 ### Subtitles and audio language
 
-If a video has multiple audio tracks or subtitles, pick them from the player controls. The app remembers your preferred spoken and subtitle languages (see [Settings](06-settings.md)) and selects them automatically when available.
+If a video has multiple audio tracks or subtitles, pick them from the player controls. The app remembers your preferred spoken and subtitle languages (see [Settings](07-settings.md)) and selects them automatically when available.
 
 ### Watch progress
 
@@ -18,7 +18,7 @@ Your position is synced to the server as you watch. Stop on your phone, continue
 
 ## Listening to music
 
-Playing a track or album opens the full music player: artwork, seek bar, and your play queue on its own tab. You can reorder what's coming up, shuffle, repeat (the whole queue or a single track), and skip. You can also rate the current track right from the player — see [Ratings](02-browsing.md#ratings).
+Playing a track or album opens the full music player: artwork, seek bar, and your play queue on its own tab. You can reorder what's coming up, shuffle, repeat (the whole queue or a single track), and skip. You can also rate the current track right from the player — see [Ratings](03-browsing.md#ratings).
 
 ![The full music player](../images/en/music-player.png)
 
@@ -30,10 +30,10 @@ Leave the full player and a mini player stays docked at the bottom of the screen
 
 ## Podcasts and audiobooks
 
-Long-form audio resumes exactly where you left off: start a podcast episode or audiobook chapter and the app jumps back to your last position — unless you already finished it, in which case it starts fresh. Audiobook chapters play in order, and for books with a matching ebook your listening position stays in sync with your [reading position](04-reading.md).
+Long-form audio resumes exactly where you left off: start a podcast episode or audiobook chapter and the app jumps back to your last position — unless you already finished it, in which case it starts fresh. Audiobook chapters play in order, and for books with a matching ebook your listening position stays in sync with your [reading position](05-reading.md).
 
 ## Where to next
 
-- Books and read-aloud: [Reading](04-reading.md)
-- Control another device: [Party mode](05-party-mode.md)
-- Language and quality preferences: [Settings](06-settings.md)
+- Books and read-aloud: [Reading](05-reading.md)
+- Control another device: [Party mode](06-party-mode.md)
+- Language and quality preferences: [Settings](07-settings.md)

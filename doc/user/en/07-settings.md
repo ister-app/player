@@ -24,7 +24,7 @@ Because these live on the server, they follow you across devices.
 
 ## Sharing & privacy
 
-Control who can see and steer your playback — the other side of [Party mode](05-party-mode.md):
+Control who can see and steer your playback — the other side of [Party mode](06-party-mode.md):
 
 - **Now playing** — who can see what you're currently playing: everyone, only you, or specific people.
 - **Remote control** — who can control your playback from their device: everyone, only you, specific people, or the same audience as *Now playing*.
@@ -53,6 +53,6 @@ The **About & data sources** page credits the external sources — such as metad
 
 ## Where to next
 
-- How these settings affect the player: [Playback](03-playback.md)
-- Managing users and libraries (admins): [Administration](08-admin.md)
-- Platform-specific notes: [Platforms](07-platforms.md)
+- How these settings affect the player: [Playback](04-playback.md)
+- Managing users and libraries (admins): [Administration](09-admin.md)
+- Platform-specific notes: [Platforms](08-platforms.md)

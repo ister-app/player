@@ -10,7 +10,7 @@ Het overzicht **nu aan het spelen** van de server toont elke actieve afspeelsess
 
 ## Een ander apparaat op afstand bedienen
 
-Kies een sessie uit het overzicht en je krijgt er een volledige afstandsbediening voor: dezelfde spelerweergave die je kent uit [Afspelen](03-playback.md), maar dan sturend op het andere apparaat. Afspelen, pauzeren, spoelen, door de wachtrij springen — de muziek blijft klinken uit het apparaat waar hij speelde, terwijl jij stuurt vanaf je telefoon.
+Kies een sessie uit het overzicht en je krijgt er een volledige afstandsbediening voor: dezelfde spelerweergave die je kent uit [Afspelen](04-playback.md), maar dan sturend op het andere apparaat. Afspelen, pauzeren, spoelen, door de wachtrij springen — de muziek blijft klinken uit het apparaat waar hij speelde, terwijl jij stuurt vanaf je telefoon.
 
 Daar dankt de feestmodus zijn naam aan: hang één apparaat aan de speakers, en iedereen op het feest kan vanaf de eigen telefoon het volgende nummer in de wachtrij zetten.
 
@@ -20,12 +20,12 @@ Je hoeft een sessie niet over te nemen om er iets aan toe te voegen. Gebruik van
 
 ## Delen & privacy
 
-Anderen zien en bedienen je afspelen alleen als jij dat toestaat. Standaard volgen je sessies je accountbrede instellingen voor **Delen & privacy** — wie mag zien wat je afspeelt, en wie de afstandsbediening mag overnemen — die je één keer instelt in [Instellingen](06-settings.md#delen--privacy).
+Anderen zien en bedienen je afspelen alleen als jij dat toestaat. Standaard volgen je sessies je accountbrede instellingen voor **Delen & privacy** — wie mag zien wat je afspeelt, en wie de afstandsbediening mag overnemen — die je één keer instelt in [Instellingen](07-settings.md#delen--privacy).
 
 Je kunt het ook per sessie afwijken: gebruik in de speler **Deze sessie delen** om, alleen voor deze ene sessie, te bepalen wie hem mag bedienen — je standaard, alleen jij, iedereen of bepaalde mensen.
 
 ## Verder lezen
 
-- De speler zelf: [Afspelen](03-playback.md)
-- Instellen wie je afspelen mag zien en bedienen: [Instellingen](06-settings.md#delen--privacy)
-- Zien wat er op de server gebeurde: [Instellingen](06-settings.md)
+- De speler zelf: [Afspelen](04-playback.md)
+- Instellen wie je afspelen mag zien en bedienen: [Instellingen](07-settings.md#delen--privacy)
+- Zien wat er op de server gebeurde: [Instellingen](07-settings.md)

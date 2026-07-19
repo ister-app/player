@@ -20,19 +20,19 @@ Movies get a detail page with the poster, description, duration and a play butto
 
 ## Music
 
-Albums list their tracks in order. Play a single track, the whole album, or add to the queue — more on queues in [Playback](03-playback.md).
+Albums list their tracks in order. Play a single track, the whole album, or add to the queue — more on queues in [Playback](04-playback.md).
 
 ![An album page with its track list](../images/en/album.png)
 
 ## Podcasts
 
-Podcasts list their episodes newest-first — you can flip the order to oldest-first, and the choice is saved. Tap an episode to download it; once it's on the server it plays like anything else, and each episode remembers how far you've listened, so a half-finished episode picks up where you stopped. (Adding and removing whole podcasts is an admin task — see [Administration](08-admin.md).)
+Podcasts list their episodes newest-first — you can flip the order to oldest-first, and the choice is saved. Tap an episode to download it; once it's on the server it plays like anything else, and each episode remembers how far you've listened, so a half-finished episode picks up where you stopped. (Adding and removing whole podcasts is an admin task — see [Administration](09-admin.md).)
 
 ![A podcast with its episode list](../images/en/podcast.png)
 
 ## Books and series
 
-Books — audiobooks, ebooks or both — have their own detail page. If a book is part of a series you can jump to the other volumes. From here you start [reading](04-reading.md) or listening; your position is shared between the two.
+Books — audiobooks, ebooks or both — have their own detail page. If a book is part of a series you can jump to the other volumes. From here you start [reading](05-reading.md) or listening; your position is shared between the two.
 
 ![A book's detail page](../images/en/book-detail.png)
 
@@ -52,5 +52,5 @@ Search looks across everything at once — movies, shows, episodes, people, albu
 
 ## Where to next
 
-- Watch or listen to what you found: [Playback](03-playback.md)
-- Open a book: [Reading](04-reading.md)
+- Watch or listen to what you found: [Playback](04-playback.md)
+- Open a book: [Reading](05-reading.md)

@@ -4,7 +4,7 @@ Ister isn't just for watching and listening — it has a full built-in reader fo
 
 ## The epub reader
 
-Open an ebook from its [book page](02-browsing.md) and it renders right in the app: clean typography, chapter by chapter. Swipe or use the arrow keys to turn pages, and open the table of contents to jump to any chapter. Tap once to show or hide the reader's controls.
+Open an ebook from its [book page](03-browsing.md) and it renders right in the app: clean typography, chapter by chapter. Swipe or use the arrow keys to turn pages, and open the table of contents to jump to any chapter. Tap once to show or hide the reader's controls.
 
 ![The epub reader](../images/en/epub-reader.png)
 
@@ -28,5 +28,5 @@ The reader adapts to how the comic is meant to be read. Set the **reading direct
 
 ## Where to next
 
-- Listening to the audiobook instead: [Playback](03-playback.md)
-- Reader-related preferences: [Settings](06-settings.md)
+- Listening to the audiobook instead: [Playback](04-playback.md)
+- Reader-related preferences: [Settings](07-settings.md)

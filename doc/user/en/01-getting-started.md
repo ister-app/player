@@ -1,6 +1,6 @@
 # Getting started
 
-Ister is your personal media server, and this app is how you watch, listen and read from it — on your phone, TV, desktop or in the browser. This chapter gets you from a fresh install to your first home screen.
+Ister is your personal media server, and this app is how you watch, listen and read from it — on your phone, TV, desktop or in the browser. With the app [installed](00-installation.md), this chapter gets you from a fresh install to your first home screen.
 
 ## Adding a server
 
@@ -20,10 +20,10 @@ After signing in you arrive at the server's home dashboard: what you were recent
 
 ![The home dashboard after signing in](../images/en/home-dashboard.png)
 
-You can add as many servers as you like; each keeps its own login and settings. Switching between them is covered in [Navigation](01-navigation.md). To remove a server, tap the trash icon next to it on the overview — that also forgets its stored sign-in.
+You can add as many servers as you like; each keeps its own login and settings. Switching between them is covered in [Navigation](02-navigation.md). To remove a server, tap the trash icon next to it on the overview — that also forgets its stored sign-in.
 
 ## Where to next
 
-- Find your way around in [Navigation](01-navigation.md)
-- Explore your libraries in [Browsing](02-browsing.md)
-- Start watching or listening in [Playback](03-playback.md)
+- Find your way around in [Navigation](02-navigation.md)
+- Explore your libraries in [Browsing](03-browsing.md)
+- Start watching or listening in [Playback](04-playback.md)

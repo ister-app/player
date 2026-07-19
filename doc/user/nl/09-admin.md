@@ -45,4 +45,4 @@ De serverpagina bevat voor beheerders ook een sectie **Beheer** met de onderhoud
 
 ## Verder lezen
 
-- De overige serverinstellingen: [Instellingen](06-settings.md)
+- De overige serverinstellingen: [Instellingen](07-settings.md)

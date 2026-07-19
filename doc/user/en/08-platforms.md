@@ -30,5 +30,5 @@ The web version runs in your browser against the same servers — nothing to ins
 
 ## Where to next
 
-- Back to the start: [Getting started](00-getting-started.md)
-- The player features these platforms share: [Playback](03-playback.md)
+- Back to the start: [Getting started](01-getting-started.md)
+- The player features these platforms share: [Playback](04-playback.md)

@@ -20,19 +20,19 @@ Films hebben een detailpagina met poster, beschrijving, speelduur en een afspeel
 
 ## Muziek
 
-Albums tonen hun nummers op volgorde. Speel één nummer, het hele album, of zet iets in de wachtrij — meer over wachtrijen in [Afspelen](03-playback.md).
+Albums tonen hun nummers op volgorde. Speel één nummer, het hele album, of zet iets in de wachtrij — meer over wachtrijen in [Afspelen](04-playback.md).
 
 ![Een albumpagina met de tracklijst](../images/nl/album.png)
 
 ## Podcasts
 
-Podcasts tonen hun afleveringen met de nieuwste bovenaan — je kunt de volgorde omdraaien naar oudste eerst, en die keuze wordt bewaard. Tik op een aflevering om hem te downloaden; zodra hij op de server staat speelt hij zoals al het andere, en elke aflevering onthoudt hoe ver je bent, dus een half beluisterde aflevering gaat verder waar je stopte. (Hele podcasts toevoegen en verwijderen is een beheertaak — zie [Beheer](08-admin.md).)
+Podcasts tonen hun afleveringen met de nieuwste bovenaan — je kunt de volgorde omdraaien naar oudste eerst, en die keuze wordt bewaard. Tik op een aflevering om hem te downloaden; zodra hij op de server staat speelt hij zoals al het andere, en elke aflevering onthoudt hoe ver je bent, dus een half beluisterde aflevering gaat verder waar je stopte. (Hele podcasts toevoegen en verwijderen is een beheertaak — zie [Beheer](09-admin.md).)
 
 ![Een podcast met de afleveringenlijst](../images/nl/podcast.png)
 
 ## Boeken en boekenreeksen
 
-Boeken — luisterboeken, e-boeken of allebei — hebben hun eigen detailpagina. Hoort een boek bij een reeks, dan spring je zo naar de andere delen. Vanaf hier begin je met [lezen](04-reading.md) of luisteren; je positie wordt tussen beide gedeeld.
+Boeken — luisterboeken, e-boeken of allebei — hebben hun eigen detailpagina. Hoort een boek bij een reeks, dan spring je zo naar de andere delen. Vanaf hier begin je met [lezen](05-reading.md) of luisteren; je positie wordt tussen beide gedeeld.
 
 ![De detailpagina van een boek](../images/nl/book-detail.png)
 
@@ -52,5 +52,5 @@ Zoeken kijkt overal tegelijk — films, series, afleveringen, personen, albums e
 
 ## Verder lezen
 
-- Kijken of luisteren naar wat je vond: [Afspelen](03-playback.md)
-- Een boek openen: [Lezen](04-reading.md)
+- Kijken of luisteren naar wat je vond: [Afspelen](04-playback.md)
+- Een boek openen: [Lezen](05-reading.md)

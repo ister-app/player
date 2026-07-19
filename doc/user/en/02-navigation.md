@@ -22,6 +22,6 @@ Playback keeps going while you switch: you can browse one server while music fro
 
 ## Where to next
 
-- What's in each library: [Browsing](02-browsing.md)
-- The player itself: [Playback](03-playback.md)
-- Your preferences: [Settings](06-settings.md)
+- What's in each library: [Browsing](03-browsing.md)
+- The player itself: [Playback](04-playback.md)
+- Your preferences: [Settings](07-settings.md)

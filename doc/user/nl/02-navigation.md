@@ -22,6 +22,6 @@ Het afspelen loopt gewoon door terwijl je wisselt: je kunt op de ene server blad
 
 ## Verder lezen
 
-- Wat er in elke bibliotheek zit: [Bladeren](02-browsing.md)
-- De speler zelf: [Afspelen](03-playback.md)
-- Je voorkeuren: [Instellingen](06-settings.md)
+- Wat er in elke bibliotheek zit: [Bladeren](03-browsing.md)
+- De speler zelf: [Afspelen](04-playback.md)
+- Je voorkeuren: [Instellingen](07-settings.md)
