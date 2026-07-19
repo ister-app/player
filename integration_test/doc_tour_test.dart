@@ -264,7 +264,10 @@ void main() {
       (AdminUsersRoute(), 'admin-users'),
       (
         AdminUserAccessRoute(
-            userId: user['id'] as String, userName: user['name'] as String),
+            userId: user['id'] as String,
+            // name is nullable server-side (e.g. a service account); the admin
+            // UI falls back to the id, so mirror that here.
+            userName: (user['name'] ?? user['id']) as String),
         'admin-user-access'
       ),
       (AdminLibrariesRoute(), 'admin-libraries'),
