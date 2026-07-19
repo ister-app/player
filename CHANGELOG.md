@@ -1,5 +1,47 @@
 # Changelog
 
+## player v1.4.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.4.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat: sharing & privacy controls for now-playing and remote control ([`ab42f50`](https://github.com/ister-app/player/commit/ab42f50))
+- feat: gate admin actions and add library-access management UI ([`06fba69`](https://github.com/ister-app/player/commit/06fba69))
+- feat: prefer local artwork over scraped provider images ([`8f0a8a9`](https://github.com/ister-app/player/commit/8f0a8a9))
+- feat: apply forest logo palette to launcher/web icons and app theme ([`b133164`](https://github.com/ister-app/player/commit/b133164))
+- feat: show metadata and image source attribution ([`26bca4e`](https://github.com/ister-app/player/commit/26bca4e))
+
+### Fixes
+
+- fix: tolerate null user name in doc-tour admin stop ([`9e4eaa3`](https://github.com/ister-app/player/commit/9e4eaa3))
+- fix: hide podcast subscribe and unsubscribe for non-admins ([`81563bd`](https://github.com/ister-app/player/commit/81563bd))
+
+### Other
+
+- ci: pin the e2e server to the 2.2.0 release ([`6b5caa7`](https://github.com/ister-app/player/commit/6b5caa7))
+- ci: let the release gate accept a chart commit sha pin ([`f3d9064`](https://github.com/ister-app/player/commit/f3d9064))
+- ci: re-pin chart to the admin-aware e2e fixture ([`bada546`](https://github.com/ister-app/player/commit/bada546))
+- docs: cover ratings, sharing/privacy, reader & comic options and more ([`01ebc25`](https://github.com/ister-app/player/commit/01ebc25))
+- ci: re-pin chart to the reachable fixture-aware mock commit ([`70e199c`](https://github.com/ister-app/player/commit/70e199c))
+- docs: document admin screens and capture them in the doc tour ([`cbb93bb`](https://github.com/ister-app/player/commit/cbb93bb))
+- ci: pin the fixture-aware chart mock and server 2.1.2-snapshot ([`109b533`](https://github.com/ister-app/player/commit/109b533))
+- chore: recolor the app icon greens to a lime/olive palette ([`451ef24`](https://github.com/ister-app/player/commit/451ef24))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.4.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.3.0...v1.4.0
+
 ## player v1.3.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
