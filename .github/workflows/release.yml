@@ -75,18 +75,24 @@ jobs:
           echo "release=true" >> "$GITHUB_OUTPUT"
           echo "::notice::$sha is green; releasing (previous tag: ${prev:-none})."
 
-      # A release must be replayable: the e2e pins have to be hard (a chart release tag, a
-      # testdata commit) and the server version they resolve to must exist as a *release*
-      # image — a -SNAPSHOT tag is mutable and is stripped first. If the stripped version
-      # was never released, this fails loudly: release the server first, then the player.
+      # A release must be replayable: the e2e pins have to be hard (a chart release tag or a
+      # full chart commit sha, a testdata commit) and the server version they resolve to must
+      # exist as a *release* image — a -SNAPSHOT tag is mutable and is stripped first. If the
+      # stripped version was never released, this fails loudly: release the server first, then
+      # the player.
+      #
+      # A commit sha is accepted, not just a vX.Y.Z tag: the chart's own e2e fixtures often
+      # depend on an unreleased player, so the two repos would otherwise deadlock — neither
+      # can cut the release the other's release gate demands. A full 40-char sha is immutable,
+      # so it stays just as replayable as a tag; only a moving branch ref is rejected.
       - name: Validate the e2e pins
         id: pins
         if: steps.check.outputs.release == 'true'
         run: |
           source ci/e2e-pins.env
 
-          [[ "$CHART_REF" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] \
-            || { echo "::error::CHART_REF ($CHART_REF) must be a chart release tag (vX.Y.Z) for a release."; exit 1; }
+          [[ "$CHART_REF" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ || "$CHART_REF" =~ ^[0-9a-f]{40}$ ]] \
+            || { echo "::error::CHART_REF ($CHART_REF) must be a chart release tag (vX.Y.Z) or a full commit sha for a release."; exit 1; }
           [[ "$TESTDATA_REF" =~ ^[0-9a-f]{40}$ ]] \
             || { echo "::error::TESTDATA_REF ($TESTDATA_REF) must be a full commit sha for a release."; exit 1; }
 

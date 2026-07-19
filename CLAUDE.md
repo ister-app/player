@@ -72,10 +72,13 @@ job in `release.yml` attaches the zip to the release. The fixture movies/episode
 audio track on purpose (testdata `create_mkv.sh`): without one, mpv's only clock is the video
 output and a GL-less player free-runs to EOF instantly.
 
-`ci/e2e-pins.env` pins the chart release tag, testdata commit and (optionally) server version the
-suite runs against; the `integration-e2e` job in `workflow.yml` reads it. The release gate refuses
-to release when the pins are soft (branch refs) or when the pinned server version — stripped of
-`-SNAPSHOT` — was never released; the release commit strips `-SNAPSHOT` from the pins.
+`ci/e2e-pins.env` pins the chart release tag (or chart commit sha), testdata commit and
+(optionally) server version the suite runs against; the `integration-e2e` job in `workflow.yml`
+reads it. The release gate refuses to release when the pins are soft (a moving branch ref — a
+`vX.Y.Z` tag or a full 40-char commit sha both pass, since a chart's e2e fixtures often depend on
+an unreleased player and the two repos would otherwise deadlock) or when the pinned server
+version — stripped of `-SNAPSHOT` — was never released; the release commit strips `-SNAPSHOT` from
+the pins.
 
 ## Architecture Overview
 
