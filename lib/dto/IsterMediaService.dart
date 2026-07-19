@@ -6,7 +6,12 @@ import 'package:player/dto/MediaItemId.dart';
 import 'package:player/graphql/albumById.graphql.dart';
 import 'package:player/graphql/albumsQuery.graphql.dart';
 import 'package:player/graphql/artistsQuery.graphql.dart';
+import 'package:player/graphql/bookById.graphql.dart';
+import 'package:player/graphql/booksQuery.graphql.dart';
 import 'package:player/graphql/episodeById.graphql.dart';
+import 'package:player/graphql/podcastById.graphql.dart';
+import 'package:player/graphql/podcastEpisodesQuery.graphql.dart';
+import 'package:player/graphql/podcastsQuery.graphql.dart';
 import 'package:player/graphql/fragmentAlbum.graphql.dart';
 import 'package:player/graphql/fragmentEpisode.graphql.dart';
 import 'package:player/graphql/libraries.graphql.dart';
@@ -26,16 +31,35 @@ import '../utils/MetadataUtil.dart';
 import '../utils/WellKnownService.dart';
 
 /// Media lookups for the audio-service browse tree (Android Auto). The tree
-/// only exposes music; episodes/movies are still resolvable by id for
-/// playFromMediaId, but are not browsable.
+/// exposes music, audiobooks and podcasts; movies and TV episodes are still
+/// resolvable by id for playFromMediaId, but are not browsable.
 ///
 /// Browse node ids are [MediaItemId] strings. `list` nodes use structured ids:
-/// - `libraries`           → every music library on every configured server
-/// - `library:<libraryId>` → the categories of one library (persists it as
-///                           the default Android Auto library)
-/// - `albums:<libraryId>`  → all albums in a library
-/// - `artists:<libraryId>` → all artists in a library
+/// - `libraries`            → every audio library (music/book/podcast) on every
+///                            configured server
+/// - `library:<libraryId>`  → the categories of one MUSIC library (persists it
+///                            as the default Android Auto library)
+/// - `albums:<libraryId>`   → all albums in a music library
+/// - `artists:<libraryId>`  → all artists in a music library
+/// - `books:<libraryId>`    → all audiobooks in a BOOK library
+/// - `podcasts:<libraryId>` → all podcasts in a PODCAST library
+///
+/// Composite leaf ids carry the two ids their play queue needs, joined by `~`:
+/// - `chapter`        id `bookId~chapterId`      → BOOK play queue
+/// - `podcastEpisode` id `podcastId~episodeId`   → PODCAST play queue
 class IsterMediaService {
+  /// Separator inside a composite leaf id (`bookId~chapterId`). A `~` never
+  /// appears in the server's UUIDs, and [MediaItemId] only splits on `;`.
+  static const String compositeIdSeparator = '~';
+
+  /// Audio library types the car can browse and play. Movies, shows and comics
+  /// are deliberately excluded — they are not audio.
+  static const Set<Enum$LibraryType> browsableLibraryTypes = {
+    Enum$LibraryType.MUSIC,
+    Enum$LibraryType.BOOK,
+    Enum$LibraryType.PODCAST,
+  };
+
   static const int pageSize = 100;
 
   /// Upper bound on items returned for one browse node. Android Auto lists
@@ -77,16 +101,24 @@ class IsterMediaService {
         getTracksForAlbum(mediaItemId.serverName, mediaItemId.id),
       IsterMediaTypes.artist =>
         getAlbumsForArtist(mediaItemId.serverName, mediaItemId.id),
+      IsterMediaTypes.book =>
+        getChaptersForBook(mediaItemId.serverName, mediaItemId.id),
+      IsterMediaTypes.podcast =>
+        getEpisodesForPodcast(mediaItemId.serverName, mediaItemId.id),
+      IsterMediaTypes.chapter => List.empty(),
+      IsterMediaTypes.podcastEpisode => List.empty(),
     };
   }
 
   Future<List<IsterMediaItem>> getList(MediaItemId mediaItemId) async {
     final id = mediaItemId.id;
     if (id == "libraries") {
-      return getMusicLibraries();
+      return getBrowsableLibraries();
     } else if (id.startsWith("library:")) {
       final libraryId = id.substring("library:".length);
-      // Browsing into a library makes it the default the car opens into.
+      // Browsing into a MUSIC library makes it the default the car opens into.
+      // Book/podcast libraries deliberately do not touch the default, so the
+      // music-centric root stays stable.
       await AutoPreferences.setDefaultLibrary(
           mediaItemId.serverName, libraryId);
       return getLibraryCategories(mediaItemId.serverName, libraryId);
@@ -96,16 +128,21 @@ class IsterMediaService {
     } else if (id.startsWith("artists:")) {
       return getArtists(
           mediaItemId.serverName, id.substring("artists:".length));
+    } else if (id.startsWith("books:")) {
+      return getBooks(mediaItemId.serverName, id.substring("books:".length));
+    } else if (id.startsWith("podcasts:")) {
+      return getPodcasts(
+          mediaItemId.serverName, id.substring("podcasts:".length));
     }
     LoggerService().logger.w(
         'getList: unsupported list type "$id" for ${mediaItemId.serverName}');
     return List.empty();
   }
 
-  /// Every MUSIC library on every configured server. Servers that are
-  /// unreachable or not logged in are skipped so one dead server cannot
-  /// empty the whole picker.
-  Future<List<IsterMediaItem>> getMusicLibraries() async {
+  /// Every browsable audio library (music, audiobooks, podcasts) on every
+  /// configured server. Servers that are unreachable or not logged in are
+  /// skipped so one dead server cannot empty the whole picker.
+  Future<List<IsterMediaItem>> getBrowsableLibraries() async {
     final servers = await WellKnownService.getServers();
     final multiServer = servers.length > 1;
     // Query every server concurrently and independently. A slow or unreachable
@@ -113,14 +150,14 @@ class IsterMediaService {
     // single dead server can no longer hang the "switch library" node forever.
     final perServer = await Future.wait(servers.map((server) async {
       try {
-        final libraries =
-            await getMusicLibrariesForServer(server).timeout(perServerTimeout);
+        final libraries = await getBrowsableLibrariesForServer(server)
+            .timeout(perServerTimeout);
         final serverLabel = multiServer
             ? WellKnownService.getCached(server)?.name ?? server
             : null;
         return libraries
             .map((library) => IsterMediaItem(
-                  id: "library:${library.id}",
+                  id: _libraryNodeId(library),
                   serverName: server,
                   isterMediaType: IsterMediaTypes.list,
                   title: serverLabel != null
@@ -129,15 +166,36 @@ class IsterMediaService {
                 ))
             .toList();
       } catch (e) {
-        LoggerService().logger.w('getMusicLibraries: skipping $server: $e');
+        LoggerService().logger.w('getBrowsableLibraries: skipping $server: $e');
         return <IsterMediaItem>[];
       }
     }));
     return perServer.expand((libraries) => libraries).toList();
   }
 
+  /// The browse-node id for a library, encoding its type so [getList] knows
+  /// how to open it (music has Albums/Artists categories; book and podcast
+  /// libraries list their content directly).
+  static String _libraryNodeId(Query$libraries$libraries library) {
+    return switch (library.type) {
+      Enum$LibraryType.BOOK => "books:${library.id}",
+      Enum$LibraryType.PODCAST => "podcasts:${library.id}",
+      _ => "library:${library.id}",
+    };
+  }
+
+  Future<List<Query$libraries$libraries>> getBrowsableLibrariesForServer(
+      String serverName) async {
+    return _librariesForServer(serverName, browsableLibraryTypes);
+  }
+
   Future<List<Query$libraries$libraries>> getMusicLibrariesForServer(
       String serverName) async {
+    return _librariesForServer(serverName, const {Enum$LibraryType.MUSIC});
+  }
+
+  Future<List<Query$libraries$libraries>> _librariesForServer(
+      String serverName, Set<Enum$LibraryType> types) async {
     final client = await getClient(serverName);
     final result = await client.query(QueryOptions(
       document: documentNodeQuerylibraries,
@@ -148,7 +206,7 @@ class IsterMediaService {
     }
     final libraries = Query$libraries.fromJson(result.data!).libraries ?? [];
     return libraries
-        .where((library) => library.type == Enum$LibraryType.MUSIC)
+        .where((library) => types.contains(library.type))
         .toList();
   }
 
@@ -266,6 +324,207 @@ class IsterMediaService {
   Future<List<IsterMediaItem>> getAlbumsForArtist(
       String serverName, String artistId) {
     return getAlbums(serverName, artistId: artistId);
+  }
+
+  /// All audiobooks in a BOOK library. Each is browsable into its chapters.
+  Future<List<IsterMediaItem>> getBooks(
+      String serverName, String libraryId) async {
+    final client = await getClient(serverName);
+    await StreamTokenService.ensureToken(serverName);
+
+    final items = <IsterMediaItem>[];
+    var page = 0;
+    while (true) {
+      final result = await client.query(QueryOptions(
+        document: documentNodeQuerybooks,
+        variables: {
+          'page': page,
+          'size': pageSize,
+          'sorting': Enum$SortingEnum.NAME,
+          'sortingOrder': Enum$SortingOrder.ASCENDING,
+          'libraryId': libraryId,
+        },
+      ));
+      if (result.hasException || result.data == null) {
+        LoggerService().logger.e(result.exception);
+        break;
+      }
+      final bookPage = Query$books.fromJson(result.data!).books;
+      if (bookPage == null) break;
+
+      items.addAll(bookPage.content.map((book) => IsterMediaItem(
+            id: book.id,
+            serverName: serverName,
+            isterMediaType: IsterMediaTypes.book,
+            title: MetadataUtil.getTitle(book.metadata) ?? book.title,
+            artist: book.author?.name,
+            artUri: coverArtUri(book.images, serverName),
+          )));
+
+      page++;
+      if (page >= bookPage.totalPages) break;
+      if (items.length >= maxItemsPerNode) {
+        LoggerService().logger.w(
+            'getBooks: capped at ${items.length} of ${bookPage.totalElements} books for $serverName');
+        break;
+      }
+    }
+    return items;
+  }
+
+  /// All podcasts in a PODCAST library. Each is browsable into its episodes.
+  Future<List<IsterMediaItem>> getPodcasts(
+      String serverName, String libraryId) async {
+    final client = await getClient(serverName);
+    await StreamTokenService.ensureToken(serverName);
+
+    final items = <IsterMediaItem>[];
+    var page = 0;
+    while (true) {
+      final result = await client.query(QueryOptions(
+        document: documentNodeQuerypodcasts,
+        variables: {
+          'page': page,
+          'size': pageSize,
+          'sorting': Enum$SortingEnum.NAME,
+          'sortingOrder': Enum$SortingOrder.ASCENDING,
+          'libraryId': libraryId,
+        },
+      ));
+      if (result.hasException || result.data == null) {
+        LoggerService().logger.e(result.exception);
+        break;
+      }
+      final podcastPage = Query$podcasts.fromJson(result.data!).podcasts;
+      if (podcastPage == null) break;
+
+      items.addAll(podcastPage.content.map((podcast) => IsterMediaItem(
+            id: podcast.id,
+            serverName: serverName,
+            isterMediaType: IsterMediaTypes.podcast,
+            title: MetadataUtil.getTitle(podcast.metadata) ?? podcast.title,
+            artist: podcast.author,
+            artUri: coverArtUri(podcast.images, serverName),
+          )));
+
+      page++;
+      if (page >= podcastPage.totalPages) break;
+      if (items.length >= maxItemsPerNode) {
+        LoggerService().logger.w(
+            'getPodcasts: capped at ${items.length} of ${podcastPage.totalElements} podcasts for $serverName');
+        break;
+      }
+    }
+    return items;
+  }
+
+  /// The chapters of one audiobook, as playable leaves. Their composite id
+  /// (`bookId~chapterId`) carries what the BOOK play queue needs.
+  Future<List<IsterMediaItem>> getChaptersForBook(
+      String serverName, String bookId) async {
+    final client = await getClient(serverName);
+    await StreamTokenService.ensureToken(serverName);
+
+    final result = await client.query(QueryOptions(
+      document: documentNodeQuerybookById,
+      variables: {'id': bookId},
+    ));
+    if (result.hasException || result.data == null) {
+      LoggerService().logger.e(result.exception);
+      return List.empty();
+    }
+    final book = Query$bookById.fromJson(result.data!).bookById;
+    if (book == null) return List.empty();
+
+    final bookTitle = MetadataUtil.getTitle(book.metadata) ?? book.title;
+    final artUri = coverArtUri(book.images, serverName);
+    return (book.chapters ?? []).map((chapter) {
+      final durationMs = chapter.mediaFile?.firstOrNull?.durationInMilliseconds;
+      return IsterMediaItem(
+        id: '$bookId$compositeIdSeparator${chapter.id}',
+        serverName: serverName,
+        isterMediaType: IsterMediaTypes.chapter,
+        title: MetadataUtil.getTitle(chapter.metadata) ??
+            '${loc.chapter} ${chapter.number}',
+        album: bookTitle,
+        artist: book.author?.name,
+        duration:
+            durationMs != null ? Duration(milliseconds: durationMs) : null,
+        artUri: artUri,
+        playable: true,
+      );
+    }).toList();
+  }
+
+  /// The episodes of one podcast, newest first, as playable leaves. Their
+  /// composite id (`podcastId~episodeId`) carries what the PODCAST play queue
+  /// needs.
+  Future<List<IsterMediaItem>> getEpisodesForPodcast(
+      String serverName, String podcastId) async {
+    final client = await getClient(serverName);
+    await StreamTokenService.ensureToken(serverName);
+
+    // One lookup for the podcast's cover art and title — the episode query
+    // carries neither.
+    final podcastResult = await client.query(QueryOptions(
+      document: documentNodeQuerypodcastById,
+      variables: {'id': podcastId},
+    ));
+    final podcast = podcastResult.hasException || podcastResult.data == null
+        ? null
+        : Query$podcastById.fromJson(podcastResult.data!).podcastById;
+    final artUri =
+        podcast != null ? coverArtUri(podcast.images, serverName) : null;
+    final podcastTitle =
+        podcast != null ? (MetadataUtil.getTitle(podcast.metadata) ?? podcast.title) : null;
+
+    final items = <IsterMediaItem>[];
+    var page = 0;
+    while (true) {
+      final result = await client.query(QueryOptions(
+        document: documentNodeQuerypodcastEpisodes,
+        variables: {
+          'podcastId': podcastId,
+          'page': page,
+          'size': pageSize,
+          'sortingOrder': Enum$SortingOrder.DESCENDING,
+        },
+      ));
+      if (result.hasException || result.data == null) {
+        LoggerService().logger.e(result.exception);
+        break;
+      }
+      final episodePage =
+          Query$podcastEpisodes.fromJson(result.data!).podcastEpisodes;
+
+      items.addAll(episodePage.content.map((episode) {
+        final durationMs = episode.durationInMilliseconds;
+        final episodeNumber = episode.episodeNumber;
+        return IsterMediaItem(
+          id: '$podcastId$compositeIdSeparator${episode.id}',
+          serverName: serverName,
+          isterMediaType: IsterMediaTypes.podcastEpisode,
+          title: MetadataUtil.getTitle(episode.metadata) ??
+              (episodeNumber != null
+                  ? loc.episode(episodeNumber)
+                  : (podcastTitle ?? '')),
+          album: podcastTitle,
+          duration:
+              durationMs != null ? Duration(milliseconds: durationMs) : null,
+          artUri: artUri,
+          playable: true,
+        );
+      }));
+
+      page++;
+      if (page >= episodePage.totalPages) break;
+      if (items.length >= maxItemsPerNode) {
+        LoggerService().logger.w(
+            'getEpisodesForPodcast: capped at ${items.length} of ${episodePage.totalElements} episodes for $serverName');
+        break;
+      }
+    }
+    return items;
   }
 
   Future<List<IsterMediaItem>> getTracksForAlbum(

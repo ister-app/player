@@ -63,4 +63,8 @@ enum IsterMediaTypes {
   track,
   album,
   artist,
+  book, // audiobook (browsable → chapters)
+  chapter, // audiobook chapter (playable); id is "bookId~chapterId"
+  podcast, // podcast (browsable → episodes)
+  podcastEpisode, // podcast episode (playable); id is "podcastId~episodeId"
 }

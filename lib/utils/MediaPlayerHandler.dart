@@ -992,6 +992,32 @@ class MediaPlayerHandler extends BaseAudioHandler
         final client = await IsterMediaService.getClient(mediaItemId.serverName);
         await startPlayQueue(
             client, null, episodeFragment, mediaItemId.serverName);
+      case IsterMediaTypes.chapter:
+        // Composite id: "bookId~chapterId".
+        final parts =
+            mediaItemId.id.split(IsterMediaService.compositeIdSeparator);
+        if (parts.length != 2) {
+          LoggerService()
+              .logger
+              .e('playFromMediaId: malformed chapter id $mediaId');
+          return;
+        }
+        final client = await IsterMediaService.getClient(mediaItemId.serverName);
+        await startPlayQueueForBook(
+            client, null, parts[0], parts[1], mediaItemId.serverName);
+      case IsterMediaTypes.podcastEpisode:
+        // Composite id: "podcastId~episodeId".
+        final parts =
+            mediaItemId.id.split(IsterMediaService.compositeIdSeparator);
+        if (parts.length != 2) {
+          LoggerService()
+              .logger
+              .e('playFromMediaId: malformed podcast episode id $mediaId');
+          return;
+        }
+        final client = await IsterMediaService.getClient(mediaItemId.serverName);
+        await startPlayQueueForPodcast(
+            client, null, parts[0], parts[1], mediaItemId.serverName);
       default:
         LoggerService().logger.w(
             'playFromMediaId: unsupported type ${mediaItemId.isterMediaType} for $mediaId');
@@ -1382,7 +1408,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     final service = IsterMediaService();
     final defaultLibrary = await _resolveDefaultLibrary(service);
     if (defaultLibrary == null) {
-      return (await service.getMusicLibraries())
+      return (await service.getBrowsableLibraries())
           .map((e) => e.mediaItem)
           .toList();
     }
