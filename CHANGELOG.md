@@ -1,5 +1,31 @@
 # Changelog
 
+## player v1.5.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.5.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat: browse audiobooks and podcasts in Android Auto ([`ac984e4`](https://github.com/ister-app/player/commit/ac984e4))
+
+### Other
+
+- docs: add installation chapter linking releases and the web app ([`191de2d`](https://github.com/ister-app/player/commit/191de2d))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.5.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.4.0...v1.5.0
+
 ## player v1.4.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
