@@ -53,14 +53,29 @@ class TvFocusable extends StatefulWidget {
 
 class _TvFocusableState extends State<TvFocusable> {
   bool _focused = false;
+  FocusNode? _internalNode;
+
+  FocusNode get _node => widget.focusNode ?? (_internalNode ??= FocusNode());
+
+  @override
+  void dispose() {
+    _internalNode?.dispose();
+    super.dispose();
+  }
 
   void _setFocused(bool value) {
-    if (value != _focused) setState(() => _focused = value);
+    // onShowFocusHighlight also reports true when a *descendant* holds focus —
+    // e.g. a row's overflow-menu IconButton after a mouse click, or after its
+    // menu closes and restores focus to it. Only the wrapper itself having
+    // primary focus means directional navigation reached this item, which is
+    // the only case the highlight is for.
+    final focused = value && _node.hasPrimaryFocus;
+    if (focused != _focused) setState(() => _focused = focused);
     // When focus lands here via D-pad/keyboard, scroll the item into view so
     // off-screen grid/carousel items become reachable. Runs after layout so
     // the render object exists; centred so there's always a hint of the next
     // row/column to move toward.
-    if (value) {
+    if (focused) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         if (Scrollable.maybeOf(context) == null) return;
@@ -78,7 +93,7 @@ class _TvFocusableState extends State<TvFocusable> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return FocusableActionDetector(
-      focusNode: widget.focusNode,
+      focusNode: _node,
       autofocus: widget.autofocus,
       onShowFocusHighlight: _setFocused,
       mouseCursor:
