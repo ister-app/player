@@ -454,6 +454,40 @@
   "@appearsIn": {
     "description": "Section header on a person page listing the movies and shows they appear in"
   },
+  "discHeader": "Disc {number}",
+  "@discHeader": {
+    "description": "Header above the tracks of one disc on a multi-disc album page",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "trackCount": "{count, plural, =1{1 song} other{{count} songs}}",
+  "@trackCount": {
+    "description": "Number of songs on an album, shown next to the play button",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "20"
+      }
+    }
+  },
+  "albumStats": "{tracks} • {duration}",
+  "@albumStats": {
+    "description": "Album summary next to the play button: song count and total duration",
+    "placeholders": {
+      "tracks": {
+        "type": "String",
+        "example": "20 songs"
+      },
+      "duration": {
+        "type": "String",
+        "example": "1:12:30"
+      }
+    }
+  },
   "episodeCount": "{count, plural, =1{1 episode} other{{count} episodes}}",
   "@episodeCount": {
     "description": "Number of episodes a person appears in, shown on the show tile in their filmography",

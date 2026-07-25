@@ -371,6 +371,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appearsIn => 'Appears in';
 
   @override
+  String discHeader(int number) {
+    return 'Disc $number';
+  }
+
+  @override
+  String trackCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count songs',
+      one: '1 song',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String albumStats(String tracks, String duration) {
+    return '$tracks • $duration';
+  }
+
+  @override
   String episodeCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

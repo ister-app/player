@@ -1,3 +1,4 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -8,6 +9,7 @@ import 'package:player/graphql/fragmentAlbum.graphql.dart';
 import 'package:player/graphql/fragmentTrack.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
+import 'package:player/utils/AccentColorUtil.dart';
 import 'package:player/utils/DurationUtil.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
@@ -21,6 +23,9 @@ import '../components/AddToSessionSheet.dart';
 import '../components/SourceAttribution.dart';
 import '../components/MusicDetailHero.dart';
 import '../components/RatingStars.dart';
+import '../components/TvFocusable.dart';
+import '../dto/IsterMediaItem.dart';
+import '../dto/MediaItemId.dart';
 import '../l10n/app_localizations.dart';
 
 @RoutePage()
@@ -30,11 +35,16 @@ class AlbumPage extends StatefulWidget {
     @PathParam.inherit('serverName') required this.serverName,
     @PathParam('albumId') required this.albumId,
     @QueryParam('playQueueId') this.playQueueId,
+    @QueryParam('trackId') this.trackId,
   });
 
   final String serverName;
   final String albumId;
   final String? playQueueId;
+
+  /// When set (e.g. arriving from a search result), the page scrolls to this
+  /// track and briefly highlights it.
+  final String? trackId;
 
   @override
   State<AlbumPage> createState() => _AlbumPageState();
@@ -45,6 +55,25 @@ class _AlbumPageState extends State<AlbumPage> {
   // the per-track dialog shows immediately without waiting for a refetch.
   final Map<String, int?> _trackRatingOverrides = {};
   bool _showAdminActions = true;
+
+  final GlobalKey _requestedTrackKey = GlobalKey();
+  bool _scrolledToRequestedTrack = false;
+  bool _requestedTrackHighlighted = false;
+
+  /// Accent extracted from the album cover, tinting the play button and the
+  /// now-playing indicator; null until extraction succeeds.
+  Color? _accent;
+  String? _accentUrl;
+
+  void _updateAccent(String? url) {
+    if (url == _accentUrl) return;
+    _accentUrl = url;
+    AccentColorUtil.fromImageUrl(url).then((color) {
+      // A cover change may have superseded this load; only apply if current.
+      if (!mounted || _accentUrl != url || color == null) return;
+      setState(() => _accent = color);
+    });
+  }
 
   @override
   void initState() {
@@ -86,6 +115,61 @@ class _AlbumPageState extends State<AlbumPage> {
   static bool _trackHasFile(Fragment$fragmentTrack track) =>
       track.mediaFile?.isNotEmpty == true;
 
+  /// "20 songs • 1:12:30" next to the play button; drops the duration while
+  /// no track has been analyzed yet (no durations known).
+  static String _albumStats(
+      AppLocalizations loc, List<Fragment$fragmentTrack> tracks) {
+    final totalMs = tracks.fold<int>(
+        0,
+        (sum, t) =>
+            sum + (t.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0));
+    final count = loc.trackCount(tracks.length);
+    if (totalMs <= 0) return count;
+    return loc.albumStats(
+        count, DurationUtil.format(Duration(milliseconds: totalMs)));
+  }
+
+  /// The id of the track currently playing on this page's server, or null when
+  /// nothing plays, the item is no track, or it belongs to another server.
+  String? _playingTrackId(MediaItem? item) {
+    if (item == null) return null;
+    try {
+      final id = MediaItemId.byStringId(item.id);
+      if (id.serverName == widget.serverName &&
+          id.isterMediaType == IsterMediaTypes.track) {
+        return id.id;
+      }
+    } catch (_) {
+      // Malformed/unknown id (e.g. from an older session): no indicator.
+    }
+    return null;
+  }
+
+  /// Scrolls to [AlbumPage.trackId] once the track list is available (e.g. when
+  /// arriving from a search result) and highlights that row for a moment.
+  void _maybeScrollToRequestedTrack(List<Fragment$fragmentTrack> tracks) {
+    if (_scrolledToRequestedTrack ||
+        widget.trackId == null ||
+        !tracks.any((t) => t.id == widget.trackId)) {
+      return;
+    }
+    _scrolledToRequestedTrack = true;
+    _requestedTrackHighlighted = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final targetContext = _requestedTrackKey.currentContext;
+      if (targetContext != null) {
+        await Scrollable.ensureVisible(
+          targetContext,
+          alignment: 0.3,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        );
+      }
+      await Future.delayed(const Duration(seconds: 2));
+      if (mounted) setState(() => _requestedTrackHighlighted = false);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
@@ -119,7 +203,14 @@ class _AlbumPageState extends State<AlbumPage> {
         }
 
         final albumData = Query$albumById.fromJson(result.data!).albumById;
-        final tracks = albumData?.tracks ?? [];
+        // Display order is (disc, track number); the server does not guarantee
+        // its list is grouped by disc. This sorted list also feeds the play
+        // button and add-to-session, so playback order matches the page.
+        final tracks = [...albumData?.tracks ?? <Fragment$fragmentTrack>[]]
+          ..sort((a, b) => a.discNumber != b.discNumber
+              ? a.discNumber.compareTo(b.discNumber)
+              : a.number.compareTo(b.number));
+        _maybeScrollToRequestedTrack(tracks);
 
         return Scaffold(
           body: _buildContent(albumData, tracks),
@@ -184,85 +275,102 @@ class _AlbumPageState extends State<AlbumPage> {
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 child: Row(
                   children: [
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: album != null &&
-                                tracks.any(_trackHasFile)
-                            ? () => _playTrack(
-                                context,
-                                album,
-                                tracks.firstWhere(_trackHasFile).id)
-                            : null,
-                        icon: const Icon(Icons.play_arrow),
-                        label: Text(loc.play),
-                        style: FilledButton.styleFrom(
-                          shape: const StadiumBorder(),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
+                    FilledButton.icon(
+                      onPressed: album != null &&
+                              tracks.any(_trackHasFile)
+                          ? () => _playTrack(
+                              context,
+                              album,
+                              tracks.firstWhere(_trackHasFile).id)
+                          : null,
+                      icon: const Icon(Icons.play_arrow),
+                      label: Text(loc.play),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: _accent,
+                        foregroundColor: _accent != null ? Colors.black : null,
+                        shape: const StadiumBorder(),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 28, vertical: 14),
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: album != null && tracks.isNotEmpty
-                            ? () {
-                                final client =
-                                    GraphQLProvider.of(context).value;
-                                MediaPlayerHandler.instance.startAlbumShuffle(
-                                  client,
-                                  widget.serverName,
-                                  widget.albumId,
-                                );
-                              }
-                            : null,
-                        icon: const Icon(Icons.shuffle),
-                        label: Text(loc.shuffle),
-                        style: FilledButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.surfaceContainerHighest,
-                          foregroundColor:
-                              Theme.of(context).colorScheme.onSurface,
-                          shape: const StadiumBorder(),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
+                    FilledButton.icon(
+                      onPressed: album != null && tracks.isNotEmpty
+                          ? () {
+                              final client =
+                                  GraphQLProvider.of(context).value;
+                              MediaPlayerHandler.instance.startAlbumShuffle(
+                                client,
+                                widget.serverName,
+                                widget.albumId,
+                              );
+                            }
+                          : null,
+                      icon: const Icon(Icons.shuffle),
+                      label: Text(loc.shuffle),
+                      style: FilledButton.styleFrom(
+                        backgroundColor:
+                            Theme.of(context).colorScheme.surfaceContainerHighest,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.onSurface,
+                        shape: const StadiumBorder(),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 28, vertical: 14),
                       ),
                     ),
+                    if (tracks.isNotEmpty) ...[
+                      const SizedBox(width: 16),
+                      Flexible(
+                        child: Text(
+                          _albumStats(loc, tracks),
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                              ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
             ),
           ),
         ),
-        if (metaLine != null)
+        if (album != null || metaLine != null)
           SliverToBoxAdapter(
             child: Center(
               child: Container(
                 width: double.infinity,
                 constraints: const BoxConstraints(maxWidth: 1600),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-                  child: Text(
-                    metaLine,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Wrap(
+                    spacing: 16,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      if (album != null)
+                        RatingStars(
+                          mediaType: Enum$RatingMediaType.ALBUM,
+                          mediaId: album.id,
+                          rating: album.rating,
                         ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        if (album != null)
-          SliverToBoxAdapter(
-            child: Center(
-              child: Container(
-                width: double.infinity,
-                constraints: const BoxConstraints(maxWidth: 1600),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                  child: RatingStars(
-                    mediaType: Enum$RatingMediaType.ALBUM,
-                    mediaId: album.id,
-                    rating: album.rating,
+                      if (metaLine != null)
+                        Text(
+                          metaLine,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                        ),
+                    ],
                   ),
                 ),
               ),
@@ -313,79 +421,174 @@ class _AlbumPageState extends State<AlbumPage> {
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1600),
-              child: ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.zero,
-                itemCount: tracks.length,
-                itemBuilder: (context, index) {
-                  final track = tracks[index];
-                  final hasFile = _trackHasFile(track);
-                  final trackTitle =
-                      MetadataUtil.getTitle(track.metadata) ?? '${track.number}';
-                  final durationMs = track.mediaFile?.firstOrNull?.durationInMilliseconds;
-                  final durationText = durationMs != null
-                      ? DurationUtil.format(Duration(milliseconds: durationMs))
-                      : null;
-                  final trackRating = _trackRating(track);
-                  // Not-yet-analyzed tracks have no playable file: mute them and
-                  // steer the user to "Analyze media" instead of a dead tap.
-                  final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
-                  return Opacity(
-                    opacity: hasFile ? 1.0 : 0.5,
-                    child: ListTile(
-                    dense: true,
-                    visualDensity: VisualDensity.compact,
-                    leading: SizedBox(
-                      width: 28,
-                      child: Text(
-                        '${track.number}',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: mutedColor,
-                            ),
-                      ),
-                    ),
-                    title: Text(trackTitle),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          track.artist.name,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: mutedColor,
-                              ),
+              child: StreamBuilder<MediaItem?>(
+                stream: MediaPlayerHandler.instance.mediaItem,
+                initialData: MediaPlayerHandler.instance.mediaItem.valueOrNull,
+                builder: (context, snapshot) {
+                  final playingTrackId = _playingTrackId(snapshot.data);
+                  return Column(
+                    children:
+                        _buildTrackSections(album, tracks, playingTrackId),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// The track list as a flat widget list; on multi-disc albums a disc header
+  /// precedes the first track of each disc.
+  List<Widget> _buildTrackSections(
+      Fragment$fragmentAlbum? album,
+      List<Fragment$fragmentTrack> tracks,
+      String? playingTrackId) {
+    final multiDisc = tracks.map((t) => t.discNumber).toSet().length > 1;
+    final children = <Widget>[];
+    int? currentDisc;
+    for (final track in tracks) {
+      if (multiDisc && track.discNumber != currentDisc) {
+        currentDisc = track.discNumber;
+        children.add(_discHeader(context, currentDisc));
+      }
+      children.add(_buildTrackRow(context, album, track, playingTrackId));
+    }
+    return children;
+  }
+
+  Widget _discHeader(BuildContext context, int discNumber) {
+    final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 4),
+      child: Row(
+        children: [
+          Icon(Icons.album, size: 18, color: mutedColor),
+          const SizedBox(width: 8),
+          Text(
+            AppLocalizations.of(context)!.discHeader(discNumber),
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: mutedColor,
+                  letterSpacing: 0.8,
+                ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(child: Divider()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrackRow(BuildContext context, Fragment$fragmentAlbum? album,
+      Fragment$fragmentTrack track, String? playingTrackId) {
+    final loc = AppLocalizations.of(context)!;
+    final hasFile = _trackHasFile(track);
+    final trackTitle =
+        MetadataUtil.getTitle(track.metadata) ?? '${track.number}';
+    final durationMs = track.mediaFile?.firstOrNull?.durationInMilliseconds;
+    final durationText = durationMs != null
+        ? DurationUtil.format(Duration(milliseconds: durationMs))
+        : null;
+    final trackRating = _trackRating(track);
+    // Not-yet-analyzed tracks have no playable file: mute them and
+    // steer the user to "Analyze media" instead of a dead tap.
+    final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    final isRequestedTrack = track.id == widget.trackId;
+    final isPlaying = track.id == playingTrackId;
+    final accentColor = _accent ?? Theme.of(context).colorScheme.primary;
+    // Repeating the album artist under every row is noise; only per-track
+    // artists (compilations, features) earn the subtitle line.
+    final showArtist = album == null || track.artist.id != album.artist.id;
+    final subtitleChildren = <Widget>[
+      if (showArtist)
+        Text(
+          track.artist.name,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: mutedColor,
+              ),
+        ),
+      if (!hasFile)
+        Text(
+          loc.trackNotPlayable,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: mutedColor,
+              ),
+        ),
+      if (trackRating != null) RatingStarsDisplay(rating: trackRating),
+    ];
+    // Hoisted so the TV remote's long-press can open the same menu as the
+    // trailing icon button.
+    final menuController = MenuController();
+
+    void onRowTap() {
+      if (album == null) return;
+      if (!hasFile) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.trackNotPlayable)),
+        );
+        return;
+      }
+      _playTrack(context, album, track.id);
+    }
+
+    return Opacity(
+      opacity: hasFile ? 1.0 : 0.5,
+      child: TvFocusable(
+        onTap: album != null ? onRowTap : null,
+        onLongPress: () => menuController.isOpen
+            ? menuController.close()
+            : menuController.open(),
+        borderRadius: const BorderRadius.all(Radius.circular(4)),
+        child: ListTile(
+          key: isRequestedTrack ? _requestedTrackKey : null,
+          tileColor: isRequestedTrack && _requestedTrackHighlighted
+              ? Theme.of(context)
+                  .colorScheme
+                  .primaryContainer
+                  .withValues(alpha: 0.5)
+              : null,
+          dense: true,
+          visualDensity: VisualDensity.compact,
+          leading: SizedBox(
+            width: 28,
+            child: isPlaying
+                ? Icon(Icons.graphic_eq, size: 18, color: accentColor)
+                : Text(
+                    '${track.number}',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: mutedColor,
                         ),
-                        if (durationText != null)
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                durationText,
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: mutedColor,
-                                    ),
-                              ),
-                              if (trackRating != null) ...[
-                                const SizedBox(width: 8),
-                                RatingStarsDisplay(rating: trackRating),
-                              ],
-                            ],
-                          )
-                        else if (!hasFile)
-                          Text(
-                            loc.trackNotPlayable,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: mutedColor,
-                                ),
-                          )
-                        else if (trackRating != null)
-                          RatingStarsDisplay(rating: trackRating),
-                      ],
-                    ),
-                    trailing: MenuAnchor(
-                      menuChildren: [
+                  ),
+          ),
+          title: Text(
+            trackTitle,
+            style: isPlaying
+                ? TextStyle(color: accentColor, fontWeight: FontWeight.w600)
+                : null,
+          ),
+          subtitle: subtitleChildren.isEmpty
+              ? null
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: subtitleChildren,
+                ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (durationText != null)
+                Text(
+                  durationText,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: mutedColor,
+                        fontFeatures: [const FontFeature.tabularFigures()],
+                      ),
+                ),
+              MenuAnchor(
+                controller: menuController,
+                menuChildren: [
                         MenuItemButton(
                           onPressed: hasFile
                               ? () => _addTrackToQueue(context, track.id)
@@ -439,35 +642,21 @@ class _AlbumPageState extends State<AlbumPage> {
                               title: Text(loc.analyzeMedia),
                             ),
                           ),
-                      ],
-                      builder: (_, MenuController controller, Widget? child) {
-                        return IconButton(
-                          icon: const Icon(Icons.more_vert),
-                          onPressed: () => controller.isOpen
-                              ? controller.close()
-                              : controller.open(),
-                        );
-                      },
-                    ),
-                    onTap: album != null
-                        ? () {
-                            if (!hasFile) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(loc.trackNotPlayable)),
-                              );
-                              return;
-                            }
-                            _playTrack(context, album, track.id);
-                          }
-                        : null,
-                  ),
+                ],
+                builder: (_, MenuController controller, Widget? child) {
+                  return IconButton(
+                    icon: const Icon(Icons.more_vert),
+                    onPressed: () => controller.isOpen
+                        ? controller.close()
+                        : controller.open(),
                   );
                 },
               ),
-            ),
+            ],
           ),
+          onTap: album != null ? onRowTap : null,
         ),
-      ],
+      ),
     );
   }
 
@@ -479,6 +668,7 @@ class _AlbumPageState extends State<AlbumPage> {
         ? ImageUtil.buildUrl(img,
             token: StreamTokenService.getToken(widget.serverName))
         : null;
+    _updateAccent(imageUrl);
 
     return MusicDetailHero(
       imageUrl: imageUrl,

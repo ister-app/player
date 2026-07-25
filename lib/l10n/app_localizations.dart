@@ -764,6 +764,24 @@ abstract class AppLocalizations {
   /// **'Appears in'**
   String get appearsIn;
 
+  /// Header above the tracks of one disc on a multi-disc album page
+  ///
+  /// In en, this message translates to:
+  /// **'Disc {number}'**
+  String discHeader(int number);
+
+  /// Number of songs on an album, shown next to the play button
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 song} other{{count} songs}}'**
+  String trackCount(int count);
+
+  /// Album summary next to the play button: song count and total duration
+  ///
+  /// In en, this message translates to:
+  /// **'{tracks} • {duration}'**
+  String albumStats(String tracks, String duration);
+
   /// Number of episodes a person appears in, shown on the show tile in their filmography
   ///
   /// In en, this message translates to:

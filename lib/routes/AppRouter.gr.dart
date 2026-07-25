@@ -214,6 +214,7 @@ class AlbumRoute extends _i31.PageRouteInfo<AlbumRouteArgs> {
     _i32.Key? key,
     required String albumId,
     String? playQueueId,
+    String? trackId,
     List<_i31.PageRouteInfo>? children,
   }) : super(
           AlbumRoute.name,
@@ -221,9 +222,10 @@ class AlbumRoute extends _i31.PageRouteInfo<AlbumRouteArgs> {
             key: key,
             albumId: albumId,
             playQueueId: playQueueId,
+            trackId: trackId,
           ),
           rawPathParams: {'albumId': albumId},
-          rawQueryParams: {'playQueueId': playQueueId},
+          rawQueryParams: {'playQueueId': playQueueId, 'trackId': trackId},
           initialChildren: children,
         );
 
@@ -238,6 +240,7 @@ class AlbumRoute extends _i31.PageRouteInfo<AlbumRouteArgs> {
         orElse: () => AlbumRouteArgs(
           albumId: pathParams.getString('albumId'),
           playQueueId: queryParams.optString('playQueueId'),
+          trackId: queryParams.optString('trackId'),
         ),
       );
       return _i4.AlbumPage(
@@ -245,13 +248,19 @@ class AlbumRoute extends _i31.PageRouteInfo<AlbumRouteArgs> {
         serverName: pathParams.getString('serverName'),
         albumId: args.albumId,
         playQueueId: args.playQueueId,
+        trackId: args.trackId,
       );
     },
   );
 }
 
 class AlbumRouteArgs {
-  const AlbumRouteArgs({this.key, required this.albumId, this.playQueueId});
+  const AlbumRouteArgs({
+    this.key,
+    required this.albumId,
+    this.playQueueId,
+    this.trackId,
+  });
 
   final _i32.Key? key;
 
@@ -259,9 +268,11 @@ class AlbumRouteArgs {
 
   final String? playQueueId;
 
+  final String? trackId;
+
   @override
   String toString() {
-    return 'AlbumRouteArgs{key: $key, albumId: $albumId, playQueueId: $playQueueId}';
+    return 'AlbumRouteArgs{key: $key, albumId: $albumId, playQueueId: $playQueueId, trackId: $trackId}';
   }
 
   @override
@@ -270,11 +281,13 @@ class AlbumRouteArgs {
     if (other is! AlbumRouteArgs) return false;
     return key == other.key &&
         albumId == other.albumId &&
-        playQueueId == other.playQueueId;
+        playQueueId == other.playQueueId &&
+        trackId == other.trackId;
   }
 
   @override
-  int get hashCode => key.hashCode ^ albumId.hashCode ^ playQueueId.hashCode;
+  int get hashCode =>
+      key.hashCode ^ albumId.hashCode ^ playQueueId.hashCode ^ trackId.hashCode;
 }
 
 /// generated route for

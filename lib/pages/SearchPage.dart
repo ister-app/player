@@ -510,8 +510,8 @@ class _SearchPageState extends State<SearchPage> {
         icon: Icons.music_note,
         images: item.album.images,
         imageType: ImageTypes.cover,
-        onTap: () =>
-            AutoRouter.of(context).push(AlbumRoute(albumId: item.album.id)),
+        onTap: () => AutoRouter.of(context)
+            .push(AlbumRoute(albumId: item.album.id, trackId: item.id)),
       );
     }
     return const _ResultView(

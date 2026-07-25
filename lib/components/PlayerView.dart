@@ -8,6 +8,7 @@ import 'package:player/components/SessionSharingSheet.dart';
 import 'package:player/components/TvFocusable.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
+import 'package:player/utils/AccentColorUtil.dart';
 import 'package:player/utils/DurationUtil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -216,30 +217,11 @@ class _PlayerViewState extends State<PlayerView>
       _accent.value = _defaultAccent;
       return;
     }
-    // `content` keeps the source artwork's hue and chroma instead of pulling it
-    // towards a muted tonal palette, which is what we want for an accent.
-    ColorScheme.fromImageProvider(
-      provider: CachedNetworkImageProvider(uri),
-      brightness: Brightness.dark,
-      dynamicSchemeVariant: DynamicSchemeVariant.content,
-    ).then((scheme) {
+    AccentColorUtil.fromImageUrl(uri).then((color) {
       // A newer skip may have superseded this load; only apply if still current.
       if (!mounted || _accentUri != uri) return;
-      _accent.value = _pickAccent(scheme);
-    }).catchError((_) {
-      if (mounted && _accentUri == uri) _accent.value = _defaultAccent;
+      _accent.value = color ?? _defaultAccent;
     });
-  }
-
-  /// Nudges the extracted colour into a range that reads well both as a thin
-  /// progress fill on a dark backdrop and as a filled button that carries black
-  /// text.
-  Color _pickAccent(ColorScheme scheme) {
-    var hsl = HSLColor.fromColor(scheme.primary);
-    if (hsl.lightness < 0.45) hsl = hsl.withLightness(0.55);
-    if (hsl.lightness > 0.78) hsl = hsl.withLightness(0.7);
-    if (hsl.saturation < 0.3) hsl = hsl.withSaturation(0.45);
-    return hsl.toColor();
   }
 
   bool _onScrollNotification(ScrollNotification n, double height) {
