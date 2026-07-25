@@ -696,11 +696,32 @@ const fragmentDefinitionfragmentPlayQueue = FragmentDefinitionNode(
                           selectionSet: null,
                         ),
                         FieldNode(
-                          name: NameNode(value: 'name'),
+                          name: NameNode(value: 'title'),
                           alias: null,
                           arguments: [],
                           directives: [],
                           selectionSet: null,
+                        ),
+                        FieldNode(
+                          name: NameNode(value: 'metadata'),
+                          alias: null,
+                          arguments: [],
+                          directives: [],
+                          selectionSet: SelectionSetNode(
+                            selections: [
+                              FragmentSpreadNode(
+                                name: NameNode(value: 'fragmentMetadata'),
+                                directives: [],
+                              ),
+                              FieldNode(
+                                name: NameNode(value: '__typename'),
+                                alias: null,
+                                arguments: [],
+                                directives: [],
+                                selectionSet: null,
+                              ),
+                            ],
+                          ),
                         ),
                         FieldNode(
                           name: NameNode(value: 'images'),
@@ -2648,7 +2669,8 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$chapter$author
 class Fragment$fragmentPlayQueue$playQueueItems$chapter$book {
   Fragment$fragmentPlayQueue$playQueueItems$chapter$book({
     required this.id,
-    required this.name,
+    required this.title,
+    this.metadata,
     this.images,
     this.$__typename = 'Book',
   });
@@ -2657,12 +2679,19 @@ class Fragment$fragmentPlayQueue$playQueueItems$chapter$book {
     Map<String, dynamic> json,
   ) {
     final l$id = json['id'];
-    final l$name = json['name'];
+    final l$title = json['title'];
+    final l$metadata = json['metadata'];
     final l$images = json['images'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentPlayQueue$playQueueItems$chapter$book(
       id: (l$id as String),
-      name: (l$name as String),
+      title: (l$title as String),
+      metadata: (l$metadata as List<dynamic>?)
+          ?.map(
+            (e) =>
+                Fragment$fragmentMetadata.fromJson((e as Map<String, dynamic>)),
+          )
+          .toList(),
       images: (l$images as List<dynamic>?)
           ?.map(
             (e) =>
@@ -2675,7 +2704,9 @@ class Fragment$fragmentPlayQueue$playQueueItems$chapter$book {
 
   final String id;
 
-  final String name;
+  final String title;
+
+  final List<Fragment$fragmentMetadata>? metadata;
 
   final List<Fragment$fragmentImages>? images;
 
@@ -2685,8 +2716,10 @@ class Fragment$fragmentPlayQueue$playQueueItems$chapter$book {
     final _resultData = <String, dynamic>{};
     final l$id = id;
     _resultData['id'] = l$id;
-    final l$name = name;
-    _resultData['name'] = l$name;
+    final l$title = title;
+    _resultData['title'] = l$title;
+    final l$metadata = metadata;
+    _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
     final l$images = images;
     _resultData['images'] = l$images?.map((e) => e.toJson()).toList();
     final l$$__typename = $__typename;
@@ -2697,12 +2730,14 @@ class Fragment$fragmentPlayQueue$playQueueItems$chapter$book {
   @override
   int get hashCode {
     final l$id = id;
-    final l$name = name;
+    final l$title = title;
+    final l$metadata = metadata;
     final l$images = images;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
-      l$name,
+      l$title,
+      l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
       l$$__typename,
     ]);
@@ -2722,9 +2757,25 @@ class Fragment$fragmentPlayQueue$playQueueItems$chapter$book {
     if (l$id != lOther$id) {
       return false;
     }
-    final l$name = name;
-    final lOther$name = other.name;
-    if (l$name != lOther$name) {
+    final l$title = title;
+    final lOther$title = other.title;
+    if (l$title != lOther$title) {
+      return false;
+    }
+    final l$metadata = metadata;
+    final lOther$metadata = other.metadata;
+    if (l$metadata != null && lOther$metadata != null) {
+      if (l$metadata.length != lOther$metadata.length) {
+        return false;
+      }
+      for (int i = 0; i < l$metadata.length; i++) {
+        final l$metadata$entry = l$metadata[i];
+        final lOther$metadata$entry = lOther$metadata[i];
+        if (l$metadata$entry != lOther$metadata$entry) {
+          return false;
+        }
+      }
+    } else if (l$metadata != lOther$metadata) {
       return false;
     }
     final l$images = images;
@@ -2778,10 +2829,17 @@ abstract class CopyWith$Fragment$fragmentPlayQueue$playQueueItems$chapter$book<
 
   TRes call({
     String? id,
-    String? name,
+    String? title,
+    List<Fragment$fragmentMetadata>? metadata,
     List<Fragment$fragmentImages>? images,
     String? $__typename,
   });
+  TRes metadata(
+    Iterable<Fragment$fragmentMetadata>? Function(
+      Iterable<CopyWith$Fragment$fragmentMetadata<Fragment$fragmentMetadata>>?,
+    )
+    _fn,
+  );
   TRes images(
     Iterable<Fragment$fragmentImages>? Function(
       Iterable<CopyWith$Fragment$fragmentImages<Fragment$fragmentImages>>?,
@@ -2807,15 +2865,19 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$chapter$book<TRes>
 
   TRes call({
     Object? id = _undefined,
-    Object? name = _undefined,
+    Object? title = _undefined,
+    Object? metadata = _undefined,
     Object? images = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentPlayQueue$playQueueItems$chapter$book(
       id: id == _undefined || id == null ? _instance.id : (id as String),
-      name: name == _undefined || name == null
-          ? _instance.name
-          : (name as String),
+      title: title == _undefined || title == null
+          ? _instance.title
+          : (title as String),
+      metadata: metadata == _undefined
+          ? _instance.metadata
+          : (metadata as List<Fragment$fragmentMetadata>?),
       images: images == _undefined
           ? _instance.images
           : (images as List<Fragment$fragmentImages>?),
@@ -2823,6 +2885,19 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$chapter$book<TRes>
           ? _instance.$__typename
           : ($__typename as String),
     ),
+  );
+
+  TRes metadata(
+    Iterable<Fragment$fragmentMetadata>? Function(
+      Iterable<CopyWith$Fragment$fragmentMetadata<Fragment$fragmentMetadata>>?,
+    )
+    _fn,
+  ) => call(
+    metadata: _fn(
+      _instance.metadata?.map(
+        (e) => CopyWith$Fragment$fragmentMetadata(e, (i) => i),
+      ),
+    )?.toList(),
   );
 
   TRes images(
@@ -2852,10 +2927,13 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$chapter$book<
 
   call({
     String? id,
-    String? name,
+    String? title,
+    List<Fragment$fragmentMetadata>? metadata,
     List<Fragment$fragmentImages>? images,
     String? $__typename,
   }) => _res;
+
+  metadata(_fn) => _res;
 
   images(_fn) => _res;
 }

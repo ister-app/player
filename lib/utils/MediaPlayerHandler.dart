@@ -992,6 +992,15 @@ class MediaPlayerHandler extends BaseAudioHandler
         final client = await IsterMediaService.getClient(mediaItemId.serverName);
         await startPlayQueue(
             client, null, episodeFragment, mediaItemId.serverName);
+      case IsterMediaTypes.book:
+        // A book leaf resumes where the listener left off — the server's
+        // resumeChapter knows which chapter that is, and the queue item's
+        // watch status carries the position within it.
+        final startChapterId = await IsterMediaService()
+            .getBookStartChapterId(mediaItemId.serverName, mediaItemId.id);
+        final client = await IsterMediaService.getClient(mediaItemId.serverName);
+        await startPlayQueueForBook(
+            client, null, mediaItemId.id, startChapterId, mediaItemId.serverName);
       case IsterMediaTypes.chapter:
         // Composite id: "bookId~chapterId".
         final parts =
@@ -1322,9 +1331,11 @@ class MediaPlayerHandler extends BaseAudioHandler
         final c = e.chapter!;
         return MediaItem(
           id: MediaItemId(srv, IsterMediaTypes.track, e.id).toString(),
-          title: MetadataUtil.getTitle(c.metadata) ?? 'Chapter ${c.number}',
+          title: MetadataUtil.getTitle(c.metadata) ??
+              '${IsterMediaService.loc.chapter} ${c.number}',
           artist: c.author.name,
-          album: c.book.name,
+          // The clean display title, not the raw file/directory name.
+          album: MetadataUtil.getTitle(c.book.metadata) ?? c.book.title,
           duration: Duration(
               milliseconds:
                   c.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0),

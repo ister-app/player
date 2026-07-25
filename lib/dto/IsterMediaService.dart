@@ -41,7 +41,8 @@ import '../utils/WellKnownService.dart';
 ///                            as the default Android Auto library)
 /// - `albums:<libraryId>`   → all albums in a music library
 /// - `artists:<libraryId>`  → all artists in a music library
-/// - `books:<libraryId>`    → all audiobooks in a BOOK library
+/// - `books:<libraryId>`    → all audiobooks in a BOOK library (playable
+///                            leaves that resume where the listener left off)
 /// - `podcasts:<libraryId>` → all podcasts in a PODCAST library
 ///
 /// Composite leaf ids carry the two ids their play queue needs, joined by `~`:
@@ -326,7 +327,9 @@ class IsterMediaService {
     return getAlbums(serverName, artistId: artistId);
   }
 
-  /// All audiobooks in a BOOK library. Each is browsable into its chapters.
+  /// All audiobooks in a BOOK library. Each is a playable leaf: selecting one
+  /// in the car resumes it where the listener left off ([playFromMediaId]
+  /// resolves the resume chapter) instead of opening a chapter list.
   Future<List<IsterMediaItem>> getBooks(
       String serverName, String libraryId) async {
     final client = await getClient(serverName);
@@ -359,6 +362,7 @@ class IsterMediaService {
             title: MetadataUtil.getTitle(book.metadata) ?? book.title,
             artist: book.author?.name,
             artUri: coverArtUri(book.images, serverName),
+            playable: true,
           )));
 
       page++;
@@ -416,6 +420,34 @@ class IsterMediaService {
       }
     }
     return items;
+  }
+
+  /// The chapter a book should start (or resume) at: the server's resume
+  /// chapter, or the first chapter that has audio. Null when the book has no
+  /// playable chapters (the play queue then starts at its first item).
+  Future<String?> getBookStartChapterId(
+      String serverName, String bookId) async {
+    final client = await getClient(serverName);
+    final result = await client.query(QueryOptions(
+      document: documentNodeQuerybookById,
+      variables: {'id': bookId},
+    ));
+    if (result.hasException || result.data == null) {
+      LoggerService().logger.e(result.exception);
+      return null;
+    }
+    return startChapterIdFor(Query$bookById.fromJson(result.data!).bookById);
+  }
+
+  /// The resume-chapter fallback chain, split out pure so it can be
+  /// unit-tested: the server's resume chapter wins; a never-started (or
+  /// finished) book starts at its first chapter that has audio.
+  static String? startChapterIdFor(Query$bookById$bookById? book) {
+    return book?.resumeChapter?.id ??
+        book?.chapters
+            ?.where((chapter) => chapter.mediaFile?.isNotEmpty == true)
+            .firstOrNull
+            ?.id;
   }
 
   /// The chapters of one audiobook, as playable leaves. Their composite id
