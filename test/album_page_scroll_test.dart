@@ -34,7 +34,8 @@ Map<String, dynamic> _metadata(String id, String title) => {
 
 /// With [discs] = 2 the 40 tracks split 1–20 → disc 1 and 21–40 → disc 2,
 /// with the track number restarting per disc; titles stay globally unique.
-Map<String, dynamic> _album({int discs = 1}) => {
+/// [guestTrack] gives that track a different artist than the album.
+Map<String, dynamic> _album({int discs = 1, int? guestTrack}) => {
       '__typename': 'Album',
       'id': 'album-1',
       'name': 'Long Album',
@@ -50,11 +51,17 @@ Map<String, dynamic> _album({int discs = 1}) => {
             'id': 'track-$n',
             'number': discs > 1 ? (n - 1) % 20 + 1 : n,
             'discNumber': discs > 1 ? (n - 1) ~/ 20 + 1 : 1,
-            'artist': {
-              '__typename': 'Person',
-              'id': 'artist-1',
-              'name': 'The Band'
-            },
+            'artist': n == guestTrack
+                ? {
+                    '__typename': 'Person',
+                    'id': 'artist-2',
+                    'name': 'Guest Star'
+                  }
+                : {
+                    '__typename': 'Person',
+                    'id': 'artist-1',
+                    'name': 'The Band'
+                  },
             'metadata': [_metadata('track-meta-$n', 'Track $n')],
             'mediaFile': [
               {'__typename': 'MediaFile', 'durationInMilliseconds': 180000}
@@ -64,13 +71,17 @@ Map<String, dynamic> _album({int discs = 1}) => {
       ],
     };
 
-MockClient _fakeGraphQL({int discs = 1}) => MockClient((request) async {
+MockClient _fakeGraphQL({int discs = 1, int? guestTrack}) =>
+    MockClient((request) async {
       final body = json.decode(request.body) as Map<String, dynamic>;
       final query = body['query'] as String;
       Map<String, dynamic> payload;
       if (query.contains('albumById')) {
         payload = {
-          'data': {'__typename': 'Query', 'albumById': _album(discs: discs)}
+          'data': {
+            '__typename': 'Query',
+            'albumById': _album(discs: discs, guestTrack: guestTrack)
+          }
         };
       } else if (query.contains('me {') || query.contains('me{')) {
         payload = {
@@ -187,6 +198,36 @@ void main() {
     final target = tester.getRect(find.text('Track 35'));
     expect(target.top, greaterThanOrEqualTo(0));
     expect(target.bottom, lessThanOrEqualTo(screenHeight));
+
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('only a track whose artist differs from the album gets an artist line',
+      (tester) async {
+    await tester.pumpWidget(_app(_fakeGraphQL(guestTrack: 2)));
+    await tester.pumpAndSettle();
+
+    // The guest artist appears under its track…
+    expect(
+      find.descendant(
+        of: find.ancestor(
+          of: find.text('Track 2'),
+          matching: find.byType(ListTile),
+        ),
+        matching: find.text('Guest Star'),
+      ),
+      findsOneWidget,
+    );
+    // …while rows matching the album artist stay without the noise line (the
+    // one "The Band" on the page is the hero header's album-artist subtitle).
+    expect(
+      find.descendant(
+        of: find.byType(ListTile),
+        matching: find.text('The Band', skipOffstage: false),
+      ),
+      findsNothing,
+    );
 
     await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();
