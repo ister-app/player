@@ -764,6 +764,12 @@ abstract class AppLocalizations {
   /// **'Appears in'**
   String get appearsIn;
 
+  /// Shown on the person page when the person does not exist or is not accessible
+  ///
+  /// In en, this message translates to:
+  /// **'Person not found'**
+  String get personNotFound;
+
   /// Header above the tracks of one disc on a multi-disc album page
   ///
   /// In en, this message translates to:

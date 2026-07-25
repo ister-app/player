@@ -110,6 +110,7 @@
   "ratingValue": "{value}/10",
   "ratingFailed": "Kon je beoordeling niet opslaan",
   "appearsIn": "Verschijnt in",
+  "personNotFound": "Persoon niet gevonden",
   "discHeader": "Cd {number}",
   "trackCount": "{count, plural, =1{1 nummer} other{{count} nummers}}",
   "albumStats": "{tracks} • {duration}",

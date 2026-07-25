@@ -84,6 +84,11 @@ class _PersonPageState extends State<PersonPage> {
             );
           }
 
+          // Only show the skeleton on a cold load. With cacheAndNetwork
+          // `isLoading` stays true while cached data is already available, and
+          // a loaded-but-null person (hidden library, bad id) must show a
+          // not-found message instead of skeletonizing forever.
+          final loading = result.data == null && result.isLoading;
           final artist = result.data == null
               ? null
               : Query$artistById.fromJson(result.data!).artistById;
@@ -130,11 +135,20 @@ class _PersonPageState extends State<PersonPage> {
                       : (Query$books.fromJson(booksResult.data!).books?.content ??
                           const <Fragment$fragmentBook>[]);
 
+                  if (!loading && artist == null) {
+                    return Scaffold(
+                      appBar: AppBar(),
+                      body: Center(
+                          child:
+                              Text(AppLocalizations.of(context)!.personNotFound)),
+                    );
+                  }
+
                   final content =
                       _buildContent(context, artist, albums, books);
 
                   return Scaffold(
-                    body: artist == null
+                    body: loading
                         ? Skeletonizer(enabled: true, child: content)
                         : content,
                   );

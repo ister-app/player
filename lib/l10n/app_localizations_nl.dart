@@ -372,6 +372,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get appearsIn => 'Verschijnt in';
 
   @override
+  String get personNotFound => 'Persoon niet gevonden';
+
+  @override
   String discHeader(int number) {
     return 'Cd $number';
   }

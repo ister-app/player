@@ -454,6 +454,10 @@
   "@appearsIn": {
     "description": "Section header on a person page listing the movies and shows they appear in"
   },
+  "personNotFound": "Person not found",
+  "@personNotFound": {
+    "description": "Shown on the person page when the person does not exist or is not accessible"
+  },
   "discHeader": "Disc {number}",
   "@discHeader": {
     "description": "Header above the tracks of one disc on a multi-disc album page",
