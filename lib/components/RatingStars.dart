@@ -54,6 +54,9 @@ class _RatingStarsState extends State<RatingStars> {
   int? _rating;
   bool _saving = false;
 
+  /// Value (1-10) under the mouse cursor, previewed but not yet saved.
+  int? _hover;
+
   @override
   void initState() {
     super.initState();
@@ -114,7 +117,12 @@ class _RatingStarsState extends State<RatingStars> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
-    final rating = _rating ?? 0;
+    final shown = _hover ?? _rating;
+    final rating = shown ?? 0;
+    // Preview the hovered value in a translucent tint until it is saved.
+    final filled = _hover != null
+        ? theme.colorScheme.primary.withValues(alpha: 0.6)
+        : theme.colorScheme.primary;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -122,7 +130,7 @@ class _RatingStarsState extends State<RatingStars> {
         for (var i = 0; i < 5; i++)
           _StarIcon(
             size: widget.size,
-            filled: theme.colorScheme.primary,
+            filled: filled,
             empty: theme.colorScheme.onSurfaceVariant,
             // 0 = empty, 1 = half, 2 = full
             fill: rating >= (i + 1) * 2
@@ -131,11 +139,18 @@ class _RatingStarsState extends State<RatingStars> {
                     ? 1
                     : 0,
             onTapHalf: _saving ? null : (leftHalf) => _onTap(i, leftHalf),
+            onHoverHalf: (leftHalf) {
+              final value = i * 2 + (leftHalf ? 1 : 2);
+              if (value != _hover) setState(() => _hover = value);
+            },
+            onHoverExit: () {
+              if (_hover != null) setState(() => _hover = null);
+            },
           ),
-        if (widget.showValue && _rating != null) ...[
+        if (widget.showValue && shown != null) ...[
           SizedBox(width: widget.size * 0.25),
           Text(
-            loc.ratingValue(_rating!),
+            loc.ratingValue(shown),
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -205,6 +220,8 @@ class _StarIcon extends StatelessWidget {
     required this.filled,
     required this.empty,
     required this.onTapHalf,
+    this.onHoverHalf,
+    this.onHoverExit,
   });
 
   final double size;
@@ -217,6 +234,12 @@ class _StarIcon extends StatelessWidget {
   /// Called with `true` for the left half, `false` for the right half.
   final void Function(bool leftHalf)? onTapHalf;
 
+  /// Called while the mouse hovers, with `true` for the left half.
+  final void Function(bool leftHalf)? onHoverHalf;
+
+  /// Called when the mouse leaves this star.
+  final VoidCallback? onHoverExit;
+
   @override
   Widget build(BuildContext context) {
     final IconData icon = switch (fill) {
@@ -224,15 +247,22 @@ class _StarIcon extends StatelessWidget {
       1 => Icons.star_half_rounded,
       _ => Icons.star_outline_rounded,
     };
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTapUp: onTapHalf == null
+    return MouseRegion(
+      cursor: onTapHalf == null ? MouseCursor.defer : SystemMouseCursors.click,
+      onHover: onHoverHalf == null
           ? null
-          : (details) => onTapHalf!(details.localPosition.dx < size / 2),
-      child: Icon(
-        icon,
-        size: size,
-        color: fill == 0 ? empty : filled,
+          : (event) => onHoverHalf!(event.localPosition.dx < size / 2),
+      onExit: onHoverExit == null ? null : (_) => onHoverExit!(),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapUp: onTapHalf == null
+            ? null
+            : (details) => onTapHalf!(details.localPosition.dx < size / 2),
+        child: Icon(
+          icon,
+          size: size,
+          color: fill == 0 ? empty : filled,
+        ),
       ),
     );
   }
