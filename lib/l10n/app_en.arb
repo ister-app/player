@@ -458,6 +458,14 @@
   "@personNotFound": {
     "description": "Shown on the person page when the person does not exist or is not accessible"
   },
+  "readMore": "Read more",
+  "@readMore": {
+    "description": "Toggle expanding a clamped long description to its full text"
+  },
+  "showLess": "Show less",
+  "@showLess": {
+    "description": "Toggle collapsing an expanded long description back to a few lines"
+  },
   "discHeader": "Disc {number}",
   "@discHeader": {
     "description": "Header above the tracks of one disc on a multi-disc album page",

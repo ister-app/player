@@ -770,6 +770,18 @@ abstract class AppLocalizations {
   /// **'Person not found'**
   String get personNotFound;
 
+  /// Toggle expanding a clamped long description to its full text
+  ///
+  /// In en, this message translates to:
+  /// **'Read more'**
+  String get readMore;
+
+  /// Toggle collapsing an expanded long description back to a few lines
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get showLess;
+
   /// Header above the tracks of one disc on a multi-disc album page
   ///
   /// In en, this message translates to:

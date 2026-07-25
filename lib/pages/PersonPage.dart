@@ -24,6 +24,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/BookCarouselTile.dart';
 import '../components/CarouselItemView.dart';
+import '../components/ExpandableText.dart';
 import '../components/MusicDetailHero.dart';
 import '../components/SourceAttribution.dart';
 import '../l10n/app_localizations.dart';
@@ -267,7 +268,7 @@ class _PersonPageState extends State<PersonPage> {
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 8),
-                      Text(description),
+                      ExpandableText(text: description),
                       const SizedBox(height: 6),
                       SourceAttribution(
                           metadata: artist?.metadata, images: artist?.images),
@@ -439,6 +440,7 @@ class _PersonPageState extends State<PersonPage> {
             ),
             images: s.images,
             onTap: () => _showEpisodesSheet(context, s),
+            placeholderIcon: Icons.tv,
           ),
         ),
     ]..sort((a, b) => b.releaseYear.compareTo(a.releaseYear));
@@ -492,14 +494,16 @@ class _PersonPageState extends State<PersonPage> {
     String? subtitle,
     List<Fragment$fragmentImages>? images,
     required VoidCallback? onTap,
+    IconData placeholderIcon = Icons.movie,
   }) {
-    // Prefer the wide background art; fall back to the poster/cover.
-    final img = ImageUtil.getImageByType(images, ImageTypes.background) ??
-        ImageUtil.getImageByType(images, ImageTypes.cover);
+    // Prefer the portrait poster/cover so it isn't cropped into a landscape
+    // frame; fall back to the wide background art.
+    final img = ImageUtil.getImageByType(images, ImageTypes.cover) ??
+        ImageUtil.getImageByType(images, ImageTypes.background);
     final imageUrl =
         ImageUtil.buildUrl(img, token: StreamTokenService.getToken(serverName));
     final placeholder = Icon(
-      Icons.movie,
+      placeholderIcon,
       size: 32,
       color: Theme.of(context).colorScheme.onSurfaceVariant,
     );
@@ -515,8 +519,8 @@ class _PersonPageState extends State<PersonPage> {
           child: Row(
             children: [
               SizedBox(
-                width: 160,
-                height: 90,
+                width: 108 * BookCarouselTile.coverAspectRatio,
+                height: 108,
                 child: Container(
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   child: (imageUrl != null && imageUrl != '')
@@ -575,16 +579,16 @@ class _PersonPageState extends State<PersonPage> {
   }
 
   void _showEpisodesSheet(BuildContext context, _ShowEntry entry) {
-    // Capture the router from the page context; inside the modal the sheet's
-    // own context can't resolve the server-scoped route tree reliably.
-    final router = AutoRouter.of(context);
+    // Resolve the router from the page context, lazily at tap time; inside
+    // the modal the sheet's own context can't resolve the server-scoped route
+    // tree reliably.
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
       builder: (_) => _PersonShowEpisodesSheet(
         serverName: serverName,
-        router: router,
+        resolveRouter: () => AutoRouter.of(context),
         showId: entry.showId,
         showName: entry.name,
         episodes: entry.episodes,
@@ -632,6 +636,8 @@ class _PersonPageState extends State<PersonPage> {
           : null,
       backgroundAlignment: Alignment.topCenter,
       placeholderIcon: Icons.person,
+      // Person photos (TMDB profiles) are portraits, not square album art.
+      coverAspectRatio: BookCarouselTile.coverAspectRatio,
     );
   }
 
@@ -656,7 +662,9 @@ class _PersonPageState extends State<PersonPage> {
       }
     }
 
+    final genre = MetadataUtil.getGenre(artist.metadata);
     final parts = <String>[
+      if ((genre ?? '').isNotEmpty) genre!,
       if (albumCount > 0) loc.albumCount(albumCount),
       if (bookCount > 0) loc.bookCount(bookCount),
       if (movieIds.isNotEmpty) loc.movieCount(movieIds.length),
@@ -730,14 +738,14 @@ class _SeasonBucket {
 class _PersonShowEpisodesSheet extends StatefulWidget {
   const _PersonShowEpisodesSheet({
     required this.serverName,
-    required this.router,
+    required this.resolveRouter,
     required this.showId,
     required this.showName,
     required this.episodes,
   });
 
   final String serverName;
-  final StackRouter router;
+  final StackRouter Function() resolveRouter;
   final String showId;
   final String showName;
   final List<Fragment$fragmentPersonCredit$episode> episodes;
@@ -802,7 +810,7 @@ class _PersonShowEpisodesSheetState extends State<_PersonShowEpisodesSheet> {
               InkWell(
                 onTap: () {
                   Navigator.of(context).pop();
-                  widget.router.push(ShowOverviewRoute(showId: widget.showId));
+                  widget.resolveRouter().push(ShowOverviewRoute(showId: widget.showId));
                 },
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -887,7 +895,7 @@ class _PersonShowEpisodesSheetState extends State<_PersonShowEpisodesSheet> {
           ? null
           : () {
               Navigator.of(context).pop();
-              widget.router
+              widget.resolveRouter()
                   .push(ShowEpisodeRoute(showId: showId, episodeId: episode.id));
             },
     );

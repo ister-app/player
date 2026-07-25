@@ -374,6 +374,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personNotFound => 'Person not found';
 
   @override
+  String get readMore => 'Read more';
+
+  @override
+  String get showLess => 'Show less';
+
+  @override
   String discHeader(int number) {
     return 'Disc $number';
   }
