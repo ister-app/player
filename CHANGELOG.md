@@ -1,5 +1,47 @@
 # Changelog
 
+## player v1.6.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.6.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat: freshen up the person page ([`30c92b3`](https://github.com/ister-app/player/commit/30c92b3))
+- feat: play audiobooks directly from the Android Auto book list ([`d0a5a3e`](https://github.com/ister-app/player/commit/d0a5a3e))
+- feat: preview the hovered rating value on the rating stars ([`a9098fe`](https://github.com/ister-app/player/commit/a9098fe))
+- feat: polish the album page with disc grouping and scroll-to-track from search ([`55e4131`](https://github.com/ister-app/player/commit/55e4131))
+
+### Fixes
+
+- fix: show a not-found message when a person fails to load ([`5ed334f`](https://github.com/ister-app/player/commit/5ed334f))
+- fix: keep the TV focus highlight off rows whose menu button holds focus ([`cd9d1c8`](https://github.com/ister-app/player/commit/cd9d1c8))
+
+### Dependency updates
+
+- chore(deps): upgrade pub dependencies ([`10475cf`](https://github.com/ister-app/player/commit/10475cf))
+- chore(deps): update github actions (major) ([`574c9db`](https://github.com/ister-app/player/commit/574c9db))
+- chore(deps): update com.android.application to v9.3.1 and kotlin.android to v2.4.10 ([`86bfbfd`](https://github.com/ister-app/player/commit/86bfbfd))
+- chore(deps): update gradle to v9.6.1 ([`f128ea6`](https://github.com/ister-app/player/commit/f128ea6))
+- chore(deps): update dependency flutter to v3.44.8 ([`214c0ae`](https://github.com/ister-app/player/commit/214c0ae))
+
+### Other
+
+- test: cover the per-track artist line on the album page ([`b7703c9`](https://github.com/ister-app/player/commit/b7703c9))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.6.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.5.0...v1.6.0
+
 ## player v1.5.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
