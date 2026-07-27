@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- audio_service looks its notification icons up by name via getIdentifier(),
+     from strings that live in Dart code — invisible to the R8 resource
+     shrinker, which otherwise strips them and the media notification dies with
+     "You must specify an icon resource id to build a CustomAction". -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/audio_service_*" />
