@@ -3,6 +3,9 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+    <!-- Runtime permission since targetSdk 33 — without it Android silently hides
+         the media playback notification of the foreground service. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <!-- Android TV: the app must run without a touchscreen and declare Leanback
          support, otherwise the Play Store hides it from TV devices. Both are

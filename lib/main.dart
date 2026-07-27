@@ -5,6 +5,7 @@ import 'utils/url_strategy_stub.dart'
     if (dart.library.html) 'utils/url_strategy_web.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:player/routes/AppRouter.dart';
 import 'package:player/utils/AppMessenger.dart';
@@ -100,6 +101,15 @@ class _MainState extends State<Main> {
             }
           : null,
     );
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      // POST_NOTIFICATIONS is a runtime permission since targetSdk 33; without
+      // it the audio_service foreground notification is silently suppressed.
+      // Request after the first frame so an activity is attached — main() also
+      // runs during headless audio-service restore, where there is none.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Permission.notification.request();
+      });
+    }
   }
 
   @override
