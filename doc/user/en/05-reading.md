@@ -4,11 +4,11 @@ Ister isn't just for watching and listening — it has a full built-in reader fo
 
 ## The epub reader
 
-Open an ebook from its [book page](03-browsing.md) and it renders right in the app: clean typography, chapter by chapter. Swipe or use the arrow keys to turn pages, and open the table of contents to jump to any chapter. Tap once to show or hide the reader's controls.
+Open an ebook from its [book page](03-browsing.md) and it renders right in the app: clean typography, chapter by chapter. Swipe, use the arrow keys, or tap the left or right edge of the screen to turn pages; tap the middle to show or hide the reader's controls. Open the table of contents to jump to any chapter, and use the **fullscreen** button to give the book the whole screen — the reader remembers that choice for next time.
 
 ![The epub reader](../images/en/epub-reader.png)
 
-Open the reading settings to make the page comfortable: adjust the **font size** and pick a **theme** — light, sepia or dark.
+Open the reading settings to make the page comfortable: adjust the **font size**, **line spacing** and **margins**, pick a **font** (the book's own, serif or sans) and a **theme** — light, sepia or dark.
 
 ### Your reading position
 
@@ -24,7 +24,7 @@ Comics get their own reader tuned for pages: swipe through page spreads, pinch t
 
 ![The comic reader showing a page spread](../images/en/comic-reader.png)
 
-The reader adapts to how the comic is meant to be read. Set the **reading direction** to left-to-right or right-to-left (right-to-left is the default for manga), choose how many **pages per view** to show (single, double or automatic), and fit each page to the **width** or the whole **page**. A thumbnail overview and a page slider let you jump anywhere, and when you reach the end of a volume a **Next volume** button takes you straight into the following one.
+The reader adapts to how the comic is meant to be read. Set the **reading direction** to left-to-right or right-to-left (right-to-left is the default for manga), choose how many **pages per view** to show (single, double or automatic), and fit each page to the **width** or the whole **page**. Like the epub reader it has a **fullscreen** toggle that is remembered. A thumbnail overview and a page slider let you jump anywhere, and when you reach the end of a volume a **Next volume** button takes you straight into the following one.
 
 ## Where to next
 

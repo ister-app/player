@@ -31,10 +31,15 @@ enum ComicSpreadMode {
 /// through on every fetch); for series-less volumes it stays the source of
 /// truth. Fit and spread mode describe this device's screen and are
 /// deliberately not synced to the server.
+///
+/// Fullscreen is the exception to the per-series scoping: it is a UI
+/// preference of this device, not a property of a series, so it uses one
+/// global key.
 class ComicPreferences {
   static const _kRtl = 'comic_rtl_';
   static const _kFit = 'comic_fit_';
   static const _kSpread = 'comic_spread_';
+  static const _kFullscreen = 'comic_fullscreen';
   static final SharedPreferencesAsync _prefs = SharedPreferencesAsync();
 
   static Future<bool> getRightToLeft(String scopeId) async =>
@@ -62,4 +67,10 @@ class ComicPreferences {
 
   static Future<void> setSpreadMode(String scopeId, ComicSpreadMode mode) =>
       _prefs.setString('$_kSpread$scopeId', mode.name);
+
+  static Future<bool> getFullscreen() async =>
+      await _prefs.getBool(_kFullscreen) ?? false;
+
+  static Future<void> setFullscreen(bool value) =>
+      _prefs.setBool(_kFullscreen, value);
 }

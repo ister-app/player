@@ -2,12 +2,15 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:player/components/reader/ReaderChrome.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/pages/ReaderPage.dart';
+import 'package:player/utils/epub/ReaderPreferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
@@ -192,6 +195,83 @@ void main() {
 
       final after = sizeOf('Opening paragraph of chapter one');
       expect(after, greaterThan(before));
+    });
+  });
+
+  testWidgets('opens windowed and the fullscreen toggle persists',
+      (tester) async {
+    // The static in-memory store leaks between tests; start from a known
+    // state.
+    await ReaderPreferences.setFullscreen(false);
+    await _withFakeServer(tester, [], () async {
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.fullscreen), findsOneWidget);
+      expect(find.byIcon(Icons.fullscreen_exit), findsNothing);
+
+      await tester.tap(find.byIcon(Icons.fullscreen));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.fullscreen_exit), findsOneWidget);
+      expect(await ReaderPreferences.getFullscreen(), isTrue);
+    });
+  });
+
+  testWidgets('restores fullscreen from the saved preference', (tester) async {
+    await ReaderPreferences.setFullscreen(true);
+    await _withFakeServer(tester, [], () async {
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.fullscreen_exit), findsOneWidget);
+    });
+  });
+
+  testWidgets('does not touch the system UI mode when opening',
+      (tester) async {
+    final calls = <String>[];
+    tester.binding.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+      calls.add(call.method);
+      return null;
+    });
+    addTearDown(() => tester.binding.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, null));
+
+    await _withFakeServer(tester, [], () async {
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+    });
+
+    expect(calls, isNot(contains('SystemChrome.setEnabledSystemUIMode')));
+  });
+
+  testWidgets('tap zones: the middle toggles the chrome, the edges page',
+      (tester) async {
+    await _withFakeServer(tester, [], () async {
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+
+      bool chromeVisible() => tester
+          .widgetList<ReaderChrome>(find.byType(ReaderChrome))
+          .every((chrome) => chrome.visible);
+
+      expect(chromeVisible(), isTrue);
+
+      // The paragraph sits in the centre zone of the 800-wide test surface.
+      await tester
+          .tap(find.textContaining('Opening paragraph', findRichText: true));
+      await tester.pumpAndSettle();
+      expect(chromeVisible(), isFalse);
+
+      // The right edge pages forward; the short fixture chapter is fully
+      // visible, so this advances to the next chapter.
+      await tester.tapAt(const Offset(760, 300));
+      await tester.pumpAndSettle();
+      expect(chromeVisible(), isFalse);
+      expect(find.textContaining('Second chapter heading', findRichText: true),
+          findsOneWidget);
     });
   });
 }

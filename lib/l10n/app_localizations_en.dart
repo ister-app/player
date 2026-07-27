@@ -629,6 +629,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get readerThemeDark => 'Dark';
 
   @override
+  String get lineHeight => 'Line spacing';
+
+  @override
+  String get pageMargins => 'Margins';
+
+  @override
+  String get readerFont => 'Font';
+
+  @override
+  String get readerFontStandard => 'Book default';
+
+  @override
+  String get readerFontSerif => 'Serif';
+
+  @override
+  String get readerFontSans => 'Sans';
+
+  @override
+  String get enterFullscreen => 'Fullscreen';
+
+  @override
+  String get exitFullscreen => 'Exit fullscreen';
+
+  @override
   String get couldNotLoadBook => 'Could not load the book';
 
   @override

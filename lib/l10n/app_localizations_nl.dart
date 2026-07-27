@@ -630,6 +630,30 @@ class AppLocalizationsNl extends AppLocalizations {
   String get readerThemeDark => 'Donker';
 
   @override
+  String get lineHeight => 'Regelafstand';
+
+  @override
+  String get pageMargins => 'Marges';
+
+  @override
+  String get readerFont => 'Lettertype';
+
+  @override
+  String get readerFontStandard => 'Boekstandaard';
+
+  @override
+  String get readerFontSerif => 'Serif';
+
+  @override
+  String get readerFontSans => 'Sans';
+
+  @override
+  String get enterFullscreen => 'Volledig scherm';
+
+  @override
+  String get exitFullscreen => 'Volledig scherm verlaten';
+
+  @override
   String get couldNotLoadBook => 'Het boek kon niet worden geladen';
 
   @override

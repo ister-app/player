@@ -18,6 +18,7 @@ import 'package:player/utils/epub/ReaderBookController.dart';
 import 'package:player/utils/epub/ReaderPreferences.dart';
 import 'package:player/utils/epub/ReadingSyncService.dart';
 import 'package:player/utils/LoggerService.dart';
+import 'package:player/utils/ReaderFullscreen.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -94,7 +95,11 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
   bool _hasReported = false;
 
   double _fontScale = 1.0;
+  double _lineHeight = ReaderPreferences.defaultLineHeight;
+  double _margin = ReaderPreferences.defaultMargin;
+  ReaderFontFamily _fontFamily = ReaderFontFamily.standard;
   ReaderTheme _theme = ReaderTheme.light;
+  bool _fullscreen = false;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -102,10 +107,6 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    if (!kIsWeb) {
-      unawaited(
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky));
-    }
     // Tolerates platforms/tests without the wakelock plugin.
     unawaited(WakelockPlus.enable().catchError((_) {}));
     _itemPositionsListener.itemPositions.addListener(_onPositionsChanged);
@@ -116,9 +117,8 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     unawaited(WakelockPlus.disable().catchError((_) {}));
-    if (!kIsWeb) {
-      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
-    }
+    // Leave fullscreen but keep the preference: the next open restores it.
+    if (_fullscreen) unawaited(ReaderFullscreen.exit());
     _readAloud?.dispose();
     _sync?.dispose(); // flushes the pending position
     _book?.removeListener(_onBookChanged);
@@ -133,16 +133,28 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
       unawaited(_readAloud?.pause());
       unawaited(_sync?.flush());
     }
+    if (state == AppLifecycleState.resumed && _fullscreen) {
+      unawaited(ReaderFullscreen.reassert());
+    }
   }
 
   Future<void> _load() async {
     final fontScale = await ReaderPreferences.getFontScale();
+    final lineHeight = await ReaderPreferences.getLineHeight();
+    final margin = await ReaderPreferences.getMargin();
+    final fontFamily = await ReaderPreferences.getFontFamily();
     final theme = await ReaderPreferences.getTheme();
+    final fullscreen = await ReaderPreferences.getFullscreen();
     if (mounted) {
       setState(() {
         _fontScale = fontScale;
+        _lineHeight = lineHeight;
+        _margin = margin;
+        _fontFamily = fontFamily;
         _theme = theme;
+        _fullscreen = fullscreen;
       });
+      if (fullscreen) unawaited(ReaderFullscreen.enter());
     }
 
     final nodeUrl = widget.nodeUrl;
@@ -545,14 +557,28 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
         .whenComplete(() => _autoScrolling = false));
   }
 
-  void _onBlockTap(int blockIndex, ChapterBlock block) {
+  void _onBlockTap(int blockIndex, ChapterBlock block, TapUpDetails details) {
     final readAloud = _readAloud;
     // While reading aloud, tapping a sentence jumps the audio there.
     if (readAloud != null && readAloud.playing && block.ids.isNotEmpty) {
       unawaited(readAloud.seekToBlock(_spineIndex, blockIndex));
       return;
     }
-    setState(() => _chromeVisible = !_chromeVisible);
+    _onSurfaceTap(details);
+  }
+
+  /// Tap zones: the outer 25% pages backward/forward (the same mapping as the
+  /// arrow keys); the middle toggles the chrome.
+  void _onSurfaceTap(TapUpDetails details) {
+    final width = MediaQuery.sizeOf(context).width;
+    final x = width <= 0 ? 0.5 : details.globalPosition.dx / width;
+    if (x < 0.25) {
+      _pageStep(-1);
+    } else if (x > 0.75) {
+      _pageStep(1);
+    } else {
+      setState(() => _chromeVisible = !_chromeVisible);
+    }
   }
 
   /* -------------------------------- input -------------------------------- */
@@ -588,16 +614,37 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
 
   /* ------------------------------- settings ------------------------------ */
 
+  void _toggleFullscreen() {
+    setState(() => _fullscreen = !_fullscreen);
+    unawaited(_fullscreen ? ReaderFullscreen.enter() : ReaderFullscreen.exit());
+    unawaited(ReaderPreferences.setFullscreen(_fullscreen));
+  }
+
   void _openSettings() {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
       builder: (context) => ReaderSettingsSheet(
         fontScale: _fontScale,
+        lineHeight: _lineHeight,
+        margin: _margin,
+        fontFamily: _fontFamily,
         theme: _theme,
         onFontScaleChanged: (value) {
           setState(() => _fontScale = value);
           unawaited(ReaderPreferences.setFontScale(value));
+        },
+        onLineHeightChanged: (value) {
+          setState(() => _lineHeight = value);
+          unawaited(ReaderPreferences.setLineHeight(value));
+        },
+        onMarginChanged: (value) {
+          setState(() => _margin = value);
+          unawaited(ReaderPreferences.setMargin(value));
+        },
+        onFontFamilyChanged: (value) {
+          setState(() => _fontFamily = value);
+          unawaited(ReaderPreferences.setFontFamily(value));
         },
         onThemeChanged: (value) {
           setState(() => _theme = value);
@@ -632,7 +679,7 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
               )
             : null,
         // The bars overlay the text in a Stack (never resizing it); the
-        // system bars are hidden by the immersive mode set in initState. The
+        // system bars are only hidden while the fullscreen toggle is on. The
         // endDrawer stays a Scaffold feature and is unaffected.
         body: Focus(
           autofocus: true,
@@ -659,6 +706,9 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
                         content: content,
                         theme: _theme,
                         fontScale: _fontScale,
+                        lineHeight: _lineHeight,
+                        horizontalMargin: _margin,
+                        fontFamily: _fontFamily.fontFamily,
                         resourceUrl: book.client.url,
                         itemScrollController: _itemScrollController,
                         itemPositionsListener: _itemPositionsListener,
@@ -666,6 +716,7 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
                         initialBlockIndex: _initialBlockIndex,
                         highlightFragment: _readAloud?.activeFragment,
                         onBlockTap: _onBlockTap,
+                        onBackgroundTap: _onSurfaceTap,
                         onLinkTap: _openLink,
                       ),
                     );
@@ -707,6 +758,15 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
                           icon: const Icon(Icons.toc),
                           onPressed: () =>
                               _scaffoldKey.currentState?.openEndDrawer(),
+                        ),
+                        IconButton(
+                          tooltip: _fullscreen
+                              ? loc.exitFullscreen
+                              : loc.enterFullscreen,
+                          icon: Icon(_fullscreen
+                              ? Icons.fullscreen_exit
+                              : Icons.fullscreen),
+                          onPressed: _toggleFullscreen,
                         ),
                       ],
                     )),

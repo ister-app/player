@@ -4,11 +4,11 @@ Ister is er niet alleen om te kijken en te luisteren — de app heeft een volwaa
 
 ## De epub-lezer
 
-Open een e-boek vanaf zijn [boekpagina](03-browsing.md) en het wordt direct in de app weergegeven: rustige typografie, hoofdstuk voor hoofdstuk. Veeg of gebruik de pijltjestoetsen om te bladeren, en open de inhoudsopgave om naar een willekeurig hoofdstuk te springen. Tik één keer om de bediening te tonen of te verbergen.
+Open een e-boek vanaf zijn [boekpagina](03-browsing.md) en het wordt direct in de app weergegeven: rustige typografie, hoofdstuk voor hoofdstuk. Veeg, gebruik de pijltjestoetsen of tik op de linker- of rechterrand van het scherm om te bladeren; tik in het midden om de bediening te tonen of te verbergen. Open de inhoudsopgave om naar een willekeurig hoofdstuk te springen, en geef het boek met de knop **volledig scherm** het hele scherm — de lezer onthoudt die keuze voor de volgende keer.
 
 ![De epub-lezer](../images/nl/epub-reader.png)
 
-Open de leesinstellingen om de pagina prettig te maken: pas de **lettergrootte** aan en kies een **thema** — licht, sepia of donker.
+Open de leesinstellingen om de pagina prettig te maken: pas de **lettergrootte**, **regelafstand** en **marges** aan, kies een **lettertype** (dat van het boek, serif of sans) en een **thema** — licht, sepia of donker.
 
 ### Je leespositie
 
@@ -24,7 +24,7 @@ Strips hebben een eigen lezer, gemaakt voor pagina's: veeg door paginaspreads, k
 
 ![De stripslezer met een paginaspread](../images/nl/comic-reader.png)
 
-De lezer past zich aan de manier waarop de strip gelezen hoort te worden. Zet de **leesrichting** op van links naar rechts of van rechts naar links (rechts-naar-links is de standaard voor manga), kies hoeveel **pagina's per weergave** je toont (enkel, dubbel of automatisch), en pas elke pagina op de **breedte** of de hele **pagina**. Een miniatuuroverzicht en een paginaschuif laten je overal naartoe springen, en aan het einde van een deel brengt een knop **Volgend deel** je meteen naar het volgende.
+De lezer past zich aan de manier waarop de strip gelezen hoort te worden. Zet de **leesrichting** op van links naar rechts of van rechts naar links (rechts-naar-links is de standaard voor manga), kies hoeveel **pagina's per weergave** je toont (enkel, dubbel of automatisch), en pas elke pagina op de **breedte** of de hele **pagina**. Net als de epub-lezer heeft hij een knop **volledig scherm** die wordt onthouden. Een miniatuuroverzicht en een paginaschuif laten je overal naartoe springen, en aan het einde van een deel brengt een knop **Volgend deel** je meteen naar het volgende.
 
 ## Verder lezen
 

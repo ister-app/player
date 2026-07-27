@@ -1148,6 +1148,54 @@ abstract class AppLocalizations {
   /// **'Dark'**
   String get readerThemeDark;
 
+  /// No description provided for @lineHeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Line spacing'**
+  String get lineHeight;
+
+  /// No description provided for @pageMargins.
+  ///
+  /// In en, this message translates to:
+  /// **'Margins'**
+  String get pageMargins;
+
+  /// No description provided for @readerFont.
+  ///
+  /// In en, this message translates to:
+  /// **'Font'**
+  String get readerFont;
+
+  /// No description provided for @readerFontStandard.
+  ///
+  /// In en, this message translates to:
+  /// **'Book default'**
+  String get readerFontStandard;
+
+  /// No description provided for @readerFontSerif.
+  ///
+  /// In en, this message translates to:
+  /// **'Serif'**
+  String get readerFontSerif;
+
+  /// No description provided for @readerFontSans.
+  ///
+  /// In en, this message translates to:
+  /// **'Sans'**
+  String get readerFontSans;
+
+  /// No description provided for @enterFullscreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Fullscreen'**
+  String get enterFullscreen;
+
+  /// No description provided for @exitFullscreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit fullscreen'**
+  String get exitFullscreen;
+
   /// No description provided for @couldNotLoadBook.
   ///
   /// In en, this message translates to:

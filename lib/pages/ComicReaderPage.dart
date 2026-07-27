@@ -19,14 +19,16 @@ import 'package:player/utils/comic/ComicResourceClient.dart';
 import 'package:player/utils/comic/ComicSyncService.dart';
 import 'package:player/utils/comic/PdfPageSource.dart';
 import 'package:player/utils/comic/SeriesDirectionService.dart';
+import 'package:player/utils/ReaderFullscreen.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 /// The comic reader: page images in a swiping [PageView], one *spread* per
 /// view — a single page, or two side by side on a wide viewport. Handles
 /// pinch-zoom, right-to-left reading (the per-series server preference; the
 /// in-reader toggle only lasts this session), tap zones, a thumbnail strip,
-/// D-pad/keyboard paging and progress sync. Fullscreen: the system bars are
-/// hidden and the app bar/slider overlay the page instead of shrinking it.
+/// D-pad/keyboard paging and progress sync. A persisted fullscreen toggle
+/// hides the system bars (native window fullscreen on desktop/web); the app
+/// bar/slider always overlay the page instead of shrinking it.
 /// Format-blind through [ComicPageSource]: cbz pages stream off the node, pdf
 /// pages are rendered locally.
 @RoutePage()
@@ -73,6 +75,7 @@ class _ComicReaderPageState extends State<ComicReaderPage>
   ComicFitMode _fit = ComicFitMode.fitPage;
   ComicSpreadMode _spreadMode = ComicSpreadMode.auto;
   bool _chromeVisible = true;
+  bool _fullscreen = false;
   bool _loadStarted = false;
 
   /// Volumes of the series (from the reading-direction query); null offline.
@@ -106,10 +109,6 @@ class _ComicReaderPageState extends State<ComicReaderPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    if (!kIsWeb) {
-      unawaited(
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky));
-    }
     // Tolerates platforms/tests without the wakelock plugin.
     unawaited(WakelockPlus.enable().catchError((_) {}));
   }
@@ -129,9 +128,8 @@ class _ComicReaderPageState extends State<ComicReaderPage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     unawaited(WakelockPlus.disable().catchError((_) {}));
-    if (!kIsWeb) {
-      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
-    }
+    // Leave fullscreen but keep the preference: the next open restores it.
+    if (_fullscreen) unawaited(ReaderFullscreen.exit());
     _sync?.dispose(); // flushes the pending position
     _source?.dispose();
     _client?.dispose();
@@ -144,6 +142,9 @@ class _ComicReaderPageState extends State<ComicReaderPage>
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       unawaited(_sync?.flush());
+    }
+    if (state == AppLifecycleState.resumed && _fullscreen) {
+      unawaited(ReaderFullscreen.reassert());
     }
   }
 
@@ -171,12 +172,15 @@ class _ComicReaderPageState extends State<ComicReaderPage>
     }
     final fit = await ComicPreferences.getFitMode(_prefsScope);
     final spreadMode = await ComicPreferences.getSpreadMode(_prefsScope);
+    final fullscreen = await ComicPreferences.getFullscreen();
     if (mounted) {
       setState(() {
         _rtl = rtl;
         _fit = fit;
         _spreadMode = spreadMode;
+        _fullscreen = fullscreen;
       });
+      if (fullscreen) unawaited(ReaderFullscreen.enter());
     }
 
     final nodeUrl = widget.nodeUrl;
@@ -516,6 +520,12 @@ class _ComicReaderPageState extends State<ComicReaderPage>
     }
   }
 
+  void _toggleFullscreen() {
+    setState(() => _fullscreen = !_fullscreen);
+    unawaited(_fullscreen ? ReaderFullscreen.enter() : ReaderFullscreen.exit());
+    unawaited(ComicPreferences.setFullscreen(_fullscreen));
+  }
+
   void _toggleFit() {
     setState(() => _fit = _fit == ComicFitMode.fitPage
         ? ComicFitMode.fitWidth
@@ -673,13 +683,19 @@ class _ComicReaderPageState extends State<ComicReaderPage>
             tooltip: _fit == ComicFitMode.fitPage ? loc.fitWidth : loc.fitPage,
             icon: Icon(_fit == ComicFitMode.fitPage
                 ? Icons.fit_screen
-                : Icons.fullscreen),
+                : Icons.width_full),
             onPressed: _toggleFit,
           ),
           IconButton(
             tooltip: loc.pageOverview,
             icon: const Icon(Icons.grid_view),
             onPressed: _openThumbnails,
+          ),
+          IconButton(
+            tooltip: _fullscreen ? loc.exitFullscreen : loc.enterFullscreen,
+            icon:
+                Icon(_fullscreen ? Icons.fullscreen_exit : Icons.fullscreen),
+            onPressed: _toggleFullscreen,
           ),
         ],
       ));
@@ -721,7 +737,7 @@ class _ComicReaderPageState extends State<ComicReaderPage>
             : null;
 
     // The bars overlay the page in a Stack (never resizing it); the system
-    // bars are hidden by the immersive mode set in initState.
+    // bars are only hidden while the fullscreen toggle is on.
     return Scaffold(
       backgroundColor: Colors.black,
       body: Focus(

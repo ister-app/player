@@ -495,4 +495,35 @@ void main() {
     expect(posts.last['location'], contains('page=9'));
     expect(posts.last['progress'], closeTo(1.0, 1e-6));
   });
+
+  testWidgets('opens windowed and the fullscreen toggle persists',
+      (tester) async {
+    // The static in-memory store leaks between tests; start from a known
+    // state.
+    await ComicPreferences.setFullscreen(false);
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.fullscreen), findsOneWidget);
+      expect(find.byIcon(Icons.fullscreen_exit), findsNothing);
+
+      await tester.tap(find.byIcon(Icons.fullscreen));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.fullscreen_exit), findsOneWidget);
+      expect(await ComicPreferences.getFullscreen(), isTrue);
+    }, () => _fakeServer([]));
+  });
+
+  testWidgets('restores fullscreen from the saved preference', (tester) async {
+    await ComicPreferences.setFullscreen(true);
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.fullscreen_exit), findsOneWidget);
+    }, () => _fakeServer([]));
+    await ComicPreferences.setFullscreen(false);
+  });
 }

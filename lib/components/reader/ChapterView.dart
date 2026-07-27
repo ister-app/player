@@ -16,6 +16,9 @@ class ChapterView extends StatelessWidget {
     required this.content,
     required this.theme,
     required this.fontScale,
+    this.lineHeight = ReaderPreferences.defaultLineHeight,
+    this.horizontalMargin = ReaderPreferences.defaultMargin,
+    this.fontFamily,
     required this.resourceUrl,
     required this.itemScrollController,
     required this.itemPositionsListener,
@@ -24,12 +27,18 @@ class ChapterView extends StatelessWidget {
     this.initialAlignment = 0,
     this.highlightFragment,
     this.onBlockTap,
+    this.onBackgroundTap,
     this.onLinkTap,
   });
 
   final ChapterContent content;
   final ReaderTheme theme;
   final double fontScale;
+  final double lineHeight;
+  final double horizontalMargin;
+
+  /// Value for [TextStyle.fontFamily]; null keeps the book/platform default.
+  final String? fontFamily;
   final String Function(String entryPath) resourceUrl;
   final ItemScrollController itemScrollController;
   final ItemPositionsListener itemPositionsListener;
@@ -40,7 +49,12 @@ class ChapterView extends StatelessWidget {
   /// Element id of the sentence the read-aloud audio is at; highlighted like
   /// the web reader's `-epub-media-overlay-active` class.
   final String? highlightFragment;
-  final void Function(int blockIndex, ChapterBlock block)? onBlockTap;
+  final void Function(int blockIndex, ChapterBlock block, TapUpDetails details)?
+      onBlockTap;
+
+  /// Tap beside the text column (the gutters on a wide screen) or on the
+  /// vertical padding around the blocks.
+  final void Function(TapUpDetails details)? onBackgroundTap;
   final void Function(String url)? onLinkTap;
 
   static const double _maxTextWidth = 700;
@@ -50,9 +64,10 @@ class ChapterView extends StatelessWidget {
     final textStyle = TextStyle(
       color: theme.foreground,
       fontSize: 16 * fontScale,
-      height: 1.6,
+      height: lineHeight,
+      fontFamily: fontFamily,
     );
-    return ScrollablePositionedList.builder(
+    final list = ScrollablePositionedList.builder(
       itemCount: content.blocks.length,
       itemScrollController: itemScrollController,
       itemPositionsListener: itemPositionsListener,
@@ -67,14 +82,15 @@ class ChapterView extends StatelessWidget {
             block.ids.contains(highlightFragment);
         return GestureDetector(
           behavior: HitTestBehavior.translucent,
-          onTap:
-              onBlockTap != null ? () => onBlockTap!(index, block) : null,
+          onTapUp: onBlockTap != null
+              ? (details) => onBlockTap!(index, block, details)
+              : null,
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: _maxTextWidth),
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                padding: EdgeInsets.symmetric(
+                    horizontal: horizontalMargin, vertical: 4),
                 child: HtmlWidget(
                   block.outerHtml,
                   // A stable key: the widget must update in place when the
@@ -106,6 +122,14 @@ class ChapterView extends StatelessWidget {
           ),
         );
       },
+    );
+    // The gutters beside the text column (and the padding around the blocks)
+    // are not covered by the per-block detectors; those claim their own taps,
+    // so this outer detector only sees the leftovers.
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTapUp: onBackgroundTap,
+      child: list,
     );
   }
 }
