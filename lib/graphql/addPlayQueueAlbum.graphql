@@ -1,0 +1,5 @@
+mutation addPlayQueueAlbum($playQueueId: ID!, $albumId: ID!) {
+    addPlayQueueAlbum(playQueueId: $playQueueId, albumId: $albumId) {
+        ...fragmentPlayQueue
+    }
+}

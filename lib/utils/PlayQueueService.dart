@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/graphql/addPlayQueueAlbum.graphql.dart';
 import 'package:player/graphql/addPlayQueueItem.graphql.dart';
 import 'package:player/graphql/createPlayQueue.graphql.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
@@ -312,6 +313,27 @@ class PlayQueueService {
       return null;
     }
     return Mutation$addPlayQueueItem.fromJson(result.data!).addPlayQueueItem;
+  }
+
+  /// Appends all tracks of [albumId] to the end of the queue in one server
+  /// call, in natural play order (disc number, track number).
+  Future<Fragment$fragmentPlayQueue?> addPlayQueueAlbum(
+    GraphQLClient graphQLClient,
+    String playQueueId,
+    String albumId,
+  ) async {
+    final QueryResult result = await graphQLClient.mutate(MutationOptions(
+        document: documentNodeMutationaddPlayQueueAlbum,
+        variables: Variables$Mutation$addPlayQueueAlbum(
+          playQueueId: playQueueId,
+          albumId: albumId,
+        ).toJson()));
+
+    if (result.hasException) {
+      LoggerService().logger.e(result.exception);
+      return null;
+    }
+    return Mutation$addPlayQueueAlbum.fromJson(result.data!).addPlayQueueAlbum;
   }
 
   Future<Fragment$fragmentPlayQueue?> removePlayQueueItem(

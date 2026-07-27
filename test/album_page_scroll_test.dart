@@ -174,6 +174,18 @@ void main() {
     await tester.pumpAndSettle();
   });
 
+  testWidgets('the app bar offers add-album-to-queue next to add-to-session',
+      (tester) async {
+    await tester.pumpWidget(_app(_fakeGraphQL()));
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.playlist_add), findsOneWidget);
+    expect(find.byIcon(Icons.queue_music), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
+  });
+
   testWidgets('a multi-disc album shows a header per disc', (tester) async {
     await tester.pumpWidget(_app(_fakeGraphQL(discs: 2)));
     await tester.pumpAndSettle();

@@ -111,6 +111,16 @@ class _AlbumPageState extends State<AlbumPage> {
     }
   }
 
+  Future<void> _addAlbumToQueue(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final loc = AppLocalizations.of(context)!;
+    final added = await MediaPlayerHandler.instance
+        .addAlbumToQueue(widget.serverName, widget.albumId);
+    if (added) {
+      messenger.showSnackBar(SnackBar(content: Text(loc.addToQueue)));
+    }
+  }
+
   /// A track can only be played/queued once it has an analyzed media file.
   static bool _trackHasFile(Fragment$fragmentTrack track) =>
       track.mediaFile?.isNotEmpty == true;
@@ -234,6 +244,12 @@ class _AlbumPageState extends State<AlbumPage> {
           stretch: true,
           foregroundColor: Colors.white,
           actions: [
+            if (album != null && tracks.any(_trackHasFile))
+              IconButton(
+                icon: const Icon(Icons.playlist_add),
+                tooltip: loc.addToQueue,
+                onPressed: () => _addAlbumToQueue(context),
+              ),
             if (album != null && tracks.any(_trackHasFile))
               IconButton(
                 icon: const Icon(Icons.queue_music),

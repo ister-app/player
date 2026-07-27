@@ -1262,6 +1262,24 @@ class MediaPlayerHandler extends BaseAudioHandler
     return true;
   }
 
+  /// Appends all tracks of [albumId] to the end of the active queue in one
+  /// server call. Same server rule as [addToQueue]; returns whether the album
+  /// was added.
+  Future<bool> addAlbumToQueue(String srv, String albumId) async {
+    final pq = playQueue;
+    final activeServer = serverName;
+    if (pq == null || activeServer == null || activeServer != srv) return false;
+
+    final client = ClientManager.getClientForUrl(srv).value;
+    _lastLocalQueueEdit = DateTime.now();
+    final updated =
+        await _playQueueService.addPlayQueueAlbum(client, pq.id, albumId);
+    if (updated == null) return false;
+    _applyServerPlayQueue(updated);
+    _refreshQueueFromPlayQueue();
+    return true;
+  }
+
   /// Removes [playQueueItemId] from the active queue. The currently playing
   /// item can't be removed (skip first).
   Future<void> removeFromQueue(String playQueueItemId) async {
