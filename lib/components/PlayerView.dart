@@ -300,8 +300,6 @@ class _PlayerViewState extends State<PlayerView>
     EdgeInsets tabPadding = const EdgeInsets.fromLTRB(4, 8, 4, 0),
     double viewportHeight = 400,
   }) {
-    if (previous.isEmpty && upNext.isEmpty) return [];
-
     final loc = AppLocalizations.of(context)!;
     final items = _selectedTab == 0 ? previous : upNext;
 
@@ -584,7 +582,6 @@ class _PlayerViewState extends State<PlayerView>
     final maxImageSize = min(constraints.maxWidth - 80, constraints.maxHeight - 340).clamp(80.0, 400.0);
     final previous = widget.controller.previous;
     final upNext = widget.controller.upNext;
-    final hasQueue = previous.isNotEmpty || upNext.isNotEmpty;
     final banner = _buildBanner();
 
     return NotificationListener<ScrollNotification>(
@@ -604,20 +601,19 @@ class _PlayerViewState extends State<PlayerView>
                 _artworkOrPlaceholder(artUri, maxImageSize, loading: loading),
                 const Spacer(),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(24, 0, 24, hasQueue ? 4 : 32),
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 4),
                   child: _Controls(controller: widget.controller, accent: _accent, loading: loading),
                 ),
-                if (hasQueue)
-                  IconButton(
-                    icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white54, size: 28),
-                    onPressed: () {
-                      _scrollController.animateTo(
-                        _scrollController.position.maxScrollExtent,
-                        duration: const Duration(milliseconds: 400),
-                        curve: Curves.easeInOut,
-                      );
-                    },
-                  ),
+                IconButton(
+                  icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white54, size: 28),
+                  onPressed: () {
+                    _scrollController.animateTo(
+                      _scrollController.position.maxScrollExtent,
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeInOut,
+                    );
+                  },
+                ),
               ],
             ),
           ),
@@ -640,7 +636,6 @@ class _PlayerViewState extends State<PlayerView>
     );
     final previous = widget.controller.previous;
     final upNext = widget.controller.upNext;
-    final hasQueue = previous.isNotEmpty || upNext.isNotEmpty;
     final banner = _buildBanner();
 
     return Row(
@@ -691,17 +686,16 @@ class _PlayerViewState extends State<PlayerView>
                           ),
                         ),
                       ),
-                      if (hasQueue)
-                        IconButton(
-                          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white54, size: 28),
-                          onPressed: () {
-                            _scrollController.animateTo(
-                              _scrollController.position.maxScrollExtent,
-                              duration: const Duration(milliseconds: 400),
-                              curve: Curves.easeInOut,
-                            );
-                          },
-                        ),
+                      IconButton(
+                        icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white54, size: 28),
+                        onPressed: () {
+                          _scrollController.animateTo(
+                            _scrollController.position.maxScrollExtent,
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),
