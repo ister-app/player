@@ -1,3 +1,7 @@
+---
+description: Browse your self-hosted Ister library of shows, movies, music, podcasts, books and comics, with ratings and search across everything.
+---
+
 # Browsing
 
 The **Library** tab is where you find everything on the server: shows, movies, music, podcasts, books and comics. This chapter walks through each kind and the search that ties them together.

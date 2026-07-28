@@ -1,3 +1,7 @@
+---
+description: Binnenin de native Flutter-epub-lezer van Ister — lui laden van resources, bloksgewijze positiesync met het luisterboek en EPUB 3-voorlezen.
+---
+
 # Epub-lezer
 
 De lezer is **native, puur Flutter** — geen webview (Linux heeft er geen). Hij leeft in `lib/utils/epub/`, `lib/pages/ReaderPage.dart` en `lib/components/reader/`. Hij rendert één hoofdstuk tegelijk als een scrollende blokkenlijst, synchroniseert de leespositie met de server (inclusief de audioboekkoppeling) en speelt EPUB 3-voorleesaudio af.

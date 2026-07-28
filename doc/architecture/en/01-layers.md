@@ -1,3 +1,7 @@
+---
+description: The layer structure of the Ister Flutter player — pages, reusable components, per-server services, GraphQL documents and playback DTOs.
+---
+
 # Layer structure
 
 See the [layer diagram](../diagrams/layers.md) for the picture; this chapter gives the conventions per layer.

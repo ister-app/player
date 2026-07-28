@@ -1,3 +1,7 @@
+---
+description: De afspeelpijplijn van Ister — play queues op de server, de MediaPlayerHandler-singleton, voortgangssync, stream-tokens en achtergrondaudio op Android.
+---
+
 # Afspeelpijplijn
 
 Het pad van een tik op "afspelen" tot gesynchroniseerde voortgang op de server. Zie het [afspeelflow-diagram](../diagrams/playback-flow.md).

@@ -1,3 +1,7 @@
+---
+description: Zo past de Ister-mediaspeler zich aan op Android-telefoons en -tablets, Android TV, Android Auto, Linux-desktops en de browser.
+---
+
 # Platforms
 
 Dezelfde app draait op Android-telefoons en -tablets, Android TV, Android Auto, Linux-desktops en het web. Dit hoofdstuk beschrijft wat er per platform anders is.

@@ -1,3 +1,7 @@
+---
+description: Hoe de Ister-player getypeerde GraphQL- en routecode genereert met graphql_codegen en build_runner, plus querypatronen en nullable-veldregels.
+---
+
 # GraphQL en codegeneratie
 
 ## Bronnen en gegenereerde typen

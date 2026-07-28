@@ -1,3 +1,7 @@
+---
+description: Hoe de Ister-player navigatie opzet met auto_route — de getypeerde routeboom, path-parameters, deep-link-guards en transparante speler-overlays.
+---
+
 # Navigatie en routes
 
 Navigatie gebruikt `auto_route` met getypeerde, gegenereerde routes. De boom staat in `lib/routes/AppRouter.dart` (`@AutoRouterConfig(replaceInRouteName: 'Screen|Page,Route')`); `auto_route_generator` schrijft `AppRouter.gr.dart` — draai `dart run build_runner build` na wijzigingen aan de boom of het toevoegen van een `@RoutePage()`.

@@ -1,3 +1,7 @@
+---
+description: Administer your Ister media server from the app — manage users, library access and visibility, podcast subscriptions and server maintenance.
+---
+
 # Administration
 
 Some screens are only for **administrators**. If you are signed in with an admin account you'll see extra entries in the **Settings** tab; ordinary users never see these, so they can't reach the management screens.

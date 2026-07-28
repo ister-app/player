@@ -1,3 +1,7 @@
+---
+description: Naslag van de service-singletons per server in de Ister-player, van serverdiscovery en OIDC-login tot play queues, instellingen en zoeken.
+---
+
 # Services
 
 Alle services leven in `lib/utils/` als singletons (of statische, `Map`-gesleutelde state) en zijn **per server**: aanroepen krijgen een serveridentifier mee en interne state is daarop gesleuteld. Zie het [multi-server-diagram](../diagrams/multi-server.md) voor hoe de discovery-/auth-keten in elkaar grijpt.

@@ -1,3 +1,7 @@
+---
+description: Zie met de feestmodus van Ister wat er op je mediaserver speelt, bedien andere apparaten op afstand en zet nummers in de wachtrij vanaf elke telefoon.
+---
+
 # Feestmodus
 
 Spelen er meerdere apparaten af vanaf dezelfde server, dan kan de app ze allemaal laten zien — en laat hij je vanaf je eigen apparaat de bediening van elke sessie overnemen.

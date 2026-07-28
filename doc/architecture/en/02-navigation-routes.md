@@ -1,3 +1,7 @@
+---
+description: How the Ister player structures navigation with auto_route — the typed route tree, path parameters, deep-link guards and transparent player overlays.
+---
+
 # Navigation and routes
 
 Navigation uses `auto_route` with typed, generated routes. The tree lives in `lib/routes/AppRouter.dart` (`@AutoRouterConfig(replaceInRouteName: 'Screen|Page,Route')`); `auto_route_generator` writes `AppRouter.gr.dart` — run `dart run build_runner build` after changing the tree or adding a `@RoutePage()`.

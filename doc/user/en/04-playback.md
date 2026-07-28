@@ -1,3 +1,7 @@
+---
+description: Watch video and listen to music, podcasts and audiobooks with the Ister player, with subtitles, queues and progress synced to your server.
+---
+
 # Playback
 
 Press play and Ister streams from your own server — video, music, podcasts and audiobooks all through the same player. This chapter covers watching, listening and picking up where you left off.

@@ -1,3 +1,7 @@
+---
+description: How to install the Ister media player on Android, Linux (Flatpak) and the web, and connect it to your self-hosted media server.
+---
+
 # Installation
 
 Before you can add a server you need the app itself. Ister runs on Android, Linux and the web, and every version talks to the same servers — pick whichever fits the device in front of you. Once it's installed, continue with [Getting started](01-getting-started.md).

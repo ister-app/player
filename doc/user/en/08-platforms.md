@@ -1,3 +1,7 @@
+---
+description: How the Ister media player adapts to Android phones and tablets, Android TV, Android Auto, Linux desktops and the web browser.
+---
+
 # Platforms
 
 The same app runs on Android phones and tablets, Android TV, Android Auto, Linux desktops and the web. This chapter covers what's different on each.

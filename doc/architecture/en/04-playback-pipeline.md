@@ -1,3 +1,7 @@
+---
+description: The Ister playback pipeline — server-side play queues, the MediaPlayerHandler singleton, progress sync, stream tokens and Android background audio.
+---
+
 # Playback pipeline
 
 The path from a tap on "play" to synced progress on the server. See the [playback-flow diagram](../diagrams/playback-flow.md).

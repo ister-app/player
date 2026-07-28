@@ -3,6 +3,9 @@
 A media player for [Ister](https://github.com/ister-app), the self-hosted media server.
 Ships for Android (incl. Android TV and Android Auto), Linux (flatpak) and web.
 
+User guide: [ister.app/player](https://ister.app/player) — architecture docs for
+contributors: [ister.app/development](https://ister.app/development).
+
 ## Development
 
 ```shell

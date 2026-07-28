@@ -1,3 +1,7 @@
+---
+description: Reference of the Ister player's per-server service singletons, from server discovery and OIDC login to play queues, settings and search.
+---
+
 # Services
 
 All services live in `lib/utils/` as singletons (or static, `Map`-keyed state) and are **per server**: calls take a server identifier and internal state is keyed by it. See the [multi-server diagram](../diagrams/multi-server.md) for how the discovery/auth chain fits together.

@@ -1,3 +1,7 @@
+---
+description: Set your language, playback and sharing preferences in Ister — stored per user on your self-hosted media server, so they follow you across devices.
+---
+
 # Settings
 
 Each server has its own **Settings** tab. Your preferences are stored on the server, per user — set them once and every device you sign in on uses them.

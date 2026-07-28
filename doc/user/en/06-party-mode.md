@@ -1,3 +1,7 @@
+---
+description: Use Ister's party mode to see what is playing on your media server, remote-control other devices and queue up tracks from any phone.
+---
+
 # Party mode
 
 When several devices are playing from the same server, the app can show you all of them — and let you take the controls of any session from your own device.

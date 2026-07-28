@@ -1,3 +1,7 @@
+---
+description: Read ebooks and comics with Ister's built-in EPUB and comic readers, with synced reading positions and EPUB 3 read-aloud narration.
+---
+
 # Reading
 
 Ister isn't just for watching and listening — it has a full built-in reader for ebooks and comics, on every platform including Linux and Android TV.

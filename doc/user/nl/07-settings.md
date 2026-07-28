@@ -1,3 +1,7 @@
+---
+description: Stel je taal-, afspeel- en privacyvoorkeuren voor Ister in — per gebruiker bewaard op je zelfgehoste mediaserver, zodat ze meereizen tussen apparaten.
+---
+
 # Instellingen
 
 Elke server heeft een eigen tabblad **Instellingen**. Je voorkeuren worden op de server bewaard, per gebruiker — stel ze één keer in en elk apparaat waarop je inlogt gebruikt ze.

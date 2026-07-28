@@ -1,3 +1,7 @@
+---
+description: Inside Ister's native Flutter EPUB reader — lazy resource loading, block-based reading positions synced with the audiobook, and EPUB 3 read-aloud.
+---
+
 # Epub reader
 
 The reader is **native, pure Flutter** — no webview (Linux has none). It lives in `lib/utils/epub/`, `lib/pages/ReaderPage.dart` and `lib/components/reader/`. It renders one chapter at a time as a scrolling block list, syncs the reading position with the server (including the audiobook mapping) and plays EPUB 3 read-aloud audio.

@@ -1,3 +1,7 @@
+---
+description: Architecture overview of the Ister player, a Flutter media client for the self-hosted Ister media server on Android, Linux and the web.
+---
+
 # Architecture overview
 
 The Ister player is a Flutter media player for the Ister media management system. It connects to multiple Ister servers at once, authenticates with OIDC, and plays and tracks progress for TV episodes, movies, music, podcasts, audiobooks, epubs and comics.

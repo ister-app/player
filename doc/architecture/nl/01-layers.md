@@ -1,3 +1,7 @@
+---
+description: De lagenstructuur van de Ister Flutter-app — pages, herbruikbare components, services per server, GraphQL-documenten en playback-DTO's.
+---
+
 # Lagenstructuur
 
 Zie het [lagendiagram](../diagrams/layers.md) voor het totaalplaatje; dit hoofdstuk beschrijft de conventies per laag.

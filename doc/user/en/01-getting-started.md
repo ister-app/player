@@ -1,3 +1,7 @@
+---
+description: Add your self-hosted Ister media server, sign in with single sign-on and reach your first home screen in the player app.
+---
+
 # Getting started
 
 Ister is your personal media server, and this app is how you watch, listen and read from it — on your phone, TV, desktop or in the browser. With the app [installed](00-installation.md), this chapter gets you from a fresh install to your first home screen.

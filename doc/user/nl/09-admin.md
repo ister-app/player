@@ -1,3 +1,7 @@
+---
+description: Beheer je Ister-mediaserver vanuit de app — gebruikers, bibliotheektoegang en -zichtbaarheid, podcastabonnementen en serveronderhoud.
+---
+
 # Beheer
 
 Sommige schermen zijn er alleen voor **beheerders**. Ben je ingelogd met een beheeraccount, dan zie je extra items in het tabblad **Instellingen**; gewone gebruikers zien die niet en kunnen de beheerschermen dus niet bereiken.

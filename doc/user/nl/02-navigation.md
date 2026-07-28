@@ -1,3 +1,7 @@
+---
+description: Vind je weg in de Ister-app met de tabbladen Home, Bibliotheek en Instellingen, en wissel moeiteloos tussen meerdere zelfgehoste mediaservers.
+---
+
 # Navigatie
 
 Eenmaal binnen op een server is alles hooguit drie tikken weg. Dit hoofdstuk laat zien waar alles zit.

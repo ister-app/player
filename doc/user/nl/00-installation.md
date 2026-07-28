@@ -1,3 +1,7 @@
+---
+description: Zo installeer je de Ister-mediaspeler op Android, Linux (Flatpak) en in de browser, klaar om te verbinden met je zelfgehoste mediaserver.
+---
+
 # Installatie
 
 Voordat je een server kunt toevoegen, heb je de app zelf nodig. Ister draait op Android, Linux en het web, en elke versie praat met dezelfde servers — kies wat past bij het apparaat dat je voor je hebt. Zodra de app geïnstalleerd is, ga je verder met [Aan de slag](01-getting-started.md).

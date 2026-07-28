@@ -1,3 +1,7 @@
+---
+description: How the Ister player generates typed GraphQL and route code with graphql_codegen and build_runner, plus query patterns and nullable-field rules.
+---
+
 # GraphQL and code generation
 
 ## Sources and generated types

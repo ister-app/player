@@ -1,3 +1,7 @@
+---
+description: Architectuuroverzicht van de Ister-player, een Flutter-mediaspeler voor de zelfgehoste Ister-mediaserver op Android, Linux en het web.
+---
+
 # Architectuuroverzicht
 
 De Ister-player is een Flutter-mediaspeler voor het Ister-mediabeheersysteem. De app verbindt met meerdere Ister-servers tegelijk, authenticeert via OIDC, en speelt tv-afleveringen, films, muziek, podcasts, audioboeken, epubs en strips af — inclusief voortgangsregistratie.

@@ -1,3 +1,7 @@
+---
+description: Kijk video en luister naar muziek, podcasts en luisterboeken met de Ister-speler, met ondertitels, wachtrijen en voortgang gesynchroniseerd met je server.
+---
+
 # Afspelen
 
 Druk op afspelen en Ister streamt vanaf je eigen server — video, muziek, podcasts en luisterboeken, allemaal via dezelfde speler. Dit hoofdstuk gaat over kijken, luisteren en verdergaan waar je gebleven was.

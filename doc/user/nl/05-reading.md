@@ -1,3 +1,7 @@
+---
+description: Lees e-boeken en strips met de ingebouwde epub- en stripslezer van Ister, met gesynchroniseerde leesposities en EPUB 3-voorlezen.
+---
+
 # Lezen
 
 Ister is er niet alleen om te kijken en te luisteren — de app heeft een volwaardige ingebouwde lezer voor e-boeken en strips, op elk platform, ook Linux en Android TV.

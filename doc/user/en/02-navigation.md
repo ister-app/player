@@ -1,3 +1,7 @@
+---
+description: Find your way around the Ister app with the Home, Library and Settings tabs, and switch between multiple self-hosted media servers.
+---
+
 # Navigation
 
 Once you're inside a server, everything is three taps away at most. This chapter shows you where things live.

@@ -1,3 +1,7 @@
+---
+description: Voeg je zelfgehoste Ister-mediaserver toe, log in met single sign-on en beland op je eerste startscherm in de speler-app.
+---
+
 # Aan de slag
 
 Ister is je eigen mediaserver, en met deze app kijk, luister en lees je eruit — op je telefoon, tv, desktop of in de browser. Heb je de app [geïnstalleerd](00-installation.md), dan brengt dit hoofdstuk je van een verse installatie naar je eerste startscherm.

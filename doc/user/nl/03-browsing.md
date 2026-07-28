@@ -1,3 +1,7 @@
+---
+description: Blader door je zelfgehoste Ister-bibliotheek met series, films, muziek, podcasts, boeken en strips, met beoordelingen en zoeken over alles heen.
+---
+
 # Bladeren
 
 Op het tabblad **Bibliotheek** vind je alles wat op de server staat: series, films, muziek, podcasts, boeken en strips. Dit hoofdstuk loopt langs elke soort, en langs de zoekfunctie die ze allemaal verbindt.
