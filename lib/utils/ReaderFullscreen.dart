@@ -16,9 +16,15 @@ import 'package:media_kit_video/media_kit_video.dart';
 class ReaderFullscreen {
   ReaderFullscreen._();
 
+  /// Whether a reader is currently fullscreen. The server shell listens to
+  /// this to hide its own navigation chrome (rail / bottom bar / mini player),
+  /// which [SystemChrome] can't touch.
+  static final ValueNotifier<bool> active = ValueNotifier(false);
+
   static bool get _mobile => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
   static Future<void> enter() async {
+    active.value = true;
     if (_mobile) {
       await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     } else {
@@ -27,6 +33,7 @@ class ReaderFullscreen {
   }
 
   static Future<void> exit() async {
+    active.value = false;
     if (_mobile) {
       await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     } else {

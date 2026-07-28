@@ -10,6 +10,7 @@ import 'package:http/testing.dart';
 import 'package:player/components/reader/ReaderChrome.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/pages/ReaderPage.dart';
+import 'package:player/utils/ReaderFullscreen.dart';
 import 'package:player/utils/epub/ReaderPreferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
@@ -215,6 +216,12 @@ void main() {
 
       expect(find.byIcon(Icons.fullscreen_exit), findsOneWidget);
       expect(await ReaderPreferences.getFullscreen(), isTrue);
+      // The server shell hides its navigation chrome off this notifier.
+      expect(ReaderFullscreen.active.value, isTrue);
+
+      await tester.tap(find.byIcon(Icons.fullscreen_exit));
+      await tester.pumpAndSettle();
+      expect(ReaderFullscreen.active.value, isFalse);
     });
   });
 

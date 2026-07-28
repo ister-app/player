@@ -12,6 +12,7 @@ import '../l10n/app_localizations.dart';
 import '../utils/LoggerService.dart';
 import '../utils/LoginManager.dart';
 import '../utils/PlatformService.dart';
+import '../utils/ReaderFullscreen.dart';
 import '../utils/StreamTokenService.dart';
 import '../utils/TabNavigationNotifier.dart';
 
@@ -169,11 +170,13 @@ class _ServerHomePageState extends State<ServerHomePage> {
 
     return ValueListenableBuilder<int>(
       valueListenable: tabNavigationNotifier,
-      builder: (context, tabIndex, _) {
+      builder: (context, tabIndex, _) => ValueListenableBuilder<bool>(
+        valueListenable: ReaderFullscreen.active,
+        builder: (context, readerFullscreen, _) {
         return Scaffold(
           body: Row(
             children: [
-              if (isWideScreen) ...[
+              if (isWideScreen && !readerFullscreen) ...[
                 FocusScope(
                   node: _railScope,
                   child: Actions(
@@ -227,7 +230,9 @@ class _ServerHomePageState extends State<ServerHomePage> {
               ),
             ],
           ),
-          bottomNavigationBar: isWideScreen
+          bottomNavigationBar: readerFullscreen
+              ? null
+              : isWideScreen
               ? FocusScope(
                   node: _miniScope,
                   child: Actions(
@@ -255,7 +260,8 @@ class _ServerHomePageState extends State<ServerHomePage> {
                   ],
                 ),
         );
-      },
+        },
+      ),
     );
   }
 
