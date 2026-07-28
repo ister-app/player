@@ -3,6 +3,108 @@ import 'fragmentMetadata.graphql.dart';
 import 'package:gql/ast.dart';
 import 'schema.graphql.dart';
 
+class Variables$Query$recentlyWatched {
+  factory Variables$Query$recentlyWatched({String? libraryId}) =>
+      Variables$Query$recentlyWatched._({
+        if (libraryId != null) r'libraryId': libraryId,
+      });
+
+  Variables$Query$recentlyWatched._(this._$data);
+
+  factory Variables$Query$recentlyWatched.fromJson(Map<String, dynamic> data) {
+    final result$data = <String, dynamic>{};
+    if (data.containsKey('libraryId')) {
+      final l$libraryId = data['libraryId'];
+      result$data['libraryId'] = (l$libraryId as String?);
+    }
+    return Variables$Query$recentlyWatched._(result$data);
+  }
+
+  Map<String, dynamic> _$data;
+
+  String? get libraryId => (_$data['libraryId'] as String?);
+
+  Map<String, dynamic> toJson() {
+    final result$data = <String, dynamic>{};
+    if (_$data.containsKey('libraryId')) {
+      final l$libraryId = libraryId;
+      result$data['libraryId'] = l$libraryId;
+    }
+    return result$data;
+  }
+
+  CopyWith$Variables$Query$recentlyWatched<Variables$Query$recentlyWatched>
+  get copyWith => CopyWith$Variables$Query$recentlyWatched(this, (i) => i);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Variables$Query$recentlyWatched ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$libraryId = libraryId;
+    final lOther$libraryId = other.libraryId;
+    if (_$data.containsKey('libraryId') !=
+        other._$data.containsKey('libraryId')) {
+      return false;
+    }
+    if (l$libraryId != lOther$libraryId) {
+      return false;
+    }
+    return true;
+  }
+
+  @override
+  int get hashCode {
+    final l$libraryId = libraryId;
+    return Object.hashAll([
+      _$data.containsKey('libraryId') ? l$libraryId : const {},
+    ]);
+  }
+}
+
+abstract class CopyWith$Variables$Query$recentlyWatched<TRes> {
+  factory CopyWith$Variables$Query$recentlyWatched(
+    Variables$Query$recentlyWatched instance,
+    TRes Function(Variables$Query$recentlyWatched) then,
+  ) = _CopyWithImpl$Variables$Query$recentlyWatched;
+
+  factory CopyWith$Variables$Query$recentlyWatched.stub(TRes res) =
+      _CopyWithStubImpl$Variables$Query$recentlyWatched;
+
+  TRes call({String? libraryId});
+}
+
+class _CopyWithImpl$Variables$Query$recentlyWatched<TRes>
+    implements CopyWith$Variables$Query$recentlyWatched<TRes> {
+  _CopyWithImpl$Variables$Query$recentlyWatched(this._instance, this._then);
+
+  final Variables$Query$recentlyWatched _instance;
+
+  final TRes Function(Variables$Query$recentlyWatched) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({Object? libraryId = _undefined}) => _then(
+    Variables$Query$recentlyWatched._({
+      ..._instance._$data,
+      if (libraryId != _undefined) 'libraryId': (libraryId as String?),
+    }),
+  );
+}
+
+class _CopyWithStubImpl$Variables$Query$recentlyWatched<TRes>
+    implements CopyWith$Variables$Query$recentlyWatched<TRes> {
+  _CopyWithStubImpl$Variables$Query$recentlyWatched(this._res);
+
+  TRes _res;
+
+  call({String? libraryId}) => _res;
+}
+
 class Query$recentlyWatched {
   Query$recentlyWatched({this.recentlyWatched, this.$__typename = 'Query'});
 
@@ -172,14 +274,26 @@ const documentNodeQueryrecentlyWatched = DocumentNode(
     OperationDefinitionNode(
       type: OperationType.query,
       name: NameNode(value: 'recentlyWatched'),
-      variableDefinitions: [],
+      variableDefinitions: [
+        VariableDefinitionNode(
+          variable: VariableNode(name: NameNode(value: 'libraryId')),
+          type: NamedTypeNode(name: NameNode(value: 'ID'), isNonNull: false),
+          defaultValue: DefaultValueNode(value: null),
+          directives: [],
+        ),
+      ],
       directives: [],
       selectionSet: SelectionSetNode(
         selections: [
           FieldNode(
             name: NameNode(value: 'recentlyWatched'),
             alias: null,
-            arguments: [],
+            arguments: [
+              ArgumentNode(
+                name: NameNode(value: 'libraryId'),
+                value: VariableNode(name: NameNode(value: 'libraryId')),
+              ),
+            ],
             directives: [],
             selectionSet: SelectionSetNode(
               selections: [

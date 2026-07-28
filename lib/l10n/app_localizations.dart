@@ -794,6 +794,48 @@ abstract class AppLocalizations {
   /// **'Highest rated'**
   String get highestRatedTracks;
 
+  /// Library view switch: the carousel-based discover view
+  ///
+  /// In en, this message translates to:
+  /// **'Discover'**
+  String get viewDiscover;
+
+  /// Library view switch: the sortable grid view
+  ///
+  /// In en, this message translates to:
+  /// **'Browse'**
+  String get viewBrowse;
+
+  /// Discover row of the library's newest items
+  ///
+  /// In en, this message translates to:
+  /// **'Recently added'**
+  String get recentlyAdded;
+
+  /// Discover row of the user's most recently played items
+  ///
+  /// In en, this message translates to:
+  /// **'Last played'**
+  String get recentlyPlayed;
+
+  /// Discover row of the user's most played items
+  ///
+  /// In en, this message translates to:
+  /// **'Most played'**
+  String get mostPlayed;
+
+  /// Discover row of the user's highest rated items
+  ///
+  /// In en, this message translates to:
+  /// **'Highest rated'**
+  String get highestRated;
+
+  /// Discover row of the user's most recently read books or series
+  ///
+  /// In en, this message translates to:
+  /// **'Recently read'**
+  String get recentlyRead;
+
   /// Tooltip/semantics label for the play-count badge in the most-played track list
   ///
   /// In en, this message translates to:

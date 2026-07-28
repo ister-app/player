@@ -1,5 +1,5 @@
-query recentlyWatched {
-    recentlyWatched {
+query recentlyWatched($libraryId: ID) {
+    recentlyWatched(libraryId: $libraryId) {
         type
         episode {
             id

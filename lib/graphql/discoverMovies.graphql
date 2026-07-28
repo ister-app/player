@@ -1,0 +1,26 @@
+query discoverMovies($libraryId: ID!, $limit: Int) {
+    libraryById(id: $libraryId) {
+        id
+        recentlyPlayedMovies(limit: $limit) {
+            id
+            name
+            releaseYear
+            images { ...fragmentImages }
+            metadata { ...fragmentMetadata }
+        }
+        mostPlayedMovies(limit: $limit) {
+            id
+            name
+            releaseYear
+            images { ...fragmentImages }
+            metadata { ...fragmentMetadata }
+        }
+        highestRatedMovies(limit: $limit) {
+            id
+            name
+            releaseYear
+            images { ...fragmentImages }
+            metadata { ...fragmentMetadata }
+        }
+    }
+}

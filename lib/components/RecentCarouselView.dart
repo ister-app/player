@@ -20,12 +20,17 @@ import 'CarouselItemView.dart';
 
 class RecentCarouselView extends StatefulWidget {
   final String serverName;
+
+  /// When set, only entries whose media lives in this library are shown
+  /// (the Discover view's continue-watching row).
+  final String? libraryId;
   final Function(Refetch?)? onRefetch;
   final Function()? onEmptyView;
 
   const RecentCarouselView({
     super.key,
     required this.serverName,
+    this.libraryId,
     this.onRefetch,
     this.onEmptyView,
   });
@@ -63,6 +68,9 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
     return Query(
       options: QueryOptions(
         document: documentNodeQueryrecentlyWatched,
+        variables: {
+          if (widget.libraryId != null) 'libraryId': widget.libraryId,
+        },
       ),
       builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
         // Always capture refetch — the play-queue stream listener needs it for
@@ -70,6 +78,12 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
         this.refetch = refetch;
         widget.onRefetch?.call(refetch);
         if (result.hasException) {
+          // Library-scoped: an older server does not know the libraryId
+          // argument yet. Degrade to an absent row instead of an error text.
+          if (widget.libraryId != null) {
+            widget.onEmptyView?.call();
+            return const SizedBox.shrink();
+          }
           return Text(result.exception.toString());
         }
 

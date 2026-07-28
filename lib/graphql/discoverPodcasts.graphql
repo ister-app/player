@@ -1,0 +1,8 @@
+query discoverPodcasts($libraryId: ID!, $limit: Int) {
+    libraryById(id: $libraryId) {
+        id
+        recentlyPlayedPodcasts(limit: $limit) { ...fragmentPodcast }
+        mostPlayedPodcasts(limit: $limit) { ...fragmentPodcast }
+        highestRatedPodcasts(limit: $limit) { ...fragmentPodcast }
+    }
+}

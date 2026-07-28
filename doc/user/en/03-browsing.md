@@ -6,9 +6,16 @@ description: Browse your self-hosted Ister library of shows, movies, music, podc
 
 The **Library** tab is where you find everything on the server: shows, movies, music, podcasts, books and comics. This chapter walks through each kind and the search that ties them together.
 
+## Discover and Browse
+
+The library opens in one of two views, switchable with the buttons at the top:
+
+- **Discover** shows rows of carousels tailored to the library: what you can continue watching or listening to in this library, what was recently added, and your personal top lists — recently played, most played and highest rated (for books and comics: recently read). These lists are yours alone: they rank by *your* plays and *your* ratings, so a row stays hidden until you've played or rated something. The app remembers which view you used last, per server.
+- **Browse** is the full grid of everything in the library, described below.
+
 ## The library grid
 
-The library shows your media as a grid of covers. Use the sort options to order by title, by what was recently added, or by release year — your choice is saved per library, so each one remembers how you like to see it. Scroll to load more; long lists fill in as you go. The search icon narrows a search to just this library, and **Shuffle play** starts the whole library in random order.
+The Browse view shows your media as a grid of covers. Use the sort button under the view switch to order by title, by what was recently added, or by release year — your choice is saved per library, so each one remembers how you like to see it. Scroll to load more; long lists fill in as you go. The search icon narrows a search to just this library, and **Shuffle play** starts the whole library in random order.
 
 ![The library grid](../images/en/library.png)
 

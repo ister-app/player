@@ -474,6 +474,34 @@
   "@highestRatedTracks": {
     "description": "Section header on the artist page for the user's highest rated tracks"
   },
+  "viewDiscover": "Discover",
+  "@viewDiscover": {
+    "description": "Library view switch: the carousel-based discover view"
+  },
+  "viewBrowse": "Browse",
+  "@viewBrowse": {
+    "description": "Library view switch: the sortable grid view"
+  },
+  "recentlyAdded": "Recently added",
+  "@recentlyAdded": {
+    "description": "Discover row of the library's newest items"
+  },
+  "recentlyPlayed": "Last played",
+  "@recentlyPlayed": {
+    "description": "Discover row of the user's most recently played items"
+  },
+  "mostPlayed": "Most played",
+  "@mostPlayed": {
+    "description": "Discover row of the user's most played items"
+  },
+  "highestRated": "Highest rated",
+  "@highestRated": {
+    "description": "Discover row of the user's highest rated items"
+  },
+  "recentlyRead": "Recently read",
+  "@recentlyRead": {
+    "description": "Discover row of the user's most recently read books or series"
+  },
   "playCountTimes": "{count, plural, =1{Played once} other{Played {count} times}}",
   "@playCountTimes": {
     "description": "Tooltip/semantics label for the play-count badge in the most-played track list",

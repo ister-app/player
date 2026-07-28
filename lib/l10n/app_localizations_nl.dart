@@ -387,6 +387,27 @@ class AppLocalizationsNl extends AppLocalizations {
   String get highestRatedTracks => 'Hoogst beoordeeld';
 
   @override
+  String get viewDiscover => 'Ontdekken';
+
+  @override
+  String get viewBrowse => 'Bladeren';
+
+  @override
+  String get recentlyAdded => 'Recent toegevoegd';
+
+  @override
+  String get recentlyPlayed => 'Laatst afgespeeld';
+
+  @override
+  String get mostPlayed => 'Meest afgespeeld';
+
+  @override
+  String get highestRated => 'Hoogst beoordeeld';
+
+  @override
+  String get recentlyRead => 'Recent gelezen';
+
+  @override
   String playCountTimes(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

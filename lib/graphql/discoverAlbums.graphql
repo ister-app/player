@@ -1,0 +1,8 @@
+query discoverAlbums($libraryId: ID!, $limit: Int) {
+    libraryById(id: $libraryId) {
+        id
+        recentlyPlayedAlbums(limit: $limit) { ...fragmentAlbum }
+        mostPlayedAlbums(limit: $limit) { ...fragmentAlbum }
+        highestRatedAlbums(limit: $limit) { ...fragmentAlbum }
+    }
+}

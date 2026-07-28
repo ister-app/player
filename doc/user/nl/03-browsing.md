@@ -6,9 +6,16 @@ description: Blader door je zelfgehoste Ister-bibliotheek met series, films, muz
 
 Op het tabblad **Bibliotheek** vind je alles wat op de server staat: series, films, muziek, podcasts, boeken en strips. Dit hoofdstuk loopt langs elke soort, en langs de zoekfunctie die ze allemaal verbindt.
 
+## Ontdekken en Bladeren
+
+De bibliotheek opent in een van twee weergaven, wisselbaar met de knoppen bovenaan:
+
+- **Ontdekken** toont rijen carrousels op maat van de bibliotheek: waar je in deze bibliotheek verder kunt kijken of luisteren, wat recent is toegevoegd, en je persoonlijke toplijsten — laatst afgespeeld, meest afgespeeld en hoogst beoordeeld (bij boeken en strips: recent gelezen). Die lijsten zijn van jou alleen: ze rangschikken op *jouw* afspeelgeschiedenis en *jouw* beoordelingen, dus een rij blijft verborgen tot je iets hebt afgespeeld of beoordeeld. De app onthoudt per server welke weergave je het laatst gebruikte.
+- **Bladeren** is het volledige raster met alles in de bibliotheek, hieronder beschreven.
+
 ## Het bibliotheekraster
 
-De bibliotheek toont je media als een raster van covers. Sorteer op titel, op recent toegevoegd of op releasejaar — je keuze wordt per bibliotheek bewaard, dus elke bibliotheek onthoudt hoe je hem het liefst ziet. Scrol om meer te laden; lange lijsten vullen zich vanzelf aan. Met het zoekpictogram beperk je een zoekopdracht tot deze bibliotheek, en met **Shuffle afspelen** start je de hele bibliotheek in willekeurige volgorde.
+De weergave Bladeren toont je media als een raster van covers. Sorteer met de sorteerknop onder de weergaveknoppen op titel, op recent toegevoegd of op releasejaar — je keuze wordt per bibliotheek bewaard, dus elke bibliotheek onthoudt hoe je hem het liefst ziet. Scrol om meer te laden; lange lijsten vullen zich vanzelf aan. Met het zoekpictogram beperk je een zoekopdracht tot deze bibliotheek, en met **Shuffle afspelen** start je de hele bibliotheek in willekeurige volgorde.
 
 ![Het bibliotheekraster](../images/nl/library.png)
 

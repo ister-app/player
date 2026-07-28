@@ -1,0 +1,6 @@
+query discoverSeries($libraryId: ID!, $limit: Int) {
+    libraryById(id: $libraryId) {
+        id
+        recentlyReadSeries(limit: $limit) { ...fragmentSeries }
+    }
+}

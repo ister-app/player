@@ -1,0 +1,26 @@
+query discoverShows($libraryId: ID!, $limit: Int) {
+    libraryById(id: $libraryId) {
+        id
+        recentlyPlayedShows(limit: $limit) {
+            id
+            name
+            releaseYear
+            images { ...fragmentImages }
+            metadata { ...fragmentMetadata }
+        }
+        mostPlayedShows(limit: $limit) {
+            id
+            name
+            releaseYear
+            images { ...fragmentImages }
+            metadata { ...fragmentMetadata }
+        }
+        highestRatedShows(limit: $limit) {
+            id
+            name
+            releaseYear
+            images { ...fragmentImages }
+            metadata { ...fragmentMetadata }
+        }
+    }
+}

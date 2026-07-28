@@ -1,0 +1,7 @@
+query discoverBooks($libraryId: ID!, $limit: Int) {
+    libraryById(id: $libraryId) {
+        id
+        recentlyReadBooks(limit: $limit) { ...fragmentBook }
+        highestRatedBooks(limit: $limit) { ...fragmentBook }
+    }
+}

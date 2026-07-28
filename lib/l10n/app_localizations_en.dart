@@ -386,6 +386,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get highestRatedTracks => 'Highest rated';
 
   @override
+  String get viewDiscover => 'Discover';
+
+  @override
+  String get viewBrowse => 'Browse';
+
+  @override
+  String get recentlyAdded => 'Recently added';
+
+  @override
+  String get recentlyPlayed => 'Last played';
+
+  @override
+  String get mostPlayed => 'Most played';
+
+  @override
+  String get highestRated => 'Highest rated';
+
+  @override
+  String get recentlyRead => 'Recently read';
+
+  @override
   String playCountTimes(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

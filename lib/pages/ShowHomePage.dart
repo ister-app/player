@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../components/AlbumScroll.dart';
 import '../components/BookScroll.dart';
+import '../components/LibraryDiscoverView.dart';
 import '../components/SeriesScroll.dart';
 import '../components/AddPodcastSheet.dart';
 import '../components/PodcastScroll.dart';
@@ -41,11 +42,14 @@ class _ShowHomePageState extends State<ShowHomePage> {
   Enum$SortingOrder _sortingOrder = Enum$SortingOrder.ASCENDING;
   // Library ID whose stored sort preference we've already seeded into _sorting/_sortingOrder.
   String? _sortSeededForLibraryId;
+  // Discover (carousels) vs. Browse (the sortable grid); remembered per server.
+  bool _discoverView = true;
   Refetch? _refetchLibraries;
   int _refreshCount = 0;
 
   static const _kSelectedLibraryKey = 'selected_library_id';
   static const _kSelectedLibraryTypeKey = 'selected_library_type';
+  static const _kLibraryViewKey = 'library_view';
   static final SharedPreferencesAsync _prefs = SharedPreferencesAsync();
 
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
@@ -67,6 +71,10 @@ class _ShowHomePageState extends State<ShowHomePage> {
   Future<void> _loadSavedLibrary() async {
     final saved = await _prefs.getString('${_kSelectedLibraryKey}_${widget.serverName}');
     final savedType = await _prefs.getString('${_kSelectedLibraryTypeKey}_${widget.serverName}');
+    final savedView = await _prefs.getString('${_kLibraryViewKey}_${widget.serverName}');
+    if (mounted && savedView != null) {
+      setState(() => _discoverView = savedView != 'browse');
+    }
     if (mounted && saved != null) {
       setState(() {
         _selectedLibraryId = saved;
@@ -92,6 +100,13 @@ class _ShowHomePageState extends State<ShowHomePage> {
     });
     await _prefs.setString('${_kSelectedLibraryKey}_${widget.serverName}', lib.id);
     await _prefs.setString('${_kSelectedLibraryTypeKey}_${widget.serverName}', lib.type.name);
+  }
+
+  Future<void> _setDiscoverView(bool discover) async {
+    if (discover == _discoverView) return;
+    setState(() => _discoverView = discover);
+    await _prefs.setString('${_kLibraryViewKey}_${widget.serverName}',
+        discover ? 'discover' : 'browse');
   }
 
   /// Persists the grid sort choice for the selected library on the server (so every client of
@@ -229,19 +244,6 @@ class _ShowHomePageState extends State<ShowHomePage> {
                     );
                   },
                 ),
-              if (_selectedLibraryId != null)
-                MenuAnchor(
-                  menuChildren: _sortMenuItems(context),
-                  builder: (context, controller, child) {
-                    return IconButton(
-                      icon: const Icon(Icons.sort),
-                      tooltip: AppLocalizations.of(context)!.sortBy,
-                      onPressed: () => controller.isOpen
-                          ? controller.close()
-                          : controller.open(),
-                    );
-                  },
-                ),
               if (libraries.isNotEmpty)
                 MenuAnchor(
                   menuChildren: libraries.map((lib) => MenuItemButton(
@@ -270,21 +272,110 @@ class _ShowHomePageState extends State<ShowHomePage> {
               ),
             ],
           ),
-          body: RefreshIndicator(
-            key: _refreshIndicatorKey,
-            onRefresh: _refresh,
-            child: _buildBody(),
+          body: Column(
+            children: [
+              if (_selectedLibraryId != null) _viewSelector(context),
+              if (_selectedLibraryId != null && !_discoverView)
+                _sortBar(context),
+              Expanded(
+                child: RefreshIndicator(
+                  key: _refreshIndicatorKey,
+                  onRefresh: _refresh,
+                  child: _buildBody(),
+                ),
+              ),
+            ],
           ),
         );
       },
     );
   }
 
+  /// The Discover/Browse switch, in the style of the search page's scope
+  /// selector. SegmentedButton is D-pad focusable on its own.
+  Widget _viewSelector(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      child: Center(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: SegmentedButton<bool>(
+            showSelectedIcon: false,
+            segments: [
+              ButtonSegment(
+                value: true,
+                label: Text(loc.viewDiscover),
+                icon: const Icon(Icons.explore_outlined),
+              ),
+              ButtonSegment(
+                value: false,
+                label: Text(loc.viewBrowse),
+                icon: const Icon(Icons.grid_view),
+              ),
+            ],
+            selected: {_discoverView},
+            onSelectionChanged: (selection) =>
+                _setDiscoverView(selection.first),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// The grid's sort control, shown under the view switch while browsing.
+  Widget _sortBar(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: MenuAnchor(
+          menuChildren: _sortMenuItems(context),
+          builder: (context, controller, child) {
+            return TextButton.icon(
+              icon: const Icon(Icons.sort),
+              label: Text(_currentSortLabel(context)),
+              onPressed: () =>
+                  controller.isOpen ? controller.close() : controller.open(),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  String _currentSortLabel(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final ascending = _sortingOrder == Enum$SortingOrder.ASCENDING;
+    switch (_sorting) {
+      case Enum$SortingEnum.DATE_CREATED:
+        return ascending ? loc.sortDateAddedOldest : loc.sortDateAddedNewest;
+      case Enum$SortingEnum.RELEASE_YEAR:
+        return ascending
+            ? loc.sortReleaseYearOldest
+            : loc.sortReleaseYearNewest;
+      default:
+        return ascending ? loc.sortNameAsc : loc.sortNameDesc;
+    }
+  }
+
   Widget _buildBody() {
     // The sort key/order are part of the key so changing them rebuilds the grid and re-runs the
     // query from page 0 (pages in the old and new order must never share one list).
     final key = ValueKey('${_selectedLibraryId ?? 'all'}-$_refreshCount'
-        '-${_sorting.name}-${_sortingOrder.name}');
+        '-${_sorting.name}-${_sortingOrder.name}-'
+        '${_discoverView ? 'discover' : 'browse'}');
+    if (_discoverView &&
+        _selectedLibraryId != null &&
+        _selectedLibraryType != null &&
+        _selectedLibraryType != Enum$LibraryType.$unknown) {
+      return LibraryDiscoverView(
+        key: key,
+        serverName: widget.serverName,
+        libraryId: _selectedLibraryId!,
+        libraryType: _selectedLibraryType!,
+      );
+    }
     if (_selectedLibraryId == null) {
       return TvShowScroll(
         key: key,
