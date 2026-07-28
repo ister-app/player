@@ -1,5 +1,39 @@
 # Changelog
 
+## player v1.7.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.7.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat: add a whole album to the play queue from the album page ([`64ebca7`](https://github.com/ister-app/player/commit/64ebca7))
+- feat: reader fullscreen toggle, typography settings and epub tap zones ([`3b785e6`](https://github.com/ister-app/player/commit/3b785e6))
+
+### Fixes
+
+- fix: always show the play queue tabs, with an empty state ([`d023b24`](https://github.com/ister-app/player/commit/d023b24))
+- fix: keep the audio_service notification icons through release resource shrinking ([`e2232c3`](https://github.com/ister-app/player/commit/e2232c3))
+- fix: request notification permission so the Android media notification shows again ([`b9bd951`](https://github.com/ister-app/player/commit/b9bd951))
+
+### Other
+
+- ci: count a lost result event after an all-green run as a pass ([`fdb5f33`](https://github.com/ister-app/player/commit/fdb5f33))
+- build: update oidc to 3.x ([`1941156`](https://github.com/ister-app/player/commit/1941156))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.7.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.6.0...v1.7.0
+
 ## player v1.6.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.

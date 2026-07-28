@@ -2,7 +2,7 @@ name: player
 description: "A media player for Ister"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.6.0+178
+version: 1.7.0+186
 
 environment:
   sdk: ^3.5.4
