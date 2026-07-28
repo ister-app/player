@@ -239,5 +239,19 @@
   "sharingCouldNotSave": "Kon de deelinstellingen niet opslaan",
   "sessionSharingTitle": "Wie mag deze sessie bedienen",
   "sessionSharingUseDefault": "Mijn standaard gebruiken",
-  "shareThisSession": "Deze sessie delen"
+  "shareThisSession": "Deze sessie delen",
+  "sleepTimer": "Slaaptimer",
+  "sleepTimerMinutes": "{minutes} min",
+  "sleepTimerRemaining": "{time} resterend",
+  "sleepTimerCancel": "Timer annuleren",
+  "sleepTimerExtend": "+15 min",
+  "sleepTimerCustom": "Aangepast…",
+  "sleepTimerCustomDuration": "Aangepaste duur",
+  "sleepTimerMinutesLabel": "Minuten",
+  "sleepTimerAuto": "Automatische slaaptimer",
+  "sleepTimerAutoDescription": "Start de slaaptimer automatisch wanneer het afspelen tussen deze tijden begint",
+  "sleepTimerFrom": "Vanaf",
+  "sleepTimerUntil": "Tot",
+  "sleepTimerDefaultDuration": "Standaardduur",
+  "sleepTimerDeviceOnly": "Geldt alleen voor dit apparaat"
 }

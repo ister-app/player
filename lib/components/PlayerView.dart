@@ -5,10 +5,12 @@ import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:player/components/SessionSharingSheet.dart';
+import 'package:player/components/SleepTimerSheet.dart';
 import 'package:player/components/TvFocusable.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/AccentColorUtil.dart';
+import 'package:player/utils/SleepTimerService.dart';
 import 'package:player/utils/DurationUtil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -73,6 +75,10 @@ abstract class PlayerViewController extends ChangeNotifier {
   bool get repeatActive => false;
   bool get repeatOne => false;
   void cycleRepeatMode() {}
+
+  /// Sleep timer is device-local, so only the local player offers it — a
+  /// remote controller can't put someone else's device to sleep.
+  bool get supportsSleepTimer => false;
 
   /// The inner play/pause button; the view wraps it in the accent-coloured
   /// circle. Local playback plugs in [PlayPauseButton] (with its spinner),
@@ -951,7 +957,10 @@ class _Controls extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             if (controller.supportsRepeat)
-              _RepeatButton(controller: controller, accent: accent),
+              _RepeatButton(controller: controller, accent: accent)
+            // Balances the sleep-timer button so the play button stays centred.
+            else if (controller.supportsSleepTimer)
+              const SizedBox(width: 48),
             IconButton(
               icon: Icon(Icons.skip_previous,
                   color: hasPrevious ? Colors.white : Colors.white30),
@@ -982,13 +991,70 @@ class _Controls extends StatelessWidget {
               iconSize: 40,
               onPressed: hasNext ? controller.skipToNext : null,
             ),
+            if (controller.supportsSleepTimer)
+              _SleepTimerButton(accent: accent)
             // Balances the row so the play button stays centred now that a
             // repeat toggle sits on the far left.
-            if (controller.supportsRepeat) const SizedBox(width: 48),
+            else if (controller.supportsRepeat)
+              const SizedBox(width: 48),
           ],
         ),
       ],
     );
+  }
+}
+
+/// Sleep timer toggle: outlined and dim while inactive, filled and tinted
+/// with the album accent while counting down, with the remaining time in a
+/// compact label underneath. Tapping opens the [SleepTimerSheet].
+class _SleepTimerButton extends StatelessWidget {
+  const _SleepTimerButton({required this.accent});
+
+  final ValueListenable<Color> accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    return ValueListenableBuilder<Duration?>(
+      valueListenable: SleepTimerService.instance.remaining,
+      builder: (context, remaining, _) => ValueListenableBuilder<Color>(
+        valueListenable: accent,
+        builder: (context, color, _) => SizedBox(
+          width: 48,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(
+                  remaining != null ? Icons.bedtime : Icons.bedtime_outlined,
+                  color: remaining != null ? color : Colors.white54,
+                ),
+                iconSize: 24,
+                tooltip: loc.sleepTimer,
+                onPressed: () => showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  showDragHandle: true,
+                  builder: (_) => const SleepTimerSheet(),
+                ),
+              ),
+              if (remaining != null)
+                Text(
+                  _shortCountdown(remaining),
+                  style: TextStyle(color: color, fontSize: 11),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Whole minutes while more than a minute is left, seconds below that, so
+  /// the label stays narrow and only ticks per second at the very end.
+  String _shortCountdown(Duration remaining) {
+    if (remaining.inMinutes >= 1) return '${(remaining.inSeconds / 60).ceil()}m';
+    return '${remaining.inSeconds}s';
   }
 }
 

@@ -857,4 +857,51 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get shareThisSession => 'Deze sessie delen';
+
+  @override
+  String get sleepTimer => 'Slaaptimer';
+
+  @override
+  String sleepTimerMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String sleepTimerRemaining(String time) {
+    return '$time resterend';
+  }
+
+  @override
+  String get sleepTimerCancel => 'Timer annuleren';
+
+  @override
+  String get sleepTimerExtend => '+15 min';
+
+  @override
+  String get sleepTimerCustom => 'Aangepast…';
+
+  @override
+  String get sleepTimerCustomDuration => 'Aangepaste duur';
+
+  @override
+  String get sleepTimerMinutesLabel => 'Minuten';
+
+  @override
+  String get sleepTimerAuto => 'Automatische slaaptimer';
+
+  @override
+  String get sleepTimerAutoDescription =>
+      'Start de slaaptimer automatisch wanneer het afspelen tussen deze tijden begint';
+
+  @override
+  String get sleepTimerFrom => 'Vanaf';
+
+  @override
+  String get sleepTimerUntil => 'Tot';
+
+  @override
+  String get sleepTimerDefaultDuration => 'Standaardduur';
+
+  @override
+  String get sleepTimerDeviceOnly => 'Geldt alleen voor dit apparaat';
 }

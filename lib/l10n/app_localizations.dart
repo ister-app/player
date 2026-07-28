@@ -1537,6 +1537,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share this session'**
   String get shareThisSession;
+
+  /// Name of the sleep timer feature; button tooltip, sheet title and settings tile
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep timer'**
+  String get sleepTimer;
+
+  /// Preset chip label for a sleep timer duration
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String sleepTimerMinutes(int minutes);
+
+  /// Countdown line in the sleep timer sheet, e.g. '14:59 remaining'
+  ///
+  /// In en, this message translates to:
+  /// **'{time} remaining'**
+  String sleepTimerRemaining(String time);
+
+  /// Button that cancels a running sleep timer
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel timer'**
+  String get sleepTimerCancel;
+
+  /// Button that adds 15 minutes to a running sleep timer
+  ///
+  /// In en, this message translates to:
+  /// **'+15 min'**
+  String get sleepTimerExtend;
+
+  /// Chip opening a dialog to enter a custom sleep timer duration
+  ///
+  /// In en, this message translates to:
+  /// **'Custom…'**
+  String get sleepTimerCustom;
+
+  /// Title of the custom sleep timer duration dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Custom duration'**
+  String get sleepTimerCustomDuration;
+
+  /// Label of the minutes input in the custom duration dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes'**
+  String get sleepTimerMinutesLabel;
+
+  /// Settings switch enabling the automatic sleep timer window
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic sleep timer'**
+  String get sleepTimerAuto;
+
+  /// Subtitle explaining the automatic sleep timer switch
+  ///
+  /// In en, this message translates to:
+  /// **'Start the sleep timer automatically when playback begins between these times'**
+  String get sleepTimerAutoDescription;
+
+  /// Settings tile for the start of the automatic sleep timer window
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get sleepTimerFrom;
+
+  /// Settings tile for the end of the automatic sleep timer window
+  ///
+  /// In en, this message translates to:
+  /// **'Until'**
+  String get sleepTimerUntil;
+
+  /// Settings tile for the duration an automatically started sleep timer runs
+  ///
+  /// In en, this message translates to:
+  /// **'Default duration'**
+  String get sleepTimerDefaultDuration;
+
+  /// Note that sleep timer settings are not synced to the server
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to this device only'**
+  String get sleepTimerDeviceOnly;
 }
 
 class _AppLocalizationsDelegate

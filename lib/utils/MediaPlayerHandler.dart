@@ -33,6 +33,7 @@ import 'ImageTypes.dart';
 import 'ImageUtil.dart';
 import 'MetadataUtil.dart';
 import 'PlayQueueService.dart';
+import 'SleepTimerService.dart';
 
 class MediaPlayerHandler extends BaseAudioHandler
     with SeekHandler, QueueHandler {
@@ -80,6 +81,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       _applyMpvNetworkOptions();
       _startStallWatchdog();
       StreamTokenService.tokenVersion.addListener(_refreshArtworkTokens);
+      SleepTimerService.instance.onExpire = stop;
       _listenersAdded = true;
     }
   }
@@ -857,6 +859,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     _stopCommandSubscription();
     unawaited(_syncProgress(_player.state.position,
         force: true, playState: Enum$PlayState.PAUSED));
+    SleepTimerService.instance.notifyPlaybackStopped();
     await _player.pause();
     // Explicit stop is the only place we release audio focus.
     final session = await AudioSession.instance;
@@ -1855,6 +1858,9 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// reporting PAUSED and the session stays visible server-side; only stop()
   /// (or the app dying) lets the server expire the session.
   void _startHeartbeat() {
+    // Every start/resume path funnels through here (track auto-advance does
+    // not), so this is where the automatic sleep timer gets a chance to arm.
+    unawaited(SleepTimerService.instance.notifyPlaybackStarted());
     _heartbeat?.cancel();
     _heartbeat = Timer.periodic(const Duration(seconds: 5), (_) {
       if (playQueue == null || graphQLClient == null) return;

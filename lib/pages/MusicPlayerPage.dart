@@ -209,6 +209,9 @@ class _LocalPlayerController extends PlayerViewController {
   bool get supportsRepeat => true;
 
   @override
+  bool get supportsSleepTimer => true;
+
+  @override
   bool get repeatActive => _repeatMode != AudioServiceRepeatMode.none;
 
   @override

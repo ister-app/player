@@ -913,5 +913,71 @@
   "shareThisSession": "Share this session",
   "@shareThisSession": {
     "description": "Menu action opening the per-session sharing sheet"
+  },
+  "sleepTimer": "Sleep timer",
+  "@sleepTimer": {
+    "description": "Name of the sleep timer feature; button tooltip, sheet title and settings tile"
+  },
+  "sleepTimerMinutes": "{minutes} min",
+  "@sleepTimerMinutes": {
+    "description": "Preset chip label for a sleep timer duration",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepTimerRemaining": "{time} remaining",
+  "@sleepTimerRemaining": {
+    "description": "Countdown line in the sleep timer sheet, e.g. '14:59 remaining'",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "sleepTimerCancel": "Cancel timer",
+  "@sleepTimerCancel": {
+    "description": "Button that cancels a running sleep timer"
+  },
+  "sleepTimerExtend": "+15 min",
+  "@sleepTimerExtend": {
+    "description": "Button that adds 15 minutes to a running sleep timer"
+  },
+  "sleepTimerCustom": "Custom…",
+  "@sleepTimerCustom": {
+    "description": "Chip opening a dialog to enter a custom sleep timer duration"
+  },
+  "sleepTimerCustomDuration": "Custom duration",
+  "@sleepTimerCustomDuration": {
+    "description": "Title of the custom sleep timer duration dialog"
+  },
+  "sleepTimerMinutesLabel": "Minutes",
+  "@sleepTimerMinutesLabel": {
+    "description": "Label of the minutes input in the custom duration dialog"
+  },
+  "sleepTimerAuto": "Automatic sleep timer",
+  "@sleepTimerAuto": {
+    "description": "Settings switch enabling the automatic sleep timer window"
+  },
+  "sleepTimerAutoDescription": "Start the sleep timer automatically when playback begins between these times",
+  "@sleepTimerAutoDescription": {
+    "description": "Subtitle explaining the automatic sleep timer switch"
+  },
+  "sleepTimerFrom": "From",
+  "@sleepTimerFrom": {
+    "description": "Settings tile for the start of the automatic sleep timer window"
+  },
+  "sleepTimerUntil": "Until",
+  "@sleepTimerUntil": {
+    "description": "Settings tile for the end of the automatic sleep timer window"
+  },
+  "sleepTimerDefaultDuration": "Default duration",
+  "@sleepTimerDefaultDuration": {
+    "description": "Settings tile for the duration an automatically started sleep timer runs"
+  },
+  "sleepTimerDeviceOnly": "Applies to this device only",
+  "@sleepTimerDeviceOnly": {
+    "description": "Note that sleep timer settings are not synced to the server"
   }
 }
