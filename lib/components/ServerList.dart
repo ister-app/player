@@ -18,6 +18,13 @@ class ServerList extends StatefulWidget {
 }
 
 class ServerListState extends State<ServerList> {
+  /// The web build auto-adds its hosting origin; widget tests compile with
+  /// kIsWeb=false, so they override these to exercise that path.
+  @visibleForTesting
+  static bool debugIsWeb = kIsWeb;
+  @visibleForTesting
+  static String Function() debugWebHost = () => Uri.base.host;
+
   final SharedPreferencesAsync _sharedPreferencesAsync =
       SharedPreferencesAsync();
   late Future<List<String>> _servers;
@@ -65,13 +72,18 @@ class ServerListState extends State<ServerList> {
     _servers = _sharedPreferencesAsync.getStringList('servers').then(
       (value) async {
         final servers = value ?? [];
-        if (kIsWeb && servers.isEmpty && ClientManager.instance.lastClientUsed == null) {
-          final host = Uri.base.host;
-          servers.add(host);
-          await _sharedPreferencesAsync.setStringList('servers', servers);
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) goToServerRoute(host);
-          });
+        if (debugIsWeb && servers.isEmpty && ClientManager.instance.lastClientUsed == null) {
+          final host = debugWebHost();
+          // Only auto-add the hosting origin when it actually serves an Ister
+          // well-known; a plain static host (e.g. player.ister.app) should
+          // leave the list empty.
+          if (await WellKnownService.fetch(host) != null) {
+            servers.add(host);
+            await _sharedPreferencesAsync.setStringList('servers', servers);
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) goToServerRoute(host);
+            });
+          }
         }
         return servers;
       },
