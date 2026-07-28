@@ -289,7 +289,13 @@ class _AlbumPageState extends State<AlbumPage> {
               constraints: const BoxConstraints(maxWidth: 1600),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Row(
+                // A Wrap instead of a Row: on narrow (mobile) screens the
+                // stats text moves to its own line below the buttons instead
+                // of being ellipsized away.
+                child: Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     FilledButton.icon(
                       onPressed: album != null &&
@@ -309,7 +315,6 @@ class _AlbumPageState extends State<AlbumPage> {
                             horizontal: 28, vertical: 14),
                       ),
                     ),
-                    const SizedBox(width: 12),
                     FilledButton.icon(
                       onPressed: album != null && tracks.isNotEmpty
                           ? () {
@@ -334,23 +339,18 @@ class _AlbumPageState extends State<AlbumPage> {
                             horizontal: 28, vertical: 14),
                       ),
                     ),
-                    if (tracks.isNotEmpty) ...[
-                      const SizedBox(width: 16),
-                      Flexible(
-                        child: Text(
-                          _albumStats(loc, tracks),
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
-                              ),
-                        ),
+                    if (tracks.isNotEmpty)
+                      Text(
+                        _albumStats(loc, tracks),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
                       ),
-                    ],
                   ],
                 ),
               ),
