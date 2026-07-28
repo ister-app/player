@@ -217,6 +217,38 @@ void main() {
     expect(find.text('3:35'), findsOneWidget);
   });
 
+  testWidgets('switches between the track lists via tabs', (tester) async {
+    final threeDaysAgo =
+        DateTime.now().toUtc().subtract(const Duration(days: 3));
+    final client = _fakeGraphQL(
+      topPlayed: [_track(1, 'Rain On Me', playCount: 27)],
+      recentlyPlayed: [
+        _track(2, 'Alice', lastPlayedAt: threeDaysAgo.toIso8601String()),
+      ],
+    );
+    useClient(client);
+    await tester.pumpWidget(_app(client));
+    await tester.pumpAndSettle();
+
+    // Both tabs are present; the first non-empty list is shown by default.
+    expect(find.text('Most played'), findsOneWidget);
+    expect(find.text('Last played'), findsOneWidget);
+    expect(find.text('Rain On Me'), findsOneWidget);
+    expect(find.text('Alice'), findsNothing);
+
+    await tester.tap(find.text('Last played'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Alice'), findsOneWidget);
+    expect(find.text('Rain On Me'), findsNothing);
+
+    await tester.tap(find.text('Most played'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Rain On Me'), findsOneWidget);
+    expect(find.text('Alice'), findsNothing);
+  });
+
   testWidgets('collapses long lists behind a show-more toggle',
       (tester) async {
     final client = _fakeGraphQL(topPlayed: [
@@ -230,7 +262,14 @@ void main() {
     expect(find.text('Track 6'), findsNothing);
 
     final showMore = find.text('Show more');
-    await tester.scrollUntilVisible(showMore, 100);
+    // The tab bar adds a nested horizontal scrollable; aim explicitly at the
+    // page's vertical CustomScrollView.
+    await tester.scrollUntilVisible(showMore, 100,
+        scrollable: find
+            .descendant(
+                of: find.byType(CustomScrollView),
+                matching: find.byType(Scrollable))
+            .first);
     await tester.tap(showMore);
     await tester.pumpAndSettle();
 

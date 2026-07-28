@@ -13,7 +13,6 @@ import 'package:player/graphql/fragmentAlbum.graphql.dart';
 import 'package:player/graphql/fragmentBook.graphql.dart';
 import 'package:player/graphql/fragmentCredit.graphql.dart';
 import 'package:player/graphql/fragmentImages.graphql.dart';
-import 'package:player/graphql/fragmentTrack.graphql.dart';
 import 'package:player/graphql/recentlyPlayedTracksByArtist.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/graphql/topPlayedTracksByArtist.graphql.dart';
@@ -33,6 +32,7 @@ import '../components/CarouselItemView.dart';
 import '../components/ExpandableText.dart';
 import '../components/MusicDetailHero.dart';
 import '../components/SourceAttribution.dart';
+import '../components/TvFocusable.dart';
 import '../l10n/app_localizations.dart';
 
 final _random = Random();
@@ -284,57 +284,13 @@ class _PersonPageState extends State<PersonPage> {
               ),
             ),
           ),
-        // The three top-track lists fetch through their own queries so each
-        // section loads (and hides when empty) independently of the page.
+        // The three top-track lists fetch through their own queries and share
+        // one tab bar; only non-empty lists get a tab, and the whole section
+        // stays away when every list is empty.
         SliverToBoxAdapter(
-          child: _ArtistTrackSection(
+          child: _ArtistTrackTabs(
             serverName: serverName,
             personId: personId,
-            title: loc.mostPlayedTracks,
-            variant: ArtistTrackListVariant.plays,
-            document: documentNodeQuerytopPlayedTracksByArtist,
-            parse: (data) => (Query$topPlayedTracksByArtist.fromJson(data)
-                        .personById
-                        ?.topPlayedTracks ??
-                    const [])
-                .map((t) => ArtistTrackListItem(
-                    track: t, album: t.album, playCount: t.playCount))
-                .toList(),
-          ),
-        ),
-        SliverToBoxAdapter(
-          child: _ArtistTrackSection(
-            serverName: serverName,
-            personId: personId,
-            title: loc.recentlyPlayedTracks,
-            variant: ArtistTrackListVariant.recency,
-            document: documentNodeQueryrecentlyPlayedTracksByArtist,
-            parse: (data) => (Query$recentlyPlayedTracksByArtist.fromJson(data)
-                        .personById
-                        ?.recentlyPlayedTracks ??
-                    const [])
-                .map((t) => ArtistTrackListItem(
-                    track: t,
-                    album: t.album,
-                    lastPlayedAt: t.lastPlayedAt != null
-                        ? DateTime.tryParse(t.lastPlayedAt!)?.toLocal()
-                        : null))
-                .toList(),
-          ),
-        ),
-        SliverToBoxAdapter(
-          child: _ArtistTrackSection(
-            serverName: serverName,
-            personId: personId,
-            title: loc.highestRatedTracks,
-            variant: ArtistTrackListVariant.rating,
-            document: documentNodeQuerytopRatedTracksByArtist,
-            parse: (data) => (Query$topRatedTracksByArtist.fromJson(data)
-                        .personById
-                        ?.topRatedTracks ??
-                    const [])
-                .map((t) => ArtistTrackListItem(track: t, album: t.album))
-                .toList(),
           ),
         ),
         if (hasAlbums) _sectionHeader(context, loc.albums),
@@ -961,67 +917,227 @@ class _PersonShowEpisodesSheetState extends State<_PersonShowEpisodesSheet> {
   }
 }
 
-/// One top-track section on the artist page: runs its own GraphQL query and
-/// renders a header plus [ArtistTrackList], or nothing while the list is
-/// empty — the sections are additive and must never block the page.
-class _ArtistTrackSection extends StatelessWidget {
-  const _ArtistTrackSection({
-    required this.serverName,
-    required this.personId,
+/// One tab's worth of top-track list: its label, list variant and the query
+/// that fills it.
+class _ArtistTrackTabConfig {
+  const _ArtistTrackTabConfig({
     required this.title,
     required this.variant,
     required this.document,
     required this.parse,
   });
 
-  final String serverName;
-  final String personId;
   final String title;
   final ArtistTrackListVariant variant;
   final DocumentNode document;
   final List<ArtistTrackListItem> Function(Map<String, dynamic> data) parse;
+}
+
+/// The top-track section on the artist page: most played, last played and
+/// highest rated behind the same underline tabs as the play-queue overlay.
+/// Each list runs its own GraphQL query; empty (or failed) lists get no tab,
+/// and the section renders nothing at all while every list is empty — it is
+/// additive and must never block the page.
+class _ArtistTrackTabs extends StatefulWidget {
+  const _ArtistTrackTabs({
+    required this.serverName,
+    required this.personId,
+  });
+
+  final String serverName;
+  final String personId;
+
+  @override
+  State<_ArtistTrackTabs> createState() => _ArtistTrackTabsState();
+}
+
+class _ArtistTrackTabsState extends State<_ArtistTrackTabs> {
+  // Keyed by variant, not by index: the queries resolve at different times,
+  // so an earlier tab can appear after the user already picked a later one.
+  ArtistTrackListVariant? _selectedVariant;
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final configs = <_ArtistTrackTabConfig>[
+      _ArtistTrackTabConfig(
+        title: loc.mostPlayedTracks,
+        variant: ArtistTrackListVariant.plays,
+        document: documentNodeQuerytopPlayedTracksByArtist,
+        parse: (data) => (Query$topPlayedTracksByArtist.fromJson(data)
+                    .personById
+                    ?.topPlayedTracks ??
+                const [])
+            .map((t) => ArtistTrackListItem(
+                track: t, album: t.album, playCount: t.playCount))
+            .toList(),
+      ),
+      _ArtistTrackTabConfig(
+        title: loc.recentlyPlayedTracks,
+        variant: ArtistTrackListVariant.recency,
+        document: documentNodeQueryrecentlyPlayedTracksByArtist,
+        parse: (data) => (Query$recentlyPlayedTracksByArtist.fromJson(data)
+                    .personById
+                    ?.recentlyPlayedTracks ??
+                const [])
+            .map((t) => ArtistTrackListItem(
+                track: t,
+                album: t.album,
+                lastPlayedAt: t.lastPlayedAt != null
+                    ? DateTime.tryParse(t.lastPlayedAt!)?.toLocal()
+                    : null))
+            .toList(),
+      ),
+      _ArtistTrackTabConfig(
+        title: loc.highestRatedTracks,
+        variant: ArtistTrackListVariant.rating,
+        document: documentNodeQuerytopRatedTracksByArtist,
+        parse: (data) => (Query$topRatedTracksByArtist.fromJson(data)
+                    .personById
+                    ?.topRatedTracks ??
+                const [])
+            .map((t) => ArtistTrackListItem(track: t, album: t.album))
+            .toList(),
+      ),
+    ];
+
+    return _TrackListQuery(
+      personId: widget.personId,
+      config: configs[0],
+      builder: (plays) => _TrackListQuery(
+        personId: widget.personId,
+        config: configs[1],
+        builder: (recency) => _TrackListQuery(
+          personId: widget.personId,
+          config: configs[2],
+          builder: (rating) => _buildTabs(context, [
+            (config: configs[0], items: plays),
+            (config: configs[1], items: recency),
+            (config: configs[2], items: rating),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabs(
+      BuildContext context,
+      List<({_ArtistTrackTabConfig config, List<ArtistTrackListItem> items})>
+          sections) {
+    final visible = sections.where((s) => s.items.isNotEmpty).toList();
+    if (visible.isEmpty) return const SizedBox.shrink();
+
+    final selected = visible
+            .where((s) => s.config.variant == _selectedVariant)
+            .firstOrNull ??
+        visible.first;
+
+    return Center(
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(maxWidth: 1600),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        for (final section in visible)
+                          _buildTab(
+                            section.config.title,
+                            section.config.variant,
+                            selected: section.config.variant ==
+                                selected.config.variant,
+                          ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1, thickness: 1),
+                ],
+              ),
+            ),
+            ArtistTrackList(
+              // A fresh list per variant, so ArtistTrackList's expand state
+              // and rating overrides don't leak between tabs.
+              key: ValueKey(selected.config.variant),
+              items: selected.items,
+              serverName: widget.serverName,
+              variant: selected.config.variant,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTab(String label, ArtistTrackListVariant variant,
+      {required bool selected}) {
+    final colors = Theme.of(context).colorScheme;
+    void select() => setState(() => _selectedVariant = variant);
+    return TvFocusable(
+      onTap: select,
+      borderRadius: BorderRadius.circular(4),
+      child: GestureDetector(
+        onTap: select,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: selected ? colors.primary : Colors.transparent,
+                width: 2,
+              ),
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected ? colors.onSurface : colors.onSurfaceVariant,
+              fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+              fontSize: 12,
+              letterSpacing: 1.5,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Runs one top-track query and hands the parsed rows to [builder] — an empty
+/// list on error or while loading, so the tabs simply appear as data arrives.
+class _TrackListQuery extends StatelessWidget {
+  const _TrackListQuery({
+    required this.personId,
+    required this.config,
+    required this.builder,
+  });
+
+  final String personId;
+  final _ArtistTrackTabConfig config;
+  final Widget Function(List<ArtistTrackListItem> items) builder;
 
   @override
   Widget build(BuildContext context) {
     return Query(
       options: QueryOptions(
-        document: document,
+        document: config.document,
         variables: {'id': personId},
         fetchPolicy: FetchPolicy.cacheAndNetwork,
       ),
       builder: (QueryResult result,
           {VoidCallback? refetch, FetchMore? fetchMore}) {
-        // On error or while loading the section simply stays away; the rest
-        // of the page (albums, filmography) is unaffected.
-        if (result.hasException || result.data == null) {
-          return const SizedBox.shrink();
-        }
-        final items = parse(result.data!);
-        if (items.isEmpty) return const SizedBox.shrink();
-
-        return Center(
-          child: Container(
-            width: double.infinity,
-            constraints: const BoxConstraints(maxWidth: 1600),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                  child: Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                ArtistTrackList(
-                  items: items,
-                  serverName: serverName,
-                  variant: variant,
-                ),
-              ],
-            ),
-          ),
-        );
+        final items = (result.hasException || result.data == null)
+            ? const <ArtistTrackListItem>[]
+            : config.parse(result.data!);
+        return builder(items);
       },
     );
   }
