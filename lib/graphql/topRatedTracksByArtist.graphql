@@ -1,0 +1,9 @@
+query topRatedTracksByArtist($id: ID) {
+    personById(id: $id) {
+        id
+        topRatedTracks(limit: 10) {
+            ...fragmentTrack
+            album { ...fragmentAlbum }
+        }
+    }
+}

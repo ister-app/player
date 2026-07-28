@@ -1,0 +1,10 @@
+query recentlyPlayedTracksByArtist($id: ID) {
+    personById(id: $id) {
+        id
+        recentlyPlayedTracks(limit: 10) {
+            ...fragmentTrack
+            lastPlayedAt
+            album { ...fragmentAlbum }
+        }
+    }
+}

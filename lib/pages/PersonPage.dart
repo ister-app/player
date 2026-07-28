@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:gql/ast.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/albumsQuery.graphql.dart';
 import 'package:player/graphql/analyzeDataForPerson.graphql.dart';
@@ -12,7 +13,11 @@ import 'package:player/graphql/fragmentAlbum.graphql.dart';
 import 'package:player/graphql/fragmentBook.graphql.dart';
 import 'package:player/graphql/fragmentCredit.graphql.dart';
 import 'package:player/graphql/fragmentImages.graphql.dart';
+import 'package:player/graphql/fragmentTrack.graphql.dart';
+import 'package:player/graphql/recentlyPlayedTracksByArtist.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
+import 'package:player/graphql/topPlayedTracksByArtist.graphql.dart';
+import 'package:player/graphql/topRatedTracksByArtist.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
@@ -22,6 +27,7 @@ import 'package:player/utils/PermissionsService.dart';
 import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../components/ArtistTrackList.dart';
 import '../components/BookCarouselTile.dart';
 import '../components/CarouselItemView.dart';
 import '../components/ExpandableText.dart';
@@ -278,6 +284,59 @@ class _PersonPageState extends State<PersonPage> {
               ),
             ),
           ),
+        // The three top-track lists fetch through their own queries so each
+        // section loads (and hides when empty) independently of the page.
+        SliverToBoxAdapter(
+          child: _ArtistTrackSection(
+            serverName: serverName,
+            personId: personId,
+            title: loc.mostPlayedTracks,
+            variant: ArtistTrackListVariant.plays,
+            document: documentNodeQuerytopPlayedTracksByArtist,
+            parse: (data) => (Query$topPlayedTracksByArtist.fromJson(data)
+                        .personById
+                        ?.topPlayedTracks ??
+                    const [])
+                .map((t) => ArtistTrackListItem(
+                    track: t, album: t.album, playCount: t.playCount))
+                .toList(),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: _ArtistTrackSection(
+            serverName: serverName,
+            personId: personId,
+            title: loc.recentlyPlayedTracks,
+            variant: ArtistTrackListVariant.recency,
+            document: documentNodeQueryrecentlyPlayedTracksByArtist,
+            parse: (data) => (Query$recentlyPlayedTracksByArtist.fromJson(data)
+                        .personById
+                        ?.recentlyPlayedTracks ??
+                    const [])
+                .map((t) => ArtistTrackListItem(
+                    track: t,
+                    album: t.album,
+                    lastPlayedAt: t.lastPlayedAt != null
+                        ? DateTime.tryParse(t.lastPlayedAt!)?.toLocal()
+                        : null))
+                .toList(),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: _ArtistTrackSection(
+            serverName: serverName,
+            personId: personId,
+            title: loc.highestRatedTracks,
+            variant: ArtistTrackListVariant.rating,
+            document: documentNodeQuerytopRatedTracksByArtist,
+            parse: (data) => (Query$topRatedTracksByArtist.fromJson(data)
+                        .personById
+                        ?.topRatedTracks ??
+                    const [])
+                .map((t) => ArtistTrackListItem(track: t, album: t.album))
+                .toList(),
+          ),
+        ),
         if (hasAlbums) _sectionHeader(context, loc.albums),
         if (hasAlbums)
         SliverToBoxAdapter(
@@ -898,6 +957,72 @@ class _PersonShowEpisodesSheetState extends State<_PersonShowEpisodesSheet> {
               widget.resolveRouter()
                   .push(ShowEpisodeRoute(showId: showId, episodeId: episode.id));
             },
+    );
+  }
+}
+
+/// One top-track section on the artist page: runs its own GraphQL query and
+/// renders a header plus [ArtistTrackList], or nothing while the list is
+/// empty — the sections are additive and must never block the page.
+class _ArtistTrackSection extends StatelessWidget {
+  const _ArtistTrackSection({
+    required this.serverName,
+    required this.personId,
+    required this.title,
+    required this.variant,
+    required this.document,
+    required this.parse,
+  });
+
+  final String serverName;
+  final String personId;
+  final String title;
+  final ArtistTrackListVariant variant;
+  final DocumentNode document;
+  final List<ArtistTrackListItem> Function(Map<String, dynamic> data) parse;
+
+  @override
+  Widget build(BuildContext context) {
+    return Query(
+      options: QueryOptions(
+        document: document,
+        variables: {'id': personId},
+        fetchPolicy: FetchPolicy.cacheAndNetwork,
+      ),
+      builder: (QueryResult result,
+          {VoidCallback? refetch, FetchMore? fetchMore}) {
+        // On error or while loading the section simply stays away; the rest
+        // of the page (albums, filmography) is unaffected.
+        if (result.hasException || result.data == null) {
+          return const SizedBox.shrink();
+        }
+        final items = parse(result.data!);
+        if (items.isEmpty) return const SizedBox.shrink();
+
+        return Center(
+          child: Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(maxWidth: 1600),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                ArtistTrackList(
+                  items: items,
+                  serverName: serverName,
+                  variant: variant,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

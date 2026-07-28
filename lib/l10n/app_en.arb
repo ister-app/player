@@ -462,6 +462,86 @@
   "@readMore": {
     "description": "Toggle expanding a clamped long description to its full text"
   },
+  "mostPlayedTracks": "Most played",
+  "@mostPlayedTracks": {
+    "description": "Section header on the artist page for the user's most played tracks"
+  },
+  "recentlyPlayedTracks": "Last played",
+  "@recentlyPlayedTracks": {
+    "description": "Section header on the artist page for the user's most recently played tracks"
+  },
+  "highestRatedTracks": "Highest rated",
+  "@highestRatedTracks": {
+    "description": "Section header on the artist page for the user's highest rated tracks"
+  },
+  "playCountTimes": "{count, plural, =1{Played once} other{Played {count} times}}",
+  "@playCountTimes": {
+    "description": "Tooltip/semantics label for the play-count badge in the most-played track list",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "27"
+      }
+    }
+  },
+  "showMore": "Show more",
+  "@showMore": {
+    "description": "Toggle expanding a collapsed track list to all its items"
+  },
+  "playedJustNow": "Just now",
+  "@playedJustNow": {
+    "description": "Relative time in the last-played track list for plays within the past hour"
+  },
+  "hoursAgoShort": "{count} hr ago",
+  "@hoursAgoShort": {
+    "description": "Compact relative time: hours",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "daysAgoShort": "{count} d ago",
+  "@daysAgoShort": {
+    "description": "Compact relative time: days",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "weeksAgoShort": "{count} wk ago",
+  "@weeksAgoShort": {
+    "description": "Compact relative time: weeks",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "monthsAgoShort": "{count} mo ago",
+  "@monthsAgoShort": {
+    "description": "Compact relative time: months",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "yearsAgoShort": "{count} yr ago",
+  "@yearsAgoShort": {
+    "description": "Compact relative time: years",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "showLess": "Show less",
   "@showLess": {
     "description": "Toggle collapsing an expanded long description back to a few lines"

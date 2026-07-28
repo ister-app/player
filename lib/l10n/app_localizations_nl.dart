@@ -378,6 +378,57 @@ class AppLocalizationsNl extends AppLocalizations {
   String get readMore => 'Lees meer';
 
   @override
+  String get mostPlayedTracks => 'Meest afgespeeld';
+
+  @override
+  String get recentlyPlayedTracks => 'Laatst afgespeeld';
+
+  @override
+  String get highestRatedTracks => 'Hoogst beoordeeld';
+
+  @override
+  String playCountTimes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count keer afgespeeld',
+      one: '1 keer afgespeeld',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get showMore => 'Toon meer';
+
+  @override
+  String get playedJustNow => 'Zojuist';
+
+  @override
+  String hoursAgoShort(int count) {
+    return '$count uur geleden';
+  }
+
+  @override
+  String daysAgoShort(int count) {
+    return '$count d geleden';
+  }
+
+  @override
+  String weeksAgoShort(int count) {
+    return '$count wk geleden';
+  }
+
+  @override
+  String monthsAgoShort(int count) {
+    return '$count mnd geleden';
+  }
+
+  @override
+  String yearsAgoShort(int count) {
+    return '$count jr geleden';
+  }
+
+  @override
   String get showLess => 'Toon minder';
 
   @override

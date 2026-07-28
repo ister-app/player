@@ -1,0 +1,10 @@
+query topPlayedTracksByArtist($id: ID) {
+    personById(id: $id) {
+        id
+        topPlayedTracks(limit: 10) {
+            ...fragmentTrack
+            playCount
+            album { ...fragmentAlbum }
+        }
+    }
+}

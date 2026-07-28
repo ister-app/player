@@ -776,6 +776,72 @@ abstract class AppLocalizations {
   /// **'Read more'**
   String get readMore;
 
+  /// Section header on the artist page for the user's most played tracks
+  ///
+  /// In en, this message translates to:
+  /// **'Most played'**
+  String get mostPlayedTracks;
+
+  /// Section header on the artist page for the user's most recently played tracks
+  ///
+  /// In en, this message translates to:
+  /// **'Last played'**
+  String get recentlyPlayedTracks;
+
+  /// Section header on the artist page for the user's highest rated tracks
+  ///
+  /// In en, this message translates to:
+  /// **'Highest rated'**
+  String get highestRatedTracks;
+
+  /// Tooltip/semantics label for the play-count badge in the most-played track list
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Played once} other{Played {count} times}}'**
+  String playCountTimes(int count);
+
+  /// Toggle expanding a collapsed track list to all its items
+  ///
+  /// In en, this message translates to:
+  /// **'Show more'**
+  String get showMore;
+
+  /// Relative time in the last-played track list for plays within the past hour
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get playedJustNow;
+
+  /// Compact relative time: hours
+  ///
+  /// In en, this message translates to:
+  /// **'{count} hr ago'**
+  String hoursAgoShort(int count);
+
+  /// Compact relative time: days
+  ///
+  /// In en, this message translates to:
+  /// **'{count} d ago'**
+  String daysAgoShort(int count);
+
+  /// Compact relative time: weeks
+  ///
+  /// In en, this message translates to:
+  /// **'{count} wk ago'**
+  String weeksAgoShort(int count);
+
+  /// Compact relative time: months
+  ///
+  /// In en, this message translates to:
+  /// **'{count} mo ago'**
+  String monthsAgoShort(int count);
+
+  /// Compact relative time: years
+  ///
+  /// In en, this message translates to:
+  /// **'{count} yr ago'**
+  String yearsAgoShort(int count);
+
   /// Toggle collapsing an expanded long description back to a few lines
   ///
   /// In en, this message translates to:
