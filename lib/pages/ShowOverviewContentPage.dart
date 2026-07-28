@@ -6,7 +6,10 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/components/AddToSessionSheet.dart';
 import 'package:player/components/CastRow.dart';
 import 'package:player/components/RatingStars.dart';
+import 'package:player/components/SourceAttribution.dart';
 import 'package:player/graphql/analyzeDataForShow.graphql.dart';
+import 'package:player/graphql/fragmentImages.graphql.dart';
+import 'package:player/graphql/fragmentMetadata.graphql.dart';
 import 'package:player/graphql/seasonById.graphql.dart';
 import 'package:player/graphql/fragmentCredit.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
@@ -86,7 +89,7 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
           body = Skeletonizer(
               enabled: true,
               child: _buildContent(null, null, BoneMock.name,
-                  BoneMock.paragraph, context, '',
+                  BoneMock.paragraph, null, null, context, '',
                   CastRow(serverName: serverName, cast: _skeletonCast), null));
         } else if (result.hasException) {
           body = Text(result.exception.toString());
@@ -107,6 +110,8 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
                     MetadataUtil.getTitle(show.metadata) ?? "",
                     show.releaseYear),
                 MetadataUtil.getDescription(show.metadata) ?? "",
+                show.metadata,
+                show.images,
                 context,
                 show.toJson().toString(),
                 PagedCastRow(serverName: serverName, showId: showId),
@@ -128,6 +133,8 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
       String? blurHash,
       String title,
       String description,
+      List<Fragment$fragmentMetadata>? metadata,
+      List<Fragment$fragmentImages?>? images,
       BuildContext context,
       String? rawJson,
       Widget castRow,
@@ -225,6 +232,10 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
                 child: ratingRow,
               ),
             Text(description),
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: SourceAttribution(metadata: metadata, images: images),
+            ),
           ])),
       castRow,
     ]));
