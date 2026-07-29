@@ -1227,8 +1227,9 @@ class MediaPlayerHandler extends BaseAudioHandler
         mediaItemId.id,
         Duration.zero,
       );
-      if (playQueueObject != null && generation == _syncGeneration) {
-        _applyServerPlayQueue(playQueueObject);
+      if (playQueueObject != null &&
+          generation == _syncGeneration &&
+          _applyServerPlayQueue(playQueueObject)) {
         currentPlayQueueItem =
             PlayQueueService.getCurrentPlayQueueItem(playQueue);
         PlayQueueService().playQueueChanged(playQueue!);
@@ -1786,12 +1787,32 @@ class MediaPlayerHandler extends BaseAudioHandler
   }
 
   /// Replaces [playQueue] with a server response while keeping the locally
-  /// tracked current item. The client is authoritative for what is playing —
+  /// tracked current item. Returns whether the response was applied — a
+  /// response for a queue other than the active one is dropped.
+  bool _applyServerPlayQueue(Fragment$fragmentPlayQueue response) {
+    final merged = mergeServerPlayQueue(playQueue, response);
+    if (merged == null) return false;
+    playQueue = merged;
+    return true;
+  }
+
+  /// Merges a server play-queue [response] into [current], keeping the locally
+  /// tracked current item — the client is authoritative for what is playing;
   /// a response can still carry a stale currentItemId (e.g. a progress update
   /// for the previous track processed server-side around a skip).
-  void _applyServerPlayQueue(Fragment$fragmentPlayQueue response) {
-    final localCurrentItemId = playQueue?.currentItemId;
-    playQueue = localCurrentItemId != null
+  ///
+  /// Returns null when [response] belongs to a different queue than [current]:
+  /// the generation counter alone can't catch this, because starting a new
+  /// queue bumps the generation *before* the createPlayQueue round-trip — a
+  /// progress update for the old queue sent during that window carries the new
+  /// generation, and its late response would otherwise reinstate the old queue.
+  static Fragment$fragmentPlayQueue? mergeServerPlayQueue(
+    Fragment$fragmentPlayQueue? current,
+    Fragment$fragmentPlayQueue response,
+  ) {
+    if (current == null || response.id != current.id) return null;
+    final localCurrentItemId = current.currentItemId;
+    return localCurrentItemId != null
         ? response.copyWith(currentItemId: localCurrentItemId)
         : response;
   }
@@ -1832,10 +1853,11 @@ class MediaPlayerHandler extends BaseAudioHandler
     final playQueueObject =
         await _sendProgressUpdate(client, pq.id, itemId, pos, playState: playState);
     // Drop the response if the queue or current item changed while this
-    // request was in flight — a slow response must not revert a skip.
+    // request was in flight — a slow response must not revert a skip or
+    // reinstate a queue that was replaced in the meantime.
     if (playQueueObject != null && generation == _syncGeneration) {
       final before = playQueue?.playQueueItems?.length ?? 0;
-      _applyServerPlayQueue(playQueueObject);
+      if (!_applyServerPlayQueue(playQueueObject)) return;
       final after = playQueue?.playQueueItems?.length ?? 0;
       // Sources with sourceExhausted == false grow server-side as playback
       // advances; rebuild the visible queue when new items are appended.
@@ -2000,7 +2022,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     final localItemStillExists = fresh.playQueueItems
             ?.any((e) => e.id == playQueue?.currentItemId) ??
         false;
-    _applyServerPlayQueue(fresh);
+    if (!_applyServerPlayQueue(fresh)) return;
     if (!localItemStillExists) {
       playQueue = playQueue?.copyWith(currentItemId: fresh.currentItemId);
     }
