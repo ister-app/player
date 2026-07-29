@@ -18,6 +18,7 @@ import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/graphql/topPlayedTracksByArtist.graphql.dart';
 import 'package:player/graphql/topRatedTracksByArtist.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
+import 'package:player/utils/AccentColorUtil.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
@@ -57,6 +58,21 @@ class _PersonPageState extends State<PersonPage> {
   String get personId => widget.personId;
 
   bool _showAdminActions = true;
+
+  /// Accent extracted from the hero image, tinting the play button; null
+  /// until extraction succeeds.
+  Color? _accent;
+  String? _accentUrl;
+
+  void _updateAccent(String? url) {
+    if (url == _accentUrl) return;
+    _accentUrl = url;
+    AccentColorUtil.fromImageUrl(url).then((color) {
+      // A hero-image change may have superseded this load; only apply if current.
+      if (!mounted || _accentUrl != url || color == null) return;
+      setState(() => _accent = color);
+    });
+  }
 
   @override
   void initState() {
@@ -213,43 +229,45 @@ class _PersonPageState extends State<PersonPage> {
               constraints: const BoxConstraints(maxWidth: 1600),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Row(
+                child: Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: albums.isNotEmpty
-                            ? () => AutoRouter.of(context)
-                                .push(AlbumRoute(albumId: albums.first.id))
-                            : null,
-                        icon: const Icon(Icons.play_arrow),
-                        label: Text(loc.play),
-                        style: FilledButton.styleFrom(
-                          shape: const StadiumBorder(),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
+                    FilledButton.icon(
+                      onPressed: albums.isNotEmpty
+                          ? () => AutoRouter.of(context)
+                              .push(AlbumRoute(albumId: albums.first.id))
+                          : null,
+                      icon: const Icon(Icons.play_arrow),
+                      label: Text(loc.play),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: _accent,
+                        foregroundColor: _accent != null ? Colors.black : null,
+                        shape: const StadiumBorder(),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 28, vertical: 14),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: albums.isNotEmpty
-                            ? () {
-                                final randomAlbum =
-                                    albums[_random.nextInt(albums.length)];
-                                AutoRouter.of(context)
-                                    .push(AlbumRoute(albumId: randomAlbum.id));
-                              }
-                            : null,
-                        icon: const Icon(Icons.shuffle),
-                        label: Text(loc.shuffle),
-                        style: FilledButton.styleFrom(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.surfaceContainerHighest,
-                          foregroundColor:
-                              Theme.of(context).colorScheme.onSurface,
-                          shape: const StadiumBorder(),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
+                    FilledButton.icon(
+                      onPressed: albums.isNotEmpty
+                          ? () {
+                              final randomAlbum =
+                                  albums[_random.nextInt(albums.length)];
+                              AutoRouter.of(context)
+                                  .push(AlbumRoute(albumId: randomAlbum.id));
+                            }
+                          : null,
+                      icon: const Icon(Icons.shuffle),
+                      label: Text(loc.shuffle),
+                      style: FilledButton.styleFrom(
+                        backgroundColor:
+                            Theme.of(context).colorScheme.surfaceContainerHighest,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.onSurface,
+                        shape: const StadiumBorder(),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 28, vertical: 14),
                       ),
                     ),
                   ],
@@ -635,6 +653,7 @@ class _PersonPageState extends State<PersonPage> {
         ? ImageUtil.buildUrl(heroImg,
             token: StreamTokenService.getToken(serverName))
         : null;
+    _updateAccent(imageUrl);
 
     final name = artist != null
         ? MetadataUtil.titleWithYear(
