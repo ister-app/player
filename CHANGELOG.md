@@ -1,5 +1,47 @@
 # Changelog
 
+## player v1.8.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.8.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat: match the person-page play buttons to the album page ([`5eb3d49`](https://github.com/ister-app/player/commit/5eb3d49))
+- feat: put the artist top-track lists behind shared tabs ([`526c8c0`](https://github.com/ister-app/player/commit/526c8c0))
+- feat: discover view with per-type top-list carousels on the library tab ([`921cd5c`](https://github.com/ister-app/player/commit/921cd5c))
+- feat: sleep timer with automatic start window ([`2174631`](https://github.com/ister-app/player/commit/2174631))
+- feat: most played, last played and highest rated tracks on the artist page ([`aba664b`](https://github.com/ister-app/player/commit/aba664b))
+
+### Fixes
+
+- fix: drop late play-queue responses from a replaced queue ([`87c7c80`](https://github.com/ister-app/player/commit/87c7c80))
+- fix: show source attribution on the show overview page ([`24be092`](https://github.com/ister-app/player/commit/24be092))
+- fix: keep the album stats visible on narrow screens ([`2af88a3`](https://github.com/ister-app/player/commit/2af88a3))
+- fix: only auto-add the web hosting origin when it serves an Ister well-known ([`0854972`](https://github.com/ister-app/player/commit/0854972))
+- fix: hide the app navigation chrome when a reader is fullscreen ([`e96eb2c`](https://github.com/ister-app/player/commit/e96eb2c))
+
+### Other
+
+- ci: pin e2e server to released 2.4.0 (was 2.3.1-snapshot) ([`8b55ec0`](https://github.com/ister-app/player/commit/8b55ec0))
+- ci: run e2e against server 2.3.1-snapshot for the discover top-lists ([`3d63619`](https://github.com/ister-app/player/commit/3d63619))
+- test: pin the sleep timer button and sheet flow in the player ([`2098b27`](https://github.com/ister-app/player/commit/2098b27))
+- docs: add SEO descriptions and link the published docs site ([`f1622c6`](https://github.com/ister-app/player/commit/f1622c6))
+- docs: add GPLv3 license ([`a9bbdab`](https://github.com/ister-app/player/commit/a9bbdab))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.8.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.7.0...v1.8.0
+
 ## player v1.7.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
