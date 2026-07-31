@@ -13,8 +13,12 @@ import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
 
 import '../components/RecentCarouselView.dart';
+import '../components/RowHeader.dart';
 import '../l10n/app_localizations.dart';
+import '../pages/MediaListPage.dart';
+import '../utils/LibrarySelectionNotifier.dart';
 import '../utils/LoggerService.dart';
+import '../utils/TabNavigationNotifier.dart';
 
 @RoutePage()
 class ServerHomeContentPage extends StatefulWidget {
@@ -132,15 +136,12 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                   children: [
                     _recentViewEmpty
                         ? Container()
-                        : Container(
-                            padding: const EdgeInsets.all(5),
-                            child: Text(
-                              "${AppLocalizations.of(context)!.watchNext}:",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium!
-                                  .copyWith(fontWeight: FontWeight.bold),
-                            )),
+                        : RowHeader(
+                            label: AppLocalizations.of(context)!.watchNext,
+                            onTap: () => AutoRouter.of(context).push(
+                              MediaListRoute(kind: MediaListKind.watchNext),
+                            ),
+                          ),
                     _recentViewEmpty
                         ? Container()
                         : SizedBox(
@@ -153,15 +154,20 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                               onEmptyView: _setRecentViewEmpty,
                             )),
                     ...libraries.expand((library) => [
-                          Container(
-                              padding: const EdgeInsets.all(5),
-                              child: Text(
-                                "${library.name}:",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium!
-                                    .copyWith(fontWeight: FontWeight.bold),
-                              )),
+                          RowHeader(
+                            label: library.name,
+                            onTap: () {
+                              // Announce the pick and switch to the library
+                              // tab; ShowHomePage consumes and persists it.
+                              pendingLibrarySelection.value =
+                                  PendingLibrarySelection(
+                                serverName: widget.serverName,
+                                libraryId: library.id,
+                                libraryType: library.type,
+                              );
+                              tabNavigationNotifier.value = 1;
+                            },
+                          ),
                           SizedBox(
                               height: 200,
                               child: library.type == Enum$LibraryType.SHOW

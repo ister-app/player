@@ -17,7 +17,9 @@ import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../l10n/app_localizations.dart';
+import '../pages/MediaListPage.dart';
 import '../utils/LoggerService.dart';
+import 'RowHeader.dart';
 import 'AlbumCarouselTile.dart';
 import 'AlbumSlide.dart';
 import 'BookCarouselTile.dart';
@@ -57,10 +59,11 @@ class LibraryDiscoverView extends StatefulWidget {
 /// One ranked carousel: a header plus the items the server returned for it.
 class _RankedRow {
   final String label;
+  final MediaListKind kind;
   final List<Widget> tiles;
   final double tileWidth;
 
-  _RankedRow(this.label, this.tiles, this.tileWidth);
+  _RankedRow(this.label, this.kind, this.tiles, this.tileWidth);
 }
 
 class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
@@ -79,7 +82,10 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
         if (!_recentEmpty) ...[
-          _rowLabel(context, loc.watchNext),
+          RowHeader(
+            label: loc.watchNext,
+            onTap: () => _pushList(context, MediaListKind.watchNext),
+          ),
           SizedBox(
             height: _rowHeight,
             child: RecentCarouselView(
@@ -93,24 +99,22 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
             ),
           ),
         ],
-        _rowLabel(context, loc.recentlyAdded),
+        RowHeader(
+          label: loc.recentlyAdded,
+          onTap: () => _pushList(context, MediaListKind.recentlyAdded),
+        ),
         SizedBox(height: _rowHeight, child: _recentlyAddedSlide()),
         _rankedRowsQuery(context),
       ],
     );
   }
 
-  Widget _rowLabel(BuildContext context, String label) {
-    return Container(
-      padding: const EdgeInsets.all(5),
-      child: Text(
-        '$label:',
-        style: Theme.of(context)
-            .textTheme
-            .bodyMedium!
-            .copyWith(fontWeight: FontWeight.bold),
-      ),
-    );
+  void _pushList(BuildContext context, MediaListKind kind) {
+    AutoRouter.of(context).push(MediaListRoute(
+      kind: kind,
+      libraryId: widget.libraryId,
+      libraryType: widget.libraryType,
+    ));
   }
 
   /// The newest items of the library — the existing home-page carousels,
@@ -184,7 +188,10 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             for (final row in rows) ...[
-              _rowLabel(context, row.label),
+              RowHeader(
+                label: row.label,
+                onTap: () => _pushList(context, row.kind),
+              ),
               SizedBox(
                 height: _rowHeight,
                 child: ListView.builder(
@@ -205,7 +212,7 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _rowLabel(context, AppLocalizations.of(context)!.recentlyPlayed),
+        RowHeader(label: AppLocalizations.of(context)!.recentlyPlayed),
         SizedBox(
           height: _rowHeight,
           child: Skeletonizer(
@@ -236,14 +243,17 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
         return [
           _RankedRow(
               loc.recentlyPlayed,
+              MediaListKind.recentlyPlayed,
               library.recentlyPlayedShows.map(_showTile).toList(),
               _landscapeTileWidth),
           _RankedRow(
               loc.mostPlayed,
+              MediaListKind.mostPlayed,
               library.mostPlayedShows.map(_showTile).toList(),
               _landscapeTileWidth),
           _RankedRow(
               loc.highestRated,
+              MediaListKind.highestRated,
               library.highestRatedShows.map(_showTile).toList(),
               _landscapeTileWidth),
         ];
@@ -253,14 +263,17 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
         return [
           _RankedRow(
               loc.recentlyPlayed,
+              MediaListKind.recentlyPlayed,
               library.recentlyPlayedAlbums.map(_albumTile).toList(),
               _squareTileWidth),
           _RankedRow(
               loc.mostPlayed,
+              MediaListKind.mostPlayed,
               library.mostPlayedAlbums.map(_albumTile).toList(),
               _squareTileWidth),
           _RankedRow(
               loc.highestRated,
+              MediaListKind.highestRated,
               library.highestRatedAlbums.map(_albumTile).toList(),
               _squareTileWidth),
         ];
@@ -270,10 +283,12 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
         return [
           _RankedRow(
               loc.recentlyRead,
+              MediaListKind.recentlyPlayed,
               library.recentlyReadBooks.map(_bookTile).toList(),
               _portraitTileWidth),
           _RankedRow(
               loc.highestRated,
+              MediaListKind.highestRated,
               library.highestRatedBooks.map(_bookTile).toList(),
               _portraitTileWidth),
         ];
@@ -283,6 +298,7 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
         return [
           _RankedRow(
               loc.recentlyRead,
+              MediaListKind.recentlyPlayed,
               library.recentlyReadSeries.map(_seriesTile).toList(),
               _portraitTileWidth),
         ];
@@ -292,14 +308,17 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
         return [
           _RankedRow(
               loc.recentlyPlayed,
+              MediaListKind.recentlyPlayed,
               library.recentlyPlayedPodcasts.map(_podcastTile).toList(),
               _squareTileWidth),
           _RankedRow(
               loc.mostPlayed,
+              MediaListKind.mostPlayed,
               library.mostPlayedPodcasts.map(_podcastTile).toList(),
               _squareTileWidth),
           _RankedRow(
               loc.highestRated,
+              MediaListKind.highestRated,
               library.highestRatedPodcasts.map(_podcastTile).toList(),
               _squareTileWidth),
         ];
@@ -309,14 +328,17 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
         return [
           _RankedRow(
               loc.recentlyPlayed,
+              MediaListKind.recentlyPlayed,
               library.recentlyPlayedMovies.map(_movieTile).toList(),
               _landscapeTileWidth),
           _RankedRow(
               loc.mostPlayed,
+              MediaListKind.mostPlayed,
               library.mostPlayedMovies.map(_movieTile).toList(),
               _landscapeTileWidth),
           _RankedRow(
               loc.highestRated,
+              MediaListKind.highestRated,
               library.highestRatedMovies.map(_movieTile).toList(),
               _landscapeTileWidth),
         ];

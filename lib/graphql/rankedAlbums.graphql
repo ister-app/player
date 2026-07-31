@@ -1,0 +1,12 @@
+query rankedAlbums($libraryId: ID!, $kind: RankKind!, $page: Int, $size: Int) {
+    libraryById(id: $libraryId) {
+        id
+        rankedAlbums(kind: $kind, page: $page, size: $size) {
+            number
+            size
+            totalElements
+            totalPages
+            content { ...fragmentAlbum }
+        }
+    }
+}

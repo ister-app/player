@@ -1028,6 +1028,43 @@ Enum$SortingOrder fromJson$Enum$SortingOrder(String value) {
   }
 }
 
+enum Enum$RankKind {
+  RECENTLY_PLAYED,
+  MOST_PLAYED,
+  HIGHEST_RATED,
+  $unknown;
+
+  factory Enum$RankKind.fromJson(String value) => fromJson$Enum$RankKind(value);
+
+  String toJson() => toJson$Enum$RankKind(this);
+}
+
+String toJson$Enum$RankKind(Enum$RankKind e) {
+  switch (e) {
+    case Enum$RankKind.RECENTLY_PLAYED:
+      return r'RECENTLY_PLAYED';
+    case Enum$RankKind.MOST_PLAYED:
+      return r'MOST_PLAYED';
+    case Enum$RankKind.HIGHEST_RATED:
+      return r'HIGHEST_RATED';
+    case Enum$RankKind.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$RankKind fromJson$Enum$RankKind(String value) {
+  switch (value) {
+    case r'RECENTLY_PLAYED':
+      return Enum$RankKind.RECENTLY_PLAYED;
+    case r'MOST_PLAYED':
+      return Enum$RankKind.MOST_PLAYED;
+    case r'HIGHEST_RATED':
+      return Enum$RankKind.HIGHEST_RATED;
+    default:
+      return Enum$RankKind.$unknown;
+  }
+}
+
 enum Enum$ReadingDirection {
   LTR,
   RTL,

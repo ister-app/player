@@ -1,0 +1,12 @@
+query rankedSeries($libraryId: ID!, $kind: RankKind!, $page: Int, $size: Int) {
+    libraryById(id: $libraryId) {
+        id
+        rankedSeries(kind: $kind, page: $page, size: $size) {
+            number
+            size
+            totalElements
+            totalPages
+            content { ...fragmentSeries }
+        }
+    }
+}

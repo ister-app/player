@@ -806,6 +806,12 @@ abstract class AppLocalizations {
   /// **'Browse'**
   String get viewBrowse;
 
+  /// Tooltip/semantics of a tappable carousel header opening the row's full vertical list
+  ///
+  /// In en, this message translates to:
+  /// **'Show all'**
+  String get showAll;
+
   /// Discover row of the library's newest items
   ///
   /// In en, this message translates to:

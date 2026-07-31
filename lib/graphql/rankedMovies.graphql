@@ -1,0 +1,18 @@
+query rankedMovies($libraryId: ID!, $kind: RankKind!, $page: Int, $size: Int) {
+    libraryById(id: $libraryId) {
+        id
+        rankedMovies(kind: $kind, page: $page, size: $size) {
+            number
+            size
+            totalElements
+            totalPages
+            content {
+                id
+                name
+                releaseYear
+                images { ...fragmentImages }
+                metadata { ...fragmentMetadata }
+            }
+        }
+    }
+}

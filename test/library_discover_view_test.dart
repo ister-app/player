@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,7 +11,9 @@ import 'package:player/components/LibraryDiscoverView.dart';
 import 'package:player/components/MovieScroll.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
+import 'package:player/pages/MediaListPage.dart';
 import 'package:player/pages/ShowHomePage.dart';
+import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/PermissionsService.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -109,6 +112,35 @@ MockClient _fakeGraphQL({
       return _json({'__typename': 'Query'});
     });
 
+/// Minimal router: the discover view at '/', a stub in place of the real
+/// MediaListPage that records the args it was pushed with.
+class _NavRouter extends RootStackRouter {
+  MediaListRouteArgs? pushedArgs;
+
+  @override
+  List<AutoRoute> get routes => [
+        AutoRoute(
+          path: '/',
+          initial: true,
+          page: PageInfo('DiscoverHostRoute',
+              builder: (data) => const Scaffold(
+                    body: LibraryDiscoverView(
+                      serverName: _server,
+                      libraryId: 'movie-lib-1',
+                      libraryType: Enum$LibraryType.MOVIE,
+                    ),
+                  )),
+        ),
+        AutoRoute(
+          path: '/list',
+          page: PageInfo(MediaListRoute.name, builder: (data) {
+            pushedArgs = data.argsAs<MediaListRouteArgs>();
+            return const Scaffold(body: Text('media-list-stub'));
+          }),
+        ),
+      ];
+}
+
 Widget _wrap(Widget child, http.Client client) => GraphQLProvider(
       client: ValueNotifier(GraphQLClient(
         link: HttpLink('https://api.example/graphql', httpClient: client),
@@ -175,6 +207,41 @@ void main() {
       expect(find.text('Most played:'), findsNothing);
       // The continue-watching row is empty and hides itself too.
       expect(find.text('Continue watching:'), findsNothing);
+    });
+
+    testWidgets('a ranked header opens the media list with its kind',
+        (tester) async {
+      final client = _fakeGraphQL(
+        discover: _discoverMovies(
+          recentlyPlayed: [_movie('played-1', 'Played Movie')],
+        ),
+      );
+      final router = _NavRouter();
+      await tester.pumpWidget(GraphQLProvider(
+        client: ValueNotifier(GraphQLClient(
+          link: HttpLink('https://api.example/graphql', httpClient: client),
+          cache: GraphQLCache(),
+        )),
+        child: MaterialApp.router(
+          routerConfig: router.config(),
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('en')],
+        ),
+      ));
+      await _pump(tester);
+
+      await tester.tap(find.text('Last played:'));
+      await _pump(tester);
+
+      expect(find.text('media-list-stub'), findsOneWidget);
+      expect(router.pushedArgs?.kind, MediaListKind.recentlyPlayed);
+      expect(router.pushedArgs?.libraryId, 'movie-lib-1');
+      expect(router.pushedArgs?.libraryType, Enum$LibraryType.MOVIE);
     });
 
     testWidgets('degrades to the recently-added row on an old server',

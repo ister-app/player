@@ -24,6 +24,10 @@ class RecentCarouselView extends StatefulWidget {
   /// When set, only entries whose media lives in this library are shown
   /// (the Discover view's continue-watching row).
   final String? libraryId;
+
+  /// [Axis.horizontal] is the carousel row; [Axis.vertical] renders the same
+  /// entries as a grid (the "show all" page). The list is unpaged either way.
+  final Axis scrollDirection;
   final Function(Refetch?)? onRefetch;
   final Function()? onEmptyView;
 
@@ -31,6 +35,7 @@ class RecentCarouselView extends StatefulWidget {
     super.key,
     required this.serverName,
     this.libraryId,
+    this.scrollDirection = Axis.horizontal,
     this.onRefetch,
     this.onEmptyView,
   });
@@ -88,6 +93,24 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
         }
 
         if (result.data == null || result.isLoading) {
+          if (widget.scrollDirection == Axis.vertical) {
+            return Skeletonizer(
+              enabled: true,
+              child: GridView.builder(
+                padding: const EdgeInsets.all(8),
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 300,
+                  childAspectRatio: 1.5,
+                ),
+                itemCount: 7,
+                itemBuilder: (context, index) => CarouselItemView(
+                  serverName: widget.serverName,
+                  title: BoneMock.name,
+                  subTitle: BoneMock.words(10),
+                ),
+              ),
+            );
+          }
           return Skeletonizer(
               enabled: true,
               child: CarouselView(
@@ -112,6 +135,18 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
             widget.onEmptyView!();
           }
           return Text(AppLocalizations.of(context)!.noRecentItems);
+        }
+
+        if (widget.scrollDirection == Axis.vertical) {
+          return GridView.builder(
+            padding: const EdgeInsets.all(8),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 300,
+              childAspectRatio: 1.5,
+            ),
+            itemCount: items.length,
+            itemBuilder: (context, index) => _buildTile(context, items[index]),
+          );
         }
 
         // No itemExtent: book covers are portrait and podcast covers are

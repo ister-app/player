@@ -54,10 +54,12 @@ class PagedContentView<T> extends StatefulWidget {
     required this.document,
     required this.rootField,
     required this.fromJson,
-    required this.sorting,
-    required this.sortingOrder,
+    this.sorting,
+    this.sortingOrder,
     required this.builder,
     this.libraryId,
+    this.rootFieldPath,
+    this.extraVariables,
     this.pageSize = 15,
     this.onRefetch,
   });
@@ -68,10 +70,20 @@ class PagedContentView<T> extends StatefulWidget {
   /// The query's root field name, used to read `content`/`totalElements` from
   /// the raw result and from `fetchMore` results (e.g. `'movies'`).
   final String rootField;
+
+  /// Path to the page object when it is nested (e.g.
+  /// `['libraryById', 'rankedMovies']`); defaults to `[rootField]`.
+  final List<String>? rootFieldPath;
   final ItemFromJson<T> fromJson;
-  final Enum$SortingEnum sorting;
-  final Enum$SortingOrder sortingOrder;
+
+  /// Sort key/direction; null for queries whose order is fixed server-side
+  /// (the ranked top-lists) — the variables are then omitted entirely.
+  final Enum$SortingEnum? sorting;
+  final Enum$SortingOrder? sortingOrder;
   final String? libraryId;
+
+  /// Extra query variables merged into every request (e.g. the ranked `kind`).
+  final Map<String, dynamic>? extraVariables;
   final int pageSize;
   final void Function(Refetch?)? onRefetch;
 
@@ -97,6 +109,16 @@ class _PagedContentViewState<T> extends State<PagedContentView<T>> {
       content?.map((e) => widget.fromJson(e as Map<String, dynamic>)).toList() ??
       <T>[];
 
+  /// The page object of a result, walking [PagedContentView.rootFieldPath].
+  Map<String, dynamic>? _pageObject(Map<String, dynamic>? data) {
+    dynamic node = data;
+    for (final field in widget.rootFieldPath ?? [widget.rootField]) {
+      if (node is! Map<String, dynamic>) return null;
+      node = node[field];
+    }
+    return node as Map<String, dynamic>?;
+  }
+
   void _requestPage(int page) {
     final fetchMore = _fetchMore;
     if (fetchMore == null) return;
@@ -107,7 +129,7 @@ class _PagedContentViewState<T> extends State<PagedContentView<T>> {
       FetchMoreOptions(
         variables: {'page': page, 'size': widget.pageSize},
         updateQuery: (previous, fetchMoreResult) {
-          final content = fetchMoreResult?[widget.rootField]?['content'];
+          final content = _pageObject(fetchMoreResult)?['content'];
           if (content == null) {
             _requestedPages.remove(page);
             return previous!;
@@ -130,9 +152,10 @@ class _PagedContentViewState<T> extends State<PagedContentView<T>> {
         variables: {
           'page': 0,
           'size': widget.pageSize,
-          'sorting': widget.sorting,
-          'sortingOrder': widget.sortingOrder,
+          if (widget.sorting != null) 'sorting': widget.sorting,
+          if (widget.sortingOrder != null) 'sortingOrder': widget.sortingOrder,
           if (widget.libraryId != null) 'libraryId': widget.libraryId,
+          ...?widget.extraVariables,
         },
         fetchPolicy: FetchPolicy.cacheAndNetwork,
       ),
@@ -145,7 +168,7 @@ class _PagedContentViewState<T> extends State<PagedContentView<T>> {
         // result and make pull-to-refresh a no-op.
         if (result.data != null && result.timestamp != _lastResultTimestamp) {
           _lastResultTimestamp = result.timestamp;
-          final root = result.data![widget.rootField];
+          final root = _pageObject(result.data);
           final content = root?['content'] as List<dynamic>?;
           final total = root?['totalElements'] as int?;
           WidgetsBinding.instance.addPostFrameCallback((_) {

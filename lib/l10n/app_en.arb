@@ -482,6 +482,10 @@
   "@viewBrowse": {
     "description": "Library view switch: the sortable grid view"
   },
+  "showAll": "Show all",
+  "@showAll": {
+    "description": "Tooltip/semantics of a tappable carousel header opening the row's full vertical list"
+  },
   "recentlyAdded": "Recently added",
   "@recentlyAdded": {
     "description": "Discover row of the library's newest items"

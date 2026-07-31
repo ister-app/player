@@ -12,6 +12,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../l10n/app_localizations.dart';
+import 'RowHeader.dart';
 
 /// Fixed height reserved for the horizontal cast strip; a bounded height is
 /// required so the lazy [ListView] in [PagedCastRow] can scroll horizontally.
@@ -49,12 +50,12 @@ List<_CastEntry> _mergeCredits(List<Fragment$fragmentCastMember> cast) {
 }
 
 /// The section header shown above every cast strip.
-Widget _castHeader(BuildContext context) => Padding(
+Widget _castHeader(BuildContext context, {VoidCallback? onTap}) => RowHeader(
+      label: AppLocalizations.of(context)!.cast,
+      style: Theme.of(context).textTheme.titleMedium,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-      child: Text(
-        AppLocalizations.of(context)!.cast,
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
+      trailingColon: false,
+      onTap: onTap,
     );
 
 /// Horizontal strip of the people credited on a movie, show or episode built
@@ -113,12 +114,18 @@ class PagedCastRow extends StatefulWidget {
     this.showId,
     this.movieId,
     this.episodeId,
+    this.scrollDirection = Axis.horizontal,
   });
 
   final String serverName;
   final String? showId;
   final String? movieId;
   final String? episodeId;
+
+  /// [Axis.horizontal] is the strip with its tappable header;
+  /// [Axis.vertical] is the full-cast grid ([CastListPage]'s body, headerless
+  /// — the page's app bar carries the title).
+  final Axis scrollDirection;
 
   @override
   State<PagedCastRow> createState() => _PagedCastRowState();
@@ -222,6 +229,40 @@ class _PagedCastRowState extends State<PagedCastRow> {
             ? 8
             : (_totalItems! - loadedCredits).clamp(0, _pageSize);
 
+        // Placeholders map back to credit indices (not merged tile indices)
+        // so the page they trigger stays aligned with the server's paging.
+        Widget itemBuilder(BuildContext context, int index) {
+          if (index < entries.length) {
+            return _CastMemberTile(
+              serverName: widget.serverName,
+              entry: entries[index],
+            );
+          }
+          final creditIndex = loadedCredits + (index - entries.length);
+          final page = creditIndex ~/ _pageSize;
+          return VisibilityDetector(
+            key: ValueKey('cast-placeholder-$index'),
+            onVisibilityChanged: (info) {
+              if (info.visibleFraction > 0 && fetchMore != null) {
+                _requestPage(page, fetchMore);
+              }
+            },
+            child: const _CastSkeletonTile(),
+          );
+        }
+
+        if (widget.scrollDirection == Axis.vertical) {
+          return GridView.builder(
+            padding: const EdgeInsets.all(12),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 140,
+              childAspectRatio: _kCastTileWidth / _kCastRowHeight,
+            ),
+            itemCount: entries.length + placeholderCount,
+            itemBuilder: itemBuilder,
+          );
+        }
+
         return Center(
           child: Container(
             width: double.infinity,
@@ -229,7 +270,14 @@ class _PagedCastRowState extends State<PagedCastRow> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _castHeader(context),
+                _castHeader(
+                  context,
+                  onTap: () => AutoRouter.of(context).push(CastListRoute(
+                    showId: widget.showId,
+                    movieId: widget.movieId,
+                    episodeId: widget.episodeId,
+                  )),
+                ),
                 SizedBox(
                   height: _kCastRowHeight,
                   child: ListView.builder(
@@ -237,30 +285,7 @@ class _PagedCastRowState extends State<PagedCastRow> {
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     itemExtent: _kCastTileWidth,
                     itemCount: entries.length + placeholderCount,
-                    itemBuilder: (context, index) {
-                      if (index < entries.length) {
-                        return _CastMemberTile(
-                          serverName: widget.serverName,
-                          entry: entries[index],
-                        );
-                      }
-
-                      // Placeholders map back to credit indices (not merged
-                      // tile indices) so the page they trigger stays aligned
-                      // with the server's paging.
-                      final creditIndex =
-                          loadedCredits + (index - entries.length);
-                      final page = creditIndex ~/ _pageSize;
-                      return VisibilityDetector(
-                        key: ValueKey('cast-placeholder-$index'),
-                        onVisibilityChanged: (info) {
-                          if (info.visibleFraction > 0 && fetchMore != null) {
-                            _requestPage(page, fetchMore);
-                          }
-                        },
-                        child: const _CastSkeletonTile(),
-                      );
-                    },
+                    itemBuilder: itemBuilder,
                   ),
                 ),
               ],

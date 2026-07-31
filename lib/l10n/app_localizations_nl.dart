@@ -393,6 +393,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get viewBrowse => 'Bladeren';
 
   @override
+  String get showAll => 'Toon alles';
+
+  @override
   String get recentlyAdded => 'Recent toegevoegd';
 
   @override

@@ -17,6 +17,7 @@ import '../components/PodcastScroll.dart';
 import '../components/MovieScroll.dart';
 import '../components/TvShowScroll.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/LibrarySelectionNotifier.dart';
 import '../utils/LoggerService.dart';
 import 'package:player/utils/PermissionsService.dart';
 
@@ -65,7 +66,41 @@ class _ShowHomePageState extends State<ShowHomePage> {
         setState(() => _showAdminActions = false);
       }
     });
-    _loadSavedLibrary();
+    // Both paths matter: the listener when this tab is already alive behind
+    // the tab bar, the direct call when the header tap builds it fresh.
+    pendingLibrarySelection.addListener(_consumePendingSelection);
+    if (pendingLibrarySelection.value != null) {
+      _consumePendingSelection();
+    } else {
+      _loadSavedLibrary();
+    }
+  }
+
+  @override
+  void dispose() {
+    pendingLibrarySelection.removeListener(_consumePendingSelection);
+    super.dispose();
+  }
+
+  /// Applies a library picked on the home page: select it, switch to the
+  /// Browse grid and persist all three choices, then clear the notifier.
+  void _consumePendingSelection() {
+    final pending = pendingLibrarySelection.value;
+    if (pending == null || pending.serverName != widget.serverName) return;
+    pendingLibrarySelection.value = null;
+    if (!mounted) return;
+    setState(() {
+      _selectedLibraryId = pending.libraryId;
+      _selectedLibraryType = pending.libraryType;
+      // Let the libraries query reseed the grid sort for the new library.
+      _sortSeededForLibraryId = null;
+      _discoverView = false;
+    });
+    _prefs.setString(
+        '${_kSelectedLibraryKey}_${widget.serverName}', pending.libraryId);
+    _prefs.setString('${_kSelectedLibraryTypeKey}_${widget.serverName}',
+        pending.libraryType.name);
+    _prefs.setString('${_kLibraryViewKey}_${widget.serverName}', 'browse');
   }
 
   Future<void> _loadSavedLibrary() async {

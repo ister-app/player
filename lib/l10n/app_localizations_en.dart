@@ -392,6 +392,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewBrowse => 'Browse';
 
   @override
+  String get showAll => 'Show all';
+
+  @override
   String get recentlyAdded => 'Recently added';
 
   @override
