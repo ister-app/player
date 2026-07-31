@@ -12,7 +12,6 @@
 import 'package:auto_route/auto_route.dart' as _i34;
 import 'package:flutter/foundation.dart' as _i36;
 import 'package:flutter/material.dart' as _i35;
-import 'package:player/graphql/schema.graphql.dart' as _i37;
 import 'package:player/pages/AdminLibrariesPage.dart' as _i1;
 import 'package:player/pages/AdminUserAccessPage.dart' as _i2;
 import 'package:player/pages/AdminUsersPage.dart' as _i3;
@@ -102,7 +101,7 @@ class AdminUserAccessRoute
   AdminUserAccessRoute({
     _i35.Key? key,
     required String userId,
-    required String userName,
+    String? userName,
     List<_i34.PageRouteInfo>? children,
   }) : super(
           AdminUserAccessRoute.name,
@@ -112,6 +111,7 @@ class AdminUserAccessRoute
             userName: userName,
           ),
           rawPathParams: {'userId': userId},
+          rawQueryParams: {'userName': userName},
           initialChildren: children,
         );
 
@@ -121,7 +121,13 @@ class AdminUserAccessRoute
     name,
     builder: (data) {
       final pathParams = data.inheritedPathParams;
-      final args = data.argsAs<AdminUserAccessRouteArgs>();
+      final queryParams = data.queryParams;
+      final args = data.argsAs<AdminUserAccessRouteArgs>(
+        orElse: () => AdminUserAccessRouteArgs(
+          userId: pathParams.getString('userId'),
+          userName: queryParams.optString('userName'),
+        ),
+      );
       return _i2.AdminUserAccessPage(
         key: args.key,
         serverName: pathParams.getString('serverName'),
@@ -136,14 +142,14 @@ class AdminUserAccessRouteArgs {
   const AdminUserAccessRouteArgs({
     this.key,
     required this.userId,
-    required this.userName,
+    this.userName,
   });
 
   final _i35.Key? key;
 
   final String userId;
 
-  final String userName;
+  final String? userName;
 
   @override
   String toString() {
@@ -381,6 +387,11 @@ class CastListRoute extends _i34.PageRouteInfo<CastListRouteArgs> {
             movieId: movieId,
             episodeId: episodeId,
           ),
+          rawQueryParams: {
+            'showId': showId,
+            'movieId': movieId,
+            'episodeId': episodeId,
+          },
           initialChildren: children,
         );
 
@@ -390,8 +401,13 @@ class CastListRoute extends _i34.PageRouteInfo<CastListRouteArgs> {
     name,
     builder: (data) {
       final pathParams = data.inheritedPathParams;
+      final queryParams = data.queryParams;
       final args = data.argsAs<CastListRouteArgs>(
-        orElse: () => CastListRouteArgs(),
+        orElse: () => CastListRouteArgs(
+          showId: queryParams.optString('showId'),
+          movieId: queryParams.optString('movieId'),
+          episodeId: queryParams.optString('episodeId'),
+        ),
       );
       return _i6.CastListPage(
         key: args.key,
@@ -579,18 +595,23 @@ class HomeRoute extends _i34.PageRouteInfo<void> {
 class MediaListRoute extends _i34.PageRouteInfo<MediaListRouteArgs> {
   MediaListRoute({
     _i35.Key? key,
-    required _i9.MediaListKind kind,
+    String? kindName,
     String? libraryId,
-    _i37.Enum$LibraryType? libraryType,
+    String? libraryTypeName,
     List<_i34.PageRouteInfo>? children,
   }) : super(
           MediaListRoute.name,
           args: MediaListRouteArgs(
             key: key,
-            kind: kind,
+            kindName: kindName,
             libraryId: libraryId,
-            libraryType: libraryType,
+            libraryTypeName: libraryTypeName,
           ),
+          rawQueryParams: {
+            'kind': kindName,
+            'libraryId': libraryId,
+            'libraryType': libraryTypeName,
+          },
           initialChildren: children,
         );
 
@@ -600,13 +621,20 @@ class MediaListRoute extends _i34.PageRouteInfo<MediaListRouteArgs> {
     name,
     builder: (data) {
       final pathParams = data.inheritedPathParams;
-      final args = data.argsAs<MediaListRouteArgs>();
+      final queryParams = data.queryParams;
+      final args = data.argsAs<MediaListRouteArgs>(
+        orElse: () => MediaListRouteArgs(
+          kindName: queryParams.optString('kind'),
+          libraryId: queryParams.optString('libraryId'),
+          libraryTypeName: queryParams.optString('libraryType'),
+        ),
+      );
       return _i9.MediaListPage(
         key: args.key,
         serverName: pathParams.getString('serverName'),
-        kind: args.kind,
+        kindName: args.kindName,
         libraryId: args.libraryId,
-        libraryType: args.libraryType,
+        libraryTypeName: args.libraryTypeName,
       );
     },
   );
@@ -615,22 +643,22 @@ class MediaListRoute extends _i34.PageRouteInfo<MediaListRouteArgs> {
 class MediaListRouteArgs {
   const MediaListRouteArgs({
     this.key,
-    required this.kind,
+    this.kindName,
     this.libraryId,
-    this.libraryType,
+    this.libraryTypeName,
   });
 
   final _i35.Key? key;
 
-  final _i9.MediaListKind kind;
+  final String? kindName;
 
   final String? libraryId;
 
-  final _i37.Enum$LibraryType? libraryType;
+  final String? libraryTypeName;
 
   @override
   String toString() {
-    return 'MediaListRouteArgs{key: $key, kind: $kind, libraryId: $libraryId, libraryType: $libraryType}';
+    return 'MediaListRouteArgs{key: $key, kindName: $kindName, libraryId: $libraryId, libraryTypeName: $libraryTypeName}';
   }
 
   @override
@@ -638,14 +666,17 @@ class MediaListRouteArgs {
     if (identical(this, other)) return true;
     if (other is! MediaListRouteArgs) return false;
     return key == other.key &&
-        kind == other.kind &&
+        kindName == other.kindName &&
         libraryId == other.libraryId &&
-        libraryType == other.libraryType;
+        libraryTypeName == other.libraryTypeName;
   }
 
   @override
   int get hashCode =>
-      key.hashCode ^ kind.hashCode ^ libraryId.hashCode ^ libraryType.hashCode;
+      key.hashCode ^
+      kindName.hashCode ^
+      libraryId.hashCode ^
+      libraryTypeName.hashCode;
 }
 
 /// generated route for
@@ -1055,10 +1086,12 @@ class SearchRoute extends _i34.PageRouteInfo<SearchRouteArgs> {
   SearchRoute({
     _i35.Key? key,
     String? libraryId,
+    String? query,
     List<_i34.PageRouteInfo>? children,
   }) : super(
           SearchRoute.name,
-          args: SearchRouteArgs(key: key, libraryId: libraryId),
+          args: SearchRouteArgs(key: key, libraryId: libraryId, query: query),
+          rawQueryParams: {'libraryId': libraryId, 'q': query},
           initialChildren: children,
         );
 
@@ -1068,39 +1101,48 @@ class SearchRoute extends _i34.PageRouteInfo<SearchRouteArgs> {
     name,
     builder: (data) {
       final pathParams = data.inheritedPathParams;
+      final queryParams = data.queryParams;
       final args = data.argsAs<SearchRouteArgs>(
-        orElse: () => SearchRouteArgs(),
+        orElse: () => SearchRouteArgs(
+          libraryId: queryParams.optString('libraryId'),
+          query: queryParams.optString('q'),
+        ),
       );
       return _i16.SearchPage(
         key: args.key,
         serverName: pathParams.getString('serverName'),
         libraryId: args.libraryId,
+        query: args.query,
       );
     },
   );
 }
 
 class SearchRouteArgs {
-  const SearchRouteArgs({this.key, this.libraryId});
+  const SearchRouteArgs({this.key, this.libraryId, this.query});
 
   final _i35.Key? key;
 
   final String? libraryId;
 
+  final String? query;
+
   @override
   String toString() {
-    return 'SearchRouteArgs{key: $key, libraryId: $libraryId}';
+    return 'SearchRouteArgs{key: $key, libraryId: $libraryId, query: $query}';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! SearchRouteArgs) return false;
-    return key == other.key && libraryId == other.libraryId;
+    return key == other.key &&
+        libraryId == other.libraryId &&
+        query == other.query;
   }
 
   @override
-  int get hashCode => key.hashCode ^ libraryId.hashCode;
+  int get hashCode => key.hashCode ^ libraryId.hashCode ^ query.hashCode;
 }
 
 /// generated route for
@@ -1796,10 +1838,15 @@ class ShowEpisodeRouteArgs {
 /// generated route for
 /// [_i30.ShowHomePage]
 class ShowHomeRoute extends _i34.PageRouteInfo<ShowHomeRouteArgs> {
-  ShowHomeRoute({_i35.Key? key, List<_i34.PageRouteInfo>? children})
-      : super(
+  ShowHomeRoute({
+    _i35.Key? key,
+    String? libraryId,
+    String? view,
+    List<_i34.PageRouteInfo>? children,
+  }) : super(
           ShowHomeRoute.name,
-          args: ShowHomeRouteArgs(key: key),
+          args: ShowHomeRouteArgs(key: key, libraryId: libraryId, view: view),
+          rawQueryParams: {'libraryId': libraryId, 'view': view},
           initialChildren: children,
         );
 
@@ -1809,36 +1856,48 @@ class ShowHomeRoute extends _i34.PageRouteInfo<ShowHomeRouteArgs> {
     name,
     builder: (data) {
       final pathParams = data.inheritedPathParams;
+      final queryParams = data.queryParams;
       final args = data.argsAs<ShowHomeRouteArgs>(
-        orElse: () => ShowHomeRouteArgs(),
+        orElse: () => ShowHomeRouteArgs(
+          libraryId: queryParams.optString('libraryId'),
+          view: queryParams.optString('view'),
+        ),
       );
       return _i30.ShowHomePage(
         key: args.key,
         serverName: pathParams.getString('serverName'),
+        libraryId: args.libraryId,
+        view: args.view,
       );
     },
   );
 }
 
 class ShowHomeRouteArgs {
-  const ShowHomeRouteArgs({this.key});
+  const ShowHomeRouteArgs({this.key, this.libraryId, this.view});
 
   final _i35.Key? key;
 
+  final String? libraryId;
+
+  final String? view;
+
   @override
   String toString() {
-    return 'ShowHomeRouteArgs{key: $key}';
+    return 'ShowHomeRouteArgs{key: $key, libraryId: $libraryId, view: $view}';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! ShowHomeRouteArgs) return false;
-    return key == other.key;
+    return key == other.key &&
+        libraryId == other.libraryId &&
+        view == other.view;
   }
 
   @override
-  int get hashCode => key.hashCode;
+  int get hashCode => key.hashCode ^ libraryId.hashCode ^ view.hashCode;
 }
 
 /// generated route for

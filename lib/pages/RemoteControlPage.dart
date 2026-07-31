@@ -14,6 +14,8 @@ import '../components/LiveFeedBanner.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/ClientManager.dart';
 import '../utils/ImageTypes.dart';
+import '../utils/LoggerService.dart';
+import '../utils/LoginManager.dart';
 import '../utils/ImageUtil.dart';
 import '../utils/MetadataUtil.dart';
 import '../utils/PlayQueueService.dart';
@@ -43,36 +45,63 @@ class RemoteControlPage extends StatefulWidget {
 }
 
 class _RemoteControlPageState extends State<RemoteControlPage> {
-  late final _RemotePlayerController _controller;
+  _RemotePlayerController? _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = _RemotePlayerController(
-      serverName: widget.serverName,
-      playQueueId: widget.playQueueId,
-      onSessionUnknown: () {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(AppLocalizations.of(context)!.sessionEnded)));
-      },
-    );
+    _bootstrap();
+  }
+
+  /// A cold URL open (shared party link) lands here without the server shell
+  /// ever mounting, so LoginManager/WellKnownService may be uninitialized and
+  /// the GraphQL calls would go out unauthenticated. waitForToken bootstraps
+  /// both (same seam the audio-service session restore uses); the warm path
+  /// resolves near-instantly.
+  Future<void> _bootstrap() async {
+    try {
+      await LoginManager.waitForToken(widget.serverName);
+    } catch (e) {
+      LoggerService().logger.w('Remote-control token bootstrap failed: $e');
+      // Fall through: the session-unknown handling below reports the failure.
+    }
+    if (!mounted) return;
+    setState(() {
+      _controller = _RemotePlayerController(
+        serverName: widget.serverName,
+        playQueueId: widget.playQueueId,
+        onSessionUnknown: () {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(AppLocalizations.of(context)!.sessionEnded)));
+        },
+      );
+    });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final controller = _controller;
+    if (controller == null) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF101014),
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.white54),
+        ),
+      );
+    }
     return ListenableBuilder(
-      listenable: _controller,
+      listenable: controller,
       builder: (context, _) {
         // Session gone before we ever saw it: no player to render, just say so.
-        if (_controller.sessionEnded && !_controller.hasSession) {
+        if (controller.sessionEnded && !controller.hasSession) {
           return Scaffold(
             backgroundColor: const Color(0xFF101014),
             appBar: AppBar(
@@ -95,16 +124,16 @@ class _RemoteControlPageState extends State<RemoteControlPage> {
         }
 
         return PlayerView(
-          controller: _controller,
-          headerTitle: _controller.headerTitle,
+          controller: controller,
+          headerTitle: controller.headerTitle,
           onDismissed: () => context.router.pop(),
-          bannerBuilder: !_controller.liveFeedBroken && !_controller.sessionEnded
+          bannerBuilder: !controller.liveFeedBroken && !controller.sessionEnded
               ? null
               : (context) => Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (_controller.liveFeedBroken) const LiveFeedBanner(),
-                      if (_controller.sessionEnded)
+                      if (controller.liveFeedBroken) const LiveFeedBanner(),
+                      if (controller.sessionEnded)
                         _SessionEndedBanner(text: loc.sessionEnded),
                     ],
                   ),

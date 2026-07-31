@@ -36,25 +36,60 @@ import '../l10n/app_localizations.dart';
 /// Which carousel a [MediaListPage] shows in full.
 enum MediaListKind { watchNext, recentlyAdded, recentlyPlayed, mostPlayed, highestRated }
 
+/// URL round-trip for [MediaListKind]: kebab-case in the `kind` query param,
+/// unknown/absent values fall back to watch-next so a bare or hand-mangled
+/// URL still renders something sensible.
+extension MediaListKindUrl on MediaListKind {
+  String get urlValue {
+    switch (this) {
+      case MediaListKind.watchNext:
+        return 'watch-next';
+      case MediaListKind.recentlyAdded:
+        return 'recently-added';
+      case MediaListKind.recentlyPlayed:
+        return 'recently-played';
+      case MediaListKind.mostPlayed:
+        return 'most-played';
+      case MediaListKind.highestRated:
+        return 'highest-rated';
+    }
+  }
+
+  static MediaListKind parse(String? value) =>
+      MediaListKind.values.firstWhere((k) => k.urlValue == value,
+          orElse: () => MediaListKind.watchNext);
+}
+
 /// The vertical "show all" page behind a carousel header: the same items as
-/// the row it was opened from, as a paged grid.
+/// the row it was opened from, as a paged grid. All context travels as query
+/// params so the page is bookmarkable.
 @RoutePage()
 class MediaListPage extends StatelessWidget {
   const MediaListPage({
     super.key,
     @PathParam.inherit('serverName') required this.serverName,
-    required this.kind,
-    this.libraryId,
-    this.libraryType,
+    @QueryParam('kind') this.kindName,
+    @QueryParam('libraryId') this.libraryId,
+    @QueryParam('libraryType') this.libraryTypeName,
   });
 
   final String serverName;
-  final MediaListKind kind;
+  final String? kindName;
 
   /// The library the row was scoped to; null only for the home page's
   /// server-wide continue-watching row.
   final String? libraryId;
-  final Enum$LibraryType? libraryType;
+  final String? libraryTypeName;
+
+  MediaListKind get kind => MediaListKindUrl.parse(kindName);
+
+  Enum$LibraryType? get libraryType {
+    if (libraryTypeName == null) return null;
+    final parsed = Enum$LibraryType.values.firstWhere(
+        (t) => t.name == libraryTypeName,
+        orElse: () => Enum$LibraryType.$unknown);
+    return parsed == Enum$LibraryType.$unknown ? null : parsed;
+  }
 
   static const int _pageSize = 15;
 

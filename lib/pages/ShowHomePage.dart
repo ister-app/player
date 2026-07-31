@@ -25,9 +25,19 @@ import 'package:player/utils/PermissionsService.dart';
 class ShowHomePage extends StatefulWidget {
   final String serverName;
 
+  /// URL context, so a bookmark pins a specific library and view. Absent on
+  /// the plain `/library` tab path — then the device's saved selection (or
+  /// the first library) applies and the URL is upgraded via replaceState.
+  final String? libraryId;
+
+  /// `'discover'` or `'browse'`; anything else falls back to the saved pref.
+  final String? view;
+
   const ShowHomePage({
     super.key,
     @PathParam.inherit('serverName') required this.serverName,
+    @QueryParam('libraryId') this.libraryId,
+    @QueryParam('view') this.view,
   });
 
   @override
@@ -68,8 +78,11 @@ class _ShowHomePageState extends State<ShowHomePage> {
     });
     // Both paths matter: the listener when this tab is already alive behind
     // the tab bar, the direct call when the header tap builds it fresh.
+    // Precedence: URL params > pending home-page pick > saved prefs.
     pendingLibrarySelection.addListener(_consumePendingSelection);
-    if (pendingLibrarySelection.value != null) {
+    if (widget.libraryId != null) {
+      _applyUrlParams();
+    } else if (pendingLibrarySelection.value != null) {
       _consumePendingSelection();
     } else {
       _loadSavedLibrary();
@@ -77,9 +90,69 @@ class _ShowHomePageState extends State<ShowHomePage> {
   }
 
   @override
+  void didUpdateWidget(covariant ShowHomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Browser back/forward between query-param states arrives as an in-place
+    // page update. Adopt it only when it actually differs from our state —
+    // our own _reflectUrl round-trip comes back matching and must be a no-op.
+    final urlChanged = widget.libraryId != oldWidget.libraryId ||
+        widget.view != oldWidget.view;
+    if (!urlChanged) return;
+    final libDiffers =
+        widget.libraryId != null && widget.libraryId != _selectedLibraryId;
+    final viewDiffers = (widget.view == 'browse' && _discoverView) ||
+        (widget.view == 'discover' && !_discoverView);
+    if (libDiffers || viewDiffers) _applyUrlParams();
+  }
+
+  @override
   void dispose() {
     pendingLibrarySelection.removeListener(_consumePendingSelection);
     super.dispose();
+  }
+
+  /// Adopts the route's query params into the page state. The libraries query
+  /// resolves the library's type and seeds the sort, as it does for a
+  /// prefs-restored ID; prefs are updated so the choice sticks on-device too.
+  void _applyUrlParams() {
+    setState(() {
+      if (widget.libraryId != null &&
+          widget.libraryId != _selectedLibraryId) {
+        _selectedLibraryId = widget.libraryId;
+        _selectedLibraryType = null;
+        _sortSeededForLibraryId = null;
+      }
+      if (widget.view == 'browse' || widget.view == 'discover') {
+        _discoverView = widget.view == 'discover';
+      }
+    });
+    if (widget.libraryId != null) {
+      _prefs.setString(
+          '${_kSelectedLibraryKey}_${widget.serverName}', widget.libraryId!);
+    }
+    if (widget.view == 'browse' || widget.view == 'discover') {
+      _prefs.setString(
+          '${_kLibraryViewKey}_${widget.serverName}', widget.view!);
+    }
+  }
+
+  /// Mirrors the current selection into the address bar (replaceState — no
+  /// history entry per library switch), making the tab bookmarkable.
+  void _reflectUrl() {
+    if (!mounted || _selectedLibraryId == null) return;
+    // Not under a router (widget tests mount the page directly): nothing to
+    // reflect into.
+    final scope = context.findAncestorWidgetOfExactType<RouteDataScope>();
+    if (scope == null) return;
+    // Only while this tab is the active route: reflecting from a background
+    // keep-alive tab would navigate the tab bar over to the library tab.
+    if (!scope.routeData.isActive) return;
+    final router = context.router;
+    router.markUrlStateForReplace();
+    router.navigate(ShowHomeRoute(
+      libraryId: _selectedLibraryId,
+      view: _discoverView ? 'discover' : 'browse',
+    ));
   }
 
   /// Applies a library picked on the home page: select it, switch to the
@@ -101,6 +174,9 @@ class _ShowHomePageState extends State<ShowHomePage> {
     _prefs.setString('${_kSelectedLibraryTypeKey}_${widget.serverName}',
         pending.libraryType.name);
     _prefs.setString('${_kLibraryViewKey}_${widget.serverName}', 'browse');
+    // Post-frame: the pick arrives while the tab switch is still in flight,
+    // so this tab only becomes the active route after the current frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _reflectUrl());
   }
 
   Future<void> _loadSavedLibrary() async {
@@ -122,6 +198,8 @@ class _ShowHomePageState extends State<ShowHomePage> {
                 (t) => t.name == savedType,
                 orElse: () => Enum$LibraryType.$unknown);
       });
+      // Upgrade the bare /library URL to a bookmarkable one.
+      _reflectUrl();
     }
   }
 
@@ -133,6 +211,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
       _sortingOrder = lib.sortingOrder;
       _sortSeededForLibraryId = lib.id;
     });
+    _reflectUrl();
     await _prefs.setString('${_kSelectedLibraryKey}_${widget.serverName}', lib.id);
     await _prefs.setString('${_kSelectedLibraryTypeKey}_${widget.serverName}', lib.type.name);
   }
@@ -140,6 +219,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
   Future<void> _setDiscoverView(bool discover) async {
     if (discover == _discoverView) return;
     setState(() => _discoverView = discover);
+    _reflectUrl();
     await _prefs.setString('${_kLibraryViewKey}_${widget.serverName}',
         discover ? 'discover' : 'browse');
   }

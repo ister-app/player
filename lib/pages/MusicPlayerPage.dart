@@ -9,6 +9,7 @@ import 'package:player/components/RatingStars.dart';
 import 'package:player/dto/IsterMediaItem.dart';
 import 'package:player/dto/MediaItemId.dart';
 import 'package:player/graphql/schema.graphql.dart';
+import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 
@@ -32,7 +33,23 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
     _initialSlideValue = MediaPlayerHandler.instance.playerInitialControllerValue;
     MediaPlayerHandler.instance.playerInitialControllerValue = 0.0;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) MediaPlayerHandler.instance.musicPlayerOpen.value = true;
+      if (!mounted) return;
+      // Cold URL open of /player: nothing is playing, so an empty transparent
+      // overlay over nothing would render. Send the visitor to their last
+      // server (or the server list) instead, mirroring the root deepLinkBuilder.
+      final handler = MediaPlayerHandler.instance;
+      if (handler.mediaItem.valueOrNull == null &&
+          handler.queue.value.isEmpty) {
+        final lastServer = ClientManager.instance.lastClientUsed;
+        context.router.replaceAll([
+          if (lastServer != null)
+            ServerHomeRoute(serverName: lastServer)
+          else
+            HomeRoute(),
+        ]);
+        return;
+      }
+      MediaPlayerHandler.instance.musicPlayerOpen.value = true;
     });
   }
 

@@ -128,9 +128,9 @@ void main() {
     await tester.pumpWidget(_wrap(
       const MediaListPage(
         serverName: _server,
-        kind: MediaListKind.recentlyPlayed,
+        kindName: 'recently-played',
         libraryId: 'movie-lib-1',
-        libraryType: Enum$LibraryType.MOVIE,
+        libraryTypeName: 'MOVIE',
       ),
       _fakeGraphQL(seenVars),
     ));
@@ -157,9 +157,9 @@ void main() {
     await tester.pumpWidget(_wrap(
       const MediaListPage(
         serverName: _server,
-        kind: MediaListKind.recentlyAdded,
+        kindName: 'recently-added',
         libraryId: 'movie-lib-1',
-        libraryType: Enum$LibraryType.MOVIE,
+        libraryTypeName: 'MOVIE',
       ),
       _fakeGraphQL([]),
     ));
@@ -172,15 +172,25 @@ void main() {
     expect(find.text('Newly Added Movie'), findsOneWidget);
   });
 
+  testWidgets('a bare or mangled URL falls back to watch next', (tester) async {
+    await tester.pumpWidget(_wrap(
+      const MediaListPage(serverName: _server, kindName: 'garbage-kind'),
+      _fakeGraphQL([]),
+    ));
+    await _pump(tester);
+
+    expect(find.text('Continue watching'), findsOneWidget);
+  });
+
   testWidgets('a book library titles last-played as recently read',
       (tester) async {
     final seenVars = <Map<String, dynamic>>[];
     await tester.pumpWidget(_wrap(
       const MediaListPage(
         serverName: _server,
-        kind: MediaListKind.recentlyPlayed,
+        kindName: 'recently-played',
         libraryId: 'book-lib-1',
-        libraryType: Enum$LibraryType.BOOK,
+        libraryTypeName: 'BOOK',
       ),
       _fakeGraphQL(seenVars),
     ));

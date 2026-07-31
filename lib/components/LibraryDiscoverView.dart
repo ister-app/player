@@ -111,9 +111,9 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
 
   void _pushList(BuildContext context, MediaListKind kind) {
     AutoRouter.of(context).push(MediaListRoute(
-      kind: kind,
+      kindName: kind.urlValue,
       libraryId: widget.libraryId,
-      libraryType: widget.libraryType,
+      libraryTypeName: widget.libraryType.name,
     ));
   }
 

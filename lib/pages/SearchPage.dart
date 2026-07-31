@@ -21,13 +21,18 @@ class SearchPage extends StatefulWidget {
   const SearchPage({
     super.key,
     @PathParam.inherit('serverName') required this.serverName,
-    this.libraryId,
+    @QueryParam() this.libraryId,
+    @QueryParam('q') this.query,
   });
 
   final String serverName;
 
   /// When set, results are limited to a single library.
   final String? libraryId;
+
+  /// The search term from the URL, so a search is bookmarkable; kept in sync
+  /// with the field via replaceState while typing.
+  final String? query;
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -53,8 +58,48 @@ class _SearchPageState extends State<SearchPage> {
   @override
   void initState() {
     super.initState();
+    final seed = widget.query?.trim();
+    if (seed != null && seed.isNotEmpty) {
+      _controller.text = seed;
+      _loading = true;
+      _runSearch(seed);
+    }
     WidgetsBinding.instance
         .addPostFrameCallback((_) => _focusNode.requestFocus());
+  }
+
+  @override
+  void didUpdateWidget(covariant SearchPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Browser back/forward between ?q= states arrives as an in-place update.
+    // Our own _reflectUrl round-trip comes back equal to the field → no-op.
+    final incoming = widget.query?.trim() ?? '';
+    if (widget.query != oldWidget.query && incoming != _controller.text.trim()) {
+      _debounce?.cancel();
+      _controller.text = incoming;
+      if (incoming.isEmpty) {
+        setState(() {
+          _results = const [];
+          _loading = false;
+        });
+      } else {
+        setState(() => _loading = true);
+        _runSearch(incoming);
+      }
+    }
+  }
+
+  /// Mirrors the current term into the address bar (replaceState, so typing
+  /// doesn't spam the browser history).
+  void _reflectUrl(String term) {
+    final scope = context.findAncestorWidgetOfExactType<RouteDataScope>();
+    if (scope == null || !scope.routeData.isActive) return;
+    final router = context.router;
+    router.markUrlStateForReplace();
+    router.navigate(SearchRoute(
+      libraryId: widget.libraryId,
+      query: term.trim().isEmpty ? null : term.trim(),
+    ));
   }
 
   @override
@@ -72,10 +117,14 @@ class _SearchPageState extends State<SearchPage> {
         _results = const [];
         _loading = false;
       });
+      _reflectUrl('');
       return;
     }
     setState(() => _loading = true);
-    _debounce = Timer(const Duration(milliseconds: 300), () => _runSearch(value));
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      _reflectUrl(value);
+      _runSearch(value);
+    });
   }
 
   Future<void> _runSearch(String term) async {

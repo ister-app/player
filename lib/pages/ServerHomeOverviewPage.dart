@@ -25,9 +25,11 @@ class _ServerHomeOverviewPageState extends State<ServerHomeOverviewPage> {
     // Reset so a value left over from a previously open server's home page
     // doesn't select the wrong tab here. Post-frame: the shell above listens
     // via ValueListenableBuilder, and notifying it while this page mounts
-    // mid-build throws "markNeedsBuild called during build".
+    // mid-build throws "markNeedsBuild called during build". Mirror the tab
+    // the router actually activated (a deep link may land on /library) —
+    // blindly writing 0 would yank such a deep link back to the home tab.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      tabNavigationNotifier.value = 0;
+      tabNavigationNotifier.value = _tabsRouter?.activeIndex ?? 0;
     });
     tabNavigationNotifier.addListener(_onExternalTabChange);
   }

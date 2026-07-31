@@ -139,7 +139,8 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                         : RowHeader(
                             label: AppLocalizations.of(context)!.watchNext,
                             onTap: () => AutoRouter.of(context).push(
-                              MediaListRoute(kind: MediaListKind.watchNext),
+                              MediaListRoute(
+                                  kindName: MediaListKind.watchNext.urlValue),
                             ),
                           ),
                     _recentViewEmpty

@@ -16,13 +16,16 @@ import '../utils/LoggerService.dart';
 class AdminUserAccessPage extends StatefulWidget {
   final String serverName;
   final String userId;
-  final String userName;
+
+  /// Display name for the app bar; absent on a cold URL open, in which case
+  /// the name is resolved from the adminUsers query the page runs anyway.
+  final String? userName;
 
   const AdminUserAccessPage({
     super.key,
     @PathParam.inherit('serverName') required this.serverName,
     @PathParam('userId') required this.userId,
-    required this.userName,
+    @QueryParam() this.userName,
   });
 
   @override
@@ -32,6 +35,9 @@ class AdminUserAccessPage extends StatefulWidget {
 class _AdminUserAccessPageState extends State<AdminUserAccessPage> {
   /// Optimistic switch positions; the query result is the fallback.
   final Map<String, bool> _pending = {};
+
+  /// Name resolved from the adminUsers query when the route carried none.
+  String? _resolvedName;
 
   Future<void> _setAccess(
       BuildContext context, String libraryId, bool granted) async {
@@ -64,7 +70,7 @@ class _AdminUserAccessPageState extends State<AdminUserAccessPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.userName),
+        title: Text(widget.userName ?? _resolvedName ?? widget.userId),
       ),
       body: GraphQLProvider(
         client: client,
@@ -108,6 +114,13 @@ class _AdminUserAccessPageState extends State<AdminUserAccessPage> {
                     : user.grantedLibraries
                         .map((library) => library.id)
                         .toSet();
+                if (widget.userName == null &&
+                    user?.name != null &&
+                    _resolvedName != user!.name) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) setState(() => _resolvedName = user.name);
+                  });
+                }
 
                 return ListView(
                   padding: const EdgeInsets.all(16.0),

@@ -12,9 +12,9 @@ class CastListPage extends StatelessWidget {
   const CastListPage({
     super.key,
     @PathParam.inherit('serverName') required this.serverName,
-    this.showId,
-    this.movieId,
-    this.episodeId,
+    @QueryParam() this.showId,
+    @QueryParam() this.movieId,
+    @QueryParam() this.episodeId,
   });
 
   final String serverName;

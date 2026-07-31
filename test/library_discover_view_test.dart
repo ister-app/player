@@ -239,9 +239,10 @@ void main() {
       await _pump(tester);
 
       expect(find.text('media-list-stub'), findsOneWidget);
-      expect(router.pushedArgs?.kind, MediaListKind.recentlyPlayed);
+      expect(router.pushedArgs?.kindName,
+          MediaListKind.recentlyPlayed.urlValue);
       expect(router.pushedArgs?.libraryId, 'movie-lib-1');
-      expect(router.pushedArgs?.libraryType, Enum$LibraryType.MOVIE);
+      expect(router.pushedArgs?.libraryTypeName, 'MOVIE');
     });
 
     testWidgets('degrades to the recently-added row on an old server',
