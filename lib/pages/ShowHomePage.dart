@@ -387,54 +387,70 @@ class _ShowHomePageState extends State<ShowHomePage> {
               ),
             ],
           ),
-          body: Column(
-            children: [
-              if (_selectedLibraryId != null) _viewSelector(context),
-              if (_selectedLibraryId != null && !_discoverView)
-                _sortBar(context),
-              Expanded(
-                child: RefreshIndicator(
-                  key: _refreshIndicatorKey,
-                  onRefresh: _refresh,
-                  child: _buildBody(),
+          body: RefreshIndicator(
+            key: _refreshIndicatorKey,
+            onRefresh: _refresh,
+            // The view selector and sort bar live in the header slivers so
+            // they scroll away with the content (the inner scrollables opt in
+            // via primary: true).
+            child: NestedScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      if (_selectedLibraryId != null) _viewSelector(context),
+                      if (_selectedLibraryId != null && !_discoverView)
+                        _sortBar(context),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+              body: _buildBody(),
+            ),
           ),
         );
       },
     );
   }
 
-  /// The Discover/Browse switch, in the style of the search page's scope
-  /// selector. SegmentedButton is D-pad focusable on its own.
+  /// The Discover/Browse switch: left-aligned text pills where only the
+  /// active view carries an outline. TextButtons are D-pad focusable on
+  /// their own.
   Widget _viewSelector(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-      child: Center(
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          child: SegmentedButton<bool>(
-            showSelectedIcon: false,
-            segments: [
-              ButtonSegment(
-                value: true,
-                label: Text(loc.viewDiscover),
-                icon: const Icon(Icons.explore_outlined),
-              ),
-              ButtonSegment(
-                value: false,
-                label: Text(loc.viewBrowse),
-                icon: const Icon(Icons.grid_view),
-              ),
+          child: Row(
+            children: [
+              _viewPill(context, loc.viewDiscover, true),
+              const SizedBox(width: 4),
+              _viewPill(context, loc.viewBrowse, false),
             ],
-            selected: {_discoverView},
-            onSelectionChanged: (selection) =>
-                _setDiscoverView(selection.first),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _viewPill(BuildContext context, String label, bool discover) {
+    final colors = Theme.of(context).colorScheme;
+    final selected = _discoverView == discover;
+    return TextButton(
+      style: TextButton.styleFrom(
+        foregroundColor: selected ? colors.onSurface : colors.onSurfaceVariant,
+        shape: StadiumBorder(
+          side: selected
+              ? BorderSide(color: colors.outline)
+              : BorderSide.none,
+        ),
+      ),
+      onPressed: () => _setDiscoverView(discover),
+      child: Text(label),
     );
   }
 

@@ -79,6 +79,9 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     return ListView(
+      // Attach to ShowHomePage's NestedScrollView so the view-selector header
+      // scrolls away with the rows (desktop does not inherit it implicitly).
+      primary: true,
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
         if (!_recentEmpty) ...[

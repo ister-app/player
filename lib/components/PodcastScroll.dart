@@ -41,6 +41,9 @@ class PodcastScroll extends StatelessWidget {
         final itemCount = data.totalItems ?? (_pageSize * 2);
 
         return GridView.builder(
+          // Attach to ShowHomePage's NestedScrollView so the view-selector header
+          // scrolls away with the grid (desktop does not inherit it implicitly).
+          primary: true,
           padding: const EdgeInsets.all(8),
           gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
             maxCrossAxisExtent: 300,
