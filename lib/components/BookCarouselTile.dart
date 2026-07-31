@@ -60,7 +60,6 @@ class BookCarouselTile extends StatelessWidget {
             token: StreamTokenService.getToken(serverName)),
         blurHash: img?.blurHash,
         placeholderIcon: Icons.menu_book,
-        portraitArtwork: true,
         onTap: () => AutoRouter.of(context).push(BookRoute(bookId: book.id)),
         onLongPress: () => menuController.isOpen
             ? menuController.close()

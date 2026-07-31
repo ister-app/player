@@ -34,7 +34,6 @@ class SeriesCarouselTile extends StatelessWidget {
           token: StreamTokenService.getToken(serverName)),
       blurHash: img?.blurHash,
       placeholderIcon: Icons.auto_stories,
-      portraitArtwork: true,
       onTap: () =>
           AutoRouter.of(context).push(SeriesRoute(seriesId: series.id)),
     );

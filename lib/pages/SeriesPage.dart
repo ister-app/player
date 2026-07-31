@@ -266,7 +266,6 @@ class _SeriesPageState extends State<SeriesPage> {
       blurHash: img?.blurHash,
       progress: progress,
       placeholderIcon: Icons.auto_stories,
-      portraitArtwork: true,
       onTap: () async {
         await AutoRouter.of(context).push(BookRoute(bookId: book.id));
         // Reading happened: refresh the volume progress bars.

@@ -15,7 +15,6 @@ class CarouselItemView extends StatelessWidget {
       this.onLongPress,
       this.onSecondaryTapDown,
       this.placeholderIcon,
-      this.portraitArtwork = false,
       this.autofocus = false});
 
   final String serverName;
@@ -32,18 +31,20 @@ class CarouselItemView extends StatelessWidget {
   /// cover art. When null the tile keeps its plain tinted background.
   final IconData? placeholderIcon;
 
-  /// Set for portrait artwork (book covers): the image fills the tile as-is
-  /// instead of being blown up past the tile's edges, which is what landscape
-  /// backdrops need to cover a square tile.
-  final bool portraitArtwork;
-
   /// Grabs D-pad/keyboard focus when first shown. Set on the first tile of a
   /// landing screen so a TV remote has somewhere to start.
   final bool autofocus;
 
+  /// Below this tile height the caption drops to the smaller text styles.
+  /// Height, not width: within one carousel row the tile widths differ per
+  /// artwork shape but the height is uniform, so keying on height keeps the
+  /// text the same size across a row. The home carousels are 200 tall and
+  /// stay large; the narrow grid cells of a phone-sized "show all" page
+  /// (maxCrossAxisExtent 300, aspect 1.5) fall below it and shrink.
+  static const double _compactHeight = 180;
+
   @override
   Widget build(BuildContext context) {
-    final double width = MediaQuery.sizeOf(context).width;
     final Widget placeholder = placeholderIcon != null
         ? Center(
             child: Icon(placeholderIcon,
@@ -61,87 +62,94 @@ class CarouselItemView extends StatelessWidget {
                   )
                 : Container(),
             imageUrl: imageUrl!,
-            fit: portraitArtwork ? BoxFit.cover : BoxFit.fitHeight,
+            fit: BoxFit.cover,
             fadeOutDuration: Duration.zero,
             fadeInDuration: Duration.zero,
             errorBuilder: (_, __, ___) => placeholder,
           )
         : placeholder;
-    return Padding(
-        padding: EdgeInsets.all(5.0),
-        child: TvFocusable(
-          onTap: onTap,
-          onLongPress: onLongPress,
-          autofocus: autofocus,
-          scale: 1.06,
-          borderRadius: BorderRadius.circular(25.0),
-          child: ClipRRect(
+    return LayoutBuilder(builder: (context, constraints) {
+      final bool compact = constraints.maxHeight < _compactHeight;
+      final TextStyle? titleStyle = compact
+          ? Theme.of(context).textTheme.titleMedium
+          : Theme.of(context).textTheme.headlineMedium;
+      final TextStyle? subTitleStyle = compact
+          ? Theme.of(context).textTheme.bodySmall
+          : Theme.of(context).textTheme.bodyMedium;
+      return Padding(
+          padding: EdgeInsets.all(5.0),
+          child: TvFocusable(
+            onTap: onTap,
+            onLongPress: onLongPress,
+            autofocus: autofocus,
+            scale: 1.06,
             borderRadius: BorderRadius.circular(25.0),
-            child: Stack(
-              alignment: AlignmentDirectional.bottomStart,
-              children: <Widget>[
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
-                    child: portraitArtwork
-                        ? image
-                        : OverflowBox(
-                            maxWidth: width * 7 / 8,
-                            minWidth: width * 7 / 8,
-                            child: image,
-                          ),
-                  ),
-                ),
-                Opacity(
-                    opacity: 0.8,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(25.0),
+              child: Stack(
+                alignment: AlignmentDirectional.bottomStart,
+                children: <Widget>[
+                  Positioned.fill(
                     child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(10),
-                      color: Theme.of(context).colorScheme.surface,
-                      // color: Colors.black,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Text(
-                            title,
-                            overflow: TextOverflow.clip,
-                            softWrap: false,
-                            maxLines: 1,
-                            style: Theme.of(context).textTheme.headlineMedium,
-                          ),
-                          const SizedBox(height: 5),
-                          Text(
-                            subTitle,
-                            overflow: TextOverflow.clip,
-                            softWrap: false,
-                            maxLines: 1,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ],
-                      ),
-                    )),
-                progress != null
-                    ? Positioned(
-                        left: 0,
-                        bottom: 0,
-                        right: 0,
-                        child: LinearProgressIndicator(
-                          value: progress,
-                        ))
-                    : Container(),
-                Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                        // Focus lives on the surrounding TvFocusable so there's
-                        // a single D-pad target; the InkWell only handles
-                        // pointer tap / long-press / secondary tap.
-                        canRequestFocus: false,
-                        borderRadius: BorderRadius.circular(25.0),
-                        onLongPress: onLongPress,
-                        onSecondaryTapDown: onSecondaryTapDown,
-                        onTap: onTap))
-              ],
-            ))));
+                      decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest),
+                      child: image,
+                    ),
+                  ),
+                  Opacity(
+                      opacity: 0.8,
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(compact ? 8 : 10),
+                        color: Theme.of(context).colorScheme.surface,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Text(
+                              title,
+                              overflow: TextOverflow.ellipsis,
+                              softWrap: false,
+                              maxLines: 1,
+                              style: titleStyle,
+                            ),
+                            SizedBox(height: compact ? 2 : 5),
+                            Text(
+                              subTitle,
+                              overflow: TextOverflow.ellipsis,
+                              softWrap: false,
+                              maxLines: 1,
+                              style: subTitleStyle,
+                            ),
+                          ],
+                        ),
+                      )),
+                  progress != null
+                      ? Positioned(
+                          left: 0,
+                          bottom: 0,
+                          right: 0,
+                          child: LinearProgressIndicator(
+                            value: progress,
+                          ))
+                      : Container(),
+                  Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                          // Focus lives on the surrounding TvFocusable so
+                          // there's a single D-pad target; the InkWell only
+                          // handles pointer tap / long-press / secondary tap.
+                          canRequestFocus: false,
+                          borderRadius: BorderRadius.circular(25.0),
+                          onLongPress: onLongPress,
+                          onSecondaryTapDown: onSecondaryTapDown,
+                          onTap: onTap))
+                ],
+              ),
+            ),
+          ));
+    });
   }
 }

@@ -286,7 +286,6 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
               token: StreamTokenService.getToken(widget.serverName)),
           blurHash: imageByType?.blurHash,
           placeholderIcon: Icons.headphones,
-          portraitArtwork: true,
           progress: chapter.watchStatus != null &&
                   chapter.watchStatus!.isNotEmpty &&
                   chapter.watchStatus!.first.watched != true &&
@@ -364,7 +363,6 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
               token: StreamTokenService.getToken(widget.serverName)),
           blurHash: imageByType?.blurHash,
           placeholderIcon: listening ? Icons.headphones : Icons.menu_book,
-          portraitArtwork: true,
           progress: reading ? readingProgress.clamp(0.0, 1.0) : chapterProgress,
           onTap: () => AutoRouter.of(context).push(BookRoute(bookId: book.id)));
     } else if (item.type == Enum$MediaType.COMIC && item.book != null) {
@@ -404,7 +402,6 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
                   token: StreamTokenService.getToken(widget.serverName)),
               blurHash: imageByType?.blurHash,
               placeholderIcon: Icons.auto_stories,
-              portraitArtwork: true,
               progress: progress,
               onSecondaryTapDown: (TapDownDetails details) =>
                   menuController.isOpen
