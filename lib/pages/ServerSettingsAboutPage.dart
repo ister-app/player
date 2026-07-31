@@ -4,6 +4,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:player/graphql/attributions.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
 
@@ -18,6 +19,9 @@ class ServerSettingsAboutPage extends StatelessWidget {
     super.key,
     @PathParam.inherit('serverName') required this.serverName,
   });
+
+  static final Uri _websiteUrl = Uri.parse('https://ister.app');
+  static final Uri _sourceUrl = Uri.parse('https://github.com/ister-app');
 
   Future<void> _showLicenses(BuildContext context) async {
     final info = await PackageInfo.fromPlatform();
@@ -85,11 +89,34 @@ class ServerSettingsAboutPage extends StatelessWidget {
                   ),
                 const SizedBox(height: 8),
                 Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.description_outlined),
-                    title: Text(loc.openSourceLicenses),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => _showLicenses(context),
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.language_outlined),
+                        title: Text(loc.projectWebsite),
+                        subtitle: Text(_websiteUrl.host),
+                        trailing: const Icon(Icons.open_in_new),
+                        onTap: () => launchUrl(_websiteUrl,
+                            mode: LaunchMode.externalApplication),
+                      ),
+                      const Divider(height: 1, indent: 56),
+                      ListTile(
+                        leading: const Icon(Icons.code),
+                        title: Text(loc.projectSourceCode),
+                        subtitle:
+                            Text('${_sourceUrl.host}${_sourceUrl.path}'),
+                        trailing: const Icon(Icons.open_in_new),
+                        onTap: () => launchUrl(_sourceUrl,
+                            mode: LaunchMode.externalApplication),
+                      ),
+                      const Divider(height: 1, indent: 56),
+                      ListTile(
+                        leading: const Icon(Icons.description_outlined),
+                        title: Text(loc.openSourceLicenses),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => _showLicenses(context),
+                      ),
+                    ],
                   ),
                 ),
               ],

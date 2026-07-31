@@ -393,6 +393,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get viewBrowse => 'Bladeren';
 
   @override
+  String get projectWebsite => 'Website';
+
+  @override
+  String get projectSourceCode => 'Broncode op GitHub';
+
+  @override
   String get showAll => 'Toon alles';
 
   @override

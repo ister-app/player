@@ -392,6 +392,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewBrowse => 'Browse';
 
   @override
+  String get projectWebsite => 'Website';
+
+  @override
+  String get projectSourceCode => 'Source code on GitHub';
+
+  @override
   String get showAll => 'Show all';
 
   @override

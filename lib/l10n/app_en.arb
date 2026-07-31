@@ -482,6 +482,14 @@
   "@viewBrowse": {
     "description": "Library view switch: the sortable grid view"
   },
+  "projectWebsite": "Website",
+  "@projectWebsite": {
+    "description": "About page: link to the Ister project website"
+  },
+  "projectSourceCode": "Source code on GitHub",
+  "@projectSourceCode": {
+    "description": "About page: link to the Ister GitHub organisation"
+  },
   "showAll": "Show all",
   "@showAll": {
     "description": "Tooltip/semantics of a tappable carousel header opening the row's full vertical list"

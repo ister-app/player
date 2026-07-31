@@ -806,6 +806,18 @@ abstract class AppLocalizations {
   /// **'Browse'**
   String get viewBrowse;
 
+  /// About page: link to the Ister project website
+  ///
+  /// In en, this message translates to:
+  /// **'Website'**
+  String get projectWebsite;
+
+  /// About page: link to the Ister GitHub organisation
+  ///
+  /// In en, this message translates to:
+  /// **'Source code on GitHub'**
+  String get projectSourceCode;
+
   /// Tooltip/semantics of a tappable carousel header opening the row's full vertical list
   ///
   /// In en, this message translates to:
