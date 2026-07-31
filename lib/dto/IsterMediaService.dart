@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:gql/ast.dart' show DocumentNode;
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/dto/IsterMediaItem.dart';
 import 'package:player/dto/MediaItemId.dart';
@@ -8,7 +9,15 @@ import 'package:player/graphql/albumsQuery.graphql.dart';
 import 'package:player/graphql/artistsQuery.graphql.dart';
 import 'package:player/graphql/bookById.graphql.dart';
 import 'package:player/graphql/booksQuery.graphql.dart';
+import 'package:player/graphql/discoverAlbums.graphql.dart';
+import 'package:player/graphql/discoverBooks.graphql.dart';
+import 'package:player/graphql/discoverPodcasts.graphql.dart';
 import 'package:player/graphql/episodeById.graphql.dart';
+import 'package:player/graphql/fragmentBook.graphql.dart';
+import 'package:player/graphql/fragmentPodcast.graphql.dart';
+import 'package:player/graphql/rankedAlbums.graphql.dart';
+import 'package:player/graphql/rankedBooks.graphql.dart';
+import 'package:player/graphql/rankedPodcasts.graphql.dart';
 import 'package:player/graphql/podcastById.graphql.dart';
 import 'package:player/graphql/podcastEpisodesQuery.graphql.dart';
 import 'package:player/graphql/podcastsQuery.graphql.dart';
@@ -44,6 +53,13 @@ import '../utils/WellKnownService.dart';
 /// - `books:<libraryId>`    → all audiobooks in a BOOK library (playable
 ///                            leaves that resume where the listener left off)
 /// - `podcasts:<libraryId>` → all podcasts in a PODCAST library
+/// - `discover:<kind>:<libraryId>` → the discover screen of one library
+///                            (kind ∈ albums|books|podcasts): titled groups
+///                            (recently played, most played, …) each closed by
+///                            a "show all" folder
+/// - `ranked:<kind>:<libraryId>:<rank>` → the full list behind one discover
+///                            group (rank ∈ RECENTLY_PLAYED | MOST_PLAYED |
+///                            HIGHEST_RATED | RECENTLY_ADDED)
 ///
 /// Composite leaf ids carry the two ids their play queue needs, joined by `~`:
 /// - `chapter`        id `bookId~chapterId`      → BOOK play queue
@@ -79,6 +95,15 @@ class IsterMediaService {
   static const String contentStyleBrowsableHint =
       'android.media.browse.CONTENT_STYLE_BROWSABLE_HINT';
   static const int contentStyleGrid = 2;
+
+  // androidx.media content-style hint: items sharing a group title render as
+  // one titled section, so a single browse node shows several groups.
+  static const String contentStyleGroupTitleHint =
+      'android.media.browse.CONTENT_STYLE_GROUP_TITLE_HINT';
+
+  /// Items per group on a discover screen; the trailing "show all" folder
+  /// opens the full ranked list.
+  static const int discoverGroupSize = 8;
 
   /// Localizations without a BuildContext — the handler runs without UI.
   static AppLocalizations get loc {
@@ -130,10 +155,24 @@ class IsterMediaService {
       return getArtists(
           mediaItemId.serverName, id.substring("artists:".length));
     } else if (id.startsWith("books:")) {
-      return getBooks(mediaItemId.serverName, id.substring("books:".length));
+      final libraryId = id.substring("books:".length);
+      return [
+        _discoverEntry(mediaItemId.serverName, DiscoverKind.books, libraryId),
+        ...await getBooks(mediaItemId.serverName, libraryId),
+      ];
     } else if (id.startsWith("podcasts:")) {
-      return getPodcasts(
-          mediaItemId.serverName, id.substring("podcasts:".length));
+      final libraryId = id.substring("podcasts:".length);
+      return [
+        _discoverEntry(
+            mediaItemId.serverName, DiscoverKind.podcasts, libraryId),
+        ...await getPodcasts(mediaItemId.serverName, libraryId),
+      ];
+    } else if (id.startsWith("discover:")) {
+      final node = DiscoverNodeId.parse(id);
+      if (node != null) return getDiscoverGroups(mediaItemId.serverName, node);
+    } else if (id.startsWith("ranked:")) {
+      final node = RankedNodeId.parse(id);
+      if (node != null) return getRankedList(mediaItemId.serverName, node);
     }
     LoggerService().logger.w(
         'getList: unsupported list type "$id" for ${mediaItemId.serverName}');
@@ -229,14 +268,33 @@ class IsterMediaService {
         title: loc.artists,
         extras: const {contentStyleBrowsableHint: contentStyleGrid},
       ),
+      _discoverEntry(serverName, DiscoverKind.albums, libraryId),
     ];
   }
 
+  /// The browsable folder that opens a library's discover screen. No grid
+  /// hint: its children are a mixed grouped list, not a wall of covers.
+  IsterMediaItem _discoverEntry(
+      String serverName, DiscoverKind kind, String libraryId) {
+    return IsterMediaItem(
+      id: DiscoverNodeId(kind, libraryId).id,
+      serverName: serverName,
+      isterMediaType: IsterMediaTypes.list,
+      title: loc.viewDiscover,
+    );
+  }
+
   Future<List<IsterMediaItem>> getAlbums(String serverName,
-      {String? libraryId, String? artistId}) async {
+      {String? libraryId,
+      String? artistId,
+      Enum$SortingEnum sorting = Enum$SortingEnum.NAME,
+      Enum$SortingOrder sortingOrder = Enum$SortingOrder.ASCENDING,
+      int? limit,
+      Map<String, dynamic>? extras}) async {
     final client = await getClient(serverName);
     await StreamTokenService.ensureToken(serverName);
 
+    final cap = limit ?? maxItemsPerNode;
     final items = <IsterMediaItem>[];
     var page = 0;
     while (true) {
@@ -244,9 +302,9 @@ class IsterMediaService {
         document: documentNodeQueryalbums,
         variables: {
           'page': page,
-          'size': pageSize,
-          'sorting': Enum$SortingEnum.NAME,
-          'sortingOrder': Enum$SortingOrder.ASCENDING,
+          'size': cap < pageSize ? cap : pageSize,
+          'sorting': sorting,
+          'sortingOrder': sortingOrder,
           if (libraryId != null) 'libraryId': libraryId,
           if (artistId != null) 'artistId': artistId,
         },
@@ -258,24 +316,20 @@ class IsterMediaService {
       final albumPage = Query$albums.fromJson(result.data!).albums;
       if (albumPage == null) break;
 
-      items.addAll(albumPage.content.map((album) => IsterMediaItem(
-            id: album.id,
-            serverName: serverName,
-            isterMediaType: IsterMediaTypes.album,
-            title: MetadataUtil.getTitle(album.metadata) ?? album.name,
-            artist: album.artist.name,
-            artUri: coverArtUri(album.images, serverName),
-          )));
+      items.addAll(albumPage.content
+          .map((album) => _albumItem(album, serverName, extras: extras)));
 
       page++;
       if (page >= albumPage.totalPages) break;
-      if (items.length >= maxItemsPerNode) {
-        LoggerService().logger.w(
-            'getAlbums: capped at ${items.length} of ${albumPage.totalElements} albums for $serverName');
+      if (items.length >= cap) {
+        if (limit == null) {
+          LoggerService().logger.w(
+              'getAlbums: capped at ${items.length} of ${albumPage.totalElements} albums for $serverName');
+        }
         break;
       }
     }
-    return items;
+    return items.length > cap ? items.sublist(0, cap) : items;
   }
 
   Future<List<IsterMediaItem>> getArtists(
@@ -330,11 +384,15 @@ class IsterMediaService {
   /// All audiobooks in a BOOK library. Each is a playable leaf: selecting one
   /// in the car resumes it where the listener left off ([playFromMediaId]
   /// resolves the resume chapter) instead of opening a chapter list.
-  Future<List<IsterMediaItem>> getBooks(
-      String serverName, String libraryId) async {
+  Future<List<IsterMediaItem>> getBooks(String serverName, String libraryId,
+      {Enum$SortingEnum sorting = Enum$SortingEnum.NAME,
+      Enum$SortingOrder sortingOrder = Enum$SortingOrder.ASCENDING,
+      int? limit,
+      Map<String, dynamic>? extras}) async {
     final client = await getClient(serverName);
     await StreamTokenService.ensureToken(serverName);
 
+    final cap = limit ?? maxItemsPerNode;
     final items = <IsterMediaItem>[];
     var page = 0;
     while (true) {
@@ -342,9 +400,9 @@ class IsterMediaService {
         document: documentNodeQuerybooks,
         variables: {
           'page': page,
-          'size': pageSize,
-          'sorting': Enum$SortingEnum.NAME,
-          'sortingOrder': Enum$SortingOrder.ASCENDING,
+          'size': cap < pageSize ? cap : pageSize,
+          'sorting': sorting,
+          'sortingOrder': sortingOrder,
           'libraryId': libraryId,
         },
       ));
@@ -355,33 +413,32 @@ class IsterMediaService {
       final bookPage = Query$books.fromJson(result.data!).books;
       if (bookPage == null) break;
 
-      items.addAll(bookPage.content.map((book) => IsterMediaItem(
-            id: book.id,
-            serverName: serverName,
-            isterMediaType: IsterMediaTypes.book,
-            title: MetadataUtil.getTitle(book.metadata) ?? book.title,
-            artist: book.author?.name,
-            artUri: coverArtUri(book.images, serverName),
-            playable: true,
-          )));
+      items.addAll(bookPage.content
+          .map((book) => _bookItem(book, serverName, extras: extras)));
 
       page++;
       if (page >= bookPage.totalPages) break;
-      if (items.length >= maxItemsPerNode) {
-        LoggerService().logger.w(
-            'getBooks: capped at ${items.length} of ${bookPage.totalElements} books for $serverName');
+      if (items.length >= cap) {
+        if (limit == null) {
+          LoggerService().logger.w(
+              'getBooks: capped at ${items.length} of ${bookPage.totalElements} books for $serverName');
+        }
         break;
       }
     }
-    return items;
+    return items.length > cap ? items.sublist(0, cap) : items;
   }
 
   /// All podcasts in a PODCAST library. Each is browsable into its episodes.
-  Future<List<IsterMediaItem>> getPodcasts(
-      String serverName, String libraryId) async {
+  Future<List<IsterMediaItem>> getPodcasts(String serverName, String libraryId,
+      {Enum$SortingEnum sorting = Enum$SortingEnum.NAME,
+      Enum$SortingOrder sortingOrder = Enum$SortingOrder.ASCENDING,
+      int? limit,
+      Map<String, dynamic>? extras}) async {
     final client = await getClient(serverName);
     await StreamTokenService.ensureToken(serverName);
 
+    final cap = limit ?? maxItemsPerNode;
     final items = <IsterMediaItem>[];
     var page = 0;
     while (true) {
@@ -389,9 +446,9 @@ class IsterMediaService {
         document: documentNodeQuerypodcasts,
         variables: {
           'page': page,
-          'size': pageSize,
-          'sorting': Enum$SortingEnum.NAME,
-          'sortingOrder': Enum$SortingOrder.ASCENDING,
+          'size': cap < pageSize ? cap : pageSize,
+          'sorting': sorting,
+          'sortingOrder': sortingOrder,
           'libraryId': libraryId,
         },
       ));
@@ -402,20 +459,338 @@ class IsterMediaService {
       final podcastPage = Query$podcasts.fromJson(result.data!).podcasts;
       if (podcastPage == null) break;
 
-      items.addAll(podcastPage.content.map((podcast) => IsterMediaItem(
-            id: podcast.id,
-            serverName: serverName,
-            isterMediaType: IsterMediaTypes.podcast,
-            title: MetadataUtil.getTitle(podcast.metadata) ?? podcast.title,
-            artist: podcast.author,
-            artUri: coverArtUri(podcast.images, serverName),
-          )));
+      items.addAll(podcastPage.content
+          .map((podcast) => _podcastItem(podcast, serverName, extras: extras)));
 
       page++;
       if (page >= podcastPage.totalPages) break;
+      if (items.length >= cap) {
+        if (limit == null) {
+          LoggerService().logger.w(
+              'getPodcasts: capped at ${items.length} of ${podcastPage.totalElements} podcasts for $serverName');
+        }
+        break;
+      }
+    }
+    return items.length > cap ? items.sublist(0, cap) : items;
+  }
+
+  IsterMediaItem _albumItem(Fragment$fragmentAlbum album, String serverName,
+      {Map<String, dynamic>? extras}) {
+    return IsterMediaItem(
+      id: album.id,
+      serverName: serverName,
+      isterMediaType: IsterMediaTypes.album,
+      title: MetadataUtil.getTitle(album.metadata) ?? album.name,
+      artist: album.artist.name,
+      artUri: coverArtUri(album.images, serverName),
+      extras: extras,
+    );
+  }
+
+  IsterMediaItem _bookItem(Fragment$fragmentBook book, String serverName,
+      {Map<String, dynamic>? extras}) {
+    return IsterMediaItem(
+      id: book.id,
+      serverName: serverName,
+      isterMediaType: IsterMediaTypes.book,
+      title: MetadataUtil.getTitle(book.metadata) ?? book.title,
+      artist: book.author?.name,
+      artUri: coverArtUri(book.images, serverName),
+      playable: true,
+      extras: extras,
+    );
+  }
+
+  IsterMediaItem _podcastItem(Fragment$fragmentPodcast podcast,
+      String serverName,
+      {Map<String, dynamic>? extras}) {
+    return IsterMediaItem(
+      id: podcast.id,
+      serverName: serverName,
+      isterMediaType: IsterMediaTypes.podcast,
+      title: MetadataUtil.getTitle(podcast.metadata) ?? podcast.title,
+      artist: podcast.author,
+      artUri: coverArtUri(podcast.images, serverName),
+      extras: extras,
+    );
+  }
+
+  static Map<String, dynamic> _groupExtras(String label) =>
+      {contentStyleGroupTitleHint: label};
+
+  /// The grouped discover screen of one library: titled sections (via the
+  /// group-title hint), each capped at [discoverGroupSize] and closed by a
+  /// "show all" folder into the full ranked list. The top lists need a server
+  /// with the `libraryById` discover fields; on an older server only the
+  /// recently-added group remains.
+  Future<List<IsterMediaItem>> getDiscoverGroups(
+      String serverName, DiscoverNodeId node) async {
+    await StreamTokenService.ensureToken(serverName);
+    final groups = <IsterMediaItem>[];
+
+    List<IsterMediaItem> group(
+            String label, DiscoverRank rank, List<IsterMediaItem> items) =>
+        _discoverGroup(
+            serverName: serverName,
+            node: node,
+            label: label,
+            rank: rank,
+            items: items);
+
+    switch (node.kind) {
+      case DiscoverKind.albums:
+        final data = await _discoverData(
+            serverName, documentNodeQuerydiscoverAlbums, node.libraryId);
+        final library =
+            data == null ? null : Query$discoverAlbums.fromJson(data).libraryById;
+        List<IsterMediaItem> albums(
+                List<Fragment$fragmentAlbum> list, String label) =>
+            list
+                .map((album) =>
+                    _albumItem(album, serverName, extras: _groupExtras(label)))
+                .toList();
+        if (library != null) {
+          groups
+            ..addAll(group(loc.recentlyPlayed, DiscoverRank.recentlyPlayed,
+                albums(library.recentlyPlayedAlbums, loc.recentlyPlayed)))
+            ..addAll(group(loc.mostPlayed, DiscoverRank.mostPlayed,
+                albums(library.mostPlayedAlbums, loc.mostPlayed)))
+            ..addAll(group(loc.highestRated, DiscoverRank.highestRated,
+                albums(library.highestRatedAlbums, loc.highestRated)));
+        }
+        groups.addAll(group(
+            loc.recentlyAdded,
+            DiscoverRank.recentlyAdded,
+            await getAlbums(serverName,
+                libraryId: node.libraryId,
+                sorting: Enum$SortingEnum.DATE_CREATED,
+                sortingOrder: Enum$SortingOrder.DESCENDING,
+                limit: discoverGroupSize,
+                extras: _groupExtras(loc.recentlyAdded))));
+      case DiscoverKind.books:
+        final data = await _discoverData(
+            serverName, documentNodeQuerydiscoverBooks, node.libraryId);
+        final library =
+            data == null ? null : Query$discoverBooks.fromJson(data).libraryById;
+        List<IsterMediaItem> books(
+                List<Fragment$fragmentBook> list, String label) =>
+            list
+                .map((book) =>
+                    _bookItem(book, serverName, extras: _groupExtras(label)))
+                .toList();
+        if (library != null) {
+          groups
+            // "Recently read" clicks through as RECENTLY_PLAYED, mirroring
+            // LibraryDiscoverView's mapping for the same row.
+            ..addAll(group(loc.recentlyRead, DiscoverRank.recentlyPlayed,
+                books(library.recentlyReadBooks, loc.recentlyRead)))
+            ..addAll(group(loc.highestRated, DiscoverRank.highestRated,
+                books(library.highestRatedBooks, loc.highestRated)));
+        }
+        groups.addAll(group(
+            loc.recentlyAdded,
+            DiscoverRank.recentlyAdded,
+            await getBooks(serverName, node.libraryId,
+                sorting: Enum$SortingEnum.DATE_CREATED,
+                sortingOrder: Enum$SortingOrder.DESCENDING,
+                limit: discoverGroupSize,
+                extras: _groupExtras(loc.recentlyAdded))));
+      case DiscoverKind.podcasts:
+        final data = await _discoverData(
+            serverName, documentNodeQuerydiscoverPodcasts, node.libraryId);
+        final library = data == null
+            ? null
+            : Query$discoverPodcasts.fromJson(data).libraryById;
+        List<IsterMediaItem> podcasts(
+                List<Fragment$fragmentPodcast> list, String label) =>
+            list
+                .map((podcast) => _podcastItem(podcast, serverName,
+                    extras: _groupExtras(label)))
+                .toList();
+        if (library != null) {
+          groups
+            ..addAll(group(loc.recentlyPlayed, DiscoverRank.recentlyPlayed,
+                podcasts(library.recentlyPlayedPodcasts, loc.recentlyPlayed)))
+            ..addAll(group(loc.mostPlayed, DiscoverRank.mostPlayed,
+                podcasts(library.mostPlayedPodcasts, loc.mostPlayed)))
+            ..addAll(group(loc.highestRated, DiscoverRank.highestRated,
+                podcasts(library.highestRatedPodcasts, loc.highestRated)));
+        }
+        groups.addAll(group(
+            loc.recentlyAdded,
+            DiscoverRank.recentlyAdded,
+            await getPodcasts(serverName, node.libraryId,
+                sorting: Enum$SortingEnum.DATE_CREATED,
+                sortingOrder: Enum$SortingOrder.DESCENDING,
+                limit: discoverGroupSize,
+                extras: _groupExtras(loc.recentlyAdded))));
+    }
+    return groups;
+  }
+
+  /// One titled section: its items (already tagged with the group-title
+  /// extra) plus a trailing "show all" folder. Empty groups vanish entirely.
+  List<IsterMediaItem> _discoverGroup({
+    required String serverName,
+    required DiscoverNodeId node,
+    required String label,
+    required DiscoverRank rank,
+    required List<IsterMediaItem> items,
+  }) {
+    if (items.isEmpty) return const [];
+    return [
+      ...items,
+      IsterMediaItem(
+        id: RankedNodeId(node.kind, node.libraryId, rank).id,
+        serverName: serverName,
+        isterMediaType: IsterMediaTypes.list,
+        title: loc.showAll,
+        extras: {
+          contentStyleGroupTitleHint: label,
+          contentStyleBrowsableHint: contentStyleGrid,
+        },
+      ),
+    ];
+  }
+
+  /// Runs one discover top-lists query; null when the server predates the
+  /// discover fields, so the screen degrades to the recently-added group.
+  Future<Map<String, dynamic>?> _discoverData(
+      String serverName, DocumentNode document, String libraryId) async {
+    try {
+      final client = await getClient(serverName);
+      final result = await client.query(QueryOptions(
+        document: document,
+        variables: {'libraryId': libraryId, 'limit': discoverGroupSize},
+      ));
+      if (result.hasException || result.data == null) {
+        LoggerService().logger.w(
+            'discover top lists unavailable for $serverName: ${result.exception}');
+        return null;
+      }
+      return result.data;
+    } catch (e) {
+      LoggerService()
+          .logger
+          .w('discover top lists unavailable for $serverName: $e');
+      return null;
+    }
+  }
+
+  /// The full list behind one discover group. Recently-added runs the
+  /// ordinary list query newest-first (works on any server); the other ranks
+  /// page the server's ranked queries up to [maxItemsPerNode].
+  Future<List<IsterMediaItem>> getRankedList(
+      String serverName, RankedNodeId node) async {
+    final rankKind = node.rank.rankKind;
+    if (rankKind == null) {
+      return switch (node.kind) {
+        DiscoverKind.albums => getAlbums(serverName,
+            libraryId: node.libraryId,
+            sorting: Enum$SortingEnum.DATE_CREATED,
+            sortingOrder: Enum$SortingOrder.DESCENDING),
+        DiscoverKind.books => getBooks(serverName, node.libraryId,
+            sorting: Enum$SortingEnum.DATE_CREATED,
+            sortingOrder: Enum$SortingOrder.DESCENDING),
+        DiscoverKind.podcasts => getPodcasts(serverName, node.libraryId,
+            sorting: Enum$SortingEnum.DATE_CREATED,
+            sortingOrder: Enum$SortingOrder.DESCENDING),
+      };
+    }
+
+    final client = await getClient(serverName);
+    await StreamTokenService.ensureToken(serverName);
+    final variables = {'libraryId': node.libraryId, 'kind': rankKind};
+    return switch (node.kind) {
+      DiscoverKind.albums => _pagedRanked(
+          client: client,
+          document: documentNodeQueryrankedAlbums,
+          variables: variables,
+          logLabel: 'getRankedList(albums)',
+          parsePage: (data) {
+            final rankedPage =
+                Query$rankedAlbums.fromJson(data).libraryById?.rankedAlbums;
+            if (rankedPage == null) return null;
+            return (
+              items: rankedPage.content
+                  .map((album) => _albumItem(album, serverName))
+                  .toList(),
+              totalPages: rankedPage.totalPages,
+              totalElements: rankedPage.totalElements,
+            );
+          }),
+      DiscoverKind.books => _pagedRanked(
+          client: client,
+          document: documentNodeQueryrankedBooks,
+          variables: variables,
+          logLabel: 'getRankedList(books)',
+          parsePage: (data) {
+            final rankedPage =
+                Query$rankedBooks.fromJson(data).libraryById?.rankedBooks;
+            if (rankedPage == null) return null;
+            return (
+              items: rankedPage.content
+                  .map((book) => _bookItem(book, serverName))
+                  .toList(),
+              totalPages: rankedPage.totalPages,
+              totalElements: rankedPage.totalElements,
+            );
+          }),
+      DiscoverKind.podcasts => _pagedRanked(
+          client: client,
+          document: documentNodeQueryrankedPodcasts,
+          variables: variables,
+          logLabel: 'getRankedList(podcasts)',
+          parsePage: (data) {
+            final rankedPage =
+                Query$rankedPodcasts.fromJson(data).libraryById?.rankedPodcasts;
+            if (rankedPage == null) return null;
+            return (
+              items: rankedPage.content
+                  .map((podcast) => _podcastItem(podcast, serverName))
+                  .toList(),
+              totalPages: rankedPage.totalPages,
+              totalElements: rankedPage.totalElements,
+            );
+          }),
+    };
+  }
+
+  /// Pages one ranked query up to [maxItemsPerNode]. A server without ranked
+  /// queries errors on the first page and yields an empty list.
+  Future<List<IsterMediaItem>> _pagedRanked({
+    required GraphQLClient client,
+    required DocumentNode document,
+    required Map<String, dynamic> variables,
+    required String logLabel,
+    required ({
+      List<IsterMediaItem> items,
+      int totalPages,
+      int totalElements
+    })?
+        Function(Map<String, dynamic> data) parsePage,
+  }) async {
+    final items = <IsterMediaItem>[];
+    var page = 0;
+    while (true) {
+      final result = await client.query(QueryOptions(
+        document: document,
+        variables: {...variables, 'page': page, 'size': pageSize},
+      ));
+      if (result.hasException || result.data == null) {
+        LoggerService().logger.e(result.exception);
+        break;
+      }
+      final parsed = parsePage(result.data!);
+      if (parsed == null) break;
+      items.addAll(parsed.items);
+
+      page++;
+      if (page >= parsed.totalPages) break;
       if (items.length >= maxItemsPerNode) {
         LoggerService().logger.w(
-            'getPodcasts: capped at ${items.length} of ${podcastPage.totalElements} podcasts for $serverName');
+            '$logLabel: capped at ${items.length} of ${parsed.totalElements} items');
         break;
       }
     }
@@ -688,5 +1063,71 @@ class IsterMediaService {
   static Future<GraphQLClient> getClient(String serverName) async {
     await LoginManager.waitForToken(serverName);
     return ClientManager.getClientForUrl(serverName).value;
+  }
+}
+
+/// The content kind a `discover:`/`ranked:` node covers — one per browsable
+/// library type.
+enum DiscoverKind { albums, books, podcasts }
+
+/// One discover group's rank. [rankKind] is the server's ranked-query kind;
+/// recently-added has none and runs the ordinary list query newest-first
+/// instead, so it also works on servers without the ranked queries.
+enum DiscoverRank {
+  recentlyPlayed('RECENTLY_PLAYED', Enum$RankKind.RECENTLY_PLAYED),
+  mostPlayed('MOST_PLAYED', Enum$RankKind.MOST_PLAYED),
+  highestRated('HIGHEST_RATED', Enum$RankKind.HIGHEST_RATED),
+  recentlyAdded('RECENTLY_ADDED', null);
+
+  const DiscoverRank(this.wireName, this.rankKind);
+
+  /// The rank token inside a `ranked:` node id.
+  final String wireName;
+
+  final Enum$RankKind? rankKind;
+}
+
+/// Parsed `discover:<kind>:<libraryId>` inner id.
+class DiscoverNodeId {
+  const DiscoverNodeId(this.kind, this.libraryId);
+
+  final DiscoverKind kind;
+  final String libraryId;
+
+  String get id => 'discover:${kind.name}:$libraryId';
+
+  static DiscoverNodeId? parse(String id) {
+    final parts = id.split(':');
+    if (parts.length != 3 || parts[0] != 'discover' || parts[2].isEmpty) {
+      return null;
+    }
+    final kind =
+        DiscoverKind.values.where((kind) => kind.name == parts[1]).firstOrNull;
+    return kind == null ? null : DiscoverNodeId(kind, parts[2]);
+  }
+}
+
+/// Parsed `ranked:<kind>:<libraryId>:<rank>` inner id.
+class RankedNodeId {
+  const RankedNodeId(this.kind, this.libraryId, this.rank);
+
+  final DiscoverKind kind;
+  final String libraryId;
+  final DiscoverRank rank;
+
+  String get id => 'ranked:${kind.name}:$libraryId:${rank.wireName}';
+
+  static RankedNodeId? parse(String id) {
+    final parts = id.split(':');
+    if (parts.length != 4 || parts[0] != 'ranked' || parts[2].isEmpty) {
+      return null;
+    }
+    final kind =
+        DiscoverKind.values.where((kind) => kind.name == parts[1]).firstOrNull;
+    final rank = DiscoverRank.values
+        .where((rank) => rank.wireName == parts[3])
+        .firstOrNull;
+    if (kind == null || rank == null) return null;
+    return RankedNodeId(kind, parts[2], rank);
   }
 }

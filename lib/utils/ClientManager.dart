@@ -70,6 +70,11 @@ class ClientManager {
   @visibleForTesting
   static GraphQLClient Function(String url)? testClientBuilder;
 
+  /// True when [testClientBuilder] is installed. Production code may branch on
+  /// this (e.g. to skip OIDC waits against stubbed clients) without tripping
+  /// the visible-for-testing lint.
+  static bool get usesTestClients => testClientBuilder != null;
+
   static ValueNotifier<GraphQLClient> getClientForUrl(String url) {
     final builder = testClientBuilder;
     if (builder != null) {

@@ -91,6 +91,9 @@ class LoginManager {
 
   static Future<String?> waitForToken(String serverUrl) async {
     if (_testTokenActive) return getToken(serverUrl);
+    // Widget-test seam: a stubbed GraphQL client needs no OIDC session, and
+    // the poll loop below would otherwise spend the full deadline in a test.
+    if (ClientManager.usesTestClients) return null;
     const pollInterval = Duration(seconds: 5);
     final deadline = DateTime.now().add(const Duration(minutes: 1));
 
