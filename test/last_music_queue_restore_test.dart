@@ -1,10 +1,13 @@
 import 'dart:convert';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:player/dto/IsterMediaItem.dart';
+import 'package:player/dto/MediaItemId.dart';
 import 'package:player/graphql/fragmentMediafiles.graphql.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 import 'package:player/utils/ClientManager.dart';
@@ -215,6 +218,28 @@ void main() {
     expect(handler.playQueue, isNull);
     expect(handler.mediaItem.valueOrNull, isNull);
     expect(await LastMusicQueuePreferences.get(), isNull);
+  });
+
+  test('the Android Auto recent tile serves the stored queue current track '
+      'without loading the player', () async {
+    useClient(_fakeGraphQL(_musicQueue()));
+    await LastMusicQueuePreferences.save(_server, 'pq-1');
+
+    final children = await handler.getChildren(AudioService.recentRootId);
+
+    // The tile itself is metadata only — the browse answer must stay fast —
+    // and its id matches what the restore publishes.
+    expect(children.single.id,
+        MediaItemId(_server, IsterMediaTypes.track, 'item-2').toString());
+
+    // The same browse request kicked the restore in the background; once it
+    // lands the session holds the queue paused, ready for a resume.
+    for (var i = 0; i < 100 && handler.playQueue == null; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+    }
+    expect(handler.playQueue?.id, 'pq-1');
+    expect(handler.playbackState.value.playing, isFalse);
+    expect(handler.mediaItem.valueOrNull?.id, children.single.id);
   });
 
   test('clears the stored pointer when the current track lost its media file',

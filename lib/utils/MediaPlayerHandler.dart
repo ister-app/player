@@ -14,6 +14,7 @@ import 'package:player/utils/AutoPreferences.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/LanguagePreferences.dart';
 import 'package:player/utils/LastMusicQueuePreferences.dart';
+import 'package:player/utils/LoginManager.dart';
 import 'package:player/utils/LanguageService.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/PlaybackPreferences.dart';
@@ -726,6 +727,45 @@ class MediaPlayerHandler extends BaseAudioHandler
     updatePlaybackState();
   }
 
+  /// [restoreLastMusicQueue] for the headless Android Auto paths: looks up
+  /// which server holds the last music queue and bootstraps login and stream
+  /// token first (the UI normally does that before the in-app restore),
+  /// bounded so an unreachable server cannot hang the whole browse request.
+  /// Returns true when a queue is loaded afterwards — restored or already
+  /// live.
+  Future<bool> _tryRestoreLastMusicQueue() async {
+    if (playQueue != null) return true;
+    final last = await LastMusicQueuePreferences.get();
+    if (last == null) return false;
+    try {
+      if (!ClientManager.usesTestClients) {
+        await LoginManager.waitForToken(last.serverName)
+            .timeout(IsterMediaService.perServerTimeout);
+        await StreamTokenService.ensureToken(last.serverName);
+      }
+      await restoreLastMusicQueue(last.serverName);
+    } catch (e) {
+      LoggerService().logger.w('last music queue restore failed: $e');
+    }
+    return playQueue != null;
+  }
+
+  Future<bool>? _autoRestoreFuture;
+
+  /// Deduplicated [_tryRestoreLastMusicQueue]: Android Auto fires a burst of
+  /// browse requests when the car connects and a tap can race the background
+  /// kick-off, but the restore must run only once. A failed attempt clears
+  /// the slot so a later trigger can retry after e.g. a network hiccup.
+  Future<bool> _restoreLastMusicQueueOnce() async {
+    final inFlight = _autoRestoreFuture;
+    if (inFlight != null) return inFlight;
+    final attempt = _tryRestoreLastMusicQueue();
+    _autoRestoreFuture = attempt;
+    final restored = await attempt;
+    if (!restored) _autoRestoreFuture = null;
+    return restored;
+  }
+
   /// Opens the media for [item], flipping the typed handler state (episode /
   /// movie / track) to match. Mirrors the per-type open in [skipToQueueItem].
   Future<void> _openQueueItem(
@@ -943,7 +983,11 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   // ── AudioService overrides ─────────────────────────────────────────────
   @override
-  Future<void> play() {
+  Future<void> play() async {
+    // A play command with nothing loaded (e.g. the car's resume button right
+    // after connecting, before any browse): restore the last queue first so
+    // "play" continues the last music instead of doing nothing.
+    if (playQueue == null) await _restoreLastMusicQueueOnce();
     _intendsToPlay = true;
     unawaited(_ensureFreshArtToken());
     // Resuming after stop() (or a paused restore) must restart the heartbeat
@@ -1089,6 +1133,27 @@ class MediaPlayerHandler extends BaseAudioHandler
     LoggerService().logger.d('playFromMediaId: $mediaId');
 
     final mediaItemId = MediaItemId.byStringId(mediaId);
+
+    // Tapping the item that is already loaded (e.g. the Android Auto recent
+    // tile after a paused queue restore) resumes at the loaded position;
+    // skipToQueueItem below would rebuild it from the track start instead.
+    if (playQueue != null && mediaItem.valueOrNull?.id == mediaId) {
+      if (!playbackState.value.playing) await play();
+      return;
+    }
+
+    // The recent tile of a not-yet-restored queue: load that queue paused at
+    // its recorded position and resume it, instead of rebuilding an album
+    // queue from the track start.
+    if (playQueue == null &&
+        _recentSubject.value.any((item) => item.id == mediaId) &&
+        await _restoreLastMusicQueueOnce()) {
+      if (mediaItem.valueOrNull?.id == mediaId) {
+        await play();
+        return;
+      }
+      // The queue moved on server-side — fall through to the tapped item.
+    }
 
     // Check if the item is already in the current queue
     final currentQueue = queue.value;
@@ -1537,6 +1602,12 @@ class MediaPlayerHandler extends BaseAudioHandler
   Future<List<MediaItem>> getChildren(String parentMediaId,
       [Map<String, dynamic>? options]) async {
     LoggerService().logger.d('getChildren: $parentMediaId');
+    // A browse request means a car (or other browser) just connected: kick
+    // off the last-queue restore in the background — deliberately not
+    // awaited, browse answers must return fast. Once it lands, the media
+    // session publishes the paused track and the Android Auto home card
+    // flips from "tap to open" to the resumable last track.
+    unawaited(_restoreLastMusicQueueOnce());
     try {
       if (parentMediaId == AudioService.recentRootId) {
         return await _getRecentChildren();
@@ -1557,9 +1628,10 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
   }
 
-  /// Root of the Android Auto browse tree: the categories of the remembered
-  /// music library plus a node to switch libraries. Falls back to the library
-  /// picker when no default could be resolved.
+  /// Root of the Android Auto browse tree: an Albums tab (the albums view of
+  /// the remembered music library — no Albums/Artists picker in between) and
+  /// a tab to switch libraries. Falls back to the library picker when no
+  /// default could be resolved.
   Future<List<MediaItem>> _getRootChildren() async {
     final service = IsterMediaService();
     final defaultLibrary = await _resolveDefaultLibrary(service);
@@ -1568,10 +1640,14 @@ class MediaPlayerHandler extends BaseAudioHandler
           .map((e) => e.mediaItem)
           .toList();
     }
-    final categories = await service.getLibraryCategories(
-        defaultLibrary.serverName, defaultLibrary.libraryId);
     return [
-      ...categories.map((e) => e.mediaItem),
+      MediaItem(
+        id: MediaItemId(defaultLibrary.serverName, IsterMediaTypes.list,
+                "albums:${defaultLibrary.libraryId}")
+            .toString(),
+        title: IsterMediaService.loc.albums,
+        playable: false,
+      ),
       MediaItem(
         id: MediaItemId(
                 defaultLibrary.serverName, IsterMediaTypes.list, "libraries")
@@ -1632,10 +1708,27 @@ class MediaPlayerHandler extends BaseAudioHandler
     return null;
   }
 
-  /// The Android Auto "recent" tile. Rebuilt from the persisted last-played
-  /// track when the process was restarted since the last playback.
+  /// The Android Auto "recent" tile. Prefers the current track of the last
+  /// music play queue (the same one the in-app restore uses) — metadata only,
+  /// so the browse answer stays fast: the queue itself is restored when the
+  /// tile is tapped ([playFromMediaId]), resuming at the recorded position.
+  /// Falls back to rebuilding an album queue from the persisted last-played
+  /// track when no queue is stored.
   Future<List<MediaItem>> _getRecentChildren() async {
     if (_recentSubject.value.isNotEmpty) return _recentSubject.value;
+    // A live (or already restored) session: the tile mirrors it.
+    final current = mediaItem.valueOrNull;
+    if (playQueue != null && current != null) {
+      final children = [current];
+      _recentSubject.add(children);
+      return children;
+    }
+    final tile = await _lastMusicQueueTile();
+    if (tile != null) {
+      final children = [tile];
+      _recentSubject.add(children);
+      return children;
+    }
     final last = await AutoPreferences.getLastPlayed();
     if (last == null) return [];
     final tracks = await IsterMediaService()
@@ -1646,6 +1739,38 @@ class MediaPlayerHandler extends BaseAudioHandler
     final children = [item.mediaItem];
     _recentSubject.add(children);
     return children;
+  }
+
+  /// The current track of the stored last music queue as a browse item.
+  /// Nothing is loaded into the player here; the returned item's id matches
+  /// what [restoreLastMusicQueue] will publish, so a tap on it can restore
+  /// and resume. Null (→ fallbacks) when there is no stored queue or the
+  /// server cannot deliver it quickly.
+  Future<MediaItem?> _lastMusicQueueTile() async {
+    final last = await LastMusicQueuePreferences.get();
+    if (last == null) return null;
+    try {
+      if (!ClientManager.usesTestClients) {
+        await LoginManager.waitForToken(last.serverName)
+            .timeout(IsterMediaService.perServerTimeout);
+        await StreamTokenService.ensureToken(last.serverName);
+      }
+      final client = ClientManager.getClientForUrl(last.serverName).value;
+      final pq = await _playQueueService.getPlayQueue(client, last.playQueueId);
+      if (pq == null) return null;
+      final currentId = pq.currentItemId ??
+          PlayQueueService.sortedItems(pq).firstOrNull?.id;
+      if (currentId == null) return null;
+      final id =
+          MediaItemId(last.serverName, IsterMediaTypes.track, currentId)
+              .toString();
+      return _buildQueueItems(pq, last.serverName)
+          .where((m) => m.id == id)
+          .firstOrNull;
+    } catch (e) {
+      LoggerService().logger.w('recent tile from last music queue failed: $e');
+      return null;
+    }
   }
 
   @override
@@ -1668,8 +1793,14 @@ class MediaPlayerHandler extends BaseAudioHandler
       [Map<String, dynamic>? extras]) async {
     LoggerService().logger.d('playFromSearch: $query');
     try {
-      // An empty query means "play something" — resume the last played track.
+      // An empty query means "play something" — resume the loaded (or
+      // restored) last music queue at its recorded position, falling back to
+      // restarting the last played track.
       if (query.trim().isEmpty) {
+        if (await _restoreLastMusicQueueOnce()) {
+          await play();
+          return;
+        }
         final last = await AutoPreferences.getLastPlayed();
         if (last != null) {
           await playTrackById(MediaItemId(
