@@ -824,6 +824,24 @@ abstract class AppLocalizations {
   /// **'Show all'**
   String get showAll;
 
+  /// Android Auto: folder closing the albums tab that opens the full alphabetical album list
+  ///
+  /// In en, this message translates to:
+  /// **'All albums'**
+  String get allAlbums;
+
+  /// Android Auto: section title of the full book list below the discover groups
+  ///
+  /// In en, this message translates to:
+  /// **'All books'**
+  String get allBooks;
+
+  /// Android Auto: section title of the full podcast list below the discover groups
+  ///
+  /// In en, this message translates to:
+  /// **'All podcasts'**
+  String get allPodcasts;
+
   /// Discover row of the library's newest items
   ///
   /// In en, this message translates to:

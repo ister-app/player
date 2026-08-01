@@ -48,15 +48,22 @@ import '../utils/WellKnownService.dart';
 ///                            configured server
 /// - `library:<libraryId>`  → the categories of one MUSIC library (persists it
 ///                            as the default Android Auto library)
-/// - `albums:<libraryId>`   → all albums in a music library
+/// - `albums:<libraryId>`   → the albums tab of a music library: the discover
+///                            groups (recently played, most played, …) closed
+///                            by an "All albums" folder
+/// - `all-albums:<libraryId>` → all albums in a music library, alphabetical
 /// - `artists:<libraryId>`  → all artists in a music library
-/// - `books:<libraryId>`    → all audiobooks in a BOOK library (playable
-///                            leaves that resume where the listener left off)
-/// - `podcasts:<libraryId>` → all podcasts in a PODCAST library
-/// - `discover:<kind>:<libraryId>` → the discover screen of one library
-///                            (kind ∈ albums|books|podcasts): titled groups
-///                            (recently played, most played, …) each closed by
-///                            a "show all" folder
+/// - `books:<libraryId>`    → a BOOK library: the discover groups followed by
+///                            every audiobook under an "All books" section
+///                            (playable leaves that resume where the listener
+///                            left off)
+/// - `podcasts:<libraryId>` → a PODCAST library: the discover groups followed
+///                            by every podcast under an "All podcasts" section
+/// - `discover:<kind>:<libraryId>` → the discover groups of one library
+///                            (kind ∈ albums|books|podcasts): titled sections
+///                            each closed by a "show all" folder. No longer
+///                            emitted, but kept resolvable for head units that
+///                            cached the node id
 /// - `ranked:<kind>:<libraryId>:<rank>` → the full list behind one discover
 ///                            group (rank ∈ RECENTLY_PLAYED | MOST_PLAYED |
 ///                            HIGHEST_RATED | RECENTLY_ADDED)
@@ -149,23 +156,29 @@ class IsterMediaService {
           mediaItemId.serverName, libraryId);
       return getLibraryCategories(mediaItemId.serverName, libraryId);
     } else if (id.startsWith("albums:")) {
+      return getAlbumsTab(
+          mediaItemId.serverName, id.substring("albums:".length));
+    } else if (id.startsWith("all-albums:")) {
       return getAlbums(mediaItemId.serverName,
-          libraryId: id.substring("albums:".length));
+          libraryId: id.substring("all-albums:".length));
     } else if (id.startsWith("artists:")) {
       return getArtists(
           mediaItemId.serverName, id.substring("artists:".length));
     } else if (id.startsWith("books:")) {
       final libraryId = id.substring("books:".length);
       return [
-        _discoverEntry(mediaItemId.serverName, DiscoverKind.books, libraryId),
-        ...await getBooks(mediaItemId.serverName, libraryId),
+        ...await getDiscoverGroups(mediaItemId.serverName,
+            DiscoverNodeId(DiscoverKind.books, libraryId)),
+        ...await getBooks(mediaItemId.serverName, libraryId,
+            extras: _groupExtras(loc.allBooks)),
       ];
     } else if (id.startsWith("podcasts:")) {
       final libraryId = id.substring("podcasts:".length);
       return [
-        _discoverEntry(
-            mediaItemId.serverName, DiscoverKind.podcasts, libraryId),
-        ...await getPodcasts(mediaItemId.serverName, libraryId),
+        ...await getDiscoverGroups(mediaItemId.serverName,
+            DiscoverNodeId(DiscoverKind.podcasts, libraryId)),
+        ...await getPodcasts(mediaItemId.serverName, libraryId,
+            extras: _groupExtras(loc.allPodcasts)),
       ];
     } else if (id.startsWith("discover:")) {
       final node = DiscoverNodeId.parse(id);
@@ -250,7 +263,8 @@ class IsterMediaService {
         .toList();
   }
 
-  /// The browse categories of one music library.
+  /// The browse categories of one music library. Albums carries no grid hint:
+  /// its children are the grouped discover sections, not a wall of covers.
   Future<List<IsterMediaItem>> getLibraryCategories(
       String serverName, String libraryId) async {
     return [
@@ -259,7 +273,6 @@ class IsterMediaService {
         serverName: serverName,
         isterMediaType: IsterMediaTypes.list,
         title: loc.albums,
-        extras: const {contentStyleBrowsableHint: contentStyleGrid},
       ),
       IsterMediaItem(
         id: "artists:$libraryId",
@@ -268,20 +281,27 @@ class IsterMediaService {
         title: loc.artists,
         extras: const {contentStyleBrowsableHint: contentStyleGrid},
       ),
-      _discoverEntry(serverName, DiscoverKind.albums, libraryId),
     ];
   }
 
-  /// The browsable folder that opens a library's discover screen. No grid
-  /// hint: its children are a mixed grouped list, not a wall of covers.
-  IsterMediaItem _discoverEntry(
-      String serverName, DiscoverKind kind, String libraryId) {
-    return IsterMediaItem(
-      id: DiscoverNodeId(kind, libraryId).id,
-      serverName: serverName,
-      isterMediaType: IsterMediaTypes.list,
-      title: loc.viewDiscover,
-    );
+  /// The albums tab of a music library: the discover groups, closed by an
+  /// "All albums" folder into the full alphabetical list.
+  Future<List<IsterMediaItem>> getAlbumsTab(
+      String serverName, String libraryId) async {
+    return [
+      ...await getDiscoverGroups(
+          serverName, DiscoverNodeId(DiscoverKind.albums, libraryId)),
+      IsterMediaItem(
+        id: "all-albums:$libraryId",
+        serverName: serverName,
+        isterMediaType: IsterMediaTypes.list,
+        title: loc.allAlbums,
+        extras: {
+          ..._groupExtras(loc.allAlbums),
+          contentStyleBrowsableHint: contentStyleGrid,
+        },
+      ),
+    ];
   }
 
   Future<List<IsterMediaItem>> getAlbums(String serverName,
@@ -519,11 +539,11 @@ class IsterMediaService {
   static Map<String, dynamic> _groupExtras(String label) =>
       {contentStyleGroupTitleHint: label};
 
-  /// The grouped discover screen of one library: titled sections (via the
-  /// group-title hint), each capped at [discoverGroupSize] and closed by a
-  /// "show all" folder into the full ranked list. The top lists need a server
-  /// with the `libraryById` discover fields; on an older server only the
-  /// recently-added group remains.
+  /// The discover sections rendered inline in a library's browse node: titled
+  /// groups (via the group-title hint), each capped at [discoverGroupSize] and
+  /// closed by a "show all" folder into the full ranked list. The top lists
+  /// need a server with the `libraryById` discover fields; on an older server
+  /// only the recently-added group remains.
   Future<List<IsterMediaItem>> getDiscoverGroups(
       String serverName, DiscoverNodeId node) async {
     await StreamTokenService.ensureToken(serverName);

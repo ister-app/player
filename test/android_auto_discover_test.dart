@@ -51,6 +51,71 @@ Map<String, dynamic> _discoverAlbums({
       },
     };
 
+Map<String, dynamic> _book(String id, String title) => {
+      '__typename': 'Book',
+      'id': id,
+      'name': title,
+      'title': title,
+      'releaseYear': 2020,
+      'seriesIndex': null,
+      'author': {'__typename': 'Person', 'id': 'author-1', 'name': 'The Author'},
+      'series': null,
+      'images': <dynamic>[],
+      'metadata': <dynamic>[],
+      'rating': null,
+    };
+
+Map<String, dynamic> _booksPage(List<Map<String, dynamic>> books) => {
+      '__typename': 'Query',
+      'books': {
+        '__typename': 'BookPage',
+        'content': books,
+        'totalPages': 1,
+        'totalElements': books.length,
+        'number': 0,
+        'size': books.length,
+      },
+    };
+
+Map<String, dynamic> _discoverBooks({
+  List<Map<String, dynamic>> recentlyRead = const [],
+  List<Map<String, dynamic>> highestRated = const [],
+}) =>
+    {
+      '__typename': 'Query',
+      'libraryById': {
+        '__typename': 'Library',
+        'id': _libraryId,
+        'recentlyReadBooks': recentlyRead,
+        'highestRatedBooks': highestRated,
+      },
+    };
+
+Map<String, dynamic> _podcast(String id, String title) => {
+      '__typename': 'Podcast',
+      'id': id,
+      'title': title,
+      'author': 'The Host',
+      'feedUrl': 'https://feed.example/$id',
+      'active': true,
+      'images': <dynamic>[],
+      'metadata': <dynamic>[],
+      'rating': null,
+      'episodeOrder': 'ASCENDING',
+    };
+
+Map<String, dynamic> _podcastsPage(List<Map<String, dynamic>> podcasts) => {
+      '__typename': 'Query',
+      'podcasts': {
+        '__typename': 'PodcastPage',
+        'content': podcasts,
+        'totalPages': 1,
+        'totalElements': podcasts.length,
+        'number': 0,
+        'size': podcasts.length,
+      },
+    };
+
 Map<String, dynamic> _rankedAlbums(List<Map<String, dynamic>> albums) => {
       '__typename': 'Query',
       'libraryById': {
@@ -87,9 +152,13 @@ http.Response _graphQLError(String message) => http.Response(
 /// the variables of every list query so sorting can be asserted.
 MockClient _fakeGraphQL({
   Map<String, dynamic>? discover,
+  Map<String, dynamic>? discoverBooks,
   bool discoverErrors = false,
   bool rankedErrors = false,
   List<Map<String, dynamic>> Function()? recentlyAddedAlbums,
+  List<Map<String, dynamic>> Function(Map<String, dynamic> variables)? books,
+  List<Map<String, dynamic>> Function(Map<String, dynamic> variables)?
+      podcasts,
   List<Map<String, dynamic>> Function()? rankedContent,
   List<Map<String, dynamic>>? recordedAlbumVariables,
 }) =>
@@ -123,6 +192,35 @@ MockClient _fakeGraphQL({
         recordedAlbumVariables
             ?.add(body['variables'] as Map<String, dynamic>? ?? {});
         return _json(_albumsPage(recentlyAddedAlbums?.call() ?? const []));
+      }
+      if (query.contains('recentlyReadBooks')) {
+        if (discoverErrors) {
+          return _graphQLError("Validation error: unknown field 'libraryById'");
+        }
+        return _json(discoverBooks ?? _discoverBooks());
+      }
+      if (query.contains('recentlyPlayedPodcasts')) {
+        if (discoverErrors) {
+          return _graphQLError("Validation error: unknown field 'libraryById'");
+        }
+        return _json({
+          '__typename': 'Query',
+          'libraryById': {
+            '__typename': 'Library',
+            'id': _libraryId,
+            'recentlyPlayedPodcasts': <dynamic>[],
+            'mostPlayedPodcasts': <dynamic>[],
+            'highestRatedPodcasts': <dynamic>[],
+          },
+        });
+      }
+      if (query.contains('books(')) {
+        final variables = body['variables'] as Map<String, dynamic>? ?? {};
+        return _json(_booksPage(books?.call(variables) ?? const []));
+      }
+      if (query.contains('podcasts(')) {
+        final variables = body['variables'] as Map<String, dynamic>? ?? {};
+        return _json(_podcastsPage(podcasts?.call(variables) ?? const []));
       }
       return _json({'__typename': 'Query'});
     });
@@ -195,21 +293,137 @@ void main() {
   });
 
   group('IsterMediaService discover tree', () {
-    test('the music library categories include a Discover folder', () async {
+    test('the music library categories are Albums and Artists, no Discover',
+        () async {
       final categories =
           await IsterMediaService().getLibraryCategories(_server, _libraryId);
-      final discover = categories.last;
-      expect(discover.id, DiscoverNodeId(DiscoverKind.albums, _libraryId).id);
-      expect(discover.isterMediaType, IsterMediaTypes.list);
-      expect(discover.playable, isFalse);
+      expect(categories.map((category) => category.id),
+          ['albums:$_libraryId', 'artists:$_libraryId']);
+      // Albums opens the mixed grouped list, so no grid hint; the artists
+      // node is still a wall of covers.
+      expect(
+          categories[0].extras?[IsterMediaService.contentStyleBrowsableHint],
+          isNull);
+      expect(
+          categories[1].extras?[IsterMediaService.contentStyleBrowsableHint],
+          IsterMediaService.contentStyleGrid);
     });
 
-    test('a book library node starts with its Discover folder', () async {
-      _installClient(_fakeGraphQL());
+    test('the albums tab shows the discover groups closed by an '
+        'All albums folder', () async {
+      _installClient(_fakeGraphQL(
+        discover: _discoverAlbums(
+          recentlyPlayed: [_album('played-1', 'Played Album')],
+        ),
+        recentlyAddedAlbums: () => [_album('new-1', 'New Album')],
+      ));
+
+      final items = await IsterMediaService().getList(
+          MediaItemId(_server, IsterMediaTypes.list, 'albums:$_libraryId'));
+
+      // Recently-played group (item + show-all), recently-added group
+      // (item + show-all), then the All albums folder.
+      expect(items, hasLength(5));
+      expect(items.map(_groupOf), everyElement(isNotNull));
+      expect(
+          items.any((item) => item.id.startsWith('discover:')), isFalse);
+
+      final allAlbums = items.last;
+      expect(allAlbums.id, 'all-albums:$_libraryId');
+      expect(allAlbums.isterMediaType, IsterMediaTypes.list);
+      expect(allAlbums.playable, isFalse);
+      expect(allAlbums.extras?[IsterMediaService.contentStyleBrowsableHint],
+          IsterMediaService.contentStyleGrid);
+      expect(_groupOf(allAlbums), allAlbums.title);
+    });
+
+    test('an old server degrades the albums tab to recently added plus '
+        'All albums', () async {
+      _installClient(_fakeGraphQL(
+        discoverErrors: true,
+        recentlyAddedAlbums: () => [_album('new-1', 'New Album')],
+      ));
+
+      final items = await IsterMediaService().getList(
+          MediaItemId(_server, IsterMediaTypes.list, 'albums:$_libraryId'));
+
+      expect(items, hasLength(3));
+      expect(items[0].id, 'new-1');
+      expect(
+          items[1].id,
+          RankedNodeId(
+                  DiscoverKind.albums, _libraryId, DiscoverRank.recentlyAdded)
+              .id);
+      expect(items[2].id, 'all-albums:$_libraryId');
+    });
+
+    test('the all-albums node is the plain alphabetical list', () async {
+      final variables = <Map<String, dynamic>>[];
+      _installClient(_fakeGraphQL(
+        recentlyAddedAlbums: () => [_album('a-1', 'An Album')],
+        recordedAlbumVariables: variables,
+      ));
+
+      final items = await IsterMediaService().getList(MediaItemId(
+          _server, IsterMediaTypes.list, 'all-albums:$_libraryId'));
+
+      expect(items.single.id, 'a-1');
+      expect(items.single.isterMediaType, IsterMediaTypes.album);
+      expect(_groupOf(items.single), isNull);
+      expect(variables.single['sorting'], 'NAME');
+      expect(variables.single['sortingOrder'], 'ASCENDING');
+      expect(variables.single['libraryId'], _libraryId);
+    });
+
+    test('a book library inlines the discover groups above the full list',
+        () async {
+      _installClient(_fakeGraphQL(
+        discoverBooks: _discoverBooks(
+          recentlyRead: [_book('read-1', 'Read Book')],
+        ),
+        books: (variables) => variables['sorting'] == 'DATE_CREATED'
+            ? [_book('new-1', 'New Book')]
+            : [_book('book-1', 'A Book'), _book('book-2', 'B Book')],
+      ));
+
       final items = await IsterMediaService().getList(
           MediaItemId(_server, IsterMediaTypes.list, 'books:$_libraryId'));
+
+      // Recently-read group, recently-added group (each item + show-all),
+      // then every book of the library under one "All books" section.
+      expect(items.map((item) => item.id), [
+        'read-1',
+        RankedNodeId(DiscoverKind.books, _libraryId, DiscoverRank.recentlyPlayed)
+            .id,
+        'new-1',
+        RankedNodeId(DiscoverKind.books, _libraryId, DiscoverRank.recentlyAdded)
+            .id,
+        'book-1',
+        'book-2',
+      ]);
+      expect(items.map(_groupOf), everyElement(isNotNull));
+
+      final tail = items.sublist(4);
+      expect(tail.map(_groupOf).toSet(), hasLength(1));
       expect(
-          items.first.id, DiscoverNodeId(DiscoverKind.books, _libraryId).id);
+          tail.every((book) =>
+              book.playable && book.isterMediaType == IsterMediaTypes.book),
+          isTrue);
+    });
+
+    test('a podcast library tags its full list as one section', () async {
+      _installClient(_fakeGraphQL(
+        podcasts: (variables) => variables['sorting'] == 'DATE_CREATED'
+            ? const []
+            : [_podcast('pod-1', 'A Podcast')],
+      ));
+
+      final items = await IsterMediaService().getList(
+          MediaItemId(_server, IsterMediaTypes.list, 'podcasts:$_libraryId'));
+
+      expect(items.single.id, 'pod-1');
+      expect(items.single.isterMediaType, IsterMediaTypes.podcast);
+      expect(_groupOf(items.single), isNotNull);
     });
 
     test('the discover screen groups items and closes each group with '

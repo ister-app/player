@@ -402,6 +402,15 @@ class AppLocalizationsNl extends AppLocalizations {
   String get showAll => 'Toon alles';
 
   @override
+  String get allAlbums => 'Alle albums';
+
+  @override
+  String get allBooks => 'Alle boeken';
+
+  @override
+  String get allPodcasts => 'Alle podcasts';
+
+  @override
   String get recentlyAdded => 'Recent toegevoegd';
 
   @override

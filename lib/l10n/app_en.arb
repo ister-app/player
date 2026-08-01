@@ -494,6 +494,18 @@
   "@showAll": {
     "description": "Tooltip/semantics of a tappable carousel header opening the row's full vertical list"
   },
+  "allAlbums": "All albums",
+  "@allAlbums": {
+    "description": "Android Auto: folder closing the albums tab that opens the full alphabetical album list"
+  },
+  "allBooks": "All books",
+  "@allBooks": {
+    "description": "Android Auto: section title of the full book list below the discover groups"
+  },
+  "allPodcasts": "All podcasts",
+  "@allPodcasts": {
+    "description": "Android Auto: section title of the full podcast list below the discover groups"
+  },
   "recentlyAdded": "Recently added",
   "@recentlyAdded": {
     "description": "Discover row of the library's newest items"

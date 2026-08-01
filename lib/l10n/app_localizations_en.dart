@@ -401,6 +401,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showAll => 'Show all';
 
   @override
+  String get allAlbums => 'All albums';
+
+  @override
+  String get allBooks => 'All books';
+
+  @override
+  String get allPodcasts => 'All podcasts';
+
+  @override
   String get recentlyAdded => 'Recently added';
 
   @override
