@@ -286,7 +286,7 @@ class _LocalPlayerController extends PlayerViewController {
       );
 
   @override
-  Widget? buildRating(BuildContext context) {
+  Widget? buildRating(BuildContext context, Color accent) {
     final item = _item;
     if (item == null) return null;
     final MediaItemId mediaItemId;
@@ -323,6 +323,9 @@ class _LocalPlayerController extends PlayerViewController {
       client: ClientManager.getClientForUrl(mediaItemId.serverName).value,
       size: 28,
       showValue: false,
+      // Match the accent-tinted transport controls on the dark backdrop.
+      color: accent,
+      emptyColor: Colors.white30,
     );
   }
 

@@ -99,8 +99,9 @@ abstract class PlayerViewController extends ChangeNotifier {
   /// Optional rating control rendered centred under the album line, so the
   /// playing track can be rated in place. Null when rating isn't applicable
   /// (non-track media) or unsupported (e.g. the remote controller). Local
-  /// playback plugs in a [RatingStars] for the current track.
-  Widget? buildRating(BuildContext context) => null;
+  /// playback plugs in a [RatingStars] for the current track, tinted with
+  /// [accent] to match the other player controls.
+  Widget? buildRating(BuildContext context, Color accent) => null;
 
   /// When non-null, the owner is watching their own session and may edit its per-session
   /// remote-control sharing; the view then shows a "share this session" action. Null for a remote
@@ -960,7 +961,8 @@ class _Controls extends StatelessWidget {
     // Rating for the playing track (local playback only); rendered under the
     // album line like the reference design. Hidden while loading so the
     // skeleton doesn't flash empty stars.
-    final rating = loading ? null : controller.buildRating(context);
+    final showRating =
+        !loading && controller.buildRating(context, accent.value) != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -1007,9 +1009,14 @@ class _Controls extends StatelessWidget {
             ],
           ),
         ),
-        if (rating != null) ...[
+        if (showRating) ...[
           const SizedBox(height: 12),
-          rating,
+          // Re-tint the stars when the artwork accent resolves.
+          ValueListenableBuilder<Color>(
+            valueListenable: accent,
+            builder: (context, color, _) =>
+                controller.buildRating(context, color)!,
+          ),
         ],
         const SizedBox(height: 20),
         _SeekBar(controller: controller, accent: accent),

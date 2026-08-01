@@ -23,6 +23,8 @@ class RatingStars extends StatefulWidget {
     this.showValue = true,
     this.onChanged,
     this.client,
+    this.color,
+    this.emptyColor,
   });
 
   final Enum$RatingMediaType mediaType;
@@ -41,6 +43,13 @@ class RatingStars extends StatefulWidget {
 
   /// Whether to show the numeric `x/10` next to the stars.
   final bool showValue;
+
+  /// Filled-star colour (defaults to the theme primary). Pass a page's accent
+  /// colour so the stars match its other tinted controls.
+  final Color? color;
+
+  /// Empty-star colour (defaults to onSurfaceVariant).
+  final Color? emptyColor;
 
   /// Called with the new value after a successful save (e.g. so a list row can
   /// update a compact badge). Not called on failure.
@@ -119,10 +128,11 @@ class _RatingStarsState extends State<RatingStars> {
     final loc = AppLocalizations.of(context)!;
     final shown = _hover ?? _rating;
     final rating = shown ?? 0;
+    final baseColor = widget.color ?? theme.colorScheme.primary;
     // Preview the hovered value in a translucent tint until it is saved.
-    final filled = _hover != null
-        ? theme.colorScheme.primary.withValues(alpha: 0.6)
-        : theme.colorScheme.primary;
+    final filled =
+        _hover != null ? baseColor.withValues(alpha: 0.6) : baseColor;
+    final empty = widget.emptyColor ?? theme.colorScheme.onSurfaceVariant;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -131,7 +141,7 @@ class _RatingStarsState extends State<RatingStars> {
           _StarIcon(
             size: widget.size,
             filled: filled,
-            empty: theme.colorScheme.onSurfaceVariant,
+            empty: empty,
             // 0 = empty, 1 = half, 2 = full
             fill: rating >= (i + 1) * 2
                 ? 2

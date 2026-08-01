@@ -375,6 +375,8 @@ class _AlbumPageState extends State<AlbumPage> {
                           mediaType: Enum$RatingMediaType.ALBUM,
                           mediaId: album.id,
                           rating: album.rating,
+                          // Tint with the cover accent, like the play button.
+                          color: _accent,
                         ),
                       if (metaLine != null)
                         Text(
@@ -531,7 +533,8 @@ class _AlbumPageState extends State<AlbumPage> {
                 color: mutedColor,
               ),
         ),
-      if (trackRating != null) RatingStarsDisplay(rating: trackRating),
+      if (trackRating != null)
+        RatingStarsDisplay(rating: trackRating, color: accentColor),
     ];
     // Hoisted so the TV remote's long-press can open the same menu as the
     // trailing icon button.
