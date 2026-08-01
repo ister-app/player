@@ -217,14 +217,16 @@ class PlayQueueService {
   }
 
   /// Unified play-queue creation against the new `createPlayQueue` mutation.
-  /// [sourceType] selects MOVIE/SHOW/ALBUM/LIBRARY; [startId] is the episode or
-  /// track to start at (ignored for MOVIE/LIBRARY sources).
+  /// [sourceType] selects MOVIE/SHOW/ALBUM/LIBRARY/ARTIST; [startId] is the
+  /// episode or track to start at (ignored for MOVIE/LIBRARY sources).
+  /// [rankKind] selects which ranked track list an ARTIST source plays.
   Future<Fragment$fragmentPlayQueue?> createPlayQueue(
     GraphQLClient graphQLClient, {
     required Enum$PlayQueueSourceType sourceType,
     required String sourceId,
     String? startId,
     bool? shuffle,
+    Enum$RankKind? rankKind,
   }) async {
     final MutationOptions options = MutationOptions(
         document: documentNodeMutationcreatePlayQueue,
@@ -234,6 +236,7 @@ class PlayQueueService {
             sourceId: sourceId,
             startId: startId,
             shuffle: shuffle,
+            rankKind: rankKind,
           ),
         ).toJson());
     final QueryResult result = await graphQLClient.mutate(options);

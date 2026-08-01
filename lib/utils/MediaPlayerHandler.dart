@@ -582,6 +582,21 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (pq != null) await _startFromPlayQueue(client, pq, srv);
   }
 
+  /// Plays an artist's ranked track list (most played / last played / highest
+  /// rated) as the queue, starting at [startTrackId]. The server evaluates the
+  /// ranking and keeps growing the queue past the visible top of the list.
+  Future<void> startPlayQueueForArtistRankedList(GraphQLClient client,
+      String srv, String personId, Enum$RankKind rankKind, String startTrackId) async {
+    final pq = await _playQueueService.createPlayQueue(
+      client,
+      sourceType: Enum$PlayQueueSourceType.ARTIST,
+      sourceId: personId,
+      rankKind: rankKind,
+      startId: startTrackId,
+    );
+    if (pq != null) await _startFromPlayQueue(client, pq, srv);
+  }
+
   /// Starts playback from an already-created [pq], opening its current item
   /// (server-selected, or the first item). Used for shuffle/library sources
   /// where the starting item isn't chosen by the caller.

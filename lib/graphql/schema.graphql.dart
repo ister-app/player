@@ -380,11 +380,13 @@ class Input$CreatePlayQueueInput {
     required String sourceId,
     String? startId,
     bool? shuffle,
+    Enum$RankKind? rankKind,
   }) => Input$CreatePlayQueueInput._({
     r'sourceType': sourceType,
     r'sourceId': sourceId,
     if (startId != null) r'startId': startId,
     if (shuffle != null) r'shuffle': shuffle,
+    if (rankKind != null) r'rankKind': rankKind,
   });
 
   Input$CreatePlayQueueInput._(this._$data);
@@ -405,6 +407,12 @@ class Input$CreatePlayQueueInput {
       final l$shuffle = data['shuffle'];
       result$data['shuffle'] = (l$shuffle as bool?);
     }
+    if (data.containsKey('rankKind')) {
+      final l$rankKind = data['rankKind'];
+      result$data['rankKind'] = l$rankKind == null
+          ? null
+          : fromJson$Enum$RankKind((l$rankKind as String));
+    }
     return Input$CreatePlayQueueInput._(result$data);
   }
 
@@ -419,6 +427,8 @@ class Input$CreatePlayQueueInput {
 
   bool? get shuffle => (_$data['shuffle'] as bool?);
 
+  Enum$RankKind? get rankKind => (_$data['rankKind'] as Enum$RankKind?);
+
   Map<String, dynamic> toJson() {
     final result$data = <String, dynamic>{};
     final l$sourceType = sourceType;
@@ -432,6 +442,12 @@ class Input$CreatePlayQueueInput {
     if (_$data.containsKey('shuffle')) {
       final l$shuffle = shuffle;
       result$data['shuffle'] = l$shuffle;
+    }
+    if (_$data.containsKey('rankKind')) {
+      final l$rankKind = rankKind;
+      result$data['rankKind'] = l$rankKind == null
+          ? null
+          : toJson$Enum$RankKind(l$rankKind);
     }
     return result$data;
   }
@@ -474,6 +490,15 @@ class Input$CreatePlayQueueInput {
     if (l$shuffle != lOther$shuffle) {
       return false;
     }
+    final l$rankKind = rankKind;
+    final lOther$rankKind = other.rankKind;
+    if (_$data.containsKey('rankKind') !=
+        other._$data.containsKey('rankKind')) {
+      return false;
+    }
+    if (l$rankKind != lOther$rankKind) {
+      return false;
+    }
     return true;
   }
 
@@ -483,11 +508,13 @@ class Input$CreatePlayQueueInput {
     final l$sourceId = sourceId;
     final l$startId = startId;
     final l$shuffle = shuffle;
+    final l$rankKind = rankKind;
     return Object.hashAll([
       l$sourceType,
       l$sourceId,
       _$data.containsKey('startId') ? l$startId : const {},
       _$data.containsKey('shuffle') ? l$shuffle : const {},
+      _$data.containsKey('rankKind') ? l$rankKind : const {},
     ]);
   }
 }
@@ -506,6 +533,7 @@ abstract class CopyWith$Input$CreatePlayQueueInput<TRes> {
     String? sourceId,
     String? startId,
     bool? shuffle,
+    Enum$RankKind? rankKind,
   });
 }
 
@@ -524,6 +552,7 @@ class _CopyWithImpl$Input$CreatePlayQueueInput<TRes>
     Object? sourceId = _undefined,
     Object? startId = _undefined,
     Object? shuffle = _undefined,
+    Object? rankKind = _undefined,
   }) => _then(
     Input$CreatePlayQueueInput._({
       ..._instance._$data,
@@ -533,6 +562,7 @@ class _CopyWithImpl$Input$CreatePlayQueueInput<TRes>
         'sourceId': (sourceId as String),
       if (startId != _undefined) 'startId': (startId as String?),
       if (shuffle != _undefined) 'shuffle': (shuffle as bool?),
+      if (rankKind != _undefined) 'rankKind': (rankKind as Enum$RankKind?),
     }),
   );
 }
@@ -548,6 +578,7 @@ class _CopyWithStubImpl$Input$CreatePlayQueueInput<TRes>
     String? sourceId,
     String? startId,
     bool? shuffle,
+    Enum$RankKind? rankKind,
   }) => _res;
 }
 
@@ -1274,6 +1305,7 @@ enum Enum$PlayQueueSourceType {
   LIBRARY,
   BOOK,
   PODCAST,
+  ARTIST,
   $unknown;
 
   factory Enum$PlayQueueSourceType.fromJson(String value) =>
@@ -1296,6 +1328,8 @@ String toJson$Enum$PlayQueueSourceType(Enum$PlayQueueSourceType e) {
       return r'BOOK';
     case Enum$PlayQueueSourceType.PODCAST:
       return r'PODCAST';
+    case Enum$PlayQueueSourceType.ARTIST:
+      return r'ARTIST';
     case Enum$PlayQueueSourceType.$unknown:
       return r'$unknown';
   }
@@ -1315,6 +1349,8 @@ Enum$PlayQueueSourceType fromJson$Enum$PlayQueueSourceType(String value) {
       return Enum$PlayQueueSourceType.BOOK;
     case r'PODCAST':
       return Enum$PlayQueueSourceType.PODCAST;
+    case r'ARTIST':
+      return Enum$PlayQueueSourceType.ARTIST;
     default:
       return Enum$PlayQueueSourceType.$unknown;
   }

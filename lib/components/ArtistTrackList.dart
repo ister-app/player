@@ -29,7 +29,15 @@ enum ArtistTrackListVariant {
   recency,
 
   /// Rating stars + duration ("Highest rated").
-  rating,
+  rating;
+
+  /// The server-side ranking this list renders; playing the list creates an
+  /// ARTIST play queue for the same ranking.
+  Enum$RankKind get rankKind => switch (this) {
+        plays => Enum$RankKind.MOST_PLAYED,
+        recency => Enum$RankKind.RECENTLY_PLAYED,
+        rating => Enum$RankKind.HIGHEST_RATED,
+      };
 }
 
 /// One row of an [ArtistTrackList]: a track with the album it plays in and
@@ -51,18 +59,23 @@ class ArtistTrackListItem {
 /// A ranked track list for the artist page (most played / last played /
 /// highest rated): rank number, album-art thumbnail, title and album, with a
 /// per-variant trailing detail. Collapsed to [collapsedCount] rows with a
-/// show-more toggle; tapping a row plays the track in its album context.
+/// show-more toggle; tapping a row plays the ranked list itself as the queue,
+/// starting at the tapped track.
 class ArtistTrackList extends StatefulWidget {
   const ArtistTrackList({
     super.key,
     required this.items,
     required this.serverName,
+    required this.personId,
     required this.variant,
     this.collapsedCount = 5,
   });
 
   final List<ArtistTrackListItem> items;
   final String serverName;
+
+  /// The artist whose ranked list this is; the ARTIST play queue's source.
+  final String personId;
   final ArtistTrackListVariant variant;
   final int collapsedCount;
 
@@ -87,12 +100,12 @@ class _ArtistTrackListState extends State<ArtistTrackList> {
 
   void _playTrack(BuildContext context, ArtistTrackListItem item) {
     final client = GraphQLProvider.of(context).value;
-    MediaPlayerHandler.instance.startPlayQueueForAlbum(
+    MediaPlayerHandler.instance.startPlayQueueForArtistRankedList(
       client,
-      null,
-      item.album,
-      item.track.id,
       widget.serverName,
+      widget.personId,
+      widget.variant.rankKind,
+      item.track.id,
     );
   }
 

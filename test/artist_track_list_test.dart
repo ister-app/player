@@ -99,10 +99,26 @@ MockClient _fakeGraphQL({
   List<Map<String, dynamic>> topPlayed = const [],
   List<Map<String, dynamic>> recentlyPlayed = const [],
   List<Map<String, dynamic>> topRated = const [],
+  List<Map<String, dynamic>>? createPlayQueueRequests,
 }) =>
     MockClient((request) async {
-      final query =
-          (json.decode(request.body) as Map<String, dynamic>)['query'] as String;
+      final body = json.decode(request.body) as Map<String, dynamic>;
+      final query = body['query'] as String;
+      if (query.contains('createPlayQueue')) {
+        // Record the variables and fail the mutation, so the handler never
+        // starts real playback inside the widget test.
+        createPlayQueueRequests
+            ?.add(body['variables'] as Map<String, dynamic>);
+        return http.Response(
+          json.encode({
+            'errors': [
+              {'message': 'queue creation stubbed out in this test'}
+            ]
+          }),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      }
       if (query.contains('topPlayedTracks')) {
         return _json(_personWithTracks('topPlayedTracks', topPlayed));
       }
@@ -247,6 +263,31 @@ void main() {
 
     expect(find.text('Rain On Me'), findsOneWidget);
     expect(find.text('Alice'), findsNothing);
+  });
+
+  testWidgets('tapping a row plays the ranked list as an ARTIST queue',
+      (tester) async {
+    final createRequests = <Map<String, dynamic>>[];
+    final client = _fakeGraphQL(
+      topPlayed: [
+        _track(1, 'Rain On Me', playCount: 27),
+        _track(2, 'Alice', playCount: 12),
+      ],
+      createPlayQueueRequests: createRequests,
+    );
+    useClient(client);
+    await tester.pumpWidget(_app(client));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Alice'));
+    await tester.pumpAndSettle();
+
+    expect(createRequests, hasLength(1));
+    final input = createRequests.single['input'] as Map<String, dynamic>;
+    expect(input['sourceType'], 'ARTIST');
+    expect(input['sourceId'], 'person-1');
+    expect(input['rankKind'], 'MOST_PLAYED');
+    expect(input['startId'], 'track-2');
   });
 
   testWidgets('collapses long lists behind a show-more toggle',

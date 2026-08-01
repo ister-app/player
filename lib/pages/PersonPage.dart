@@ -1088,6 +1088,7 @@ class _ArtistTrackTabsState extends State<_ArtistTrackTabs> {
               key: ValueKey(selected.config.variant),
               items: selected.items,
               serverName: widget.serverName,
+              personId: widget.personId,
               variant: selected.config.variant,
             ),
           ],
