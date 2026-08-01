@@ -60,7 +60,7 @@ Map<String, dynamic> _discoverMovies({
       },
     };
 
-Map<String, dynamic> _libraries() => {
+Map<String, dynamic> _libraries({bool withMusic = false}) => {
       '__typename': 'Query',
       'libraries': [
         {
@@ -70,7 +70,16 @@ Map<String, dynamic> _libraries() => {
           'type': 'MOVIE',
           'sorting': 'NAME',
           'sortingOrder': 'ASCENDING',
-        }
+        },
+        if (withMusic)
+          {
+            '__typename': 'Library',
+            'id': 'music-lib-1',
+            'name': 'music',
+            'type': 'MUSIC',
+            'sorting': 'NAME',
+            'sortingOrder': 'ASCENDING',
+          },
       ],
     };
 
@@ -84,6 +93,7 @@ http.Response _json(Map<String, dynamic> data) => http.Response(
 MockClient _fakeGraphQL({
   Map<String, dynamic>? discover,
   bool discoverErrors = false,
+  bool withMusicLibrary = false,
 }) =>
     MockClient((request) async {
       final query = json.decode(request.body)['query'] as String? ?? '';
@@ -106,7 +116,7 @@ MockClient _fakeGraphQL({
         return _json(_moviesPage([_movie('new-1', 'Newly Added Movie')]));
       }
       if (query.contains('libraries {')) {
-        return _json(_libraries());
+        return _json(_libraries(withMusic: withMusicLibrary));
       }
       // recentlyWatched et al.: empty.
       return _json({'__typename': 'Query'});
@@ -166,10 +176,18 @@ Future<void> _pump(WidgetTester tester) async {
 }
 
 void main() {
-  setUp(() {
-    VisibilityDetectorController.instance.updateInterval = Duration.zero;
+  // Set the platform instance once and clear it per test: ShowHomePage holds
+  // a static SharedPreferencesAsync, which binds the platform instance at
+  // first construction — swapping in a fresh instance per test would leave the
+  // page writing to the old one.
+  setUpAll(() {
     SharedPreferencesAsyncPlatform.instance =
         InMemorySharedPreferencesAsync.empty();
+  });
+
+  setUp(() async {
+    VisibilityDetectorController.instance.updateInterval = Duration.zero;
+    await SharedPreferencesAsync().clear();
     ClientManager.clients.clear();
     PermissionsService().invalidate(_server);
   });
@@ -305,6 +323,61 @@ void main() {
       expect(find.byIcon(Icons.sort), findsNothing);
       expect(await SharedPreferencesAsync().getString('library_view_$_server'),
           'discover');
+    });
+
+    testWidgets(
+        'the app-bar title is the library switcher: name, type icons and check',
+        (tester) async {
+      final client = _fakeGraphQL(
+        discover: _discoverMovies(
+          recentlyPlayed: [_movie('played-1', 'Played Movie')],
+        ),
+        withMusicLibrary: true,
+      );
+      ClientManager.testClientBuilder = (_) => GraphQLClient(
+            link: HttpLink('https://api.example/graphql', httpClient: client),
+            cache: GraphQLCache(),
+          );
+      await tester.pumpWidget(
+          _wrap(const ShowHomePage(serverName: _server), client));
+      await _pump(tester);
+
+      // The title is the selected library's name with a dropdown arrow; the
+      // static "Library" title is gone once the list has loaded.
+      final appBar = find.byType(AppBar);
+      expect(find.descendant(of: appBar, matching: find.text('movies')),
+          findsOneWidget);
+      expect(
+          find.descendant(
+              of: appBar, matching: find.byIcon(Icons.arrow_drop_down)),
+          findsOneWidget);
+      expect(find.descendant(of: appBar, matching: find.text('Library')),
+          findsNothing);
+
+      // The menu lists every library with its type icon, checking the active one.
+      await tester.tap(find.descendant(
+          of: appBar, matching: find.byIcon(Icons.arrow_drop_down)));
+      await _pump(tester);
+      expect(find.byIcon(Icons.movie), findsOneWidget);
+      expect(find.byIcon(Icons.library_music), findsOneWidget);
+      expect(find.byIcon(Icons.check), findsOneWidget);
+      expect(find.text('music'), findsOneWidget);
+      // Wide enough that short library names don't wrap mid-word.
+      expect(tester.getSize(find.byType(MenuItemButton).first).width,
+          greaterThanOrEqualTo(220));
+
+      // Switching selects the other library: it becomes the title and is
+      // persisted per server.
+      await tester.tap(find.text('music'));
+      await _pump(tester);
+      expect(find.descendant(of: appBar, matching: find.text('music')),
+          findsOneWidget);
+      expect(find.descendant(of: appBar, matching: find.text('movies')),
+          findsNothing);
+      expect(
+          await SharedPreferencesAsync()
+              .getString('selected_library_id_$_server'),
+          'music-lib-1');
     });
   });
 }

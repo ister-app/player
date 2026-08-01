@@ -17,6 +17,7 @@ import '../components/PodcastScroll.dart';
 import '../components/MovieScroll.dart';
 import '../components/TvShowScroll.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/LibraryIcons.dart';
 import '../utils/LibrarySelectionNotifier.dart';
 import '../utils/LoggerService.dart';
 import 'package:player/utils/PermissionsService.dart';
@@ -327,7 +328,8 @@ class _ShowHomePageState extends State<ShowHomePage> {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(AppLocalizations.of(context)!.library),
+            title: _libraryTitle(context, libraries),
+            titleSpacing: 8,
             actions: [
               IconButton(
                 icon: const Icon(Icons.search),
@@ -359,28 +361,6 @@ class _ShowHomePageState extends State<ShowHomePage> {
                     );
                   },
                 ),
-              if (libraries.isNotEmpty)
-                MenuAnchor(
-                  menuChildren: libraries.map((lib) => MenuItemButton(
-                    onPressed: () => _selectLibrary(lib),
-                    child: Text(lib.name),
-                  )).toList(),
-                  builder: (context, controller, child) {
-                    final selectedName = _selectedLibraryId == null
-                        ? ''
-                        : libraries.firstWhere((l) => l.id == _selectedLibraryId, orElse: () => libraries.first).name;
-                    return TextButton(
-                      onPressed: () => controller.isOpen ? controller.close() : controller.open(),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(selectedName),
-                          const Icon(Icons.arrow_drop_down),
-                        ],
-                      ),
-                    );
-                  },
-                ),
               IconButton(
                 icon: const Icon(Icons.refresh),
                 onPressed: triggerRefresh,
@@ -408,6 +388,62 @@ class _ShowHomePageState extends State<ShowHomePage> {
               ],
               body: _buildBody(),
             ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// The library switcher, doubling as the page title: the selected library's
+  /// name in title typography with a dropdown menu of all libraries. Falls
+  /// back to the static "Library" title while the list is still loading. A
+  /// TextButton so it's D-pad focusable on its own.
+  Widget _libraryTitle(
+      BuildContext context, List<Query$libraries$libraries> libraries) {
+    if (libraries.isEmpty || _selectedLibraryId == null) {
+      return Text(AppLocalizations.of(context)!.library);
+    }
+    final selected = libraries.firstWhere((l) => l.id == _selectedLibraryId,
+        orElse: () => libraries.first);
+    final colors = Theme.of(context).colorScheme;
+    return MenuAnchor(
+      menuChildren: libraries.map((lib) {
+        final isSelected = lib.id == selected.id;
+        return MenuItemButton(
+          onPressed: () => _selectLibrary(lib),
+          // A minimum width keeps short names from wrapping: the menu sizes
+          // to the items' intrinsic width, and the ListTile squeezes its
+          // title between the leading icon and the check otherwise.
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 220),
+            child: ListTile(
+              leading: Icon(libraryTypeIcon(lib.type)),
+              title: Text(lib.name),
+              trailing: isSelected ? const Icon(Icons.check) : null,
+            ),
+          ),
+        );
+      }).toList(),
+      builder: (context, controller, child) {
+        return TextButton(
+          style: TextButton.styleFrom(
+            foregroundColor: colors.onSurface,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+          ),
+          onPressed: () =>
+              controller.isOpen ? controller.close() : controller.open(),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  selected.name,
+                  style: Theme.of(context).textTheme.titleLarge,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const Icon(Icons.arrow_drop_down),
+            ],
           ),
         );
       },

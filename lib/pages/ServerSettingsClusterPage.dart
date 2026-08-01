@@ -8,12 +8,12 @@ import 'package:player/graphql/getServerInfo.graphql.dart';
 import 'package:player/graphql/libraries.graphql.dart';
 import 'package:player/graphql/reindexSearch.graphql.dart';
 import 'package:player/graphql/scanLibrary.graphql.dart';
-import 'package:player/graphql/schema.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../l10n/app_localizations.dart';
 import '../components/AdminGate.dart';
 import '../utils/ClientManager.dart';
+import '../utils/LibraryIcons.dart';
 import '../utils/LoggerService.dart';
 
 @RoutePage()
@@ -65,17 +65,6 @@ class ServerSettingsClusterPage extends StatelessWidget {
     );
   }
 
-  IconData _libraryIcon(Enum$LibraryType type) {
-    switch (type) {
-      case Enum$LibraryType.SHOW:
-        return Icons.tv;
-      case Enum$LibraryType.MUSIC:
-        return Icons.library_music;
-      default:
-        return Icons.movie;
-    }
-  }
-
   Future<void> _showAnalyzeOptions(BuildContext context) async {
     final loc = AppLocalizations.of(context)!;
     final client = GraphQLProvider.of(context).value;
@@ -115,7 +104,8 @@ class ServerSettingsClusterPage extends StatelessWidget {
                 if (libraries.isNotEmpty) const Divider(height: 1),
                 for (final library in libraries)
                   ListTile(
-                    leading: Icon(_libraryIcon(library.type), color: mutedColor),
+                    leading:
+                        Icon(libraryTypeIcon(library.type), color: mutedColor),
                     title: Text(library.name),
                     onTap: () {
                       Navigator.pop(sheetContext);
