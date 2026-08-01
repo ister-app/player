@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:player/components/SleepTimerSheet.dart';
 import 'package:player/components/TvFocusable.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
+import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/AccentColorUtil.dart';
 import 'package:player/utils/SleepTimerService.dart';
 import 'package:player/utils/DurationUtil.dart';
@@ -60,6 +62,15 @@ abstract class PlayerViewController extends ChangeNotifier {
   String? get artistLine;
   String? get titleLine;
   String? get albumLine;
+
+  /// Where tapping the artist line navigates (the artist/author page on the
+  /// playing item's server), or null when the hosting surface has no such
+  /// page — e.g. the remote controller, or a podcast whose author is plain
+  /// text. The view dismisses itself before following the route.
+  ({String serverName, PageRouteInfo route})? get artistRoute => null;
+
+  /// Same for the album line: the album/book/podcast page of the playing item.
+  ({String serverName, PageRouteInfo route})? get albumRoute => null;
 
   int get positionMs;
   int? get durationMs;
@@ -201,6 +212,20 @@ class _PlayerViewState extends State<PlayerView>
     _scrollController.dispose();
     _accent.dispose();
     super.dispose();
+  }
+
+  /// Follows an artist/album line tap: dismiss the overlay first — navigating
+  /// while it's still up would pop it without its animation to bring the
+  /// server shell to the top, and the dismiss pop would then remove the shell
+  /// itself. The root router outlives this state, so navigation happens after
+  /// the pop. `navigate` (not push) so re-tapping the page already underneath
+  /// doesn't stack a duplicate.
+  Future<void> _openMetaRoute(
+      ({String serverName, PageRouteInfo route}) target) async {
+    final root = AutoRouter.of(context).root;
+    await dismiss();
+    root.navigate(ServerHomeRoute(
+        serverName: target.serverName, children: [target.route]));
   }
 
   Future<void> dismiss() async {
@@ -608,7 +633,7 @@ class _PlayerViewState extends State<PlayerView>
                 const Spacer(),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 4),
-                  child: _Controls(controller: widget.controller, accent: _accent, loading: loading),
+                  child: _Controls(controller: widget.controller, accent: _accent, loading: loading, onNavigate: _openMetaRoute),
                 ),
                 IconButton(
                   icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white54, size: 28),
@@ -687,7 +712,7 @@ class _PlayerViewState extends State<PlayerView>
                             child: Padding(
                               padding:
                                   const EdgeInsets.fromLTRB(32, 16, 32, 4),
-                              child: _Controls(controller: widget.controller, accent: _accent, loading: loading),
+                              child: _Controls(controller: widget.controller, accent: _accent, loading: loading, onNavigate: _openMetaRoute),
                             ),
                           ),
                         ),
@@ -886,11 +911,37 @@ class _QueueItemState extends State<_QueueItem> {
 }
 
 class _Controls extends StatelessWidget {
-  const _Controls({required this.controller, required this.accent, this.loading = false});
+  const _Controls({
+    required this.controller,
+    required this.accent,
+    this.loading = false,
+    this.onNavigate,
+  });
 
   final PlayerViewController controller;
   final ValueListenable<Color> accent;
   final bool loading;
+
+  /// Invoked with the controller's artist/album route when that line is
+  /// tapped; the hosting view navigates and dismisses itself.
+  final void Function(({String serverName, PageRouteInfo route}) target)?
+      onNavigate;
+
+  /// Wraps a metadata line so a tap (or TV select) follows [target]. Lines
+  /// without a target render unchanged — no dead tap affordance.
+  Widget _tappableLine(Widget text,
+      ({String serverName, PageRouteInfo route})? target) {
+    if (target == null || onNavigate == null) return text;
+    return TvFocusable(
+      onTap: () => onNavigate!(target),
+      borderRadius: BorderRadius.circular(4),
+      child: GestureDetector(
+        onTap: () => onNavigate!(target),
+        behavior: HitTestBehavior.opaque,
+        child: text,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -899,6 +950,10 @@ class _Controls extends StatelessWidget {
     final artist = loading ? 'Artist name' : controller.artistLine;
     final title = loading ? 'Loading track title' : controller.titleLine;
     final album = loading ? 'Album name here' : controller.albumLine;
+    // Navigation targets resolve against the *current* item; while loading
+    // they'd still point at the previous one, so suppress them.
+    final artistRoute = loading ? null : controller.artistRoute;
+    final albumRoute = loading ? null : controller.albumRoute;
     final enabled = controller.enabled;
     final hasPrevious = controller.hasPrevious && enabled;
     final hasNext = controller.hasNext && enabled;
@@ -918,12 +973,15 @@ class _Controls extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (artist != null)
-                Text(
-                  artist,
-                  style: const TextStyle(color: Colors.white70, fontSize: 14),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                _tappableLine(
+                  Text(
+                    artist,
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  artistRoute,
                 ),
               const SizedBox(height: 4),
               Text(
@@ -935,12 +993,15 @@ class _Controls extends StatelessWidget {
               ),
               if (album != null) ...[
                 const SizedBox(height: 4),
-                Text(
-                  album,
-                  style: const TextStyle(color: Colors.white60, fontSize: 13),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                _tappableLine(
+                  Text(
+                    album,
+                    style: const TextStyle(color: Colors.white60, fontSize: 13),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  albumRoute,
                 ),
               ],
             ],

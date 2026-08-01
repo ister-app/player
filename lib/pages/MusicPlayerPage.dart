@@ -144,6 +144,42 @@ class _LocalPlayerController extends PlayerViewController {
 
   MediaItem? get _item => _handler.mediaItem.valueOrNull;
 
+  /// Resolve targets from the current play-queue item (mixed queues like a
+  /// library shuffle can span albums), falling back to the handler's source
+  /// album. The playing server can differ from the browsed one, so the route
+  /// is paired with the handler's server.
+  @override
+  ({String serverName, PageRouteInfo route})? get artistRoute {
+    final srv = _handler.serverName;
+    if (srv == null) return null;
+    final item = _handler.currentPlayQueueItem;
+    final personId = item?.track?.artist.id ??
+        item?.chapter?.author.id ??
+        _handler.album?.artist.id;
+    if (personId == null) return null;
+    return (serverName: srv, route: PersonRoute(personId: personId));
+  }
+
+  @override
+  ({String serverName, PageRouteInfo route})? get albumRoute {
+    final srv = _handler.serverName;
+    if (srv == null) return null;
+    final item = _handler.currentPlayQueueItem;
+    final albumId = item?.track?.album.id ?? _handler.album?.id;
+    if (albumId != null) {
+      return (serverName: srv, route: AlbumRoute(albumId: albumId));
+    }
+    final bookId = item?.chapter?.book.id;
+    if (bookId != null) {
+      return (serverName: srv, route: BookRoute(bookId: bookId));
+    }
+    final podcastId = item?.podcastEpisode?.podcast.id;
+    if (podcastId != null) {
+      return (serverName: srv, route: PodcastRoute(podcastId: podcastId));
+    }
+    return null;
+  }
+
   @override
   String? get artUri => _item?.artUri?.toString();
 
