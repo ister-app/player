@@ -37,8 +37,12 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
       // Cold URL open of /player: nothing is playing, so an empty transparent
       // overlay over nothing would render. Send the visitor to their last
       // server (or the server list) instead, mirroring the root deepLinkBuilder.
+      // A fresh in-app play (openMusicPlayerRequest) also lands here before the
+      // queue round-trip fills mediaItem — mediaLoading distinguishes it from a
+      // genuinely idle cold open.
       final handler = MediaPlayerHandler.instance;
-      if (handler.mediaItem.valueOrNull == null &&
+      if (!handler.mediaLoading.value &&
+          handler.mediaItem.valueOrNull == null &&
           handler.queue.value.isEmpty) {
         final lastServer = ClientManager.instance.lastClientUsed;
         context.router.replaceAll([
