@@ -11,6 +11,7 @@ import '../components/MiniPlayer.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/LoggerService.dart';
 import '../utils/LoginManager.dart';
+import '../utils/MediaPlayerHandler.dart';
 import '../utils/PlatformService.dart';
 import '../utils/ReaderFullscreen.dart';
 import '../utils/StreamTokenService.dart';
@@ -71,6 +72,7 @@ class _ServerHomePageState extends State<ServerHomePage> {
   late Future<WellKnownInfo?> _wellKnownFuture;
   Future<void>? _initFuture;
   Future<String?>? _tokenFuture;
+  Future<void>? _restoreFuture;
   OidcDeviceAuthorizationResponse? _deviceAuthResponse;
 
   // TV D-pad navigation between the left rail, the content, and the mini
@@ -352,6 +354,11 @@ class _ServerHomePageState extends State<ServerHomePage> {
                                 child: CircularProgressIndicator()),
                           );
                         }
+                        // Authenticated and stream token in hand: reload the
+                        // last music queue paused into the mini player.
+                        // Fire-and-forget — the shell must not wait for it.
+                        _restoreFuture ??= MediaPlayerHandler.instance
+                            .restoreLastMusicQueue(widget.serverName);
                         return _buildShell(context);
                       },
                     );

@@ -1,6 +1,7 @@
 fragment fragmentPlayQueue on PlayQueue {
     id
     currentItemId
+    progressInMilliseconds
     shuffle
     sourceType
     sourceExhausted

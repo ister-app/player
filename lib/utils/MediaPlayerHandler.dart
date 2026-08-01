@@ -13,6 +13,7 @@ import 'package:flutter/foundation.dart';
 import 'package:player/utils/AutoPreferences.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/LanguagePreferences.dart';
+import 'package:player/utils/LastMusicQueuePreferences.dart';
 import 'package:player/utils/LanguageService.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/PlaybackPreferences.dart';
@@ -289,6 +290,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       await _resumeCurrentItem();
     }
     updatePlaybackState();
+    _rememberLastMusicQueue();
   }
 
   /// Starting the item that is already loaded should resume it — and restart
@@ -402,6 +404,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       await _resumeCurrentItem();
     }
     updatePlaybackState();
+    _rememberLastMusicQueue();
   }
 
   Future<void> startPlayQueueForAlbum(
@@ -509,6 +512,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
     updatePlaybackState();
     _rememberLastPlayed(newServerName, newAlbum.id, trackId);
+    _rememberLastMusicQueue();
   }
 
   /// Keeps the Android Auto "recent" tile and its persisted backup in sync
@@ -518,6 +522,24 @@ class MediaPlayerHandler extends BaseAudioHandler
     final nowPlaying = mediaItem.valueOrNull;
     if (nowPlaying != null) {
       _recentSubject.add([nowPlaying]);
+    }
+  }
+
+  /// Keeps the "last music queue" restore state in sync with what just opened:
+  /// saved while a real track plays, cleared for everything else (audiobook
+  /// chapters and podcast episodes also open as [IsterMediaTypes.track], but
+  /// only real tracks set [currentTrackId]), so a fresh app start only ever
+  /// restores a queue whose last-played item was music.
+  void _rememberLastMusicQueue() {
+    final srv = serverName;
+    final queueId = playQueue?.id;
+    if (_currentMediaType == IsterMediaTypes.track &&
+        currentTrackId != null &&
+        srv != null &&
+        queueId != null) {
+      unawaited(LastMusicQueuePreferences.save(srv, queueId));
+    } else {
+      unawaited(LastMusicQueuePreferences.clear());
     }
   }
 
@@ -632,6 +654,78 @@ class MediaPlayerHandler extends BaseAudioHandler
     updatePlaybackState();
   }
 
+  /// Re-loads the play queue that last played music — paused, at the server's
+  /// recorded item and position — so a fresh app start gets its music back in
+  /// the mini player. A no-op unless [srv] is the server the queue belongs to
+  /// (see [LastMusicQueuePreferences]) and nothing is loaded yet, so a live
+  /// session (e.g. Android's audio service surviving the UI process) is never
+  /// clobbered. Deliberately does not set [_intendsToPlay], start the
+  /// heartbeat or open the music player: the restored state is silent until
+  /// the user hits play, which takes the normal [play] path.
+  Future<void> restoreLastMusicQueue(String srv) async {
+    if (playQueue != null) return;
+    final last = await LastMusicQueuePreferences.get();
+    if (last == null || last.serverName != srv) return;
+
+    final client = ClientManager.getClientForUrl(srv).value;
+    // Null covers both "queue deleted" and a transient failure; keep the
+    // preference so a later start can still restore after a network hiccup.
+    final pq = await _playQueueService.getPlayQueue(client, last.playQueueId);
+    if (pq == null) return;
+    // Something started playing during the fetch — its state wins.
+    if (playQueue != null) return;
+
+    final current = PlayQueueService.getCurrentPlayQueueItem(pq) ??
+        PlayQueueService.sortedItems(pq).firstOrNull;
+    final track = current?.track;
+    final mf = track?.mediaFile?.firstOrNull;
+    if (current == null || track == null || mf == null) {
+      // The queue moved on to non-music (or lost its media): forget it.
+      await LastMusicQueuePreferences.clear();
+      return;
+    }
+
+    serverName = srv;
+    graphQLClient = client;
+    _syncGeneration++;
+    playQueue =
+        pq.currentItemId == null ? pq.copyWith(currentItemId: current.id) : pq;
+    currentPlayQueueItem = current;
+    currentTrackId = track.id;
+    episode = null;
+    movie = null;
+    album = null;
+    _currentMediaType = IsterMediaTypes.track;
+    // No command subscription yet: a restored queue has no live server session
+    // to remote-control. play() arms it along with the heartbeat.
+
+    queueTitle.add("Now Playing");
+    queue.add(_buildQueueItems(playQueue!, srv));
+
+    // A track that already played to (almost) the end restarts at zero, like
+    // the long-form resume rule.
+    final duration = mf.durationInMilliseconds;
+    var startMs = pq.progressInMilliseconds;
+    if (duration != null && startMs >= duration - 5000) startMs = 0;
+
+    final directPlay =
+        kIsWeb ? false : await PlaybackPreferences.getDirectPlay(serverName: srv);
+    final transcode =
+        kIsWeb ? true : await PlaybackPreferences.getTranscode(serverName: srv);
+    await _openMedia(
+      serverName: srv,
+      mediaUrl: ImageUtil.buildMediaFileUrl(mf,
+              token: StreamTokenService.getToken(srv),
+              direct: directPlay,
+              transcode: transcode) ??
+          '',
+      startTimeInMilliseconds: startMs,
+      mediaType: IsterMediaTypes.track,
+      autoPlay: false,
+    );
+    updatePlaybackState();
+  }
+
   /// Opens the media for [item], flipping the typed handler state (episode /
   /// movie / track) to match. Mirrors the per-type open in [skipToQueueItem].
   Future<void> _openQueueItem(
@@ -723,6 +817,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         mediaType: IsterMediaTypes.episode,
       );
     }
+    _rememberLastMusicQueue();
   }
 
   Future<void> _openMedia({
@@ -730,6 +825,9 @@ class MediaPlayerHandler extends BaseAudioHandler
     required String mediaUrl,
     int? startTimeInMilliseconds,
     IsterMediaTypes mediaType = IsterMediaTypes.episode,
+    // False only for the paused restore of the last music queue: the media is
+    // loaded and published but playback waits for an explicit play().
+    bool autoPlay = true,
   }) async {
     _currentMediaUrl = mediaUrl;
     _streamOpenPositionMs = startTimeInMilliseconds ?? 0;
@@ -747,17 +845,22 @@ class MediaPlayerHandler extends BaseAudioHandler
     try {
       _audioPreferenceApplied = false;
       _subtitlePreferenceApplied = false;
-      // Silence the currently-playing stream right away so it doesn't keep
-      // playing while the new (HLS) stream loads — otherwise there's audible
-      // overlap until _player.open() finishes buffering the next item.
-      await _player.stop();
-      await _player.open(media);
-      // setVideoTrack throws UnsupportedError on web (media_kit); skipping it
-      // there would otherwise abort _openMedia before mediaItem is published,
-      // which is what the mini player gates its visibility on.
-      if (!kIsWeb) {
-        await _player.setVideoTrack(
-            mediaType == IsterMediaTypes.track ? VideoTrack.no() : VideoTrack.auto());
+      // Under flutter test (mock GraphQL clients) there is no real mpv event
+      // loop, so the player calls below would never complete; skip them and
+      // still publish the mediaItem/queue state the tests assert on.
+      if (!ClientManager.usesTestClients) {
+        // Silence the currently-playing stream right away so it doesn't keep
+        // playing while the new (HLS) stream loads — otherwise there's audible
+        // overlap until _player.open() finishes buffering the next item.
+        await _player.stop();
+        await _player.open(media, play: autoPlay);
+        // setVideoTrack throws UnsupportedError on web (media_kit); skipping it
+        // there would otherwise abort _openMedia before mediaItem is published,
+        // which is what the mini player gates its visibility on.
+        if (!kIsWeb) {
+          await _player.setVideoTrack(
+              mediaType == IsterMediaTypes.track ? VideoTrack.no() : VideoTrack.auto());
+        }
       }
       final currentItemId = playQueue?.currentItemId;
       final found = currentItemId != null
@@ -843,8 +946,12 @@ class MediaPlayerHandler extends BaseAudioHandler
   Future<void> play() {
     _intendsToPlay = true;
     unawaited(_ensureFreshArtToken());
-    // Resuming after stop() must restart the heartbeat the stop cancelled.
-    if (playQueue != null) _startHeartbeat();
+    // Resuming after stop() (or a paused restore) must restart the heartbeat
+    // and the remote-command subscription those paths left down.
+    if (playQueue != null) {
+      _startHeartbeat();
+      _ensureCommandSubscription();
+    }
     final result = _player.play();
     // Tell the server we resumed right away. playState is passed explicitly
     // because _player.state.playing hasn't flipped to true yet at this point.
@@ -1232,6 +1339,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       if (track != null) {
         _rememberLastPlayed(mediaItemId.serverName, track.album.id, track.id);
       }
+      _rememberLastMusicQueue();
 
       // Sync the new current item to the server. The local state above is
       // already final; the response only refreshes progress data, and is

@@ -12,6 +12,7 @@ class Fragment$fragmentPlayQueue {
   Fragment$fragmentPlayQueue({
     required this.id,
     this.currentItemId,
+    required this.progressInMilliseconds,
     required this.shuffle,
     this.sourceType,
     required this.sourceExhausted,
@@ -24,6 +25,7 @@ class Fragment$fragmentPlayQueue {
   factory Fragment$fragmentPlayQueue.fromJson(Map<String, dynamic> json) {
     final l$id = json['id'];
     final l$currentItemId = json['currentItemId'];
+    final l$progressInMilliseconds = json['progressInMilliseconds'];
     final l$shuffle = json['shuffle'];
     final l$sourceType = json['sourceType'];
     final l$sourceExhausted = json['sourceExhausted'];
@@ -34,6 +36,7 @@ class Fragment$fragmentPlayQueue {
     return Fragment$fragmentPlayQueue(
       id: (l$id as String),
       currentItemId: (l$currentItemId as String?),
+      progressInMilliseconds: (l$progressInMilliseconds as int),
       shuffle: (l$shuffle as bool),
       sourceType: l$sourceType == null
           ? null
@@ -62,6 +65,8 @@ class Fragment$fragmentPlayQueue {
 
   final String? currentItemId;
 
+  final int progressInMilliseconds;
+
   final bool shuffle;
 
   final Enum$PlayQueueSourceType? sourceType;
@@ -82,6 +87,8 @@ class Fragment$fragmentPlayQueue {
     _resultData['id'] = l$id;
     final l$currentItemId = currentItemId;
     _resultData['currentItemId'] = l$currentItemId;
+    final l$progressInMilliseconds = progressInMilliseconds;
+    _resultData['progressInMilliseconds'] = l$progressInMilliseconds;
     final l$shuffle = shuffle;
     _resultData['shuffle'] = l$shuffle;
     final l$sourceType = sourceType;
@@ -111,6 +118,7 @@ class Fragment$fragmentPlayQueue {
   int get hashCode {
     final l$id = id;
     final l$currentItemId = currentItemId;
+    final l$progressInMilliseconds = progressInMilliseconds;
     final l$shuffle = shuffle;
     final l$sourceType = sourceType;
     final l$sourceExhausted = sourceExhausted;
@@ -121,6 +129,7 @@ class Fragment$fragmentPlayQueue {
     return Object.hashAll([
       l$id,
       l$currentItemId,
+      l$progressInMilliseconds,
       l$shuffle,
       l$sourceType,
       l$sourceExhausted,
@@ -150,6 +159,11 @@ class Fragment$fragmentPlayQueue {
     final l$currentItemId = currentItemId;
     final lOther$currentItemId = other.currentItemId;
     if (l$currentItemId != lOther$currentItemId) {
+      return false;
+    }
+    final l$progressInMilliseconds = progressInMilliseconds;
+    final lOther$progressInMilliseconds = other.progressInMilliseconds;
+    if (l$progressInMilliseconds != lOther$progressInMilliseconds) {
       return false;
     }
     final l$shuffle = shuffle;
@@ -228,6 +242,7 @@ abstract class CopyWith$Fragment$fragmentPlayQueue<TRes> {
   TRes call({
     String? id,
     String? currentItemId,
+    int? progressInMilliseconds,
     bool? shuffle,
     Enum$PlayQueueSourceType? sourceType,
     bool? sourceExhausted,
@@ -261,6 +276,7 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue<TRes>
   TRes call({
     Object? id = _undefined,
     Object? currentItemId = _undefined,
+    Object? progressInMilliseconds = _undefined,
     Object? shuffle = _undefined,
     Object? sourceType = _undefined,
     Object? sourceExhausted = _undefined,
@@ -274,6 +290,10 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue<TRes>
       currentItemId: currentItemId == _undefined
           ? _instance.currentItemId
           : (currentItemId as String?),
+      progressInMilliseconds:
+          progressInMilliseconds == _undefined || progressInMilliseconds == null
+          ? _instance.progressInMilliseconds
+          : (progressInMilliseconds as int),
       shuffle: shuffle == _undefined || shuffle == null
           ? _instance.shuffle
           : (shuffle as bool),
@@ -327,6 +347,7 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue<TRes>
   call({
     String? id,
     String? currentItemId,
+    int? progressInMilliseconds,
     bool? shuffle,
     Enum$PlayQueueSourceType? sourceType,
     bool? sourceExhausted,
@@ -356,6 +377,13 @@ const fragmentDefinitionfragmentPlayQueue = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'currentItemId'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'progressInMilliseconds'),
         alias: null,
         arguments: [],
         directives: [],

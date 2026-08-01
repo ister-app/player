@@ -14,6 +14,7 @@ void main() {
       Fragment$fragmentPlayQueue(
         id: id,
         currentItemId: currentItemId,
+        progressInMilliseconds: 0,
         shuffle: false,
         sourceExhausted: true,
         controlAllowedUserIds: const [],
