@@ -8,6 +8,8 @@ import 'package:player/dto/IsterMediaItem.dart';
 import 'package:player/dto/IsterMediaService.dart';
 import 'package:player/dto/MediaItemId.dart';
 import 'package:player/utils/ClientManager.dart';
+import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 const _server = 'test-server';
 const _libraryId = 'lib-1';
@@ -235,6 +237,22 @@ void _installClient(MockClient client) {
 String? _groupOf(IsterMediaItem item) =>
     item.extras?[IsterMediaService.contentStyleGroupTitleHint] as String?;
 
+int? _singleItemOf(IsterMediaItem item) =>
+    item.extras?[IsterMediaService.contentStyleSingleItemHint] as int?;
+
+/// Asserts a clickable section-header row: full-width list row whose children
+/// render as a grid of covers.
+void _expectHeader(IsterMediaItem item, {required String id, String? title}) {
+  expect(item.id, id);
+  expect(item.isterMediaType, IsterMediaTypes.list);
+  expect(item.playable, isFalse);
+  if (title != null) expect(item.title, title);
+  expect(_groupOf(item), isNull);
+  expect(_singleItemOf(item), IsterMediaService.contentStyleList);
+  expect(item.extras?[IsterMediaService.contentStyleBrowsableHint],
+      IsterMediaService.contentStyleGrid);
+}
+
 void main() {
   setUp(() {
     ClientManager.clients.clear();
@@ -293,24 +311,30 @@ void main() {
   });
 
   group('IsterMediaService discover tree', () {
-    test('the music library categories are Albums and Artists, no Discover',
-        () async {
-      final categories =
-          await IsterMediaService().getLibraryCategories(_server, _libraryId);
-      expect(categories.map((category) => category.id),
-          ['albums:$_libraryId', 'artists:$_libraryId']);
-      // Albums opens the mixed grouped list, so no grid hint; the artists
-      // node is still a wall of covers.
-      expect(
-          categories[0].extras?[IsterMediaService.contentStyleBrowsableHint],
-          isNull);
-      expect(
-          categories[1].extras?[IsterMediaService.contentStyleBrowsableHint],
-          IsterMediaService.contentStyleGrid);
+    test('a music library opens directly into the albums view, '
+        'no Albums/Artists picker', () async {
+      SharedPreferencesAsyncPlatform.instance =
+          InMemorySharedPreferencesAsync.empty();
+      _installClient(_fakeGraphQL(
+        discover: _discoverAlbums(
+          recentlyPlayed: [_album('played-1', 'Played Album')],
+        ),
+        recentlyAddedAlbums: () => [_album('new-1', 'New Album')],
+      ));
+
+      final items = await IsterMediaService().getList(
+          MediaItemId(_server, IsterMediaTypes.list, 'library:$_libraryId'));
+
+      // Same shape as the albums tab: sections closed by the All albums row,
+      // no category folders in between.
+      expect(items, hasLength(5));
+      expect(items.last.id, 'all-albums:$_libraryId');
+      expect(items.any((item) => item.id.startsWith('artists:')), isFalse);
+      expect(items.any((item) => item.id.startsWith('albums:')), isFalse);
     });
 
     test('the albums tab shows the discover groups closed by an '
-        'All albums folder', () async {
+        'All albums header row', () async {
       _installClient(_fakeGraphQL(
         discover: _discoverAlbums(
           recentlyPlayed: [_album('played-1', 'Played Album')],
@@ -321,20 +345,32 @@ void main() {
       final items = await IsterMediaService().getList(
           MediaItemId(_server, IsterMediaTypes.list, 'albums:$_libraryId'));
 
-      // Recently-played group (item + show-all), recently-added group
-      // (item + show-all), then the All albums folder.
+      // Recently-played section (header + item), recently-added section
+      // (header + item), then the All albums header row.
       expect(items, hasLength(5));
-      expect(items.map(_groupOf), everyElement(isNotNull));
+      expect(items.map(_groupOf), everyElement(isNull));
       expect(
           items.any((item) => item.id.startsWith('discover:')), isFalse);
 
-      final allAlbums = items.last;
-      expect(allAlbums.id, 'all-albums:$_libraryId');
-      expect(allAlbums.isterMediaType, IsterMediaTypes.list);
-      expect(allAlbums.playable, isFalse);
-      expect(allAlbums.extras?[IsterMediaService.contentStyleBrowsableHint],
-          IsterMediaService.contentStyleGrid);
-      expect(_groupOf(allAlbums), allAlbums.title);
+      _expectHeader(items[0],
+          id: RankedNodeId(
+                  DiscoverKind.albums, _libraryId, DiscoverRank.recentlyPlayed)
+              .id,
+          title: IsterMediaService.loc.recentlyPlayed);
+      expect(items[1].id, 'played-1');
+      expect(_singleItemOf(items[1]), IsterMediaService.contentStyleGrid);
+
+      _expectHeader(items[2],
+          id: RankedNodeId(
+                  DiscoverKind.albums, _libraryId, DiscoverRank.recentlyAdded)
+              .id,
+          title: IsterMediaService.loc.recentlyAdded);
+      expect(items[3].id, 'new-1');
+      expect(_singleItemOf(items[3]), IsterMediaService.contentStyleGrid);
+
+      _expectHeader(items[4],
+          id: 'all-albums:$_libraryId',
+          title: IsterMediaService.loc.allAlbums);
     });
 
     test('an old server degrades the albums tab to recently added plus '
@@ -348,12 +384,12 @@ void main() {
           MediaItemId(_server, IsterMediaTypes.list, 'albums:$_libraryId'));
 
       expect(items, hasLength(3));
-      expect(items[0].id, 'new-1');
       expect(
-          items[1].id,
+          items[0].id,
           RankedNodeId(
                   DiscoverKind.albums, _libraryId, DiscoverRank.recentlyAdded)
               .id);
+      expect(items[1].id, 'new-1');
       expect(items[2].id, 'all-albums:$_libraryId');
     });
 
@@ -389,22 +425,29 @@ void main() {
       final items = await IsterMediaService().getList(
           MediaItemId(_server, IsterMediaTypes.list, 'books:$_libraryId'));
 
-      // Recently-read group, recently-added group (each item + show-all),
+      // Recently-read section, recently-added section (each header + item),
       // then every book of the library under one "All books" section.
       expect(items.map((item) => item.id), [
-        'read-1',
         RankedNodeId(DiscoverKind.books, _libraryId, DiscoverRank.recentlyPlayed)
             .id,
-        'new-1',
+        'read-1',
         RankedNodeId(DiscoverKind.books, _libraryId, DiscoverRank.recentlyAdded)
             .id,
+        'new-1',
         'book-1',
         'book-2',
       ]);
-      expect(items.map(_groupOf), everyElement(isNotNull));
+      _expectHeader(items[0],
+          id: items[0].id, title: IsterMediaService.loc.recentlyRead);
+      expect(_groupOf(items[1]), isNull);
+      expect(_singleItemOf(items[1]), IsterMediaService.contentStyleGrid);
 
+      // The inline full list has no node of its own to click into, so it
+      // keeps a plain text group title above its grid tiles.
       final tail = items.sublist(4);
-      expect(tail.map(_groupOf).toSet(), hasLength(1));
+      expect(tail.map(_groupOf).toSet(), {IsterMediaService.loc.allBooks});
+      expect(tail.map(_singleItemOf).toSet(),
+          {IsterMediaService.contentStyleGrid});
       expect(
           tail.every((book) =>
               book.playable && book.isterMediaType == IsterMediaTypes.book),
@@ -423,11 +466,13 @@ void main() {
 
       expect(items.single.id, 'pod-1');
       expect(items.single.isterMediaType, IsterMediaTypes.podcast);
-      expect(_groupOf(items.single), isNotNull);
+      expect(_groupOf(items.single), IsterMediaService.loc.allPodcasts);
+      expect(
+          _singleItemOf(items.single), IsterMediaService.contentStyleGrid);
     });
 
-    test('the discover screen groups items and closes each group with '
-        'a show-all folder', () async {
+    test('the discover screen opens each group with a clickable header row '
+        'above its grid tiles', () async {
       _installClient(_fakeGraphQL(
         discover: _discoverAlbums(
           recentlyPlayed: [_album('played-1', 'Played Album')],
@@ -439,39 +484,34 @@ void main() {
       final items = await IsterMediaService()
           .getDiscoverGroups(_server, DiscoverNodeId(DiscoverKind.albums, _libraryId));
 
-      // Three non-empty groups of one item + one show-all folder each; the
+      // Three non-empty sections of one header row + one item each; the
       // empty most-played group vanished entirely.
       expect(items, hasLength(6));
-      expect(items.map(_groupOf), everyElement(isNotNull));
-      expect(items.map(_groupOf).toSet(), hasLength(3));
+      expect(items.map(_groupOf), everyElement(isNull));
 
-      final played = items[0];
+      _expectHeader(items[0],
+          id: RankedNodeId(DiscoverKind.albums, _libraryId,
+                  DiscoverRank.recentlyPlayed)
+              .id,
+          title: IsterMediaService.loc.recentlyPlayed);
+      final played = items[1];
       expect(played.id, 'played-1');
       expect(played.isterMediaType, IsterMediaTypes.album);
-      expect(_groupOf(played), _groupOf(items[1]));
+      expect(_singleItemOf(played), IsterMediaService.contentStyleGrid);
 
-      final showAllPlayed = items[1];
-      expect(showAllPlayed.isterMediaType, IsterMediaTypes.list);
-      expect(
-          showAllPlayed.id,
-          RankedNodeId(DiscoverKind.albums, _libraryId,
-                  DiscoverRank.recentlyPlayed)
-              .id);
-
-      final showAllRated = items[3];
-      expect(
-          showAllRated.id,
-          RankedNodeId(
+      _expectHeader(items[2],
+          id: RankedNodeId(
                   DiscoverKind.albums, _libraryId, DiscoverRank.highestRated)
-              .id);
+              .id,
+          title: IsterMediaService.loc.highestRated);
+      expect(items[3].id, 'rated-1');
 
-      final newAlbum = items[4];
-      expect(newAlbum.id, 'new-1');
-      expect(
-          items[5].id,
-          RankedNodeId(
+      _expectHeader(items[4],
+          id: RankedNodeId(
                   DiscoverKind.albums, _libraryId, DiscoverRank.recentlyAdded)
-              .id);
+              .id,
+          title: IsterMediaService.loc.recentlyAdded);
+      expect(items[5].id, 'new-1');
     });
 
     test('an old server without the discover fields keeps the '
@@ -485,12 +525,12 @@ void main() {
           _server, DiscoverNodeId(DiscoverKind.albums, _libraryId));
 
       expect(items, hasLength(2));
-      expect(items[0].id, 'new-1');
       expect(
-          items[1].id,
+          items[0].id,
           RankedNodeId(
                   DiscoverKind.albums, _libraryId, DiscoverRank.recentlyAdded)
               .id);
+      expect(items[1].id, 'new-1');
     });
 
     test('a ranked show-all list pages the ranked query', () async {

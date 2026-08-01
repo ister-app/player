@@ -102,15 +102,34 @@ class IsterMediaService {
   static const String contentStyleBrowsableHint =
       'android.media.browse.CONTENT_STYLE_BROWSABLE_HINT';
   static const int contentStyleGrid = 2;
+  static const int contentStyleList = 1;
+
+  // androidx.media content-style hint: overrides the layout of one item, so a
+  // single browse node can mix full-width list rows and grid tiles.
+  static const String contentStyleSingleItemHint =
+      'android.media.browse.CONTENT_STYLE_SINGLE_ITEM_HINT';
 
   // androidx.media content-style hint: items sharing a group title render as
   // one titled section, so a single browse node shows several groups.
   static const String contentStyleGroupTitleHint =
       'android.media.browse.CONTENT_STYLE_GROUP_TITLE_HINT';
 
-  /// Items per group on a discover screen; the trailing "show all" folder
-  /// opens the full ranked list.
-  static const int discoverGroupSize = 8;
+  /// Cover-art tiles inside a mixed node: rendered as grid items next to each
+  /// other instead of full-width rows.
+  static const Map<String, dynamic> _gridTileExtras = {
+    contentStyleSingleItemHint: contentStyleGrid,
+  };
+
+  /// A clickable section-header row inside a mixed node; opening it shows its
+  /// full list as a grid of covers.
+  static const Map<String, dynamic> _headerExtras = {
+    contentStyleSingleItemHint: contentStyleList,
+    contentStyleBrowsableHint: contentStyleGrid,
+  };
+
+  /// Items per group on a discover screen; the leading header row opens the
+  /// full ranked list.
+  static const int discoverGroupSize = 6;
 
   /// Localizations without a BuildContext — the handler runs without UI.
   static AppLocalizations get loc {
@@ -154,7 +173,7 @@ class IsterMediaService {
       // music-centric root stays stable.
       await AutoPreferences.setDefaultLibrary(
           mediaItemId.serverName, libraryId);
-      return getLibraryCategories(mediaItemId.serverName, libraryId);
+      return getAlbumsTab(mediaItemId.serverName, libraryId);
     } else if (id.startsWith("albums:")) {
       return getAlbumsTab(
           mediaItemId.serverName, id.substring("albums:".length));
@@ -263,29 +282,8 @@ class IsterMediaService {
         .toList();
   }
 
-  /// The browse categories of one music library. Albums carries no grid hint:
-  /// its children are the grouped discover sections, not a wall of covers.
-  Future<List<IsterMediaItem>> getLibraryCategories(
-      String serverName, String libraryId) async {
-    return [
-      IsterMediaItem(
-        id: "albums:$libraryId",
-        serverName: serverName,
-        isterMediaType: IsterMediaTypes.list,
-        title: loc.albums,
-      ),
-      IsterMediaItem(
-        id: "artists:$libraryId",
-        serverName: serverName,
-        isterMediaType: IsterMediaTypes.list,
-        title: loc.artists,
-        extras: const {contentStyleBrowsableHint: contentStyleGrid},
-      ),
-    ];
-  }
-
   /// The albums tab of a music library: the discover groups, closed by an
-  /// "All albums" folder into the full alphabetical list.
+  /// "All albums" header row into the full alphabetical cover grid.
   Future<List<IsterMediaItem>> getAlbumsTab(
       String serverName, String libraryId) async {
     return [
@@ -296,10 +294,7 @@ class IsterMediaService {
         serverName: serverName,
         isterMediaType: IsterMediaTypes.list,
         title: loc.allAlbums,
-        extras: {
-          ..._groupExtras(loc.allAlbums),
-          contentStyleBrowsableHint: contentStyleGrid,
-        },
+        extras: _headerExtras,
       ),
     ];
   }
@@ -536,14 +531,18 @@ class IsterMediaService {
     );
   }
 
-  static Map<String, dynamic> _groupExtras(String label) =>
-      {contentStyleGroupTitleHint: label};
+  /// A titled grid section for inline full lists that have no browse node of
+  /// their own (all books / all podcasts): a plain text header above tiles.
+  static Map<String, dynamic> _groupExtras(String label) => {
+        contentStyleGroupTitleHint: label,
+        ..._gridTileExtras,
+      };
 
-  /// The discover sections rendered inline in a library's browse node: titled
-  /// groups (via the group-title hint), each capped at [discoverGroupSize] and
-  /// closed by a "show all" folder into the full ranked list. The top lists
-  /// need a server with the `libraryById` discover fields; on an older server
-  /// only the recently-added group remains.
+  /// The discover sections rendered inline in a library's browse node: each a
+  /// clickable header row into the full ranked list, followed by up to
+  /// [discoverGroupSize] cover tiles rendered as a grid. The top lists need a
+  /// server with the `libraryById` discover fields; on an older server only
+  /// the recently-added group remains.
   Future<List<IsterMediaItem>> getDiscoverGroups(
       String serverName, DiscoverNodeId node) async {
     await StreamTokenService.ensureToken(serverName);
@@ -564,20 +563,18 @@ class IsterMediaService {
             serverName, documentNodeQuerydiscoverAlbums, node.libraryId);
         final library =
             data == null ? null : Query$discoverAlbums.fromJson(data).libraryById;
-        List<IsterMediaItem> albums(
-                List<Fragment$fragmentAlbum> list, String label) =>
-            list
-                .map((album) =>
-                    _albumItem(album, serverName, extras: _groupExtras(label)))
-                .toList();
+        List<IsterMediaItem> albums(List<Fragment$fragmentAlbum> list) => list
+            .map((album) =>
+                _albumItem(album, serverName, extras: _gridTileExtras))
+            .toList();
         if (library != null) {
           groups
             ..addAll(group(loc.recentlyPlayed, DiscoverRank.recentlyPlayed,
-                albums(library.recentlyPlayedAlbums, loc.recentlyPlayed)))
+                albums(library.recentlyPlayedAlbums)))
             ..addAll(group(loc.mostPlayed, DiscoverRank.mostPlayed,
-                albums(library.mostPlayedAlbums, loc.mostPlayed)))
+                albums(library.mostPlayedAlbums)))
             ..addAll(group(loc.highestRated, DiscoverRank.highestRated,
-                albums(library.highestRatedAlbums, loc.highestRated)));
+                albums(library.highestRatedAlbums)));
         }
         groups.addAll(group(
             loc.recentlyAdded,
@@ -587,26 +584,23 @@ class IsterMediaService {
                 sorting: Enum$SortingEnum.DATE_CREATED,
                 sortingOrder: Enum$SortingOrder.DESCENDING,
                 limit: discoverGroupSize,
-                extras: _groupExtras(loc.recentlyAdded))));
+                extras: _gridTileExtras)));
       case DiscoverKind.books:
         final data = await _discoverData(
             serverName, documentNodeQuerydiscoverBooks, node.libraryId);
         final library =
             data == null ? null : Query$discoverBooks.fromJson(data).libraryById;
-        List<IsterMediaItem> books(
-                List<Fragment$fragmentBook> list, String label) =>
-            list
-                .map((book) =>
-                    _bookItem(book, serverName, extras: _groupExtras(label)))
-                .toList();
+        List<IsterMediaItem> books(List<Fragment$fragmentBook> list) => list
+            .map((book) => _bookItem(book, serverName, extras: _gridTileExtras))
+            .toList();
         if (library != null) {
           groups
             // "Recently read" clicks through as RECENTLY_PLAYED, mirroring
             // LibraryDiscoverView's mapping for the same row.
             ..addAll(group(loc.recentlyRead, DiscoverRank.recentlyPlayed,
-                books(library.recentlyReadBooks, loc.recentlyRead)))
+                books(library.recentlyReadBooks)))
             ..addAll(group(loc.highestRated, DiscoverRank.highestRated,
-                books(library.highestRatedBooks, loc.highestRated)));
+                books(library.highestRatedBooks)));
         }
         groups.addAll(group(
             loc.recentlyAdded,
@@ -615,27 +609,26 @@ class IsterMediaService {
                 sorting: Enum$SortingEnum.DATE_CREATED,
                 sortingOrder: Enum$SortingOrder.DESCENDING,
                 limit: discoverGroupSize,
-                extras: _groupExtras(loc.recentlyAdded))));
+                extras: _gridTileExtras)));
       case DiscoverKind.podcasts:
         final data = await _discoverData(
             serverName, documentNodeQuerydiscoverPodcasts, node.libraryId);
         final library = data == null
             ? null
             : Query$discoverPodcasts.fromJson(data).libraryById;
-        List<IsterMediaItem> podcasts(
-                List<Fragment$fragmentPodcast> list, String label) =>
+        List<IsterMediaItem> podcasts(List<Fragment$fragmentPodcast> list) =>
             list
-                .map((podcast) => _podcastItem(podcast, serverName,
-                    extras: _groupExtras(label)))
+                .map((podcast) =>
+                    _podcastItem(podcast, serverName, extras: _gridTileExtras))
                 .toList();
         if (library != null) {
           groups
             ..addAll(group(loc.recentlyPlayed, DiscoverRank.recentlyPlayed,
-                podcasts(library.recentlyPlayedPodcasts, loc.recentlyPlayed)))
+                podcasts(library.recentlyPlayedPodcasts)))
             ..addAll(group(loc.mostPlayed, DiscoverRank.mostPlayed,
-                podcasts(library.mostPlayedPodcasts, loc.mostPlayed)))
+                podcasts(library.mostPlayedPodcasts)))
             ..addAll(group(loc.highestRated, DiscoverRank.highestRated,
-                podcasts(library.highestRatedPodcasts, loc.highestRated)));
+                podcasts(library.highestRatedPodcasts)));
         }
         groups.addAll(group(
             loc.recentlyAdded,
@@ -644,13 +637,14 @@ class IsterMediaService {
                 sorting: Enum$SortingEnum.DATE_CREATED,
                 sortingOrder: Enum$SortingOrder.DESCENDING,
                 limit: discoverGroupSize,
-                extras: _groupExtras(loc.recentlyAdded))));
+                extras: _gridTileExtras)));
     }
     return groups;
   }
 
-  /// One titled section: its items (already tagged with the group-title
-  /// extra) plus a trailing "show all" folder. Empty groups vanish entirely.
+  /// One section: a leading clickable header row (titled after the section,
+  /// opening the full ranked list as a grid) followed by its cover tiles.
+  /// Empty groups vanish entirely.
   List<IsterMediaItem> _discoverGroup({
     required String serverName,
     required DiscoverNodeId node,
@@ -660,17 +654,14 @@ class IsterMediaService {
   }) {
     if (items.isEmpty) return const [];
     return [
-      ...items,
       IsterMediaItem(
         id: RankedNodeId(node.kind, node.libraryId, rank).id,
         serverName: serverName,
         isterMediaType: IsterMediaTypes.list,
-        title: loc.showAll,
-        extras: {
-          contentStyleGroupTitleHint: label,
-          contentStyleBrowsableHint: contentStyleGrid,
-        },
+        title: label,
+        extras: _headerExtras,
       ),
+      ...items,
     ];
   }
 
