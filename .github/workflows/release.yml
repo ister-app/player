@@ -39,6 +39,7 @@ jobs:
       prev: ${{ steps.check.outputs.prev }}
       version: ${{ steps.version.outputs.version }}
       build: ${{ steps.version.outputs.build }}
+      server_pin_resolved: ${{ steps.pins.outputs.server_pin_resolved }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -106,12 +107,38 @@ jobs:
 
           release_tag="${server_tag%-SNAPSHOT}"
           release_tag="${release_tag%-snapshot}"
+
+          # A -snapshot pin predicts the next server version as a patch bump, but a feat
+          # commit turns the actual release into a minor bump (2.4.1-snapshot → 2.5.0), so
+          # the predicted patch may never exist. Fall back to the closest newer release
+          # within the same major; a major bump is a breaking change and still fails loudly.
+          if ! docker manifest inspect "ghcr.io/ister-app/server:$release_tag" >/dev/null 2>&1; then
+            major="${release_tag%%.*}"
+            token=$(curl -fsS "https://ghcr.io/token?scope=repository:ister-app/server:pull" | jq -r .token)
+            candidate=$(curl -fsS -H "Authorization: Bearer $token" \
+                "https://ghcr.io/v2/ister-app/server/tags/list?n=1000" \
+              | jq -r '.tags[]' \
+              | grep -P "^${major}\.[0-9]+\.[0-9]+$" \
+              | sort -V \
+              | awk -v pin="$release_tag" 'BEGIN { split(pin, p, ".") }
+                  { split($0, v, "."); if (v[2]+0 > p[2]+0 || (v[2]+0 == p[2]+0 && v[3]+0 > p[3]+0)) { print; exit } }')
+            if [ -n "$candidate" ]; then
+              echo "::warning::pinned server version $release_tag was never released; falling back to $candidate"
+              release_tag="$candidate"
+            fi
+          fi
+
           for image in ghcr.io/ister-app/server ghcr.io/ister-app/migrations; do
             docker manifest inspect "$image:$release_tag" >/dev/null 2>&1 \
-              || { echo "::error::$image:$release_tag does not exist — the pinned server version ($server_tag) has no release. Release the server first, then bump the pins."; exit 1; }
+              || { echo "::error::$image:$release_tag does not exist — the pinned server version ($server_tag) has no release and no newer release in the same major exists. Release the server first, then bump the pins."; exit 1; }
           done
 
           echo "server_release_tag=$release_tag" >> "$GITHUB_OUTPUT"
+          # Only a non-empty pin gets rewritten in the release commit; an empty pin is
+          # chart-managed and must stay empty.
+          if [ -n "$SERVER_IMAGE_TAG" ]; then
+            echo "server_pin_resolved=$release_tag" >> "$GITHUB_OUTPUT"
+          fi
           echo "::notice::e2e pins OK: chart $CHART_REF, testdata $TESTDATA_REF, server $release_tag"
 
       - name: Work out the release version
@@ -271,6 +298,12 @@ jobs:
       # captured against. Only KEY=value lines may reach GITHUB_ENV.
       - name: Read the e2e pins
         run: grep -E '^[A-Z_]+=' player/ci/e2e-pins.env >> "$GITHUB_ENV"
+
+      # The screenshots must be captured against the server version the release commit will
+      # pin — the gate's validated release tag — not the mutable -snapshot tag in the file.
+      - name: Use the gate's resolved server version
+        if: needs.gate.outputs.server_pin_resolved != ''
+        run: echo "SERVER_IMAGE_TAG=${{ needs.gate.outputs.server_pin_resolved }}" >> "$GITHUB_ENV"
 
       - uses: actions/checkout@v7
         with:
@@ -447,12 +480,17 @@ jobs:
           grep -qx "version: ${VERSION}+${BUILD}" pubspec.yaml \
             || { echo "version not written to pubspec.yaml" >&2; exit 1; }
 
-      # The gate proved the stripped server version exists as a release, so the release
-      # commit pins that real version — main never releases while pointing at a mutable
-      # -SNAPSHOT tag. A no-op when the pin was empty (chart-managed) or already clean.
-      - name: Strip -snapshot from the e2e pins
+      # The gate proved a server release exists for the pin (the stripped version, or its
+      # same-major fallback), so the release commit pins that real version — main never
+      # releases while pointing at a mutable -SNAPSHOT tag or a version that was never
+      # released. A no-op when the pin was empty (chart-managed) or already clean.
+      - name: Pin the released server version
+        env:
+          RESOLVED: ${{ needs.gate.outputs.server_pin_resolved }}
         run: |
-          sed -i -E 's|^(SERVER_IMAGE_TAG=.*)-[Ss][Nn][Aa][Pp][Ss][Hh][Oo][Tt]$|\1|' ci/e2e-pins.env
+          if [ -n "$RESOLVED" ]; then
+            sed -i -E "s|^SERVER_IMAGE_TAG=.*$|SERVER_IMAGE_TAG=${RESOLVED}|" ci/e2e-pins.env
+          fi
           ! grep -qiE '^SERVER_IMAGE_TAG=.*-snapshot' ci/e2e-pins.env \
             || { echo "a -snapshot survived in ci/e2e-pins.env" >&2; exit 1; }
 
