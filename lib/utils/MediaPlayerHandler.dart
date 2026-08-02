@@ -235,10 +235,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     graphQLClient = client;
 
     if (shouldRefresh) {
-      _syncGeneration++;
-      // Silence the previous item immediately so it doesn't keep playing
-      // during the getOrCreatePlayQueue round-trip below.
-      await _player.stop();
+      await _silenceForQueueSwitch();
       final playQueueObject = await _playQueueService.getOrCreatePlayQueue(
         client,
         playQueueId,
@@ -292,6 +289,22 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
     updatePlaybackState();
     _rememberLastMusicQueue();
+  }
+
+  /// Silences the current item ahead of the getOrCreatePlayQueue round-trip of
+  /// a queue switch. Clearing the media URL and open timestamp for the duration
+  /// of the round-trip keeps the stall watchdog from "recovering" the freshly
+  /// stopped stream (audibly re-opening the previous item) and gates
+  /// [_syncProgress], so nothing can overwrite the previous item's progress —
+  /// e.g. reverting a fully-watched episode to the watchdog's re-open position —
+  /// before [_openMedia] installs the new stream.
+  Future<void> _silenceForQueueSwitch() async {
+    _syncGeneration++;
+    _currentMediaUrl = null;
+    _mediaOpenedAt = null;
+    // Under flutter test there is no real mpv event loop and player calls
+    // never complete — same seam as _openMedia.
+    if (!ClientManager.usesTestClients) await _player.stop();
   }
 
   /// Starting the item that is already loaded should resume it — and restart
@@ -352,10 +365,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     graphQLClient = client;
 
     if (shouldRefresh) {
-      _syncGeneration++;
-      // Silence the previous item immediately so it doesn't keep playing
-      // during the getOrCreatePlayQueue round-trip below.
-      await _player.stop();
+      await _silenceForQueueSwitch();
       final playQueueObject = await _playQueueService.getOrCreatePlayQueueForMovie(
         client,
         playQueueId,
@@ -437,10 +447,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     graphQLClient = client;
 
     if (shouldRefresh) {
-      _syncGeneration++;
-      // Silence the previous item immediately so it doesn't keep playing
-      // during the getOrCreatePlayQueue round-trip below.
-      await _player.stop();
+      await _silenceForQueueSwitch();
       final playQueueObject =
           await _playQueueService.getOrCreatePlayQueueForAlbum(
         client,
@@ -2076,6 +2083,11 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// final position so resume points don't lag behind).
   Future<void> _syncProgress(Duration pos,
       {bool force = false, Enum$PlayState? playState}) async {
+    // No stream is open — a queue switch is in flight (see
+    // _silenceForQueueSwitch) or nothing was ever opened. Any position event
+    // arriving now belongs to the silenced previous stream; syncing it would
+    // overwrite that item's progress with a bogus position.
+    if (_currentMediaUrl == null) return;
     if (!force &&
         _lastProgress != null &&
         (pos - _lastProgress!).inMilliseconds.abs() <= 10 * 1000) {
