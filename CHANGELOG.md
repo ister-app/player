@@ -1,5 +1,49 @@
 # Changelog
 
+## player v1.9.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.9.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(auto): resume the last music play queue in Android Auto ([`90937ec`](https://github.com/ister-app/player/commit/90937ec))
+- feat(auto): render discover sections as cover grids under clickable headers ([`884b783`](https://github.com/ister-app/player/commit/884b783))
+- feat(player): restore the last music play queue paused after a restart ([`ecd2aff`](https://github.com/ister-app/player/commit/ecd2aff))
+- feat(rating): tint rating stars with the page accent colour ([`9563645`](https://github.com/ister-app/player/commit/9563645))
+- feat(library): move the library switcher into the app-bar title ([`707d5ad`](https://github.com/ister-app/player/commit/707d5ad))
+- feat(artist): play the ranked artist list as the queue ([`d92000e`](https://github.com/ister-app/player/commit/d92000e))
+- feat: navigate to the artist/album page from the player's metadata lines ([`e2b3949`](https://github.com/ister-app/player/commit/e2b3949))
+- feat: inline the Android Auto discover groups in the library views ([`562b168`](https://github.com/ister-app/player/commit/562b168))
+- feat: restyle the library view switch as scrolling text pills ([`e5852d2`](https://github.com/ister-app/player/commit/e5852d2))
+- feat: discover groups in the Android Auto browse tree ([`ea55d85`](https://github.com/ister-app/player/commit/ea55d85))
+- feat: link the Ister website and GitHub from the about page ([`c970978`](https://github.com/ister-app/player/commit/c970978))
+- feat: make every page URL-addressable for bookmarks and deep links ([`90687fc`](https://github.com/ister-app/player/commit/90687fc))
+- feat: clickable carousel headers opening full vertical lists ([`9fa418e`](https://github.com/ister-app/player/commit/9fa418e))
+
+### Fixes
+
+- fix: don't bounce a fresh music play to the start screen ([`814a7c1`](https://github.com/ister-app/player/commit/814a7c1))
+- fix(ci): fall back to the next same-major server release when the pinned patch was never released ([`eaeb3a5`](https://github.com/ister-app/player/commit/eaeb3a5))
+- fix: readable card captions on narrow continue-watching grids ([`7a6e2d2`](https://github.com/ister-app/player/commit/7a6e2d2))
+
+### Other
+
+- build(android): compile against SDK 37 for permission_handler 13 ([`0c60f75`](https://github.com/ister-app/player/commit/0c60f75))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.9.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.8.0...v1.9.0
+
 ## player v1.8.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
