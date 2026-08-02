@@ -1844,6 +1844,7 @@ class ShowHomeRoute extends _i34.PageRouteInfo<ShowHomeRouteArgs> {
     String? view,
     String? kind,
     String? layout,
+    String? filter,
     List<_i34.PageRouteInfo>? children,
   }) : super(
           ShowHomeRoute.name,
@@ -1853,12 +1854,14 @@ class ShowHomeRoute extends _i34.PageRouteInfo<ShowHomeRouteArgs> {
             view: view,
             kind: kind,
             layout: layout,
+            filter: filter,
           ),
           rawQueryParams: {
             'libraryId': libraryId,
             'view': view,
             'kind': kind,
             'layout': layout,
+            'filter': filter,
           },
           initialChildren: children,
         );
@@ -1876,6 +1879,7 @@ class ShowHomeRoute extends _i34.PageRouteInfo<ShowHomeRouteArgs> {
           view: queryParams.optString('view'),
           kind: queryParams.optString('kind'),
           layout: queryParams.optString('layout'),
+          filter: queryParams.optString('filter'),
         ),
       );
       return _i30.ShowHomePage(
@@ -1885,6 +1889,7 @@ class ShowHomeRoute extends _i34.PageRouteInfo<ShowHomeRouteArgs> {
         view: args.view,
         kind: args.kind,
         layout: args.layout,
+        filter: args.filter,
       );
     },
   );
@@ -1897,6 +1902,7 @@ class ShowHomeRouteArgs {
     this.view,
     this.kind,
     this.layout,
+    this.filter,
   });
 
   final _i35.Key? key;
@@ -1909,9 +1915,11 @@ class ShowHomeRouteArgs {
 
   final String? layout;
 
+  final String? filter;
+
   @override
   String toString() {
-    return 'ShowHomeRouteArgs{key: $key, libraryId: $libraryId, view: $view, kind: $kind, layout: $layout}';
+    return 'ShowHomeRouteArgs{key: $key, libraryId: $libraryId, view: $view, kind: $kind, layout: $layout, filter: $filter}';
   }
 
   @override
@@ -1922,7 +1930,8 @@ class ShowHomeRouteArgs {
         libraryId == other.libraryId &&
         view == other.view &&
         kind == other.kind &&
-        layout == other.layout;
+        layout == other.layout &&
+        filter == other.filter;
   }
 
   @override
@@ -1931,7 +1940,8 @@ class ShowHomeRouteArgs {
       libraryId.hashCode ^
       view.hashCode ^
       kind.hashCode ^
-      layout.hashCode;
+      layout.hashCode ^
+      filter.hashCode;
 }
 
 /// generated route for

@@ -973,4 +973,132 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sleepTimerDeviceOnly => 'Applies to this device only';
+
+  @override
+  String get customFilter => 'Custom filter';
+
+  @override
+  String get filterMatchAll => 'Match all of the following';
+
+  @override
+  String get filterMatchAny => 'Match any of the following';
+
+  @override
+  String get filterAddCondition => 'Add condition';
+
+  @override
+  String get filterAddSubgroup => 'Add subgroup';
+
+  @override
+  String get filterClear => 'Clear filter';
+
+  @override
+  String get filterApply => 'Apply';
+
+  @override
+  String get filterSaveAsView => 'Save as view';
+
+  @override
+  String get filterLimitTo => 'Limit to';
+
+  @override
+  String filterActiveChip(int count) {
+    return 'Filter ($count)';
+  }
+
+  @override
+  String get filterViewNameLabel => 'Name';
+
+  @override
+  String get filterSavedViews => 'Views';
+
+  @override
+  String get filterDeleteView => 'Delete view';
+
+  @override
+  String get filterValueHint => 'Value';
+
+  @override
+  String get filterDateHint => 'YYYY-MM-DD';
+
+  @override
+  String get filterValueTrue => 'Yes';
+
+  @override
+  String get filterValueFalse => 'No';
+
+  @override
+  String get filterPlayResults => 'Play results';
+
+  @override
+  String get filterViewSaveFailed => 'Saving the view failed';
+
+  @override
+  String get filterFieldTitle => 'Title';
+
+  @override
+  String get filterFieldArtistName => 'Artist';
+
+  @override
+  String get filterFieldAlbumName => 'Album';
+
+  @override
+  String get filterFieldReleaseYear => 'Year';
+
+  @override
+  String get filterFieldBirthYear => 'Birth year';
+
+  @override
+  String get filterFieldGenre => 'Genre';
+
+  @override
+  String get filterFieldRating => 'Rating';
+
+  @override
+  String get filterFieldPlayCount => 'Play count';
+
+  @override
+  String get filterFieldLastPlayedAt => 'Last played';
+
+  @override
+  String get filterFieldDuration => 'Duration (minutes)';
+
+  @override
+  String get filterFieldWatched => 'Watched';
+
+  @override
+  String get filterFieldDateAdded => 'Date added';
+
+  @override
+  String get filterOpContains => 'contains';
+
+  @override
+  String get filterOpNotContains => 'does not contain';
+
+  @override
+  String get filterOpEquals => 'is';
+
+  @override
+  String get filterOpNotEquals => 'is not';
+
+  @override
+  String get filterOpLessThan => 'less than';
+
+  @override
+  String get filterOpGreaterThan => 'greater than';
+
+  @override
+  String get filterOpBefore => 'before';
+
+  @override
+  String get filterOpAfter => 'after';
+
+  @override
+  String get filterOpInLastDays => 'in the last (days)';
+
+  @override
+  String get filterOpIsSet => 'is set';
+
+  @override
+  String get filterOpIsNotSet => 'is not set';
 }

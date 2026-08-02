@@ -22,6 +22,7 @@ class EpisodeScroll extends StatelessWidget {
   final Enum$SortingEnum sorting;
   final Enum$SortingOrder sortingOrder;
   final bool listLayout;
+  final Input$MediaFilterInput? filter;
   final void Function(Refetch?)? onRefetch;
 
   const EpisodeScroll({
@@ -31,6 +32,7 @@ class EpisodeScroll extends StatelessWidget {
     this.sorting = Enum$SortingEnum.DATE_CREATED,
     this.sortingOrder = Enum$SortingOrder.DESCENDING,
     this.listLayout = false,
+    this.filter,
     this.onRefetch,
   });
 
@@ -81,6 +83,8 @@ class EpisodeScroll extends StatelessWidget {
       sorting: sorting,
       sortingOrder: sortingOrder,
       libraryId: libraryId,
+      extraVariables:
+          filter == null ? null : {'filter': filter!.toJson()},
       onRefetch: onRefetch,
       pageSize: _pageSize,
       builder: (context, data, requestPage) {

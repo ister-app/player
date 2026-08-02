@@ -1,5 +1,5 @@
-query tracks($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $libraryId: ID) {
-    tracks(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, libraryId: $libraryId) {
+query tracks($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $libraryId: ID, $filter: MediaFilterInput) {
+    tracks(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, libraryId: $libraryId, filter: $filter) {
         content {
             ...fragmentTrack
             # The full album fragment on purpose: it is exactly what

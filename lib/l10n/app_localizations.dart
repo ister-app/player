@@ -1759,6 +1759,258 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Applies to this device only'**
   String get sleepTimerDeviceOnly;
+
+  /// Tooltip/label of the filter button in the library browse bar
+  ///
+  /// In en, this message translates to:
+  /// **'Custom filter'**
+  String get customFilter;
+
+  /// Filter builder: AND mode of a group
+  ///
+  /// In en, this message translates to:
+  /// **'Match all of the following'**
+  String get filterMatchAll;
+
+  /// Filter builder: OR mode of a group
+  ///
+  /// In en, this message translates to:
+  /// **'Match any of the following'**
+  String get filterMatchAny;
+
+  /// Filter builder: the + button tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Add condition'**
+  String get filterAddCondition;
+
+  /// Filter builder menu: add a nested condition group
+  ///
+  /// In en, this message translates to:
+  /// **'Add subgroup'**
+  String get filterAddSubgroup;
+
+  /// Filter builder menu: remove all conditions
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filter'**
+  String get filterClear;
+
+  /// Filter builder: apply button
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get filterApply;
+
+  /// Filter builder menu: save the filter as a named view
+  ///
+  /// In en, this message translates to:
+  /// **'Save as view'**
+  String get filterSaveAsView;
+
+  /// Filter builder: label of the maximum-results field
+  ///
+  /// In en, this message translates to:
+  /// **'Limit to'**
+  String get filterLimitTo;
+
+  /// Chip showing the active filter with its condition count
+  ///
+  /// In en, this message translates to:
+  /// **'Filter ({count})'**
+  String filterActiveChip(int count);
+
+  /// Save-as-view dialog: name field label
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get filterViewNameLabel;
+
+  /// Filter sheet: header of the saved views section
+  ///
+  /// In en, this message translates to:
+  /// **'Views'**
+  String get filterSavedViews;
+
+  /// Filter sheet: delete a saved view
+  ///
+  /// In en, this message translates to:
+  /// **'Delete view'**
+  String get filterDeleteView;
+
+  /// Filter builder: hint of the value input
+  ///
+  /// In en, this message translates to:
+  /// **'Value'**
+  String get filterValueHint;
+
+  /// Filter builder: hint of a date value input
+  ///
+  /// In en, this message translates to:
+  /// **'YYYY-MM-DD'**
+  String get filterDateHint;
+
+  /// Filter builder: boolean value true
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get filterValueTrue;
+
+  /// Filter builder: boolean value false
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get filterValueFalse;
+
+  /// Play the filtered results as a queue
+  ///
+  /// In en, this message translates to:
+  /// **'Play results'**
+  String get filterPlayResults;
+
+  /// Snackbar when createSavedView fails
+  ///
+  /// In en, this message translates to:
+  /// **'Saving the view failed'**
+  String get filterViewSaveFailed;
+
+  /// Filter field label
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get filterFieldTitle;
+
+  /// Filter field label
+  ///
+  /// In en, this message translates to:
+  /// **'Artist'**
+  String get filterFieldArtistName;
+
+  /// Filter field label
+  ///
+  /// In en, this message translates to:
+  /// **'Album'**
+  String get filterFieldAlbumName;
+
+  /// Filter field label
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get filterFieldReleaseYear;
+
+  /// Filter field label
+  ///
+  /// In en, this message translates to:
+  /// **'Birth year'**
+  String get filterFieldBirthYear;
+
+  /// Filter field label
+  ///
+  /// In en, this message translates to:
+  /// **'Genre'**
+  String get filterFieldGenre;
+
+  /// Filter field label
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get filterFieldRating;
+
+  /// Filter field label
+  ///
+  /// In en, this message translates to:
+  /// **'Play count'**
+  String get filterFieldPlayCount;
+
+  /// Filter field label
+  ///
+  /// In en, this message translates to:
+  /// **'Last played'**
+  String get filterFieldLastPlayedAt;
+
+  /// Filter field label; value is entered in minutes
+  ///
+  /// In en, this message translates to:
+  /// **'Duration (minutes)'**
+  String get filterFieldDuration;
+
+  /// Filter field label
+  ///
+  /// In en, this message translates to:
+  /// **'Watched'**
+  String get filterFieldWatched;
+
+  /// Filter field label
+  ///
+  /// In en, this message translates to:
+  /// **'Date added'**
+  String get filterFieldDateAdded;
+
+  /// Filter operator label
+  ///
+  /// In en, this message translates to:
+  /// **'contains'**
+  String get filterOpContains;
+
+  /// Filter operator label
+  ///
+  /// In en, this message translates to:
+  /// **'does not contain'**
+  String get filterOpNotContains;
+
+  /// Filter operator label
+  ///
+  /// In en, this message translates to:
+  /// **'is'**
+  String get filterOpEquals;
+
+  /// Filter operator label
+  ///
+  /// In en, this message translates to:
+  /// **'is not'**
+  String get filterOpNotEquals;
+
+  /// Filter operator label
+  ///
+  /// In en, this message translates to:
+  /// **'less than'**
+  String get filterOpLessThan;
+
+  /// Filter operator label
+  ///
+  /// In en, this message translates to:
+  /// **'greater than'**
+  String get filterOpGreaterThan;
+
+  /// Filter operator label
+  ///
+  /// In en, this message translates to:
+  /// **'before'**
+  String get filterOpBefore;
+
+  /// Filter operator label
+  ///
+  /// In en, this message translates to:
+  /// **'after'**
+  String get filterOpAfter;
+
+  /// Filter operator label; the value is a number of days
+  ///
+  /// In en, this message translates to:
+  /// **'in the last (days)'**
+  String get filterOpInLastDays;
+
+  /// Filter operator label
+  ///
+  /// In en, this message translates to:
+  /// **'is set'**
+  String get filterOpIsSet;
+
+  /// Filter operator label
+  ///
+  /// In en, this message translates to:
+  /// **'is not set'**
+  String get filterOpIsNotSet;
 }
 
 class _AppLocalizationsDelegate

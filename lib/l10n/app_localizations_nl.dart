@@ -973,4 +973,132 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get sleepTimerDeviceOnly => 'Geldt alleen voor dit apparaat';
+
+  @override
+  String get customFilter => 'Custom filter';
+
+  @override
+  String get filterMatchAll => 'Overeenkomen met al het volgende';
+
+  @override
+  String get filterMatchAny => 'Overeenkomen met een van de volgende';
+
+  @override
+  String get filterAddCondition => 'Voorwaarde toevoegen';
+
+  @override
+  String get filterAddSubgroup => 'Subgroep toevoegen';
+
+  @override
+  String get filterClear => 'Filter wissen';
+
+  @override
+  String get filterApply => 'Toepassen';
+
+  @override
+  String get filterSaveAsView => 'Opslaan als view';
+
+  @override
+  String get filterLimitTo => 'Limiteer tot';
+
+  @override
+  String filterActiveChip(int count) {
+    return 'Filter ($count)';
+  }
+
+  @override
+  String get filterViewNameLabel => 'Naam';
+
+  @override
+  String get filterSavedViews => 'Views';
+
+  @override
+  String get filterDeleteView => 'View verwijderen';
+
+  @override
+  String get filterValueHint => 'Waarde';
+
+  @override
+  String get filterDateHint => 'JJJJ-MM-DD';
+
+  @override
+  String get filterValueTrue => 'Ja';
+
+  @override
+  String get filterValueFalse => 'Nee';
+
+  @override
+  String get filterPlayResults => 'Resultaten afspelen';
+
+  @override
+  String get filterViewSaveFailed => 'View opslaan mislukt';
+
+  @override
+  String get filterFieldTitle => 'Titel';
+
+  @override
+  String get filterFieldArtistName => 'Artiest';
+
+  @override
+  String get filterFieldAlbumName => 'Album';
+
+  @override
+  String get filterFieldReleaseYear => 'Jaar';
+
+  @override
+  String get filterFieldBirthYear => 'Geboortejaar';
+
+  @override
+  String get filterFieldGenre => 'Genre';
+
+  @override
+  String get filterFieldRating => 'Beoordeling';
+
+  @override
+  String get filterFieldPlayCount => 'Aantal keer gespeeld';
+
+  @override
+  String get filterFieldLastPlayedAt => 'Laatst gespeeld';
+
+  @override
+  String get filterFieldDuration => 'Duur (minuten)';
+
+  @override
+  String get filterFieldWatched => 'Gezien';
+
+  @override
+  String get filterFieldDateAdded => 'Datum toegevoegd';
+
+  @override
+  String get filterOpContains => 'bevat';
+
+  @override
+  String get filterOpNotContains => 'bevat niet';
+
+  @override
+  String get filterOpEquals => 'is';
+
+  @override
+  String get filterOpNotEquals => 'is niet';
+
+  @override
+  String get filterOpLessThan => 'kleiner dan';
+
+  @override
+  String get filterOpGreaterThan => 'groter dan';
+
+  @override
+  String get filterOpBefore => 'voor';
+
+  @override
+  String get filterOpAfter => 'na';
+
+  @override
+  String get filterOpInLastDays => 'in de laatste (dagen)';
+
+  @override
+  String get filterOpIsSet => 'is ingevuld';
+
+  @override
+  String get filterOpIsNotSet => 'is niet ingevuld';
 }

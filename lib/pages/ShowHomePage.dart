@@ -19,8 +19,11 @@ import '../components/PodcastScroll.dart';
 import '../components/MovieScroll.dart';
 import '../components/TrackScroll.dart';
 import '../components/TvShowScroll.dart';
+import '../components/filter/FilterSheet.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/BrowseKind.dart';
+import '../utils/filter/FilterCatalog.dart';
+import '../utils/filter/MediaFilterModel.dart';
 import '../utils/LibraryIcons.dart';
 import '../utils/LibrarySelectionNotifier.dart';
 import '../utils/LoggerService.dart';
@@ -45,6 +48,9 @@ class ShowHomePage extends StatefulWidget {
   /// `'grid'` or `'list'`; anything else falls back to the saved pref.
   final String? layout;
 
+  /// A [MediaFilterModel] as JSON; invalid JSON falls back to the saved pref.
+  final String? filter;
+
   const ShowHomePage({
     super.key,
     @PathParam.inherit('serverName') required this.serverName,
@@ -52,6 +58,7 @@ class ShowHomePage extends StatefulWidget {
     @QueryParam('view') this.view,
     @QueryParam('kind') this.kind,
     @QueryParam('layout') this.layout,
+    @QueryParam('filter') this.filter,
   });
 
   @override
@@ -78,6 +85,8 @@ class _ShowHomePageState extends State<ShowHomePage> {
   Enum$SortingOrder? _kindSortingOrder;
   // Grid vs list layout for the Browse view; remembered per server.
   bool _listLayout = false;
+  // The custom filter of the Browse grid; remembered per library + kind.
+  MediaFilterModel? _filter;
   Refetch? _refetchLibraries;
   int _refreshCount = 0;
 
@@ -132,7 +141,8 @@ class _ShowHomePageState extends State<ShowHomePage> {
     final urlChanged = widget.libraryId != oldWidget.libraryId ||
         widget.view != oldWidget.view ||
         widget.kind != oldWidget.kind ||
-        widget.layout != oldWidget.layout;
+        widget.layout != oldWidget.layout ||
+        widget.filter != oldWidget.filter;
     if (!urlChanged) return;
     final libDiffers =
         widget.libraryId != null && widget.libraryId != _selectedLibraryId;
@@ -142,7 +152,9 @@ class _ShowHomePageState extends State<ShowHomePage> {
     final kindDiffers = urlKind != null && urlKind != _browseKind;
     final layoutDiffers = (widget.layout == 'list' && !_listLayout) ||
         (widget.layout == 'grid' && _listLayout);
-    if (libDiffers || viewDiffers || kindDiffers || layoutDiffers) {
+    final filterDiffers = widget.filter != _filter?.encode();
+    if (libDiffers || viewDiffers || kindDiffers || layoutDiffers ||
+        filterDiffers) {
       _applyUrlParams();
     }
   }
@@ -180,6 +192,9 @@ class _ShowHomePageState extends State<ShowHomePage> {
       if (widget.layout == 'grid' || widget.layout == 'list') {
         _listLayout = widget.layout == 'list';
       }
+      // The filter is state + URL only (not persisted): a bookmark restores
+      // it, a library switch clears it.
+      _filter = MediaFilterModel.decode(widget.filter);
     });
     if (widget.libraryId != null) {
       _prefs.setString(
@@ -256,6 +271,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
       view: _discoverView ? 'discover' : 'browse',
       kind: _browseKind?.name,
       layout: _listLayout ? 'list' : null,
+      filter: _filter?.encode(),
     ));
   }
 
@@ -275,6 +291,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
       _browseKind = null;
       _kindSorting = null;
       _kindSortingOrder = null;
+      _filter = null;
     });
     _restoreBrowseKind(pending.libraryId);
     _prefs.setString(
@@ -322,6 +339,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
       _browseKind = null;
       _kindSorting = null;
       _kindSortingOrder = null;
+      _filter = null;
     });
     _reflectUrl();
     _restoreBrowseKind(lib.id);
@@ -377,6 +395,8 @@ class _ShowHomePageState extends State<ShowHomePage> {
       _browseKind = kind;
       _kindSorting = null;
       _kindSortingOrder = null;
+      // A filter is field-typed per kind; it cannot survive a kind switch.
+      _filter = null;
     });
     _reflectUrl();
     await _prefs.setString(_browseKindPrefKey(libraryId), kind.name);
@@ -666,48 +686,140 @@ class _ShowHomePageState extends State<ShowHomePage> {
     );
   }
 
+  /// The filter kind of the current browse view; null = no filter support.
+  Enum$FilterKind? get _filterKind =>
+      FilterCatalog.kindFor(_selectedLibraryType, _effectiveKind);
+
+  void _setFilter(MediaFilterModel? filter) {
+    setState(() => _filter = filter);
+    _reflectUrl();
+  }
+
+  void _openFilterSheet(BuildContext context) {
+    final kind = _filterKind;
+    if (kind == null) return;
+    showFilterSheet(
+      context,
+      kind: kind,
+      libraryId: _selectedLibraryId,
+      initial: _filter,
+      onApply: _setFilter,
+    );
+  }
+
   /// The browse controls under the view switch: kind pills (only for types
-  /// with more than one kind), the sort menu and the grid/list toggle.
+  /// with more than one kind), the sort menu, the custom filter and the
+  /// grid/list toggle.
   Widget _sortBar(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final kinds = browseKindsFor(_selectedLibraryType);
+    final colors = Theme.of(context).colorScheme;
+    final filterKind = _filterKind;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  if (kinds.length > 1)
-                    for (final kind in kinds) ...[
-                      _kindPill(context, kind),
-                      const SizedBox(width: 4),
+          Row(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      if (kinds.length > 1)
+                        for (final kind in kinds) ...[
+                          _kindPill(context, kind),
+                          const SizedBox(width: 4),
+                        ],
+                      MenuAnchor(
+                        menuChildren: _sortMenuItems(context),
+                        builder: (context, controller, child) {
+                          return TextButton.icon(
+                            icon: const Icon(Icons.sort),
+                            label: Text(_currentSortLabel(context)),
+                            onPressed: () => controller.isOpen
+                                ? controller.close()
+                                : controller.open(),
+                          );
+                        },
+                      ),
                     ],
-                  MenuAnchor(
-                    menuChildren: _sortMenuItems(context),
-                    builder: (context, controller, child) {
-                      return TextButton.icon(
-                        icon: const Icon(Icons.sort),
-                        label: Text(_currentSortLabel(context)),
-                        onPressed: () => controller.isOpen
-                            ? controller.close()
-                            : controller.open(),
-                      );
-                    },
                   ),
-                ],
+                ),
               ),
-            ),
+              if (filterKind != null)
+                IconButton(
+                  icon: Icon(
+                    _filter != null ? Icons.filter_alt : Icons.filter_alt_outlined,
+                    color: _filter != null ? colors.primary : null,
+                  ),
+                  tooltip: loc.customFilter,
+                  onPressed: () => _openFilterSheet(context),
+                ),
+              IconButton(
+                icon: Icon(_listLayout ? Icons.grid_view : Icons.view_list),
+                tooltip: _listLayout ? loc.viewAsGrid : loc.viewAsList,
+                onPressed: _toggleLayout,
+              ),
+            ],
           ),
-          IconButton(
-            icon: Icon(_listLayout ? Icons.grid_view : Icons.view_list),
-            tooltip: _listLayout ? loc.viewAsGrid : loc.viewAsList,
-            onPressed: _toggleLayout,
-          ),
+          if (_filter != null && filterKind != null)
+            _activeFilterRow(context, filterKind),
         ],
       ),
+    );
+  }
+
+  /// The active-filter chip plus, for playable kinds, play/shuffle actions
+  /// that turn the filtered result into a FILTER play queue.
+  Widget _activeFilterRow(BuildContext context, Enum$FilterKind filterKind) {
+    final loc = AppLocalizations.of(context)!;
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Row(
+          children: [
+            InputChip(
+              avatar: const Icon(Icons.filter_alt, size: 18),
+              label: Text(
+                  loc.filterActiveChip(_filter?.conditionCount ?? 0)),
+              onPressed: () => _openFilterSheet(context),
+              onDeleted: () => _setFilter(null),
+            ),
+            if (FilterCatalog.isPlayable(filterKind)) ...[
+              IconButton(
+                icon: const Icon(Icons.play_arrow),
+                tooltip: loc.filterPlayResults,
+                onPressed: () => _playFiltered(context, filterKind, false),
+              ),
+              IconButton(
+                icon: const Icon(Icons.shuffle),
+                tooltip: loc.shufflePlay,
+                onPressed: () => _playFiltered(context, filterKind, true),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _playFiltered(
+      BuildContext context, Enum$FilterKind filterKind, bool shuffle) {
+    final filter = _filter;
+    if (filter == null) return;
+    final client = GraphQLProvider.of(context).value;
+    MediaPlayerHandler.instance.startFilteredPlay(
+      client,
+      widget.serverName,
+      filter.toInput(),
+      filterKind,
+      libraryId: _selectedLibraryId,
+      sorting: _effectiveSorting,
+      sortingOrder: _effectiveSortingOrder,
+      shuffle: shuffle,
     );
   }
 
@@ -772,7 +884,9 @@ class _ShowHomePageState extends State<ShowHomePage> {
     final key = ValueKey('${_selectedLibraryId ?? 'all'}-$_refreshCount'
         '-${_effectiveSorting.name}-${_effectiveSortingOrder.name}-'
         '${_discoverView ? 'discover' : 'browse'}'
-        '-${_effectiveKind?.name ?? 'default'}');
+        '-${_effectiveKind?.name ?? 'default'}'
+        '-${_filter?.encode() ?? 'nofilter'}');
+    final filterInput = _filter?.toInput();
     if (_discoverView &&
         _selectedLibraryId != null &&
         _selectedLibraryType != null &&
@@ -788,6 +902,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
       return TvShowScroll(
         key: key,
         serverName: widget.serverName,
+        filter: filterInput,
         sorting: _effectiveSorting,
         sortingOrder: _effectiveSortingOrder,
         listLayout: _listLayout,
@@ -797,6 +912,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
         return EpisodeScroll(
           key: key,
           serverName: widget.serverName,
+          filter: filterInput,
           libraryId: _selectedLibraryId,
           sorting: _effectiveSorting,
           sortingOrder: _effectiveSortingOrder,
@@ -806,6 +922,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
       return TvShowScroll(
         key: key,
         serverName: widget.serverName,
+        filter: filterInput,
         libraryId: _selectedLibraryId,
         sorting: _effectiveSorting,
         sortingOrder: _effectiveSortingOrder,
@@ -816,6 +933,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
         return ArtistScroll(
           key: key,
           serverName: widget.serverName,
+          filter: filterInput,
           libraryId: _selectedLibraryId,
           sorting: _effectiveSorting,
           sortingOrder: _effectiveSortingOrder,
@@ -826,6 +944,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
         return TrackScroll(
           key: key,
           serverName: widget.serverName,
+          filter: filterInput,
           libraryId: _selectedLibraryId,
           sorting: _effectiveSorting,
           sortingOrder: _effectiveSortingOrder,
@@ -835,6 +954,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
       return AlbumScroll(
         key: key,
         serverName: widget.serverName,
+        filter: filterInput,
         libraryId: _selectedLibraryId,
         sorting: _effectiveSorting,
         sortingOrder: _effectiveSortingOrder,
@@ -871,6 +991,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
       return MovieScroll(
         key: key,
         serverName: widget.serverName,
+        filter: filterInput,
         libraryId: _selectedLibraryId,
         sorting: _effectiveSorting,
         sortingOrder: _effectiveSortingOrder,

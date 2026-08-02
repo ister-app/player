@@ -564,6 +564,32 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (pq != null) await _startFromPlayQueue(client, pq, srv);
   }
 
+  /// Plays a custom-filter result as a FILTER queue: the server pins the
+  /// definition, evaluates it as of now and grows the queue lazily. Only
+  /// track/movie/episode filters are playable.
+  Future<void> startFilteredPlay(
+    GraphQLClient client,
+    String srv,
+    Input$MediaFilterInput filter,
+    Enum$FilterKind filterKind, {
+    String? libraryId,
+    Enum$SortingEnum? sorting,
+    Enum$SortingOrder? sortingOrder,
+    bool shuffle = false,
+  }) async {
+    final pq = await _playQueueService.createPlayQueue(
+      client,
+      sourceType: Enum$PlayQueueSourceType.FILTER,
+      filter: filter,
+      filterKind: filterKind,
+      libraryId: libraryId,
+      sorting: shuffle ? null : sorting,
+      sortingOrder: shuffle ? null : sortingOrder,
+      shuffle: shuffle,
+    );
+    if (pq != null) await _startFromPlayQueue(client, pq, srv);
+  }
+
   /// Starts (or resumes) an audiobook: creates a BOOK play queue of the book's
   /// chapters in order, starting at [chapterId] (or the first chapter).
   Future<void> startPlayQueueForBook(

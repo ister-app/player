@@ -1,3 +1,668 @@
+class Input$FilterConditionInput {
+  factory Input$FilterConditionInput({
+    required Enum$FilterField field,
+    required Enum$FilterOperator $operator,
+    String? value,
+  }) => Input$FilterConditionInput._({
+    r'field': field,
+    r'operator': $operator,
+    if (value != null) r'value': value,
+  });
+
+  Input$FilterConditionInput._(this._$data);
+
+  factory Input$FilterConditionInput.fromJson(Map<String, dynamic> data) {
+    final result$data = <String, dynamic>{};
+    final l$field = data['field'];
+    result$data['field'] = fromJson$Enum$FilterField((l$field as String));
+    final l$$operator = data['operator'];
+    result$data['operator'] = fromJson$Enum$FilterOperator(
+      (l$$operator as String),
+    );
+    if (data.containsKey('value')) {
+      final l$value = data['value'];
+      result$data['value'] = (l$value as String?);
+    }
+    return Input$FilterConditionInput._(result$data);
+  }
+
+  Map<String, dynamic> _$data;
+
+  Enum$FilterField get field => (_$data['field'] as Enum$FilterField);
+
+  Enum$FilterOperator get $operator =>
+      (_$data['operator'] as Enum$FilterOperator);
+
+  String? get value => (_$data['value'] as String?);
+
+  Map<String, dynamic> toJson() {
+    final result$data = <String, dynamic>{};
+    final l$field = field;
+    result$data['field'] = toJson$Enum$FilterField(l$field);
+    final l$$operator = $operator;
+    result$data['operator'] = toJson$Enum$FilterOperator(l$$operator);
+    if (_$data.containsKey('value')) {
+      final l$value = value;
+      result$data['value'] = l$value;
+    }
+    return result$data;
+  }
+
+  CopyWith$Input$FilterConditionInput<Input$FilterConditionInput>
+  get copyWith => CopyWith$Input$FilterConditionInput(this, (i) => i);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Input$FilterConditionInput ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$field = field;
+    final lOther$field = other.field;
+    if (l$field != lOther$field) {
+      return false;
+    }
+    final l$$operator = $operator;
+    final lOther$$operator = other.$operator;
+    if (l$$operator != lOther$$operator) {
+      return false;
+    }
+    final l$value = value;
+    final lOther$value = other.value;
+    if (_$data.containsKey('value') != other._$data.containsKey('value')) {
+      return false;
+    }
+    if (l$value != lOther$value) {
+      return false;
+    }
+    return true;
+  }
+
+  @override
+  int get hashCode {
+    final l$field = field;
+    final l$$operator = $operator;
+    final l$value = value;
+    return Object.hashAll([
+      l$field,
+      l$$operator,
+      _$data.containsKey('value') ? l$value : const {},
+    ]);
+  }
+}
+
+abstract class CopyWith$Input$FilterConditionInput<TRes> {
+  factory CopyWith$Input$FilterConditionInput(
+    Input$FilterConditionInput instance,
+    TRes Function(Input$FilterConditionInput) then,
+  ) = _CopyWithImpl$Input$FilterConditionInput;
+
+  factory CopyWith$Input$FilterConditionInput.stub(TRes res) =
+      _CopyWithStubImpl$Input$FilterConditionInput;
+
+  TRes call({
+    Enum$FilterField? field,
+    Enum$FilterOperator? $operator,
+    String? value,
+  });
+}
+
+class _CopyWithImpl$Input$FilterConditionInput<TRes>
+    implements CopyWith$Input$FilterConditionInput<TRes> {
+  _CopyWithImpl$Input$FilterConditionInput(this._instance, this._then);
+
+  final Input$FilterConditionInput _instance;
+
+  final TRes Function(Input$FilterConditionInput) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? field = _undefined,
+    Object? $operator = _undefined,
+    Object? value = _undefined,
+  }) => _then(
+    Input$FilterConditionInput._({
+      ..._instance._$data,
+      if (field != _undefined && field != null)
+        'field': (field as Enum$FilterField),
+      if ($operator != _undefined && $operator != null)
+        'operator': ($operator as Enum$FilterOperator),
+      if (value != _undefined) 'value': (value as String?),
+    }),
+  );
+}
+
+class _CopyWithStubImpl$Input$FilterConditionInput<TRes>
+    implements CopyWith$Input$FilterConditionInput<TRes> {
+  _CopyWithStubImpl$Input$FilterConditionInput(this._res);
+
+  TRes _res;
+
+  call({
+    Enum$FilterField? field,
+    Enum$FilterOperator? $operator,
+    String? value,
+  }) => _res;
+}
+
+class Input$MediaFilterInput {
+  factory Input$MediaFilterInput({
+    required Enum$FilterMatch match,
+    List<Input$FilterConditionInput>? conditions,
+    List<Input$MediaFilterInput>? groups,
+    int? limit,
+  }) => Input$MediaFilterInput._({
+    r'match': match,
+    if (conditions != null) r'conditions': conditions,
+    if (groups != null) r'groups': groups,
+    if (limit != null) r'limit': limit,
+  });
+
+  Input$MediaFilterInput._(this._$data);
+
+  factory Input$MediaFilterInput.fromJson(Map<String, dynamic> data) {
+    final result$data = <String, dynamic>{};
+    final l$match = data['match'];
+    result$data['match'] = fromJson$Enum$FilterMatch((l$match as String));
+    if (data.containsKey('conditions')) {
+      final l$conditions = data['conditions'];
+      result$data['conditions'] = (l$conditions as List<dynamic>?)
+          ?.map(
+            (e) => Input$FilterConditionInput.fromJson(
+              (e as Map<String, dynamic>),
+            ),
+          )
+          .toList();
+    }
+    if (data.containsKey('groups')) {
+      final l$groups = data['groups'];
+      result$data['groups'] = (l$groups as List<dynamic>?)
+          ?.map(
+            (e) => Input$MediaFilterInput.fromJson((e as Map<String, dynamic>)),
+          )
+          .toList();
+    }
+    if (data.containsKey('limit')) {
+      final l$limit = data['limit'];
+      result$data['limit'] = (l$limit as int?);
+    }
+    return Input$MediaFilterInput._(result$data);
+  }
+
+  Map<String, dynamic> _$data;
+
+  Enum$FilterMatch get match => (_$data['match'] as Enum$FilterMatch);
+
+  List<Input$FilterConditionInput>? get conditions =>
+      (_$data['conditions'] as List<Input$FilterConditionInput>?);
+
+  List<Input$MediaFilterInput>? get groups =>
+      (_$data['groups'] as List<Input$MediaFilterInput>?);
+
+  int? get limit => (_$data['limit'] as int?);
+
+  Map<String, dynamic> toJson() {
+    final result$data = <String, dynamic>{};
+    final l$match = match;
+    result$data['match'] = toJson$Enum$FilterMatch(l$match);
+    if (_$data.containsKey('conditions')) {
+      final l$conditions = conditions;
+      result$data['conditions'] = l$conditions?.map((e) => e.toJson()).toList();
+    }
+    if (_$data.containsKey('groups')) {
+      final l$groups = groups;
+      result$data['groups'] = l$groups?.map((e) => e.toJson()).toList();
+    }
+    if (_$data.containsKey('limit')) {
+      final l$limit = limit;
+      result$data['limit'] = l$limit;
+    }
+    return result$data;
+  }
+
+  CopyWith$Input$MediaFilterInput<Input$MediaFilterInput> get copyWith =>
+      CopyWith$Input$MediaFilterInput(this, (i) => i);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Input$MediaFilterInput || runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$match = match;
+    final lOther$match = other.match;
+    if (l$match != lOther$match) {
+      return false;
+    }
+    final l$conditions = conditions;
+    final lOther$conditions = other.conditions;
+    if (_$data.containsKey('conditions') !=
+        other._$data.containsKey('conditions')) {
+      return false;
+    }
+    if (l$conditions != null && lOther$conditions != null) {
+      if (l$conditions.length != lOther$conditions.length) {
+        return false;
+      }
+      for (int i = 0; i < l$conditions.length; i++) {
+        final l$conditions$entry = l$conditions[i];
+        final lOther$conditions$entry = lOther$conditions[i];
+        if (l$conditions$entry != lOther$conditions$entry) {
+          return false;
+        }
+      }
+    } else if (l$conditions != lOther$conditions) {
+      return false;
+    }
+    final l$groups = groups;
+    final lOther$groups = other.groups;
+    if (_$data.containsKey('groups') != other._$data.containsKey('groups')) {
+      return false;
+    }
+    if (l$groups != null && lOther$groups != null) {
+      if (l$groups.length != lOther$groups.length) {
+        return false;
+      }
+      for (int i = 0; i < l$groups.length; i++) {
+        final l$groups$entry = l$groups[i];
+        final lOther$groups$entry = lOther$groups[i];
+        if (l$groups$entry != lOther$groups$entry) {
+          return false;
+        }
+      }
+    } else if (l$groups != lOther$groups) {
+      return false;
+    }
+    final l$limit = limit;
+    final lOther$limit = other.limit;
+    if (_$data.containsKey('limit') != other._$data.containsKey('limit')) {
+      return false;
+    }
+    if (l$limit != lOther$limit) {
+      return false;
+    }
+    return true;
+  }
+
+  @override
+  int get hashCode {
+    final l$match = match;
+    final l$conditions = conditions;
+    final l$groups = groups;
+    final l$limit = limit;
+    return Object.hashAll([
+      l$match,
+      _$data.containsKey('conditions')
+          ? l$conditions == null
+                ? null
+                : Object.hashAll(l$conditions.map((v) => v))
+          : const {},
+      _$data.containsKey('groups')
+          ? l$groups == null
+                ? null
+                : Object.hashAll(l$groups.map((v) => v))
+          : const {},
+      _$data.containsKey('limit') ? l$limit : const {},
+    ]);
+  }
+}
+
+abstract class CopyWith$Input$MediaFilterInput<TRes> {
+  factory CopyWith$Input$MediaFilterInput(
+    Input$MediaFilterInput instance,
+    TRes Function(Input$MediaFilterInput) then,
+  ) = _CopyWithImpl$Input$MediaFilterInput;
+
+  factory CopyWith$Input$MediaFilterInput.stub(TRes res) =
+      _CopyWithStubImpl$Input$MediaFilterInput;
+
+  TRes call({
+    Enum$FilterMatch? match,
+    List<Input$FilterConditionInput>? conditions,
+    List<Input$MediaFilterInput>? groups,
+    int? limit,
+  });
+  TRes conditions(
+    Iterable<Input$FilterConditionInput>? Function(
+      Iterable<
+        CopyWith$Input$FilterConditionInput<Input$FilterConditionInput>
+      >?,
+    )
+    _fn,
+  );
+  TRes groups(
+    Iterable<Input$MediaFilterInput>? Function(
+      Iterable<CopyWith$Input$MediaFilterInput<Input$MediaFilterInput>>?,
+    )
+    _fn,
+  );
+}
+
+class _CopyWithImpl$Input$MediaFilterInput<TRes>
+    implements CopyWith$Input$MediaFilterInput<TRes> {
+  _CopyWithImpl$Input$MediaFilterInput(this._instance, this._then);
+
+  final Input$MediaFilterInput _instance;
+
+  final TRes Function(Input$MediaFilterInput) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? match = _undefined,
+    Object? conditions = _undefined,
+    Object? groups = _undefined,
+    Object? limit = _undefined,
+  }) => _then(
+    Input$MediaFilterInput._({
+      ..._instance._$data,
+      if (match != _undefined && match != null)
+        'match': (match as Enum$FilterMatch),
+      if (conditions != _undefined)
+        'conditions': (conditions as List<Input$FilterConditionInput>?),
+      if (groups != _undefined)
+        'groups': (groups as List<Input$MediaFilterInput>?),
+      if (limit != _undefined) 'limit': (limit as int?),
+    }),
+  );
+
+  TRes conditions(
+    Iterable<Input$FilterConditionInput>? Function(
+      Iterable<
+        CopyWith$Input$FilterConditionInput<Input$FilterConditionInput>
+      >?,
+    )
+    _fn,
+  ) => call(
+    conditions: _fn(
+      _instance.conditions?.map(
+        (e) => CopyWith$Input$FilterConditionInput(e, (i) => i),
+      ),
+    )?.toList(),
+  );
+
+  TRes groups(
+    Iterable<Input$MediaFilterInput>? Function(
+      Iterable<CopyWith$Input$MediaFilterInput<Input$MediaFilterInput>>?,
+    )
+    _fn,
+  ) => call(
+    groups: _fn(
+      _instance.groups?.map(
+        (e) => CopyWith$Input$MediaFilterInput(e, (i) => i),
+      ),
+    )?.toList(),
+  );
+}
+
+class _CopyWithStubImpl$Input$MediaFilterInput<TRes>
+    implements CopyWith$Input$MediaFilterInput<TRes> {
+  _CopyWithStubImpl$Input$MediaFilterInput(this._res);
+
+  TRes _res;
+
+  call({
+    Enum$FilterMatch? match,
+    List<Input$FilterConditionInput>? conditions,
+    List<Input$MediaFilterInput>? groups,
+    int? limit,
+  }) => _res;
+
+  conditions(_fn) => _res;
+
+  groups(_fn) => _res;
+}
+
+class Input$SavedViewInput {
+  factory Input$SavedViewInput({
+    required String name,
+    required Enum$FilterKind kind,
+    String? libraryId,
+    required Input$MediaFilterInput filter,
+    Enum$SortingEnum? sorting,
+    Enum$SortingOrder? sortingOrder,
+  }) => Input$SavedViewInput._({
+    r'name': name,
+    r'kind': kind,
+    if (libraryId != null) r'libraryId': libraryId,
+    r'filter': filter,
+    if (sorting != null) r'sorting': sorting,
+    if (sortingOrder != null) r'sortingOrder': sortingOrder,
+  });
+
+  Input$SavedViewInput._(this._$data);
+
+  factory Input$SavedViewInput.fromJson(Map<String, dynamic> data) {
+    final result$data = <String, dynamic>{};
+    final l$name = data['name'];
+    result$data['name'] = (l$name as String);
+    final l$kind = data['kind'];
+    result$data['kind'] = fromJson$Enum$FilterKind((l$kind as String));
+    if (data.containsKey('libraryId')) {
+      final l$libraryId = data['libraryId'];
+      result$data['libraryId'] = (l$libraryId as String?);
+    }
+    final l$filter = data['filter'];
+    result$data['filter'] = Input$MediaFilterInput.fromJson(
+      (l$filter as Map<String, dynamic>),
+    );
+    if (data.containsKey('sorting')) {
+      final l$sorting = data['sorting'];
+      result$data['sorting'] = l$sorting == null
+          ? null
+          : fromJson$Enum$SortingEnum((l$sorting as String));
+    }
+    if (data.containsKey('sortingOrder')) {
+      final l$sortingOrder = data['sortingOrder'];
+      result$data['sortingOrder'] = l$sortingOrder == null
+          ? null
+          : fromJson$Enum$SortingOrder((l$sortingOrder as String));
+    }
+    return Input$SavedViewInput._(result$data);
+  }
+
+  Map<String, dynamic> _$data;
+
+  String get name => (_$data['name'] as String);
+
+  Enum$FilterKind get kind => (_$data['kind'] as Enum$FilterKind);
+
+  String? get libraryId => (_$data['libraryId'] as String?);
+
+  Input$MediaFilterInput get filter =>
+      (_$data['filter'] as Input$MediaFilterInput);
+
+  Enum$SortingEnum? get sorting => (_$data['sorting'] as Enum$SortingEnum?);
+
+  Enum$SortingOrder? get sortingOrder =>
+      (_$data['sortingOrder'] as Enum$SortingOrder?);
+
+  Map<String, dynamic> toJson() {
+    final result$data = <String, dynamic>{};
+    final l$name = name;
+    result$data['name'] = l$name;
+    final l$kind = kind;
+    result$data['kind'] = toJson$Enum$FilterKind(l$kind);
+    if (_$data.containsKey('libraryId')) {
+      final l$libraryId = libraryId;
+      result$data['libraryId'] = l$libraryId;
+    }
+    final l$filter = filter;
+    result$data['filter'] = l$filter.toJson();
+    if (_$data.containsKey('sorting')) {
+      final l$sorting = sorting;
+      result$data['sorting'] = l$sorting == null
+          ? null
+          : toJson$Enum$SortingEnum(l$sorting);
+    }
+    if (_$data.containsKey('sortingOrder')) {
+      final l$sortingOrder = sortingOrder;
+      result$data['sortingOrder'] = l$sortingOrder == null
+          ? null
+          : toJson$Enum$SortingOrder(l$sortingOrder);
+    }
+    return result$data;
+  }
+
+  CopyWith$Input$SavedViewInput<Input$SavedViewInput> get copyWith =>
+      CopyWith$Input$SavedViewInput(this, (i) => i);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Input$SavedViewInput || runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$name = name;
+    final lOther$name = other.name;
+    if (l$name != lOther$name) {
+      return false;
+    }
+    final l$kind = kind;
+    final lOther$kind = other.kind;
+    if (l$kind != lOther$kind) {
+      return false;
+    }
+    final l$libraryId = libraryId;
+    final lOther$libraryId = other.libraryId;
+    if (_$data.containsKey('libraryId') !=
+        other._$data.containsKey('libraryId')) {
+      return false;
+    }
+    if (l$libraryId != lOther$libraryId) {
+      return false;
+    }
+    final l$filter = filter;
+    final lOther$filter = other.filter;
+    if (l$filter != lOther$filter) {
+      return false;
+    }
+    final l$sorting = sorting;
+    final lOther$sorting = other.sorting;
+    if (_$data.containsKey('sorting') != other._$data.containsKey('sorting')) {
+      return false;
+    }
+    if (l$sorting != lOther$sorting) {
+      return false;
+    }
+    final l$sortingOrder = sortingOrder;
+    final lOther$sortingOrder = other.sortingOrder;
+    if (_$data.containsKey('sortingOrder') !=
+        other._$data.containsKey('sortingOrder')) {
+      return false;
+    }
+    if (l$sortingOrder != lOther$sortingOrder) {
+      return false;
+    }
+    return true;
+  }
+
+  @override
+  int get hashCode {
+    final l$name = name;
+    final l$kind = kind;
+    final l$libraryId = libraryId;
+    final l$filter = filter;
+    final l$sorting = sorting;
+    final l$sortingOrder = sortingOrder;
+    return Object.hashAll([
+      l$name,
+      l$kind,
+      _$data.containsKey('libraryId') ? l$libraryId : const {},
+      l$filter,
+      _$data.containsKey('sorting') ? l$sorting : const {},
+      _$data.containsKey('sortingOrder') ? l$sortingOrder : const {},
+    ]);
+  }
+}
+
+abstract class CopyWith$Input$SavedViewInput<TRes> {
+  factory CopyWith$Input$SavedViewInput(
+    Input$SavedViewInput instance,
+    TRes Function(Input$SavedViewInput) then,
+  ) = _CopyWithImpl$Input$SavedViewInput;
+
+  factory CopyWith$Input$SavedViewInput.stub(TRes res) =
+      _CopyWithStubImpl$Input$SavedViewInput;
+
+  TRes call({
+    String? name,
+    Enum$FilterKind? kind,
+    String? libraryId,
+    Input$MediaFilterInput? filter,
+    Enum$SortingEnum? sorting,
+    Enum$SortingOrder? sortingOrder,
+  });
+  CopyWith$Input$MediaFilterInput<TRes> get filter;
+}
+
+class _CopyWithImpl$Input$SavedViewInput<TRes>
+    implements CopyWith$Input$SavedViewInput<TRes> {
+  _CopyWithImpl$Input$SavedViewInput(this._instance, this._then);
+
+  final Input$SavedViewInput _instance;
+
+  final TRes Function(Input$SavedViewInput) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? name = _undefined,
+    Object? kind = _undefined,
+    Object? libraryId = _undefined,
+    Object? filter = _undefined,
+    Object? sorting = _undefined,
+    Object? sortingOrder = _undefined,
+  }) => _then(
+    Input$SavedViewInput._({
+      ..._instance._$data,
+      if (name != _undefined && name != null) 'name': (name as String),
+      if (kind != _undefined && kind != null) 'kind': (kind as Enum$FilterKind),
+      if (libraryId != _undefined) 'libraryId': (libraryId as String?),
+      if (filter != _undefined && filter != null)
+        'filter': (filter as Input$MediaFilterInput),
+      if (sorting != _undefined) 'sorting': (sorting as Enum$SortingEnum?),
+      if (sortingOrder != _undefined)
+        'sortingOrder': (sortingOrder as Enum$SortingOrder?),
+    }),
+  );
+
+  CopyWith$Input$MediaFilterInput<TRes> get filter {
+    final local$filter = _instance.filter;
+    return CopyWith$Input$MediaFilterInput(
+      local$filter,
+      (e) => call(filter: e),
+    );
+  }
+}
+
+class _CopyWithStubImpl$Input$SavedViewInput<TRes>
+    implements CopyWith$Input$SavedViewInput<TRes> {
+  _CopyWithStubImpl$Input$SavedViewInput(this._res);
+
+  TRes _res;
+
+  call({
+    String? name,
+    Enum$FilterKind? kind,
+    String? libraryId,
+    Input$MediaFilterInput? filter,
+    Enum$SortingEnum? sorting,
+    Enum$SortingOrder? sortingOrder,
+  }) => _res;
+
+  CopyWith$Input$MediaFilterInput<TRes> get filter =>
+      CopyWith$Input$MediaFilterInput.stub(_res);
+}
+
 class Input$StreamSettingsInput {
   factory Input$StreamSettingsInput({
     required bool direct,
@@ -377,16 +1042,26 @@ class _CopyWithStubImpl$Input$UserSettingsInput<TRes>
 class Input$CreatePlayQueueInput {
   factory Input$CreatePlayQueueInput({
     required Enum$PlayQueueSourceType sourceType,
-    required String sourceId,
+    String? sourceId,
     String? startId,
     bool? shuffle,
     Enum$RankKind? rankKind,
+    Input$MediaFilterInput? filter,
+    Enum$FilterKind? filterKind,
+    String? libraryId,
+    Enum$SortingEnum? sorting,
+    Enum$SortingOrder? sortingOrder,
   }) => Input$CreatePlayQueueInput._({
     r'sourceType': sourceType,
-    r'sourceId': sourceId,
+    if (sourceId != null) r'sourceId': sourceId,
     if (startId != null) r'startId': startId,
     if (shuffle != null) r'shuffle': shuffle,
     if (rankKind != null) r'rankKind': rankKind,
+    if (filter != null) r'filter': filter,
+    if (filterKind != null) r'filterKind': filterKind,
+    if (libraryId != null) r'libraryId': libraryId,
+    if (sorting != null) r'sorting': sorting,
+    if (sortingOrder != null) r'sortingOrder': sortingOrder,
   });
 
   Input$CreatePlayQueueInput._(this._$data);
@@ -397,8 +1072,10 @@ class Input$CreatePlayQueueInput {
     result$data['sourceType'] = fromJson$Enum$PlayQueueSourceType(
       (l$sourceType as String),
     );
-    final l$sourceId = data['sourceId'];
-    result$data['sourceId'] = (l$sourceId as String);
+    if (data.containsKey('sourceId')) {
+      final l$sourceId = data['sourceId'];
+      result$data['sourceId'] = (l$sourceId as String?);
+    }
     if (data.containsKey('startId')) {
       final l$startId = data['startId'];
       result$data['startId'] = (l$startId as String?);
@@ -413,6 +1090,34 @@ class Input$CreatePlayQueueInput {
           ? null
           : fromJson$Enum$RankKind((l$rankKind as String));
     }
+    if (data.containsKey('filter')) {
+      final l$filter = data['filter'];
+      result$data['filter'] = l$filter == null
+          ? null
+          : Input$MediaFilterInput.fromJson((l$filter as Map<String, dynamic>));
+    }
+    if (data.containsKey('filterKind')) {
+      final l$filterKind = data['filterKind'];
+      result$data['filterKind'] = l$filterKind == null
+          ? null
+          : fromJson$Enum$FilterKind((l$filterKind as String));
+    }
+    if (data.containsKey('libraryId')) {
+      final l$libraryId = data['libraryId'];
+      result$data['libraryId'] = (l$libraryId as String?);
+    }
+    if (data.containsKey('sorting')) {
+      final l$sorting = data['sorting'];
+      result$data['sorting'] = l$sorting == null
+          ? null
+          : fromJson$Enum$SortingEnum((l$sorting as String));
+    }
+    if (data.containsKey('sortingOrder')) {
+      final l$sortingOrder = data['sortingOrder'];
+      result$data['sortingOrder'] = l$sortingOrder == null
+          ? null
+          : fromJson$Enum$SortingOrder((l$sortingOrder as String));
+    }
     return Input$CreatePlayQueueInput._(result$data);
   }
 
@@ -421,7 +1126,7 @@ class Input$CreatePlayQueueInput {
   Enum$PlayQueueSourceType get sourceType =>
       (_$data['sourceType'] as Enum$PlayQueueSourceType);
 
-  String get sourceId => (_$data['sourceId'] as String);
+  String? get sourceId => (_$data['sourceId'] as String?);
 
   String? get startId => (_$data['startId'] as String?);
 
@@ -429,12 +1134,26 @@ class Input$CreatePlayQueueInput {
 
   Enum$RankKind? get rankKind => (_$data['rankKind'] as Enum$RankKind?);
 
+  Input$MediaFilterInput? get filter =>
+      (_$data['filter'] as Input$MediaFilterInput?);
+
+  Enum$FilterKind? get filterKind => (_$data['filterKind'] as Enum$FilterKind?);
+
+  String? get libraryId => (_$data['libraryId'] as String?);
+
+  Enum$SortingEnum? get sorting => (_$data['sorting'] as Enum$SortingEnum?);
+
+  Enum$SortingOrder? get sortingOrder =>
+      (_$data['sortingOrder'] as Enum$SortingOrder?);
+
   Map<String, dynamic> toJson() {
     final result$data = <String, dynamic>{};
     final l$sourceType = sourceType;
     result$data['sourceType'] = toJson$Enum$PlayQueueSourceType(l$sourceType);
-    final l$sourceId = sourceId;
-    result$data['sourceId'] = l$sourceId;
+    if (_$data.containsKey('sourceId')) {
+      final l$sourceId = sourceId;
+      result$data['sourceId'] = l$sourceId;
+    }
     if (_$data.containsKey('startId')) {
       final l$startId = startId;
       result$data['startId'] = l$startId;
@@ -448,6 +1167,32 @@ class Input$CreatePlayQueueInput {
       result$data['rankKind'] = l$rankKind == null
           ? null
           : toJson$Enum$RankKind(l$rankKind);
+    }
+    if (_$data.containsKey('filter')) {
+      final l$filter = filter;
+      result$data['filter'] = l$filter?.toJson();
+    }
+    if (_$data.containsKey('filterKind')) {
+      final l$filterKind = filterKind;
+      result$data['filterKind'] = l$filterKind == null
+          ? null
+          : toJson$Enum$FilterKind(l$filterKind);
+    }
+    if (_$data.containsKey('libraryId')) {
+      final l$libraryId = libraryId;
+      result$data['libraryId'] = l$libraryId;
+    }
+    if (_$data.containsKey('sorting')) {
+      final l$sorting = sorting;
+      result$data['sorting'] = l$sorting == null
+          ? null
+          : toJson$Enum$SortingEnum(l$sorting);
+    }
+    if (_$data.containsKey('sortingOrder')) {
+      final l$sortingOrder = sortingOrder;
+      result$data['sortingOrder'] = l$sortingOrder == null
+          ? null
+          : toJson$Enum$SortingOrder(l$sortingOrder);
     }
     return result$data;
   }
@@ -471,6 +1216,10 @@ class Input$CreatePlayQueueInput {
     }
     final l$sourceId = sourceId;
     final lOther$sourceId = other.sourceId;
+    if (_$data.containsKey('sourceId') !=
+        other._$data.containsKey('sourceId')) {
+      return false;
+    }
     if (l$sourceId != lOther$sourceId) {
       return false;
     }
@@ -499,6 +1248,49 @@ class Input$CreatePlayQueueInput {
     if (l$rankKind != lOther$rankKind) {
       return false;
     }
+    final l$filter = filter;
+    final lOther$filter = other.filter;
+    if (_$data.containsKey('filter') != other._$data.containsKey('filter')) {
+      return false;
+    }
+    if (l$filter != lOther$filter) {
+      return false;
+    }
+    final l$filterKind = filterKind;
+    final lOther$filterKind = other.filterKind;
+    if (_$data.containsKey('filterKind') !=
+        other._$data.containsKey('filterKind')) {
+      return false;
+    }
+    if (l$filterKind != lOther$filterKind) {
+      return false;
+    }
+    final l$libraryId = libraryId;
+    final lOther$libraryId = other.libraryId;
+    if (_$data.containsKey('libraryId') !=
+        other._$data.containsKey('libraryId')) {
+      return false;
+    }
+    if (l$libraryId != lOther$libraryId) {
+      return false;
+    }
+    final l$sorting = sorting;
+    final lOther$sorting = other.sorting;
+    if (_$data.containsKey('sorting') != other._$data.containsKey('sorting')) {
+      return false;
+    }
+    if (l$sorting != lOther$sorting) {
+      return false;
+    }
+    final l$sortingOrder = sortingOrder;
+    final lOther$sortingOrder = other.sortingOrder;
+    if (_$data.containsKey('sortingOrder') !=
+        other._$data.containsKey('sortingOrder')) {
+      return false;
+    }
+    if (l$sortingOrder != lOther$sortingOrder) {
+      return false;
+    }
     return true;
   }
 
@@ -509,12 +1301,22 @@ class Input$CreatePlayQueueInput {
     final l$startId = startId;
     final l$shuffle = shuffle;
     final l$rankKind = rankKind;
+    final l$filter = filter;
+    final l$filterKind = filterKind;
+    final l$libraryId = libraryId;
+    final l$sorting = sorting;
+    final l$sortingOrder = sortingOrder;
     return Object.hashAll([
       l$sourceType,
-      l$sourceId,
+      _$data.containsKey('sourceId') ? l$sourceId : const {},
       _$data.containsKey('startId') ? l$startId : const {},
       _$data.containsKey('shuffle') ? l$shuffle : const {},
       _$data.containsKey('rankKind') ? l$rankKind : const {},
+      _$data.containsKey('filter') ? l$filter : const {},
+      _$data.containsKey('filterKind') ? l$filterKind : const {},
+      _$data.containsKey('libraryId') ? l$libraryId : const {},
+      _$data.containsKey('sorting') ? l$sorting : const {},
+      _$data.containsKey('sortingOrder') ? l$sortingOrder : const {},
     ]);
   }
 }
@@ -534,7 +1336,13 @@ abstract class CopyWith$Input$CreatePlayQueueInput<TRes> {
     String? startId,
     bool? shuffle,
     Enum$RankKind? rankKind,
+    Input$MediaFilterInput? filter,
+    Enum$FilterKind? filterKind,
+    String? libraryId,
+    Enum$SortingEnum? sorting,
+    Enum$SortingOrder? sortingOrder,
   });
+  CopyWith$Input$MediaFilterInput<TRes> get filter;
 }
 
 class _CopyWithImpl$Input$CreatePlayQueueInput<TRes>
@@ -553,18 +1361,36 @@ class _CopyWithImpl$Input$CreatePlayQueueInput<TRes>
     Object? startId = _undefined,
     Object? shuffle = _undefined,
     Object? rankKind = _undefined,
+    Object? filter = _undefined,
+    Object? filterKind = _undefined,
+    Object? libraryId = _undefined,
+    Object? sorting = _undefined,
+    Object? sortingOrder = _undefined,
   }) => _then(
     Input$CreatePlayQueueInput._({
       ..._instance._$data,
       if (sourceType != _undefined && sourceType != null)
         'sourceType': (sourceType as Enum$PlayQueueSourceType),
-      if (sourceId != _undefined && sourceId != null)
-        'sourceId': (sourceId as String),
+      if (sourceId != _undefined) 'sourceId': (sourceId as String?),
       if (startId != _undefined) 'startId': (startId as String?),
       if (shuffle != _undefined) 'shuffle': (shuffle as bool?),
       if (rankKind != _undefined) 'rankKind': (rankKind as Enum$RankKind?),
+      if (filter != _undefined) 'filter': (filter as Input$MediaFilterInput?),
+      if (filterKind != _undefined)
+        'filterKind': (filterKind as Enum$FilterKind?),
+      if (libraryId != _undefined) 'libraryId': (libraryId as String?),
+      if (sorting != _undefined) 'sorting': (sorting as Enum$SortingEnum?),
+      if (sortingOrder != _undefined)
+        'sortingOrder': (sortingOrder as Enum$SortingOrder?),
     }),
   );
+
+  CopyWith$Input$MediaFilterInput<TRes> get filter {
+    final local$filter = _instance.filter;
+    return local$filter == null
+        ? CopyWith$Input$MediaFilterInput.stub(_then(_instance))
+        : CopyWith$Input$MediaFilterInput(local$filter, (e) => call(filter: e));
+  }
 }
 
 class _CopyWithStubImpl$Input$CreatePlayQueueInput<TRes>
@@ -579,7 +1405,15 @@ class _CopyWithStubImpl$Input$CreatePlayQueueInput<TRes>
     String? startId,
     bool? shuffle,
     Enum$RankKind? rankKind,
+    Input$MediaFilterInput? filter,
+    Enum$FilterKind? filterKind,
+    String? libraryId,
+    Enum$SortingEnum? sorting,
+    Enum$SortingOrder? sortingOrder,
   }) => _res;
+
+  CopyWith$Input$MediaFilterInput<TRes> get filter =>
+      CopyWith$Input$MediaFilterInput.stub(_res);
 }
 
 class Input$PlaybackSharingSettingsInput {
@@ -1059,6 +1893,253 @@ Enum$SortingOrder fromJson$Enum$SortingOrder(String value) {
   }
 }
 
+enum Enum$FilterKind {
+  ARTIST,
+  ALBUM,
+  TRACK,
+  MOVIE,
+  SHOW,
+  EPISODE,
+  $unknown;
+
+  factory Enum$FilterKind.fromJson(String value) =>
+      fromJson$Enum$FilterKind(value);
+
+  String toJson() => toJson$Enum$FilterKind(this);
+}
+
+String toJson$Enum$FilterKind(Enum$FilterKind e) {
+  switch (e) {
+    case Enum$FilterKind.ARTIST:
+      return r'ARTIST';
+    case Enum$FilterKind.ALBUM:
+      return r'ALBUM';
+    case Enum$FilterKind.TRACK:
+      return r'TRACK';
+    case Enum$FilterKind.MOVIE:
+      return r'MOVIE';
+    case Enum$FilterKind.SHOW:
+      return r'SHOW';
+    case Enum$FilterKind.EPISODE:
+      return r'EPISODE';
+    case Enum$FilterKind.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$FilterKind fromJson$Enum$FilterKind(String value) {
+  switch (value) {
+    case r'ARTIST':
+      return Enum$FilterKind.ARTIST;
+    case r'ALBUM':
+      return Enum$FilterKind.ALBUM;
+    case r'TRACK':
+      return Enum$FilterKind.TRACK;
+    case r'MOVIE':
+      return Enum$FilterKind.MOVIE;
+    case r'SHOW':
+      return Enum$FilterKind.SHOW;
+    case r'EPISODE':
+      return Enum$FilterKind.EPISODE;
+    default:
+      return Enum$FilterKind.$unknown;
+  }
+}
+
+enum Enum$FilterMatch {
+  ALL,
+  ANY,
+  $unknown;
+
+  factory Enum$FilterMatch.fromJson(String value) =>
+      fromJson$Enum$FilterMatch(value);
+
+  String toJson() => toJson$Enum$FilterMatch(this);
+}
+
+String toJson$Enum$FilterMatch(Enum$FilterMatch e) {
+  switch (e) {
+    case Enum$FilterMatch.ALL:
+      return r'ALL';
+    case Enum$FilterMatch.ANY:
+      return r'ANY';
+    case Enum$FilterMatch.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$FilterMatch fromJson$Enum$FilterMatch(String value) {
+  switch (value) {
+    case r'ALL':
+      return Enum$FilterMatch.ALL;
+    case r'ANY':
+      return Enum$FilterMatch.ANY;
+    default:
+      return Enum$FilterMatch.$unknown;
+  }
+}
+
+enum Enum$FilterField {
+  TITLE,
+  ARTIST_NAME,
+  ALBUM_NAME,
+  RELEASE_YEAR,
+  BIRTH_YEAR,
+  GENRE,
+  RATING,
+  PLAY_COUNT,
+  LAST_PLAYED_AT,
+  DURATION,
+  WATCHED,
+  DATE_ADDED,
+  $unknown;
+
+  factory Enum$FilterField.fromJson(String value) =>
+      fromJson$Enum$FilterField(value);
+
+  String toJson() => toJson$Enum$FilterField(this);
+}
+
+String toJson$Enum$FilterField(Enum$FilterField e) {
+  switch (e) {
+    case Enum$FilterField.TITLE:
+      return r'TITLE';
+    case Enum$FilterField.ARTIST_NAME:
+      return r'ARTIST_NAME';
+    case Enum$FilterField.ALBUM_NAME:
+      return r'ALBUM_NAME';
+    case Enum$FilterField.RELEASE_YEAR:
+      return r'RELEASE_YEAR';
+    case Enum$FilterField.BIRTH_YEAR:
+      return r'BIRTH_YEAR';
+    case Enum$FilterField.GENRE:
+      return r'GENRE';
+    case Enum$FilterField.RATING:
+      return r'RATING';
+    case Enum$FilterField.PLAY_COUNT:
+      return r'PLAY_COUNT';
+    case Enum$FilterField.LAST_PLAYED_AT:
+      return r'LAST_PLAYED_AT';
+    case Enum$FilterField.DURATION:
+      return r'DURATION';
+    case Enum$FilterField.WATCHED:
+      return r'WATCHED';
+    case Enum$FilterField.DATE_ADDED:
+      return r'DATE_ADDED';
+    case Enum$FilterField.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$FilterField fromJson$Enum$FilterField(String value) {
+  switch (value) {
+    case r'TITLE':
+      return Enum$FilterField.TITLE;
+    case r'ARTIST_NAME':
+      return Enum$FilterField.ARTIST_NAME;
+    case r'ALBUM_NAME':
+      return Enum$FilterField.ALBUM_NAME;
+    case r'RELEASE_YEAR':
+      return Enum$FilterField.RELEASE_YEAR;
+    case r'BIRTH_YEAR':
+      return Enum$FilterField.BIRTH_YEAR;
+    case r'GENRE':
+      return Enum$FilterField.GENRE;
+    case r'RATING':
+      return Enum$FilterField.RATING;
+    case r'PLAY_COUNT':
+      return Enum$FilterField.PLAY_COUNT;
+    case r'LAST_PLAYED_AT':
+      return Enum$FilterField.LAST_PLAYED_AT;
+    case r'DURATION':
+      return Enum$FilterField.DURATION;
+    case r'WATCHED':
+      return Enum$FilterField.WATCHED;
+    case r'DATE_ADDED':
+      return Enum$FilterField.DATE_ADDED;
+    default:
+      return Enum$FilterField.$unknown;
+  }
+}
+
+enum Enum$FilterOperator {
+  EQUALS,
+  NOT_EQUALS,
+  CONTAINS,
+  NOT_CONTAINS,
+  LESS_THAN,
+  GREATER_THAN,
+  BEFORE,
+  AFTER,
+  IN_LAST_DAYS,
+  IS_SET,
+  IS_NOT_SET,
+  $unknown;
+
+  factory Enum$FilterOperator.fromJson(String value) =>
+      fromJson$Enum$FilterOperator(value);
+
+  String toJson() => toJson$Enum$FilterOperator(this);
+}
+
+String toJson$Enum$FilterOperator(Enum$FilterOperator e) {
+  switch (e) {
+    case Enum$FilterOperator.EQUALS:
+      return r'EQUALS';
+    case Enum$FilterOperator.NOT_EQUALS:
+      return r'NOT_EQUALS';
+    case Enum$FilterOperator.CONTAINS:
+      return r'CONTAINS';
+    case Enum$FilterOperator.NOT_CONTAINS:
+      return r'NOT_CONTAINS';
+    case Enum$FilterOperator.LESS_THAN:
+      return r'LESS_THAN';
+    case Enum$FilterOperator.GREATER_THAN:
+      return r'GREATER_THAN';
+    case Enum$FilterOperator.BEFORE:
+      return r'BEFORE';
+    case Enum$FilterOperator.AFTER:
+      return r'AFTER';
+    case Enum$FilterOperator.IN_LAST_DAYS:
+      return r'IN_LAST_DAYS';
+    case Enum$FilterOperator.IS_SET:
+      return r'IS_SET';
+    case Enum$FilterOperator.IS_NOT_SET:
+      return r'IS_NOT_SET';
+    case Enum$FilterOperator.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$FilterOperator fromJson$Enum$FilterOperator(String value) {
+  switch (value) {
+    case r'EQUALS':
+      return Enum$FilterOperator.EQUALS;
+    case r'NOT_EQUALS':
+      return Enum$FilterOperator.NOT_EQUALS;
+    case r'CONTAINS':
+      return Enum$FilterOperator.CONTAINS;
+    case r'NOT_CONTAINS':
+      return Enum$FilterOperator.NOT_CONTAINS;
+    case r'LESS_THAN':
+      return Enum$FilterOperator.LESS_THAN;
+    case r'GREATER_THAN':
+      return Enum$FilterOperator.GREATER_THAN;
+    case r'BEFORE':
+      return Enum$FilterOperator.BEFORE;
+    case r'AFTER':
+      return Enum$FilterOperator.AFTER;
+    case r'IN_LAST_DAYS':
+      return Enum$FilterOperator.IN_LAST_DAYS;
+    case r'IS_SET':
+      return Enum$FilterOperator.IS_SET;
+    case r'IS_NOT_SET':
+      return Enum$FilterOperator.IS_NOT_SET;
+    default:
+      return Enum$FilterOperator.$unknown;
+  }
+}
+
 enum Enum$RankKind {
   RECENTLY_PLAYED,
   MOST_PLAYED,
@@ -1306,6 +2387,7 @@ enum Enum$PlayQueueSourceType {
   BOOK,
   PODCAST,
   ARTIST,
+  FILTER,
   $unknown;
 
   factory Enum$PlayQueueSourceType.fromJson(String value) =>
@@ -1330,6 +2412,8 @@ String toJson$Enum$PlayQueueSourceType(Enum$PlayQueueSourceType e) {
       return r'PODCAST';
     case Enum$PlayQueueSourceType.ARTIST:
       return r'ARTIST';
+    case Enum$PlayQueueSourceType.FILTER:
+      return r'FILTER';
     case Enum$PlayQueueSourceType.$unknown:
       return r'$unknown';
   }
@@ -1351,6 +2435,8 @@ Enum$PlayQueueSourceType fromJson$Enum$PlayQueueSourceType(String value) {
       return Enum$PlayQueueSourceType.PODCAST;
     case r'ARTIST':
       return Enum$PlayQueueSourceType.ARTIST;
+    case r'FILTER':
+      return Enum$PlayQueueSourceType.FILTER;
     default:
       return Enum$PlayQueueSourceType.$unknown;
   }

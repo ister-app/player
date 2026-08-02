@@ -1,0 +1,24 @@
+# Two nesting levels of subgroups: the builder UI supports one level of subgroups, the second
+# level is only read defensively (deeper trees would need a recursive fragment, which GraphQL
+# does not allow).
+fragment fragmentSavedView on SavedView {
+    id
+    name
+    kind
+    libraryId
+    sorting
+    sortingOrder
+    filter {
+        match
+        limit
+        conditions { field operator value }
+        groups {
+            match
+            conditions { field operator value }
+            groups {
+                match
+                conditions { field operator value }
+            }
+        }
+    }
+}

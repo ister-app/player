@@ -1,5 +1,5 @@
-query movies($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $libraryId: ID) {
-    movies(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, libraryId: $libraryId) {
+query movies($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $libraryId: ID, $filter: MediaFilterInput) {
+    movies(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, libraryId: $libraryId, filter: $filter) {
         number
         size
         totalElements

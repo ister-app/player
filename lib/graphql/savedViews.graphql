@@ -1,0 +1,23 @@
+# The calling user's custom views (saved filters). The filter tree mirrors MediaFilterInput,
+# so a view can be loaded straight back into the filter builder.
+query savedViews($libraryId: ID, $kind: FilterKind) {
+    savedViews(libraryId: $libraryId, kind: $kind) {
+        ...fragmentSavedView
+    }
+}
+
+mutation createSavedView($input: SavedViewInput!) {
+    createSavedView(input: $input) {
+        ...fragmentSavedView
+    }
+}
+
+mutation updateSavedView($id: ID!, $input: SavedViewInput!) {
+    updateSavedView(id: $id, input: $input) {
+        ...fragmentSavedView
+    }
+}
+
+mutation deleteSavedView($id: ID!) {
+    deleteSavedView(id: $id)
+}

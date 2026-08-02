@@ -217,16 +217,24 @@ class PlayQueueService {
   }
 
   /// Unified play-queue creation against the new `createPlayQueue` mutation.
-  /// [sourceType] selects MOVIE/SHOW/ALBUM/LIBRARY/ARTIST; [startId] is the
-  /// episode or track to start at (ignored for MOVIE/LIBRARY sources).
+  /// [sourceType] selects MOVIE/SHOW/ALBUM/LIBRARY/ARTIST/FILTER; [startId] is
+  /// the episode or track to start at (ignored for MOVIE/LIBRARY sources).
   /// [rankKind] selects which ranked track list an ARTIST source plays.
+  /// FILTER sources take either a saved view as [sourceId] or an inline
+  /// [filter] + [filterKind], optionally scoped to [libraryId] and ordered by
+  /// [sorting]/[sortingOrder].
   Future<Fragment$fragmentPlayQueue?> createPlayQueue(
     GraphQLClient graphQLClient, {
     required Enum$PlayQueueSourceType sourceType,
-    required String sourceId,
+    String? sourceId,
     String? startId,
     bool? shuffle,
     Enum$RankKind? rankKind,
+    Input$MediaFilterInput? filter,
+    Enum$FilterKind? filterKind,
+    String? libraryId,
+    Enum$SortingEnum? sorting,
+    Enum$SortingOrder? sortingOrder,
   }) async {
     final MutationOptions options = MutationOptions(
         document: documentNodeMutationcreatePlayQueue,
@@ -237,6 +245,11 @@ class PlayQueueService {
             startId: startId,
             shuffle: shuffle,
             rankKind: rankKind,
+            filter: filter,
+            filterKind: filterKind,
+            libraryId: libraryId,
+            sorting: sorting,
+            sortingOrder: sortingOrder,
           ),
         ).toJson());
     final QueryResult result = await graphQLClient.mutate(options);

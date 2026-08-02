@@ -21,6 +21,7 @@ class AlbumScroll extends StatelessWidget {
   final Enum$SortingEnum sorting;
   final Enum$SortingOrder sortingOrder;
   final bool listLayout;
+  final Input$MediaFilterInput? filter;
   final void Function(Refetch?)? onRefetch;
 
   const AlbumScroll({
@@ -30,6 +31,7 @@ class AlbumScroll extends StatelessWidget {
     this.sorting = Enum$SortingEnum.NAME,
     this.sortingOrder = Enum$SortingOrder.ASCENDING,
     this.listLayout = false,
+    this.filter,
     this.onRefetch,
   });
 
@@ -44,6 +46,8 @@ class AlbumScroll extends StatelessWidget {
       sorting: sorting,
       sortingOrder: sortingOrder,
       libraryId: libraryId,
+      extraVariables:
+          filter == null ? null : {'filter': filter!.toJson()},
       onRefetch: onRefetch,
       pageSize: _pageSize,
       builder: (context, data, requestPage) {

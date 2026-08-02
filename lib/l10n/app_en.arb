@@ -1,13 +1,13 @@
 {
-  "home":"Home",
+  "home": "Home",
   "@home": {
     "description": "Home as in start page"
   },
-  "library":"Library",
+  "library": "Library",
   "@library": {
     "description": "Library of shows/films/music"
   },
-  "settings":"Settings",
+  "settings": "Settings",
   "@settings": {
     "description": "Title of the settings page"
   },
@@ -343,7 +343,7 @@
   },
   "shuffle": "Shuffle",
   "@shuffle": {
-    "description": "Button label to start playback in shuffle mode"
+    "description": "Shuffle toggle / shuffle-play action"
   },
   "songs": "Songs",
   "@songs": {
@@ -778,10 +778,6 @@
   "@removeFromQueue": {
     "description": "Action to remove an item from the play queue"
   },
-  "shuffle": "Shuffle",
-  "@shuffle": {
-    "description": "Shuffle toggle / shuffle-play action"
-  },
   "shufflePlay": "Shuffle play",
   "@shufflePlay": {
     "description": "Action to play an entire library in shuffled order"
@@ -888,17 +884,27 @@
   "pageOfPages": "Page {current} of {total}",
   "@pageOfPages": {
     "placeholders": {
-      "current": {"type": "int"},
-      "total": {"type": "int"}
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "readingDirectionRtl": "Read right-to-left (manga)",
   "pageRangeOfPages": "Page {from}-{to} of {total}",
   "@pageRangeOfPages": {
     "placeholders": {
-      "from": {"type": "int"},
-      "to": {"type": "int"},
-      "total": {"type": "int"}
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "goToSeries": "Go to series",
@@ -915,7 +921,9 @@
   "@readingDirectionDefault": {
     "description": "Segment label for the series' detected reading direction; {direction} is the LTR/RTL abbreviation.",
     "placeholders": {
-      "direction": {"type": "String"}
+      "direction": {
+        "type": "String"
+      }
     }
   },
   "readingDirectionLtr": "Left-to-right",
@@ -925,7 +933,9 @@
   "@sourceAttribution": {
     "description": "Per-item credit line naming the external metadata/artwork providers, e.g. \"Source: TMDB · Wikipedia\".",
     "placeholders": {
-      "sources": {"type": "String"}
+      "sources": {
+        "type": "String"
+      }
     }
   },
   "aboutAttributions": "About & data sources",
@@ -933,7 +943,9 @@
   "attributionLicense": "License: {license}",
   "@attributionLicense": {
     "placeholders": {
-      "license": {"type": "String"}
+      "license": {
+        "type": "String"
+      }
     }
   },
   "attributionsUnavailable": "The server does not report its data sources yet.",
@@ -1071,5 +1083,178 @@
   "sleepTimerDeviceOnly": "Applies to this device only",
   "@sleepTimerDeviceOnly": {
     "description": "Note that sleep timer settings are not synced to the server"
+  },
+  "customFilter": "Custom filter",
+  "@customFilter": {
+    "description": "Tooltip/label of the filter button in the library browse bar"
+  },
+  "filterMatchAll": "Match all of the following",
+  "@filterMatchAll": {
+    "description": "Filter builder: AND mode of a group"
+  },
+  "filterMatchAny": "Match any of the following",
+  "@filterMatchAny": {
+    "description": "Filter builder: OR mode of a group"
+  },
+  "filterAddCondition": "Add condition",
+  "@filterAddCondition": {
+    "description": "Filter builder: the + button tooltip"
+  },
+  "filterAddSubgroup": "Add subgroup",
+  "@filterAddSubgroup": {
+    "description": "Filter builder menu: add a nested condition group"
+  },
+  "filterClear": "Clear filter",
+  "@filterClear": {
+    "description": "Filter builder menu: remove all conditions"
+  },
+  "filterApply": "Apply",
+  "@filterApply": {
+    "description": "Filter builder: apply button"
+  },
+  "filterSaveAsView": "Save as view",
+  "@filterSaveAsView": {
+    "description": "Filter builder menu: save the filter as a named view"
+  },
+  "filterLimitTo": "Limit to",
+  "@filterLimitTo": {
+    "description": "Filter builder: label of the maximum-results field"
+  },
+  "filterActiveChip": "Filter ({count})",
+  "@filterActiveChip": {
+    "description": "Chip showing the active filter with its condition count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filterViewNameLabel": "Name",
+  "@filterViewNameLabel": {
+    "description": "Save-as-view dialog: name field label"
+  },
+  "filterSavedViews": "Views",
+  "@filterSavedViews": {
+    "description": "Filter sheet: header of the saved views section"
+  },
+  "filterDeleteView": "Delete view",
+  "@filterDeleteView": {
+    "description": "Filter sheet: delete a saved view"
+  },
+  "filterValueHint": "Value",
+  "@filterValueHint": {
+    "description": "Filter builder: hint of the value input"
+  },
+  "filterDateHint": "YYYY-MM-DD",
+  "@filterDateHint": {
+    "description": "Filter builder: hint of a date value input"
+  },
+  "filterValueTrue": "Yes",
+  "@filterValueTrue": {
+    "description": "Filter builder: boolean value true"
+  },
+  "filterValueFalse": "No",
+  "@filterValueFalse": {
+    "description": "Filter builder: boolean value false"
+  },
+  "filterPlayResults": "Play results",
+  "@filterPlayResults": {
+    "description": "Play the filtered results as a queue"
+  },
+  "filterViewSaveFailed": "Saving the view failed",
+  "@filterViewSaveFailed": {
+    "description": "Snackbar when createSavedView fails"
+  },
+  "filterFieldTitle": "Title",
+  "@filterFieldTitle": {
+    "description": "Filter field label"
+  },
+  "filterFieldArtistName": "Artist",
+  "@filterFieldArtistName": {
+    "description": "Filter field label"
+  },
+  "filterFieldAlbumName": "Album",
+  "@filterFieldAlbumName": {
+    "description": "Filter field label"
+  },
+  "filterFieldReleaseYear": "Year",
+  "@filterFieldReleaseYear": {
+    "description": "Filter field label"
+  },
+  "filterFieldBirthYear": "Birth year",
+  "@filterFieldBirthYear": {
+    "description": "Filter field label"
+  },
+  "filterFieldGenre": "Genre",
+  "@filterFieldGenre": {
+    "description": "Filter field label"
+  },
+  "filterFieldRating": "Rating",
+  "@filterFieldRating": {
+    "description": "Filter field label"
+  },
+  "filterFieldPlayCount": "Play count",
+  "@filterFieldPlayCount": {
+    "description": "Filter field label"
+  },
+  "filterFieldLastPlayedAt": "Last played",
+  "@filterFieldLastPlayedAt": {
+    "description": "Filter field label"
+  },
+  "filterFieldDuration": "Duration (minutes)",
+  "@filterFieldDuration": {
+    "description": "Filter field label; value is entered in minutes"
+  },
+  "filterFieldWatched": "Watched",
+  "@filterFieldWatched": {
+    "description": "Filter field label"
+  },
+  "filterFieldDateAdded": "Date added",
+  "@filterFieldDateAdded": {
+    "description": "Filter field label"
+  },
+  "filterOpContains": "contains",
+  "@filterOpContains": {
+    "description": "Filter operator label"
+  },
+  "filterOpNotContains": "does not contain",
+  "@filterOpNotContains": {
+    "description": "Filter operator label"
+  },
+  "filterOpEquals": "is",
+  "@filterOpEquals": {
+    "description": "Filter operator label"
+  },
+  "filterOpNotEquals": "is not",
+  "@filterOpNotEquals": {
+    "description": "Filter operator label"
+  },
+  "filterOpLessThan": "less than",
+  "@filterOpLessThan": {
+    "description": "Filter operator label"
+  },
+  "filterOpGreaterThan": "greater than",
+  "@filterOpGreaterThan": {
+    "description": "Filter operator label"
+  },
+  "filterOpBefore": "before",
+  "@filterOpBefore": {
+    "description": "Filter operator label"
+  },
+  "filterOpAfter": "after",
+  "@filterOpAfter": {
+    "description": "Filter operator label"
+  },
+  "filterOpInLastDays": "in the last (days)",
+  "@filterOpInLastDays": {
+    "description": "Filter operator label; the value is a number of days"
+  },
+  "filterOpIsSet": "is set",
+  "@filterOpIsSet": {
+    "description": "Filter operator label"
+  },
+  "filterOpIsNotSet": "is not set",
+  "@filterOpIsNotSet": {
+    "description": "Filter operator label"
   }
 }

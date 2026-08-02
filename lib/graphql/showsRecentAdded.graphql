@@ -1,5 +1,5 @@
-query shows($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $libraryId: ID) {
-    shows(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, libraryId: $libraryId) {
+query shows($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $libraryId: ID, $filter: MediaFilterInput) {
+    shows(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, libraryId: $libraryId, filter: $filter) {
         number
         size
         totalElements

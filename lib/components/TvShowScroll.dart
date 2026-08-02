@@ -21,6 +21,7 @@ class TvShowScroll extends StatefulWidget {
   final Enum$SortingEnum sorting;
   final Enum$SortingOrder sortingOrder;
   final bool listLayout;
+  final Input$MediaFilterInput? filter;
   final Function(Refetch?)? onRefetch;
   final VoidCallback? onEmptyView;
 
@@ -31,6 +32,7 @@ class TvShowScroll extends StatefulWidget {
     this.sorting = Enum$SortingEnum.NAME,
     this.sortingOrder = Enum$SortingOrder.ASCENDING,
     this.listLayout = false,
+    this.filter,
     this.onRefetch,
     this.onEmptyView,
   });
@@ -88,6 +90,7 @@ class _TvShowScrollState extends State<TvShowScroll> {
           'sorting': widget.sorting,
           'sortingOrder': widget.sortingOrder,
           if (widget.libraryId != null) 'libraryId': widget.libraryId,
+          if (widget.filter != null) 'filter': widget.filter!.toJson(),
         },
         fetchPolicy: FetchPolicy.cacheAndNetwork,
       ),

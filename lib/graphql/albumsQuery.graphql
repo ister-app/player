@@ -1,5 +1,5 @@
-query albums($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $artistId: ID, $libraryId: ID) {
-    albums(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, artistId: $artistId, libraryId: $libraryId) {
+query albums($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $artistId: ID, $libraryId: ID, $filter: MediaFilterInput) {
+    albums(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, artistId: $artistId, libraryId: $libraryId, filter: $filter) {
         content { ...fragmentAlbum }
         totalPages totalElements number size
     }

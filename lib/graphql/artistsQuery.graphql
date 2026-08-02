@@ -1,5 +1,5 @@
-query artists($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $libraryId: ID) {
-    artists: persons(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, libraryId: $libraryId) {
+query artists($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $libraryId: ID, $filter: MediaFilterInput) {
+    artists: persons(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, libraryId: $libraryId, filter: $filter) {
         content {
             id name
             images { ...fragmentImages }

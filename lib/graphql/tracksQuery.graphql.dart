@@ -12,12 +12,14 @@ class Variables$Query$tracks {
     Enum$SortingEnum? sorting,
     Enum$SortingOrder? sortingOrder,
     String? libraryId,
+    Input$MediaFilterInput? filter,
   }) => Variables$Query$tracks._({
     if (page != null) r'page': page,
     if (size != null) r'size': size,
     if (sorting != null) r'sorting': sorting,
     if (sortingOrder != null) r'sortingOrder': sortingOrder,
     if (libraryId != null) r'libraryId': libraryId,
+    if (filter != null) r'filter': filter,
   });
 
   Variables$Query$tracks._(this._$data);
@@ -48,6 +50,12 @@ class Variables$Query$tracks {
       final l$libraryId = data['libraryId'];
       result$data['libraryId'] = (l$libraryId as String?);
     }
+    if (data.containsKey('filter')) {
+      final l$filter = data['filter'];
+      result$data['filter'] = l$filter == null
+          ? null
+          : Input$MediaFilterInput.fromJson((l$filter as Map<String, dynamic>));
+    }
     return Variables$Query$tracks._(result$data);
   }
 
@@ -63,6 +71,9 @@ class Variables$Query$tracks {
       (_$data['sortingOrder'] as Enum$SortingOrder?);
 
   String? get libraryId => (_$data['libraryId'] as String?);
+
+  Input$MediaFilterInput? get filter =>
+      (_$data['filter'] as Input$MediaFilterInput?);
 
   Map<String, dynamic> toJson() {
     final result$data = <String, dynamic>{};
@@ -89,6 +100,10 @@ class Variables$Query$tracks {
     if (_$data.containsKey('libraryId')) {
       final l$libraryId = libraryId;
       result$data['libraryId'] = l$libraryId;
+    }
+    if (_$data.containsKey('filter')) {
+      final l$filter = filter;
+      result$data['filter'] = l$filter?.toJson();
     }
     return result$data;
   }
@@ -146,6 +161,14 @@ class Variables$Query$tracks {
     if (l$libraryId != lOther$libraryId) {
       return false;
     }
+    final l$filter = filter;
+    final lOther$filter = other.filter;
+    if (_$data.containsKey('filter') != other._$data.containsKey('filter')) {
+      return false;
+    }
+    if (l$filter != lOther$filter) {
+      return false;
+    }
     return true;
   }
 
@@ -156,12 +179,14 @@ class Variables$Query$tracks {
     final l$sorting = sorting;
     final l$sortingOrder = sortingOrder;
     final l$libraryId = libraryId;
+    final l$filter = filter;
     return Object.hashAll([
       _$data.containsKey('page') ? l$page : const {},
       _$data.containsKey('size') ? l$size : const {},
       _$data.containsKey('sorting') ? l$sorting : const {},
       _$data.containsKey('sortingOrder') ? l$sortingOrder : const {},
       _$data.containsKey('libraryId') ? l$libraryId : const {},
+      _$data.containsKey('filter') ? l$filter : const {},
     ]);
   }
 }
@@ -181,6 +206,7 @@ abstract class CopyWith$Variables$Query$tracks<TRes> {
     Enum$SortingEnum? sorting,
     Enum$SortingOrder? sortingOrder,
     String? libraryId,
+    Input$MediaFilterInput? filter,
   });
 }
 
@@ -200,6 +226,7 @@ class _CopyWithImpl$Variables$Query$tracks<TRes>
     Object? sorting = _undefined,
     Object? sortingOrder = _undefined,
     Object? libraryId = _undefined,
+    Object? filter = _undefined,
   }) => _then(
     Variables$Query$tracks._({
       ..._instance._$data,
@@ -209,6 +236,7 @@ class _CopyWithImpl$Variables$Query$tracks<TRes>
       if (sortingOrder != _undefined)
         'sortingOrder': (sortingOrder as Enum$SortingOrder?),
       if (libraryId != _undefined) 'libraryId': (libraryId as String?),
+      if (filter != _undefined) 'filter': (filter as Input$MediaFilterInput?),
     }),
   );
 }
@@ -225,6 +253,7 @@ class _CopyWithStubImpl$Variables$Query$tracks<TRes>
     Enum$SortingEnum? sorting,
     Enum$SortingOrder? sortingOrder,
     String? libraryId,
+    Input$MediaFilterInput? filter,
   }) => _res;
 }
 
@@ -384,6 +413,15 @@ const documentNodeQuerytracks = DocumentNode(
           defaultValue: DefaultValueNode(value: null),
           directives: [],
         ),
+        VariableDefinitionNode(
+          variable: VariableNode(name: NameNode(value: 'filter')),
+          type: NamedTypeNode(
+            name: NameNode(value: 'MediaFilterInput'),
+            isNonNull: false,
+          ),
+          defaultValue: DefaultValueNode(value: null),
+          directives: [],
+        ),
       ],
       directives: [],
       selectionSet: SelectionSetNode(
@@ -411,6 +449,10 @@ const documentNodeQuerytracks = DocumentNode(
               ArgumentNode(
                 name: NameNode(value: 'libraryId'),
                 value: VariableNode(name: NameNode(value: 'libraryId')),
+              ),
+              ArgumentNode(
+                name: NameNode(value: 'filter'),
+                value: VariableNode(name: NameNode(value: 'filter')),
               ),
             ],
             directives: [],
