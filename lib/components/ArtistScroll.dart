@@ -1,20 +1,21 @@
 import 'package:auto_route/auto_route.dart' show AutoRouter;
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:player/graphql/moviesQuery.graphql.dart';
+import 'package:player/graphql/artistsQuery.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
-import 'package:player/utils/MetadataUtil.dart';
 import 'package:player/utils/StreamTokenService.dart';
 
 import 'BrowseListRow.dart';
 import 'CarouselItemView.dart';
 import 'PagedContentView.dart';
 
-/// Scrollable grid or list of all movies in a library, loaded page by page.
-class MovieScroll extends StatelessWidget {
+/// Scrollable grid or list of all artists in a music library, loaded page by
+/// page. Artists are persons server-side; the `artists` operation aliases the
+/// `persons` query.
+class ArtistScroll extends StatelessWidget {
   final String serverName;
   final String? libraryId;
   final Enum$SortingEnum sorting;
@@ -22,7 +23,7 @@ class MovieScroll extends StatelessWidget {
   final bool listLayout;
   final void Function(Refetch?)? onRefetch;
 
-  const MovieScroll({
+  const ArtistScroll({
     super.key,
     required this.serverName,
     this.libraryId,
@@ -36,10 +37,10 @@ class MovieScroll extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PagedContentView<Query$movies$movies$content>(
-      document: documentNodeQuerymovies,
-      rootField: 'movies',
-      fromJson: Query$movies$movies$content.fromJson,
+    return PagedContentView<Query$artists$artists$content>(
+      document: documentNodeQueryartists,
+      rootField: 'artists',
+      fromJson: Query$artists$artists$content.fromJson,
       sorting: sorting,
       sortingOrder: sortingOrder,
       libraryId: libraryId,
@@ -54,23 +55,23 @@ class MovieScroll extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: itemCount,
             itemBuilder: (context, index) {
-              final movie = data.itemAt(index);
-              if (movie == null) {
+              final artist = data.itemAt(index);
+              if (artist == null) {
                 return pagedSkeletonRow(
-                  key: ValueKey('movie-list-skeleton-$index'),
+                  key: ValueKey('artist-list-skeleton-$index'),
                   onVisible: () => requestPage(index ~/ _pageSize),
                 );
               }
               final img =
-                  ImageUtil.getImageByType(movie.images, ImageTypes.cover);
+                  ImageUtil.getImageByType(artist.images, ImageTypes.cover);
               return BrowseListRow(
                 imageUrl: ImageUtil.buildUrl(img,
                     token: StreamTokenService.getToken(serverName)),
-                placeholderIcon: Icons.movie,
-                title: MetadataUtil.getTitle(movie.metadata) ?? movie.name,
-                subtitle: MetadataUtil.getDescription(movie.metadata) ?? '',
-                onTap: () =>
-                    AutoRouter.of(context).push(MovieRoute(movieId: movie.id)),
+                placeholderIcon: Icons.person,
+                squareThumb: true,
+                title: artist.name,
+                onTap: () => AutoRouter.of(context)
+                    .push(PersonRoute(personId: artist.id)),
               );
             },
           );
@@ -83,30 +84,31 @@ class MovieScroll extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
             maxCrossAxisExtent: 300,
-            childAspectRatio: 0.65,
+            childAspectRatio: 1.0,
             mainAxisSpacing: 0,
             crossAxisSpacing: 0,
           ),
           itemCount: itemCount,
           itemBuilder: (context, index) {
-            final movie = data.itemAt(index);
-            if (movie != null) {
+            final artist = data.itemAt(index);
+            if (artist != null) {
               final img =
-                  ImageUtil.getImageByType(movie.images, ImageTypes.cover);
+                  ImageUtil.getImageByType(artist.images, ImageTypes.cover);
               return CarouselItemView(
                 serverName: serverName,
-                title: MetadataUtil.getTitle(movie.metadata) ?? movie.name,
-                subTitle: MetadataUtil.getDescription(movie.metadata) ?? '',
+                title: artist.name,
+                subTitle: '',
                 imageUrl: ImageUtil.buildUrl(img,
                     token: StreamTokenService.getToken(serverName)),
                 blurHash: img?.blurHash,
-                onTap: () =>
-                    AutoRouter.of(context).push(MovieRoute(movieId: movie.id)),
+                placeholderIcon: Icons.person,
+                onTap: () => AutoRouter.of(context)
+                    .push(PersonRoute(personId: artist.id)),
               );
             }
 
             return pagedSkeletonSlot(
-              key: ValueKey('movie-scroll-skeleton-$index'),
+              key: ValueKey('artist-scroll-skeleton-$index'),
               onVisible: () => requestPage(index ~/ _pageSize),
             );
           },

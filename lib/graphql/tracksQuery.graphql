@@ -1,0 +1,12 @@
+query tracks($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $libraryId: ID) {
+    tracks(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, libraryId: $libraryId) {
+        content {
+            ...fragmentTrack
+            # The full album fragment on purpose: it is exactly what
+            # MediaPlayerHandler.startPlayQueueForAlbum needs, so a tapped
+            # track starts playing without an extra albumById round-trip.
+            album { ...fragmentAlbum }
+        }
+        totalPages totalElements number size
+    }
+}

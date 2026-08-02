@@ -11,13 +11,16 @@ import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+import 'BrowseListRow.dart';
 import 'CarouselItemView.dart';
+import 'PagedContentView.dart' show pagedSkeletonRow;
 
 class TvShowScroll extends StatefulWidget {
   final String serverName;
   final String? libraryId;
   final Enum$SortingEnum sorting;
   final Enum$SortingOrder sortingOrder;
+  final bool listLayout;
   final Function(Refetch?)? onRefetch;
   final VoidCallback? onEmptyView;
 
@@ -27,6 +30,7 @@ class TvShowScroll extends StatefulWidget {
     this.libraryId,
     this.sorting = Enum$SortingEnum.NAME,
     this.sortingOrder = Enum$SortingOrder.ASCENDING,
+    this.listLayout = false,
     this.onRefetch,
     this.onEmptyView,
   });
@@ -111,6 +115,39 @@ class _TvShowScrollState extends State<TvShowScroll> {
         }
 
         final int itemCount = _totalItems ?? (_pageSize * 2);
+
+        if (widget.listLayout) {
+          return ListView.builder(
+            primary: true,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: itemCount,
+            itemBuilder: (context, index) {
+              final page = index ~/ _pageSize;
+              final itemIndex = index % _pageSize;
+              final pageItems = _pageData[page];
+              if (pageItems == null || itemIndex >= pageItems.length) {
+                return pagedSkeletonRow(
+                  key: ValueKey('tvshow-list-skeleton-$index'),
+                  onVisible: () {
+                    if (fetchMore != null) _requestPage(page, fetchMore);
+                  },
+                );
+              }
+              final show = pageItems[itemIndex];
+              final img =
+                  ImageUtil.getImageByType(show.images, ImageTypes.cover);
+              return BrowseListRow(
+                imageUrl: ImageUtil.buildUrl(img,
+                    token: StreamTokenService.getToken(widget.serverName)),
+                placeholderIcon: Icons.tv,
+                title: MetadataUtil.getTitle(show.metadata) ?? '',
+                subtitle: MetadataUtil.getDescription(show.metadata) ?? '',
+                onTap: () => AutoRouter.of(context)
+                    .push(ShowOverviewRoute(showId: show.id)),
+              );
+            },
+          );
+        }
 
         return GridView.builder(
           // Attach to ShowHomePage's NestedScrollView so the view-selector header

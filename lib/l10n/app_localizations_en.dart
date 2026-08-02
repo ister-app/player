@@ -389,6 +389,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewDiscover => 'Discover';
 
   @override
+  String get goToAlbum => 'Go to album';
+
+  @override
+  String get browseKindAlbums => 'Albums';
+
+  @override
+  String get browseKindArtists => 'Artists';
+
+  @override
+  String get browseKindTracks => 'Tracks';
+
+  @override
+  String get browseKindShows => 'Shows';
+
+  @override
+  String get browseKindEpisodes => 'Episodes';
+
+  @override
+  String get viewAsGrid => 'Grid view';
+
+  @override
+  String get viewAsList => 'List view';
+
+  @override
+  String get sortAirDateNewest => 'Air date (newest first)';
+
+  @override
+  String get sortAirDateOldest => 'Air date (oldest first)';
+
+  @override
   String get viewBrowse => 'Browse';
 
   @override

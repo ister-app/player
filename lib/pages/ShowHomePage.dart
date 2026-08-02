@@ -9,14 +9,18 @@ import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../components/AlbumScroll.dart';
+import '../components/ArtistScroll.dart';
 import '../components/BookScroll.dart';
+import '../components/EpisodeScroll.dart';
 import '../components/LibraryDiscoverView.dart';
 import '../components/SeriesScroll.dart';
 import '../components/AddPodcastSheet.dart';
 import '../components/PodcastScroll.dart';
 import '../components/MovieScroll.dart';
+import '../components/TrackScroll.dart';
 import '../components/TvShowScroll.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/BrowseKind.dart';
 import '../utils/LibraryIcons.dart';
 import '../utils/LibrarySelectionNotifier.dart';
 import '../utils/LoggerService.dart';
@@ -34,11 +38,20 @@ class ShowHomePage extends StatefulWidget {
   /// `'discover'` or `'browse'`; anything else falls back to the saved pref.
   final String? view;
 
+  /// A [BrowseKind] name (e.g. `'tracks'`); anything else falls back to the
+  /// saved pref / the library type's default kind.
+  final String? kind;
+
+  /// `'grid'` or `'list'`; anything else falls back to the saved pref.
+  final String? layout;
+
   const ShowHomePage({
     super.key,
     @PathParam.inherit('serverName') required this.serverName,
     @QueryParam('libraryId') this.libraryId,
     @QueryParam('view') this.view,
+    @QueryParam('kind') this.kind,
+    @QueryParam('layout') this.layout,
   });
 
   @override
@@ -56,12 +69,24 @@ class _ShowHomePageState extends State<ShowHomePage> {
   String? _sortSeededForLibraryId;
   // Discover (carousels) vs. Browse (the sortable grid); remembered per server.
   bool _discoverView = true;
+  // What the Browse grid lists (albums/artists/tracks, shows/episodes); null =
+  // the library type's default kind. Remembered per library.
+  BrowseKind? _browseKind;
+  // The sort of the non-default kinds is a device-local preference (the
+  // server-stored library sort keeps belonging to the default kind).
+  Enum$SortingEnum? _kindSorting;
+  Enum$SortingOrder? _kindSortingOrder;
+  // Grid vs list layout for the Browse view; remembered per server.
+  bool _listLayout = false;
   Refetch? _refetchLibraries;
   int _refreshCount = 0;
 
   static const _kSelectedLibraryKey = 'selected_library_id';
   static const _kSelectedLibraryTypeKey = 'selected_library_type';
   static const _kLibraryViewKey = 'library_view';
+  static const _kBrowseKindKey = 'library_browse_kind';
+  static const _kBrowseLayoutKey = 'library_browse_layout';
+  static const _kKindSortingKey = 'library_kind_sorting';
   static final SharedPreferencesAsync _prefs = SharedPreferencesAsync();
 
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
@@ -88,6 +113,14 @@ class _ShowHomePageState extends State<ShowHomePage> {
     } else {
       _loadSavedLibrary();
     }
+    // The layout pref applies on every path; an explicit URL layout wins.
+    if (widget.layout != 'grid' && widget.layout != 'list') {
+      _prefs.getString('${_kBrowseLayoutKey}_${widget.serverName}').then((saved) {
+        if (mounted && saved != null) {
+          setState(() => _listLayout = saved == 'list');
+        }
+      });
+    }
   }
 
   @override
@@ -97,14 +130,26 @@ class _ShowHomePageState extends State<ShowHomePage> {
     // page update. Adopt it only when it actually differs from our state —
     // our own _reflectUrl round-trip comes back matching and must be a no-op.
     final urlChanged = widget.libraryId != oldWidget.libraryId ||
-        widget.view != oldWidget.view;
+        widget.view != oldWidget.view ||
+        widget.kind != oldWidget.kind ||
+        widget.layout != oldWidget.layout;
     if (!urlChanged) return;
     final libDiffers =
         widget.libraryId != null && widget.libraryId != _selectedLibraryId;
     final viewDiffers = (widget.view == 'browse' && _discoverView) ||
         (widget.view == 'discover' && !_discoverView);
-    if (libDiffers || viewDiffers) _applyUrlParams();
+    final urlKind = _parseKind(widget.kind);
+    final kindDiffers = urlKind != null && urlKind != _browseKind;
+    final layoutDiffers = (widget.layout == 'list' && !_listLayout) ||
+        (widget.layout == 'grid' && _listLayout);
+    if (libDiffers || viewDiffers || kindDiffers || layoutDiffers) {
+      _applyUrlParams();
+    }
   }
+
+  static BrowseKind? _parseKind(String? name) => BrowseKind.values
+      .cast<BrowseKind?>()
+      .firstWhere((k) => k!.name == name, orElse: () => null);
 
   @override
   void dispose() {
@@ -116,15 +161,24 @@ class _ShowHomePageState extends State<ShowHomePage> {
   /// resolves the library's type and seeds the sort, as it does for a
   /// prefs-restored ID; prefs are updated so the choice sticks on-device too.
   void _applyUrlParams() {
+    final urlKind = _parseKind(widget.kind);
+    final libraryChanged = widget.libraryId != null &&
+        widget.libraryId != _selectedLibraryId;
     setState(() {
-      if (widget.libraryId != null &&
-          widget.libraryId != _selectedLibraryId) {
+      if (libraryChanged) {
         _selectedLibraryId = widget.libraryId;
         _selectedLibraryType = null;
         _sortSeededForLibraryId = null;
+        _browseKind = null;
+        _kindSorting = null;
+        _kindSortingOrder = null;
       }
       if (widget.view == 'browse' || widget.view == 'discover') {
         _discoverView = widget.view == 'discover';
+      }
+      if (urlKind != null) _browseKind = urlKind;
+      if (widget.layout == 'grid' || widget.layout == 'list') {
+        _listLayout = widget.layout == 'list';
       }
     });
     if (widget.libraryId != null) {
@@ -135,6 +189,53 @@ class _ShowHomePageState extends State<ShowHomePage> {
       _prefs.setString(
           '${_kLibraryViewKey}_${widget.serverName}', widget.view!);
     }
+    if (urlKind != null && widget.libraryId != null) {
+      _prefs.setString(
+          _browseKindPrefKey(widget.libraryId!), urlKind.name);
+      _loadKindSorting(widget.libraryId!, urlKind);
+    } else if (libraryChanged) {
+      _restoreBrowseKind(widget.libraryId!);
+    }
+    if (widget.layout == 'grid' || widget.layout == 'list') {
+      _prefs.setString(
+          '${_kBrowseLayoutKey}_${widget.serverName}', widget.layout!);
+    }
+  }
+
+  String _browseKindPrefKey(String libraryId) =>
+      '${_kBrowseKindKey}_${widget.serverName}_$libraryId';
+
+  String _kindSortingPrefKey(String libraryId, BrowseKind kind) =>
+      '${_kKindSortingKey}_${widget.serverName}_${libraryId}_${kind.name}';
+
+  /// Restores the remembered browse kind (and its device-local sort) of a
+  /// library; leaves the default kind in place when nothing was saved.
+  Future<void> _restoreBrowseKind(String libraryId) async {
+    final saved = await _prefs.getString(_browseKindPrefKey(libraryId));
+    final kind = _parseKind(saved);
+    if (!mounted || kind == null || libraryId != _selectedLibraryId) return;
+    setState(() => _browseKind = kind);
+    await _loadKindSorting(libraryId, kind);
+  }
+
+  /// Seeds [_kindSorting]/[_kindSortingOrder] from the device-local pref of
+  /// the given kind (null → the kind's own default applies).
+  Future<void> _loadKindSorting(String libraryId, BrowseKind kind) async {
+    final saved = await _prefs.getString(_kindSortingPrefKey(libraryId, kind));
+    if (!mounted || _selectedLibraryId != libraryId) return;
+    final parts = saved?.split(':');
+    setState(() {
+      _kindSorting = parts == null || parts.length != 2
+          ? null
+          : Enum$SortingEnum.values
+              .cast<Enum$SortingEnum?>()
+              .firstWhere((s) => s!.name == parts[0], orElse: () => null);
+      _kindSortingOrder = parts == null || parts.length != 2
+          ? null
+          : Enum$SortingOrder.values
+              .cast<Enum$SortingOrder?>()
+              .firstWhere((o) => o!.name == parts[1], orElse: () => null);
+    });
   }
 
   /// Mirrors the current selection into the address bar (replaceState — no
@@ -153,6 +254,8 @@ class _ShowHomePageState extends State<ShowHomePage> {
     router.navigate(ShowHomeRoute(
       libraryId: _selectedLibraryId,
       view: _discoverView ? 'discover' : 'browse',
+      kind: _browseKind?.name,
+      layout: _listLayout ? 'list' : null,
     ));
   }
 
@@ -169,7 +272,11 @@ class _ShowHomePageState extends State<ShowHomePage> {
       // Let the libraries query reseed the grid sort for the new library.
       _sortSeededForLibraryId = null;
       _discoverView = false;
+      _browseKind = null;
+      _kindSorting = null;
+      _kindSortingOrder = null;
     });
+    _restoreBrowseKind(pending.libraryId);
     _prefs.setString(
         '${_kSelectedLibraryKey}_${widget.serverName}', pending.libraryId);
     _prefs.setString('${_kSelectedLibraryTypeKey}_${widget.serverName}',
@@ -201,6 +308,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
       });
       // Upgrade the bare /library URL to a bookmarkable one.
       _reflectUrl();
+      await _restoreBrowseKind(saved);
     }
   }
 
@@ -211,8 +319,12 @@ class _ShowHomePageState extends State<ShowHomePage> {
       _sorting = lib.sorting;
       _sortingOrder = lib.sortingOrder;
       _sortSeededForLibraryId = lib.id;
+      _browseKind = null;
+      _kindSorting = null;
+      _kindSortingOrder = null;
     });
     _reflectUrl();
+    _restoreBrowseKind(lib.id);
     await _prefs.setString('${_kSelectedLibraryKey}_${widget.serverName}', lib.id);
     await _prefs.setString('${_kSelectedLibraryTypeKey}_${widget.serverName}', lib.type.name);
   }
@@ -225,13 +337,77 @@ class _ShowHomePageState extends State<ShowHomePage> {
         discover ? 'discover' : 'browse');
   }
 
-  /// Persists the grid sort choice for the selected library on the server (so every client of
-  /// this user follows it) and rebuilds the grid via its [ValueKey] to re-run the query.
+  /// The kind the Browse grid actually shows: the user's choice when it is
+  /// valid for the library type, else the type's default (first) kind. Null
+  /// for single-kind types.
+  BrowseKind? get _effectiveKind {
+    final kinds = browseKindsFor(_selectedLibraryType);
+    if (kinds.isEmpty) return null;
+    if (_browseKind != null && kinds.contains(_browseKind)) return _browseKind;
+    return kinds.first;
+  }
+
+  /// Whether the current kind is the type's default one. The default kind
+  /// follows the server-stored library sort; the others sort device-locally.
+  bool get _isDefaultKind {
+    final kinds = browseKindsFor(_selectedLibraryType);
+    return kinds.isEmpty || _effectiveKind == kinds.first;
+  }
+
+  static (Enum$SortingEnum, Enum$SortingOrder) _kindSortDefaults(
+      BrowseKind kind) {
+    // The library-wide episode list reads as a feed: newest additions first.
+    return kind == BrowseKind.episodes
+        ? (Enum$SortingEnum.DATE_CREATED, Enum$SortingOrder.DESCENDING)
+        : (Enum$SortingEnum.NAME, Enum$SortingOrder.ASCENDING);
+  }
+
+  Enum$SortingEnum get _effectiveSorting => _isDefaultKind
+      ? _sorting
+      : _kindSorting ?? _kindSortDefaults(_effectiveKind!).$1;
+
+  Enum$SortingOrder get _effectiveSortingOrder => _isDefaultKind
+      ? _sortingOrder
+      : _kindSortingOrder ?? _kindSortDefaults(_effectiveKind!).$2;
+
+  Future<void> _setBrowseKind(BrowseKind kind) async {
+    final libraryId = _selectedLibraryId;
+    if (libraryId == null || kind == _effectiveKind) return;
+    setState(() {
+      _browseKind = kind;
+      _kindSorting = null;
+      _kindSortingOrder = null;
+    });
+    _reflectUrl();
+    await _prefs.setString(_browseKindPrefKey(libraryId), kind.name);
+    await _loadKindSorting(libraryId, kind);
+  }
+
+  Future<void> _toggleLayout() async {
+    setState(() => _listLayout = !_listLayout);
+    _reflectUrl();
+    await _prefs.setString('${_kBrowseLayoutKey}_${widget.serverName}',
+        _listLayout ? 'list' : 'grid');
+  }
+
+  /// Persists the grid sort choice. For the type's default kind it goes to the
+  /// server via setLibrarySorting (so every client of this user follows it);
+  /// for the other kinds it is a device-local preference, so switching kinds
+  /// never clobbers the shared library sort.
   Future<void> _setSorting(BuildContext context, Enum$SortingEnum sorting,
       Enum$SortingOrder order) async {
     final libraryId = _selectedLibraryId;
     if (libraryId == null ||
-        (sorting == _sorting && order == _sortingOrder)) {
+        (sorting == _effectiveSorting && order == _effectiveSortingOrder)) {
+      return;
+    }
+    if (!_isDefaultKind) {
+      setState(() {
+        _kindSorting = sorting;
+        _kindSortingOrder = order;
+      });
+      await _prefs.setString(_kindSortingPrefKey(libraryId, _effectiveKind!),
+          '${sorting.name}:${order.name}');
       return;
     }
     final messenger = ScaffoldMessenger.of(context);
@@ -490,34 +666,96 @@ class _ShowHomePageState extends State<ShowHomePage> {
     );
   }
 
-  /// The grid's sort control, shown under the view switch while browsing.
+  /// The browse controls under the view switch: kind pills (only for types
+  /// with more than one kind), the sort menu and the grid/list toggle.
   Widget _sortBar(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: MenuAnchor(
-          menuChildren: _sortMenuItems(context),
-          builder: (context, controller, child) {
-            return TextButton.icon(
-              icon: const Icon(Icons.sort),
-              label: Text(_currentSortLabel(context)),
-              onPressed: () =>
-                  controller.isOpen ? controller.close() : controller.open(),
-            );
-          },
-        ),
+    final loc = AppLocalizations.of(context)!;
+    final kinds = browseKindsFor(_selectedLibraryType);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  if (kinds.length > 1)
+                    for (final kind in kinds) ...[
+                      _kindPill(context, kind),
+                      const SizedBox(width: 4),
+                    ],
+                  MenuAnchor(
+                    menuChildren: _sortMenuItems(context),
+                    builder: (context, controller, child) {
+                      return TextButton.icon(
+                        icon: const Icon(Icons.sort),
+                        label: Text(_currentSortLabel(context)),
+                        onPressed: () => controller.isOpen
+                            ? controller.close()
+                            : controller.open(),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          IconButton(
+            icon: Icon(_listLayout ? Icons.grid_view : Icons.view_list),
+            tooltip: _listLayout ? loc.viewAsGrid : loc.viewAsList,
+            onPressed: _toggleLayout,
+          ),
+        ],
       ),
     );
   }
 
+  /// A browse-kind pill, same styling as the Discover/Browse pills.
+  Widget _kindPill(BuildContext context, BrowseKind kind) {
+    final colors = Theme.of(context).colorScheme;
+    final selected = _effectiveKind == kind;
+    return TextButton(
+      style: TextButton.styleFrom(
+        foregroundColor: selected ? colors.onSurface : colors.onSurfaceVariant,
+        shape: StadiumBorder(
+          side: selected
+              ? BorderSide(color: colors.outline)
+              : BorderSide.none,
+        ),
+      ),
+      onPressed: () => _setBrowseKind(kind),
+      child: Text(_kindLabel(context, kind)),
+    );
+  }
+
+  String _kindLabel(BuildContext context, BrowseKind kind) {
+    final loc = AppLocalizations.of(context)!;
+    switch (kind) {
+      case BrowseKind.albums:
+        return loc.browseKindAlbums;
+      case BrowseKind.artists:
+        return loc.browseKindArtists;
+      case BrowseKind.tracks:
+        return loc.browseKindTracks;
+      case BrowseKind.shows:
+        return loc.browseKindShows;
+      case BrowseKind.episodes:
+        return loc.browseKindEpisodes;
+    }
+  }
+
   String _currentSortLabel(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final ascending = _sortingOrder == Enum$SortingOrder.ASCENDING;
-    switch (_sorting) {
+    final ascending = _effectiveSortingOrder == Enum$SortingOrder.ASCENDING;
+    final airDate = _effectiveKind == BrowseKind.episodes;
+    switch (_effectiveSorting) {
       case Enum$SortingEnum.DATE_CREATED:
         return ascending ? loc.sortDateAddedOldest : loc.sortDateAddedNewest;
       case Enum$SortingEnum.RELEASE_YEAR:
+        if (airDate) {
+          return ascending ? loc.sortAirDateOldest : loc.sortAirDateNewest;
+        }
         return ascending
             ? loc.sortReleaseYearOldest
             : loc.sortReleaseYearNewest;
@@ -527,11 +765,14 @@ class _ShowHomePageState extends State<ShowHomePage> {
   }
 
   Widget _buildBody() {
-    // The sort key/order are part of the key so changing them rebuilds the grid and re-runs the
-    // query from page 0 (pages in the old and new order must never share one list).
+    // The sort key/order and browse kind are part of the key so changing them rebuilds the grid
+    // and re-runs the query from page 0 (pages in the old and new order must never share one
+    // list). The grid/list layout is deliberately NOT in the key: it is a plain parameter, so
+    // toggling it keeps the already-loaded pages.
     final key = ValueKey('${_selectedLibraryId ?? 'all'}-$_refreshCount'
-        '-${_sorting.name}-${_sortingOrder.name}-'
-        '${_discoverView ? 'discover' : 'browse'}');
+        '-${_effectiveSorting.name}-${_effectiveSortingOrder.name}-'
+        '${_discoverView ? 'discover' : 'browse'}'
+        '-${_effectiveKind?.name ?? 'default'}');
     if (_discoverView &&
         _selectedLibraryId != null &&
         _selectedLibraryType != null &&
@@ -547,56 +788,93 @@ class _ShowHomePageState extends State<ShowHomePage> {
       return TvShowScroll(
         key: key,
         serverName: widget.serverName,
-        sorting: _sorting,
-        sortingOrder: _sortingOrder,
+        sorting: _effectiveSorting,
+        sortingOrder: _effectiveSortingOrder,
+        listLayout: _listLayout,
       );
     } else if (_selectedLibraryType == Enum$LibraryType.SHOW) {
+      if (_effectiveKind == BrowseKind.episodes) {
+        return EpisodeScroll(
+          key: key,
+          serverName: widget.serverName,
+          libraryId: _selectedLibraryId,
+          sorting: _effectiveSorting,
+          sortingOrder: _effectiveSortingOrder,
+          listLayout: _listLayout,
+        );
+      }
       return TvShowScroll(
         key: key,
         serverName: widget.serverName,
         libraryId: _selectedLibraryId,
-        sorting: _sorting,
-        sortingOrder: _sortingOrder,
+        sorting: _effectiveSorting,
+        sortingOrder: _effectiveSortingOrder,
+        listLayout: _listLayout,
       );
     } else if (_selectedLibraryType == Enum$LibraryType.MUSIC) {
+      if (_effectiveKind == BrowseKind.artists) {
+        return ArtistScroll(
+          key: key,
+          serverName: widget.serverName,
+          libraryId: _selectedLibraryId,
+          sorting: _effectiveSorting,
+          sortingOrder: _effectiveSortingOrder,
+          listLayout: _listLayout,
+        );
+      }
+      if (_effectiveKind == BrowseKind.tracks) {
+        return TrackScroll(
+          key: key,
+          serverName: widget.serverName,
+          libraryId: _selectedLibraryId,
+          sorting: _effectiveSorting,
+          sortingOrder: _effectiveSortingOrder,
+          listLayout: _listLayout,
+        );
+      }
       return AlbumScroll(
         key: key,
         serverName: widget.serverName,
         libraryId: _selectedLibraryId,
-        sorting: _sorting,
-        sortingOrder: _sortingOrder,
+        sorting: _effectiveSorting,
+        sortingOrder: _effectiveSortingOrder,
+        listLayout: _listLayout,
       );
     } else if (_selectedLibraryType == Enum$LibraryType.BOOK) {
       return BookScroll(
         key: key,
         serverName: widget.serverName,
         libraryId: _selectedLibraryId,
-        sorting: _sorting,
-        sortingOrder: _sortingOrder,
+        sorting: _effectiveSorting,
+        sortingOrder: _effectiveSortingOrder,
+        listLayout: _listLayout,
       );
     } else if (_selectedLibraryType == Enum$LibraryType.COMIC) {
       return SeriesScroll(
         key: key,
         serverName: widget.serverName,
         libraryId: _selectedLibraryId,
-        sorting: _sorting,
-        sortingOrder: _sortingOrder,
+        sorting: _effectiveSorting,
+        sortingOrder: _effectiveSortingOrder,
+        listLayout: _listLayout,
       );
     } else if (_selectedLibraryType == Enum$LibraryType.PODCAST) {
       return PodcastScroll(
         key: key,
         serverName: widget.serverName,
         libraryId: _selectedLibraryId,
-        sorting: _sorting,
-        sortingOrder: _sortingOrder,
+        sorting: _effectiveSorting,
+        sortingOrder: _effectiveSortingOrder,
+        listLayout: _listLayout,
       );
     } else if (_selectedLibraryType == Enum$LibraryType.MOVIE) {
       return MovieScroll(
         key: key,
         serverName: widget.serverName,
         libraryId: _selectedLibraryId,
-        sorting: _sorting,
-        sortingOrder: _sortingOrder,
+        sorting: _effectiveSorting,
+        sortingOrder: _effectiveSortingOrder,
+        listLayout: _listLayout,
       );
     } else {
       // Type not resolved yet (e.g. restored ID without a stored type). Wait for
@@ -606,10 +884,13 @@ class _ShowHomePageState extends State<ShowHomePage> {
     }
   }
 
-  /// The sort options offered for the selected library. Release-year sorting is hidden for
-  /// podcasts, which have no release year (the server folds it onto the title as a safety net).
+  /// The sort options offered for the selected library and browse kind.
+  /// Release-year sorting is hidden for podcasts, which have no release year
+  /// (the server folds it onto the title as a safety net), and for artists,
+  /// where it would be meaningless; for episodes it is labelled as air date.
   List<Widget> _sortMenuItems(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final kind = _effectiveKind;
     final items = <Widget>[
       _sortMenuItem(context, loc.sortNameAsc,
           Enum$SortingEnum.NAME, Enum$SortingOrder.ASCENDING),
@@ -620,7 +901,13 @@ class _ShowHomePageState extends State<ShowHomePage> {
       _sortMenuItem(context, loc.sortDateAddedOldest,
           Enum$SortingEnum.DATE_CREATED, Enum$SortingOrder.ASCENDING),
     ];
-    if (_selectedLibraryType != Enum$LibraryType.PODCAST) {
+    if (kind == BrowseKind.episodes) {
+      items.add(_sortMenuItem(context, loc.sortAirDateNewest,
+          Enum$SortingEnum.RELEASE_YEAR, Enum$SortingOrder.DESCENDING));
+      items.add(_sortMenuItem(context, loc.sortAirDateOldest,
+          Enum$SortingEnum.RELEASE_YEAR, Enum$SortingOrder.ASCENDING));
+    } else if (_selectedLibraryType != Enum$LibraryType.PODCAST &&
+        kind != BrowseKind.artists) {
       items.add(_sortMenuItem(context, loc.sortReleaseYearNewest,
           Enum$SortingEnum.RELEASE_YEAR, Enum$SortingOrder.DESCENDING));
       items.add(_sortMenuItem(context, loc.sortReleaseYearOldest,
@@ -631,7 +918,8 @@ class _ShowHomePageState extends State<ShowHomePage> {
 
   Widget _sortMenuItem(BuildContext context, String label,
       Enum$SortingEnum sorting, Enum$SortingOrder order) {
-    final selected = _sorting == sorting && _sortingOrder == order;
+    final selected =
+        _effectiveSorting == sorting && _effectiveSortingOrder == order;
     return MenuItemButton(
       onPressed: () => _setSorting(context, sorting, order),
       child: ListTile(

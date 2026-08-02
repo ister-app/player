@@ -1,18 +1,25 @@
+import 'package:auto_route/auto_route.dart' show AutoRouter;
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/booksQuery.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
+import 'package:player/routes/AppRouter.gr.dart';
+import 'package:player/utils/ImageTypes.dart';
+import 'package:player/utils/ImageUtil.dart';
+import 'package:player/utils/StreamTokenService.dart';
 
 import '../graphql/fragmentBook.graphql.dart';
 import 'BookCarouselTile.dart';
+import 'BrowseListRow.dart';
 import 'PagedContentView.dart';
 
-/// Scrollable grid of all books in a book library, loaded page by page.
+/// Scrollable grid or list of all books in a book library, loaded page by page.
 class BookScroll extends StatelessWidget {
   final String serverName;
   final String? libraryId;
   final Enum$SortingEnum sorting;
   final Enum$SortingOrder sortingOrder;
+  final bool listLayout;
   final void Function(Refetch?)? onRefetch;
 
   const BookScroll({
@@ -21,6 +28,7 @@ class BookScroll extends StatelessWidget {
     this.libraryId,
     this.sorting = Enum$SortingEnum.NAME,
     this.sortingOrder = Enum$SortingOrder.ASCENDING,
+    this.listLayout = false,
     this.onRefetch,
   });
 
@@ -39,6 +47,35 @@ class BookScroll extends StatelessWidget {
       pageSize: _pageSize,
       builder: (context, data, requestPage) {
         final itemCount = data.totalItems ?? (_pageSize * 2);
+
+        if (listLayout) {
+          return ListView.builder(
+            primary: true,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: itemCount,
+            itemBuilder: (context, index) {
+              final book = data.itemAt(index);
+              if (book == null) {
+                return pagedSkeletonRow(
+                  key: ValueKey('book-list-skeleton-$index'),
+                  onVisible: () => requestPage(index ~/ _pageSize),
+                );
+              }
+              final img =
+                  ImageUtil.getImageByType(book.images, ImageTypes.cover);
+              return BrowseListRow(
+                imageUrl: ImageUtil.buildUrl(img,
+                    token: StreamTokenService.getToken(serverName)),
+                placeholderIcon: Icons.menu_book,
+                squareThumb: true,
+                title: book.title,
+                subtitle: book.author?.name ?? book.series?.name ?? '',
+                onTap: () =>
+                    AutoRouter.of(context).push(BookRoute(bookId: book.id)),
+              );
+            },
+          );
+        }
 
         return GridView.builder(
           // Attach to ShowHomePage's NestedScrollView so the view-selector header

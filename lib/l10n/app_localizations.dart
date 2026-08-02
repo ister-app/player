@@ -800,6 +800,66 @@ abstract class AppLocalizations {
   /// **'Discover'**
   String get viewDiscover;
 
+  /// In context menu an item when clicked navigates to the album page.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to album'**
+  String get goToAlbum;
+
+  /// Browse kind pill: list the albums of a music library
+  ///
+  /// In en, this message translates to:
+  /// **'Albums'**
+  String get browseKindAlbums;
+
+  /// Browse kind pill: list the artists of a music library
+  ///
+  /// In en, this message translates to:
+  /// **'Artists'**
+  String get browseKindArtists;
+
+  /// Browse kind pill: list every track of a music library
+  ///
+  /// In en, this message translates to:
+  /// **'Tracks'**
+  String get browseKindTracks;
+
+  /// Browse kind pill: list the shows of a show library
+  ///
+  /// In en, this message translates to:
+  /// **'Shows'**
+  String get browseKindShows;
+
+  /// Browse kind pill: list every episode of a show library
+  ///
+  /// In en, this message translates to:
+  /// **'Episodes'**
+  String get browseKindEpisodes;
+
+  /// Tooltip of the layout toggle while the list layout is active
+  ///
+  /// In en, this message translates to:
+  /// **'Grid view'**
+  String get viewAsGrid;
+
+  /// Tooltip of the layout toggle while the grid layout is active
+  ///
+  /// In en, this message translates to:
+  /// **'List view'**
+  String get viewAsList;
+
+  /// Episode sort option: by air date, newest first
+  ///
+  /// In en, this message translates to:
+  /// **'Air date (newest first)'**
+  String get sortAirDateNewest;
+
+  /// Episode sort option: by air date, oldest first
+  ///
+  /// In en, this message translates to:
+  /// **'Air date (oldest first)'**
+  String get sortAirDateOldest;
+
   /// Library view switch: the sortable grid view
   ///
   /// In en, this message translates to:

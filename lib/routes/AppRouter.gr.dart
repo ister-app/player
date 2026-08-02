@@ -1842,11 +1842,24 @@ class ShowHomeRoute extends _i34.PageRouteInfo<ShowHomeRouteArgs> {
     _i35.Key? key,
     String? libraryId,
     String? view,
+    String? kind,
+    String? layout,
     List<_i34.PageRouteInfo>? children,
   }) : super(
           ShowHomeRoute.name,
-          args: ShowHomeRouteArgs(key: key, libraryId: libraryId, view: view),
-          rawQueryParams: {'libraryId': libraryId, 'view': view},
+          args: ShowHomeRouteArgs(
+            key: key,
+            libraryId: libraryId,
+            view: view,
+            kind: kind,
+            layout: layout,
+          ),
+          rawQueryParams: {
+            'libraryId': libraryId,
+            'view': view,
+            'kind': kind,
+            'layout': layout,
+          },
           initialChildren: children,
         );
 
@@ -1861,6 +1874,8 @@ class ShowHomeRoute extends _i34.PageRouteInfo<ShowHomeRouteArgs> {
         orElse: () => ShowHomeRouteArgs(
           libraryId: queryParams.optString('libraryId'),
           view: queryParams.optString('view'),
+          kind: queryParams.optString('kind'),
+          layout: queryParams.optString('layout'),
         ),
       );
       return _i30.ShowHomePage(
@@ -1868,13 +1883,21 @@ class ShowHomeRoute extends _i34.PageRouteInfo<ShowHomeRouteArgs> {
         serverName: pathParams.getString('serverName'),
         libraryId: args.libraryId,
         view: args.view,
+        kind: args.kind,
+        layout: args.layout,
       );
     },
   );
 }
 
 class ShowHomeRouteArgs {
-  const ShowHomeRouteArgs({this.key, this.libraryId, this.view});
+  const ShowHomeRouteArgs({
+    this.key,
+    this.libraryId,
+    this.view,
+    this.kind,
+    this.layout,
+  });
 
   final _i35.Key? key;
 
@@ -1882,9 +1905,13 @@ class ShowHomeRouteArgs {
 
   final String? view;
 
+  final String? kind;
+
+  final String? layout;
+
   @override
   String toString() {
-    return 'ShowHomeRouteArgs{key: $key, libraryId: $libraryId, view: $view}';
+    return 'ShowHomeRouteArgs{key: $key, libraryId: $libraryId, view: $view, kind: $kind, layout: $layout}';
   }
 
   @override
@@ -1893,11 +1920,18 @@ class ShowHomeRouteArgs {
     if (other is! ShowHomeRouteArgs) return false;
     return key == other.key &&
         libraryId == other.libraryId &&
-        view == other.view;
+        view == other.view &&
+        kind == other.kind &&
+        layout == other.layout;
   }
 
   @override
-  int get hashCode => key.hashCode ^ libraryId.hashCode ^ view.hashCode;
+  int get hashCode =>
+      key.hashCode ^
+      libraryId.hashCode ^
+      view.hashCode ^
+      kind.hashCode ^
+      layout.hashCode;
 }
 
 /// generated route for

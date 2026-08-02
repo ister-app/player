@@ -1,0 +1,19 @@
+# Library-wide episode browse list. Deliberately slimmer than fragmentEpisode:
+# the rows only need a title, show context, a still and watch progress.
+query episodes($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $libraryId: ID) {
+    episodes(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, libraryId: $libraryId) {
+        content {
+            id number
+            show {
+                id name
+                images { ...fragmentImages }
+            }
+            season { id number }
+            metadata { ...fragmentMetadata }
+            images { ...fragmentImages }
+            watchStatus { ...fragmentWatchStatus }
+            mediaFile { durationInMilliseconds }
+        }
+        totalPages totalElements number size
+    }
+}

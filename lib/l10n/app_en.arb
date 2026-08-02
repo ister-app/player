@@ -478,6 +478,46 @@
   "@viewDiscover": {
     "description": "Library view switch: the carousel-based discover view"
   },
+  "goToAlbum": "Go to album",
+  "@goToAlbum": {
+    "description": "In context menu an item when clicked navigates to the album page."
+  },
+  "browseKindAlbums": "Albums",
+  "@browseKindAlbums": {
+    "description": "Browse kind pill: list the albums of a music library"
+  },
+  "browseKindArtists": "Artists",
+  "@browseKindArtists": {
+    "description": "Browse kind pill: list the artists of a music library"
+  },
+  "browseKindTracks": "Tracks",
+  "@browseKindTracks": {
+    "description": "Browse kind pill: list every track of a music library"
+  },
+  "browseKindShows": "Shows",
+  "@browseKindShows": {
+    "description": "Browse kind pill: list the shows of a show library"
+  },
+  "browseKindEpisodes": "Episodes",
+  "@browseKindEpisodes": {
+    "description": "Browse kind pill: list every episode of a show library"
+  },
+  "viewAsGrid": "Grid view",
+  "@viewAsGrid": {
+    "description": "Tooltip of the layout toggle while the list layout is active"
+  },
+  "viewAsList": "List view",
+  "@viewAsList": {
+    "description": "Tooltip of the layout toggle while the grid layout is active"
+  },
+  "sortAirDateNewest": "Air date (newest first)",
+  "@sortAirDateNewest": {
+    "description": "Episode sort option: by air date, newest first"
+  },
+  "sortAirDateOldest": "Air date (oldest first)",
+  "@sortAirDateOldest": {
+    "description": "Episode sort option: by air date, oldest first"
+  },
   "viewBrowse": "Browse",
   "@viewBrowse": {
     "description": "Library view switch: the sortable grid view"

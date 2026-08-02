@@ -5,6 +5,7 @@ import 'package:player/graphql/schema.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+import 'BrowseListRow.dart';
 import 'CarouselItemView.dart';
 
 typedef ItemFromJson<T> = T Function(Map<String, dynamic> json);
@@ -208,6 +209,24 @@ Widget pagedSkeletonSlot({required Key key, required VoidCallback onVisible}) {
         serverName: '',
         title: BoneMock.name,
         subTitle: BoneMock.words(10),
+      ),
+    ),
+  );
+}
+
+/// [pagedSkeletonSlot]'s counterpart for the list layout.
+Widget pagedSkeletonRow({required Key key, required VoidCallback onVisible}) {
+  return VisibilityDetector(
+    key: key,
+    onVisibilityChanged: (info) {
+      if (info.visibleFraction > 0) onVisible();
+    },
+    child: Skeletonizer(
+      enabled: true,
+      child: BrowseListRow(
+        placeholderIcon: Icons.image,
+        title: BoneMock.name,
+        subtitle: BoneMock.words(4),
       ),
     ),
   );

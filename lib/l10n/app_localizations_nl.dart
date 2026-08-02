@@ -390,6 +390,36 @@ class AppLocalizationsNl extends AppLocalizations {
   String get viewDiscover => 'Ontdekken';
 
   @override
+  String get goToAlbum => 'Ga naar album';
+
+  @override
+  String get browseKindAlbums => 'Albums';
+
+  @override
+  String get browseKindArtists => 'Artiesten';
+
+  @override
+  String get browseKindTracks => 'Nummers';
+
+  @override
+  String get browseKindShows => 'Series';
+
+  @override
+  String get browseKindEpisodes => 'Afleveringen';
+
+  @override
+  String get viewAsGrid => 'Rasterweergave';
+
+  @override
+  String get viewAsList => 'Lijstweergave';
+
+  @override
+  String get sortAirDateNewest => 'Uitzenddatum (nieuwste eerst)';
+
+  @override
+  String get sortAirDateOldest => 'Uitzenddatum (oudste eerst)';
+
+  @override
   String get viewBrowse => 'Bladeren';
 
   @override
