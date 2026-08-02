@@ -1101,4 +1101,41 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get filterOpIsNotSet => 'is niet ingevuld';
+
+  @override
+  String get followListenAlong => 'Luister mee';
+
+  @override
+  String get followingBadge => 'Luistert mee';
+
+  @override
+  String get followQueueUnavailable =>
+      'Kan niet meeluisteren — deze sessie is niet meer beschikbaar';
+
+  @override
+  String get followNoLibraryAccess =>
+      'Kan niet meeluisteren — je hebt geen toegang tot de bibliotheek van deze wachtrij';
+
+  @override
+  String followTrackNotAvailable(String title) {
+    return '\'$title\' is voor jou niet beschikbaar — wacht op het volgende nummer';
+  }
+
+  @override
+  String get followLeaderStopped =>
+      'Meeluisteren gestopt — de sessie is beëindigd';
+
+  @override
+  String followersListening(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count apparaten luisteren mee',
+      one: '1 apparaat luistert mee',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get stopListeningAlong => 'Stop met meeluisteren';
 }

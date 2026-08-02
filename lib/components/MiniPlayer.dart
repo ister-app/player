@@ -245,13 +245,32 @@ class _MiniPlayerState extends State<MiniPlayer> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          item.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
+                        Row(
+                          children: [
+                            // "Listening along": this device follows another
+                            // device's session (see MediaPlayerHandler).
+                            ValueListenableBuilder<bool>(
+                              valueListenable: MediaPlayerHandler
+                                  .instance.followModeNotifier,
+                              builder: (context, following, _) => following
+                                  ? const Padding(
+                                      padding: EdgeInsets.only(right: 4),
+                                      child: Icon(Icons.headphones, size: 14),
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                            Expanded(
+                              child: Text(
+                                item.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(fontWeight: FontWeight.bold),
                               ),
+                            ),
+                          ],
                         ),
                         if (item.artist != null)
                           Text(

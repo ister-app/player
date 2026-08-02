@@ -1,0 +1,3 @@
+mutation followPlayQueue($playQueueId: ID!, $deviceId: String!, $active: Boolean!) {
+    followPlayQueue(playQueueId: $playQueueId, deviceId: $deviceId, active: $active)
+}

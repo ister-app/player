@@ -13,8 +13,10 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/LiveFeedBanner.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/AppMessenger.dart';
 import '../utils/ClientManager.dart';
 import '../utils/LoggerService.dart';
+import '../utils/MediaPlayerHandler.dart';
 import '../utils/ResilientSubscription.dart';
 import '../utils/StreamTokenService.dart';
 import '../utils/WellKnownService.dart';
@@ -172,6 +174,24 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
     return hours > 0 ? '$hours:$mmss' : mmss;
   }
 
+  /// Starts follow mode for [playQueueId] on this device. The server decides:
+  /// NOT_FOUND (session gone / permission revoked) and NO_LIBRARY_ACCESS get
+  /// their own explanation, OK starts playback via the media handler.
+  Future<void> _startListenAlong(String playQueueId) async {
+    final loc = AppLocalizations.of(context)!;
+    final result = await MediaPlayerHandler.instance
+        .startFollowingQueue(widget.serverName, playQueueId);
+    switch (result) {
+      case Enum$FollowResult.OK:
+        break;
+      case Enum$FollowResult.NO_LIBRARY_ACCESS:
+        showAppSnackBar(loc.followNoLibraryAccess);
+      case Enum$FollowResult.NOT_FOUND:
+      case Enum$FollowResult.$unknown:
+        showAppSnackBar(loc.followQueueUnavailable);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
@@ -216,6 +236,11 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
                       serverName: widget.serverName,
                       playQueueId: session.playQueueId))
                   : null,
+              // Listen along: anyone who may control the session may also
+              // play it along on this device (same permission server-side).
+              onListenAlong: session.controllable
+                  ? () => _startListenAlong(session.playQueueId)
+                  : null,
             ),
         ],
       );
@@ -237,6 +262,7 @@ class _SessionCard extends StatelessWidget {
   final IconData mediaIcon;
   final String Function(int) formatProgress;
   final VoidCallback? onTap;
+  final VoidCallback? onListenAlong;
 
   const _SessionCard({
     required this.session,
@@ -245,6 +271,7 @@ class _SessionCard extends StatelessWidget {
     required this.mediaIcon,
     required this.formatProgress,
     this.onTap,
+    this.onListenAlong,
   });
 
   @override
@@ -257,9 +284,12 @@ class _SessionCard extends StatelessWidget {
         ? (positionMs / total).clamp(0.0, 1.0)
         : null;
 
+    final loc = AppLocalizations.of(context)!;
     final subtitleParts = [
       if (session.userName != null) session.userName!,
       session.nodeName,
+      if (session.followerCount > 0)
+        loc.followersListening(session.followerCount),
     ];
 
     return Card(
@@ -292,6 +322,13 @@ class _SessionCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       _StateChip(paused: paused),
+                      if (onListenAlong != null)
+                        IconButton(
+                          icon: const Icon(Icons.headphones),
+                          tooltip: loc.followListenAlong,
+                          visualDensity: VisualDensity.compact,
+                          onPressed: onListenAlong,
+                        ),
                     ],
                   ),
                   if (subtitleParts.isNotEmpty) ...[

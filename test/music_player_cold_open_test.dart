@@ -63,6 +63,7 @@ class _TestRouter extends RootStackRouter {
 void _installPlayingTrack(MediaPlayerHandler handler) {
   handler.serverName = 'test-server';
   handler.currentPlayQueueItem = Fragment$fragmentPlayQueue$playQueueItems(
+    accessible: true,
     id: 'pq-item-1',
     position: 0,
     track: Fragment$fragmentPlayQueue$playQueueItems$track(

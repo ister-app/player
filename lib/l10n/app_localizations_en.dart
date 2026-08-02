@@ -1101,4 +1101,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterOpIsNotSet => 'is not set';
+
+  @override
+  String get followListenAlong => 'Listen along';
+
+  @override
+  String get followingBadge => 'Listening along';
+
+  @override
+  String get followQueueUnavailable =>
+      'Can\'t listen along — this session is no longer available';
+
+  @override
+  String get followNoLibraryAccess =>
+      'Can\'t listen along — you don\'t have access to this queue\'s library';
+
+  @override
+  String followTrackNotAvailable(String title) {
+    return '\'$title\' isn\'t available for you — waiting for the next track';
+  }
+
+  @override
+  String get followLeaderStopped =>
+      'Listening along ended — the session stopped';
+
+  @override
+  String followersListening(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count devices listening along',
+      one: '1 device listening along',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get stopListeningAlong => 'Stop listening along';
 }

@@ -32,6 +32,7 @@ Fragment$fragmentMediaFiles _mediaFile(String id) => Fragment$fragmentMediaFiles
 Fragment$fragmentPlayQueue$playQueueItems _trackItem(String id, double position,
         {bool withFile = true}) =>
     Fragment$fragmentPlayQueue$playQueueItems(
+      accessible: true,
       id: id,
       position: position,
       track: Fragment$fragmentPlayQueue$playQueueItems$track(
@@ -207,7 +208,7 @@ void main() {
     final nonMusic = _musicQueue(
       currentItemId: 'item-x',
       items: [
-        Fragment$fragmentPlayQueue$playQueueItems(id: 'item-x', position: 1),
+        Fragment$fragmentPlayQueue$playQueueItems(accessible: true, id: 'item-x', position: 1),
       ],
     );
     useClient(_fakeGraphQL(nonMusic));

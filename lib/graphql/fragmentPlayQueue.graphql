@@ -10,6 +10,7 @@ fragment fragmentPlayQueue on PlayQueue {
     playQueueItems {
         id
         position
+        accessible
         episode {
             ...fragmentEpisode
         }

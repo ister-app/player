@@ -2011,6 +2011,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'is not set'**
   String get filterOpIsNotSet;
+
+  /// Action to start following another device's playback session on this device
+  ///
+  /// In en, this message translates to:
+  /// **'Listen along'**
+  String get followListenAlong;
+
+  /// Indicator shown while this device follows another device's session
+  ///
+  /// In en, this message translates to:
+  /// **'Listening along'**
+  String get followingBadge;
+
+  /// Toast when starting to follow fails because the session stopped or the caller lost control permission
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t listen along — this session is no longer available'**
+  String get followQueueUnavailable;
+
+  /// Toast when starting to follow fails because the caller's library access does not cover the queue's source
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t listen along — you don\'t have access to this queue\'s library'**
+  String get followNoLibraryAccess;
+
+  /// Toast on a following device when the current item cannot be streamed with this user's library access; the device stays silent until the session owner moves on
+  ///
+  /// In en, this message translates to:
+  /// **'\'{title}\' isn\'t available for you — waiting for the next track'**
+  String followTrackNotAvailable(String title);
+
+  /// Toast when the followed session disappears (owner stopped playing or the session timed out)
+  ///
+  /// In en, this message translates to:
+  /// **'Listening along ended — the session stopped'**
+  String get followLeaderStopped;
+
+  /// Follower count on a now-playing session card
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 device listening along} other{{count} devices listening along}}'**
+  String followersListening(int count);
+
+  /// Action to leave follow mode on this device
+  ///
+  /// In en, this message translates to:
+  /// **'Stop listening along'**
+  String get stopListeningAlong;
 }
 
 class _AppLocalizationsDelegate

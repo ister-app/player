@@ -1691,6 +1691,44 @@ Enum$MetadataSource fromJson$Enum$MetadataSource(String value) {
   }
 }
 
+enum Enum$FollowResult {
+  OK,
+  NOT_FOUND,
+  NO_LIBRARY_ACCESS,
+  $unknown;
+
+  factory Enum$FollowResult.fromJson(String value) =>
+      fromJson$Enum$FollowResult(value);
+
+  String toJson() => toJson$Enum$FollowResult(this);
+}
+
+String toJson$Enum$FollowResult(Enum$FollowResult e) {
+  switch (e) {
+    case Enum$FollowResult.OK:
+      return r'OK';
+    case Enum$FollowResult.NOT_FOUND:
+      return r'NOT_FOUND';
+    case Enum$FollowResult.NO_LIBRARY_ACCESS:
+      return r'NO_LIBRARY_ACCESS';
+    case Enum$FollowResult.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$FollowResult fromJson$Enum$FollowResult(String value) {
+  switch (value) {
+    case r'OK':
+      return Enum$FollowResult.OK;
+    case r'NOT_FOUND':
+      return Enum$FollowResult.NOT_FOUND;
+    case r'NO_LIBRARY_ACCESS':
+      return Enum$FollowResult.NO_LIBRARY_ACCESS;
+    default:
+      return Enum$FollowResult.$unknown;
+  }
+}
+
 enum Enum$PlaybackCommandType {
   PLAY,
   PAUSE,

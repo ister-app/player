@@ -446,6 +446,13 @@ const fragmentDefinitionfragmentPlayQueue = FragmentDefinitionNode(
               selectionSet: null,
             ),
             FieldNode(
+              name: NameNode(value: 'accessible'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
               name: NameNode(value: 'episode'),
               alias: null,
               arguments: [],
@@ -1045,6 +1052,7 @@ class Fragment$fragmentPlayQueue$playQueueItems {
   Fragment$fragmentPlayQueue$playQueueItems({
     required this.id,
     required this.position,
+    required this.accessible,
     this.episode,
     this.movie,
     this.track,
@@ -1058,6 +1066,7 @@ class Fragment$fragmentPlayQueue$playQueueItems {
   ) {
     final l$id = json['id'];
     final l$position = json['position'];
+    final l$accessible = json['accessible'];
     final l$episode = json['episode'];
     final l$movie = json['movie'];
     final l$track = json['track'];
@@ -1067,6 +1076,7 @@ class Fragment$fragmentPlayQueue$playQueueItems {
     return Fragment$fragmentPlayQueue$playQueueItems(
       id: (l$id as String),
       position: (l$position as num).toDouble(),
+      accessible: (l$accessible as bool),
       episode: l$episode == null
           ? null
           : Fragment$fragmentEpisode.fromJson(
@@ -1098,6 +1108,8 @@ class Fragment$fragmentPlayQueue$playQueueItems {
 
   final double position;
 
+  final bool accessible;
+
   final Fragment$fragmentEpisode? episode;
 
   final Fragment$fragmentMovie? movie;
@@ -1117,6 +1129,8 @@ class Fragment$fragmentPlayQueue$playQueueItems {
     _resultData['id'] = l$id;
     final l$position = position;
     _resultData['position'] = l$position;
+    final l$accessible = accessible;
+    _resultData['accessible'] = l$accessible;
     final l$episode = episode;
     _resultData['episode'] = l$episode?.toJson();
     final l$movie = movie;
@@ -1136,6 +1150,7 @@ class Fragment$fragmentPlayQueue$playQueueItems {
   int get hashCode {
     final l$id = id;
     final l$position = position;
+    final l$accessible = accessible;
     final l$episode = episode;
     final l$movie = movie;
     final l$track = track;
@@ -1145,6 +1160,7 @@ class Fragment$fragmentPlayQueue$playQueueItems {
     return Object.hashAll([
       l$id,
       l$position,
+      l$accessible,
       l$episode,
       l$movie,
       l$track,
@@ -1171,6 +1187,11 @@ class Fragment$fragmentPlayQueue$playQueueItems {
     final l$position = position;
     final lOther$position = other.position;
     if (l$position != lOther$position) {
+      return false;
+    }
+    final l$accessible = accessible;
+    final lOther$accessible = other.accessible;
+    if (l$accessible != lOther$accessible) {
       return false;
     }
     final l$episode = episode;
@@ -1228,6 +1249,7 @@ abstract class CopyWith$Fragment$fragmentPlayQueue$playQueueItems<TRes> {
   TRes call({
     String? id,
     double? position,
+    bool? accessible,
     Fragment$fragmentEpisode? episode,
     Fragment$fragmentMovie? movie,
     Fragment$fragmentPlayQueue$playQueueItems$track? track,
@@ -1259,6 +1281,7 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems<TRes>
   TRes call({
     Object? id = _undefined,
     Object? position = _undefined,
+    Object? accessible = _undefined,
     Object? episode = _undefined,
     Object? movie = _undefined,
     Object? track = _undefined,
@@ -1271,6 +1294,9 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems<TRes>
       position: position == _undefined || position == null
           ? _instance.position
           : (position as double),
+      accessible: accessible == _undefined || accessible == null
+          ? _instance.accessible
+          : (accessible as bool),
       episode: episode == _undefined
           ? _instance.episode
           : (episode as Fragment$fragmentEpisode?),
@@ -1357,6 +1383,7 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems<TRes>
   call({
     String? id,
     double? position,
+    bool? accessible,
     Fragment$fragmentEpisode? episode,
     Fragment$fragmentMovie? movie,
     Fragment$fragmentPlayQueue$playQueueItems$track? track,

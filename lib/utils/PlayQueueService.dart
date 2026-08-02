@@ -4,6 +4,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/addPlayQueueAlbum.graphql.dart';
 import 'package:player/graphql/addPlayQueueItem.graphql.dart';
 import 'package:player/graphql/createPlayQueue.graphql.dart';
+import 'package:player/graphql/followPlayQueue.graphql.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 import 'package:player/graphql/fragmentWatchStatus.graphql.dart';
 import 'package:player/graphql/getPlayQueue.graphql.dart';
@@ -304,6 +305,32 @@ class PlayQueueService {
     }
     return Mutation$sendPlaybackCommand.fromJson(result.data!)
         .sendPlaybackCommand;
+  }
+
+  /// Registers ([active] true) or deregisters this device as a follower of
+  /// [playQueueId]'s live session ("listen along"). Also the follow heartbeat:
+  /// call every ~20s while following or the registration expires server-side.
+  /// Returns null when the mutation itself failed (network); the caller should
+  /// keep following and retry on the next heartbeat tick.
+  Future<Enum$FollowResult?> followPlayQueue(
+    GraphQLClient graphQLClient,
+    String playQueueId,
+    String deviceId,
+    bool active,
+  ) async {
+    final QueryResult result = await graphQLClient.mutate(MutationOptions(
+        document: documentNodeMutationfollowPlayQueue,
+        variables: Variables$Mutation$followPlayQueue(
+          playQueueId: playQueueId,
+          deviceId: deviceId,
+          active: active,
+        ).toJson()));
+
+    if (result.hasException) {
+      LoggerService().logger.e(result.exception);
+      return null;
+    }
+    return Mutation$followPlayQueue.fromJson(result.data!).followPlayQueue;
   }
 
   /// Appends [mediaId] to the queue, optionally right after

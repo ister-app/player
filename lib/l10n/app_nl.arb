@@ -317,5 +317,13 @@
   "filterOpAfter": "na",
   "filterOpInLastDays": "in de laatste (dagen)",
   "filterOpIsSet": "is ingevuld",
-  "filterOpIsNotSet": "is niet ingevuld"
+  "filterOpIsNotSet": "is niet ingevuld",
+  "followListenAlong": "Luister mee",
+  "followingBadge": "Luistert mee",
+  "followQueueUnavailable": "Kan niet meeluisteren — deze sessie is niet meer beschikbaar",
+  "followNoLibraryAccess": "Kan niet meeluisteren — je hebt geen toegang tot de bibliotheek van deze wachtrij",
+  "followTrackNotAvailable": "'{title}' is voor jou niet beschikbaar — wacht op het volgende nummer",
+  "followLeaderStopped": "Meeluisteren gestopt — de sessie is beëindigd",
+  "followersListening": "{count, plural, =1{1 apparaat luistert mee} other{{count} apparaten luisteren mee}}",
+  "stopListeningAlong": "Stop met meeluisteren"
 }

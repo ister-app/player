@@ -1144,6 +1144,7 @@ class Fragment$fragmentPlaybackSession {
     required this.nodeName,
     required this.updatedAt,
     required this.controllable,
+    required this.followerCount,
     this.$__typename = 'PlaybackSession',
   });
 
@@ -1162,6 +1163,7 @@ class Fragment$fragmentPlaybackSession {
     final l$nodeName = json['nodeName'];
     final l$updatedAt = json['updatedAt'];
     final l$controllable = json['controllable'];
+    final l$followerCount = json['followerCount'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentPlaybackSession(
       playQueueId: (l$playQueueId as String),
@@ -1180,6 +1182,7 @@ class Fragment$fragmentPlaybackSession {
       nodeName: (l$nodeName as String),
       updatedAt: (l$updatedAt as String),
       controllable: (l$controllable as bool),
+      followerCount: (l$followerCount as int),
       $__typename: (l$$__typename as String),
     );
   }
@@ -1211,6 +1214,8 @@ class Fragment$fragmentPlaybackSession {
   final String updatedAt;
 
   final bool controllable;
+
+  final int followerCount;
 
   final String $__typename;
 
@@ -1246,6 +1251,8 @@ class Fragment$fragmentPlaybackSession {
     _resultData['updatedAt'] = l$updatedAt;
     final l$controllable = controllable;
     _resultData['controllable'] = l$controllable;
+    final l$followerCount = followerCount;
+    _resultData['followerCount'] = l$followerCount;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -1267,6 +1274,7 @@ class Fragment$fragmentPlaybackSession {
     final l$nodeName = nodeName;
     final l$updatedAt = updatedAt;
     final l$controllable = controllable;
+    final l$followerCount = followerCount;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$playQueueId,
@@ -1283,6 +1291,7 @@ class Fragment$fragmentPlaybackSession {
       l$nodeName,
       l$updatedAt,
       l$controllable,
+      l$followerCount,
       l$$__typename,
     ]);
   }
@@ -1366,6 +1375,11 @@ class Fragment$fragmentPlaybackSession {
     if (l$controllable != lOther$controllable) {
       return false;
     }
+    final l$followerCount = followerCount;
+    final lOther$followerCount = other.followerCount;
+    if (l$followerCount != lOther$followerCount) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -1405,6 +1419,7 @@ abstract class CopyWith$Fragment$fragmentPlaybackSession<TRes> {
     String? nodeName,
     String? updatedAt,
     bool? controllable,
+    int? followerCount,
     String? $__typename,
   });
 }
@@ -1434,6 +1449,7 @@ class _CopyWithImpl$Fragment$fragmentPlaybackSession<TRes>
     Object? nodeName = _undefined,
     Object? updatedAt = _undefined,
     Object? controllable = _undefined,
+    Object? followerCount = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentPlaybackSession(
@@ -1476,6 +1492,9 @@ class _CopyWithImpl$Fragment$fragmentPlaybackSession<TRes>
       controllable: controllable == _undefined || controllable == null
           ? _instance.controllable
           : (controllable as bool),
+      followerCount: followerCount == _undefined || followerCount == null
+          ? _instance.followerCount
+          : (followerCount as int),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -1504,6 +1523,7 @@ class _CopyWithStubImpl$Fragment$fragmentPlaybackSession<TRes>
     String? nodeName,
     String? updatedAt,
     bool? controllable,
+    int? followerCount,
     String? $__typename,
   }) => _res;
 }
@@ -1612,6 +1632,13 @@ const fragmentDefinitionfragmentPlaybackSession = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'controllable'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'followerCount'),
         alias: null,
         arguments: [],
         directives: [],

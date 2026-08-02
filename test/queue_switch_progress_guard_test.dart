@@ -58,7 +58,7 @@ final _episodeQueue = Fragment$fragmentPlayQueue(
   sourceExhausted: true,
   controlAllowedUserIds: const [],
   playQueueItems: [
-    Fragment$fragmentPlayQueue$playQueueItems(id: 'ep-item-1', position: 1),
+    Fragment$fragmentPlayQueue$playQueueItems(accessible: true, id: 'ep-item-1', position: 1),
   ],
 );
 
@@ -71,6 +71,7 @@ final _albumQueue = Fragment$fragmentPlayQueue(
   controlAllowedUserIds: const [],
   playQueueItems: [
     Fragment$fragmentPlayQueue$playQueueItems(
+      accessible: true,
       id: 'alb-item-1',
       position: 1,
       track: Fragment$fragmentPlayQueue$playQueueItems$track(

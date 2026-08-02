@@ -12,6 +12,8 @@ import 'package:player/graphql/schema.graphql.dart';
 
 import '../components/LiveFeedBanner.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/AppMessenger.dart';
+import '../utils/MediaPlayerHandler.dart';
 import '../utils/ClientManager.dart';
 import '../utils/ImageTypes.dart';
 import '../utils/LoggerService.dart';
@@ -127,16 +129,90 @@ class _RemoteControlPageState extends State<RemoteControlPage> {
           controller: controller,
           headerTitle: controller.headerTitle,
           onDismissed: () => context.router.pop(),
-          bannerBuilder: !controller.liveFeedBroken && !controller.sessionEnded
-              ? null
-              : (context) => Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (controller.liveFeedBroken) const LiveFeedBanner(),
-                      if (controller.sessionEnded)
-                        _SessionEndedBanner(text: loc.sessionEnded),
-                    ],
-                  ),
+          bannerBuilder: (context) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (controller.liveFeedBroken) const LiveFeedBanner(),
+              if (controller.sessionEnded)
+                _SessionEndedBanner(text: loc.sessionEnded),
+              if (!controller.sessionEnded)
+                _ListenAlongBanner(
+                  serverName: widget.serverName,
+                  playQueueId: widget.playQueueId,
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Start/stop "listen along" for this session on *this* device. Anyone who
+/// can open the remote control may also follow (same server-side permission);
+/// the server still verifies and answers NOT_FOUND / NO_LIBRARY_ACCESS.
+class _ListenAlongBanner extends StatelessWidget {
+  const _ListenAlongBanner({
+    required this.serverName,
+    required this.playQueueId,
+  });
+
+  final String serverName;
+  final String playQueueId;
+
+  Future<void> _start(BuildContext context) async {
+    final loc = AppLocalizations.of(context)!;
+    final result = await MediaPlayerHandler.instance
+        .startFollowingQueue(serverName, playQueueId);
+    switch (result) {
+      case Enum$FollowResult.OK:
+        break;
+      case Enum$FollowResult.NO_LIBRARY_ACCESS:
+        showAppSnackBar(loc.followNoLibraryAccess);
+      case Enum$FollowResult.NOT_FOUND:
+      case Enum$FollowResult.$unknown:
+        showAppSnackBar(loc.followQueueUnavailable);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final handler = MediaPlayerHandler.instance;
+    return ValueListenableBuilder<bool>(
+      valueListenable: handler.followModeNotifier,
+      builder: (context, following, _) {
+        final followingThisQueue =
+            following && handler.playQueue?.id == playQueueId;
+        return Container(
+          margin: const EdgeInsets.only(top: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.headphones, color: Colors.white70, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  followingThisQueue
+                      ? loc.followingBadge
+                      : loc.followListenAlong,
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+              ),
+              TextButton(
+                onPressed: followingThisQueue
+                    ? () => handler.stopFollowing()
+                    : () => _start(context),
+                child: Text(followingThisQueue
+                    ? loc.stopListeningAlong
+                    : loc.followListenAlong),
+              ),
+            ],
+          ),
         );
       },
     );

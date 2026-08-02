@@ -4,7 +4,7 @@ import 'package:player/utils/MediaPlayerHandler.dart';
 
 void main() {
   Fragment$fragmentPlayQueue$playQueueItems item(String id, double position) =>
-      Fragment$fragmentPlayQueue$playQueueItems(id: id, position: position);
+      Fragment$fragmentPlayQueue$playQueueItems(accessible: true, id: id, position: position);
 
   Fragment$fragmentPlayQueue queue(
     String id, {

@@ -1256,5 +1256,47 @@
   "filterOpIsNotSet": "is not set",
   "@filterOpIsNotSet": {
     "description": "Filter operator label"
+  },
+  "followListenAlong": "Listen along",
+  "@followListenAlong": {
+    "description": "Action to start following another device's playback session on this device"
+  },
+  "followingBadge": "Listening along",
+  "@followingBadge": {
+    "description": "Indicator shown while this device follows another device's session"
+  },
+  "followQueueUnavailable": "Can't listen along — this session is no longer available",
+  "@followQueueUnavailable": {
+    "description": "Toast when starting to follow fails because the session stopped or the caller lost control permission"
+  },
+  "followNoLibraryAccess": "Can't listen along — you don't have access to this queue's library",
+  "@followNoLibraryAccess": {
+    "description": "Toast when starting to follow fails because the caller's library access does not cover the queue's source"
+  },
+  "followTrackNotAvailable": "'{title}' isn't available for you — waiting for the next track",
+  "@followTrackNotAvailable": {
+    "description": "Toast on a following device when the current item cannot be streamed with this user's library access; the device stays silent until the session owner moves on",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "followLeaderStopped": "Listening along ended — the session stopped",
+  "@followLeaderStopped": {
+    "description": "Toast when the followed session disappears (owner stopped playing or the session timed out)"
+  },
+  "followersListening": "{count, plural, =1{1 device listening along} other{{count} devices listening along}}",
+  "@followersListening": {
+    "description": "Follower count on a now-playing session card",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "stopListeningAlong": "Stop listening along",
+  "@stopListeningAlong": {
+    "description": "Action to leave follow mode on this device"
   }
 }
