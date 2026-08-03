@@ -2071,6 +2071,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Audio delay of this device: {ms} ms'**
   String outputLatencySlider(int ms);
+
+  /// Discover row header and playlist list page title
+  ///
+  /// In en, this message translates to:
+  /// **'Playlists'**
+  String get playlists;
+
+  /// No description provided for @newPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'New playlist'**
+  String get newPlaylist;
+
+  /// No description provided for @editPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit playlist'**
+  String get editPlaylist;
+
+  /// No description provided for @deletePlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete playlist'**
+  String get deletePlaylist;
+
+  /// No description provided for @deletePlaylistConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete playlist \'{name}\'? Anything currently playing keeps playing.'**
+  String deletePlaylistConfirm(String name);
+
+  /// No description provided for @playlistName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get playlistName;
+
+  /// No description provided for @smartPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart playlist'**
+  String get smartPlaylist;
+
+  /// No description provided for @smartPlaylistDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The contents follow a filter you define'**
+  String get smartPlaylistDescription;
+
+  /// No description provided for @manualPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist'**
+  String get manualPlaylist;
+
+  /// No description provided for @manualPlaylistDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'You pick the items yourself'**
+  String get manualPlaylistDescription;
+
+  /// No description provided for @addToPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to playlist'**
+  String get addToPlaylist;
+
+  /// No description provided for @addedToPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to playlist'**
+  String get addedToPlaylist;
+
+  /// No description provided for @addToPlaylistFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add to the playlist'**
+  String get addToPlaylistFailed;
+
+  /// No description provided for @noPlaylistsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No playlists yet'**
+  String get noPlaylistsYet;
+
+  /// No description provided for @playlistEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'This playlist is empty. Add items from their context menu.'**
+  String get playlistEmpty;
+
+  /// No description provided for @playlistItemCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item} other{{count} items}}'**
+  String playlistItemCount(int count);
+
+  /// No description provided for @removeFromPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from playlist'**
+  String get removeFromPlaylist;
+
+  /// No description provided for @editFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit filter'**
+  String get editFilter;
 }
 
 class _AppLocalizationsDelegate

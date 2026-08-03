@@ -663,6 +663,281 @@ class _CopyWithStubImpl$Input$SavedViewInput<TRes>
       CopyWith$Input$MediaFilterInput.stub(_res);
 }
 
+class Input$PlaylistInput {
+  factory Input$PlaylistInput({
+    required String name,
+    required String libraryId,
+    required Enum$PlaylistType type,
+    Input$MediaFilterInput? filter,
+    Enum$FilterKind? filterKind,
+    Enum$SortingEnum? sorting,
+    Enum$SortingOrder? sortingOrder,
+  }) => Input$PlaylistInput._({
+    r'name': name,
+    r'libraryId': libraryId,
+    r'type': type,
+    if (filter != null) r'filter': filter,
+    if (filterKind != null) r'filterKind': filterKind,
+    if (sorting != null) r'sorting': sorting,
+    if (sortingOrder != null) r'sortingOrder': sortingOrder,
+  });
+
+  Input$PlaylistInput._(this._$data);
+
+  factory Input$PlaylistInput.fromJson(Map<String, dynamic> data) {
+    final result$data = <String, dynamic>{};
+    final l$name = data['name'];
+    result$data['name'] = (l$name as String);
+    final l$libraryId = data['libraryId'];
+    result$data['libraryId'] = (l$libraryId as String);
+    final l$type = data['type'];
+    result$data['type'] = fromJson$Enum$PlaylistType((l$type as String));
+    if (data.containsKey('filter')) {
+      final l$filter = data['filter'];
+      result$data['filter'] = l$filter == null
+          ? null
+          : Input$MediaFilterInput.fromJson((l$filter as Map<String, dynamic>));
+    }
+    if (data.containsKey('filterKind')) {
+      final l$filterKind = data['filterKind'];
+      result$data['filterKind'] = l$filterKind == null
+          ? null
+          : fromJson$Enum$FilterKind((l$filterKind as String));
+    }
+    if (data.containsKey('sorting')) {
+      final l$sorting = data['sorting'];
+      result$data['sorting'] = l$sorting == null
+          ? null
+          : fromJson$Enum$SortingEnum((l$sorting as String));
+    }
+    if (data.containsKey('sortingOrder')) {
+      final l$sortingOrder = data['sortingOrder'];
+      result$data['sortingOrder'] = l$sortingOrder == null
+          ? null
+          : fromJson$Enum$SortingOrder((l$sortingOrder as String));
+    }
+    return Input$PlaylistInput._(result$data);
+  }
+
+  Map<String, dynamic> _$data;
+
+  String get name => (_$data['name'] as String);
+
+  String get libraryId => (_$data['libraryId'] as String);
+
+  Enum$PlaylistType get type => (_$data['type'] as Enum$PlaylistType);
+
+  Input$MediaFilterInput? get filter =>
+      (_$data['filter'] as Input$MediaFilterInput?);
+
+  Enum$FilterKind? get filterKind => (_$data['filterKind'] as Enum$FilterKind?);
+
+  Enum$SortingEnum? get sorting => (_$data['sorting'] as Enum$SortingEnum?);
+
+  Enum$SortingOrder? get sortingOrder =>
+      (_$data['sortingOrder'] as Enum$SortingOrder?);
+
+  Map<String, dynamic> toJson() {
+    final result$data = <String, dynamic>{};
+    final l$name = name;
+    result$data['name'] = l$name;
+    final l$libraryId = libraryId;
+    result$data['libraryId'] = l$libraryId;
+    final l$type = type;
+    result$data['type'] = toJson$Enum$PlaylistType(l$type);
+    if (_$data.containsKey('filter')) {
+      final l$filter = filter;
+      result$data['filter'] = l$filter?.toJson();
+    }
+    if (_$data.containsKey('filterKind')) {
+      final l$filterKind = filterKind;
+      result$data['filterKind'] = l$filterKind == null
+          ? null
+          : toJson$Enum$FilterKind(l$filterKind);
+    }
+    if (_$data.containsKey('sorting')) {
+      final l$sorting = sorting;
+      result$data['sorting'] = l$sorting == null
+          ? null
+          : toJson$Enum$SortingEnum(l$sorting);
+    }
+    if (_$data.containsKey('sortingOrder')) {
+      final l$sortingOrder = sortingOrder;
+      result$data['sortingOrder'] = l$sortingOrder == null
+          ? null
+          : toJson$Enum$SortingOrder(l$sortingOrder);
+    }
+    return result$data;
+  }
+
+  CopyWith$Input$PlaylistInput<Input$PlaylistInput> get copyWith =>
+      CopyWith$Input$PlaylistInput(this, (i) => i);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Input$PlaylistInput || runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$name = name;
+    final lOther$name = other.name;
+    if (l$name != lOther$name) {
+      return false;
+    }
+    final l$libraryId = libraryId;
+    final lOther$libraryId = other.libraryId;
+    if (l$libraryId != lOther$libraryId) {
+      return false;
+    }
+    final l$type = type;
+    final lOther$type = other.type;
+    if (l$type != lOther$type) {
+      return false;
+    }
+    final l$filter = filter;
+    final lOther$filter = other.filter;
+    if (_$data.containsKey('filter') != other._$data.containsKey('filter')) {
+      return false;
+    }
+    if (l$filter != lOther$filter) {
+      return false;
+    }
+    final l$filterKind = filterKind;
+    final lOther$filterKind = other.filterKind;
+    if (_$data.containsKey('filterKind') !=
+        other._$data.containsKey('filterKind')) {
+      return false;
+    }
+    if (l$filterKind != lOther$filterKind) {
+      return false;
+    }
+    final l$sorting = sorting;
+    final lOther$sorting = other.sorting;
+    if (_$data.containsKey('sorting') != other._$data.containsKey('sorting')) {
+      return false;
+    }
+    if (l$sorting != lOther$sorting) {
+      return false;
+    }
+    final l$sortingOrder = sortingOrder;
+    final lOther$sortingOrder = other.sortingOrder;
+    if (_$data.containsKey('sortingOrder') !=
+        other._$data.containsKey('sortingOrder')) {
+      return false;
+    }
+    if (l$sortingOrder != lOther$sortingOrder) {
+      return false;
+    }
+    return true;
+  }
+
+  @override
+  int get hashCode {
+    final l$name = name;
+    final l$libraryId = libraryId;
+    final l$type = type;
+    final l$filter = filter;
+    final l$filterKind = filterKind;
+    final l$sorting = sorting;
+    final l$sortingOrder = sortingOrder;
+    return Object.hashAll([
+      l$name,
+      l$libraryId,
+      l$type,
+      _$data.containsKey('filter') ? l$filter : const {},
+      _$data.containsKey('filterKind') ? l$filterKind : const {},
+      _$data.containsKey('sorting') ? l$sorting : const {},
+      _$data.containsKey('sortingOrder') ? l$sortingOrder : const {},
+    ]);
+  }
+}
+
+abstract class CopyWith$Input$PlaylistInput<TRes> {
+  factory CopyWith$Input$PlaylistInput(
+    Input$PlaylistInput instance,
+    TRes Function(Input$PlaylistInput) then,
+  ) = _CopyWithImpl$Input$PlaylistInput;
+
+  factory CopyWith$Input$PlaylistInput.stub(TRes res) =
+      _CopyWithStubImpl$Input$PlaylistInput;
+
+  TRes call({
+    String? name,
+    String? libraryId,
+    Enum$PlaylistType? type,
+    Input$MediaFilterInput? filter,
+    Enum$FilterKind? filterKind,
+    Enum$SortingEnum? sorting,
+    Enum$SortingOrder? sortingOrder,
+  });
+  CopyWith$Input$MediaFilterInput<TRes> get filter;
+}
+
+class _CopyWithImpl$Input$PlaylistInput<TRes>
+    implements CopyWith$Input$PlaylistInput<TRes> {
+  _CopyWithImpl$Input$PlaylistInput(this._instance, this._then);
+
+  final Input$PlaylistInput _instance;
+
+  final TRes Function(Input$PlaylistInput) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? name = _undefined,
+    Object? libraryId = _undefined,
+    Object? type = _undefined,
+    Object? filter = _undefined,
+    Object? filterKind = _undefined,
+    Object? sorting = _undefined,
+    Object? sortingOrder = _undefined,
+  }) => _then(
+    Input$PlaylistInput._({
+      ..._instance._$data,
+      if (name != _undefined && name != null) 'name': (name as String),
+      if (libraryId != _undefined && libraryId != null)
+        'libraryId': (libraryId as String),
+      if (type != _undefined && type != null)
+        'type': (type as Enum$PlaylistType),
+      if (filter != _undefined) 'filter': (filter as Input$MediaFilterInput?),
+      if (filterKind != _undefined)
+        'filterKind': (filterKind as Enum$FilterKind?),
+      if (sorting != _undefined) 'sorting': (sorting as Enum$SortingEnum?),
+      if (sortingOrder != _undefined)
+        'sortingOrder': (sortingOrder as Enum$SortingOrder?),
+    }),
+  );
+
+  CopyWith$Input$MediaFilterInput<TRes> get filter {
+    final local$filter = _instance.filter;
+    return local$filter == null
+        ? CopyWith$Input$MediaFilterInput.stub(_then(_instance))
+        : CopyWith$Input$MediaFilterInput(local$filter, (e) => call(filter: e));
+  }
+}
+
+class _CopyWithStubImpl$Input$PlaylistInput<TRes>
+    implements CopyWith$Input$PlaylistInput<TRes> {
+  _CopyWithStubImpl$Input$PlaylistInput(this._res);
+
+  TRes _res;
+
+  call({
+    String? name,
+    String? libraryId,
+    Enum$PlaylistType? type,
+    Input$MediaFilterInput? filter,
+    Enum$FilterKind? filterKind,
+    Enum$SortingEnum? sorting,
+    Enum$SortingOrder? sortingOrder,
+  }) => _res;
+
+  CopyWith$Input$MediaFilterInput<TRes> get filter =>
+      CopyWith$Input$MediaFilterInput.stub(_res);
+}
+
 class Input$StreamSettingsInput {
   factory Input$StreamSettingsInput({
     required bool direct,
@@ -2178,6 +2453,39 @@ Enum$FilterOperator fromJson$Enum$FilterOperator(String value) {
   }
 }
 
+enum Enum$PlaylistType {
+  MANUAL,
+  SMART,
+  $unknown;
+
+  factory Enum$PlaylistType.fromJson(String value) =>
+      fromJson$Enum$PlaylistType(value);
+
+  String toJson() => toJson$Enum$PlaylistType(this);
+}
+
+String toJson$Enum$PlaylistType(Enum$PlaylistType e) {
+  switch (e) {
+    case Enum$PlaylistType.MANUAL:
+      return r'MANUAL';
+    case Enum$PlaylistType.SMART:
+      return r'SMART';
+    case Enum$PlaylistType.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$PlaylistType fromJson$Enum$PlaylistType(String value) {
+  switch (value) {
+    case r'MANUAL':
+      return Enum$PlaylistType.MANUAL;
+    case r'SMART':
+      return Enum$PlaylistType.SMART;
+    default:
+      return Enum$PlaylistType.$unknown;
+  }
+}
+
 enum Enum$RankKind {
   RECENTLY_PLAYED,
   MOST_PLAYED,
@@ -2426,6 +2734,7 @@ enum Enum$PlayQueueSourceType {
   PODCAST,
   ARTIST,
   FILTER,
+  PLAYLIST,
   $unknown;
 
   factory Enum$PlayQueueSourceType.fromJson(String value) =>
@@ -2452,6 +2761,8 @@ String toJson$Enum$PlayQueueSourceType(Enum$PlayQueueSourceType e) {
       return r'ARTIST';
     case Enum$PlayQueueSourceType.FILTER:
       return r'FILTER';
+    case Enum$PlayQueueSourceType.PLAYLIST:
+      return r'PLAYLIST';
     case Enum$PlayQueueSourceType.$unknown:
       return r'$unknown';
   }
@@ -2475,6 +2786,8 @@ Enum$PlayQueueSourceType fromJson$Enum$PlayQueueSourceType(String value) {
       return Enum$PlayQueueSourceType.ARTIST;
     case r'FILTER':
       return Enum$PlayQueueSourceType.FILTER;
+    case r'PLAYLIST':
+      return Enum$PlayQueueSourceType.PLAYLIST;
     default:
       return Enum$PlayQueueSourceType.$unknown;
   }

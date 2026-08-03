@@ -11,6 +11,7 @@ import 'package:player/utils/MetadataUtil.dart';
 import 'package:player/utils/StreamTokenService.dart';
 
 import '../l10n/app_localizations.dart';
+import 'AddToPlaylistSheet.dart';
 import 'BrowseListRow.dart';
 import 'CarouselItemView.dart';
 import 'PagedContentView.dart';
@@ -71,6 +72,20 @@ class TrackScroll extends StatelessWidget {
         child: ListTile(
           leading: const Icon(Icons.playlist_add),
           title: Text(loc.addToQueue),
+        ),
+      ),
+      MenuItemButton(
+        onPressed: hasFile
+            ? () => showAddToPlaylistSheet(
+                  context,
+                  serverName: serverName,
+                  mediaType: Enum$MediaType.TRACK,
+                  loadItemIds: (_) async => [track.id],
+                )
+            : null,
+        child: ListTile(
+          leading: const Icon(Icons.playlist_add_check),
+          title: Text(loc.addToPlaylist),
         ),
       ),
       MenuItemButton(

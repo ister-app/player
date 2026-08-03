@@ -1,0 +1,31 @@
+# One MANUAL playlist entry; exactly one media field is set, matching type. The media
+# selections mirror what fragmentPlayQueue selects per kind, plus whole books.
+fragment fragmentPlaylistItem on PlaylistItem {
+    id
+    position
+    type
+    episode {
+        ...fragmentEpisode
+    }
+    movie {
+        ...fragmentMovie
+    }
+    track {
+        id number discNumber
+        artist { id name }
+        album { id name images { ...fragmentImages } }
+        metadata { ...fragmentMetadata }
+        mediaFile { ...fragmentMediaFiles }
+        rating
+    }
+    book {
+        ...fragmentBook
+    }
+    podcastEpisode {
+        id publishedAt
+        podcast { id title author images { ...fragmentImages } }
+        metadata { ...fragmentMetadata }
+        mediaFile { ...fragmentMediaFiles }
+        watchStatus { ...fragmentWatchStatus }
+    }
+}

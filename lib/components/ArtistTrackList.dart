@@ -17,6 +17,7 @@ import 'package:player/utils/StreamTokenService.dart';
 import '../dto/IsterMediaItem.dart';
 import '../dto/MediaItemId.dart';
 import '../l10n/app_localizations.dart';
+import 'AddToPlaylistSheet.dart';
 import 'RatingStars.dart';
 import 'TvFocusable.dart';
 
@@ -278,6 +279,20 @@ class _ArtistTrackListState extends State<ArtistTrackList> {
                     child: ListTile(
                       leading: const Icon(Icons.playlist_add),
                       title: Text(loc.addToQueue),
+                    ),
+                  ),
+                  MenuItemButton(
+                    onPressed: hasFile
+                        ? () => showAddToPlaylistSheet(
+                              context,
+                              serverName: widget.serverName,
+                              mediaType: Enum$MediaType.TRACK,
+                              loadItemIds: (_) async => [track.id],
+                            )
+                        : null,
+                    child: ListTile(
+                      leading: const Icon(Icons.playlist_add_check),
+                      title: Text(loc.addToPlaylist),
                     ),
                   ),
                   MenuItemButton(

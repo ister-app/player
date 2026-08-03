@@ -1,0 +1,27 @@
+# The light playlist shape for lists and carousels (no items). The filter tree mirrors
+# MediaFilterInput two levels deep, like fragmentSavedView, so a smart playlist's filter can be
+# loaded straight back into the filter builder.
+fragment fragmentPlaylist on Playlist {
+    id
+    name
+    type
+    libraryId
+    libraryType
+    itemCount
+    filterKind
+    sorting
+    sortingOrder
+    filter {
+        match
+        limit
+        conditions { field operator value }
+        groups {
+            match
+            conditions { field operator value }
+            groups {
+                match
+                conditions { field operator value }
+            }
+        }
+    }
+}

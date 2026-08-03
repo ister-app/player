@@ -19,6 +19,7 @@ import 'package:player/utils/PermissionsService.dart';
 import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../components/AddToPlaylistSheet.dart';
 import '../components/AddToSessionSheet.dart';
 import '../components/SourceAttribution.dart';
 import '../components/MusicDetailHero.dart';
@@ -261,6 +262,20 @@ class _AlbumPageState extends State<AlbumPage> {
                   loadItems: (_) async => [
                     for (final track in tracks.where(_trackHasFile))
                       (Enum$MediaType.TRACK, track.id),
+                  ],
+                ),
+              ),
+            if (album != null && tracks.any(_trackHasFile))
+              IconButton(
+                icon: const Icon(Icons.playlist_add_check),
+                tooltip: loc.addToPlaylist,
+                onPressed: () => showAddToPlaylistSheet(
+                  context,
+                  serverName: widget.serverName,
+                  mediaType: Enum$MediaType.TRACK,
+                  // Whole album, in the page's disc/track order.
+                  loadItemIds: (_) async => [
+                    for (final track in tracks.where(_trackHasFile)) track.id,
                   ],
                 ),
               ),
@@ -629,6 +644,20 @@ class _AlbumPageState extends State<AlbumPage> {
                           child: ListTile(
                             leading: const Icon(Icons.queue_music),
                             title: Text(loc.addToSession),
+                          ),
+                        ),
+                        MenuItemButton(
+                          onPressed: hasFile
+                              ? () => showAddToPlaylistSheet(
+                                    context,
+                                    serverName: widget.serverName,
+                                    mediaType: Enum$MediaType.TRACK,
+                                    loadItemIds: (_) async => [track.id],
+                                  )
+                              : null,
+                          child: ListTile(
+                            leading: const Icon(Icons.playlist_add_check),
+                            title: Text(loc.addToPlaylist),
                           ),
                         ),
                         MenuItemButton(

@@ -601,6 +601,28 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (pq != null) await _startFromPlayQueue(client, pq, srv);
   }
 
+  /// Plays one of the user's playlists as a PLAYLIST queue. Manual playlists
+  /// play their entries in order (or seeded-shuffled); smart playlists pin
+  /// their filter server-side, like FILTER queues. [startId] is the media item
+  /// to start at (a book id starts at that book's first chapter); unsupported
+  /// for smart playlists.
+  Future<void> startPlaylistPlay(
+    GraphQLClient client,
+    String srv,
+    String playlistId, {
+    String? startId,
+    bool shuffle = false,
+  }) async {
+    final pq = await _playQueueService.createPlayQueue(
+      client,
+      sourceType: Enum$PlayQueueSourceType.PLAYLIST,
+      sourceId: playlistId,
+      startId: startId,
+      shuffle: shuffle,
+    );
+    if (pq != null) await _startFromPlayQueue(client, pq, srv);
+  }
+
   /// Starts (or resumes) an audiobook: creates a BOOK play queue of the book's
   /// chapters in order, starting at [chapterId] (or the first chapter).
   Future<void> startPlayQueueForBook(

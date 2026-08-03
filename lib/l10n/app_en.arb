@@ -1311,5 +1311,40 @@
         "type": "int"
       }
     }
-  }
+  },
+  "playlists": "Playlists",
+  "@playlists": {
+    "description": "Discover row header and playlist list page title"
+  },
+  "newPlaylist": "New playlist",
+  "editPlaylist": "Edit playlist",
+  "deletePlaylist": "Delete playlist",
+  "deletePlaylistConfirm": "Delete playlist '{name}'? Anything currently playing keeps playing.",
+  "@deletePlaylistConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "playlistName": "Name",
+  "smartPlaylist": "Smart playlist",
+  "smartPlaylistDescription": "The contents follow a filter you define",
+  "manualPlaylist": "Playlist",
+  "manualPlaylistDescription": "You pick the items yourself",
+  "addToPlaylist": "Add to playlist",
+  "addedToPlaylist": "Added to playlist",
+  "addToPlaylistFailed": "Could not add to the playlist",
+  "noPlaylistsYet": "No playlists yet",
+  "playlistEmpty": "This playlist is empty. Add items from their context menu.",
+  "playlistItemCount": "{count, plural, =1{1 item} other{{count} items}}",
+  "@playlistItemCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "removeFromPlaylist": "Remove from playlist",
+  "editFilter": "Edit filter"
 }

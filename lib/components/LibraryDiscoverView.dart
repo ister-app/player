@@ -8,6 +8,8 @@ import 'package:player/graphql/discoverMovies.graphql.dart';
 import 'package:player/graphql/discoverPodcasts.graphql.dart';
 import 'package:player/graphql/discoverSeries.graphql.dart';
 import 'package:player/graphql/discoverShows.graphql.dart';
+import 'package:player/graphql/fragmentPlaylist.graphql.dart';
+import 'package:player/graphql/playlists.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ImageTypes.dart';
@@ -107,6 +109,7 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
           onTap: () => _pushList(context, MediaListKind.recentlyAdded),
         ),
         SizedBox(height: _rowHeight, child: _recentlyAddedSlide()),
+        _playlistsRow(context),
         _rankedRowsQuery(context),
       ],
     );
@@ -160,6 +163,83 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
       default:
         return documentNodeQuerydiscoverMovies;
     }
+  }
+
+  /// The user's playlists in this library. Hidden when empty, and silently
+  /// absent against an older server without the playlists query. COMIC
+  /// libraries cannot have playlists, so the query is skipped there.
+  Widget _playlistsRow(BuildContext context) {
+    if (widget.libraryType == Enum$LibraryType.COMIC) {
+      return const SizedBox.shrink();
+    }
+    final loc = AppLocalizations.of(context)!;
+    return Query(
+      options: QueryOptions(
+        document: documentNodeQueryplaylists,
+        variables:
+            Variables$Query$playlists(libraryId: widget.libraryId).toJson(),
+        fetchPolicy: FetchPolicy.cacheAndNetwork,
+      ),
+      builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
+        if (result.hasException || result.data == null) {
+          if (result.hasException) {
+            LoggerService()
+                .logger
+                .w('Playlists unavailable: ${result.exception}');
+          }
+          return const SizedBox.shrink();
+        }
+        final playlists = Query$playlists.fromJson(result.data!).playlists;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            RowHeader(
+              label: loc.playlists,
+              onTap: () => AutoRouter.of(context).push(PlaylistListRoute(
+                libraryId: widget.libraryId,
+                libraryTypeName: widget.libraryType.name,
+              )),
+            ),
+            if (playlists.isEmpty)
+              // Keep the header (it is the entry point for creating the first
+              // playlist) with a hint instead of an empty carousel.
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(loc.noPlaylistsYet,
+                    style: Theme.of(context).textTheme.bodySmall),
+              )
+            else
+              SizedBox(
+                height: _rowHeight,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemExtent: _squareTileWidth,
+                  itemCount: playlists.length,
+                  itemBuilder: (context, index) =>
+                      _playlistTile(context, playlists[index]),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _playlistTile(
+      BuildContext context, Fragment$fragmentPlaylist playlist) {
+    final loc = AppLocalizations.of(context)!;
+    return CarouselItemView(
+      serverName: widget.serverName,
+      title: playlist.name,
+      subTitle: playlist.type == Enum$PlaylistType.SMART
+          ? loc.smartPlaylist
+          : loc.playlistItemCount(playlist.itemCount ?? 0),
+      placeholderIcon: widget.libraryType == Enum$LibraryType.MUSIC
+          ? Icons.queue_music
+          : Icons.playlist_play,
+      onTap: () => AutoRouter.of(context)
+          .push(PlaylistRoute(playlistId: playlist.id)),
+    );
   }
 
   Widget _rankedRowsQuery(BuildContext context) {

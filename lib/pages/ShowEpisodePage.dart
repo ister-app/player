@@ -9,6 +9,7 @@ import 'package:player/graphql/analyzeDataForEpisode.graphql.dart';
 import 'package:player/graphql/episodeById.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../components/AddToPlaylistSheet.dart';
 import '../components/AddToSessionSheet.dart';
 import '../components/SourceAttribution.dart';
 import '../components/CastRow.dart';
@@ -269,6 +270,19 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                         child: ListTile(
                           leading: const Icon(Icons.playlist_add),
                           title: Text(AppLocalizations.of(context)!.addToSession),
+                        ),
+                      ),
+                    if (episode != null)
+                      MenuItemButton(
+                        onPressed: () => showAddToPlaylistSheet(
+                          context,
+                          serverName: widget.serverName,
+                          mediaType: Enum$MediaType.EPISODE,
+                          loadItemIds: (_) async => [episode.id],
+                        ),
+                        child: ListTile(
+                          leading: const Icon(Icons.playlist_add_check),
+                          title: Text(AppLocalizations.of(context)!.addToPlaylist),
                         ),
                       ),
                   ],

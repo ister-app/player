@@ -1146,4 +1146,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String outputLatencySlider(int ms) {
     return 'Audio delay of this device: $ms ms';
   }
+
+  @override
+  String get playlists => 'Playlists';
+
+  @override
+  String get newPlaylist => 'New playlist';
+
+  @override
+  String get editPlaylist => 'Edit playlist';
+
+  @override
+  String get deletePlaylist => 'Delete playlist';
+
+  @override
+  String deletePlaylistConfirm(String name) {
+    return 'Delete playlist \'$name\'? Anything currently playing keeps playing.';
+  }
+
+  @override
+  String get playlistName => 'Name';
+
+  @override
+  String get smartPlaylist => 'Smart playlist';
+
+  @override
+  String get smartPlaylistDescription =>
+      'The contents follow a filter you define';
+
+  @override
+  String get manualPlaylist => 'Playlist';
+
+  @override
+  String get manualPlaylistDescription => 'You pick the items yourself';
+
+  @override
+  String get addToPlaylist => 'Add to playlist';
+
+  @override
+  String get addedToPlaylist => 'Added to playlist';
+
+  @override
+  String get addToPlaylistFailed => 'Could not add to the playlist';
+
+  @override
+  String get noPlaylistsYet => 'No playlists yet';
+
+  @override
+  String get playlistEmpty =>
+      'This playlist is empty. Add items from their context menu.';
+
+  @override
+  String playlistItemCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get removeFromPlaylist => 'Remove from playlist';
+
+  @override
+  String get editFilter => 'Edit filter';
 }

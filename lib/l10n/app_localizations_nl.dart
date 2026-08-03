@@ -1146,4 +1146,71 @@ class AppLocalizationsNl extends AppLocalizations {
   String outputLatencySlider(int ms) {
     return 'Geluidsvertraging van dit apparaat: $ms ms';
   }
+
+  @override
+  String get playlists => 'Afspeellijsten';
+
+  @override
+  String get newPlaylist => 'Nieuwe afspeellijst';
+
+  @override
+  String get editPlaylist => 'Afspeellijst bewerken';
+
+  @override
+  String get deletePlaylist => 'Afspeellijst verwijderen';
+
+  @override
+  String deletePlaylistConfirm(String name) {
+    return 'Afspeellijst \'$name\' verwijderen? Wat nu speelt, speelt gewoon door.';
+  }
+
+  @override
+  String get playlistName => 'Naam';
+
+  @override
+  String get smartPlaylist => 'Slimme afspeellijst';
+
+  @override
+  String get smartPlaylistDescription =>
+      'De inhoud volgt een filter dat je zelf instelt';
+
+  @override
+  String get manualPlaylist => 'Afspeellijst';
+
+  @override
+  String get manualPlaylistDescription => 'Je kiest zelf de items';
+
+  @override
+  String get addToPlaylist => 'Toevoegen aan afspeellijst';
+
+  @override
+  String get addedToPlaylist => 'Toegevoegd aan afspeellijst';
+
+  @override
+  String get addToPlaylistFailed =>
+      'Toevoegen aan de afspeellijst is niet gelukt';
+
+  @override
+  String get noPlaylistsYet => 'Nog geen afspeellijsten';
+
+  @override
+  String get playlistEmpty =>
+      'Deze afspeellijst is leeg. Voeg items toe via hun contextmenu.';
+
+  @override
+  String playlistItemCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get removeFromPlaylist => 'Uit afspeellijst verwijderen';
+
+  @override
+  String get editFilter => 'Filter bewerken';
 }

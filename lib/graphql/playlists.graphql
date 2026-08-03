@@ -1,0 +1,58 @@
+# The calling user's playlists: manual item lists and smart (filter-backed) playlists, always
+# scoped to one library. Item mutations return the full item list so the detail page can
+# refresh in place.
+query playlists($libraryId: ID) {
+    playlists(libraryId: $libraryId) {
+        ...fragmentPlaylist
+    }
+}
+
+query playlistById($id: ID!) {
+    playlistById(id: $id) {
+        ...fragmentPlaylist
+        items {
+            ...fragmentPlaylistItem
+        }
+    }
+}
+
+mutation createPlaylist($input: PlaylistInput!) {
+    createPlaylist(input: $input) {
+        ...fragmentPlaylist
+    }
+}
+
+mutation updatePlaylist($id: ID!, $input: PlaylistInput!) {
+    updatePlaylist(id: $id, input: $input) {
+        ...fragmentPlaylist
+    }
+}
+
+mutation deletePlaylist($id: ID!) {
+    deletePlaylist(id: $id)
+}
+
+mutation addPlaylistItem($playlistId: ID!, $mediaId: ID!, $afterPlaylistItemId: ID) {
+    addPlaylistItem(playlistId: $playlistId, mediaId: $mediaId, afterPlaylistItemId: $afterPlaylistItemId) {
+        id
+        itemCount
+    }
+}
+
+mutation movePlaylistItem($playlistId: ID!, $playlistItemId: ID!, $afterPlaylistItemId: ID) {
+    movePlaylistItem(playlistId: $playlistId, playlistItemId: $playlistItemId, afterPlaylistItemId: $afterPlaylistItemId) {
+        id
+        items {
+            ...fragmentPlaylistItem
+        }
+    }
+}
+
+mutation removePlaylistItem($playlistId: ID!, $playlistItemId: ID!) {
+    removePlaylistItem(playlistId: $playlistId, playlistItemId: $playlistItemId) {
+        id
+        items {
+            ...fragmentPlaylistItem
+        }
+    }
+}
