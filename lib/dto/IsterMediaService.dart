@@ -35,6 +35,7 @@ import '../utils/ImageTypes.dart';
 import '../utils/ImageUtil.dart';
 import '../utils/LoggerService.dart';
 import '../utils/LoginManager.dart';
+import '../utils/PlaylistService.dart';
 import '../utils/StreamTokenService.dart';
 import '../utils/MetadataUtil.dart';
 import '../utils/WellKnownService.dart';
@@ -159,6 +160,7 @@ class IsterMediaService {
         getEpisodesForPodcast(mediaItemId.serverName, mediaItemId.id),
       IsterMediaTypes.chapter => List.empty(),
       IsterMediaTypes.podcastEpisode => List.empty(),
+      IsterMediaTypes.playlist => List.empty(),
     };
   }
 
@@ -188,6 +190,7 @@ class IsterMediaService {
       return [
         ...await getDiscoverGroups(mediaItemId.serverName,
             DiscoverNodeId(DiscoverKind.books, libraryId)),
+        ...await getPlaylistsGroup(mediaItemId.serverName, libraryId),
         ...await getBooks(mediaItemId.serverName, libraryId,
             extras: _groupExtras(loc.allBooks)),
       ];
@@ -196,6 +199,7 @@ class IsterMediaService {
       return [
         ...await getDiscoverGroups(mediaItemId.serverName,
             DiscoverNodeId(DiscoverKind.podcasts, libraryId)),
+        ...await getPlaylistsGroup(mediaItemId.serverName, libraryId),
         ...await getPodcasts(mediaItemId.serverName, libraryId,
             extras: _groupExtras(loc.allPodcasts)),
       ];
@@ -282,13 +286,15 @@ class IsterMediaService {
         .toList();
   }
 
-  /// The albums tab of a music library: the discover groups, closed by an
-  /// "All albums" header row into the full alphabetical cover grid.
+  /// The albums tab of a music library: the discover groups and the user's
+  /// playlists, closed by an "All albums" header row into the full
+  /// alphabetical cover grid.
   Future<List<IsterMediaItem>> getAlbumsTab(
       String serverName, String libraryId) async {
     return [
       ...await getDiscoverGroups(
           serverName, DiscoverNodeId(DiscoverKind.albums, libraryId)),
+      ...await getPlaylistsGroup(serverName, libraryId),
       IsterMediaItem(
         id: "all-albums:$libraryId",
         serverName: serverName,
@@ -297,6 +303,32 @@ class IsterMediaService {
         extras: _headerExtras,
       ),
     ];
+  }
+
+  /// The user's playlists in this library, as playable tiles in a titled
+  /// section. Empty — and silently absent against an older server without the
+  /// playlists query — when the user has none here.
+  Future<List<IsterMediaItem>> getPlaylistsGroup(
+      String serverName, String libraryId) async {
+    try {
+      final client = await getClient(serverName);
+      final playlists =
+          await PlaylistService.list(client, libraryId: libraryId);
+      if (playlists == null || playlists.isEmpty) return const [];
+      return playlists
+          .map((playlist) => IsterMediaItem(
+                id: playlist.id,
+                serverName: serverName,
+                isterMediaType: IsterMediaTypes.playlist,
+                title: playlist.name,
+                playable: true,
+                extras: _groupExtras(loc.playlists),
+              ))
+          .toList();
+    } catch (e) {
+      LoggerService().logger.w('playlists unavailable for $serverName: $e');
+      return const [];
+    }
   }
 
   Future<List<IsterMediaItem>> getAlbums(String serverName,

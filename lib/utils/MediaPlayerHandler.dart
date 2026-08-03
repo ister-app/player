@@ -1306,6 +1306,9 @@ class MediaPlayerHandler extends BaseAudioHandler
         final client = await IsterMediaService.getClient(mediaItemId.serverName);
         await startPlayQueueForBook(
             client, null, parts[0], parts[1], mediaItemId.serverName);
+      case IsterMediaTypes.playlist:
+        final client = await IsterMediaService.getClient(mediaItemId.serverName);
+        await startPlaylistPlay(client, mediaItemId.serverName, mediaItemId.id);
       case IsterMediaTypes.podcastEpisode:
         // Composite id: "podcastId~episodeId".
         final parts =

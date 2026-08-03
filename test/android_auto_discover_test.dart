@@ -163,6 +163,7 @@ MockClient _fakeGraphQL({
       podcasts,
   List<Map<String, dynamic>> Function()? rankedContent,
   List<Map<String, dynamic>>? recordedAlbumVariables,
+  List<Map<String, dynamic>>? playlists,
 }) =>
     MockClient((request) async {
       final body = json.decode(request.body) as Map<String, dynamic>;
@@ -214,6 +215,12 @@ MockClient _fakeGraphQL({
             'mostPlayedPodcasts': <dynamic>[],
             'highestRatedPodcasts': <dynamic>[],
           },
+        });
+      }
+      if (query.contains('playlists(')) {
+        return _json({
+          '__typename': 'Query',
+          'playlists': playlists ?? const <dynamic>[],
         });
       }
       if (query.contains('books(')) {
@@ -371,6 +378,42 @@ void main() {
       _expectHeader(items[4],
           id: 'all-albums:$_libraryId',
           title: IsterMediaService.loc.allAlbums);
+    });
+
+    test('the albums tab inlines the playlists as a titled section of '
+        'playable tiles', () async {
+      _installClient(_fakeGraphQL(
+        recentlyAddedAlbums: () => [_album('new-1', 'New Album')],
+        playlists: [
+          {
+            '__typename': 'Playlist',
+            'id': 'pl-1',
+            'name': 'Road Trip',
+            'type': 'MANUAL',
+            'libraryId': _libraryId,
+            'libraryType': 'MUSIC',
+            'itemCount': 3,
+            'filterKind': null,
+            'sorting': null,
+            'sortingOrder': null,
+            'filter': null,
+          },
+        ],
+      ));
+
+      final items = await IsterMediaService().getList(
+          MediaItemId(_server, IsterMediaTypes.list, 'albums:$_libraryId'));
+
+      final playlist =
+          items.singleWhere((item) => item.id == 'pl-1');
+      expect(playlist.isterMediaType, IsterMediaTypes.playlist);
+      expect(playlist.playable, isTrue);
+      expect(playlist.title, 'Road Trip');
+      expect(_groupOf(playlist), IsterMediaService.loc.playlists);
+      expect(_singleItemOf(playlist), IsterMediaService.contentStyleGrid);
+      // The playlists section sits before the closing All albums header.
+      expect(items.indexOf(playlist),
+          lessThan(items.indexWhere((item) => item.id.startsWith('all-albums:'))));
     });
 
     test('an old server degrades the albums tab to recently added plus '
