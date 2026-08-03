@@ -1145,6 +1145,8 @@ class Fragment$fragmentPlaybackSession {
     required this.updatedAt,
     required this.controllable,
     required this.followerCount,
+    this.anchorPositionMs,
+    this.anchorServerTimeMs,
     this.$__typename = 'PlaybackSession',
   });
 
@@ -1164,6 +1166,8 @@ class Fragment$fragmentPlaybackSession {
     final l$updatedAt = json['updatedAt'];
     final l$controllable = json['controllable'];
     final l$followerCount = json['followerCount'];
+    final l$anchorPositionMs = json['anchorPositionMs'];
+    final l$anchorServerTimeMs = json['anchorServerTimeMs'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentPlaybackSession(
       playQueueId: (l$playQueueId as String),
@@ -1183,6 +1187,8 @@ class Fragment$fragmentPlaybackSession {
       updatedAt: (l$updatedAt as String),
       controllable: (l$controllable as bool),
       followerCount: (l$followerCount as int),
+      anchorPositionMs: (l$anchorPositionMs as int?),
+      anchorServerTimeMs: (l$anchorServerTimeMs as num?)?.toDouble(),
       $__typename: (l$$__typename as String),
     );
   }
@@ -1216,6 +1222,10 @@ class Fragment$fragmentPlaybackSession {
   final bool controllable;
 
   final int followerCount;
+
+  final int? anchorPositionMs;
+
+  final double? anchorServerTimeMs;
 
   final String $__typename;
 
@@ -1253,6 +1263,10 @@ class Fragment$fragmentPlaybackSession {
     _resultData['controllable'] = l$controllable;
     final l$followerCount = followerCount;
     _resultData['followerCount'] = l$followerCount;
+    final l$anchorPositionMs = anchorPositionMs;
+    _resultData['anchorPositionMs'] = l$anchorPositionMs;
+    final l$anchorServerTimeMs = anchorServerTimeMs;
+    _resultData['anchorServerTimeMs'] = l$anchorServerTimeMs;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -1275,6 +1289,8 @@ class Fragment$fragmentPlaybackSession {
     final l$updatedAt = updatedAt;
     final l$controllable = controllable;
     final l$followerCount = followerCount;
+    final l$anchorPositionMs = anchorPositionMs;
+    final l$anchorServerTimeMs = anchorServerTimeMs;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$playQueueId,
@@ -1292,6 +1308,8 @@ class Fragment$fragmentPlaybackSession {
       l$updatedAt,
       l$controllable,
       l$followerCount,
+      l$anchorPositionMs,
+      l$anchorServerTimeMs,
       l$$__typename,
     ]);
   }
@@ -1380,6 +1398,16 @@ class Fragment$fragmentPlaybackSession {
     if (l$followerCount != lOther$followerCount) {
       return false;
     }
+    final l$anchorPositionMs = anchorPositionMs;
+    final lOther$anchorPositionMs = other.anchorPositionMs;
+    if (l$anchorPositionMs != lOther$anchorPositionMs) {
+      return false;
+    }
+    final l$anchorServerTimeMs = anchorServerTimeMs;
+    final lOther$anchorServerTimeMs = other.anchorServerTimeMs;
+    if (l$anchorServerTimeMs != lOther$anchorServerTimeMs) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -1420,6 +1448,8 @@ abstract class CopyWith$Fragment$fragmentPlaybackSession<TRes> {
     String? updatedAt,
     bool? controllable,
     int? followerCount,
+    int? anchorPositionMs,
+    double? anchorServerTimeMs,
     String? $__typename,
   });
 }
@@ -1450,6 +1480,8 @@ class _CopyWithImpl$Fragment$fragmentPlaybackSession<TRes>
     Object? updatedAt = _undefined,
     Object? controllable = _undefined,
     Object? followerCount = _undefined,
+    Object? anchorPositionMs = _undefined,
+    Object? anchorServerTimeMs = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentPlaybackSession(
@@ -1495,6 +1527,12 @@ class _CopyWithImpl$Fragment$fragmentPlaybackSession<TRes>
       followerCount: followerCount == _undefined || followerCount == null
           ? _instance.followerCount
           : (followerCount as int),
+      anchorPositionMs: anchorPositionMs == _undefined
+          ? _instance.anchorPositionMs
+          : (anchorPositionMs as int?),
+      anchorServerTimeMs: anchorServerTimeMs == _undefined
+          ? _instance.anchorServerTimeMs
+          : (anchorServerTimeMs as double?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -1524,6 +1562,8 @@ class _CopyWithStubImpl$Fragment$fragmentPlaybackSession<TRes>
     String? updatedAt,
     bool? controllable,
     int? followerCount,
+    int? anchorPositionMs,
+    double? anchorServerTimeMs,
     String? $__typename,
   }) => _res;
 }
@@ -1639,6 +1679,20 @@ const fragmentDefinitionfragmentPlaybackSession = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'followerCount'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'anchorPositionMs'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'anchorServerTimeMs'),
         alias: null,
         arguments: [],
         directives: [],

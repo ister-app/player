@@ -47,4 +47,6 @@ fragment fragmentPlaybackSession on PlaybackSession {
     updatedAt
     controllable
     followerCount
+    anchorPositionMs
+    anchorServerTimeMs
 }

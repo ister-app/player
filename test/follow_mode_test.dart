@@ -67,6 +67,8 @@ Fragment$fragmentPlaybackSession _session({
   String? playQueueItemId = 'item-1',
   int progressInMilliseconds = 30000,
   Enum$PlayState playState = Enum$PlayState.PLAYING,
+  int? anchorPositionMs,
+  double? anchorServerTimeMs,
 }) =>
     Fragment$fragmentPlaybackSession(
       playQueueId: playQueueId,
@@ -79,6 +81,8 @@ Fragment$fragmentPlaybackSession _session({
       updatedAt: '2026-08-02T12:00:00Z',
       controllable: true,
       followerCount: 1,
+      anchorPositionMs: anchorPositionMs,
+      anchorServerTimeMs: anchorServerTimeMs,
     );
 
 /// GraphQL stub for the follow flow. Records every operation name so tests
@@ -284,6 +288,28 @@ void main() {
     await handler.debugApplyFollowNowPlaying(
         [_session(playQueueItemId: 'item-1', progressInMilliseconds: 0)]);
     expect(handler.currentPlayQueueItem?.id, 'item-1');
+  });
+
+  test('the tight-sync anchor is stored from now-playing and cleared without one',
+      () async {
+    final operations = <String>[];
+    useClient(_fakeGraphQL(queue: _queue(), operations: operations));
+    await handler.startFollowingQueue(_server, 'pq-follow');
+
+    await handler.debugApplyFollowNowPlaying([
+      _session(
+          progressInMilliseconds: 31000,
+          anchorPositionMs: 30950,
+          anchorServerTimeMs: 1760000000000)
+    ]);
+    expect(handler.debugFollowAnchor?.positionMs, 30950);
+    expect(handler.debugFollowAnchor?.serverTimeMs, 1760000000000);
+    expect(handler.debugFollowAnchor?.itemId, 'item-1');
+
+    // An emission without anchor fields (older leader) clears it, so the
+    // discipline loop falls back to the coarse sync.
+    await handler.debugApplyFollowNowPlaying([_session()]);
+    expect(handler.debugFollowAnchor, isNull);
   });
 
   test('stopFollowing deregisters and clears the follow state', () async {

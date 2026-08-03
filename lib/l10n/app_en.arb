@@ -1298,5 +1298,18 @@
   "stopListeningAlong": "Stop listening along",
   "@stopListeningAlong": {
     "description": "Action to leave follow mode on this device"
+  },
+  "tightSyncToggle": "In sync in the same room",
+  "@tightSyncToggle": {
+    "description": "Switch on a following device: discipline playback tightly against the leader's clock so both devices can play audibly in the same room"
+  },
+  "outputLatencySlider": "Audio delay of this device: {ms} ms",
+  "@outputLatencySlider": {
+    "description": "Label of the output-latency slider for tight sync; the user tunes it until the echo between devices disappears (Bluetooth adds unmeasurable delay)",
+    "placeholders": {
+      "ms": {
+        "type": "int"
+      }
+    }
   }
 }

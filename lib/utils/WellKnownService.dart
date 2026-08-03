@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/LoggerService.dart';
@@ -27,6 +28,12 @@ class WellKnownService {
   /// Returns cached in-memory info synchronously. Used by [ClientManager].
   static WellKnownInfo? getCached(String serverIdentifier) {
     return _cache[serverIdentifier];
+  }
+
+  /// Test seam: seeds the in-memory cache without network or preferences.
+  @visibleForTesting
+  static void cacheForTest(String serverIdentifier, WellKnownInfo info) {
+    _cache[serverIdentifier] = info;
   }
 
   /// The servers configured in the app (the same list [ServerList] manages).

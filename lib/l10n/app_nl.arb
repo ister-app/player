@@ -325,5 +325,7 @@
   "followTrackNotAvailable": "'{title}' is voor jou niet beschikbaar — wacht op het volgende nummer",
   "followLeaderStopped": "Meeluisteren gestopt — de sessie is beëindigd",
   "followersListening": "{count, plural, =1{1 apparaat luistert mee} other{{count} apparaten luisteren mee}}",
-  "stopListeningAlong": "Stop met meeluisteren"
+  "stopListeningAlong": "Stop met meeluisteren",
+  "tightSyncToggle": "Synchroon in dezelfde kamer",
+  "outputLatencySlider": "Geluidsvertraging van dit apparaat: {ms} ms"
 }

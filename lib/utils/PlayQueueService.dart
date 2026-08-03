@@ -439,13 +439,18 @@ class PlayQueueService {
   /// [playState] marks the update as PLAYING (also when null) or PAUSED; the
   /// server treats this mutation as the playback heartbeat and considers the
   /// session stopped when no update arrives for 60s.
+  /// [anchorPositionMs]/[anchorServerTimeMs]: optional tight-sync timeline
+  /// anchor ("this position at that server-clock instant"); followers
+  /// extrapolate the leader position from it locally.
   Future<Fragment$fragmentPlayQueue?> updateProgress(
       GraphQLClient graphQLClient,
       String playQueueId,
       String playQueueItemId,
       Duration duration,
       {Input$StreamSettingsInput? streamSettings,
-      Enum$PlayState? playState}) async {
+      Enum$PlayState? playState,
+      int? anchorPositionMs,
+      double? anchorServerTimeMs}) async {
     final MutationOptions options = MutationOptions(
         document: documentNodeMutationupdatePlayQueue,
         variables: Variables$Mutation$updatePlayQueue(
@@ -454,6 +459,8 @@ class PlayQueueService {
           progressInMilliseconds: duration.inMilliseconds,
           streamSettings: streamSettings,
           playState: playState,
+          anchorPositionMs: anchorPositionMs,
+          anchorServerTimeMs: anchorServerTimeMs,
         ).toJson());
     final QueryResult result = await graphQLClient.mutate(options);
 

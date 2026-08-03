@@ -2059,6 +2059,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Stop listening along'**
   String get stopListeningAlong;
+
+  /// Switch on a following device: discipline playback tightly against the leader's clock so both devices can play audibly in the same room
+  ///
+  /// In en, this message translates to:
+  /// **'In sync in the same room'**
+  String get tightSyncToggle;
+
+  /// Label of the output-latency slider for tight sync; the user tunes it until the echo between devices disappears (Bluetooth adds unmeasurable delay)
+  ///
+  /// In en, this message translates to:
+  /// **'Audio delay of this device: {ms} ms'**
+  String outputLatencySlider(int ms);
 }
 
 class _AppLocalizationsDelegate

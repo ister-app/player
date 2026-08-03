@@ -1138,4 +1138,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stopListeningAlong => 'Stop listening along';
+
+  @override
+  String get tightSyncToggle => 'In sync in the same room';
+
+  @override
+  String outputLatencySlider(int ms) {
+    return 'Audio delay of this device: $ms ms';
+  }
 }

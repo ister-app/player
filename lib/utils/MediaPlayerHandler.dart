@@ -12,7 +12,9 @@ import 'package:player/dto/MediaItemId.dart';
 import 'package:flutter/foundation.dart';
 import 'package:player/utils/AutoPreferences.dart';
 import 'package:player/utils/ClientManager.dart';
+import 'package:player/utils/ClockSyncService.dart';
 import 'package:player/utils/DevicePreferences.dart';
+import 'package:player/utils/SyncPreferences.dart';
 import 'package:player/utils/LanguagePreferences.dart';
 import 'package:player/utils/LastMusicQueuePreferences.dart';
 import 'package:player/utils/LoginManager.dart';
@@ -34,6 +36,7 @@ import '../graphql/fragmentServerActivity.graphql.dart';
 import '../graphql/nowPlayingSubscription.graphql.dart';
 import '../graphql/playbackCommandsSubscription.graphql.dart';
 import '../graphql/schema.graphql.dart';
+import 'FollowSyncDecision.dart';
 import 'ImageTypes.dart';
 import 'ImageUtil.dart';
 import 'MetadataUtil.dart';
@@ -2165,15 +2168,37 @@ class MediaPlayerHandler extends BaseAudioHandler
     // because the in-video controls can pause without going through pause().
     // play()/pause()/stop() pass it explicitly because the player state hasn't
     // flipped yet when they fire the update.
-    final send = _progressChain.then((_) async => _playQueueService
-        .updateProgress(client, playQueueId, playQueueItemId, position,
-            streamSettings: await _currentStreamSettings(),
-            playState: playState ??
-                (_player.state.playing
-                    ? Enum$PlayState.PLAYING
-                    : Enum$PlayState.PAUSED)));
+    final send = _progressChain.then((_) async {
+      // Tight-sync anchor: sample the position and server clock at the moment
+      // the request actually goes out. The device's own output latency is
+      // subtracted so the anchor describes what listeners *hear*, not what the
+      // decoder reports. Omitted (nulls) until the clock has been measured;
+      // followers then fall back to the coarse sync.
+      final anchor = _timelineAnchor();
+      return _playQueueService.updateProgress(
+          client, playQueueId, playQueueItemId, position,
+          streamSettings: await _currentStreamSettings(),
+          playState: playState ??
+              (_player.state.playing
+                  ? Enum$PlayState.PLAYING
+                  : Enum$PlayState.PAUSED),
+          anchorPositionMs: anchor?.positionMs,
+          anchorServerTimeMs: anchor?.serverTimeMs);
+    });
     _progressChain = send.then((_) {}, onError: (_) {});
     return send;
+  }
+
+  /// The tight-sync anchor for the currently playing stream, or null when the
+  /// server clock hasn't been measured (yet) or nothing is open.
+  ({int positionMs, double serverTimeMs})? _timelineAnchor() {
+    final srv = serverName;
+    if (srv == null || _currentMediaUrl == null) return null;
+    final serverNow = ClockSyncService.instance.serverNowMs(srv);
+    if (serverNow == null) return null;
+    final positionMs = _player.state.position.inMilliseconds -
+        SyncPreferences.outputLatencyMs.value;
+    return (positionMs: positionMs < 0 ? 0 : positionMs, serverTimeMs: serverNow);
   }
 
   /// Replaces [playQueue] with a server response while keeping the locally
@@ -2285,6 +2310,13 @@ class MediaPlayerHandler extends BaseAudioHandler
     // A follower has its own heartbeat (followPlayQueue); the session
     // heartbeat below would try to report progress it must not send.
     if (_followMode) return;
+    // Arm the tight-sync anchor: once the server clock is measured (and the
+    // output-latency preference loaded), every progress update carries one.
+    final srv = serverName;
+    if (srv != null && !ClientManager.usesTestClients) {
+      unawaited(SyncPreferences.ensureLoaded());
+      unawaited(ClockSyncService.instance.ensureSynced(srv));
+    }
     _heartbeat?.cancel();
     _heartbeat = Timer.periodic(const Duration(seconds: 5), (_) {
       if (playQueue == null || graphQLClient == null) return;
@@ -2427,6 +2459,16 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   Timer? _followHeartbeat;
   ResilientSubscription? _followNowPlayingSubscription;
+  // Tight sync ("same room"): the leader's latest timeline anchor and the
+  // 500ms discipline loop steering this device towards it with setRate.
+  Timer? _followSyncTimer;
+  ({
+    int positionMs,
+    double serverTimeMs,
+    Enum$PlayState playState,
+    String? itemId
+  })? _followAnchor;
+  double _followAppliedRate = 1.0;
   // Serializes application of nowPlaying emissions; a next emission arrives
   // within seconds, so a dropped one is never missed for long.
   bool _followSyncBusy = false;
@@ -2483,6 +2525,13 @@ class MediaPlayerHandler extends BaseAudioHandler
     _ensureCommandSubscription();
     _startFollowHeartbeat(deviceId);
     _ensureFollowNowPlayingSubscription();
+    unawaited(SyncPreferences.ensureLoaded());
+    if (!ClientManager.usesTestClients) {
+      unawaited(ClockSyncService.instance.ensureSynced(srv));
+      _followSyncTimer?.cancel();
+      _followSyncTimer = Timer.periodic(
+          const Duration(milliseconds: 500), (_) => unawaited(_followSyncTick()));
+    }
 
     if (current != null && current.track != null) {
       // Music opens the full player, like every other music start path.
@@ -2510,6 +2559,10 @@ class MediaPlayerHandler extends BaseAudioHandler
     _intendsToPlay = false;
     _followHeartbeat?.cancel();
     _followHeartbeat = null;
+    _followSyncTimer?.cancel();
+    _followSyncTimer = null;
+    _followAnchor = null;
+    await _resetFollowRate();
     _followNowPlayingSubscription?.dispose();
     _followNowPlayingSubscription = null;
     _stopCommandSubscription();
@@ -2541,6 +2594,62 @@ class MediaPlayerHandler extends BaseAudioHandler
         await stopFollowing(notifyServer: false);
       }
     });
+  }
+
+  /// One tick of the tight-sync discipline loop (every 500ms while following):
+  /// extrapolates the leader's position from its anchor and the shared server
+  /// clock, then applies [decideFollowSync] — seek for large errors, a ≤2%
+  /// rate nudge for moderate ones, rate 1.0 once locked. Falls back to doing
+  /// nothing (and a neutral rate) whenever tight sync is off, the anchor is
+  /// missing/stale, the items differ, or either side is paused.
+  Future<void> _followSyncTick() async {
+    if (!_followMode || ClientManager.usesTestClients) return;
+    final srv = serverName;
+    final anchor = _followAnchor;
+    if (srv == null) return;
+    if (!SyncPreferences.tightSyncEnabled.value || anchor == null) {
+      await _resetFollowRate();
+      return;
+    }
+    // Keeps the offset fresh; a no-op within its refresh interval.
+    unawaited(ClockSyncService.instance.ensureSynced(srv));
+    final sameItem =
+        anchor.itemId != null && anchor.itemId == currentPlayQueueItem?.id;
+    if (!sameItem ||
+        anchor.playState != Enum$PlayState.PLAYING ||
+        !_player.state.playing ||
+        _player.state.duration <= Duration.zero) {
+      await _resetFollowRate();
+      return;
+    }
+    final serverNow = ClockSyncService.instance.serverNowMs(srv);
+    if (serverNow == null) return;
+    final targetMs = anchor.positionMs +
+        (serverNow - anchor.serverTimeMs) +
+        SyncPreferences.outputLatencyMs.value;
+    final errorMs = _player.state.position.inMilliseconds - targetMs;
+    final action =
+        decideFollowSync(errorMs: errorMs, currentRate: _followAppliedRate);
+    switch (action.type) {
+      case FollowSyncActionType.seek:
+        await _resetFollowRate();
+        // Aim slightly past the target: the seek itself takes a beat, and on
+        // HLS it lands on a segment boundary; the rate loop trims the rest.
+        await _player.seek(Duration(milliseconds: targetMs.round() + 100));
+      case FollowSyncActionType.rate:
+        _followAppliedRate = action.rate;
+        await _player.setRate(action.rate);
+      case FollowSyncActionType.none:
+        break;
+    }
+  }
+
+  /// mpv's speed is a player-level property that survives stream loads, so a
+  /// non-neutral rate must be reset explicitly whenever steering stops.
+  Future<void> _resetFollowRate() async {
+    if (_followAppliedRate == 1.0) return;
+    _followAppliedRate = 1.0;
+    if (!ClientManager.usesTestClients) await _player.setRate(1.0);
   }
 
   /// Follows the leading device through the now-playing fan-out: it is the
@@ -2581,6 +2690,18 @@ class MediaPlayerHandler extends BaseAudioHandler
       await stopFollowing(notifyServer: false);
       return;
     }
+    // Tight-sync anchor for the discipline loop; null when the leader doesn't
+    // report one (older client, or its clock is not measured yet).
+    final anchorPosition = session.anchorPositionMs;
+    final anchorServerTime = session.anchorServerTimeMs;
+    _followAnchor = anchorPosition != null && anchorServerTime != null
+        ? (
+            positionMs: anchorPosition,
+            serverTimeMs: anchorServerTime,
+            playState: session.playState,
+            itemId: session.playQueueItemId,
+          )
+        : null;
     _followSyncBusy = true;
     _applyingRemoteSync = true;
     try {
@@ -2601,7 +2722,12 @@ class MediaPlayerHandler extends BaseAudioHandler
       // Coarse position correction, only within the same item and once the
       // stream is actually loaded. The leader reports every ~10s; small skews
       // are left alone (an HLS seek is more disruptive than a 2s offset).
-      if (itemId != null &&
+      // With tight sync active and an anchor available the discipline loop
+      // owns the position — the coarse seek would fight its rate steering.
+      final tightSyncActive =
+          SyncPreferences.tightSyncEnabled.value && _followAnchor != null;
+      if (!tightSyncActive &&
+          itemId != null &&
           itemId == currentPlayQueueItem?.id &&
           !ClientManager.usesTestClients &&
           _player.state.duration > Duration.zero) {
@@ -2624,6 +2750,16 @@ class MediaPlayerHandler extends BaseAudioHandler
   Future<void> debugApplyFollowNowPlaying(
           List<Fragment$fragmentPlaybackSession> sessions) =>
       _onFollowNowPlaying(sessions);
+
+  /// Test seam: the tight-sync anchor as last stored from a now-playing
+  /// emission.
+  @visibleForTesting
+  ({
+    int positionMs,
+    double serverTimeMs,
+    Enum$PlayState playState,
+    String? itemId
+  })? get debugFollowAnchor => _followAnchor;
 
   /// A followed item this user's library access cannot stream: keep the queue
   /// index in step with the leader but stay silent until the leader moves on.

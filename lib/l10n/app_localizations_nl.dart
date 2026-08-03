@@ -1138,4 +1138,12 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get stopListeningAlong => 'Stop met meeluisteren';
+
+  @override
+  String get tightSyncToggle => 'Synchroon in dezelfde kamer';
+
+  @override
+  String outputLatencySlider(int ms) {
+    return 'Geluidsvertraging van dit apparaat: $ms ms';
+  }
 }

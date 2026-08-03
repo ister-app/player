@@ -16,12 +16,16 @@ class Variables$Mutation$updatePlayQueue {
     required int progressInMilliseconds,
     Input$StreamSettingsInput? streamSettings,
     Enum$PlayState? playState,
+    int? anchorPositionMs,
+    double? anchorServerTimeMs,
   }) => Variables$Mutation$updatePlayQueue._({
     r'id': id,
     r'playQueueItemId': playQueueItemId,
     r'progressInMilliseconds': progressInMilliseconds,
     if (streamSettings != null) r'streamSettings': streamSettings,
     if (playState != null) r'playState': playState,
+    if (anchorPositionMs != null) r'anchorPositionMs': anchorPositionMs,
+    if (anchorServerTimeMs != null) r'anchorServerTimeMs': anchorServerTimeMs,
   });
 
   Variables$Mutation$updatePlayQueue._(this._$data);
@@ -50,6 +54,15 @@ class Variables$Mutation$updatePlayQueue {
           ? null
           : fromJson$Enum$PlayState((l$playState as String));
     }
+    if (data.containsKey('anchorPositionMs')) {
+      final l$anchorPositionMs = data['anchorPositionMs'];
+      result$data['anchorPositionMs'] = (l$anchorPositionMs as int?);
+    }
+    if (data.containsKey('anchorServerTimeMs')) {
+      final l$anchorServerTimeMs = data['anchorServerTimeMs'];
+      result$data['anchorServerTimeMs'] = (l$anchorServerTimeMs as num?)
+          ?.toDouble();
+    }
     return Variables$Mutation$updatePlayQueue._(result$data);
   }
 
@@ -65,6 +78,10 @@ class Variables$Mutation$updatePlayQueue {
       (_$data['streamSettings'] as Input$StreamSettingsInput?);
 
   Enum$PlayState? get playState => (_$data['playState'] as Enum$PlayState?);
+
+  int? get anchorPositionMs => (_$data['anchorPositionMs'] as int?);
+
+  double? get anchorServerTimeMs => (_$data['anchorServerTimeMs'] as double?);
 
   Map<String, dynamic> toJson() {
     final result$data = <String, dynamic>{};
@@ -83,6 +100,14 @@ class Variables$Mutation$updatePlayQueue {
       result$data['playState'] = l$playState == null
           ? null
           : toJson$Enum$PlayState(l$playState);
+    }
+    if (_$data.containsKey('anchorPositionMs')) {
+      final l$anchorPositionMs = anchorPositionMs;
+      result$data['anchorPositionMs'] = l$anchorPositionMs;
+    }
+    if (_$data.containsKey('anchorServerTimeMs')) {
+      final l$anchorServerTimeMs = anchorServerTimeMs;
+      result$data['anchorServerTimeMs'] = l$anchorServerTimeMs;
     }
     return result$data;
   }
@@ -134,6 +159,24 @@ class Variables$Mutation$updatePlayQueue {
     if (l$playState != lOther$playState) {
       return false;
     }
+    final l$anchorPositionMs = anchorPositionMs;
+    final lOther$anchorPositionMs = other.anchorPositionMs;
+    if (_$data.containsKey('anchorPositionMs') !=
+        other._$data.containsKey('anchorPositionMs')) {
+      return false;
+    }
+    if (l$anchorPositionMs != lOther$anchorPositionMs) {
+      return false;
+    }
+    final l$anchorServerTimeMs = anchorServerTimeMs;
+    final lOther$anchorServerTimeMs = other.anchorServerTimeMs;
+    if (_$data.containsKey('anchorServerTimeMs') !=
+        other._$data.containsKey('anchorServerTimeMs')) {
+      return false;
+    }
+    if (l$anchorServerTimeMs != lOther$anchorServerTimeMs) {
+      return false;
+    }
     return true;
   }
 
@@ -144,12 +187,18 @@ class Variables$Mutation$updatePlayQueue {
     final l$progressInMilliseconds = progressInMilliseconds;
     final l$streamSettings = streamSettings;
     final l$playState = playState;
+    final l$anchorPositionMs = anchorPositionMs;
+    final l$anchorServerTimeMs = anchorServerTimeMs;
     return Object.hashAll([
       l$id,
       l$playQueueItemId,
       l$progressInMilliseconds,
       _$data.containsKey('streamSettings') ? l$streamSettings : const {},
       _$data.containsKey('playState') ? l$playState : const {},
+      _$data.containsKey('anchorPositionMs') ? l$anchorPositionMs : const {},
+      _$data.containsKey('anchorServerTimeMs')
+          ? l$anchorServerTimeMs
+          : const {},
     ]);
   }
 }
@@ -169,6 +218,8 @@ abstract class CopyWith$Variables$Mutation$updatePlayQueue<TRes> {
     int? progressInMilliseconds,
     Input$StreamSettingsInput? streamSettings,
     Enum$PlayState? playState,
+    int? anchorPositionMs,
+    double? anchorServerTimeMs,
   });
 }
 
@@ -188,6 +239,8 @@ class _CopyWithImpl$Variables$Mutation$updatePlayQueue<TRes>
     Object? progressInMilliseconds = _undefined,
     Object? streamSettings = _undefined,
     Object? playState = _undefined,
+    Object? anchorPositionMs = _undefined,
+    Object? anchorServerTimeMs = _undefined,
   }) => _then(
     Variables$Mutation$updatePlayQueue._({
       ..._instance._$data,
@@ -200,6 +253,10 @@ class _CopyWithImpl$Variables$Mutation$updatePlayQueue<TRes>
       if (streamSettings != _undefined)
         'streamSettings': (streamSettings as Input$StreamSettingsInput?),
       if (playState != _undefined) 'playState': (playState as Enum$PlayState?),
+      if (anchorPositionMs != _undefined)
+        'anchorPositionMs': (anchorPositionMs as int?),
+      if (anchorServerTimeMs != _undefined)
+        'anchorServerTimeMs': (anchorServerTimeMs as double?),
     }),
   );
 }
@@ -216,6 +273,8 @@ class _CopyWithStubImpl$Variables$Mutation$updatePlayQueue<TRes>
     int? progressInMilliseconds,
     Input$StreamSettingsInput? streamSettings,
     Enum$PlayState? playState,
+    int? anchorPositionMs,
+    double? anchorServerTimeMs,
   }) => _res;
 }
 
@@ -392,6 +451,18 @@ const documentNodeMutationupdatePlayQueue = DocumentNode(
           defaultValue: DefaultValueNode(value: null),
           directives: [],
         ),
+        VariableDefinitionNode(
+          variable: VariableNode(name: NameNode(value: 'anchorPositionMs')),
+          type: NamedTypeNode(name: NameNode(value: 'Int'), isNonNull: false),
+          defaultValue: DefaultValueNode(value: null),
+          directives: [],
+        ),
+        VariableDefinitionNode(
+          variable: VariableNode(name: NameNode(value: 'anchorServerTimeMs')),
+          type: NamedTypeNode(name: NameNode(value: 'Float'), isNonNull: false),
+          defaultValue: DefaultValueNode(value: null),
+          directives: [],
+        ),
       ],
       directives: [],
       selectionSet: SelectionSetNode(
@@ -421,6 +492,16 @@ const documentNodeMutationupdatePlayQueue = DocumentNode(
               ArgumentNode(
                 name: NameNode(value: 'playState'),
                 value: VariableNode(name: NameNode(value: 'playState')),
+              ),
+              ArgumentNode(
+                name: NameNode(value: 'anchorPositionMs'),
+                value: VariableNode(name: NameNode(value: 'anchorPositionMs')),
+              ),
+              ArgumentNode(
+                name: NameNode(value: 'anchorServerTimeMs'),
+                value: VariableNode(
+                  name: NameNode(value: 'anchorServerTimeMs'),
+                ),
               ),
             ],
             directives: [],
