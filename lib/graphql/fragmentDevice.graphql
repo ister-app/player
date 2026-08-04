@@ -1,0 +1,8 @@
+fragment fragmentDevice on Device {
+    deviceId
+    name
+    platform
+    online
+    lastSeenAt
+    createdAt
+}

@@ -16,6 +16,7 @@ class Variables$Mutation$updatePlayQueue {
     required int progressInMilliseconds,
     Input$StreamSettingsInput? streamSettings,
     Enum$PlayState? playState,
+    String? deviceId,
     int? anchorPositionMs,
     double? anchorServerTimeMs,
   }) => Variables$Mutation$updatePlayQueue._({
@@ -24,6 +25,7 @@ class Variables$Mutation$updatePlayQueue {
     r'progressInMilliseconds': progressInMilliseconds,
     if (streamSettings != null) r'streamSettings': streamSettings,
     if (playState != null) r'playState': playState,
+    if (deviceId != null) r'deviceId': deviceId,
     if (anchorPositionMs != null) r'anchorPositionMs': anchorPositionMs,
     if (anchorServerTimeMs != null) r'anchorServerTimeMs': anchorServerTimeMs,
   });
@@ -54,6 +56,10 @@ class Variables$Mutation$updatePlayQueue {
           ? null
           : fromJson$Enum$PlayState((l$playState as String));
     }
+    if (data.containsKey('deviceId')) {
+      final l$deviceId = data['deviceId'];
+      result$data['deviceId'] = (l$deviceId as String?);
+    }
     if (data.containsKey('anchorPositionMs')) {
       final l$anchorPositionMs = data['anchorPositionMs'];
       result$data['anchorPositionMs'] = (l$anchorPositionMs as int?);
@@ -79,6 +85,8 @@ class Variables$Mutation$updatePlayQueue {
 
   Enum$PlayState? get playState => (_$data['playState'] as Enum$PlayState?);
 
+  String? get deviceId => (_$data['deviceId'] as String?);
+
   int? get anchorPositionMs => (_$data['anchorPositionMs'] as int?);
 
   double? get anchorServerTimeMs => (_$data['anchorServerTimeMs'] as double?);
@@ -100,6 +108,10 @@ class Variables$Mutation$updatePlayQueue {
       result$data['playState'] = l$playState == null
           ? null
           : toJson$Enum$PlayState(l$playState);
+    }
+    if (_$data.containsKey('deviceId')) {
+      final l$deviceId = deviceId;
+      result$data['deviceId'] = l$deviceId;
     }
     if (_$data.containsKey('anchorPositionMs')) {
       final l$anchorPositionMs = anchorPositionMs;
@@ -159,6 +171,15 @@ class Variables$Mutation$updatePlayQueue {
     if (l$playState != lOther$playState) {
       return false;
     }
+    final l$deviceId = deviceId;
+    final lOther$deviceId = other.deviceId;
+    if (_$data.containsKey('deviceId') !=
+        other._$data.containsKey('deviceId')) {
+      return false;
+    }
+    if (l$deviceId != lOther$deviceId) {
+      return false;
+    }
     final l$anchorPositionMs = anchorPositionMs;
     final lOther$anchorPositionMs = other.anchorPositionMs;
     if (_$data.containsKey('anchorPositionMs') !=
@@ -187,6 +208,7 @@ class Variables$Mutation$updatePlayQueue {
     final l$progressInMilliseconds = progressInMilliseconds;
     final l$streamSettings = streamSettings;
     final l$playState = playState;
+    final l$deviceId = deviceId;
     final l$anchorPositionMs = anchorPositionMs;
     final l$anchorServerTimeMs = anchorServerTimeMs;
     return Object.hashAll([
@@ -195,6 +217,7 @@ class Variables$Mutation$updatePlayQueue {
       l$progressInMilliseconds,
       _$data.containsKey('streamSettings') ? l$streamSettings : const {},
       _$data.containsKey('playState') ? l$playState : const {},
+      _$data.containsKey('deviceId') ? l$deviceId : const {},
       _$data.containsKey('anchorPositionMs') ? l$anchorPositionMs : const {},
       _$data.containsKey('anchorServerTimeMs')
           ? l$anchorServerTimeMs
@@ -218,6 +241,7 @@ abstract class CopyWith$Variables$Mutation$updatePlayQueue<TRes> {
     int? progressInMilliseconds,
     Input$StreamSettingsInput? streamSettings,
     Enum$PlayState? playState,
+    String? deviceId,
     int? anchorPositionMs,
     double? anchorServerTimeMs,
   });
@@ -239,6 +263,7 @@ class _CopyWithImpl$Variables$Mutation$updatePlayQueue<TRes>
     Object? progressInMilliseconds = _undefined,
     Object? streamSettings = _undefined,
     Object? playState = _undefined,
+    Object? deviceId = _undefined,
     Object? anchorPositionMs = _undefined,
     Object? anchorServerTimeMs = _undefined,
   }) => _then(
@@ -253,6 +278,7 @@ class _CopyWithImpl$Variables$Mutation$updatePlayQueue<TRes>
       if (streamSettings != _undefined)
         'streamSettings': (streamSettings as Input$StreamSettingsInput?),
       if (playState != _undefined) 'playState': (playState as Enum$PlayState?),
+      if (deviceId != _undefined) 'deviceId': (deviceId as String?),
       if (anchorPositionMs != _undefined)
         'anchorPositionMs': (anchorPositionMs as int?),
       if (anchorServerTimeMs != _undefined)
@@ -273,6 +299,7 @@ class _CopyWithStubImpl$Variables$Mutation$updatePlayQueue<TRes>
     int? progressInMilliseconds,
     Input$StreamSettingsInput? streamSettings,
     Enum$PlayState? playState,
+    String? deviceId,
     int? anchorPositionMs,
     double? anchorServerTimeMs,
   }) => _res;
@@ -452,6 +479,12 @@ const documentNodeMutationupdatePlayQueue = DocumentNode(
           directives: [],
         ),
         VariableDefinitionNode(
+          variable: VariableNode(name: NameNode(value: 'deviceId')),
+          type: NamedTypeNode(name: NameNode(value: 'ID'), isNonNull: false),
+          defaultValue: DefaultValueNode(value: null),
+          directives: [],
+        ),
+        VariableDefinitionNode(
           variable: VariableNode(name: NameNode(value: 'anchorPositionMs')),
           type: NamedTypeNode(name: NameNode(value: 'Int'), isNonNull: false),
           defaultValue: DefaultValueNode(value: null),
@@ -492,6 +525,10 @@ const documentNodeMutationupdatePlayQueue = DocumentNode(
               ArgumentNode(
                 name: NameNode(value: 'playState'),
                 value: VariableNode(name: NameNode(value: 'playState')),
+              ),
+              ArgumentNode(
+                name: NameNode(value: 'deviceId'),
+                value: VariableNode(name: NameNode(value: 'deviceId')),
               ),
               ArgumentNode(
                 name: NameNode(value: 'anchorPositionMs'),

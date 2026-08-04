@@ -1,0 +1,5 @@
+mutation renameDevice($deviceId: ID!, $name: String!) {
+    renameDevice(deviceId: $deviceId, name: $name) {
+        ...fragmentDevice
+    }
+}

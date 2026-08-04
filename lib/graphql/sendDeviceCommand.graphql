@@ -1,0 +1,3 @@
+mutation sendDeviceCommand($deviceId: ID!, $command: DeviceCommandType!, $mediaType: MediaType, $mediaId: ID, $startId: ID, $playQueueId: ID, $positionInMilliseconds: Float) {
+    sendDeviceCommand(deviceId: $deviceId, command: $command, mediaType: $mediaType, mediaId: $mediaId, startId: $startId, playQueueId: $playQueueId, positionInMilliseconds: $positionInMilliseconds)
+}

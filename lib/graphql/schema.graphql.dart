@@ -1966,6 +1966,107 @@ Enum$MetadataSource fromJson$Enum$MetadataSource(String value) {
   }
 }
 
+enum Enum$DevicePlatform {
+  ANDROID,
+  ANDROID_TV,
+  IOS,
+  LINUX,
+  MACOS,
+  WINDOWS,
+  WEB,
+  OTHER,
+  $unknown;
+
+  factory Enum$DevicePlatform.fromJson(String value) =>
+      fromJson$Enum$DevicePlatform(value);
+
+  String toJson() => toJson$Enum$DevicePlatform(this);
+}
+
+String toJson$Enum$DevicePlatform(Enum$DevicePlatform e) {
+  switch (e) {
+    case Enum$DevicePlatform.ANDROID:
+      return r'ANDROID';
+    case Enum$DevicePlatform.ANDROID_TV:
+      return r'ANDROID_TV';
+    case Enum$DevicePlatform.IOS:
+      return r'IOS';
+    case Enum$DevicePlatform.LINUX:
+      return r'LINUX';
+    case Enum$DevicePlatform.MACOS:
+      return r'MACOS';
+    case Enum$DevicePlatform.WINDOWS:
+      return r'WINDOWS';
+    case Enum$DevicePlatform.WEB:
+      return r'WEB';
+    case Enum$DevicePlatform.OTHER:
+      return r'OTHER';
+    case Enum$DevicePlatform.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$DevicePlatform fromJson$Enum$DevicePlatform(String value) {
+  switch (value) {
+    case r'ANDROID':
+      return Enum$DevicePlatform.ANDROID;
+    case r'ANDROID_TV':
+      return Enum$DevicePlatform.ANDROID_TV;
+    case r'IOS':
+      return Enum$DevicePlatform.IOS;
+    case r'LINUX':
+      return Enum$DevicePlatform.LINUX;
+    case r'MACOS':
+      return Enum$DevicePlatform.MACOS;
+    case r'WINDOWS':
+      return Enum$DevicePlatform.WINDOWS;
+    case r'WEB':
+      return Enum$DevicePlatform.WEB;
+    case r'OTHER':
+      return Enum$DevicePlatform.OTHER;
+    default:
+      return Enum$DevicePlatform.$unknown;
+  }
+}
+
+enum Enum$DeviceCommandType {
+  PLAY_MEDIA,
+  TAKEOVER_QUEUE,
+  START_FOLLOW,
+  $unknown;
+
+  factory Enum$DeviceCommandType.fromJson(String value) =>
+      fromJson$Enum$DeviceCommandType(value);
+
+  String toJson() => toJson$Enum$DeviceCommandType(this);
+}
+
+String toJson$Enum$DeviceCommandType(Enum$DeviceCommandType e) {
+  switch (e) {
+    case Enum$DeviceCommandType.PLAY_MEDIA:
+      return r'PLAY_MEDIA';
+    case Enum$DeviceCommandType.TAKEOVER_QUEUE:
+      return r'TAKEOVER_QUEUE';
+    case Enum$DeviceCommandType.START_FOLLOW:
+      return r'START_FOLLOW';
+    case Enum$DeviceCommandType.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$DeviceCommandType fromJson$Enum$DeviceCommandType(String value) {
+  switch (value) {
+    case r'PLAY_MEDIA':
+      return Enum$DeviceCommandType.PLAY_MEDIA;
+    case r'TAKEOVER_QUEUE':
+      return Enum$DeviceCommandType.TAKEOVER_QUEUE;
+    case r'START_FOLLOW':
+      return Enum$DeviceCommandType.START_FOLLOW;
+    default:
+      return Enum$DeviceCommandType.$unknown;
+  }
+}
+
 enum Enum$FollowResult {
   OK,
   NOT_FOUND,

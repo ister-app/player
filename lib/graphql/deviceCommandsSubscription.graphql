@@ -1,0 +1,12 @@
+subscription deviceCommands($deviceId: ID!) {
+    deviceCommands(deviceId: $deviceId) {
+        deviceId
+        command
+        mediaType
+        mediaId
+        startId
+        playQueueId
+        positionInMilliseconds
+        timestamp
+    }
+}

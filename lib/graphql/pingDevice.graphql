@@ -1,0 +1,3 @@
+mutation pingDevice($deviceId: ID!) {
+    pingDevice(deviceId: $deviceId)
+}

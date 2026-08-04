@@ -9,6 +9,8 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../components/MiniPlayer.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/DeviceCommandService.dart';
+import '../utils/DeviceService.dart';
 import '../utils/LoggerService.dart';
 import '../utils/LoginManager.dart';
 import '../utils/MediaPlayerHandler.dart';
@@ -73,6 +75,7 @@ class _ServerHomePageState extends State<ServerHomePage> {
   Future<void>? _initFuture;
   Future<String?>? _tokenFuture;
   Future<void>? _restoreFuture;
+  Future<void>? _deviceInitFuture;
   OidcDeviceAuthorizationResponse? _deviceAuthResponse;
 
   // TV D-pad navigation between the left rail, the content, and the mini
@@ -359,6 +362,15 @@ class _ServerHomePageState extends State<ServerHomePage> {
                         // Fire-and-forget — the shell must not wait for it.
                         _restoreFuture ??= MediaPlayerHandler.instance
                             .restoreLastMusicQueue(widget.serverName);
+                        // Register this device and open its command channel
+                        // (play-on/handoff/listen-along targets). Both are
+                        // idempotent and degrade silently on older servers.
+                        _deviceInitFuture ??= (() async {
+                          await DeviceService.instance
+                              .ensureRegistered(widget.serverName);
+                          await DeviceCommandService.instance
+                              .ensureStarted(widget.serverName);
+                        })();
                         return _buildShell(context);
                       },
                     );

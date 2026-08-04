@@ -708,7 +708,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// mutation takes no startId; unknown ids keep the queue's own start.
   Future<void> _startFromPlayQueue(
       GraphQLClient client, Fragment$fragmentPlayQueue pq, String srv,
-      {String? startMediaId}) async {
+      {String? startMediaId, int? startTimeMs}) async {
     _intendsToPlay = true;
     _loadRetries = 0;
     _startHeartbeat();
@@ -740,8 +740,27 @@ class MediaPlayerHandler extends BaseAudioHandler
     queue.add(_buildQueueItems(playQueue!, srv));
     currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
-    await _openQueueItem(current, srv);
+    await _openQueueItem(current, srv, startTimeMs: startTimeMs);
     updatePlaybackState();
+  }
+
+  /// Starts playback of a queue the server just created for a device command
+  /// ("play on this device"): same path as the shuffle/library starts.
+  Future<void> startFromServerQueue(
+          GraphQLClient client, Fragment$fragmentPlayQueue pq, String srv) =>
+      _startFromPlayQueue(client, pq, srv);
+
+  /// Resumes an existing play queue on this device — the receiving side of a
+  /// queue handoff. Opens the queue's current item at [positionMs] (the
+  /// position the sending device flushed before handing off) and takes over
+  /// the heartbeat; same-user ownership makes that takeover valid server-side.
+  Future<void> startFromExistingQueue(String srv, String playQueueId,
+      {int? positionMs}) async {
+    if (followMode) await stopFollowing();
+    final client = ClientManager.getClientForUrl(srv).value;
+    final pq = await _playQueueService.getPlayQueue(client, playQueueId);
+    if (pq == null) return;
+    await _startFromPlayQueue(client, pq, srv, startTimeMs: positionMs);
   }
 
   /// Re-loads the play queue that last played music — paused, at the server's
@@ -2230,6 +2249,7 @@ class MediaPlayerHandler extends BaseAudioHandler
               (_player.state.playing
                   ? Enum$PlayState.PLAYING
                   : Enum$PlayState.PAUSED),
+          deviceId: await DevicePreferences.getDeviceId(),
           anchorPositionMs: anchor?.positionMs,
           anchorServerTimeMs: anchor?.serverTimeMs);
     });

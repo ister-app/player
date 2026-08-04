@@ -1,0 +1,5 @@
+mutation registerDevice($deviceId: ID!, $name: String!, $platform: DevicePlatform!) {
+    registerDevice(deviceId: $deviceId, name: $name, platform: $platform) {
+        ...fragmentDevice
+    }
+}

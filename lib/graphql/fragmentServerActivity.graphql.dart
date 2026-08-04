@@ -1145,6 +1145,8 @@ class Fragment$fragmentPlaybackSession {
     required this.updatedAt,
     required this.controllable,
     required this.followerCount,
+    this.deviceId,
+    this.deviceName,
     this.anchorPositionMs,
     this.anchorServerTimeMs,
     this.$__typename = 'PlaybackSession',
@@ -1166,6 +1168,8 @@ class Fragment$fragmentPlaybackSession {
     final l$updatedAt = json['updatedAt'];
     final l$controllable = json['controllable'];
     final l$followerCount = json['followerCount'];
+    final l$deviceId = json['deviceId'];
+    final l$deviceName = json['deviceName'];
     final l$anchorPositionMs = json['anchorPositionMs'];
     final l$anchorServerTimeMs = json['anchorServerTimeMs'];
     final l$$__typename = json['__typename'];
@@ -1187,6 +1191,8 @@ class Fragment$fragmentPlaybackSession {
       updatedAt: (l$updatedAt as String),
       controllable: (l$controllable as bool),
       followerCount: (l$followerCount as int),
+      deviceId: (l$deviceId as String?),
+      deviceName: (l$deviceName as String?),
       anchorPositionMs: (l$anchorPositionMs as int?),
       anchorServerTimeMs: (l$anchorServerTimeMs as num?)?.toDouble(),
       $__typename: (l$$__typename as String),
@@ -1222,6 +1228,10 @@ class Fragment$fragmentPlaybackSession {
   final bool controllable;
 
   final int followerCount;
+
+  final String? deviceId;
+
+  final String? deviceName;
 
   final int? anchorPositionMs;
 
@@ -1263,6 +1273,10 @@ class Fragment$fragmentPlaybackSession {
     _resultData['controllable'] = l$controllable;
     final l$followerCount = followerCount;
     _resultData['followerCount'] = l$followerCount;
+    final l$deviceId = deviceId;
+    _resultData['deviceId'] = l$deviceId;
+    final l$deviceName = deviceName;
+    _resultData['deviceName'] = l$deviceName;
     final l$anchorPositionMs = anchorPositionMs;
     _resultData['anchorPositionMs'] = l$anchorPositionMs;
     final l$anchorServerTimeMs = anchorServerTimeMs;
@@ -1289,6 +1303,8 @@ class Fragment$fragmentPlaybackSession {
     final l$updatedAt = updatedAt;
     final l$controllable = controllable;
     final l$followerCount = followerCount;
+    final l$deviceId = deviceId;
+    final l$deviceName = deviceName;
     final l$anchorPositionMs = anchorPositionMs;
     final l$anchorServerTimeMs = anchorServerTimeMs;
     final l$$__typename = $__typename;
@@ -1308,6 +1324,8 @@ class Fragment$fragmentPlaybackSession {
       l$updatedAt,
       l$controllable,
       l$followerCount,
+      l$deviceId,
+      l$deviceName,
       l$anchorPositionMs,
       l$anchorServerTimeMs,
       l$$__typename,
@@ -1398,6 +1416,16 @@ class Fragment$fragmentPlaybackSession {
     if (l$followerCount != lOther$followerCount) {
       return false;
     }
+    final l$deviceId = deviceId;
+    final lOther$deviceId = other.deviceId;
+    if (l$deviceId != lOther$deviceId) {
+      return false;
+    }
+    final l$deviceName = deviceName;
+    final lOther$deviceName = other.deviceName;
+    if (l$deviceName != lOther$deviceName) {
+      return false;
+    }
     final l$anchorPositionMs = anchorPositionMs;
     final lOther$anchorPositionMs = other.anchorPositionMs;
     if (l$anchorPositionMs != lOther$anchorPositionMs) {
@@ -1448,6 +1476,8 @@ abstract class CopyWith$Fragment$fragmentPlaybackSession<TRes> {
     String? updatedAt,
     bool? controllable,
     int? followerCount,
+    String? deviceId,
+    String? deviceName,
     int? anchorPositionMs,
     double? anchorServerTimeMs,
     String? $__typename,
@@ -1480,6 +1510,8 @@ class _CopyWithImpl$Fragment$fragmentPlaybackSession<TRes>
     Object? updatedAt = _undefined,
     Object? controllable = _undefined,
     Object? followerCount = _undefined,
+    Object? deviceId = _undefined,
+    Object? deviceName = _undefined,
     Object? anchorPositionMs = _undefined,
     Object? anchorServerTimeMs = _undefined,
     Object? $__typename = _undefined,
@@ -1527,6 +1559,12 @@ class _CopyWithImpl$Fragment$fragmentPlaybackSession<TRes>
       followerCount: followerCount == _undefined || followerCount == null
           ? _instance.followerCount
           : (followerCount as int),
+      deviceId: deviceId == _undefined
+          ? _instance.deviceId
+          : (deviceId as String?),
+      deviceName: deviceName == _undefined
+          ? _instance.deviceName
+          : (deviceName as String?),
       anchorPositionMs: anchorPositionMs == _undefined
           ? _instance.anchorPositionMs
           : (anchorPositionMs as int?),
@@ -1562,6 +1600,8 @@ class _CopyWithStubImpl$Fragment$fragmentPlaybackSession<TRes>
     String? updatedAt,
     bool? controllable,
     int? followerCount,
+    String? deviceId,
+    String? deviceName,
     int? anchorPositionMs,
     double? anchorServerTimeMs,
     String? $__typename,
@@ -1679,6 +1719,20 @@ const fragmentDefinitionfragmentPlaybackSession = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'followerCount'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'deviceId'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'deviceName'),
         alias: null,
         arguments: [],
         directives: [],

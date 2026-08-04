@@ -1,5 +1,5 @@
-mutation updatePlayQueue($id: ID!, $playQueueItemId: ID!, $progressInMilliseconds: Int!, $streamSettings: StreamSettingsInput, $playState: PlayState, $anchorPositionMs: Int, $anchorServerTimeMs: Float) {
-    updatePlayQueue(id: $id, playQueueItemId: $playQueueItemId, progressInMilliseconds: $progressInMilliseconds, streamSettings: $streamSettings, playState: $playState, anchorPositionMs: $anchorPositionMs, anchorServerTimeMs: $anchorServerTimeMs) {
+mutation updatePlayQueue($id: ID!, $playQueueItemId: ID!, $progressInMilliseconds: Int!, $streamSettings: StreamSettingsInput, $playState: PlayState, $deviceId: ID, $anchorPositionMs: Int, $anchorServerTimeMs: Float) {
+    updatePlayQueue(id: $id, playQueueItemId: $playQueueItemId, progressInMilliseconds: $progressInMilliseconds, streamSettings: $streamSettings, playState: $playState, deviceId: $deviceId, anchorPositionMs: $anchorPositionMs, anchorServerTimeMs: $anchorServerTimeMs) {
         ...fragmentPlayQueue
     }
 }

@@ -463,6 +463,7 @@ class PlayQueueService {
       Duration duration,
       {Input$StreamSettingsInput? streamSettings,
       Enum$PlayState? playState,
+      String? deviceId,
       int? anchorPositionMs,
       double? anchorServerTimeMs}) async {
     final MutationOptions options = MutationOptions(
@@ -473,6 +474,7 @@ class PlayQueueService {
           progressInMilliseconds: duration.inMilliseconds,
           streamSettings: streamSettings,
           playState: playState,
+          deviceId: deviceId,
           anchorPositionMs: anchorPositionMs,
           anchorServerTimeMs: anchorServerTimeMs,
         ).toJson());
