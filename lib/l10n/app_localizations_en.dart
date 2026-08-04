@@ -1226,4 +1226,106 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editFilter => 'Edit filter';
+
+  @override
+  String get devicesTitle => 'Devices';
+
+  @override
+  String get devicesSubtitle =>
+      'Your devices, play on or hand off to another device';
+
+  @override
+  String get deviceThisDevice => 'This device';
+
+  @override
+  String get deviceOnlineNow => 'Online';
+
+  @override
+  String get deviceLastSeenUnknown => 'Last online: unknown';
+
+  @override
+  String deviceLastSeenMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minutes',
+      one: '1 minute',
+    );
+    return 'Last online $_temp0 ago';
+  }
+
+  @override
+  String deviceLastSeenHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hours',
+      one: '1 hour',
+    );
+    return 'Last online $_temp0 ago';
+  }
+
+  @override
+  String deviceLastSeenDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return 'Last online $_temp0 ago';
+  }
+
+  @override
+  String deviceNowPlaying(String title) {
+    return 'Now playing: $title';
+  }
+
+  @override
+  String get deviceRename => 'Rename';
+
+  @override
+  String get deviceRemove => 'Remove';
+
+  @override
+  String deviceRemoveConfirm(String name) {
+    return 'Remove device \'$name\'?';
+  }
+
+  @override
+  String deviceRemoveThisDeviceConfirm(String name) {
+    return 'Remove this device (\'$name\')? It re-registers itself the next time the app starts.';
+  }
+
+  @override
+  String get deviceCouldNotLoad =>
+      'Could not load devices. The server may not support them yet.';
+
+  @override
+  String get deviceCouldNotSave => 'Could not save the change.';
+
+  @override
+  String get deviceNoDevices => 'No devices registered yet.';
+
+  @override
+  String get devicePlayOn => 'Play on device…';
+
+  @override
+  String get deviceMoveQueue => 'Move playback to device…';
+
+  @override
+  String get deviceListenAlongOn => 'Listen along on device…';
+
+  @override
+  String get devicePickerNoDevicesOnline =>
+      'None of your other devices are online.';
+
+  @override
+  String deviceCommandSent(String name) {
+    return 'Sent to $name';
+  }
+
+  @override
+  String get deviceCommandFailed =>
+      'The device did not accept the command. It may have just gone offline.';
 }

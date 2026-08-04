@@ -2203,6 +2203,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit filter'**
   String get editFilter;
+
+  /// Settings tile + page title for the user's registered devices
+  ///
+  /// In en, this message translates to:
+  /// **'Devices'**
+  String get devicesTitle;
+
+  /// Subtitle of the devices tile on the settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Your devices, play on or hand off to another device'**
+  String get devicesSubtitle;
+
+  /// Chip marking the row of the device the app runs on
+  ///
+  /// In en, this message translates to:
+  /// **'This device'**
+  String get deviceThisDevice;
+
+  /// Last-seen label when the device is online right now
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get deviceOnlineNow;
+
+  /// Last-seen label when the server sent no usable timestamp
+  ///
+  /// In en, this message translates to:
+  /// **'Last online: unknown'**
+  String get deviceLastSeenUnknown;
+
+  /// No description provided for @deviceLastSeenMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Last online {count, plural, =1{1 minute} other{{count} minutes}} ago'**
+  String deviceLastSeenMinutesAgo(int count);
+
+  /// No description provided for @deviceLastSeenHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Last online {count, plural, =1{1 hour} other{{count} hours}} ago'**
+  String deviceLastSeenHoursAgo(int count);
+
+  /// No description provided for @deviceLastSeenDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Last online {count, plural, =1{1 day} other{{count} days}} ago'**
+  String deviceLastSeenDaysAgo(int count);
+
+  /// Device row subtitle while that device is playing something
+  ///
+  /// In en, this message translates to:
+  /// **'Now playing: {title}'**
+  String deviceNowPlaying(String title);
+
+  /// Menu item + dialog title to rename a device
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get deviceRename;
+
+  /// Menu item + confirm button to remove a device
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get deviceRemove;
+
+  /// No description provided for @deviceRemoveConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove device \'{name}\'?'**
+  String deviceRemoveConfirm(String name);
+
+  /// No description provided for @deviceRemoveThisDeviceConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this device (\'{name}\')? It re-registers itself the next time the app starts.'**
+  String deviceRemoveThisDeviceConfirm(String name);
+
+  /// Devices page error state, also shown against older servers
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load devices. The server may not support them yet.'**
+  String get deviceCouldNotLoad;
+
+  /// Snackbar when a device rename/remove fails
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the change.'**
+  String get deviceCouldNotSave;
+
+  /// Devices page empty state
+  ///
+  /// In en, this message translates to:
+  /// **'No devices registered yet.'**
+  String get deviceNoDevices;
+
+  /// Context action that plays an item on another of your devices
+  ///
+  /// In en, this message translates to:
+  /// **'Play on device…'**
+  String get devicePlayOn;
+
+  /// Player menu action that hands the queue off to another device
+  ///
+  /// In en, this message translates to:
+  /// **'Move playback to device…'**
+  String get deviceMoveQueue;
+
+  /// Action that makes another of your devices join this queue in follow mode
+  ///
+  /// In en, this message translates to:
+  /// **'Listen along on device…'**
+  String get deviceListenAlongOn;
+
+  /// Device picker empty state
+  ///
+  /// In en, this message translates to:
+  /// **'None of your other devices are online.'**
+  String get devicePickerNoDevicesOnline;
+
+  /// Snackbar after a device command was accepted
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to {name}'**
+  String deviceCommandSent(String name);
+
+  /// Snackbar when the server refuses a device command
+  ///
+  /// In en, this message translates to:
+  /// **'The device did not accept the command. It may have just gone offline.'**
+  String get deviceCommandFailed;
 }
 
 class _AppLocalizationsDelegate

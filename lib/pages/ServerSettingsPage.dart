@@ -82,6 +82,15 @@ class ServerSettingsPage extends StatelessWidget {
                 ],
                 const Divider(height: 1, indent: 56),
                 ListTile(
+                  leading: const Icon(Icons.devices),
+                  title: Text(loc.devicesTitle),
+                  subtitle: Text(loc.devicesSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => AutoRouter.of(context)
+                      .push(ServerSettingsDevicesRoute()),
+                ),
+                const Divider(height: 1, indent: 56),
+                ListTile(
                   leading: const Icon(Icons.shield_outlined),
                   title: Text(loc.sharingSettings),
                   subtitle: Text(loc.sharingSettingsSubtitle),

@@ -1227,4 +1227,106 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get editFilter => 'Filter bewerken';
+
+  @override
+  String get devicesTitle => 'Apparaten';
+
+  @override
+  String get devicesSubtitle =>
+      'Je apparaten, afspelen op of overdragen naar een ander apparaat';
+
+  @override
+  String get deviceThisDevice => 'Dit apparaat';
+
+  @override
+  String get deviceOnlineNow => 'Online';
+
+  @override
+  String get deviceLastSeenUnknown => 'Laatst online: onbekend';
+
+  @override
+  String deviceLastSeenMinutesAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minuten',
+      one: '1 minuut',
+    );
+    return 'Laatst online $_temp0 geleden';
+  }
+
+  @override
+  String deviceLastSeenHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count uur',
+      one: '1 uur',
+    );
+    return 'Laatst online $_temp0 geleden';
+  }
+
+  @override
+  String deviceLastSeenDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dagen',
+      one: '1 dag',
+    );
+    return 'Laatst online $_temp0 geleden';
+  }
+
+  @override
+  String deviceNowPlaying(String title) {
+    return 'Speelt nu: $title';
+  }
+
+  @override
+  String get deviceRename => 'Hernoemen';
+
+  @override
+  String get deviceRemove => 'Verwijderen';
+
+  @override
+  String deviceRemoveConfirm(String name) {
+    return 'Apparaat \'$name\' verwijderen?';
+  }
+
+  @override
+  String deviceRemoveThisDeviceConfirm(String name) {
+    return 'Dit apparaat (\'$name\') verwijderen? Het registreert zichzelf opnieuw bij de volgende start van de app.';
+  }
+
+  @override
+  String get deviceCouldNotLoad =>
+      'Kan apparaten niet laden. Mogelijk ondersteunt de server ze nog niet.';
+
+  @override
+  String get deviceCouldNotSave => 'Kan de wijziging niet opslaan.';
+
+  @override
+  String get deviceNoDevices => 'Nog geen apparaten geregistreerd.';
+
+  @override
+  String get devicePlayOn => 'Afspelen op apparaat…';
+
+  @override
+  String get deviceMoveQueue => 'Afspelen verplaatsen naar apparaat…';
+
+  @override
+  String get deviceListenAlongOn => 'Meeluisteren op apparaat…';
+
+  @override
+  String get devicePickerNoDevicesOnline =>
+      'Geen van je andere apparaten is online.';
+
+  @override
+  String deviceCommandSent(String name) {
+    return 'Verstuurd naar $name';
+  }
+
+  @override
+  String get deviceCommandFailed =>
+      'Het apparaat accepteerde de opdracht niet. Mogelijk is het net offline gegaan.';
 }

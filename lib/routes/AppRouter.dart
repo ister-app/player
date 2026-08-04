@@ -80,6 +80,7 @@ class AppRouter extends RootStackRouter {
           AutoRoute(path: 'settings/playback', page: ServerSettingsPlaybackRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/sleep-timer', page: SleepTimerSettingsRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/sharing', page: ServerSettingsSharingRoute.page, guards: [_deepLinkGuard]),
+          AutoRoute(path: 'settings/devices', page: ServerSettingsDevicesRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/nowplaying', page: ServerNowPlayingRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/activity', page: ServerActivityRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/about', page: ServerSettingsAboutRoute.page, guards: [_deepLinkGuard]),
