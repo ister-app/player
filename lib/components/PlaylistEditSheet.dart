@@ -178,3 +178,58 @@ class _PlaylistCreateSheetState extends State<_PlaylistCreateSheet> {
     );
   }
 }
+
+/// Asks for a playlist name. [title] names the action it belongs to (creating
+/// one, saving a filter as one); returns null when cancelled or left empty.
+Future<String?> showPlaylistNameDialog(BuildContext context, String title) async {
+  final name = await showDialog<String>(
+    context: context,
+    builder: (context) => _PlaylistNameDialog(title: title),
+  );
+  final trimmed = name?.trim();
+  return trimmed == null || trimmed.isEmpty ? null : trimmed;
+}
+
+/// A widget of its own so the controller outlives the dialog's exit animation.
+class _PlaylistNameDialog extends StatefulWidget {
+  const _PlaylistNameDialog({required this.title});
+
+  final String title;
+
+  @override
+  State<_PlaylistNameDialog> createState() => _PlaylistNameDialogState();
+}
+
+class _PlaylistNameDialogState extends State<_PlaylistNameDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    return AlertDialog(
+      title: Text(widget.title),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        decoration: InputDecoration(labelText: loc.playlistName),
+        onSubmitted: (value) => Navigator.of(context).pop(value),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text),
+          child: Text(MaterialLocalizations.of(context).okButtonLabel),
+        ),
+      ],
+    );
+  }
+}

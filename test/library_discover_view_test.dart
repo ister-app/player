@@ -90,13 +90,36 @@ http.Response _json(Map<String, dynamic> data) => http.Response(
     );
 
 /// Routes on the query text; graphql_flutter sends no operationName.
+/// One playlist of the movie library, as the light playlists query returns it.
+Map<String, dynamic> _playlist(String id, String name) => {
+      '__typename': 'Playlist',
+      'id': id,
+      'name': name,
+      'type': 'MANUAL',
+      'libraryId': 'movie-lib-1',
+      'libraryType': 'MOVIE',
+      'itemCount': 2,
+      'coverImages': <dynamic>[],
+      'filterKind': null,
+      'sorting': null,
+      'sortingOrder': null,
+      'filter': null,
+    };
+
 MockClient _fakeGraphQL({
   Map<String, dynamic>? discover,
   bool discoverErrors = false,
   bool withMusicLibrary = false,
+  List<Map<String, dynamic>>? playlists,
 }) =>
     MockClient((request) async {
       final query = json.decode(request.body)['query'] as String? ?? '';
+      if (query.contains('playlists(')) {
+        return _json({
+          '__typename': 'Query',
+          'playlists': playlists ?? <dynamic>[],
+        });
+      }
       if (query.contains('libraryById')) {
         if (discoverErrors) {
           // An old server without the discover schema rejects the query.
@@ -225,6 +248,35 @@ void main() {
       expect(find.text('Most played:'), findsNothing);
       // The continue-watching row is empty and hides itself too.
       expect(find.text('Continue watching:'), findsNothing);
+    });
+
+    testWidgets('shows the playlists row only when there are playlists',
+        (tester) async {
+      // Empty: no header, no hint — an empty row is dead space between the
+      // rows that do have content.
+      await tester.pumpWidget(_wrap(
+        const LibraryDiscoverView(
+          serverName: _server,
+          libraryId: 'movie-lib-1',
+          libraryType: Enum$LibraryType.MOVIE,
+        ),
+        _fakeGraphQL(),
+      ));
+      await _pump(tester);
+      expect(find.text('Playlists:'), findsNothing);
+      expect(find.text('No playlists yet'), findsNothing);
+
+      await tester.pumpWidget(_wrap(
+        const LibraryDiscoverView(
+          serverName: _server,
+          libraryId: 'movie-lib-1',
+          libraryType: Enum$LibraryType.MOVIE,
+        ),
+        _fakeGraphQL(playlists: [_playlist('pl-1', 'Movie Night')]),
+      ));
+      await _pump(tester);
+      expect(find.text('Playlists:'), findsOneWidget);
+      expect(find.text('Movie Night'), findsOneWidget);
     });
 
     testWidgets('a ranked header opens the media list with its kind',

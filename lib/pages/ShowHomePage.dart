@@ -19,6 +19,7 @@ import '../components/PodcastScroll.dart';
 import '../components/MovieScroll.dart';
 import '../components/TrackScroll.dart';
 import '../components/TvShowScroll.dart';
+import '../components/PlaylistEditSheet.dart';
 import '../components/filter/FilterSheet.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/BrowseKind.dart';
@@ -826,15 +827,12 @@ class _ShowHomePageState extends State<ShowHomePage> {
     final messenger = ScaffoldMessenger.of(context);
     final client = GraphQLProvider.of(context).value;
 
-    final name = await showDialog<String>(
-      context: context,
-      builder: (context) => const _PlaylistNameDialog(),
-    );
-    if (name == null || name.trim().isEmpty) return;
+    final name = await showPlaylistNameDialog(context, loc.filterSaveAsPlaylist);
+    if (name == null) return;
 
     final playlist = await PlaylistService.create(
       client,
-      name: name.trim(),
+      name: name,
       libraryId: libraryId,
       type: Enum$PlaylistType.SMART,
       filter: filter,
@@ -1101,49 +1099,6 @@ class _ShowHomePageState extends State<ShowHomePage> {
         leading: Icon(selected ? Icons.check : Icons.sort),
         title: Text(label),
       ),
-    );
-  }
-}
-
-/// Name prompt of the save-as-playlist action. A widget of its own so the
-/// controller outlives the dialog's exit animation.
-class _PlaylistNameDialog extends StatefulWidget {
-  const _PlaylistNameDialog();
-
-  @override
-  State<_PlaylistNameDialog> createState() => _PlaylistNameDialogState();
-}
-
-class _PlaylistNameDialogState extends State<_PlaylistNameDialog> {
-  final _controller = TextEditingController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
-    return AlertDialog(
-      title: Text(loc.filterSaveAsPlaylist),
-      content: TextField(
-        controller: _controller,
-        autofocus: true,
-        decoration: InputDecoration(labelText: loc.playlistName),
-        onSubmitted: (value) => Navigator.of(context).pop(value),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(_controller.text),
-          child: Text(MaterialLocalizations.of(context).okButtonLabel),
-        ),
-      ],
     );
   }
 }

@@ -265,6 +265,97 @@ void main() {
       expect(addedIds, ['track-1', 'track-2']);
       expect(find.text('Added to playlist'), findsOneWidget);
     });
+
+    testWidgets('creates a playlist for the item when there is none yet',
+        (tester) async {
+      final addedIds = <String>[];
+      Map<String, dynamic>? createInput;
+      _mockGraphQL(MockClient((request) async {
+        final body = json.decode(request.body);
+        final query = body['query'] as String? ?? '';
+        if (query.contains('createPlaylist')) {
+          createInput = body['variables']['input'] as Map<String, dynamic>;
+          return _json({
+            '__typename': 'Mutation',
+            'createPlaylist': _playlist('pl-new', 'Roadtrip'),
+          });
+        }
+        if (query.contains('addPlaylistItem')) {
+          addedIds.add(body['variables']['mediaId'] as String);
+          return _json({
+            '__typename': 'Mutation',
+            'addPlaylistItem': {
+              '__typename': 'Playlist',
+              'id': 'pl-new',
+              'itemCount': addedIds.length,
+            },
+          });
+        }
+        if (query.contains('playlists(')) {
+          // Nothing to pick from: creating is the only way forward.
+          return _json({'__typename': 'Query', 'playlists': <dynamic>[]});
+        }
+        if (query.contains('libraries {')) {
+          return _json({
+            '__typename': 'Query',
+            'libraries': [
+              {
+                '__typename': 'Library',
+                'id': 'lib-MUSIC',
+                'name': 'music',
+                'type': 'MUSIC',
+                'sorting': 'NAME',
+                'sortingOrder': 'ASCENDING',
+              },
+              // Another type: it cannot hold tracks, so it is not even offered.
+              {
+                '__typename': 'Library',
+                'id': 'lib-MOVIE',
+                'name': 'movies',
+                'type': 'MOVIE',
+                'sorting': 'NAME',
+                'sortingOrder': 'ASCENDING',
+              },
+            ],
+          });
+        }
+        return _json({'__typename': 'Query'});
+      }));
+
+      await tester.pumpWidget(_wrap(Builder(
+        builder: (context) => Scaffold(
+          body: Center(
+            child: ElevatedButton(
+              onPressed: () => showAddToPlaylistSheet(
+                context,
+                serverName: _server,
+                mediaType: Enum$MediaType.TRACK,
+                loadItemIds: (_) async => ['track-1'],
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      )));
+      await tester.tap(find.text('open'));
+      await _pump(tester);
+
+      await tester.tap(find.text('New playlist'));
+      await tester.pump(const Duration(milliseconds: 400));
+      await _pump(tester);
+      await tester.enterText(find.widgetWithText(TextField, 'Name'), 'Roadtrip');
+      await tester.tap(find.text('OK'));
+      await tester.pump(const Duration(milliseconds: 400));
+      await _pump(tester);
+
+      // One music library, so it is chosen without asking; the new playlist is
+      // manual and the item lands in it.
+      expect(createInput?['name'], 'Roadtrip');
+      expect(createInput?['type'], 'MANUAL');
+      expect(createInput?['libraryId'], 'lib-MUSIC');
+      expect(addedIds, ['track-1']);
+      expect(find.text('Added to playlist'), findsOneWidget);
+    });
   });
 
   group('PlaylistPage', () {

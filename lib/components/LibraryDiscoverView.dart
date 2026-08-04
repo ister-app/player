@@ -191,6 +191,13 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
           return const SizedBox.shrink();
         }
         final playlists = Query$playlists.fromJson(result.data!).playlists;
+        // No playlists, no row: an empty carousel (or a header with a hint)
+        // is dead space between the rows that do have content. The first
+        // playlist is made from the add-to-playlist sheet or by saving a
+        // browse filter, both of which lead here afterwards.
+        if (playlists.isEmpty) {
+          return const SizedBox.shrink();
+        }
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -201,25 +208,16 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
                 libraryTypeName: widget.libraryType.name,
               )),
             ),
-            if (playlists.isEmpty)
-              // Keep the header (it is the entry point for creating the first
-              // playlist) with a hint instead of an empty carousel.
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(loc.noPlaylistsYet,
-                    style: Theme.of(context).textTheme.bodySmall),
-              )
-            else
-              SizedBox(
-                height: _rowHeight,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemExtent: _squareTileWidth,
-                  itemCount: playlists.length,
-                  itemBuilder: (context, index) =>
-                      _playlistTile(context, playlists[index]),
-                ),
+            SizedBox(
+              height: _rowHeight,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemExtent: _squareTileWidth,
+                itemCount: playlists.length,
+                itemBuilder: (context, index) =>
+                    _playlistTile(context, playlists[index]),
               ),
+            ),
           ],
         );
       },
