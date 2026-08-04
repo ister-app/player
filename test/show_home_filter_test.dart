@@ -65,15 +65,33 @@ http.Response _json(Map<String, dynamic> data) => http.Response(
 
 /// Routes on the query text and records the variables of every albums query,
 /// so the tests can assert what filter (if any) went to the server.
-MockClient _fakeGraphQL(List<Map<String, dynamic>> albumVariables) =>
+MockClient _fakeGraphQL(
+  List<Map<String, dynamic>> albumVariables, {
+  List<Map<String, dynamic>>? playlistVariables,
+}) =>
     MockClient((request) async {
       final body = json.decode(request.body) as Map<String, dynamic>;
       final query = body['query'] as String? ?? '';
+      if (query.contains('createPlaylist(')) {
+        final variables =
+            (body['variables'] as Map<String, dynamic>?) ?? const {};
+        playlistVariables?.add(variables);
+        final input = variables['input'] as Map<String, dynamic>? ?? const {};
+        return _json(_createdPlaylist(input['name'] as String? ?? ''));
+      }
       if (query.contains('albums(')) {
         albumVariables
             .add((body['variables'] as Map<String, dynamic>?) ?? const {});
         return _json(_page('albums', 'AlbumPage',
             [_album('album-1', 'First Album')]));
+      }
+      if (query.contains('tracks(')) {
+        return _json(_page('tracks', 'TrackPage', [
+          _track('track-1', 'Opening Song'),
+        ]));
+      }
+      if (query.contains('playlists(')) {
+        return _json({'__typename': 'Query', 'playlists': <dynamic>[]});
       }
       if (query.contains('savedViews(')) {
         return _json({'__typename': 'Query', 'savedViews': <dynamic>[]});
@@ -215,6 +233,53 @@ void main() {
       final filtered = albumVariables.last['filter'] as Map<String, dynamic>;
       expect(filtered['match'], 'ANY');
       expect(find.text('Filter (1)'), findsOneWidget);
+    });
+
+    testWidgets(
+        'saving the filter of a playable kind creates a smart playlist',
+        (tester) async {
+      final albumVariables = <Map<String, dynamic>>[];
+      final playlistVariables = <Map<String, dynamic>>[];
+      final client =
+          _fakeGraphQL(albumVariables, playlistVariables: playlistVariables);
+      await _mountBrowse(tester, client);
+
+      // Albums are not playable; tracks are, so the playlist action only
+      // shows up after switching kind.
+      await tester.tap(find.text('Tracks'));
+      await _pump(tester);
+
+      await tester.tap(find.byIcon(Icons.filter_alt_outlined));
+      await tester.pump(const Duration(milliseconds: 400));
+      await _pump(tester);
+      await tester.ensureVisible(find.widgetWithText(TextField, 'Value'));
+      await tester.enterText(find.widgetWithText(TextField, 'Value'), 'glass');
+      await tester.ensureVisible(find.text('Apply'));
+      await tester.tap(find.text('Apply'));
+      await tester.pump(const Duration(milliseconds: 400));
+      await _pump(tester);
+
+      expect(find.byIcon(Icons.playlist_add), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.playlist_add));
+      await tester.pump(const Duration(milliseconds: 400));
+      await _pump(tester);
+      await tester.enterText(
+          find.widgetWithText(TextField, 'Name'), 'Glassy tracks');
+      await tester.tap(find.text('OK'));
+      await tester.pump(const Duration(milliseconds: 400));
+      await _pump(tester);
+
+      final input = playlistVariables.single['input'] as Map<String, dynamic>;
+      expect(input['name'], 'Glassy tracks');
+      expect(input['type'], 'SMART');
+      expect(input['libraryId'], 'music-lib-1');
+      expect(input['filterKind'], 'TRACK');
+      final filter = input['filter'] as Map<String, dynamic>;
+      final condition =
+          (filter['conditions'] as List<dynamic>).single as Map<String, dynamic>;
+      expect(condition['field'], 'TITLE');
+      expect(condition['value'], 'glass');
+      expect(find.text('Playlist "Glassy tracks" created'), findsOneWidget);
     });
 
     testWidgets('switching the browse kind clears the filter', (tester) async {

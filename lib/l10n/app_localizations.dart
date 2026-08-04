@@ -1874,6 +1874,30 @@ abstract class AppLocalizations {
   /// **'Saving the view failed'**
   String get filterViewSaveFailed;
 
+  /// Turn the active browse filter into a smart playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Save as playlist'**
+  String get filterSaveAsPlaylist;
+
+  /// Snackbar after creating a smart playlist from the browse filter
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist \"{name}\" created'**
+  String filterPlaylistCreated(String name);
+
+  /// Snackbar action opening the freshly created playlist
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get filterPlaylistOpen;
+
+  /// Snackbar when createPlaylist from the browse filter fails
+  ///
+  /// In en, this message translates to:
+  /// **'Creating the playlist failed'**
+  String get filterPlaylistSaveFailed;
+
   /// Filter field label
   ///
   /// In en, this message translates to:

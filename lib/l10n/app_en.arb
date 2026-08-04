@@ -1165,6 +1165,27 @@
   "@filterViewSaveFailed": {
     "description": "Snackbar when createSavedView fails"
   },
+  "filterSaveAsPlaylist": "Save as playlist",
+  "@filterSaveAsPlaylist": {
+    "description": "Turn the active browse filter into a smart playlist"
+  },
+  "filterPlaylistCreated": "Playlist \"{name}\" created",
+  "@filterPlaylistCreated": {
+    "description": "Snackbar after creating a smart playlist from the browse filter",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "filterPlaylistOpen": "Open",
+  "@filterPlaylistOpen": {
+    "description": "Snackbar action opening the freshly created playlist"
+  },
+  "filterPlaylistSaveFailed": "Creating the playlist failed",
+  "@filterPlaylistSaveFailed": {
+    "description": "Snackbar when createPlaylist from the browse filter fails"
+  },
   "filterFieldTitle": "Title",
   "@filterFieldTitle": {
     "description": "Filter field label"

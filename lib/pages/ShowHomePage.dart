@@ -27,6 +27,7 @@ import '../utils/filter/MediaFilterModel.dart';
 import '../utils/LibraryIcons.dart';
 import '../utils/LibrarySelectionNotifier.dart';
 import '../utils/LoggerService.dart';
+import '../utils/PlaylistService.dart';
 import 'package:player/utils/PermissionsService.dart';
 
 @RoutePage()
@@ -799,11 +800,64 @@ class _ShowHomePageState extends State<ShowHomePage> {
                 tooltip: loc.shufflePlay,
                 onPressed: () => _playFiltered(context, filterKind, true),
               ),
+              if (_selectedLibraryId != null)
+                IconButton(
+                  icon: const Icon(Icons.playlist_add),
+                  tooltip: loc.filterSaveAsPlaylist,
+                  onPressed: () => _saveFilterAsPlaylist(context, filterKind),
+                ),
             ],
           ],
         ),
       ),
     );
+  }
+
+  /// Turns the active browse filter into a smart playlist of the selected
+  /// library: same filter, kind and grid sort, so browsing the playlist shows
+  /// what the grid shows. Only offered for playable kinds — the server rejects
+  /// a smart playlist over albums/artists/shows.
+  Future<void> _saveFilterAsPlaylist(
+      BuildContext context, Enum$FilterKind filterKind) async {
+    final filter = _filter;
+    final libraryId = _selectedLibraryId;
+    if (filter == null || libraryId == null) return;
+    final loc = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final client = GraphQLProvider.of(context).value;
+
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => const _PlaylistNameDialog(),
+    );
+    if (name == null || name.trim().isEmpty) return;
+
+    final playlist = await PlaylistService.create(
+      client,
+      name: name.trim(),
+      libraryId: libraryId,
+      type: Enum$PlaylistType.SMART,
+      filter: filter,
+      filterKind: filterKind,
+      sorting: _effectiveSorting,
+      sortingOrder: _effectiveSortingOrder,
+    );
+    if (!mounted) return;
+    if (playlist == null) {
+      messenger.showSnackBar(
+          SnackBar(content: Text(loc.filterPlaylistSaveFailed)));
+      return;
+    }
+    messenger.showSnackBar(SnackBar(
+      content: Text(loc.filterPlaylistCreated(playlist.name)),
+      action: SnackBarAction(
+        label: loc.filterPlaylistOpen,
+        // Resolved on tap: the page's own context is the router descendant,
+        // and it outlives the snackbar.
+        onPressed: () => AutoRouter.of(this.context)
+            .push(PlaylistRoute(playlistId: playlist.id)),
+      ),
+    ));
   }
 
   void _playFiltered(
@@ -1047,6 +1101,49 @@ class _ShowHomePageState extends State<ShowHomePage> {
         leading: Icon(selected ? Icons.check : Icons.sort),
         title: Text(label),
       ),
+    );
+  }
+}
+
+/// Name prompt of the save-as-playlist action. A widget of its own so the
+/// controller outlives the dialog's exit animation.
+class _PlaylistNameDialog extends StatefulWidget {
+  const _PlaylistNameDialog();
+
+  @override
+  State<_PlaylistNameDialog> createState() => _PlaylistNameDialogState();
+}
+
+class _PlaylistNameDialogState extends State<_PlaylistNameDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    return AlertDialog(
+      title: Text(loc.filterSaveAsPlaylist),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        decoration: InputDecoration(labelText: loc.playlistName),
+        onSubmitted: (value) => Navigator.of(context).pop(value),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text),
+          child: Text(MaterialLocalizations.of(context).okButtonLabel),
+        ),
+      ],
     );
   }
 }

@@ -1034,6 +1034,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterViewSaveFailed => 'Saving the view failed';
 
   @override
+  String get filterSaveAsPlaylist => 'Save as playlist';
+
+  @override
+  String filterPlaylistCreated(String name) {
+    return 'Playlist \"$name\" created';
+  }
+
+  @override
+  String get filterPlaylistOpen => 'Open';
+
+  @override
+  String get filterPlaylistSaveFailed => 'Creating the playlist failed';
+
+  @override
   String get filterFieldTitle => 'Title';
 
   @override

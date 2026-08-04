@@ -1034,6 +1034,20 @@ class AppLocalizationsNl extends AppLocalizations {
   String get filterViewSaveFailed => 'View opslaan mislukt';
 
   @override
+  String get filterSaveAsPlaylist => 'Opslaan als afspeellijst';
+
+  @override
+  String filterPlaylistCreated(String name) {
+    return 'Afspeellijst \"$name\" aangemaakt';
+  }
+
+  @override
+  String get filterPlaylistOpen => 'Openen';
+
+  @override
+  String get filterPlaylistSaveFailed => 'Afspeellijst aanmaken mislukt';
+
+  @override
   String get filterFieldTitle => 'Titel';
 
   @override
