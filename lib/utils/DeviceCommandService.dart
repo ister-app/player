@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/deviceCommandsSubscription.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
@@ -68,6 +69,12 @@ class DeviceCommandService {
       LoggerService().logger.e('device command ${command.command} failed: $e');
     });
   }
+
+  /// Test seam: runs the real executor on a synthetic command.
+  @visibleForTesting
+  Future<void> debugExecute(String serverName,
+          Subscription$deviceCommands$deviceCommands command) =>
+      _execute(serverName, command);
 
   Future<void> _execute(String serverName,
       Subscription$deviceCommands$deviceCommands command) async {

@@ -21,6 +21,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/AddToPlaylistSheet.dart';
 import '../components/AddToSessionSheet.dart';
+import '../components/DevicePickerSheet.dart';
 import '../components/SourceAttribution.dart';
 import '../components/MusicDetailHero.dart';
 import '../components/RatingStars.dart';
@@ -263,6 +264,17 @@ class _AlbumPageState extends State<AlbumPage> {
                     for (final track in tracks.where(_trackHasFile))
                       (Enum$MediaType.TRACK, track.id),
                   ],
+                ),
+              ),
+            if (album != null && tracks.any(_trackHasFile))
+              IconButton(
+                icon: const Icon(Icons.devices),
+                tooltip: loc.devicePlayOn,
+                onPressed: () => playOnDevice(
+                  context,
+                  serverName: widget.serverName,
+                  mediaType: Enum$MediaType.TRACK,
+                  mediaId: album.id,
                 ),
               ),
             if (album != null && tracks.any(_trackHasFile))
@@ -644,6 +656,21 @@ class _AlbumPageState extends State<AlbumPage> {
                           child: ListTile(
                             leading: const Icon(Icons.queue_music),
                             title: Text(loc.addToSession),
+                          ),
+                        ),
+                        MenuItemButton(
+                          onPressed: hasFile
+                              ? () => playOnDevice(
+                                    context,
+                                    serverName: widget.serverName,
+                                    mediaType: Enum$MediaType.TRACK,
+                                    mediaId: widget.albumId,
+                                    startId: track.id,
+                                  )
+                              : null,
+                          child: ListTile(
+                            leading: const Icon(Icons.devices),
+                            title: Text(loc.devicePlayOn),
                           ),
                         ),
                         MenuItemButton(

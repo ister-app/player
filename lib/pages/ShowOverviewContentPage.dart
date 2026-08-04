@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/components/AddToSessionSheet.dart';
+import 'package:player/components/DevicePickerSheet.dart';
 import 'package:player/components/CastRow.dart';
 import 'package:player/components/RatingStars.dart';
 import 'package:player/components/SourceAttribution.dart';
@@ -208,6 +209,18 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
                         child: ListTile(
                           leading: const Icon(Icons.playlist_add),
                           title: Text(AppLocalizations.of(context)!.addToSession),
+                        ),
+                      ),
+                      MenuItemButton(
+                        onPressed: () => playOnDevice(
+                          context,
+                          serverName: serverName,
+                          mediaType: Enum$MediaType.EPISODE,
+                          mediaId: showId,
+                        ),
+                        child: ListTile(
+                          leading: const Icon(Icons.devices),
+                          title: Text(AppLocalizations.of(context)!.devicePlayOn),
                         ),
                       ),
                     ],

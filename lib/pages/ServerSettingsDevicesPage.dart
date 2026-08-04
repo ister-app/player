@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:player/graphql/schema.graphql.dart';
+import 'package:player/components/DevicePickerSheet.dart';
 import 'package:player/graphql/serverActivitySnapshot.graphql.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/DevicePreferences.dart';
@@ -212,7 +212,7 @@ class _ServerSettingsDevicesPageState extends State<ServerSettingsDevicesPage> {
   Widget _deviceTile(AppLocalizations loc, DeviceInfo device) {
     final nowPlaying = _nowPlayingTitles[device.deviceId];
     return ListTile(
-      leading: Icon(platformIcon(device.platform)),
+      leading: Icon(devicePlatformIcon(device.platform)),
       title: Row(
         children: [
           Flexible(child: Text(device.name, overflow: TextOverflow.ellipsis)),
@@ -256,24 +256,6 @@ class _ServerSettingsDevicesPageState extends State<ServerSettingsDevicesPage> {
     return loc.deviceLastSeenDaysAgo(elapsed.inDays);
   }
 
-  static IconData platformIcon(Enum$DevicePlatform platform) {
-    switch (platform) {
-      case Enum$DevicePlatform.ANDROID:
-      case Enum$DevicePlatform.IOS:
-        return Icons.smartphone;
-      case Enum$DevicePlatform.ANDROID_TV:
-        return Icons.tv;
-      case Enum$DevicePlatform.WEB:
-        return Icons.language;
-      case Enum$DevicePlatform.LINUX:
-      case Enum$DevicePlatform.MACOS:
-      case Enum$DevicePlatform.WINDOWS:
-        return Icons.computer;
-      case Enum$DevicePlatform.OTHER:
-      case Enum$DevicePlatform.$unknown:
-        return Icons.devices_other;
-    }
-  }
 }
 
 class _OnlineDot extends StatelessWidget {

@@ -8,6 +8,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/AddToPlaylistSheet.dart';
 import '../components/AddToSessionSheet.dart';
+import '../components/DevicePickerSheet.dart';
 import '../components/SourceAttribution.dart';
 import '../components/CastRow.dart';
 import '../components/IsterPlayer.dart';
@@ -239,6 +240,19 @@ class _MoviePageState extends State<MoviePage> {
                         child: ListTile(
                           leading: const Icon(Icons.playlist_add),
                           title: Text(AppLocalizations.of(context)!.addToSession),
+                        ),
+                      ),
+                    if (movie != null)
+                      MenuItemButton(
+                        onPressed: () => playOnDevice(
+                          context,
+                          serverName: widget.serverName,
+                          mediaType: Enum$MediaType.MOVIE,
+                          mediaId: movie.id,
+                        ),
+                        child: ListTile(
+                          leading: const Icon(Icons.devices),
+                          title: Text(AppLocalizations.of(context)!.devicePlayOn),
                         ),
                       ),
                     if (movie != null)

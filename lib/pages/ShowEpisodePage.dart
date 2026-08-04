@@ -11,6 +11,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/AddToPlaylistSheet.dart';
 import '../components/AddToSessionSheet.dart';
+import '../components/DevicePickerSheet.dart';
 import '../components/SourceAttribution.dart';
 import '../components/CastRow.dart';
 import '../components/IsterPlayer.dart';
@@ -270,6 +271,20 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                         child: ListTile(
                           leading: const Icon(Icons.playlist_add),
                           title: Text(AppLocalizations.of(context)!.addToSession),
+                        ),
+                      ),
+                    if (episode != null)
+                      MenuItemButton(
+                        onPressed: () => playOnDevice(
+                          context,
+                          serverName: widget.serverName,
+                          mediaType: Enum$MediaType.EPISODE,
+                          mediaId: widget.showId,
+                          startId: episode.id,
+                        ),
+                        child: ListTile(
+                          leading: const Icon(Icons.devices),
+                          title: Text(AppLocalizations.of(context)!.devicePlayOn),
                         ),
                       ),
                     if (episode != null)

@@ -5,6 +5,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:player/components/DevicePickerSheet.dart';
 import 'package:player/components/SessionSharingSheet.dart';
 import 'package:player/components/SleepTimerSheet.dart';
 import 'package:player/components/TvFocusable.dart';
@@ -12,6 +13,9 @@ import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/AccentColorUtil.dart';
+import 'package:player/utils/AppMessenger.dart';
+import 'package:player/utils/DeviceService.dart';
+import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:player/utils/SleepTimerService.dart';
 import 'package:player/utils/DurationUtil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -523,9 +527,77 @@ class _PlayerViewState extends State<PlayerView>
               tooltip: loc.shareThisSession,
               onPressed: () => _openSessionSharing(sessionQueueId),
             ),
+          // Device actions only make sense for the local session (the remote
+          // controller and follow mode have no queue of their own to hand off).
+          if (sessionQueueId != null &&
+              widget.controller.sessionSharingServerName != null &&
+              !MediaPlayerHandler.instance.followMode)
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.devices, color: Colors.white70),
+              onSelected: (choice) {
+                if (choice == 'move') _moveQueueToDevice(sessionQueueId);
+                if (choice == 'follow') _listenAlongOnDevice(sessionQueueId);
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(value: 'move', child: Text(loc.deviceMoveQueue)),
+                PopupMenuItem(
+                    value: 'follow', child: Text(loc.deviceListenAlongOn)),
+              ],
+            ),
         ],
       ),
     );
+  }
+
+  /// Hands the queue off to another device: pause (flushes progress), tell the
+  /// target to take over at the current position, and stop locally once the
+  /// server accepted. On refusal local playback resumes where it was.
+  Future<void> _moveQueueToDevice(String playQueueId) async {
+    final loc = AppLocalizations.of(context)!;
+    final serverName = widget.controller.sessionSharingServerName!;
+    final handler = MediaPlayerHandler.instance;
+    final device = await showDevicePickerSheet(context,
+        serverName: serverName, title: loc.deviceMoveQueue);
+    if (device == null) return;
+
+    final wasPlaying = handler.playbackState.value.playing;
+    await handler.pause();
+    final accepted = await DeviceService.instance.sendCommand(
+      serverName,
+      deviceId: device.deviceId,
+      command: Enum$DeviceCommandType.TAKEOVER_QUEUE,
+      playQueueId: playQueueId,
+      positionMs: handler.playbackState.value.position.inMilliseconds,
+    );
+    if (accepted) {
+      // Stop after the send: the target's first heartbeat (same user, so
+      // ownership holds) takes the session over from this device.
+      await handler.stop();
+      if (mounted) dismiss();
+    } else if (wasPlaying) {
+      await handler.play();
+    }
+    showAppSnackBar(accepted
+        ? loc.deviceCommandSent(device.name)
+        : loc.deviceCommandFailed);
+  }
+
+  /// Lets another of the user's devices listen along with the local queue.
+  Future<void> _listenAlongOnDevice(String playQueueId) async {
+    final loc = AppLocalizations.of(context)!;
+    final serverName = widget.controller.sessionSharingServerName!;
+    final device = await showDevicePickerSheet(context,
+        serverName: serverName, title: loc.deviceListenAlongOn);
+    if (device == null) return;
+    final accepted = await DeviceService.instance.sendCommand(
+      serverName,
+      deviceId: device.deviceId,
+      command: Enum$DeviceCommandType.START_FOLLOW,
+      playQueueId: playQueueId,
+    );
+    showAppSnackBar(accepted
+        ? loc.deviceCommandSent(device.name)
+        : loc.deviceCommandFailed);
   }
 
   Future<void> _openSessionSharing(String playQueueId) async {

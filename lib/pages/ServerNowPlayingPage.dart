@@ -11,10 +11,12 @@ import 'package:player/graphql/serverActivitySnapshot.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../components/DevicePickerSheet.dart';
 import '../components/LiveFeedBanner.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/AppMessenger.dart';
 import '../utils/ClientManager.dart';
+import '../utils/DeviceService.dart';
 import '../utils/LoggerService.dart';
 import '../utils/MediaPlayerHandler.dart';
 import '../utils/ResilientSubscription.dart';
@@ -174,6 +176,25 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
     return hours > 0 ? '$hours:$mmss' : mmss;
   }
 
+  /// Makes one of the user's other online devices join [playQueueId] in follow
+  /// mode. The device executes the follow itself, so the usual follow
+  /// permission checks run there (same user, so they match this device's).
+  Future<void> _listenAlongOnDevice(String playQueueId) async {
+    final loc = AppLocalizations.of(context)!;
+    final device = await showDevicePickerSheet(context,
+        serverName: widget.serverName, title: loc.deviceListenAlongOn);
+    if (device == null) return;
+    final accepted = await DeviceService.instance.sendCommand(
+      widget.serverName,
+      deviceId: device.deviceId,
+      command: Enum$DeviceCommandType.START_FOLLOW,
+      playQueueId: playQueueId,
+    );
+    showAppSnackBar(accepted
+        ? loc.deviceCommandSent(device.name)
+        : loc.deviceCommandFailed);
+  }
+
   /// Starts follow mode for [playQueueId] on this device. The server decides:
   /// NOT_FOUND (session gone / permission revoked) and NO_LIBRARY_ACCESS get
   /// their own explanation, OK starts playback via the media handler.
@@ -241,6 +262,9 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
               onListenAlong: session.controllable
                   ? () => _startListenAlong(session.playQueueId)
                   : null,
+              onListenAlongOnDevice: session.controllable
+                  ? () => _listenAlongOnDevice(session.playQueueId)
+                  : null,
             ),
         ],
       );
@@ -263,6 +287,7 @@ class _SessionCard extends StatelessWidget {
   final String Function(int) formatProgress;
   final VoidCallback? onTap;
   final VoidCallback? onListenAlong;
+  final VoidCallback? onListenAlongOnDevice;
 
   const _SessionCard({
     required this.session,
@@ -272,6 +297,7 @@ class _SessionCard extends StatelessWidget {
     required this.formatProgress,
     this.onTap,
     this.onListenAlong,
+    this.onListenAlongOnDevice,
   });
 
   @override
@@ -287,7 +313,9 @@ class _SessionCard extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
     final subtitleParts = [
       if (session.userName != null) session.userName!,
-      session.nodeName,
+      // The registered device name says *which* client plays; the node name
+      // (kept as fallback) only says which server node it reports to.
+      session.deviceName ?? session.nodeName,
       if (session.followerCount > 0)
         loc.followersListening(session.followerCount),
     ];
@@ -328,6 +356,13 @@ class _SessionCard extends StatelessWidget {
                           tooltip: loc.followListenAlong,
                           visualDensity: VisualDensity.compact,
                           onPressed: onListenAlong,
+                        ),
+                      if (onListenAlongOnDevice != null)
+                        IconButton(
+                          icon: const Icon(Icons.devices),
+                          tooltip: loc.deviceListenAlongOn,
+                          visualDensity: VisualDensity.compact,
+                          onPressed: onListenAlongOnDevice,
                         ),
                     ],
                   ),
