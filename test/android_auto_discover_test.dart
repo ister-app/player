@@ -393,6 +393,7 @@ void main() {
             'libraryId': _libraryId,
             'libraryType': 'MUSIC',
             'itemCount': 3,
+            'coverImages': <dynamic>[],
             'filterKind': null,
             'sorting': null,
             'sortingOrder': null,

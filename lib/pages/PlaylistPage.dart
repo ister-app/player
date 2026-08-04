@@ -4,15 +4,21 @@ import 'package:player/graphql/fragmentPlaylistItem.graphql.dart';
 import 'package:player/graphql/playlists.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 
+import 'package:player/graphql/fragmentImages.graphql.dart';
+
 import '../components/filter/FilterSheet.dart';
+import '../components/BrowseListRow.dart';
 import '../components/EpisodeScroll.dart';
 import '../components/MovieScroll.dart';
 import '../components/TrackScroll.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/ClientManager.dart';
+import '../utils/ImageTypes.dart';
+import '../utils/ImageUtil.dart';
 import '../utils/MediaPlayerHandler.dart';
 import '../utils/MetadataUtil.dart';
 import '../utils/PlaylistService.dart';
+import '../utils/StreamTokenService.dart';
 import '../utils/filter/MediaFilterModel.dart';
 
 /// One playlist: header with play/shuffle, then either the reorderable manual
@@ -191,61 +197,67 @@ class _PlaylistPageState extends State<PlaylistPage> {
     await _load();
   }
 
-  (String, String?, String?) _itemText(Fragment$fragmentPlaylistItem item) {
+  /// One manual entry as a browse row, so the hand-picked list reads like the
+  /// filter result a smart playlist shows: artwork, title/subtitle and the
+  /// media id to start playback at. [square] picks the cover thumb over the
+  /// landscape one, matching the `*Scroll` list layouts per media kind.
+  _ItemRow _itemRow(Fragment$fragmentPlaylistItem item) {
     final track = item.track;
     if (track != null) {
-      return (
-        MetadataUtil.getTitle(track.metadata) ?? '',
-        track.artist.name,
-        track.id,
+      return _ItemRow(
+        title: MetadataUtil.getTitle(track.metadata) ?? '',
+        subtitle: '${track.artist.name} • ${track.album.name}',
+        mediaId: track.id,
+        image: ImageUtil.getImageByType(track.album.images, ImageTypes.cover),
+        icon: Icons.music_note,
       );
     }
     final movie = item.movie;
     if (movie != null) {
-      return (
-        MetadataUtil.getTitle(movie.metadata) ?? movie.name,
-        movie.releaseYear.toString(),
-        movie.id,
+      return _ItemRow(
+        title: MetadataUtil.getTitle(movie.metadata) ?? movie.name,
+        subtitle: movie.releaseYear.toString(),
+        mediaId: movie.id,
+        image: ImageUtil.getImageByType(movie.images, ImageTypes.cover),
+        icon: Icons.movie,
       );
     }
     final episode = item.episode;
     if (episode != null) {
-      return (
-        MetadataUtil.getTitle(episode.metadata) ?? '${episode.number}',
-        null,
-        episode.id,
+      return _ItemRow(
+        title: MetadataUtil.getTitle(episode.metadata) ?? 'E${episode.number}',
+        subtitle: 'E${episode.number}',
+        mediaId: episode.id,
+        // The playlist's episode selection carries no show, so its own still is
+        // all there is to show.
+        image: ImageUtil.getImageByType(episode.images, ImageTypes.background) ??
+            ImageUtil.getImageByType(episode.images, ImageTypes.cover),
+        icon: Icons.tv,
+        square: false,
       );
     }
     final book = item.book;
     if (book != null) {
-      return (book.title ?? book.name, book.author?.name, book.id);
+      return _ItemRow(
+        title: book.title,
+        subtitle: book.author?.name ?? book.series?.name,
+        mediaId: book.id,
+        image: ImageUtil.getImageByType(book.images, ImageTypes.cover),
+        icon: Icons.menu_book,
+      );
     }
     final podcastEpisode = item.podcastEpisode;
     if (podcastEpisode != null) {
-      return (
-        MetadataUtil.getTitle(podcastEpisode.metadata) ?? '',
-        podcastEpisode.podcast.title,
-        podcastEpisode.id,
+      return _ItemRow(
+        title: MetadataUtil.getTitle(podcastEpisode.metadata) ?? '',
+        subtitle: podcastEpisode.podcast.title,
+        mediaId: podcastEpisode.id,
+        image: ImageUtil.getImageByType(
+            podcastEpisode.podcast.images, ImageTypes.cover),
+        icon: Icons.podcasts,
       );
     }
-    return ('', null, null);
-  }
-
-  IconData get _itemIcon {
-    switch (_playlist?.libraryType) {
-      case Enum$LibraryType.MUSIC:
-        return Icons.music_note;
-      case Enum$LibraryType.MOVIE:
-        return Icons.movie;
-      case Enum$LibraryType.SHOW:
-        return Icons.tv;
-      case Enum$LibraryType.BOOK:
-        return Icons.menu_book;
-      case Enum$LibraryType.PODCAST:
-        return Icons.podcasts;
-      default:
-        return Icons.play_circle_outline;
-    }
+    return const _ItemRow(title: '', icon: Icons.play_circle_outline);
   }
 
   @override
@@ -362,19 +374,23 @@ class _PlaylistPageState extends State<PlaylistPage> {
     }
     return ReorderableListView.builder(
       buildDefaultDragHandles: false,
+      padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: items.length,
       onReorder: _onReorder,
       itemBuilder: (context, index) {
         final item = items[index];
-        final (title, subtitle, mediaId) = _itemText(item);
-        return ListTile(
+        final row = _itemRow(item);
+        return BrowseListRow(
           key: ValueKey(item.id),
-          leading: Icon(_itemIcon),
-          title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-          subtitle: subtitle == null
+          imageUrl: ImageUtil.buildUrl(row.image,
+              token: StreamTokenService.getToken(widget.serverName)),
+          placeholderIcon: row.icon,
+          squareThumb: row.square,
+          title: row.title,
+          subtitle: row.subtitle,
+          onTap: row.mediaId == null
               ? null
-              : Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
-          onTap: mediaId == null ? null : () => _play(startId: mediaId),
+              : () => _play(startId: row.mediaId),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -393,4 +409,23 @@ class _PlaylistPageState extends State<PlaylistPage> {
       },
     );
   }
+}
+
+/// The display shape of one manual playlist entry, whatever media kind it holds.
+class _ItemRow {
+  const _ItemRow({
+    required this.title,
+    required this.icon,
+    this.subtitle,
+    this.mediaId,
+    this.image,
+    this.square = true,
+  });
+
+  final String title;
+  final String? subtitle;
+  final String? mediaId;
+  final Fragment$fragmentImages? image;
+  final IconData icon;
+  final bool square;
 }

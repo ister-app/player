@@ -29,6 +29,50 @@ Map<String, dynamic> _album(String id, String name) => {
       'rating': null,
     };
 
+Map<String, dynamic> _metadata(String id, String title) => {
+      '__typename': 'Metadata',
+      'id': id,
+      'description': null,
+      'language': 'eng',
+      'sourceUri': null,
+      'source': null,
+      'title': title,
+      'released': null,
+      'genre': null,
+    };
+
+Map<String, dynamic> _track(String id, String title) => {
+      '__typename': 'Track',
+      'id': id,
+      'number': 1,
+      'discNumber': 1,
+      'artist': {'__typename': 'Person', 'id': 'artist-1', 'name': 'The Band'},
+      'metadata': [_metadata('meta-$id', title)],
+      'mediaFile': [
+        {'__typename': 'MediaFile', 'durationInMilliseconds': 180000}
+      ],
+      'rating': null,
+      'album': _album('album-1', 'First Album'),
+    };
+
+Map<String, dynamic> _createdPlaylist(String name) => {
+      '__typename': 'Mutation',
+      'createPlaylist': {
+        '__typename': 'Playlist',
+        'id': 'playlist-1',
+        'name': name,
+        'type': 'SMART',
+        'libraryId': 'music-lib-1',
+        'libraryType': 'MUSIC',
+        'itemCount': null,
+        'coverImages': <dynamic>[],
+        'filterKind': 'TRACK',
+        'sorting': 'NAME',
+        'sortingOrder': 'ASCENDING',
+        'filter': null,
+      },
+    };
+
 Map<String, dynamic> _page(String rootField, String pageTypename,
         List<Map<String, dynamic>> content) =>
     {

@@ -1,3 +1,4 @@
+import 'fragmentImages.graphql.dart';
 import 'package:gql/ast.dart';
 import 'schema.graphql.dart';
 
@@ -9,6 +10,7 @@ class Fragment$fragmentPlaylist {
     required this.libraryId,
     required this.libraryType,
     this.itemCount,
+    required this.coverImages,
     this.filterKind,
     this.sorting,
     this.sortingOrder,
@@ -23,6 +25,7 @@ class Fragment$fragmentPlaylist {
     final l$libraryId = json['libraryId'];
     final l$libraryType = json['libraryType'];
     final l$itemCount = json['itemCount'];
+    final l$coverImages = json['coverImages'];
     final l$filterKind = json['filterKind'];
     final l$sorting = json['sorting'];
     final l$sortingOrder = json['sortingOrder'];
@@ -35,6 +38,12 @@ class Fragment$fragmentPlaylist {
       libraryId: (l$libraryId as String),
       libraryType: fromJson$Enum$LibraryType((l$libraryType as String)),
       itemCount: (l$itemCount as int?),
+      coverImages: (l$coverImages as List<dynamic>)
+          .map(
+            (e) =>
+                Fragment$fragmentImages.fromJson((e as Map<String, dynamic>)),
+          )
+          .toList(),
       filterKind: l$filterKind == null
           ? null
           : fromJson$Enum$FilterKind((l$filterKind as String)),
@@ -65,6 +74,8 @@ class Fragment$fragmentPlaylist {
 
   final int? itemCount;
 
+  final List<Fragment$fragmentImages> coverImages;
+
   final Enum$FilterKind? filterKind;
 
   final Enum$SortingEnum? sorting;
@@ -89,6 +100,8 @@ class Fragment$fragmentPlaylist {
     _resultData['libraryType'] = toJson$Enum$LibraryType(l$libraryType);
     final l$itemCount = itemCount;
     _resultData['itemCount'] = l$itemCount;
+    final l$coverImages = coverImages;
+    _resultData['coverImages'] = l$coverImages.map((e) => e.toJson()).toList();
     final l$filterKind = filterKind;
     _resultData['filterKind'] = l$filterKind == null
         ? null
@@ -116,6 +129,7 @@ class Fragment$fragmentPlaylist {
     final l$libraryId = libraryId;
     final l$libraryType = libraryType;
     final l$itemCount = itemCount;
+    final l$coverImages = coverImages;
     final l$filterKind = filterKind;
     final l$sorting = sorting;
     final l$sortingOrder = sortingOrder;
@@ -128,6 +142,7 @@ class Fragment$fragmentPlaylist {
       l$libraryId,
       l$libraryType,
       l$itemCount,
+      Object.hashAll(l$coverImages.map((v) => v)),
       l$filterKind,
       l$sorting,
       l$sortingOrder,
@@ -174,6 +189,18 @@ class Fragment$fragmentPlaylist {
     final lOther$itemCount = other.itemCount;
     if (l$itemCount != lOther$itemCount) {
       return false;
+    }
+    final l$coverImages = coverImages;
+    final lOther$coverImages = other.coverImages;
+    if (l$coverImages.length != lOther$coverImages.length) {
+      return false;
+    }
+    for (int i = 0; i < l$coverImages.length; i++) {
+      final l$coverImages$entry = l$coverImages[i];
+      final lOther$coverImages$entry = lOther$coverImages[i];
+      if (l$coverImages$entry != lOther$coverImages$entry) {
+        return false;
+      }
     }
     final l$filterKind = filterKind;
     final lOther$filterKind = other.filterKind;
@@ -226,12 +253,19 @@ abstract class CopyWith$Fragment$fragmentPlaylist<TRes> {
     String? libraryId,
     Enum$LibraryType? libraryType,
     int? itemCount,
+    List<Fragment$fragmentImages>? coverImages,
     Enum$FilterKind? filterKind,
     Enum$SortingEnum? sorting,
     Enum$SortingOrder? sortingOrder,
     Fragment$fragmentPlaylist$filter? filter,
     String? $__typename,
   });
+  TRes coverImages(
+    Iterable<Fragment$fragmentImages> Function(
+      Iterable<CopyWith$Fragment$fragmentImages<Fragment$fragmentImages>>,
+    )
+    _fn,
+  );
   CopyWith$Fragment$fragmentPlaylist$filter<TRes> get filter;
 }
 
@@ -252,6 +286,7 @@ class _CopyWithImpl$Fragment$fragmentPlaylist<TRes>
     Object? libraryId = _undefined,
     Object? libraryType = _undefined,
     Object? itemCount = _undefined,
+    Object? coverImages = _undefined,
     Object? filterKind = _undefined,
     Object? sorting = _undefined,
     Object? sortingOrder = _undefined,
@@ -275,6 +310,9 @@ class _CopyWithImpl$Fragment$fragmentPlaylist<TRes>
       itemCount: itemCount == _undefined
           ? _instance.itemCount
           : (itemCount as int?),
+      coverImages: coverImages == _undefined || coverImages == null
+          ? _instance.coverImages
+          : (coverImages as List<Fragment$fragmentImages>),
       filterKind: filterKind == _undefined
           ? _instance.filterKind
           : (filterKind as Enum$FilterKind?),
@@ -291,6 +329,19 @@ class _CopyWithImpl$Fragment$fragmentPlaylist<TRes>
           ? _instance.$__typename
           : ($__typename as String),
     ),
+  );
+
+  TRes coverImages(
+    Iterable<Fragment$fragmentImages> Function(
+      Iterable<CopyWith$Fragment$fragmentImages<Fragment$fragmentImages>>,
+    )
+    _fn,
+  ) => call(
+    coverImages: _fn(
+      _instance.coverImages.map(
+        (e) => CopyWith$Fragment$fragmentImages(e, (i) => i),
+      ),
+    ).toList(),
   );
 
   CopyWith$Fragment$fragmentPlaylist$filter<TRes> get filter {
@@ -317,12 +368,15 @@ class _CopyWithStubImpl$Fragment$fragmentPlaylist<TRes>
     String? libraryId,
     Enum$LibraryType? libraryType,
     int? itemCount,
+    List<Fragment$fragmentImages>? coverImages,
     Enum$FilterKind? filterKind,
     Enum$SortingEnum? sorting,
     Enum$SortingOrder? sortingOrder,
     Fragment$fragmentPlaylist$filter? filter,
     String? $__typename,
   }) => _res;
+
+  coverImages(_fn) => _res;
 
   CopyWith$Fragment$fragmentPlaylist$filter<TRes> get filter =>
       CopyWith$Fragment$fragmentPlaylist$filter.stub(_res);
@@ -377,6 +431,27 @@ const fragmentDefinitionfragmentPlaylist = FragmentDefinitionNode(
         arguments: [],
         directives: [],
         selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'coverImages'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: SelectionSetNode(
+          selections: [
+            FragmentSpreadNode(
+              name: NameNode(value: 'fragmentImages'),
+              directives: [],
+            ),
+            FieldNode(
+              name: NameNode(value: '__typename'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+          ],
+        ),
       ),
       FieldNode(
         name: NameNode(value: 'filterKind'),
@@ -603,7 +678,10 @@ const fragmentDefinitionfragmentPlaylist = FragmentDefinitionNode(
   ),
 );
 const documentNodeFragmentfragmentPlaylist = DocumentNode(
-  definitions: [fragmentDefinitionfragmentPlaylist],
+  definitions: [
+    fragmentDefinitionfragmentPlaylist,
+    fragmentDefinitionfragmentImages,
+  ],
 );
 
 class Fragment$fragmentPlaylist$filter {

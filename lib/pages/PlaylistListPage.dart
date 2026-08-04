@@ -4,6 +4,7 @@ import 'package:player/graphql/fragmentPlaylist.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 
+import '../components/PlaylistCoverMosaic.dart';
 import '../components/PlaylistEditSheet.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/ClientManager.dart';
@@ -93,10 +94,15 @@ class _PlaylistListPageState extends State<PlaylistListPage> {
                     children: [
                       for (final playlist in playlists)
                         ListTile(
-                          leading: Icon(playlist.type ==
-                                  Enum$PlaylistType.SMART
-                              ? Icons.auto_awesome
-                              : Icons.queue_music),
+                          leading: PlaylistCoverMosaic(
+                            serverName: widget.serverName,
+                            covers: playlist.coverImages,
+                            placeholderIcon: playlist.type ==
+                                    Enum$PlaylistType.SMART
+                                ? Icons.auto_awesome
+                                : Icons.queue_music,
+                            size: 56,
+                          ),
                           title: Text(playlist.name,
                               maxLines: 1, overflow: TextOverflow.ellipsis),
                           subtitle: Text(playlist.type ==

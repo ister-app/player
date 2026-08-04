@@ -7,6 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../utils/ClientManager.dart';
 import '../utils/LoggerService.dart';
 import '../utils/PlaylistService.dart';
+import 'PlaylistCoverMosaic.dart';
 
 /// Bottom sheet that adds media to one of the user's own manual playlists.
 /// Only playlists that can hold [mediaType] are offered (a playlist holds one
@@ -140,7 +141,12 @@ class _AddToPlaylistSheetState extends State<_AddToPlaylistSheet> {
           ),
           for (final playlist in playlists)
             ListTile(
-              leading: const Icon(Icons.queue_music),
+              leading: PlaylistCoverMosaic(
+                serverName: widget.serverName,
+                covers: playlist.coverImages,
+                placeholderIcon: Icons.queue_music,
+                size: 48,
+              ),
               title: Text(playlist.name,
                   maxLines: 1, overflow: TextOverflow.ellipsis),
               subtitle: playlist.itemCount == null

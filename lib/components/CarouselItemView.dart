@@ -15,6 +15,7 @@ class CarouselItemView extends StatelessWidget {
       this.onLongPress,
       this.onSecondaryTapDown,
       this.placeholderIcon,
+      this.artwork,
       this.autofocus = false});
 
   final String serverName;
@@ -30,6 +31,10 @@ class CarouselItemView extends StatelessWidget {
   /// Icon shown when there is no (loadable) image, e.g. an album without
   /// cover art. When null the tile keeps its plain tinted background.
   final IconData? placeholderIcon;
+
+  /// Artwork built by the caller instead of a single [imageUrl] — a playlist
+  /// hands in its cover mosaic here. Takes precedence over [imageUrl].
+  final Widget? artwork;
 
   /// Grabs D-pad/keyboard focus when first shown. Set on the first tile of a
   /// landing screen so a TV remote has somewhere to start.
@@ -51,7 +56,8 @@ class CarouselItemView extends StatelessWidget {
                 size: 64,
                 color: Theme.of(context).colorScheme.onSurfaceVariant))
         : Container();
-    final Widget image = (imageUrl != null && imageUrl != '')
+    final Widget image = artwork ??
+        ((imageUrl != null && imageUrl != '')
         ? CachedNetworkImage(
             placeholder: (context, url) => blurHash != null
                 ? BlurHash(
@@ -67,7 +73,7 @@ class CarouselItemView extends StatelessWidget {
             fadeInDuration: Duration.zero,
             errorBuilder: (_, __, ___) => placeholder,
           )
-        : placeholder;
+            : placeholder);
     return LayoutBuilder(builder: (context, constraints) {
       final bool compact = constraints.maxHeight < _compactHeight;
       final TextStyle? titleStyle = compact

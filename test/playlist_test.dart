@@ -7,10 +7,14 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:player/components/AddToPlaylistSheet.dart';
+import 'package:player/components/BrowseListRow.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/pages/PlaylistPage.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import 'package:player/utils/ClientManager.dart';
+import 'package:player/utils/MediaPlayerHandler.dart';
 
 const _server = 'test-server';
 
@@ -21,6 +25,7 @@ Map<String, dynamic> _playlist(
   String libraryType = 'MUSIC',
   int? itemCount = 0,
   List<Map<String, dynamic>>? items,
+  List<Map<String, dynamic>>? coverImages,
 }) =>
     {
       '__typename': 'Playlist',
@@ -30,6 +35,7 @@ Map<String, dynamic> _playlist(
       'libraryId': 'lib-$libraryType',
       'libraryType': libraryType,
       'itemCount': type == 'MANUAL' ? itemCount : null,
+      'coverImages': coverImages ?? <dynamic>[],
       'filterKind': type == 'SMART' ? 'TRACK' : null,
       'sorting': null,
       'sortingOrder': null,
@@ -84,6 +90,41 @@ Map<String, dynamic> _trackItem(String id, String title) => {
       },
     };
 
+/// A track as the `tracks` browse query returns it — the smart playlist body
+/// renders the live filter result with the same paged widgets the library uses.
+Map<String, dynamic> _browseTrack(String id, String title) => {
+      '__typename': 'Track',
+      'id': id,
+      'number': 1,
+      'discNumber': 1,
+      'artist': {'__typename': 'Person', 'id': 'p1', 'name': 'The Artist'},
+      'album': {
+        '__typename': 'Album',
+        'id': 'a1',
+        'name': 'The Album',
+        'releaseYear': 2020,
+        'artist': {'__typename': 'Person', 'id': 'p1', 'name': 'The Artist'},
+        'images': <dynamic>[],
+        'metadata': <dynamic>[],
+        'rating': null,
+      },
+      'metadata': [
+        {
+          '__typename': 'Metadata',
+          'id': 'm-$id',
+          'sourceUri': null,
+          'source': null,
+          'language': null,
+          'title': title,
+          'description': null,
+          'released': null,
+          'genre': null,
+        }
+      ],
+      'mediaFile': <dynamic>[],
+      'rating': null,
+    };
+
 http.Response _json(Map<String, dynamic> data) => http.Response(
       json.encode({'data': data}),
       200,
@@ -115,6 +156,18 @@ Future<void> _pump(WidgetTester tester) async {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  // Playing from the page touches MediaPlayerHandler.instance, whose singleton
+  // constructs a media_kit Player; force it into existence outside any test zone.
+  MediaKit.ensureInitialized();
+  MediaPlayerHandler.instance;
+
+  setUp(() {
+    // The paged smart-playlist body schedules visibility callbacks; without
+    // this they outlive the widget tree as pending timers.
+    VisibilityDetectorController.instance.updateInterval = Duration.zero;
+  });
+
   tearDown(() {
     ClientManager.testClientBuilder = null;
     ClientManager.clients.clear();
@@ -240,6 +293,79 @@ void main() {
       expect(find.text('Second Song'), findsOneWidget);
       expect(find.byIcon(Icons.play_arrow), findsOneWidget);
       expect(find.byIcon(Icons.shuffle), findsOneWidget);
+      // Manual entries render as the same artwork rows the smart body shows.
+      expect(find.byType(BrowseListRow), findsNWidgets(2));
+      expect(find.text('The Artist • The Album'), findsNWidgets(2));
+      expect(find.byIcon(Icons.music_note), findsNWidgets(2),
+          reason: 'the cover placeholder stands in for a track without artwork');
+    });
+
+    testWidgets('tapping a track of a smart playlist plays the playlist',
+        (tester) async {
+      final creates = <Map<String, dynamic>>[];
+      _mockGraphQL(MockClient((request) async {
+        final body = json.decode(request.body) as Map<String, dynamic>;
+        final query = body['query'] as String? ?? '';
+        if (query.contains('mutation createPlayQueue')) {
+          creates.add(
+              (body['variables']['input'] as Map<String, dynamic>?) ?? {});
+          // Failing the creation keeps the handler out of playback (and out of
+          // its heartbeat timer): this test is about which queue gets created,
+          // not about playback itself.
+          return http.Response(
+            json.encode({
+              'errors': [
+                {'message': 'queue creation stops here'}
+              ]
+            }),
+            200,
+            headers: {'content-type': 'application/json'},
+          );
+        }
+        if (query.contains('playlistById')) {
+          return _json({
+            '__typename': 'Query',
+            'playlistById': _playlist('pl-s', 'Smart Mix',
+                type: 'SMART', items: <Map<String, dynamic>>[]),
+          });
+        }
+        if (query.contains('query tracks')) {
+          return _json({
+            '__typename': 'Query',
+            'tracks': {
+              '__typename': 'TrackPage',
+              'content': [
+                _browseTrack('track-1', 'First Song'),
+                _browseTrack('track-2', 'Second Song'),
+              ],
+              'totalPages': 1,
+              'totalElements': 2,
+              'number': 0,
+              'size': 15,
+            },
+          });
+        }
+        return _json({'__typename': 'Query'});
+      }));
+
+      // The smart body browses through PagedContentView, which reads the
+      // client from the widget tree rather than from ClientManager.
+      await tester.pumpWidget(GraphQLProvider(
+        client: ValueNotifier(ClientManager.getClientForUrl(_server).value),
+        child: _wrap(
+            const PlaylistPage(serverName: _server, playlistId: 'pl-s')),
+      ));
+      await _pump(tester);
+      expect(find.text('Second Song'), findsOneWidget);
+
+      await tester.tap(find.text('Second Song'));
+      await _pump(tester);
+
+      // The playlist itself becomes the queue — not the track's album — and
+      // the tapped track goes along as the item to start at.
+      expect(creates.first['sourceType'], 'PLAYLIST');
+      expect(creates.first['sourceId'], 'pl-s');
+      expect(creates.first['startId'], 'track-2');
     });
 
     testWidgets('hides shuffle for a book playlist', (tester) async {

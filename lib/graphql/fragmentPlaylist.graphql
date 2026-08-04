@@ -1,6 +1,7 @@
 # The light playlist shape for lists and carousels (no items). The filter tree mirrors
 # MediaFilterInput two levels deep, like fragmentSavedView, so a smart playlist's filter can be
-# loaded straight back into the filter builder.
+# loaded straight back into the filter builder. coverImages holds up to four distinct covers of
+# the playlist's first entries, which PlaylistCoverMosaic repeats into a 2x2 tile.
 fragment fragmentPlaylist on Playlist {
     id
     name
@@ -8,6 +9,9 @@ fragment fragmentPlaylist on Playlist {
     libraryId
     libraryType
     itemCount
+    coverImages {
+        ...fragmentImages
+    }
     filterKind
     sorting
     sortingOrder

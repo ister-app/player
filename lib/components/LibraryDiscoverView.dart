@@ -28,6 +28,7 @@ import 'BookCarouselTile.dart';
 import 'BookSlide.dart';
 import 'CarouselItemView.dart';
 import 'MovieSlide.dart';
+import 'PlaylistCoverMosaic.dart';
 import 'PodcastCarouselTile.dart';
 import 'PodcastSlide.dart';
 import 'RecentCarouselView.dart';
@@ -228,15 +229,24 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
   Widget _playlistTile(
       BuildContext context, Fragment$fragmentPlaylist playlist) {
     final loc = AppLocalizations.of(context)!;
+    final placeholderIcon = widget.libraryType == Enum$LibraryType.MUSIC
+        ? Icons.queue_music
+        : Icons.playlist_play;
     return CarouselItemView(
       serverName: widget.serverName,
       title: playlist.name,
       subTitle: playlist.type == Enum$PlaylistType.SMART
           ? loc.smartPlaylist
           : loc.playlistItemCount(playlist.itemCount ?? 0),
-      placeholderIcon: widget.libraryType == Enum$LibraryType.MUSIC
-          ? Icons.queue_music
-          : Icons.playlist_play,
+      placeholderIcon: placeholderIcon,
+      // A playlist has no cover of its own: it wears the covers of its first
+      // items, so it does not read as a hole next to the album art around it.
+      artwork: PlaylistCoverMosaic(
+        serverName: widget.serverName,
+        covers: playlist.coverImages,
+        placeholderIcon: placeholderIcon,
+        borderRadius: 0,
+      ),
       onTap: () => AutoRouter.of(context)
           .push(PlaylistRoute(playlistId: playlist.id)),
     );
