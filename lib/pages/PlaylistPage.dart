@@ -61,6 +61,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
   bool get _canShuffle =>
       _playlist?.libraryType != Enum$LibraryType.BOOK;
 
+  /// Plays the playlist itself, at [startId] when given.
   void _play({String? startId, bool shuffle = false}) {
     MediaPlayerHandler.instance.startPlaylistPlay(
       _client,
@@ -325,6 +326,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
           sorting: sorting,
           sortingOrder: sortingOrder,
           filter: filter,
+          listLayout: true,
         );
       case Enum$FilterKind.EPISODE:
         return EpisodeScroll(
@@ -343,6 +345,8 @@ class _PlaylistPageState extends State<PlaylistPage> {
           sortingOrder: sortingOrder,
           filter: filter,
           listLayout: true,
+          // Tapping a track plays the playlist from there, not its album.
+          onTrackTap: (trackId) => _play(startId: trackId),
         );
     }
   }

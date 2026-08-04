@@ -434,6 +434,20 @@ class PlayQueueService {
     return sorted;
   }
 
+  /// The queue item holding [mediaId] — a track, episode, movie, chapter or
+  /// podcast episode id — or null when the queue does not (yet) contain it.
+  static Fragment$fragmentPlayQueue$playQueueItems? itemForMedia(
+      List<Fragment$fragmentPlayQueue$playQueueItems> items, String mediaId) {
+    return items
+        .where((item) =>
+            item.track?.id == mediaId ||
+            item.episode?.id == mediaId ||
+            item.movie?.id == mediaId ||
+            item.chapter?.id == mediaId ||
+            item.podcastEpisode?.id == mediaId)
+        .firstOrNull;
+  }
+
   /// [streamSettings] tells the server what format the client is playing
   /// with, so it can prefetch the next queue item in the same format.
   /// [playState] marks the update as PLAYING (also when null) or PAUSED; the

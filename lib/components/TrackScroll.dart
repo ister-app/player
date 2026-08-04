@@ -18,8 +18,9 @@ import 'PagedContentView.dart';
 
 /// Scrollable grid or list of every track in a music library, loaded page by
 /// page. Tapping a track starts playback in its album's context (the same path
-/// as tapping it on the album page); the context menu jumps to the album or
-/// artist instead.
+/// as tapping it on the album page) unless [onTrackTap] overrides that — a
+/// smart playlist plays its own list instead; the context menu jumps to the
+/// album or artist.
 class TrackScroll extends StatelessWidget {
   final String serverName;
   final String? libraryId;
@@ -28,6 +29,10 @@ class TrackScroll extends StatelessWidget {
   final bool listLayout;
   final Input$MediaFilterInput? filter;
   final void Function(Refetch?)? onRefetch;
+
+  /// Replaces the default "play the track's album" tap action; gets the id of
+  /// the tapped track.
+  final void Function(String trackId)? onTrackTap;
 
   const TrackScroll({
     super.key,
@@ -38,11 +43,17 @@ class TrackScroll extends StatelessWidget {
     this.listLayout = false,
     this.filter,
     this.onRefetch,
+    this.onTrackTap,
   });
 
   static const int _pageSize = 15;
 
   void _playTrack(BuildContext context, Query$tracks$tracks$content track) {
+    final override = onTrackTap;
+    if (override != null) {
+      override(track.id);
+      return;
+    }
     MediaPlayerHandler.instance.startPlayQueueForAlbum(
       GraphQLProvider.of(context).value,
       null,

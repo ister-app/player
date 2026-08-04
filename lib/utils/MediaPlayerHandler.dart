@@ -604,8 +604,12 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// Plays one of the user's playlists as a PLAYLIST queue. Manual playlists
   /// play their entries in order (or seeded-shuffled); smart playlists pin
   /// their filter server-side, like FILTER queues. [startId] is the media item
-  /// to start at (a book id starts at that book's first chapter); unsupported
-  /// for smart playlists.
+  /// to start at (a book id starts at that book's first chapter).
+  ///
+  /// Servers before the "start a filter-backed queue at an item" support reject
+  /// [startId] on a smart playlist; that failure retries without it and opens
+  /// the item client-side instead, which only reaches items inside the created
+  /// window.
   Future<void> startPlaylistPlay(
     GraphQLClient client,
     String srv,
@@ -613,14 +617,25 @@ class MediaPlayerHandler extends BaseAudioHandler
     String? startId,
     bool shuffle = false,
   }) async {
-    final pq = await _playQueueService.createPlayQueue(
-      client,
-      sourceType: Enum$PlayQueueSourceType.PLAYLIST,
-      sourceId: playlistId,
-      startId: startId,
-      shuffle: shuffle,
-    );
-    if (pq != null) await _startFromPlayQueue(client, pq, srv);
+    Future<Fragment$fragmentPlayQueue?> create(String? start) =>
+        _playQueueService.createPlayQueue(
+          client,
+          sourceType: Enum$PlayQueueSourceType.PLAYLIST,
+          sourceId: playlistId,
+          startId: start,
+          shuffle: shuffle,
+        );
+
+    final pq = await create(startId);
+    if (pq != null) {
+      await _startFromPlayQueue(client, pq, srv);
+      return;
+    }
+    if (startId == null || shuffle) return;
+    final fallback = await create(null);
+    if (fallback != null) {
+      await _startFromPlayQueue(client, fallback, srv, startMediaId: startId);
+    }
   }
 
   /// Starts (or resumes) an audiobook: creates a BOOK play queue of the book's
@@ -688,9 +703,12 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   /// Starts playback from an already-created [pq], opening its current item
   /// (server-selected, or the first item). Used for shuffle/library sources
-  /// where the starting item isn't chosen by the caller.
+  /// where the starting item isn't chosen by the caller. [startMediaId] picks
+  /// the queue item holding that media instead — for sources whose creation
+  /// mutation takes no startId; unknown ids keep the queue's own start.
   Future<void> _startFromPlayQueue(
-      GraphQLClient client, Fragment$fragmentPlayQueue pq, String srv) async {
+      GraphQLClient client, Fragment$fragmentPlayQueue pq, String srv,
+      {String? startMediaId}) async {
     _intendsToPlay = true;
     _loadRetries = 0;
     _startHeartbeat();
@@ -708,9 +726,14 @@ class MediaPlayerHandler extends BaseAudioHandler
       mediaLoading.value = false;
       return;
     }
-    final current = PlayQueueService.getCurrentPlayQueueItem(pq) ?? items.first;
-    playQueue =
-        pq.currentItemId == null ? pq.copyWith(currentItemId: current.id) : pq;
+    final current = (startMediaId == null
+            ? null
+            : PlayQueueService.itemForMedia(items, startMediaId)) ??
+        PlayQueueService.getCurrentPlayQueueItem(pq) ??
+        items.first;
+    playQueue = pq.currentItemId == current.id
+        ? pq
+        : pq.copyWith(currentItemId: current.id);
     _ensureCommandSubscription();
 
     queueTitle.add("Now Playing");
