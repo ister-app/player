@@ -1760,6 +1760,60 @@ abstract class AppLocalizations {
   /// **'Applies to this device only'**
   String get sleepTimerDeviceOnly;
 
+  /// Snackbar shown when a sleep timer is armed, manually or automatically
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep timer started: playback pauses in {minutes} min'**
+  String sleepTimerStartedMessage(int minutes);
+
+  /// Snackbar shown when the sleep timer runs out and stops playback
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep timer ended: playback paused'**
+  String get sleepTimerExpiredMessage;
+
+  /// Heading above the duration presets in the sleep timer sheet
+  ///
+  /// In en, this message translates to:
+  /// **'After a while'**
+  String get sleepTimerAfterDuration;
+
+  /// Heading above the item-count presets in the sleep timer sheet
+  ///
+  /// In en, this message translates to:
+  /// **'After a number of items'**
+  String get sleepTimerAfterItems;
+
+  /// Preset chip for stopping after a number of media items
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{This item} other{{count} items}}'**
+  String sleepTimerItems(int count);
+
+  /// Status line in the sleep timer sheet while counting items
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item left} other{{count} items left}}'**
+  String sleepTimerItemsRemaining(int count);
+
+  /// Compact badge under the player's sleep timer button while counting items
+  ///
+  /// In en, this message translates to:
+  /// **'{count}×'**
+  String sleepTimerItemsShort(int count);
+
+  /// Label of the input in the custom item-count dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Number of items'**
+  String get sleepTimerItemsCount;
+
+  /// Snackbar shown when an item-counting sleep timer is armed
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Sleep timer started: playback pauses after this item} other{Sleep timer started: playback pauses after {count} items}}'**
+  String sleepTimerItemsStartedMessage(int count);
+
   /// Tooltip/label of the filter button in the library browse bar
   ///
   /// In en, this message translates to:

@@ -99,6 +99,41 @@ void main() {
       });
     });
 
+    test('announces arming and expiry', () {
+      fakeAsync((async) {
+        final service = serviceOn(async);
+        final messages = <String>[];
+        service.showMessage = messages.add;
+        service.onExpire = () async {};
+        service.start(const Duration(minutes: 15));
+
+        expect(messages, hasLength(1));
+        expect(messages.single, contains('15'));
+
+        async.elapse(const Duration(minutes: 14));
+        expect(messages, hasLength(1));
+
+        async.elapse(const Duration(minutes: 1));
+        expect(messages, hasLength(2));
+
+        async.elapse(const Duration(minutes: 5));
+        expect(messages, hasLength(2));
+      });
+    });
+
+    test('cancel announces nothing', () {
+      fakeAsync((async) {
+        final service = serviceOn(async);
+        final messages = <String>[];
+        service.start(const Duration(minutes: 15));
+        service.showMessage = messages.add;
+
+        service.cancel();
+        async.elapse(const Duration(hours: 1));
+        expect(messages, isEmpty);
+      });
+    });
+
     test('restarting an active timer replaces the deadline', () {
       fakeAsync((async) {
         final service = serviceOn(async);
@@ -113,6 +148,79 @@ void main() {
         async.elapse(const Duration(minutes: 15));
         expect(expiries, 1);
       });
+    });
+  });
+
+  group('item count', () {
+    late SleepTimerService service;
+    late List<String> messages;
+    late int expiries;
+
+    setUp(() {
+      service = SleepTimerService.forTest();
+      messages = [];
+      expiries = 0;
+      service.showMessage = messages.add;
+      service.onExpire = () async => expiries++;
+    });
+
+    test('counts the current item and stops after the last one', () {
+      service.startItems(3);
+      expect(service.isActive, isTrue);
+      expect(service.remainingItems.value, 3);
+      expect(messages, hasLength(1));
+
+      expect(service.notifyItemFinished(), isFalse);
+      expect(service.remainingItems.value, 2);
+      expect(service.notifyItemFinished(), isFalse);
+      expect(service.remainingItems.value, 1);
+      expect(expiries, 0);
+
+      // The last allowed item ended: the caller must not advance.
+      expect(service.notifyItemFinished(), isTrue);
+      expect(expiries, 1);
+      expect(service.isActive, isFalse);
+      expect(service.remainingItems.value, isNull);
+      expect(messages, hasLength(2));
+    });
+
+    test('one item stops at the end of what is playing', () {
+      service.startItems(1);
+      expect(service.notifyItemFinished(), isTrue);
+      expect(expiries, 1);
+    });
+
+    test('item ends are ignored when no item timer is armed', () {
+      expect(service.notifyItemFinished(), isFalse);
+      expect(expiries, 0);
+
+      service.start(const Duration(minutes: 15));
+      expect(service.notifyItemFinished(), isFalse);
+      expect(service.remaining.value, const Duration(minutes: 15));
+      expect(expiries, 0);
+    });
+
+    test('the two modes replace each other', () {
+      service.startItems(3);
+      service.start(const Duration(minutes: 15));
+      expect(service.remainingItems.value, isNull);
+      expect(service.remaining.value, const Duration(minutes: 15));
+
+      service.startItems(2);
+      expect(service.remaining.value, isNull);
+      expect(service.isActive, isTrue);
+    });
+
+    test('cancel and playback stop clear the item count', () {
+      service.startItems(3);
+      service.cancel();
+      expect(service.remainingItems.value, isNull);
+      expect(service.notifyItemFinished(), isFalse);
+
+      service.startItems(3);
+      service.notifyPlaybackStopped();
+      expect(service.remainingItems.value, isNull);
+      expect(expiries, 0);
     });
   });
 

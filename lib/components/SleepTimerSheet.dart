@@ -4,11 +4,12 @@ import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/SleepTimerService.dart';
 
 const sleepTimerPresetsMinutes = [15, 30, 45, 60, 90];
+const sleepTimerPresetsItems = [1, 2, 3, 5];
 
-/// Bottom sheet controlling the sleep timer: preset/custom durations when
-/// inactive, a live countdown with extend/cancel when running. Talks straight
-/// to [SleepTimerService] — the timer is local to this device, so it is not
-/// offered on the remote-control player.
+/// Bottom sheet controlling the sleep timer: preset/custom durations or a
+/// number of media items when inactive, a live countdown with extend/cancel
+/// when running. Talks straight to [SleepTimerService] — the timer is local
+/// to this device, so it is not offered on the remote-control player.
 class SleepTimerSheet extends StatelessWidget {
   const SleepTimerSheet({super.key});
 
@@ -21,60 +22,87 @@ class SleepTimerSheet extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
         child: ValueListenableBuilder<Duration?>(
           valueListenable: service.remaining,
-          builder: (context, remaining, _) => Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text(loc.sleepTimer,
-                    style: Theme.of(context).textTheme.titleMedium),
-              ),
-              if (remaining != null) ...[
-                Center(
-                  child: Text(
-                    loc.sleepTimerRemaining(_format(remaining)),
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
+          builder: (context, remaining, _) => ValueListenableBuilder<int?>(
+            valueListenable: service.remainingItems,
+            builder: (context, items, _) => Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(loc.sleepTimer,
+                      style: Theme.of(context).textTheme.titleMedium),
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    OutlinedButton(
-                      onPressed: () =>
-                          service.extend(const Duration(minutes: 15)),
-                      child: Text(loc.sleepTimerExtend),
+                if (remaining != null || items != null) ...[
+                  Center(
+                    child: Text(
+                      remaining != null
+                          ? loc.sleepTimerRemaining(_format(remaining))
+                          : loc.sleepTimerItemsRemaining(items!),
+                      style: Theme.of(context).textTheme.headlineSmall,
                     ),
-                    const SizedBox(width: 12),
-                    FilledButton.tonal(
-                      onPressed: () {
-                        service.cancel();
-                        Navigator.of(context).pop();
-                      },
-                      child: Text(loc.sleepTimerCancel),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Extending only makes sense for a countdown; the item
+                      // presets below re-arm the item mode with a new count.
+                      if (remaining != null) ...[
+                        OutlinedButton(
+                          onPressed: () =>
+                              service.extend(const Duration(minutes: 15)),
+                          child: Text(loc.sleepTimerExtend),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+                      FilledButton.tonal(
+                        onPressed: () {
+                          service.cancel();
+                          Navigator.of(context).pop();
+                        },
+                        child: Text(loc.sleepTimerCancel),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                _SectionLabel(loc.sleepTimerAfterDuration),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    for (final minutes in sleepTimerPresetsMinutes)
+                      ActionChip(
+                        label: Text(loc.sleepTimerMinutes(minutes)),
+                        onPressed: () =>
+                            _start(context, Duration(minutes: minutes)),
+                      ),
+                    ActionChip(
+                      label: Text(loc.sleepTimerCustom),
+                      onPressed: () => _startCustom(context),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-              ],
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: [
-                  for (final minutes in sleepTimerPresetsMinutes)
+                _SectionLabel(loc.sleepTimerAfterItems),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    for (final count in sleepTimerPresetsItems)
+                      ActionChip(
+                        label: Text(loc.sleepTimerItems(count)),
+                        onPressed: () => _startItems(context, count),
+                      ),
                     ActionChip(
-                      label: Text(loc.sleepTimerMinutes(minutes)),
-                      onPressed: () =>
-                          _start(context, Duration(minutes: minutes)),
+                      label: Text(loc.sleepTimerCustom),
+                      onPressed: () => _startCustomItems(context),
                     ),
-                  ActionChip(
-                    label: Text(loc.sleepTimerCustom),
-                    onPressed: () => _startCustom(context),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -93,6 +121,18 @@ class SleepTimerSheet extends StatelessWidget {
     }
   }
 
+  void _startItems(BuildContext context, int count) {
+    SleepTimerService.instance.startItems(count);
+    Navigator.of(context).pop();
+  }
+
+  Future<void> _startCustomItems(BuildContext context) async {
+    final count = await showSleepTimerItemsDialog(context);
+    if (count != null && count > 0 && context.mounted) {
+      _startItems(context, count);
+    }
+  }
+
   String _format(Duration d) {
     final minutes = d.inMinutes;
     final seconds = d.inSeconds % 60;
@@ -103,21 +143,47 @@ class SleepTimerSheet extends StatelessWidget {
   }
 }
 
+/// Small heading separating the duration and item presets.
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Text(text, style: Theme.of(context).textTheme.labelMedium),
+      );
+}
+
 /// Dialog asking for a duration in minutes; returns null when dismissed.
 /// Shared between the player sheet and the sleep timer settings page.
 Future<int?> showSleepTimerMinutesDialog(BuildContext context) {
   final loc = AppLocalizations.of(context)!;
+  return _showCountDialog(
+      context, loc.sleepTimerCustomDuration, loc.sleepTimerMinutesLabel);
+}
+
+/// Dialog asking how many media items should still play; null when dismissed.
+Future<int?> showSleepTimerItemsDialog(BuildContext context) {
+  final loc = AppLocalizations.of(context)!;
+  return _showCountDialog(
+      context, loc.sleepTimerCustomDuration, loc.sleepTimerItemsCount);
+}
+
+Future<int?> _showCountDialog(
+    BuildContext context, String title, String label) {
   final controller = TextEditingController();
   return showDialog<int>(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text(loc.sleepTimerCustomDuration),
+      title: Text(title),
       content: TextField(
         controller: controller,
         autofocus: true,
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: InputDecoration(labelText: loc.sleepTimerMinutesLabel),
+        decoration: InputDecoration(labelText: label),
         onSubmitted: (value) =>
             Navigator.of(context).pop(int.tryParse(value)),
       ),

@@ -106,6 +106,21 @@ void main() {
     await tester.pump();
   });
 
+  testWidgets('item preset from the sheet arms the item mode',
+      (tester) async {
+    await tester.pumpWidget(_app(_FakeController()));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.bedtime_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('3 items'));
+    await tester.pumpAndSettle();
+
+    expect(SleepTimerService.instance.remainingItems.value, 3);
+    expect(find.byIcon(Icons.bedtime), findsOneWidget);
+    expect(find.text('3×'), findsOneWidget);
+  });
+
   testWidgets('the play button sits in the same place with and without the '
       'outer buttons', (tester) async {
     // The remote control supports neither repeat nor a sleep timer; the row

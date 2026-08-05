@@ -3026,11 +3026,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     _lastAutoAdvance = DateTime.now();
     LoggerService().logger.w(
         '[STALL] Near-end stall detected (remaining=${dur - pos}, stalledFor=$stalledFor) — advancing to next');
-    if (_repeatMode == AudioServiceRepeatMode.one) {
-      _repeatCurrent();
-    } else {
-      skipToNext();
-    }
+    _advanceAfterItemEnd();
   }
 
   void _listenToCompletion() {
@@ -3065,13 +3061,20 @@ class MediaPlayerHandler extends BaseAudioHandler
         }
         // Mark so the stall watchdog doesn't double-advance.
         _lastAutoAdvance = DateTime.now();
-        if (_repeatMode == AudioServiceRepeatMode.one) {
-          _repeatCurrent();
-        } else {
-          skipToNext();
-        }
+        _advanceAfterItemEnd();
       }
     });
+  }
+
+  /// Auto-advance at the end of an item, unless an item-counting sleep timer
+  /// just ran out — it stops playback itself, so nothing must follow.
+  void _advanceAfterItemEnd() {
+    if (SleepTimerService.instance.notifyItemFinished()) return;
+    if (_repeatMode == AudioServiceRepeatMode.one) {
+      _repeatCurrent();
+    } else {
+      skipToNext();
+    }
   }
 
   Future<void> _listenToSession() async {

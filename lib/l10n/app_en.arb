@@ -1084,6 +1084,67 @@
   "@sleepTimerDeviceOnly": {
     "description": "Note that sleep timer settings are not synced to the server"
   },
+  "sleepTimerStartedMessage": "Sleep timer started: playback pauses in {minutes} min",
+  "@sleepTimerStartedMessage": {
+    "description": "Snackbar shown when a sleep timer is armed, manually or automatically",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepTimerExpiredMessage": "Sleep timer ended: playback paused",
+  "@sleepTimerExpiredMessage": {
+    "description": "Snackbar shown when the sleep timer runs out and stops playback"
+  },
+  "sleepTimerAfterDuration": "After a while",
+  "@sleepTimerAfterDuration": {
+    "description": "Heading above the duration presets in the sleep timer sheet"
+  },
+  "sleepTimerAfterItems": "After a number of items",
+  "@sleepTimerAfterItems": {
+    "description": "Heading above the item-count presets in the sleep timer sheet"
+  },
+  "sleepTimerItems": "{count, plural, =1{This item} other{{count} items}}",
+  "@sleepTimerItems": {
+    "description": "Preset chip for stopping after a number of media items",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepTimerItemsRemaining": "{count, plural, =1{1 item left} other{{count} items left}}",
+  "@sleepTimerItemsRemaining": {
+    "description": "Status line in the sleep timer sheet while counting items",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepTimerItemsShort": "{count}×",
+  "@sleepTimerItemsShort": {
+    "description": "Compact badge under the player's sleep timer button while counting items",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sleepTimerItemsCount": "Number of items",
+  "@sleepTimerItemsCount": {
+    "description": "Label of the input in the custom item-count dialog"
+  },
+  "sleepTimerItemsStartedMessage": "{count, plural, =1{Sleep timer started: playback pauses after this item} other{Sleep timer started: playback pauses after {count} items}}",
+  "@sleepTimerItemsStartedMessage": {
+    "description": "Snackbar shown when an item-counting sleep timer is armed",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "customFilter": "Custom filter",
   "@customFilter": {
     "description": "Tooltip/label of the filter button in the library browse bar"

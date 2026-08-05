@@ -1174,34 +1174,46 @@ class _SleepTimerButton extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
     return ValueListenableBuilder<Duration?>(
       valueListenable: SleepTimerService.instance.remaining,
-      builder: (context, remaining, _) => ValueListenableBuilder<Color>(
-        valueListenable: accent,
-        builder: (context, color, _) => SizedBox(
-          width: 48,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: Icon(
-                  remaining != null ? Icons.bedtime : Icons.bedtime_outlined,
-                  color: remaining != null ? color : Colors.white54,
-                ),
-                iconSize: 24,
-                tooltip: loc.sleepTimer,
-                onPressed: () => showModalBottomSheet<void>(
-                  context: context,
-                  isScrollControlled: true,
-                  showDragHandle: true,
-                  builder: (_) => const SleepTimerSheet(),
-                ),
+      builder: (context, remaining, _) => ValueListenableBuilder<int?>(
+        valueListenable: SleepTimerService.instance.remainingItems,
+        builder: (context, items, _) => ValueListenableBuilder<Color>(
+          valueListenable: accent,
+          builder: (context, color, _) {
+            // Either a countdown or an item count is armed, never both.
+            final active = remaining != null || items != null;
+            final label = remaining != null
+                ? _shortCountdown(remaining)
+                : items != null
+                    ? loc.sleepTimerItemsShort(items)
+                    : null;
+            return SizedBox(
+              width: 48,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      active ? Icons.bedtime : Icons.bedtime_outlined,
+                      color: active ? color : Colors.white54,
+                    ),
+                    iconSize: 24,
+                    tooltip: loc.sleepTimer,
+                    onPressed: () => showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      showDragHandle: true,
+                      builder: (_) => const SleepTimerSheet(),
+                    ),
+                  ),
+                  if (label != null)
+                    Text(
+                      label,
+                      style: TextStyle(color: color, fontSize: 11),
+                    ),
+                ],
               ),
-              if (remaining != null)
-                Text(
-                  _shortCountdown(remaining),
-                  style: TextStyle(color: color, fontSize: 11),
-                ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

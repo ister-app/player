@@ -975,6 +975,62 @@ class AppLocalizationsNl extends AppLocalizations {
   String get sleepTimerDeviceOnly => 'Geldt alleen voor dit apparaat';
 
   @override
+  String sleepTimerStartedMessage(int minutes) {
+    return 'Slaaptimer gestart: afspelen pauzeert over $minutes min';
+  }
+
+  @override
+  String get sleepTimerExpiredMessage =>
+      'Slaaptimer afgelopen: afspelen gepauzeerd';
+
+  @override
+  String get sleepTimerAfterDuration => 'Na een tijd';
+
+  @override
+  String get sleepTimerAfterItems => 'Na een aantal items';
+
+  @override
+  String sleepTimerItems(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: 'Dit item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sleepTimerItemsRemaining(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Nog $count items',
+      one: 'Nog 1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sleepTimerItemsShort(int count) {
+    return '$count×';
+  }
+
+  @override
+  String get sleepTimerItemsCount => 'Aantal items';
+
+  @override
+  String sleepTimerItemsStartedMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Slaaptimer gestart: afspelen pauzeert na $count items',
+      one: 'Slaaptimer gestart: afspelen pauzeert na dit item',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get customFilter => 'Custom filter';
 
   @override

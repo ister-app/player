@@ -975,6 +975,61 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sleepTimerDeviceOnly => 'Applies to this device only';
 
   @override
+  String sleepTimerStartedMessage(int minutes) {
+    return 'Sleep timer started: playback pauses in $minutes min';
+  }
+
+  @override
+  String get sleepTimerExpiredMessage => 'Sleep timer ended: playback paused';
+
+  @override
+  String get sleepTimerAfterDuration => 'After a while';
+
+  @override
+  String get sleepTimerAfterItems => 'After a number of items';
+
+  @override
+  String sleepTimerItems(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: 'This item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sleepTimerItemsRemaining(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items left',
+      one: '1 item left',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sleepTimerItemsShort(int count) {
+    return '$count×';
+  }
+
+  @override
+  String get sleepTimerItemsCount => 'Number of items';
+
+  @override
+  String sleepTimerItemsStartedMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Sleep timer started: playback pauses after $count items',
+      one: 'Sleep timer started: playback pauses after this item',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get customFilter => 'Custom filter';
 
   @override
