@@ -1,4 +1,5 @@
 import 'fragmentBook.graphql.dart';
+import 'fragmentBookProgress.graphql.dart';
 import 'fragmentChapter.graphql.dart';
 import 'fragmentImages.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
@@ -440,6 +441,27 @@ const documentNodeQuerybookById = DocumentNode(
                   ),
                 ),
                 FieldNode(
+                  name: NameNode(value: 'progress'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: SelectionSetNode(
+                    selections: [
+                      FragmentSpreadNode(
+                        name: NameNode(value: 'fragmentBookProgress'),
+                        directives: [],
+                      ),
+                      FieldNode(
+                        name: NameNode(value: '__typename'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                    ],
+                  ),
+                ),
+                FieldNode(
                   name: NameNode(value: '__typename'),
                   alias: null,
                   arguments: [],
@@ -463,6 +485,7 @@ const documentNodeQuerybookById = DocumentNode(
     fragmentDefinitionfragmentImages,
     fragmentDefinitionfragmentMetadata,
     fragmentDefinitionfragmentChapter,
+    fragmentDefinitionfragmentBookProgress,
   ],
 );
 
@@ -483,6 +506,7 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
     this.resumeChapter,
     this.epubFiles,
     this.watchStatus,
+    this.progress,
   });
 
   factory Query$bookById$bookById.fromJson(Map<String, dynamic> json) {
@@ -501,6 +525,7 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
     final l$resumeChapter = json['resumeChapter'];
     final l$epubFiles = json['epubFiles'];
     final l$watchStatus = json['watchStatus'];
+    final l$progress = json['progress'];
     return Query$bookById$bookById(
       id: (l$id as String),
       name: (l$name as String),
@@ -556,6 +581,11 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
             ),
           )
           .toList(),
+      progress: l$progress == null
+          ? null
+          : Fragment$fragmentBookProgress.fromJson(
+              (l$progress as Map<String, dynamic>),
+            ),
     );
   }
 
@@ -589,6 +619,8 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
 
   final List<Query$bookById$bookById$watchStatus>? watchStatus;
 
+  final Fragment$fragmentBookProgress? progress;
+
   Map<String, dynamic> toJson() {
     final _resultData = <String, dynamic>{};
     final l$id = id;
@@ -621,6 +653,8 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
     _resultData['epubFiles'] = l$epubFiles?.map((e) => e.toJson()).toList();
     final l$watchStatus = watchStatus;
     _resultData['watchStatus'] = l$watchStatus?.map((e) => e.toJson()).toList();
+    final l$progress = progress;
+    _resultData['progress'] = l$progress?.toJson();
     return _resultData;
   }
 
@@ -641,6 +675,7 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
     final l$resumeChapter = resumeChapter;
     final l$epubFiles = epubFiles;
     final l$watchStatus = watchStatus;
+    final l$progress = progress;
     return Object.hashAll([
       l$id,
       l$name,
@@ -659,6 +694,7 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
       l$watchStatus == null
           ? null
           : Object.hashAll(l$watchStatus.map((v) => v)),
+      l$progress,
     ]);
   }
 
@@ -800,6 +836,11 @@ class Query$bookById$bookById implements Fragment$fragmentBook {
     } else if (l$watchStatus != lOther$watchStatus) {
       return false;
     }
+    final l$progress = progress;
+    final lOther$progress = other.progress;
+    if (l$progress != lOther$progress) {
+      return false;
+    }
     return true;
   }
 }
@@ -834,6 +875,7 @@ abstract class CopyWith$Query$bookById$bookById<TRes> {
     Query$bookById$bookById$resumeChapter? resumeChapter,
     List<Query$bookById$bookById$epubFiles>? epubFiles,
     List<Query$bookById$bookById$watchStatus>? watchStatus,
+    Fragment$fragmentBookProgress? progress,
   });
   CopyWith$Query$bookById$bookById$author<TRes> get author;
   CopyWith$Query$bookById$bookById$series<TRes> get series;
@@ -876,6 +918,7 @@ abstract class CopyWith$Query$bookById$bookById<TRes> {
     )
     _fn,
   );
+  CopyWith$Fragment$fragmentBookProgress<TRes> get progress;
 }
 
 class _CopyWithImpl$Query$bookById$bookById<TRes>
@@ -904,6 +947,7 @@ class _CopyWithImpl$Query$bookById$bookById<TRes>
     Object? resumeChapter = _undefined,
     Object? epubFiles = _undefined,
     Object? watchStatus = _undefined,
+    Object? progress = _undefined,
   }) => _then(
     Query$bookById$bookById(
       id: id == _undefined || id == null ? _instance.id : (id as String),
@@ -947,6 +991,9 @@ class _CopyWithImpl$Query$bookById$bookById<TRes>
       watchStatus: watchStatus == _undefined
           ? _instance.watchStatus
           : (watchStatus as List<Query$bookById$bookById$watchStatus>?),
+      progress: progress == _undefined
+          ? _instance.progress
+          : (progress as Fragment$fragmentBookProgress?),
     ),
   );
 
@@ -1052,6 +1099,16 @@ class _CopyWithImpl$Query$bookById$bookById<TRes>
       ),
     )?.toList(),
   );
+
+  CopyWith$Fragment$fragmentBookProgress<TRes> get progress {
+    final local$progress = _instance.progress;
+    return local$progress == null
+        ? CopyWith$Fragment$fragmentBookProgress.stub(_then(_instance))
+        : CopyWith$Fragment$fragmentBookProgress(
+            local$progress,
+            (e) => call(progress: e),
+          );
+  }
 }
 
 class _CopyWithStubImpl$Query$bookById$bookById<TRes>
@@ -1076,6 +1133,7 @@ class _CopyWithStubImpl$Query$bookById$bookById<TRes>
     Query$bookById$bookById$resumeChapter? resumeChapter,
     List<Query$bookById$bookById$epubFiles>? epubFiles,
     List<Query$bookById$bookById$watchStatus>? watchStatus,
+    Fragment$fragmentBookProgress? progress,
   }) => _res;
 
   CopyWith$Query$bookById$bookById$author<TRes> get author =>
@@ -1096,6 +1154,9 @@ class _CopyWithStubImpl$Query$bookById$bookById<TRes>
   epubFiles(_fn) => _res;
 
   watchStatus(_fn) => _res;
+
+  CopyWith$Fragment$fragmentBookProgress<TRes> get progress =>
+      CopyWith$Fragment$fragmentBookProgress.stub(_res);
 }
 
 class Query$bookById$bookById$author implements Fragment$fragmentBook$author {

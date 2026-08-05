@@ -8,5 +8,6 @@ query bookById($id: ID) {
             directory { node { url } }
         }
         watchStatus { id watched readingLocation readingProgress }
+        progress { ...fragmentBookProgress }
     }
 }

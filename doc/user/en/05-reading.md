@@ -16,7 +16,7 @@ Open the reading settings to make the page comfortable: adjust the **font size**
 
 ### Your reading position
 
-Your position syncs to the server automatically as you read. Even better: for books that also have an audiobook, the reading and listening positions are kept in sync — finish a chapter on your commute by ear, open the book at home and continue reading from that exact spot, and vice versa.
+Your position syncs to the server automatically as you read. Even better: for books that also have an audiobook, the reading and listening positions are kept in sync — finish a chapter on your commute by ear, open the book at home and continue reading from that exact spot, and vice versa. The progress bar on a book — in the continue-watching row and on the book's own page — shows how far you are in the *whole* book, whether you got there by reading or by listening.
 
 ## Read-aloud
 

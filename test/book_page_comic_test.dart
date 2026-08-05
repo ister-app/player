@@ -39,6 +39,7 @@ Map<String, dynamic> _comicVolume() => {
         }
       ],
       'watchStatus': [],
+      'progress': null,
     };
 
 MockClient _fakeGraphQL() => MockClient((request) async => http.Response(

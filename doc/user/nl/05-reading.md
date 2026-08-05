@@ -16,7 +16,7 @@ Open de leesinstellingen om de pagina prettig te maken: pas de **lettergrootte**
 
 ### Je leespositie
 
-Je positie wordt tijdens het lezen automatisch naar de server gesynchroniseerd. Nog mooier: bij boeken die er ook als luisterboek zijn, blijven de lees- en luisterpositie gelijk lopen — luister onderweg een hoofdstuk uit, sla thuis het boek open en lees verder vanaf precies dat punt, en andersom.
+Je positie wordt tijdens het lezen automatisch naar de server gesynchroniseerd. Nog mooier: bij boeken die er ook als luisterboek zijn, blijven de lees- en luisterpositie gelijk lopen — luister onderweg een hoofdstuk uit, sla thuis het boek open en lees verder vanaf precies dat punt, en andersom. De voortgangsbalk bij een boek — in de rij "blijf kijken" en op de boekpagina zelf — laat zien hoe ver je in het *hele* boek bent, of je nu leest of luistert.
 
 ## Voorlezen
 

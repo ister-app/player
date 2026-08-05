@@ -33,6 +33,7 @@ Map<String, dynamic> _comicEntry() => {
             'readingProgress': 0.25,
           }
         ],
+        'progress': null,
         'epubFiles': [
           {
             '__typename': 'MediaFile',

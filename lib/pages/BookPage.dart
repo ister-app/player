@@ -5,6 +5,7 @@ import 'package:player/graphql/bookById.graphql.dart';
 import 'package:player/graphql/fragmentChapter.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
+import 'package:player/utils/BookProgressUtil.dart';
 import 'package:player/utils/DurationUtil.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
@@ -102,6 +103,7 @@ class _BookPageState extends State<BookPage> {
   /// fraction still rounds to 0, and a location written before the reader
   /// started reporting one has no progress at all.
   bool get _hasProgress {
+    if (_book?.progress != null) return true;
     if (_readingLocation != null) return true;
     if ((_readingProgress ?? 0) > 0) return true;
     return _chapters.any((chapter) {
@@ -277,6 +279,13 @@ class _BookPageState extends State<BookPage> {
     final readAloudFile = _readAloudEpubFile;
     final readingProgress = _readingProgress;
     final hasProgress = _hasProgress;
+    // Position in the whole book; older servers only tell us the epub fraction.
+    final bookProgress = book?.progress;
+    final progressValue = bookProgress != null
+        ? BookProgressUtil.barValue(bookProgress)
+        : (readingProgress != null && readingProgress > 0
+            ? readingProgress.clamp(0.0, 1.0)
+            : null);
 
     return CustomScrollView(
       slivers: [
@@ -318,23 +327,31 @@ class _BookPageState extends State<BookPage> {
               ),
             ),
           ),
-        if (readingProgress != null && readingProgress > 0)
+        if (progressValue != null)
           SliverToBoxAdapter(
             child: _constrained(
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
                 child: Row(
                   children: [
+                    // Which of the two formats this position comes from.
+                    Icon(
+                      BookProgressUtil.isListening(bookProgress)
+                          ? Icons.headphones
+                          : Icons.menu_book,
+                      size: 16,
+                      color: Theme.of(context).textTheme.bodySmall?.color,
+                    ),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                            value: readingProgress.clamp(0.0, 1.0)),
+                        child: LinearProgressIndicator(value: progressValue),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '${(readingProgress * 100).round()}%',
+                      '${(progressValue * 100).round()}%',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],

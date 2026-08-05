@@ -4,8 +4,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/episodesRecentWatchedQuery.graphql.dart';
+import 'package:player/graphql/fragmentBookProgress.graphql.dart';
 import 'package:player/graphql/fragmentImages.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
+import 'package:player/utils/BookProgressUtil.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MetadataUtil.dart';
@@ -273,33 +275,22 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
               onTap: () =>
                   AutoRouter.of(context).push(MovieRoute(movieId: mv.id))));
     } else if (item.type == Enum$MediaType.CHAPTER && item.chapter != null) {
-      // Continue listening: the next unfinished audiobook chapter.
+      // Continue listening: the next unfinished audiobook chapter (legacy shape,
+      // one entry per chapter; a BOOK entry below carries the same thing today).
       final chapter = item.chapter!;
       final book = chapter.book;
-      List<Fragment$fragmentImages>? images = book.images
-          ?.map((e) => Fragment$fragmentImages.fromJson(e.toJson()))
-          .toList();
-      var imageByType = ImageUtil.getImageByType(images, ImageTypes.cover);
-      final chapterTitle = MetadataUtil.getTitle(chapter.metadata) ??
-          '${AppLocalizations.of(context)!.chapter} ${chapter.number}';
-      return CarouselItemView(
-          serverName: widget.serverName,
-          title: book.title,
-          subTitle: chapterTitle,
-          imageUrl: ImageUtil.buildUrl(imageByType,
-              token: StreamTokenService.getToken(widget.serverName)),
-          blurHash: imageByType?.blurHash,
-          placeholderIcon: Icons.headphones,
-          progress: chapter.watchStatus != null &&
-                  chapter.watchStatus!.isNotEmpty &&
-                  chapter.watchStatus!.first.watched != true &&
-                  (chapter.mediaFile?.firstOrNull?.durationInMilliseconds ??
-                          0) >
-                      0
-              ? chapter.watchStatus!.first.progressInMilliseconds /
-                  chapter.mediaFile!.first.durationInMilliseconds!
-              : null,
-          onTap: () => AutoRouter.of(context).push(BookRoute(bookId: book.id)));
+      return _buildBookTile(
+        context,
+        bookId: book.id,
+        title: book.title,
+        subTitle: _chapterTitle(context, chapter),
+        images: book.images
+            ?.map((e) => Fragment$fragmentImages.fromJson(e.toJson()))
+            .toList(),
+        progress: book.progress,
+        fallbackProgress: _chapterFraction(chapter),
+        fallbackListening: true,
+      );
     } else if (item.type == Enum$MediaType.PODCAST_EPISODE &&
         item.podcastEpisode != null) {
       // Continue listening: a partially played podcast episode.
@@ -330,45 +321,41 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
               AutoRouter.of(context).push(PodcastRoute(podcastId: podcast.id)));
     } else if (item.type == Enum$MediaType.BOOK && item.book != null) {
       // One entry per book, carrying a reading target (epub) and/or a listening target (chapter).
-      // Show whichever format the user is actually in: reading if there is reading progress,
-      // otherwise the audiobook chapter they were listening to.
+      // The server says which of the two the user is in and how far they are in the book as a
+      // whole; the chapter is only there to name what is playing.
       final book = item.book!;
-      List<Fragment$fragmentImages>? images = book.images
-          ?.map((e) => Fragment$fragmentImages.fromJson(e.toJson()))
-          .toList();
-      var imageByType = ImageUtil.getImageByType(images, ImageTypes.cover);
+      final chapter = item.chapter;
+
+      // Older servers don't send the aggregate: fall back to the epub fraction,
+      // or to the position inside the chapter that was playing.
       final readingProgress = book.watchStatus
           ?.where((status) => status.readingProgress != null)
           .firstOrNull
           ?.readingProgress;
       final bool reading = readingProgress != null && readingProgress > 0;
+      final double? chapterProgress =
+          reading ? null : _chapterFraction(chapter);
 
-      final chapter = item.chapter;
-      final double? chapterProgress = !reading &&
-              chapter != null &&
-              chapter.watchStatus != null &&
-              chapter.watchStatus!.isNotEmpty &&
-              chapter.watchStatus!.first.watched != true &&
-              (chapter.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0) > 0
-          ? chapter.watchStatus!.first.progressInMilliseconds /
-              chapter.mediaFile!.first.durationInMilliseconds!
-          : null;
-      final bool listening = chapterProgress != null;
-
-      final subTitle = listening
-          ? (MetadataUtil.getTitle(chapter!.metadata) ??
-              '${AppLocalizations.of(context)!.chapter} ${chapter.number}')
+      final bool listening = book.progress != null
+          ? BookProgressUtil.isListening(book.progress)
+          : chapterProgress != null;
+      final subTitle = listening && chapter != null
+          ? _chapterTitle(context, chapter)
           : (MetadataUtil.getDescription(book.metadata) ?? "");
-      return CarouselItemView(
-          serverName: widget.serverName,
-          title: book.title,
-          subTitle: subTitle,
-          imageUrl: ImageUtil.buildUrl(imageByType,
-              token: StreamTokenService.getToken(widget.serverName)),
-          blurHash: imageByType?.blurHash,
-          placeholderIcon: listening ? Icons.headphones : Icons.menu_book,
-          progress: reading ? readingProgress.clamp(0.0, 1.0) : chapterProgress,
-          onTap: () => AutoRouter.of(context).push(BookRoute(bookId: book.id)));
+
+      return _buildBookTile(
+        context,
+        bookId: book.id,
+        title: book.title,
+        subTitle: subTitle,
+        images: book.images
+            ?.map((e) => Fragment$fragmentImages.fromJson(e.toJson()))
+            .toList(),
+        progress: book.progress,
+        fallbackProgress:
+            reading ? readingProgress.clamp(0.0, 1.0) : chapterProgress,
+        fallbackListening: listening,
+      );
     } else if (item.type == Enum$MediaType.COMIC && item.book != null) {
       // One entry per comic series, pointing at the next unfinished volume.
       final book = item.book!;
@@ -419,5 +406,55 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
     } else {
       return const SizedBox.shrink();
     }
+  }
+
+  /// The tile a book gets in this row, whichever entry shape it arrived in.
+  ///
+  /// [progress] is the server's whole-book position and wins when it is there;
+  /// [fallbackProgress]/[fallbackListening] carry what this row used to compute
+  /// itself, for servers that don't know `Book.progress` yet.
+  Widget _buildBookTile(
+    BuildContext context, {
+    required String bookId,
+    required String title,
+    required String subTitle,
+    required List<Fragment$fragmentImages>? images,
+    required Fragment$fragmentBookProgress? progress,
+    required double? fallbackProgress,
+    required bool fallbackListening,
+  }) {
+    final imageByType = ImageUtil.getImageByType(images, ImageTypes.cover);
+    final bool listening = progress != null
+        ? BookProgressUtil.isListening(progress)
+        : fallbackListening;
+    return CarouselItemView(
+        serverName: widget.serverName,
+        title: title,
+        subTitle: subTitle,
+        imageUrl: ImageUtil.buildUrl(imageByType,
+            token: StreamTokenService.getToken(widget.serverName)),
+        blurHash: imageByType?.blurHash,
+        placeholderIcon: listening ? Icons.headphones : Icons.menu_book,
+        progress: progress != null
+            ? BookProgressUtil.barValue(progress)
+            : fallbackProgress,
+        onTap: () => AutoRouter.of(context).push(BookRoute(bookId: bookId)));
+  }
+
+  String _chapterTitle(BuildContext context,
+          Query$recentlyWatched$recentlyWatched$chapter chapter) =>
+      MetadataUtil.getTitle(chapter.metadata) ??
+      '${AppLocalizations.of(context)!.chapter} ${chapter.number}';
+
+  /// How far into the playing chapter the user is — the pre-`Book.progress`
+  /// answer, kept as the fallback for older servers.
+  double? _chapterFraction(
+      Query$recentlyWatched$recentlyWatched$chapter? chapter) {
+    final status = chapter?.watchStatus?.firstOrNull;
+    final duration = chapter?.mediaFile?.firstOrNull?.durationInMilliseconds;
+    if (status == null || status.watched == true || (duration ?? 0) <= 0) {
+      return null;
+    }
+    return status.progressInMilliseconds / duration!;
   }
 }

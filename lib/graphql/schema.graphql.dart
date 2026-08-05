@@ -3122,6 +3122,39 @@ Enum$CreditType fromJson$Enum$CreditType(String value) {
   }
 }
 
+enum Enum$BookProgressMode {
+  READING,
+  LISTENING,
+  $unknown;
+
+  factory Enum$BookProgressMode.fromJson(String value) =>
+      fromJson$Enum$BookProgressMode(value);
+
+  String toJson() => toJson$Enum$BookProgressMode(this);
+}
+
+String toJson$Enum$BookProgressMode(Enum$BookProgressMode e) {
+  switch (e) {
+    case Enum$BookProgressMode.READING:
+      return r'READING';
+    case Enum$BookProgressMode.LISTENING:
+      return r'LISTENING';
+    case Enum$BookProgressMode.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$BookProgressMode fromJson$Enum$BookProgressMode(String value) {
+  switch (value) {
+    case r'READING':
+      return Enum$BookProgressMode.READING;
+    case r'LISTENING':
+      return Enum$BookProgressMode.LISTENING;
+    default:
+      return Enum$BookProgressMode.$unknown;
+  }
+}
+
 enum Enum$__TypeKind {
   SCALAR,
   OBJECT,

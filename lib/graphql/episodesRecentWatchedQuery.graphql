@@ -22,7 +22,12 @@ query recentlyWatched($libraryId: ID) {
         chapter {
             id
             number
-            book { id name title images { ...fragmentImages } metadata { ...fragmentMetadata } }
+            book {
+                id name title
+                images { ...fragmentImages }
+                metadata { ...fragmentMetadata }
+                progress { ...fragmentBookProgress }
+            }
             metadata { ...fragmentMetadata }
             watchStatus { id playQueueItemId progressInMilliseconds watched }
             mediaFile { id durationInMilliseconds }
@@ -35,6 +40,7 @@ query recentlyWatched($libraryId: ID) {
             images { ...fragmentImages }
             metadata { ...fragmentMetadata }
             watchStatus { id watched readingLocation readingProgress }
+            progress { ...fragmentBookProgress }
             epubFiles { id path format mediaOverlays directory { node { url } } }
         }
         podcastEpisode {

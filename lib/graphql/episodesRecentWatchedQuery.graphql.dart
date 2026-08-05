@@ -1,3 +1,4 @@
+import 'fragmentBookProgress.graphql.dart';
 import 'fragmentImages.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
 import 'package:gql/ast.dart';
@@ -784,6 +785,29 @@ const documentNodeQueryrecentlyWatched = DocumentNode(
                               ),
                             ),
                             FieldNode(
+                              name: NameNode(value: 'progress'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: SelectionSetNode(
+                                selections: [
+                                  FragmentSpreadNode(
+                                    name: NameNode(
+                                      value: 'fragmentBookProgress',
+                                    ),
+                                    directives: [],
+                                  ),
+                                  FieldNode(
+                                    name: NameNode(value: '__typename'),
+                                    alias: null,
+                                    arguments: [],
+                                    directives: [],
+                                    selectionSet: null,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            FieldNode(
                               name: NameNode(value: '__typename'),
                               alias: null,
                               arguments: [],
@@ -1035,6 +1059,27 @@ const documentNodeQueryrecentlyWatched = DocumentNode(
                               arguments: [],
                               directives: [],
                               selectionSet: null,
+                            ),
+                            FieldNode(
+                              name: NameNode(value: '__typename'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                          ],
+                        ),
+                      ),
+                      FieldNode(
+                        name: NameNode(value: 'progress'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: SelectionSetNode(
+                          selections: [
+                            FragmentSpreadNode(
+                              name: NameNode(value: 'fragmentBookProgress'),
+                              directives: [],
                             ),
                             FieldNode(
                               name: NameNode(value: '__typename'),
@@ -1344,6 +1389,7 @@ const documentNodeQueryrecentlyWatched = DocumentNode(
     ),
     fragmentDefinitionfragmentMetadata,
     fragmentDefinitionfragmentImages,
+    fragmentDefinitionfragmentBookProgress,
   ],
 );
 
@@ -4060,6 +4106,7 @@ class Query$recentlyWatched$recentlyWatched$chapter$book {
     required this.title,
     this.images,
     this.metadata,
+    this.progress,
     this.$__typename = 'Book',
   });
 
@@ -4071,6 +4118,7 @@ class Query$recentlyWatched$recentlyWatched$chapter$book {
     final l$title = json['title'];
     final l$images = json['images'];
     final l$metadata = json['metadata'];
+    final l$progress = json['progress'];
     final l$$__typename = json['__typename'];
     return Query$recentlyWatched$recentlyWatched$chapter$book(
       id: (l$id as String),
@@ -4088,6 +4136,11 @@ class Query$recentlyWatched$recentlyWatched$chapter$book {
                 Fragment$fragmentMetadata.fromJson((e as Map<String, dynamic>)),
           )
           .toList(),
+      progress: l$progress == null
+          ? null
+          : Fragment$fragmentBookProgress.fromJson(
+              (l$progress as Map<String, dynamic>),
+            ),
       $__typename: (l$$__typename as String),
     );
   }
@@ -4101,6 +4154,8 @@ class Query$recentlyWatched$recentlyWatched$chapter$book {
   final List<Fragment$fragmentImages>? images;
 
   final List<Fragment$fragmentMetadata>? metadata;
+
+  final Fragment$fragmentBookProgress? progress;
 
   final String $__typename;
 
@@ -4116,6 +4171,8 @@ class Query$recentlyWatched$recentlyWatched$chapter$book {
     _resultData['images'] = l$images?.map((e) => e.toJson()).toList();
     final l$metadata = metadata;
     _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
+    final l$progress = progress;
+    _resultData['progress'] = l$progress?.toJson();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -4128,6 +4185,7 @@ class Query$recentlyWatched$recentlyWatched$chapter$book {
     final l$title = title;
     final l$images = images;
     final l$metadata = metadata;
+    final l$progress = progress;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
@@ -4135,6 +4193,7 @@ class Query$recentlyWatched$recentlyWatched$chapter$book {
       l$title,
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
+      l$progress,
       l$$__typename,
     ]);
   }
@@ -4195,6 +4254,11 @@ class Query$recentlyWatched$recentlyWatched$chapter$book {
     } else if (l$metadata != lOther$metadata) {
       return false;
     }
+    final l$progress = progress;
+    final lOther$progress = other.progress;
+    if (l$progress != lOther$progress) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -4233,6 +4297,7 @@ abstract class CopyWith$Query$recentlyWatched$recentlyWatched$chapter$book<
     String? title,
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
+    Fragment$fragmentBookProgress? progress,
     String? $__typename,
   });
   TRes images(
@@ -4247,6 +4312,7 @@ abstract class CopyWith$Query$recentlyWatched$recentlyWatched$chapter$book<
     )
     _fn,
   );
+  CopyWith$Fragment$fragmentBookProgress<TRes> get progress;
 }
 
 class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$chapter$book<TRes>
@@ -4269,6 +4335,7 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$chapter$book<TRes>
     Object? title = _undefined,
     Object? images = _undefined,
     Object? metadata = _undefined,
+    Object? progress = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Query$recentlyWatched$recentlyWatched$chapter$book(
@@ -4285,6 +4352,9 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$chapter$book<TRes>
       metadata: metadata == _undefined
           ? _instance.metadata
           : (metadata as List<Fragment$fragmentMetadata>?),
+      progress: progress == _undefined
+          ? _instance.progress
+          : (progress as Fragment$fragmentBookProgress?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -4316,6 +4386,16 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$chapter$book<TRes>
       ),
     )?.toList(),
   );
+
+  CopyWith$Fragment$fragmentBookProgress<TRes> get progress {
+    final local$progress = _instance.progress;
+    return local$progress == null
+        ? CopyWith$Fragment$fragmentBookProgress.stub(_then(_instance))
+        : CopyWith$Fragment$fragmentBookProgress(
+            local$progress,
+            (e) => call(progress: e),
+          );
+  }
 }
 
 class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$chapter$book<TRes>
@@ -4333,12 +4413,16 @@ class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$chapter$book<TRes>
     String? title,
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
+    Fragment$fragmentBookProgress? progress,
     String? $__typename,
   }) => _res;
 
   images(_fn) => _res;
 
   metadata(_fn) => _res;
+
+  CopyWith$Fragment$fragmentBookProgress<TRes> get progress =>
+      CopyWith$Fragment$fragmentBookProgress.stub(_res);
 }
 
 class Query$recentlyWatched$recentlyWatched$chapter$watchStatus {
@@ -4704,6 +4788,7 @@ class Query$recentlyWatched$recentlyWatched$book {
     this.images,
     this.metadata,
     this.watchStatus,
+    this.progress,
     this.epubFiles,
     this.$__typename = 'Book',
   });
@@ -4718,6 +4803,7 @@ class Query$recentlyWatched$recentlyWatched$book {
     final l$images = json['images'];
     final l$metadata = json['metadata'];
     final l$watchStatus = json['watchStatus'];
+    final l$progress = json['progress'];
     final l$epubFiles = json['epubFiles'];
     final l$$__typename = json['__typename'];
     return Query$recentlyWatched$recentlyWatched$book(
@@ -4749,6 +4835,11 @@ class Query$recentlyWatched$recentlyWatched$book {
                 ),
           )
           .toList(),
+      progress: l$progress == null
+          ? null
+          : Fragment$fragmentBookProgress.fromJson(
+              (l$progress as Map<String, dynamic>),
+            ),
       epubFiles: (l$epubFiles as List<dynamic>?)
           ?.map(
             (e) =>
@@ -4776,6 +4867,8 @@ class Query$recentlyWatched$recentlyWatched$book {
   final List<Query$recentlyWatched$recentlyWatched$book$watchStatus>?
   watchStatus;
 
+  final Fragment$fragmentBookProgress? progress;
+
   final List<Query$recentlyWatched$recentlyWatched$book$epubFiles>? epubFiles;
 
   final String $__typename;
@@ -4796,6 +4889,8 @@ class Query$recentlyWatched$recentlyWatched$book {
     _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
     final l$watchStatus = watchStatus;
     _resultData['watchStatus'] = l$watchStatus?.map((e) => e.toJson()).toList();
+    final l$progress = progress;
+    _resultData['progress'] = l$progress?.toJson();
     final l$epubFiles = epubFiles;
     _resultData['epubFiles'] = l$epubFiles?.map((e) => e.toJson()).toList();
     final l$$__typename = $__typename;
@@ -4812,6 +4907,7 @@ class Query$recentlyWatched$recentlyWatched$book {
     final l$images = images;
     final l$metadata = metadata;
     final l$watchStatus = watchStatus;
+    final l$progress = progress;
     final l$epubFiles = epubFiles;
     final l$$__typename = $__typename;
     return Object.hashAll([
@@ -4824,6 +4920,7 @@ class Query$recentlyWatched$recentlyWatched$book {
       l$watchStatus == null
           ? null
           : Object.hashAll(l$watchStatus.map((v) => v)),
+      l$progress,
       l$epubFiles == null ? null : Object.hashAll(l$epubFiles.map((v) => v)),
       l$$__typename,
     ]);
@@ -4906,6 +5003,11 @@ class Query$recentlyWatched$recentlyWatched$book {
     } else if (l$watchStatus != lOther$watchStatus) {
       return false;
     }
+    final l$progress = progress;
+    final lOther$progress = other.progress;
+    if (l$progress != lOther$progress) {
+      return false;
+    }
     final l$epubFiles = epubFiles;
     final lOther$epubFiles = other.epubFiles;
     if (l$epubFiles != null && lOther$epubFiles != null) {
@@ -4957,6 +5059,7 @@ abstract class CopyWith$Query$recentlyWatched$recentlyWatched$book<TRes> {
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
     List<Query$recentlyWatched$recentlyWatched$book$watchStatus>? watchStatus,
+    Fragment$fragmentBookProgress? progress,
     List<Query$recentlyWatched$recentlyWatched$book$epubFiles>? epubFiles,
     String? $__typename,
   });
@@ -4983,6 +5086,7 @@ abstract class CopyWith$Query$recentlyWatched$recentlyWatched$book<TRes> {
     )
     _fn,
   );
+  CopyWith$Fragment$fragmentBookProgress<TRes> get progress;
   TRes epubFiles(
     Iterable<Query$recentlyWatched$recentlyWatched$book$epubFiles>? Function(
       Iterable<
@@ -5016,6 +5120,7 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book<TRes>
     Object? images = _undefined,
     Object? metadata = _undefined,
     Object? watchStatus = _undefined,
+    Object? progress = _undefined,
     Object? epubFiles = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
@@ -5042,6 +5147,9 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book<TRes>
                 as List<
                   Query$recentlyWatched$recentlyWatched$book$watchStatus
                 >?),
+      progress: progress == _undefined
+          ? _instance.progress
+          : (progress as Fragment$fragmentBookProgress?),
       epubFiles: epubFiles == _undefined
           ? _instance.epubFiles
           : (epubFiles
@@ -5110,6 +5218,16 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book<TRes>
     )?.toList(),
   );
 
+  CopyWith$Fragment$fragmentBookProgress<TRes> get progress {
+    final local$progress = _instance.progress;
+    return local$progress == null
+        ? CopyWith$Fragment$fragmentBookProgress.stub(_then(_instance))
+        : CopyWith$Fragment$fragmentBookProgress(
+            local$progress,
+            (e) => call(progress: e),
+          );
+  }
+
   TRes epubFiles(
     Iterable<Query$recentlyWatched$recentlyWatched$book$epubFiles>? Function(
       Iterable<
@@ -5145,6 +5263,7 @@ class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$book<TRes>
     List<Fragment$fragmentImages>? images,
     List<Fragment$fragmentMetadata>? metadata,
     List<Query$recentlyWatched$recentlyWatched$book$watchStatus>? watchStatus,
+    Fragment$fragmentBookProgress? progress,
     List<Query$recentlyWatched$recentlyWatched$book$epubFiles>? epubFiles,
     String? $__typename,
   }) => _res;
@@ -5157,6 +5276,9 @@ class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$book<TRes>
   metadata(_fn) => _res;
 
   watchStatus(_fn) => _res;
+
+  CopyWith$Fragment$fragmentBookProgress<TRes> get progress =>
+      CopyWith$Fragment$fragmentBookProgress.stub(_res);
 
   epubFiles(_fn) => _res;
 }
