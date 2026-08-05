@@ -210,6 +210,20 @@ void main() {
     expect(operations, isNot(contains('updatePlayQueue')));
   });
 
+  test('the own live queue is recognised, a followed one is not', () async {
+    // Own playback: the listen-along affordances must disappear for it.
+    handler.serverName = _server;
+    handler.playQueue = _queue();
+    expect(handler.isOwnLiveQueue(_server, 'pq-follow'), isTrue);
+    expect(handler.isOwnLiveQueue(_server, 'pq-other'), isFalse);
+    expect(handler.isOwnLiveQueue('other-server', 'pq-follow'), isFalse);
+
+    // Following the same queue is someone else's session, not our own.
+    useClient(_fakeGraphQL(queue: _queue(), operations: []));
+    await handler.startFollowingQueue(_server, 'pq-follow');
+    expect(handler.isOwnLiveQueue(_server, 'pq-follow'), isFalse);
+  });
+
   test('a denied follow leaves the handler untouched', () async {
     final operations = <String>[];
     useClient(_fakeGraphQL(

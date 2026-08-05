@@ -2512,6 +2512,13 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// UI hook for the "listening along" indicator.
   final ValueNotifier<bool> followModeNotifier = ValueNotifier(false);
 
+  /// True when [playQueueId] on [srv] is this device's *own* live playback
+  /// rather than a queue it merely follows. Listening along with yourself is
+  /// a no-op (and would tear down the very session it joins), so the UI hides
+  /// the listen-along affordances for such a session.
+  bool isOwnLiveQueue(String srv, String playQueueId) =>
+      !_followMode && serverName == srv && playQueue?.id == playQueueId;
+
   Timer? _followHeartbeat;
   ResilientSubscription? _followNowPlayingSubscription;
   // Tight sync ("same room"): the leader's latest timeline anchor and the

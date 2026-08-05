@@ -259,8 +259,12 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
                       playQueueId: session.playQueueId))
                   : null,
               // Listen along: anyone who may control the session may also
-              // play it along on this device (same permission server-side).
-              onListenAlong: session.controllable
+              // play it along on this device (same permission server-side) —
+              // except for this device's own session, where following itself
+              // would only stop the playback it joins.
+              onListenAlong: session.controllable &&
+                      !MediaPlayerHandler.instance
+                          .isOwnLiveQueue(widget.serverName, session.playQueueId)
                   ? () => _startListenAlong(session.playQueueId)
                   : null,
               onListenAlongOnDevice: session.controllable

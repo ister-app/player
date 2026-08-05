@@ -413,7 +413,9 @@ class _RemotePlayerController
       children: [
         if (liveFeedBroken) const LiveFeedBanner(),
         if (sessionEnded) _SessionEndedBanner(text: loc.sessionEnded),
-        if (!sessionEnded)
+        // Not on this device's own session: following yourself is a no-op.
+        if (!sessionEnded &&
+            !MediaPlayerHandler.instance.isOwnLiveQueue(serverName, playQueueId))
           _ListenAlongBanner(
             serverName: serverName,
             playQueueId: playQueueId,
