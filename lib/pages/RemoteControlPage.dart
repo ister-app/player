@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/components/PlayerView.dart';
+import 'package:player/components/QueuePlayerViewController.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 import 'package:player/graphql/fragmentServerActivity.graphql.dart';
 import 'package:player/graphql/nowPlayingSubscription.graphql.dart';
@@ -16,15 +17,13 @@ import '../utils/AppMessenger.dart';
 import '../utils/MediaPlayerHandler.dart';
 import '../utils/SyncPreferences.dart';
 import '../utils/ClientManager.dart';
-import '../utils/ImageTypes.dart';
 import '../utils/LoggerService.dart';
 import '../utils/LoginManager.dart';
 import '../utils/ImageUtil.dart';
-import '../utils/MetadataUtil.dart';
 import '../utils/PlayQueueService.dart';
+import '../utils/QueueItemDisplay.dart';
 import '../utils/ResilientSubscription.dart';
 import '../utils/StreamTokenService.dart';
-import '../utils/WellKnownService.dart';
 
 /// Remote control ("party mode") for one active playback session on the
 /// server: the same [PlayerView] overlay as the local music player — also when
@@ -310,7 +309,8 @@ class _SessionEndedBanner extends StatelessWidget {
 /// Adapts a remote playback session (nowPlaying + playbackCommands
 /// subscriptions and playback-command mutations) to the shared
 /// [PlayerViewController] interface.
-class _RemotePlayerController extends PlayerViewController {
+class _RemotePlayerController
+    extends QueuePlayerViewController<Fragment$fragmentPlayQueue$playQueueItems> {
   _RemotePlayerController({
     required this.serverName,
     required this.playQueueId,
@@ -319,6 +319,9 @@ class _RemotePlayerController extends PlayerViewController {
     StreamTokenService.ensureToken(serverName).then((_) {
       if (!_disposed) notifyListeners();
     });
+    // Artwork URLs are built in the getters, so a token renewal only has to
+    // trigger a rebuild — otherwise every cover goes stale mid-session.
+    StreamTokenService.tokenVersion.addListener(_onTokenRefreshed);
 
     // The server replays the latest session list on subscribe, so no separate
     // snapshot query is needed to render the initial state.
@@ -416,9 +419,14 @@ class _RemotePlayerController extends PlayerViewController {
   void dispose() {
     _disposed = true;
     _ticker?.cancel();
+    StreamTokenService.tokenVersion.removeListener(_onTokenRefreshed);
     _nowPlayingSubscription?.dispose();
     _commandsSubscription?.dispose();
     super.dispose();
+  }
+
+  void _onTokenRefreshed() {
+    if (!_disposed) notifyListeners();
   }
 
   /// Applies commands (our own echoes and other controllers') optimistically
@@ -509,86 +517,53 @@ class _RemotePlayerController extends PlayerViewController {
 
   /// The id of the item the session is playing right now; the live session is
   /// authoritative, the stored queue's currentItemId is the fallback.
-  String? get _currentItemId =>
+  @override
+  String? get currentQueueItemId =>
       _session?.playQueueItemId ?? _playQueue?.currentItemId;
 
-  List<Fragment$fragmentPlayQueue$playQueueItems> get _sortedItems =>
+  @override
+  List<Fragment$fragmentPlayQueue$playQueueItems> get queueItems =>
       _localItems ?? PlayQueueService.sortedItems(_playQueue);
 
-  int get _currentIndex {
-    final id = _currentItemId;
+  @override
+  int get currentIndex {
+    final id = currentQueueItemId;
     if (id == null) return -1;
-    return _sortedItems.indexWhere((e) => e.id == id);
+    return queueItems.indexWhere((e) => e.id == id);
   }
 
-  ({
-    List<Fragment$fragmentPlayQueue$playQueueItems> previous,
-    List<Fragment$fragmentPlayQueue$playQueueItems> upNext
-  }) _sliceQueue() {
-    final items = _sortedItems;
-    final index = _currentIndex;
-    final previous = index > 0
-        ? items.sublist(0, index).reversed.toList()
-        : <Fragment$fragmentPlayQueue$playQueueItems>[];
-    final upNext = index >= 0 && index + 1 < items.length
-        ? items.sublist(index + 1)
-        : <Fragment$fragmentPlayQueue$playQueueItems>[];
-    return (previous: previous, upNext: upNext);
-  }
+  @override
+  String queueItemIdOf(Fragment$fragmentPlayQueue$playQueueItems item) => item.id;
+
+  @override
+  void setOptimisticQueue(List<Fragment$fragmentPlayQueue$playQueueItems>? items) => _localItems = items;
+
+  @override
+  bool get disposed => _disposed;
+
+  /// The move/remove mutations fan out QUEUE_CHANGED, and that refresh clears
+  /// the optimistic order — doing it here as well would flash the stale queue.
+  @override
+  bool get clearsOptimisticQueue => false;
+
+  @override
+  Future<void> applyMove(String movedId, String? afterId) =>
+      PlayQueueService().movePlayQueueItem(_client, playQueueId, movedId, afterId);
+
+  @override
+  Future<void> applyRemove(String queueItemId) =>
+      PlayQueueService().removePlayQueueItem(_client, playQueueId, queueItemId);
 
   // ── Display helpers ──────────────────────────────────────────────────────
 
-  String? _sessionArtworkUrl() {
-    final imageId = _session?.artworkImageId;
-    if (imageId == null) return null;
-    final serverUrl = WellKnownService.getCached(serverName)?.serverUrl;
-    if (serverUrl == null) return null;
-    final token = StreamTokenService.getToken(serverName);
-    final base = '$serverUrl/images/$imageId/download';
-    return token != null ? '$base?token=$token' : base;
-  }
-
-  ({String title, String? subtitle, String? album, String? artUrl})
-      _itemDisplay(Fragment$fragmentPlayQueue$playQueueItems item) {
-    final token = StreamTokenService.getToken(serverName);
-    if (item.track != null) {
-      final t = item.track!;
-      return (
-        title: MetadataUtil.getTitle(t.metadata) ?? '${t.number}',
-        subtitle: t.artist.name,
-        album: t.album.name,
-        artUrl: ImageUtil.buildUrl(
-            ImageUtil.getImageByType(t.album.images, ImageTypes.cover),
-            token: token),
-      );
-    } else if (item.movie != null) {
-      final m = item.movie!;
-      return (
-        title: m.name,
-        subtitle: null,
-        album: null,
-        artUrl: ImageUtil.buildUrl(
-            ImageUtil.getImageByType(m.images, ImageTypes.background),
-            token: token),
-      );
-    }
-    final ep = item.episode;
-    return (
-      title: MetadataUtil.getTitle(ep?.metadata) ?? 'unknown',
-      subtitle: null,
-      album: null,
-      artUrl: ep == null
-          ? null
-          : ImageUtil.buildUrl(
-              ImageUtil.getImageByType(ep.images, ImageTypes.background),
-              token: token),
-    );
-  }
+  QueueItemDisplay _itemDisplay(
+          Fragment$fragmentPlayQueue$playQueueItems item) =>
+      QueueItemDisplay.of(item,
+          token: StreamTokenService.getToken(serverName));
 
   Fragment$fragmentPlayQueue$playQueueItems? get _currentItem {
-    final id = _currentItemId;
-    if (id == null) return null;
-    return _sortedItems.where((e) => e.id == id).firstOrNull;
+    final index = currentIndex;
+    return index < 0 ? null : queueItems[index];
   }
 
   // ── PlayerViewController ─────────────────────────────────────────────────
@@ -602,16 +577,19 @@ class _RemotePlayerController extends PlayerViewController {
   @override
   String? get artUri {
     final current = _currentItem;
-    return _sessionArtworkUrl() ??
+    return ImageUtil.buildUrlById(serverName, _session?.artworkImageId) ??
         (current == null ? null : _itemDisplay(current).artUrl);
   }
 
   @override
-  bool get portraitArtwork => _currentItem?.chapter != null;
+  bool get portraitArtwork {
+    final current = _currentItem;
+    return current != null && _itemDisplay(current).portraitArtwork;
+  }
 
   @override
   String? get artistLine =>
-      _currentItem == null ? null : _itemDisplay(_currentItem!).subtitle;
+      _currentItem == null ? null : _itemDisplay(_currentItem!).artist;
 
   @override
   String? get titleLine {
@@ -656,31 +634,15 @@ class _RemotePlayerController extends PlayerViewController {
   }
 
   @override
-  bool get hasPrevious => _currentIndex > 0;
-
-  @override
-  bool get hasNext {
-    final index = _currentIndex;
-    return index >= 0 && index < _sortedItems.length - 1;
-  }
-
-  PlayerQueueEntry _toEntry(Fragment$fragmentPlayQueue$playQueueItems item) {
+  PlayerQueueEntry entryFor(Fragment$fragmentPlayQueue$playQueueItems item) {
     final display = _itemDisplay(item);
     return PlayerQueueEntry(
       id: item.id,
       title: display.title,
-      subtitle: display.subtitle,
+      subtitle: display.artist,
       artUrl: display.artUrl,
     );
   }
-
-  @override
-  List<PlayerQueueEntry> get previous =>
-      _sliceQueue().previous.map(_toEntry).toList();
-
-  @override
-  List<PlayerQueueEntry> get upNext =>
-      _sliceQueue().upNext.map(_toEntry).toList();
 
   @override
   Widget buildPlayPauseButton(BuildContext context) {
@@ -724,40 +686,8 @@ class _RemotePlayerController extends PlayerViewController {
   }
 
   @override
-  void tapPrevious(int index) => _skipToItem(_sliceQueue().previous[index]);
+  void tapPrevious(int index) => _skipToItem(sliceQueue().previous[index]);
 
   @override
-  void tapUpNext(int index) => _skipToItem(_sliceQueue().upNext[index]);
-
-  @override
-  Future<void> moveUpNext(int oldIndex, int newIndex) async {
-    if (newIndex > oldIndex) newIndex -= 1;
-    if (newIndex == oldIndex) return;
-
-    final reordered = List.of(_sliceQueue().upNext);
-    final moved = reordered.removeAt(oldIndex);
-    reordered.insert(newIndex, moved);
-
-    final items = _sortedItems;
-    final head = _currentIndex >= 0
-        ? items.sublist(0, _currentIndex + 1)
-        : <Fragment$fragmentPlayQueue$playQueueItems>[];
-    _localItems = [...head, ...reordered];
-    notifyListeners();
-
-    // Moving to the head of "up next" means directly after the current item.
-    final afterId = newIndex == 0 ? _currentItemId : reordered[newIndex - 1].id;
-    await PlayQueueService()
-        .movePlayQueueItem(_client, playQueueId, moved.id, afterId);
-    // The mutation fans out QUEUE_CHANGED, which refreshes and clears
-    // _localItems; nothing else to do here.
-  }
-
-  @override
-  Future<void> removeEntry(PlayerQueueEntry entry) async {
-    _localItems = _sortedItems.where((e) => e.id != entry.id).toList();
-    notifyListeners();
-    await PlayQueueService()
-        .removePlayQueueItem(_client, playQueueId, entry.id);
-  }
+  void tapUpNext(int index) => _skipToItem(sliceQueue().upNext[index]);
 }

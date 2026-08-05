@@ -22,13 +22,13 @@ import 'package:player/utils/LanguageService.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/PlaybackPreferences.dart';
 import 'package:player/utils/ResilientSubscription.dart';
+import 'package:player/utils/QueueItemDisplay.dart';
 import 'package:player/utils/StreamTokenService.dart';
 import 'package:player/utils/WellKnownService.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../graphql/fragmentAlbum.graphql.dart';
 import '../graphql/fragmentEpisode.graphql.dart';
-import '../graphql/fragmentImages.graphql.dart';
 import '../graphql/fragmentMovie.graphql.dart';
 import '../graphql/fragmentWatchStatus.graphql.dart';
 import '../graphql/fragmentPlayQueue.graphql.dart';
@@ -1701,82 +1701,24 @@ class MediaPlayerHandler extends BaseAudioHandler
     PlayQueueService().playQueueChanged(pq);
   }
 
-  /// Builds the [MediaItem] list for [pq] in playback order, handling all three
-  /// media types the queue can contain.
+  /// Builds the [MediaItem] list for [pq] in playback order. What each item
+  /// looks like is [QueueItemDisplay]'s job — shared with the remote control,
+  /// which renders the same queues without playing them.
   List<MediaItem> _buildQueueItems(Fragment$fragmentPlayQueue pq, String srv) {
     final token = StreamTokenService.getToken(srv);
-    Uri? artFor(Fragment$fragmentImages? img) => img == null
-        ? null
-        : Uri.tryParse(ImageUtil.buildUrl(img, token: token) ?? '');
-
     return PlayQueueService.sortedItems(pq).map((e) {
-      if (e.track != null) {
-        final t = e.track!;
-        return MediaItem(
-          id: MediaItemId(srv, IsterMediaTypes.track, e.id).toString(),
-          title: MetadataUtil.getTitle(t.metadata) ?? '${t.number}',
-          artist: t.artist.name,
-          album: t.album.name,
-          duration: Duration(
-              milliseconds:
-                  t.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0),
-          artUri: artFor(ImageUtil.getImageByType(t.album.images, ImageTypes.cover)),
-        );
-      } else if (e.chapter != null) {
-        final c = e.chapter!;
-        return MediaItem(
-          id: MediaItemId(srv, IsterMediaTypes.track, e.id).toString(),
-          title: MetadataUtil.getTitle(c.metadata) ??
-              '${IsterMediaService.loc.chapter} ${c.number}',
-          artist: c.author.name,
-          // The clean display title, not the raw file/directory name.
-          album: MetadataUtil.getTitle(c.book.metadata) ?? c.book.title,
-          duration: Duration(
-              milliseconds:
-                  c.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0),
-          artUri: artFor(ImageUtil.getImageByType(c.book.images, ImageTypes.cover)),
-          // Book covers are portrait — flag it so the player shows the cover
-          // in its true 2:3 aspect ratio instead of cropping it square.
-          extras: const {'portraitArtwork': true},
-        );
-      } else if (e.podcastEpisode != null) {
-        final pe = e.podcastEpisode!;
-        return MediaItem(
-          id: MediaItemId(srv, IsterMediaTypes.track, e.id).toString(),
-          title: MetadataUtil.getTitle(pe.metadata) ?? pe.podcast.title,
-          artist: pe.podcast.author ?? pe.podcast.title,
-          album: pe.podcast.title,
-          duration: Duration(
-              milliseconds:
-                  pe.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0),
-          artUri: artFor(
-              ImageUtil.getImageByType(pe.podcast.images, ImageTypes.cover)),
-        );
-      } else if (e.movie != null) {
-        final m = e.movie!;
-        return MediaItem(
-          id: MediaItemId(srv, IsterMediaTypes.movie, e.id).toString(),
-          title: m.name,
-          artist: "ister",
-          duration: Duration(
-              milliseconds:
-                  m.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0),
-          artUri: artFor(ImageUtil.getImageByType(m.images, ImageTypes.background)),
-        );
-      } else {
-        final ep = e.episode;
-        return MediaItem(
-          id: MediaItemId(srv, IsterMediaTypes.episode, e.id).toString(),
-          title: MetadataUtil.getTitle(ep?.metadata) ?? "unknown",
-          artist: "ister",
-          duration: Duration(
-              milliseconds:
-                  ep?.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0),
-          artUri: ep?.images == null
-              ? null
-              : artFor(ImageUtil.getImageByType(ep!.images, ImageTypes.background)),
-        );
-      }
+      final display = QueueItemDisplay.of(e, token: token);
+      return MediaItem(
+        id: MediaItemId(srv, display.mediaType, e.id).toString(),
+        title: display.title,
+        artist: display.artist,
+        album: display.album,
+        duration: display.duration,
+        artUri: display.artUrl == null ? null : Uri.tryParse(display.artUrl!),
+        // Book covers are portrait — flag it so the player shows the cover in
+        // its true 2:3 aspect ratio instead of cropping it square.
+        extras: display.portraitArtwork ? const {'portraitArtwork': true} : null,
+      );
     }).toList();
   }
 

@@ -5,6 +5,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:player/components/PlayPauseButton.dart';
 import 'package:player/components/PlayerView.dart';
+import 'package:player/components/QueuePlayerViewController.dart';
 import 'package:player/components/RatingStars.dart';
 import 'package:player/dto/IsterMediaItem.dart';
 import 'package:player/dto/MediaItemId.dart';
@@ -76,7 +77,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
 
 /// Adapts [MediaPlayerHandler]'s audio_service streams to the shared
 /// [PlayerViewController] interface.
-class _LocalPlayerController extends PlayerViewController {
+class _LocalPlayerController extends QueuePlayerViewController<MediaItem> {
   _LocalPlayerController() {
     final handler = MediaPlayerHandler.instance;
     _position = handler.player.state.position;
@@ -210,9 +211,35 @@ class _LocalPlayerController extends PlayerViewController {
   @override
   bool get canSeek => _duration.inMilliseconds > 0;
 
-  List<MediaItem> get _allItems => _localQueue ?? _handler.queue.value;
+  @override
+  List<MediaItem> get queueItems => _localQueue ?? _handler.queue.value;
 
-  int get _currentIndex => _handler.playbackState.valueOrNull?.queueIndex ?? -1;
+  @override
+  int get currentIndex => _handler.playbackState.valueOrNull?.queueIndex ?? -1;
+
+  @override
+  String? get currentQueueItemId => _handler.playQueue?.currentItemId;
+
+  @override
+  String queueItemIdOf(MediaItem item) => MediaItemId.byStringId(item.id).id;
+
+  @override
+  void setOptimisticQueue(List<MediaItem>? items) => _localQueue = items;
+
+  @override
+  bool get disposed => _disposed;
+
+  // With repeat-all the queue is a loop, so the ends stay reachable.
+  @override
+  bool get queueWrapsAround => _repeatAll;
+
+  @override
+  Future<void> applyMove(String movedId, String? afterId) =>
+      _handler.moveQueueItem(movedId, afterId);
+
+  @override
+  Future<void> applyRemove(String queueItemId) =>
+      _handler.removeFromQueue(queueItemId);
 
   AudioServiceRepeatMode get _repeatMode =>
       _handler.playbackState.valueOrNull?.repeatMode ??
@@ -221,46 +248,12 @@ class _LocalPlayerController extends PlayerViewController {
   bool get _repeatAll => _repeatMode == AudioServiceRepeatMode.all;
 
   @override
-  bool get hasPrevious =>
-      _currentIndex > 0 || (_repeatAll && _allItems.length > 1);
-
-  // With repeat-all the queue is a loop, so the ends are reachable.
-  @override
-  bool get hasNext =>
-      (_currentIndex >= 0 && _currentIndex < _allItems.length - 1) ||
-      (_repeatAll && _allItems.length > 1);
-
-  /// Splits the full queue around the currently playing index into the
-  /// already-played tracks (newest first) and the still-to-come tracks.
-  ({List<MediaItem> previous, List<MediaItem> upNext}) _sliceQueue() {
-    final allItems = _allItems;
-    var currentIndex = _currentIndex;
-    // queueIndex can briefly be stale (e.g. right after switching to a shorter
-    // album); clamp so sublist can never reach past the queue.
-    if (currentIndex >= allItems.length) currentIndex = allItems.length - 1;
-    final previous = currentIndex > 0
-        ? allItems.sublist(0, currentIndex).reversed.toList()
-        : <MediaItem>[];
-    final upNext = currentIndex >= 0 && currentIndex + 1 < allItems.length
-        ? allItems.sublist(currentIndex + 1)
-        : <MediaItem>[];
-    return (previous: previous, upNext: upNext);
-  }
-
-  PlayerQueueEntry _toEntry(MediaItem item) => PlayerQueueEntry(
+  PlayerQueueEntry entryFor(MediaItem item) => PlayerQueueEntry(
         id: item.id,
         title: item.title,
         subtitle: item.artist,
         artUrl: item.artUri?.toString(),
       );
-
-  @override
-  List<PlayerQueueEntry> get previous =>
-      _sliceQueue().previous.map(_toEntry).toList();
-
-  @override
-  List<PlayerQueueEntry> get upNext =>
-      _sliceQueue().upNext.map(_toEntry).toList();
 
   @override
   bool get supportsRepeat => true;
@@ -340,48 +333,9 @@ class _LocalPlayerController extends PlayerViewController {
 
   @override
   void tapPrevious(int index) =>
-      _handler.skipToQueueItem(_currentIndex - 1 - index);
+      _handler.skipToQueueItem(currentIndex - 1 - index);
 
   @override
   void tapUpNext(int index) =>
-      _handler.skipToQueueItem(_currentIndex + 1 + index);
-
-  @override
-  Future<void> moveUpNext(int oldIndex, int newIndex) async {
-    if (newIndex > oldIndex) newIndex -= 1;
-    if (newIndex == oldIndex) return;
-
-    final reordered = List<MediaItem>.of(_sliceQueue().upNext);
-    final moved = reordered.removeAt(oldIndex);
-    reordered.insert(newIndex, moved);
-
-    final full = _allItems;
-    final currentIndex = _currentIndex;
-    final head =
-        currentIndex >= 0 ? full.sublist(0, currentIndex + 1) : <MediaItem>[];
-    _localQueue = [...head, ...reordered];
-    notifyListeners();
-
-    final movedId = MediaItemId.byStringId(moved.id).id;
-    // Moving to the head of "up next" means directly after the current item.
-    final afterId = newIndex == 0
-        ? _handler.playQueue?.currentItemId
-        : MediaItemId.byStringId(reordered[newIndex - 1].id).id;
-    await _handler.moveQueueItem(movedId, afterId);
-    if (_disposed) return;
-    _localQueue = null;
-    notifyListeners();
-  }
-
-  @override
-  Future<void> removeEntry(PlayerQueueEntry entry) async {
-    final id = MediaItemId.byStringId(entry.id).id;
-    _localQueue = List<MediaItem>.of(_allItems)
-      ..removeWhere((e) => e.id == entry.id);
-    notifyListeners();
-    await _handler.removeFromQueue(id);
-    if (_disposed) return;
-    _localQueue = null;
-    notifyListeners();
-  }
+      _handler.skipToQueueItem(currentIndex + 1 + index);
 }

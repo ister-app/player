@@ -18,12 +18,12 @@ import '../l10n/app_localizations.dart';
 import '../utils/AppMessenger.dart';
 import '../utils/ClientManager.dart';
 import '../utils/DeviceService.dart';
+import '../utils/ImageUtil.dart';
 import '../utils/LoggerService.dart';
 import '../utils/MediaPlayerHandler.dart';
 import '../utils/PermissionsService.dart';
 import '../utils/ResilientSubscription.dart';
 import '../utils/StreamTokenService.dart';
-import '../utils/WellKnownService.dart';
 
 /// Live list of active playback sessions on the server, seeded from
 /// serverActivitySnapshot and kept current via the nowPlaying subscription
@@ -153,16 +153,6 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
     return pos < 0 ? 0 : pos;
   }
 
-  String? _artworkUrl(Fragment$fragmentPlaybackSession session) {
-    final imageId = session.artworkImageId;
-    if (imageId == null) return null;
-    final serverUrl = WellKnownService.getCached(widget.serverName)?.serverUrl;
-    if (serverUrl == null) return null;
-    final token = StreamTokenService.getToken(widget.serverName);
-    final base = '$serverUrl/images/$imageId/download';
-    return token != null ? '$base?token=$token' : base;
-  }
-
   IconData _mediaIcon(Enum$MediaType? type) {
     switch (type) {
       case Enum$MediaType.EPISODE:
@@ -256,7 +246,8 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
             _SessionCard(
               session: session,
               positionMs: _livePositionMs(session),
-              artworkUrl: _artworkUrl(session),
+              artworkUrl:
+                  ImageUtil.buildUrlById(widget.serverName, session.artworkImageId),
               mediaIcon: _mediaIcon(session.mediaType),
               formatProgress: _formatProgress,
               // Party mode: open the remote control overlay for this session — but only when the
