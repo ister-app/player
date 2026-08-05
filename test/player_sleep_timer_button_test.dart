@@ -106,6 +106,21 @@ void main() {
     await tester.pump();
   });
 
+  testWidgets('the play button sits in the same place with and without the '
+      'outer buttons', (tester) async {
+    // The remote control supports neither repeat nor a sleep timer; the row
+    // must still lay out identically to the local player's.
+    await tester.pumpWidget(_app(_FakeController(sleepTimer: true)));
+    await tester.pumpAndSettle();
+    final withButtons = tester.getCenter(find.byIcon(Icons.play_arrow));
+
+    await tester.pumpWidget(_app(_FakeController(sleepTimer: false)));
+    await tester.pumpAndSettle();
+    final withoutButtons = tester.getCenter(find.byIcon(Icons.play_arrow));
+
+    expect(withoutButtons.dx, moreOrLessEquals(withButtons.dx, epsilon: 0.5));
+  });
+
   testWidgets('cancelling from the sheet disarms the timer', (tester) async {
     SleepTimerService.instance.start(const Duration(minutes: 30));
     await tester.pumpWidget(_app(_FakeController()));

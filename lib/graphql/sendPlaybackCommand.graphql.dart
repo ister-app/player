@@ -7,12 +7,14 @@ class Variables$Mutation$sendPlaybackCommand {
     required Enum$PlaybackCommandType command,
     int? positionInMilliseconds,
     String? playQueueItemId,
+    Enum$RepeatMode? repeatMode,
   }) => Variables$Mutation$sendPlaybackCommand._({
     r'playQueueId': playQueueId,
     r'command': command,
     if (positionInMilliseconds != null)
       r'positionInMilliseconds': positionInMilliseconds,
     if (playQueueItemId != null) r'playQueueItemId': playQueueItemId,
+    if (repeatMode != null) r'repeatMode': repeatMode,
   });
 
   Variables$Mutation$sendPlaybackCommand._(this._$data);
@@ -36,6 +38,12 @@ class Variables$Mutation$sendPlaybackCommand {
       final l$playQueueItemId = data['playQueueItemId'];
       result$data['playQueueItemId'] = (l$playQueueItemId as String?);
     }
+    if (data.containsKey('repeatMode')) {
+      final l$repeatMode = data['repeatMode'];
+      result$data['repeatMode'] = l$repeatMode == null
+          ? null
+          : fromJson$Enum$RepeatMode((l$repeatMode as String));
+    }
     return Variables$Mutation$sendPlaybackCommand._(result$data);
   }
 
@@ -50,6 +58,8 @@ class Variables$Mutation$sendPlaybackCommand {
 
   String? get playQueueItemId => (_$data['playQueueItemId'] as String?);
 
+  Enum$RepeatMode? get repeatMode => (_$data['repeatMode'] as Enum$RepeatMode?);
+
   Map<String, dynamic> toJson() {
     final result$data = <String, dynamic>{};
     final l$playQueueId = playQueueId;
@@ -63,6 +73,12 @@ class Variables$Mutation$sendPlaybackCommand {
     if (_$data.containsKey('playQueueItemId')) {
       final l$playQueueItemId = playQueueItemId;
       result$data['playQueueItemId'] = l$playQueueItemId;
+    }
+    if (_$data.containsKey('repeatMode')) {
+      final l$repeatMode = repeatMode;
+      result$data['repeatMode'] = l$repeatMode == null
+          ? null
+          : toJson$Enum$RepeatMode(l$repeatMode);
     }
     return result$data;
   }
@@ -110,6 +126,15 @@ class Variables$Mutation$sendPlaybackCommand {
     if (l$playQueueItemId != lOther$playQueueItemId) {
       return false;
     }
+    final l$repeatMode = repeatMode;
+    final lOther$repeatMode = other.repeatMode;
+    if (_$data.containsKey('repeatMode') !=
+        other._$data.containsKey('repeatMode')) {
+      return false;
+    }
+    if (l$repeatMode != lOther$repeatMode) {
+      return false;
+    }
     return true;
   }
 
@@ -119,6 +144,7 @@ class Variables$Mutation$sendPlaybackCommand {
     final l$command = command;
     final l$positionInMilliseconds = positionInMilliseconds;
     final l$playQueueItemId = playQueueItemId;
+    final l$repeatMode = repeatMode;
     return Object.hashAll([
       l$playQueueId,
       l$command,
@@ -126,6 +152,7 @@ class Variables$Mutation$sendPlaybackCommand {
           ? l$positionInMilliseconds
           : const {},
       _$data.containsKey('playQueueItemId') ? l$playQueueItemId : const {},
+      _$data.containsKey('repeatMode') ? l$repeatMode : const {},
     ]);
   }
 }
@@ -144,6 +171,7 @@ abstract class CopyWith$Variables$Mutation$sendPlaybackCommand<TRes> {
     Enum$PlaybackCommandType? command,
     int? positionInMilliseconds,
     String? playQueueItemId,
+    Enum$RepeatMode? repeatMode,
   });
 }
 
@@ -165,6 +193,7 @@ class _CopyWithImpl$Variables$Mutation$sendPlaybackCommand<TRes>
     Object? command = _undefined,
     Object? positionInMilliseconds = _undefined,
     Object? playQueueItemId = _undefined,
+    Object? repeatMode = _undefined,
   }) => _then(
     Variables$Mutation$sendPlaybackCommand._({
       ..._instance._$data,
@@ -176,6 +205,8 @@ class _CopyWithImpl$Variables$Mutation$sendPlaybackCommand<TRes>
         'positionInMilliseconds': (positionInMilliseconds as int?),
       if (playQueueItemId != _undefined)
         'playQueueItemId': (playQueueItemId as String?),
+      if (repeatMode != _undefined)
+        'repeatMode': (repeatMode as Enum$RepeatMode?),
     }),
   );
 }
@@ -191,6 +222,7 @@ class _CopyWithStubImpl$Variables$Mutation$sendPlaybackCommand<TRes>
     Enum$PlaybackCommandType? command,
     int? positionInMilliseconds,
     String? playQueueItemId,
+    Enum$RepeatMode? repeatMode,
   }) => _res;
 }
 
@@ -340,6 +372,15 @@ const documentNodeMutationsendPlaybackCommand = DocumentNode(
           defaultValue: DefaultValueNode(value: null),
           directives: [],
         ),
+        VariableDefinitionNode(
+          variable: VariableNode(name: NameNode(value: 'repeatMode')),
+          type: NamedTypeNode(
+            name: NameNode(value: 'RepeatMode'),
+            isNonNull: false,
+          ),
+          defaultValue: DefaultValueNode(value: null),
+          directives: [],
+        ),
       ],
       directives: [],
       selectionSet: SelectionSetNode(
@@ -365,6 +406,10 @@ const documentNodeMutationsendPlaybackCommand = DocumentNode(
               ArgumentNode(
                 name: NameNode(value: 'playQueueItemId'),
                 value: VariableNode(name: NameNode(value: 'playQueueItemId')),
+              ),
+              ArgumentNode(
+                name: NameNode(value: 'repeatMode'),
+                value: VariableNode(name: NameNode(value: 'repeatMode')),
               ),
             ],
             directives: [],

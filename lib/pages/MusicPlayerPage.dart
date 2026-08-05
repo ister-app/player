@@ -127,6 +127,9 @@ class _LocalPlayerController extends QueuePlayerViewController<MediaItem> {
 
   // Local playback = the owner watching their own session, so per-session sharing is editable here.
   @override
+  bool get isLocalSession => true;
+
+  @override
   String? get sessionSharingQueueId => _handler.playQueue?.id;
 
   @override

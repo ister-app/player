@@ -319,6 +319,7 @@ class PlayQueueService {
     Enum$PlaybackCommandType command, {
     Duration? position,
     String? playQueueItemId,
+    Enum$RepeatMode? repeatMode,
   }) async {
     final QueryResult result = await graphQLClient.mutate(MutationOptions(
         document: documentNodeMutationsendPlaybackCommand,
@@ -327,6 +328,7 @@ class PlayQueueService {
           command: command,
           positionInMilliseconds: position?.inMilliseconds,
           playQueueItemId: playQueueItemId,
+          repeatMode: repeatMode,
         ).toJson()));
 
     if (result.hasException) {
@@ -541,6 +543,8 @@ class PlayQueueService {
   /// [anchorPositionMs]/[anchorServerTimeMs]: optional tight-sync timeline
   /// anchor ("this position at that server-clock instant"); followers
   /// extrapolate the leader position from it locally.
+  /// [repeatMode] is relayed onto the session so remote controls show the same
+  /// repeat state as this device.
   Future<Fragment$fragmentPlayQueue?> updateProgress(
       GraphQLClient graphQLClient,
       String playQueueId,
@@ -550,7 +554,8 @@ class PlayQueueService {
       Enum$PlayState? playState,
       String? deviceId,
       int? anchorPositionMs,
-      double? anchorServerTimeMs}) async {
+      double? anchorServerTimeMs,
+      Enum$RepeatMode? repeatMode}) async {
     final MutationOptions options = MutationOptions(
         document: documentNodeMutationupdatePlayQueue,
         variables: Variables$Mutation$updatePlayQueue(
@@ -562,6 +567,7 @@ class PlayQueueService {
           deviceId: deviceId,
           anchorPositionMs: anchorPositionMs,
           anchorServerTimeMs: anchorServerTimeMs,
+          repeatMode: repeatMode,
         ).toJson());
     final QueryResult result = await graphQLClient.mutate(options);
 

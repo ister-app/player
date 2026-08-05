@@ -5,6 +5,7 @@ subscription playbackCommands($playQueueId: ID!) {
         positionInMilliseconds
         playQueueItemId
         targetDeviceId
+        repeatMode
         timestamp
     }
 }

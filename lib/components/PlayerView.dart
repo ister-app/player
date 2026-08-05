@@ -108,9 +108,20 @@ abstract class PlayerViewController extends ChangeNotifier {
   /// [accent] to match the other player controls.
   Widget? buildRating(BuildContext context, Color accent) => null;
 
-  /// When non-null, the owner is watching their own session and may edit its per-session
-  /// remote-control sharing; the view then shows a "share this session" action. Null for a remote
-  /// controller (you cannot change someone else's session's sharing).
+  /// Whether this view drives playback on *this* device. Only then do the
+  /// owner-only header actions (share, listeners, hand off to a device) apply:
+  /// you cannot reshare, inspect or move someone else's session.
+  bool get isLocalSession => false;
+
+  /// Optional line next to the dismiss chevron (e.g. "user · device").
+  String? get headerTitle => null;
+
+  /// Optional banner above the artwork (live feed broken, session ended,
+  /// listening along). Rebuilt whenever the controller notifies.
+  Widget? buildBanner(BuildContext context) => null;
+
+  /// The session's play queue, when the view may edit its per-session
+  /// remote-control sharing — that is, when the caller owns it.
   String? get sessionSharingQueueId => null;
 
   /// Server that owns the session referenced by [sessionSharingQueueId].
@@ -153,8 +164,6 @@ class PlayerView extends StatefulWidget {
     required this.controller,
     required this.onDismissed,
     this.initialSlideValue = 0.0,
-    this.headerTitle,
-    this.bannerBuilder,
   });
 
   final PlayerViewController controller;
@@ -164,13 +173,6 @@ class PlayerView extends StatefulWidget {
 
   /// Starting value of the slide-up animation (mini-player drag hand-off).
   final double initialSlideValue;
-
-  /// Optional line next to the dismiss chevron (e.g. "user · device").
-  final String? headerTitle;
-
-  /// Optional banners (live-feed broken, session ended) rendered above the
-  /// artwork; evaluated inside the controller listener so they stay current.
-  final WidgetBuilder? bannerBuilder;
 
   /// Dismiss handler of the top-most open [PlayerView], for the root router
   /// delegate: the back button should play the slide-down animation instead of
@@ -503,7 +505,16 @@ class _PlayerViewState extends State<PlayerView>
 
   Widget _buildHeader() {
     final loc = AppLocalizations.of(context)!;
-    final sessionQueueId = widget.controller.sessionSharingQueueId;
+    final controller = widget.controller;
+    final headerTitle = controller.headerTitle;
+    // Session actions are owner-only and act on this device's own playback, so
+    // they are shown for the local session only — and not while this device is
+    // merely following someone else's queue.
+    final sessionQueueId = controller.isLocalSession &&
+            !MediaPlayerHandler.instance.followMode
+        ? controller.sessionSharingQueueId
+        : null;
+    final sessionServerName = controller.sessionSharingServerName;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
@@ -513,9 +524,9 @@ class _PlayerViewState extends State<PlayerView>
             onPressed: dismiss,
           ),
           Expanded(
-            child: widget.headerTitle != null
+            child: headerTitle != null
                 ? Text(
-                    widget.headerTitle!,
+                    headerTitle,
                     style: const TextStyle(color: Colors.white70, fontSize: 14),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -528,23 +539,17 @@ class _PlayerViewState extends State<PlayerView>
               tooltip: loc.shareThisSession,
               onPressed: () => _openSessionSharing(sessionQueueId),
             ),
-          if (sessionQueueId != null &&
-              widget.controller.sessionSharingServerName != null &&
-              !MediaPlayerHandler.instance.followMode)
+          if (sessionQueueId != null && sessionServerName != null)
             IconButton(
               icon: const Icon(Icons.groups, color: Colors.white70),
               tooltip: loc.followersSheetTitle,
               onPressed: () => showSessionListenersSheet(
                 context,
-                serverName: widget.controller.sessionSharingServerName!,
+                serverName: sessionServerName,
                 playQueueId: sessionQueueId,
               ),
             ),
-          // Device actions only make sense for the local session (the remote
-          // controller and follow mode have no queue of their own to hand off).
-          if (sessionQueueId != null &&
-              widget.controller.sessionSharingServerName != null &&
-              !MediaPlayerHandler.instance.followMode)
+          if (sessionQueueId != null && sessionServerName != null)
             PopupMenuButton<String>(
               icon: const Icon(Icons.devices, color: Colors.white70),
               onSelected: (choice) {
@@ -629,7 +634,7 @@ class _PlayerViewState extends State<PlayerView>
   }
 
   Widget? _buildBanner() {
-    final banner = widget.bannerBuilder?.call(context);
+    final banner = widget.controller.buildBanner(context);
     if (banner == null) return null;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
@@ -1109,10 +1114,11 @@ class _Controls extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
+            // The outer slots are always reserved, whether or not their button
+            // exists, so the transport row looks the same in every player.
             if (controller.supportsRepeat)
               _RepeatButton(controller: controller, accent: accent)
-            // Balances the sleep-timer button so the play button stays centred.
-            else if (controller.supportsSleepTimer)
+            else
               const SizedBox(width: 48),
             IconButton(
               icon: Icon(Icons.skip_previous,
@@ -1146,9 +1152,7 @@ class _Controls extends StatelessWidget {
             ),
             if (controller.supportsSleepTimer)
               _SleepTimerButton(accent: accent)
-            // Balances the row so the play button stays centred now that a
-            // repeat toggle sits on the far left.
-            else if (controller.supportsRepeat)
+            else
               const SizedBox(width: 48),
           ],
         ),

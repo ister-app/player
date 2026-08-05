@@ -1241,7 +1241,28 @@ class MediaPlayerHandler extends BaseAudioHandler
   Future<void> setRepeatMode(AudioServiceRepeatMode repeatMode) async {
     _repeatMode = repeatMode;
     playbackState.add(playbackState.value.copyWith(repeatMode: repeatMode));
+    // The mode rides along on the next heartbeat, but a remote control would
+    // then show the old state for up to ~10s; a forced sync closes that gap.
+    unawaited(_syncProgress(_player.state.position, force: true));
   }
+
+  /// The wire form of an audio_service repeat mode; the session relays it so
+  /// remote controls can show and toggle the same state.
+  static Enum$RepeatMode repeatModeToApi(AudioServiceRepeatMode mode) =>
+      switch (mode) {
+        AudioServiceRepeatMode.all => Enum$RepeatMode.ALL,
+        AudioServiceRepeatMode.one => Enum$RepeatMode.ONE,
+        // audio_service also knows "group", which this app never sets.
+        _ => Enum$RepeatMode.NONE,
+      };
+
+  static AudioServiceRepeatMode repeatModeFromApi(Enum$RepeatMode mode) =>
+      switch (mode) {
+        Enum$RepeatMode.ALL => AudioServiceRepeatMode.all,
+        Enum$RepeatMode.ONE => AudioServiceRepeatMode.one,
+        Enum$RepeatMode.NONE || Enum$RepeatMode.$unknown =>
+          AudioServiceRepeatMode.none,
+      };
 
   /// Cycles repeat none → all → one → none, for a single UI toggle button.
   Future<void> cycleRepeatMode() async {
@@ -2193,7 +2214,8 @@ class MediaPlayerHandler extends BaseAudioHandler
                   : Enum$PlayState.PAUSED),
           deviceId: await DevicePreferences.getDeviceId(),
           anchorPositionMs: anchor?.positionMs,
-          anchorServerTimeMs: anchor?.serverTimeMs);
+          anchorServerTimeMs: anchor?.serverTimeMs,
+          repeatMode: repeatModeToApi(_repeatMode));
     });
     _progressChain = send.then((_) {}, onError: (_) {});
     return send;
@@ -2418,6 +2440,9 @@ class MediaPlayerHandler extends BaseAudioHandler
         if (itemId != null) await _skipToItemId(itemId);
       case Enum$PlaybackCommandType.QUEUE_CHANGED:
         await _reloadPlayQueueFromServer();
+      case Enum$PlaybackCommandType.SET_REPEAT:
+        final mode = command.repeatMode;
+        if (mode != null) await setRepeatMode(repeatModeFromApi(mode));
       // Handled before this switch; the owner's kick is not a transport command.
       case Enum$PlaybackCommandType.STOP_FOLLOW:
       case Enum$PlaybackCommandType.$unknown:
@@ -2466,6 +2491,7 @@ class MediaPlayerHandler extends BaseAudioHandler
                     const Duration(seconds: 3)
             ? null
             : loc.remoteQueueChanged;
+      case Enum$PlaybackCommandType.SET_REPEAT:
       case Enum$PlaybackCommandType.STOP_FOLLOW:
       case Enum$PlaybackCommandType.$unknown:
         message = null;

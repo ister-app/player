@@ -1149,6 +1149,7 @@ class Fragment$fragmentPlaybackSession {
     this.deviceName,
     this.anchorPositionMs,
     this.anchorServerTimeMs,
+    this.repeatMode,
     this.$__typename = 'PlaybackSession',
   });
 
@@ -1172,6 +1173,7 @@ class Fragment$fragmentPlaybackSession {
     final l$deviceName = json['deviceName'];
     final l$anchorPositionMs = json['anchorPositionMs'];
     final l$anchorServerTimeMs = json['anchorServerTimeMs'];
+    final l$repeatMode = json['repeatMode'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentPlaybackSession(
       playQueueId: (l$playQueueId as String),
@@ -1195,6 +1197,9 @@ class Fragment$fragmentPlaybackSession {
       deviceName: (l$deviceName as String?),
       anchorPositionMs: (l$anchorPositionMs as int?),
       anchorServerTimeMs: (l$anchorServerTimeMs as num?)?.toDouble(),
+      repeatMode: l$repeatMode == null
+          ? null
+          : fromJson$Enum$RepeatMode((l$repeatMode as String)),
       $__typename: (l$$__typename as String),
     );
   }
@@ -1236,6 +1241,8 @@ class Fragment$fragmentPlaybackSession {
   final int? anchorPositionMs;
 
   final double? anchorServerTimeMs;
+
+  final Enum$RepeatMode? repeatMode;
 
   final String $__typename;
 
@@ -1281,6 +1288,10 @@ class Fragment$fragmentPlaybackSession {
     _resultData['anchorPositionMs'] = l$anchorPositionMs;
     final l$anchorServerTimeMs = anchorServerTimeMs;
     _resultData['anchorServerTimeMs'] = l$anchorServerTimeMs;
+    final l$repeatMode = repeatMode;
+    _resultData['repeatMode'] = l$repeatMode == null
+        ? null
+        : toJson$Enum$RepeatMode(l$repeatMode);
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -1307,6 +1318,7 @@ class Fragment$fragmentPlaybackSession {
     final l$deviceName = deviceName;
     final l$anchorPositionMs = anchorPositionMs;
     final l$anchorServerTimeMs = anchorServerTimeMs;
+    final l$repeatMode = repeatMode;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$playQueueId,
@@ -1328,6 +1340,7 @@ class Fragment$fragmentPlaybackSession {
       l$deviceName,
       l$anchorPositionMs,
       l$anchorServerTimeMs,
+      l$repeatMode,
       l$$__typename,
     ]);
   }
@@ -1436,6 +1449,11 @@ class Fragment$fragmentPlaybackSession {
     if (l$anchorServerTimeMs != lOther$anchorServerTimeMs) {
       return false;
     }
+    final l$repeatMode = repeatMode;
+    final lOther$repeatMode = other.repeatMode;
+    if (l$repeatMode != lOther$repeatMode) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -1480,6 +1498,7 @@ abstract class CopyWith$Fragment$fragmentPlaybackSession<TRes> {
     String? deviceName,
     int? anchorPositionMs,
     double? anchorServerTimeMs,
+    Enum$RepeatMode? repeatMode,
     String? $__typename,
   });
 }
@@ -1514,6 +1533,7 @@ class _CopyWithImpl$Fragment$fragmentPlaybackSession<TRes>
     Object? deviceName = _undefined,
     Object? anchorPositionMs = _undefined,
     Object? anchorServerTimeMs = _undefined,
+    Object? repeatMode = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentPlaybackSession(
@@ -1571,6 +1591,9 @@ class _CopyWithImpl$Fragment$fragmentPlaybackSession<TRes>
       anchorServerTimeMs: anchorServerTimeMs == _undefined
           ? _instance.anchorServerTimeMs
           : (anchorServerTimeMs as double?),
+      repeatMode: repeatMode == _undefined
+          ? _instance.repeatMode
+          : (repeatMode as Enum$RepeatMode?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -1604,6 +1627,7 @@ class _CopyWithStubImpl$Fragment$fragmentPlaybackSession<TRes>
     String? deviceName,
     int? anchorPositionMs,
     double? anchorServerTimeMs,
+    Enum$RepeatMode? repeatMode,
     String? $__typename,
   }) => _res;
 }
@@ -1747,6 +1771,13 @@ const fragmentDefinitionfragmentPlaybackSession = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'anchorServerTimeMs'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'repeatMode'),
         alias: null,
         arguments: [],
         directives: [],

@@ -19,6 +19,7 @@ class Variables$Mutation$updatePlayQueue {
     String? deviceId,
     int? anchorPositionMs,
     double? anchorServerTimeMs,
+    Enum$RepeatMode? repeatMode,
   }) => Variables$Mutation$updatePlayQueue._({
     r'id': id,
     r'playQueueItemId': playQueueItemId,
@@ -28,6 +29,7 @@ class Variables$Mutation$updatePlayQueue {
     if (deviceId != null) r'deviceId': deviceId,
     if (anchorPositionMs != null) r'anchorPositionMs': anchorPositionMs,
     if (anchorServerTimeMs != null) r'anchorServerTimeMs': anchorServerTimeMs,
+    if (repeatMode != null) r'repeatMode': repeatMode,
   });
 
   Variables$Mutation$updatePlayQueue._(this._$data);
@@ -69,6 +71,12 @@ class Variables$Mutation$updatePlayQueue {
       result$data['anchorServerTimeMs'] = (l$anchorServerTimeMs as num?)
           ?.toDouble();
     }
+    if (data.containsKey('repeatMode')) {
+      final l$repeatMode = data['repeatMode'];
+      result$data['repeatMode'] = l$repeatMode == null
+          ? null
+          : fromJson$Enum$RepeatMode((l$repeatMode as String));
+    }
     return Variables$Mutation$updatePlayQueue._(result$data);
   }
 
@@ -90,6 +98,8 @@ class Variables$Mutation$updatePlayQueue {
   int? get anchorPositionMs => (_$data['anchorPositionMs'] as int?);
 
   double? get anchorServerTimeMs => (_$data['anchorServerTimeMs'] as double?);
+
+  Enum$RepeatMode? get repeatMode => (_$data['repeatMode'] as Enum$RepeatMode?);
 
   Map<String, dynamic> toJson() {
     final result$data = <String, dynamic>{};
@@ -120,6 +130,12 @@ class Variables$Mutation$updatePlayQueue {
     if (_$data.containsKey('anchorServerTimeMs')) {
       final l$anchorServerTimeMs = anchorServerTimeMs;
       result$data['anchorServerTimeMs'] = l$anchorServerTimeMs;
+    }
+    if (_$data.containsKey('repeatMode')) {
+      final l$repeatMode = repeatMode;
+      result$data['repeatMode'] = l$repeatMode == null
+          ? null
+          : toJson$Enum$RepeatMode(l$repeatMode);
     }
     return result$data;
   }
@@ -198,6 +214,15 @@ class Variables$Mutation$updatePlayQueue {
     if (l$anchorServerTimeMs != lOther$anchorServerTimeMs) {
       return false;
     }
+    final l$repeatMode = repeatMode;
+    final lOther$repeatMode = other.repeatMode;
+    if (_$data.containsKey('repeatMode') !=
+        other._$data.containsKey('repeatMode')) {
+      return false;
+    }
+    if (l$repeatMode != lOther$repeatMode) {
+      return false;
+    }
     return true;
   }
 
@@ -211,6 +236,7 @@ class Variables$Mutation$updatePlayQueue {
     final l$deviceId = deviceId;
     final l$anchorPositionMs = anchorPositionMs;
     final l$anchorServerTimeMs = anchorServerTimeMs;
+    final l$repeatMode = repeatMode;
     return Object.hashAll([
       l$id,
       l$playQueueItemId,
@@ -222,6 +248,7 @@ class Variables$Mutation$updatePlayQueue {
       _$data.containsKey('anchorServerTimeMs')
           ? l$anchorServerTimeMs
           : const {},
+      _$data.containsKey('repeatMode') ? l$repeatMode : const {},
     ]);
   }
 }
@@ -244,6 +271,7 @@ abstract class CopyWith$Variables$Mutation$updatePlayQueue<TRes> {
     String? deviceId,
     int? anchorPositionMs,
     double? anchorServerTimeMs,
+    Enum$RepeatMode? repeatMode,
   });
 }
 
@@ -266,6 +294,7 @@ class _CopyWithImpl$Variables$Mutation$updatePlayQueue<TRes>
     Object? deviceId = _undefined,
     Object? anchorPositionMs = _undefined,
     Object? anchorServerTimeMs = _undefined,
+    Object? repeatMode = _undefined,
   }) => _then(
     Variables$Mutation$updatePlayQueue._({
       ..._instance._$data,
@@ -283,6 +312,8 @@ class _CopyWithImpl$Variables$Mutation$updatePlayQueue<TRes>
         'anchorPositionMs': (anchorPositionMs as int?),
       if (anchorServerTimeMs != _undefined)
         'anchorServerTimeMs': (anchorServerTimeMs as double?),
+      if (repeatMode != _undefined)
+        'repeatMode': (repeatMode as Enum$RepeatMode?),
     }),
   );
 }
@@ -302,6 +333,7 @@ class _CopyWithStubImpl$Variables$Mutation$updatePlayQueue<TRes>
     String? deviceId,
     int? anchorPositionMs,
     double? anchorServerTimeMs,
+    Enum$RepeatMode? repeatMode,
   }) => _res;
 }
 
@@ -496,6 +528,15 @@ const documentNodeMutationupdatePlayQueue = DocumentNode(
           defaultValue: DefaultValueNode(value: null),
           directives: [],
         ),
+        VariableDefinitionNode(
+          variable: VariableNode(name: NameNode(value: 'repeatMode')),
+          type: NamedTypeNode(
+            name: NameNode(value: 'RepeatMode'),
+            isNonNull: false,
+          ),
+          defaultValue: DefaultValueNode(value: null),
+          directives: [],
+        ),
       ],
       directives: [],
       selectionSet: SelectionSetNode(
@@ -539,6 +580,10 @@ const documentNodeMutationupdatePlayQueue = DocumentNode(
                 value: VariableNode(
                   name: NameNode(value: 'anchorServerTimeMs'),
                 ),
+              ),
+              ArgumentNode(
+                name: NameNode(value: 'repeatMode'),
+                value: VariableNode(name: NameNode(value: 'repeatMode')),
               ),
             ],
             directives: [],

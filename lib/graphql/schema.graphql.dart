@@ -2114,6 +2114,7 @@ enum Enum$PlaybackCommandType {
   SKIP_TO_ITEM,
   QUEUE_CHANGED,
   STOP_FOLLOW,
+  SET_REPEAT,
   $unknown;
 
   factory Enum$PlaybackCommandType.fromJson(String value) =>
@@ -2140,6 +2141,8 @@ String toJson$Enum$PlaybackCommandType(Enum$PlaybackCommandType e) {
       return r'QUEUE_CHANGED';
     case Enum$PlaybackCommandType.STOP_FOLLOW:
       return r'STOP_FOLLOW';
+    case Enum$PlaybackCommandType.SET_REPEAT:
+      return r'SET_REPEAT';
     case Enum$PlaybackCommandType.$unknown:
       return r'$unknown';
   }
@@ -2163,8 +2166,48 @@ Enum$PlaybackCommandType fromJson$Enum$PlaybackCommandType(String value) {
       return Enum$PlaybackCommandType.QUEUE_CHANGED;
     case r'STOP_FOLLOW':
       return Enum$PlaybackCommandType.STOP_FOLLOW;
+    case r'SET_REPEAT':
+      return Enum$PlaybackCommandType.SET_REPEAT;
     default:
       return Enum$PlaybackCommandType.$unknown;
+  }
+}
+
+enum Enum$RepeatMode {
+  NONE,
+  ALL,
+  ONE,
+  $unknown;
+
+  factory Enum$RepeatMode.fromJson(String value) =>
+      fromJson$Enum$RepeatMode(value);
+
+  String toJson() => toJson$Enum$RepeatMode(this);
+}
+
+String toJson$Enum$RepeatMode(Enum$RepeatMode e) {
+  switch (e) {
+    case Enum$RepeatMode.NONE:
+      return r'NONE';
+    case Enum$RepeatMode.ALL:
+      return r'ALL';
+    case Enum$RepeatMode.ONE:
+      return r'ONE';
+    case Enum$RepeatMode.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$RepeatMode fromJson$Enum$RepeatMode(String value) {
+  switch (value) {
+    case r'NONE':
+      return Enum$RepeatMode.NONE;
+    case r'ALL':
+      return Enum$RepeatMode.ALL;
+    case r'ONE':
+      return Enum$RepeatMode.ONE;
+    default:
+      return Enum$RepeatMode.$unknown;
   }
 }
 

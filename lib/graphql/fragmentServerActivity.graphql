@@ -51,4 +51,5 @@ fragment fragmentPlaybackSession on PlaybackSession {
     deviceName
     anchorPositionMs
     anchorServerTimeMs
+    repeatMode
 }

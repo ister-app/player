@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/components/PlayerView.dart';
+import 'package:player/components/RatingStars.dart';
 import 'package:player/components/QueuePlayerViewController.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 import 'package:player/graphql/fragmentServerActivity.graphql.dart';
@@ -12,6 +13,7 @@ import 'package:player/graphql/playbackCommandsSubscription.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 
 import '../components/LiveFeedBanner.dart';
+import '../routes/AppRouter.gr.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/AppMessenger.dart';
 import '../utils/MediaPlayerHandler.dart';
@@ -127,21 +129,7 @@ class _RemoteControlPageState extends State<RemoteControlPage> {
 
         return PlayerView(
           controller: controller,
-          headerTitle: controller.headerTitle,
           onDismissed: () => context.router.pop(),
-          bannerBuilder: (context) => Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (controller.liveFeedBroken) const LiveFeedBanner(),
-              if (controller.sessionEnded)
-                _SessionEndedBanner(text: loc.sessionEnded),
-              if (!controller.sessionEnded)
-                _ListenAlongBanner(
-                  serverName: widget.serverName,
-                  playQueueId: widget.playQueueId,
-                ),
-            ],
-          ),
         );
       },
     );
@@ -395,6 +383,7 @@ class _RemotePlayerController
   static const _overrideWindow = Duration(seconds: 6);
   int? _overrideProgressMs;
   bool? _overridePaused;
+  Enum$RepeatMode? _overrideRepeatMode;
   DateTime? _overrideSetAt;
 
   /// Optimistic queue order held during a reorder/remove so the list doesn't
@@ -405,6 +394,7 @@ class _RemotePlayerController
 
   bool get hasSession => _session != null;
 
+  @override
   String? get headerTitle {
     final session = _session;
     if (session == null) return null;
@@ -413,6 +403,23 @@ class _RemotePlayerController
       session.nodeName,
     ];
     return parts.join(' · ');
+  }
+
+  @override
+  Widget? buildBanner(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (liveFeedBroken) const LiveFeedBanner(),
+        if (sessionEnded) _SessionEndedBanner(text: loc.sessionEnded),
+        if (!sessionEnded)
+          _ListenAlongBanner(
+            serverName: serverName,
+            playQueueId: playQueueId,
+          ),
+      ],
+    );
   }
 
   @override
@@ -449,6 +456,8 @@ class _RemotePlayerController
         // The playing client force-syncs the new item right away; the next
         // nowPlaying emission carries it. Only reset the bar optimistically.
         _applyOverride(progressMs: 0);
+      case Enum$PlaybackCommandType.SET_REPEAT:
+        _applyOverride(repeatMode: command.repeatMode);
       // Aimed at one following device, and changes nothing about the session.
       case Enum$PlaybackCommandType.STOP_FOLLOW:
       case Enum$PlaybackCommandType.$unknown:
@@ -456,9 +465,11 @@ class _RemotePlayerController
     }
   }
 
-  void _applyOverride({int? progressMs, bool? paused}) {
+  void _applyOverride(
+      {int? progressMs, bool? paused, Enum$RepeatMode? repeatMode}) {
     _overrideProgressMs = progressMs ?? positionMs;
     _overridePaused = paused ?? _displayPaused();
+    _overrideRepeatMode = repeatMode ?? _displayRepeatMode();
     _overrideSetAt = DateTime.now();
     _syncTicker();
     positionTicker.notify();
@@ -498,6 +509,7 @@ class _RemotePlayerController
     Enum$PlaybackCommandType command, {
     Duration? position,
     String? playQueueItemId,
+    Enum$RepeatMode? repeatMode,
   }) async {
     final known = await PlayQueueService().sendPlaybackCommand(
       _client,
@@ -505,6 +517,7 @@ class _RemotePlayerController
       command,
       position: position,
       playQueueItemId: playQueueItemId,
+      repeatMode: repeatMode,
     );
     if (_disposed) return;
     if (known == false) {
@@ -642,6 +655,93 @@ class _RemotePlayerController
       subtitle: display.artist,
       artUrl: display.artUrl,
     );
+  }
+
+  /// Rating of the playing track. The play queue carries the track's id and
+  /// current rating, and setRating is not owner-scoped, so a remote controller
+  /// can rate along exactly like the playing device does.
+  @override
+  Widget? buildRating(BuildContext context, Color accent) {
+    final track = _currentItem?.track;
+    if (track == null) return null;
+    return RatingStars(
+      // Re-key per track so switching songs adopts the new rating instead of
+      // keeping the previous track's optimistic value.
+      key: ValueKey('remote_rating_${track.id}'),
+      mediaType: Enum$RatingMediaType.TRACK,
+      mediaId: track.id,
+      rating: track.rating,
+      client: _client,
+      size: 28,
+      showValue: false,
+      color: accent,
+      emptyColor: Colors.white30,
+    );
+  }
+
+  /// Resolve targets from the playing queue item, paired with the session's
+  /// server — the same navigation the local player offers.
+  @override
+  ({String serverName, PageRouteInfo route})? get artistRoute {
+    final item = _currentItem;
+    final personId = item?.track?.artist.id ?? item?.chapter?.author.id;
+    if (personId == null) return null;
+    return (serverName: serverName, route: PersonRoute(personId: personId));
+  }
+
+  @override
+  ({String serverName, PageRouteInfo route})? get albumRoute {
+    final item = _currentItem;
+    final albumId = item?.track?.album.id;
+    if (albumId != null) {
+      return (serverName: serverName, route: AlbumRoute(albumId: albumId));
+    }
+    final bookId = item?.chapter?.book.id;
+    if (bookId != null) {
+      return (serverName: serverName, route: BookRoute(bookId: bookId));
+    }
+    final podcastId = item?.podcastEpisode?.podcast.id;
+    if (podcastId != null) {
+      return (serverName: serverName, route: PodcastRoute(podcastId: podcastId));
+    }
+    return null;
+  }
+
+  /// The session's repeat mode, overridden optimistically right after a change
+  /// so the toggle reacts before the playing device's next heartbeat.
+  Enum$RepeatMode _displayRepeatMode() {
+    if (_overrideActive && _overrideRepeatMode != null) {
+      return _overrideRepeatMode!;
+    }
+    return _session?.repeatMode ?? Enum$RepeatMode.NONE;
+  }
+
+  // The playing client owns the repeat mode and reports it on its heartbeat,
+  // so a controller can show and cycle it just like the local player.
+  @override
+  bool get supportsRepeat => true;
+
+  @override
+  bool get repeatActive => _displayRepeatMode() != Enum$RepeatMode.NONE;
+
+  @override
+  bool get repeatOne => _displayRepeatMode() == Enum$RepeatMode.ONE;
+
+  @override
+  bool get queueWrapsAround => _displayRepeatMode() == Enum$RepeatMode.ALL;
+
+  @override
+  void cycleRepeatMode() {
+    const order = [
+      Enum$RepeatMode.NONE,
+      Enum$RepeatMode.ALL,
+      Enum$RepeatMode.ONE,
+    ];
+    final next =
+        order[(order.indexOf(_displayRepeatMode()) + 1) % order.length];
+    _applyOverride(repeatMode: next);
+    unawaited(_sendCommand(Enum$PlaybackCommandType.SET_REPEAT,
+        repeatMode: next));
   }
 
   @override
