@@ -1,5 +1,49 @@
 # Changelog
 
+## player v1.10.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.10.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(devices): play on, hand off to and listen along on another device ([`0fbe245`](https://github.com/ister-app/player/commit/0fbe245))
+- feat(devices): devices settings page ([`5a68ba7`](https://github.com/ister-app/player/commit/5a68ba7))
+- feat(devices): device registration and command channel ([`d4d6fca`](https://github.com/ister-app/player/commit/d4d6fca))
+- feat(playlist): create a playlist from the add-to-playlist sheet ([`87601bf`](https://github.com/ister-app/player/commit/87601bf))
+- feat(playlist): cover mosaic and artwork rows for every playlist kind ([`4c0a1f1`](https://github.com/ister-app/player/commit/4c0a1f1))
+- feat(playlist): play a smart playlist from the tapped track ([`b0098a0`](https://github.com/ister-app/player/commit/b0098a0))
+- feat(library): save the browse filter as a smart playlist ([`26b054f`](https://github.com/ister-app/player/commit/26b054f))
+- feat(auto): playlists in the Android Auto browse tree ([`414f9d4`](https://github.com/ister-app/player/commit/414f9d4))
+- feat(library): playlists with manual items and smart filters ([`f92c9cf`](https://github.com/ister-app/player/commit/f92c9cf))
+- feat(player): tight audio sync for listen-along (same-room mode) ([`0381f28`](https://github.com/ister-app/player/commit/0381f28))
+- feat(player): listen along with another device's play queue ([`5b2bca0`](https://github.com/ister-app/player/commit/5b2bca0))
+- feat(library): custom filters with saved views and filtered play queues ([`c54a2d6`](https://github.com/ister-app/player/commit/c54a2d6))
+- feat(library): browse kind switcher and grid/list layout toggle ([`7dfa99b`](https://github.com/ister-app/player/commit/7dfa99b))
+
+### Fixes
+
+- fix(ci): pin the chart with widened database probe timeouts ([`027a161`](https://github.com/ister-app/player/commit/027a161))
+- fix(ci): pin server 2.7.1-snapshot for the listen-along tight-sync schema ([`09a4438`](https://github.com/ister-app/player/commit/09a4438))
+- fix(player): stop watchdog and progress sync reverting the previous item during a queue switch ([`c198bc5`](https://github.com/ister-app/player/commit/c198bc5))
+
+### Other
+
+- test(e2e): playlist playback against the kind deployment ([`7c844d9`](https://github.com/ister-app/player/commit/7c844d9))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.10.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.9.0...v1.10.0
+
 ## player v1.9.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
