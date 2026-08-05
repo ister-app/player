@@ -46,6 +46,16 @@ class SessionFollower {
   final DateTime? since;
 }
 
+/// A play-queue change as broadcast to subscribers.
+class PlayQueueChange {
+  const PlayQueueChange(this.queue, {this.optimistic = false});
+
+  final Fragment$fragmentPlayQueue queue;
+
+  /// True for a local change that the server has not confirmed yet.
+  final bool optimistic;
+}
+
 class PlayQueueService {
   PlayQueueService._privateConstructor();
 
@@ -56,8 +66,8 @@ class PlayQueueService {
     return _instance;
   }
 
-  final StreamController<Fragment$fragmentPlayQueue> playQueueChanges =
-      StreamController<Fragment$fragmentPlayQueue>.broadcast();
+  final StreamController<PlayQueueChange> playQueueChanges =
+      StreamController<PlayQueueChange>.broadcast();
 
   Future<Fragment$fragmentPlayQueue?> getOrCreatePlayQueue(
       GraphQLClient graphQLClient,
@@ -579,12 +589,25 @@ class PlayQueueService {
     }
   }
 
-  void playQueueChanged(Fragment$fragmentPlayQueue item) {
-    playQueueChanges.sink.add(item);
+  /// Publishes [item] to the queue-change subscribers. Set [optimistic] for a
+  /// local state change that has not been confirmed by the server yet — those
+  /// emissions are meant for UI that renders the handler's own state, not for
+  /// subscribers that answer by re-querying the server (they would read data
+  /// from before the sync landed).
+  void playQueueChanged(Fragment$fragmentPlayQueue item,
+      {bool optimistic = false}) {
+    playQueueChanges.sink.add(PlayQueueChange(item, optimistic: optimistic));
   }
 
-  Stream<Fragment$fragmentPlayQueue> getPlayQueueChangedStream() {
-    return playQueueChanges.stream;
+  /// Queue changes. Pass `includeOptimistic: false` to only see server-confirmed
+  /// changes — an item switch emits twice (locally first, then after the
+  /// updatePlayQueue round trip), so a server refetch driven by every emission
+  /// runs twice and visibly settles on two different results.
+  Stream<Fragment$fragmentPlayQueue> getPlayQueueChangedStream(
+      {bool includeOptimistic = true}) {
+    return playQueueChanges.stream
+        .where((change) => includeOptimistic || !change.optimistic)
+        .map((change) => change.queue);
   }
 
   static Fragment$fragmentPlayQueue$playQueueItems? getCurrentPlayQueueItem(Fragment$fragmentPlayQueue? playQueue) {

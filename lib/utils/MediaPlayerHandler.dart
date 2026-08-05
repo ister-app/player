@@ -1521,7 +1521,9 @@ class MediaPlayerHandler extends BaseAudioHandler
       _currentMediaType = mediaItemId.isterMediaType;
       mediaItem.add(queue.value[index]);
       if (playQueue != null) {
-        PlayQueueService().playQueueChanged(playQueue!);
+        // Optimistic: the server still has the previous item as current until
+        // the sync below lands, so subscribers that refetch must skip this one.
+        PlayQueueService().playQueueChanged(playQueue!, optimistic: true);
       }
 
       final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay(serverName: mediaItemId.serverName);

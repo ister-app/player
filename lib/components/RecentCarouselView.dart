@@ -54,8 +54,12 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
     super.initState();
     playQueueService = PlayQueueService();
 
-    _playQueueSubscription =
-        playQueueService.getPlayQueueChangedStream().listen((event) {
+    // Server-confirmed changes only: this row answers with a refetch, and the
+    // optimistic emission of an item switch precedes the sync that would make
+    // that refetch return the new order — it would visibly reorder twice.
+    _playQueueSubscription = playQueueService
+        .getPlayQueueChangedStream(includeOptimistic: false)
+        .listen((event) {
       if (refetch != null) {
         refetch!();
       }
