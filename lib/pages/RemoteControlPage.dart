@@ -441,6 +441,8 @@ class _RemotePlayerController extends PlayerViewController {
         // The playing client force-syncs the new item right away; the next
         // nowPlaying emission carries it. Only reset the bar optimistically.
         _applyOverride(progressMs: 0);
+      // Aimed at one following device, and changes nothing about the session.
+      case Enum$PlaybackCommandType.STOP_FOLLOW:
       case Enum$PlaybackCommandType.$unknown:
         break;
     }

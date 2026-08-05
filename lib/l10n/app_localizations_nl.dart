@@ -1151,6 +1151,44 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String get followersSheetTitle => 'Luistert mee';
+
+  @override
+  String get followersNone => 'Er luistert nu niemand mee';
+
+  @override
+  String get followersCouldNotLoad => 'Kon de meeluisteraars niet laden';
+
+  @override
+  String get followerUnknownUser => 'Onbekende gebruiker';
+
+  @override
+  String get followerUnknownDevice => 'Onbekend apparaat';
+
+  @override
+  String get followerRemove => 'Verwijderen';
+
+  @override
+  String get followerRemoveUser => 'Al hun apparaten verwijderen';
+
+  @override
+  String followerRemoveConfirm(String name) {
+    return '$name laten stoppen met meeluisteren?';
+  }
+
+  @override
+  String followerRemoved(String name) {
+    return '$name luistert niet meer mee';
+  }
+
+  @override
+  String get followerRemoveFailed => 'Kon deze meeluisteraar niet verwijderen';
+
+  @override
+  String get followerRemovedByOwner =>
+      'De eigenaar van de sessie heeft je meeluisteren beëindigd';
+
+  @override
   String get stopListeningAlong => 'Stop met meeluisteren';
 
   @override

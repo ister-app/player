@@ -1151,6 +1151,44 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get followersSheetTitle => 'Listening along';
+
+  @override
+  String get followersNone => 'Nobody is listening along right now';
+
+  @override
+  String get followersCouldNotLoad => 'Could not load the listeners';
+
+  @override
+  String get followerUnknownUser => 'Unknown user';
+
+  @override
+  String get followerUnknownDevice => 'Unknown device';
+
+  @override
+  String get followerRemove => 'Remove';
+
+  @override
+  String get followerRemoveUser => 'Remove all their devices';
+
+  @override
+  String followerRemoveConfirm(String name) {
+    return 'Stop $name from listening along?';
+  }
+
+  @override
+  String followerRemoved(String name) {
+    return '$name is no longer listening along';
+  }
+
+  @override
+  String get followerRemoveFailed => 'Could not remove that listener';
+
+  @override
+  String get followerRemovedByOwner =>
+      'The session owner ended your listening along';
+
+  @override
   String get stopListeningAlong => 'Stop listening along';
 
   @override

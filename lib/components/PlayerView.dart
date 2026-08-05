@@ -6,6 +6,7 @@ import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:player/components/DevicePickerSheet.dart';
+import 'package:player/components/SessionListenersSheet.dart';
 import 'package:player/components/SessionSharingSheet.dart';
 import 'package:player/components/SleepTimerSheet.dart';
 import 'package:player/components/TvFocusable.dart';
@@ -526,6 +527,18 @@ class _PlayerViewState extends State<PlayerView>
               icon: const Icon(Icons.ios_share, color: Colors.white70),
               tooltip: loc.shareThisSession,
               onPressed: () => _openSessionSharing(sessionQueueId),
+            ),
+          if (sessionQueueId != null &&
+              widget.controller.sessionSharingServerName != null &&
+              !MediaPlayerHandler.instance.followMode)
+            IconButton(
+              icon: const Icon(Icons.groups, color: Colors.white70),
+              tooltip: loc.followersSheetTitle,
+              onPressed: () => showSessionListenersSheet(
+                context,
+                serverName: widget.controller.sessionSharingServerName!,
+                playQueueId: sessionQueueId,
+              ),
             ),
           // Device actions only make sense for the local session (the remote
           // controller and follow mode have no queue of their own to hand off).

@@ -1,0 +1,3 @@
+mutation removeFollower($playQueueId: ID!, $userId: ID!, $deviceId: String) {
+    removeFollower(playQueueId: $playQueueId, userId: $userId, deviceId: $deviceId)
+}

@@ -2439,6 +2439,12 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   Future<void> _onRemoteCommand(
       Subscription$playbackCommands$playbackCommands command) async {
+    // Not a transport command: the session owner removed one following device.
+    // Everyone on the queue receives it, so it is matched on the install id.
+    if (command.command == Enum$PlaybackCommandType.STOP_FOLLOW) {
+      await _onRemovedByOwner(command.targetDeviceId);
+      return;
+    }
     _showRemoteCommandToast(command.command);
     // In follow mode the bus is the transport: commands (including this
     // device's own echoes) must run the local paths, not be re-sent.
@@ -2470,9 +2476,21 @@ class MediaPlayerHandler extends BaseAudioHandler
         if (itemId != null) await _skipToItemId(itemId);
       case Enum$PlaybackCommandType.QUEUE_CHANGED:
         await _reloadPlayQueueFromServer();
+      // Handled before this switch; the owner's kick is not a transport command.
+      case Enum$PlaybackCommandType.STOP_FOLLOW:
       case Enum$PlaybackCommandType.$unknown:
         break;
     }
+  }
+
+  /// The session owner kicked a device off their session. Only the addressed
+  /// device reacts, and only while it is actually following: leave follow mode
+  /// without telling the server (it already dropped the registration).
+  Future<void> _onRemovedByOwner(String? targetDeviceId) async {
+    if (!_followMode || targetDeviceId == null) return;
+    if (targetDeviceId != await DevicePreferences.getDeviceId()) return;
+    showAppSnackBar(IsterMediaService.loc.followerRemovedByOwner);
+    await stopFollowing(notifyServer: false);
   }
 
   /// Tells the user on this client that someone took the controls. Suppressed
@@ -2506,6 +2524,7 @@ class MediaPlayerHandler extends BaseAudioHandler
                     const Duration(seconds: 3)
             ? null
             : loc.remoteQueueChanged;
+      case Enum$PlaybackCommandType.STOP_FOLLOW:
       case Enum$PlaybackCommandType.$unknown:
         message = null;
     }

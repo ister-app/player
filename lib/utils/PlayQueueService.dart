@@ -9,12 +9,42 @@ import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 import 'package:player/graphql/fragmentWatchStatus.graphql.dart';
 import 'package:player/graphql/getPlayQueue.graphql.dart';
 import 'package:player/graphql/movePlayQueueItem.graphql.dart';
+import 'package:player/graphql/removeFollower.graphql.dart';
 import 'package:player/graphql/removePlayQueueItem.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/graphql/sendPlaybackCommand.graphql.dart';
+import 'package:player/graphql/sessionFollowers.graphql.dart';
 import 'package:player/utils/LoggerService.dart';
+import 'package:player/utils/SchemaCompat.dart';
 
 import '../graphql/updatePlayQueue.graphql.dart';
+
+/// One device listening along with a session, as its owner sees it.
+class SessionFollower {
+  const SessionFollower({
+    required this.userId,
+    required this.userName,
+    required this.deviceId,
+    required this.deviceName,
+    required this.platform,
+    required this.since,
+  });
+
+  final String userId;
+
+  /// Display name of the following user; null on a server that has none for them.
+  final String? userName;
+
+  /// The follower's install id — unique per user, not globally.
+  final String deviceId;
+
+  /// Registered device name; null when that device never registered itself.
+  final String? deviceName;
+  final Enum$DevicePlatform? platform;
+
+  /// When this device started listening along.
+  final DateTime? since;
+}
 
 class PlayQueueService {
   PlayQueueService._privateConstructor();
@@ -331,6 +361,61 @@ class PlayQueueService {
       return null;
     }
     return Mutation$followPlayQueue.fromJson(result.data!).followPlayQueue;
+  }
+
+  /// The devices listening along with [playQueueId], for its owner. Empty for a session the
+  /// caller does not own; null on a server that predates the query, so the UI can hide itself.
+  /// Throws on any other failure.
+  Future<List<SessionFollower>?> sessionFollowers(
+    GraphQLClient graphQLClient,
+    String playQueueId,
+  ) async {
+    final QueryResult result = await graphQLClient.query(QueryOptions(
+      document: documentNodeQuerysessionFollowers,
+      variables:
+          Variables$Query$sessionFollowers(playQueueId: playQueueId).toJson(),
+      fetchPolicy: FetchPolicy.networkOnly,
+    ));
+
+    if (result.hasException || result.data == null) {
+      final exception = result.exception;
+      if (exception != null && isUnknownFieldError(exception)) return null;
+      throw exception ?? Exception('empty sessionFollowers response');
+    }
+    return Query$sessionFollowers.fromJson(result.data!)
+        .sessionFollowers
+        .map((follower) => SessionFollower(
+              userId: follower.userId,
+              userName: follower.userName,
+              deviceId: follower.deviceId,
+              deviceName: follower.deviceName,
+              platform: follower.platform,
+              since: DateTime.tryParse(follower.since),
+            ))
+        .toList();
+  }
+
+  /// Kicks a follower off the caller's own session: [deviceId] null removes every device of
+  /// [userId]. Returns whether anything was following.
+  Future<bool> removeFollower(
+    GraphQLClient graphQLClient, {
+    required String playQueueId,
+    required String userId,
+    String? deviceId,
+  }) async {
+    final QueryResult result = await graphQLClient.mutate(MutationOptions(
+        document: documentNodeMutationremoveFollower,
+        variables: Variables$Mutation$removeFollower(
+          playQueueId: playQueueId,
+          userId: userId,
+          deviceId: deviceId,
+        ).toJson()));
+
+    if (result.hasException || result.data == null) {
+      LoggerService().logger.e(result.exception);
+      return false;
+    }
+    return Mutation$removeFollower.fromJson(result.data!).removeFollower;
   }
 
   /// Appends [mediaId] to the queue, optionally right after

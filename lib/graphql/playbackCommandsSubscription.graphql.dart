@@ -268,6 +268,13 @@ const documentNodeSubscriptionplaybackCommands = DocumentNode(
                   selectionSet: null,
                 ),
                 FieldNode(
+                  name: NameNode(value: 'targetDeviceId'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
                   name: NameNode(value: 'timestamp'),
                   alias: null,
                   arguments: [],
@@ -296,6 +303,7 @@ class Subscription$playbackCommands$playbackCommands {
     required this.command,
     this.positionInMilliseconds,
     this.playQueueItemId,
+    this.targetDeviceId,
     required this.timestamp,
     this.$__typename = 'PlaybackCommand',
   });
@@ -307,6 +315,7 @@ class Subscription$playbackCommands$playbackCommands {
     final l$command = json['command'];
     final l$positionInMilliseconds = json['positionInMilliseconds'];
     final l$playQueueItemId = json['playQueueItemId'];
+    final l$targetDeviceId = json['targetDeviceId'];
     final l$timestamp = json['timestamp'];
     final l$$__typename = json['__typename'];
     return Subscription$playbackCommands$playbackCommands(
@@ -314,6 +323,7 @@ class Subscription$playbackCommands$playbackCommands {
       command: fromJson$Enum$PlaybackCommandType((l$command as String)),
       positionInMilliseconds: (l$positionInMilliseconds as int?),
       playQueueItemId: (l$playQueueItemId as String?),
+      targetDeviceId: (l$targetDeviceId as String?),
       timestamp: (l$timestamp as String),
       $__typename: (l$$__typename as String),
     );
@@ -326,6 +336,8 @@ class Subscription$playbackCommands$playbackCommands {
   final int? positionInMilliseconds;
 
   final String? playQueueItemId;
+
+  final String? targetDeviceId;
 
   final String timestamp;
 
@@ -341,6 +353,8 @@ class Subscription$playbackCommands$playbackCommands {
     _resultData['positionInMilliseconds'] = l$positionInMilliseconds;
     final l$playQueueItemId = playQueueItemId;
     _resultData['playQueueItemId'] = l$playQueueItemId;
+    final l$targetDeviceId = targetDeviceId;
+    _resultData['targetDeviceId'] = l$targetDeviceId;
     final l$timestamp = timestamp;
     _resultData['timestamp'] = l$timestamp;
     final l$$__typename = $__typename;
@@ -354,6 +368,7 @@ class Subscription$playbackCommands$playbackCommands {
     final l$command = command;
     final l$positionInMilliseconds = positionInMilliseconds;
     final l$playQueueItemId = playQueueItemId;
+    final l$targetDeviceId = targetDeviceId;
     final l$timestamp = timestamp;
     final l$$__typename = $__typename;
     return Object.hashAll([
@@ -361,6 +376,7 @@ class Subscription$playbackCommands$playbackCommands {
       l$command,
       l$positionInMilliseconds,
       l$playQueueItemId,
+      l$targetDeviceId,
       l$timestamp,
       l$$__typename,
     ]);
@@ -393,6 +409,11 @@ class Subscription$playbackCommands$playbackCommands {
     final l$playQueueItemId = playQueueItemId;
     final lOther$playQueueItemId = other.playQueueItemId;
     if (l$playQueueItemId != lOther$playQueueItemId) {
+      return false;
+    }
+    final l$targetDeviceId = targetDeviceId;
+    final lOther$targetDeviceId = other.targetDeviceId;
+    if (l$targetDeviceId != lOther$targetDeviceId) {
       return false;
     }
     final l$timestamp = timestamp;
@@ -433,6 +454,7 @@ abstract class CopyWith$Subscription$playbackCommands$playbackCommands<TRes> {
     Enum$PlaybackCommandType? command,
     int? positionInMilliseconds,
     String? playQueueItemId,
+    String? targetDeviceId,
     String? timestamp,
     String? $__typename,
   });
@@ -456,6 +478,7 @@ class _CopyWithImpl$Subscription$playbackCommands$playbackCommands<TRes>
     Object? command = _undefined,
     Object? positionInMilliseconds = _undefined,
     Object? playQueueItemId = _undefined,
+    Object? targetDeviceId = _undefined,
     Object? timestamp = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
@@ -472,6 +495,9 @@ class _CopyWithImpl$Subscription$playbackCommands$playbackCommands<TRes>
       playQueueItemId: playQueueItemId == _undefined
           ? _instance.playQueueItemId
           : (playQueueItemId as String?),
+      targetDeviceId: targetDeviceId == _undefined
+          ? _instance.targetDeviceId
+          : (targetDeviceId as String?),
       timestamp: timestamp == _undefined || timestamp == null
           ? _instance.timestamp
           : (timestamp as String),
@@ -493,6 +519,7 @@ class _CopyWithStubImpl$Subscription$playbackCommands$playbackCommands<TRes>
     Enum$PlaybackCommandType? command,
     int? positionInMilliseconds,
     String? playQueueItemId,
+    String? targetDeviceId,
     String? timestamp,
     String? $__typename,
   }) => _res;

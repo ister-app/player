@@ -4,6 +4,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/me.graphql.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/LoggerService.dart';
+import 'package:player/utils/SchemaCompat.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Whether the calling user holds the admin role on a server.
@@ -29,6 +30,7 @@ class PermissionsService {
 
   final Map<String, AdminStatus> _cache = {};
   final Map<String, Future<AdminStatus>> _inFlight = {};
+  final Map<String, String> _userIds = {};
 
   /// The admin status for [serverName]: from memory, else the server, else the local cache.
   Future<AdminStatus> adminStatusFor(String? serverName) async {
@@ -41,6 +43,24 @@ class PermissionsService {
     return _inFlight[server] ??= _load(server).whenComplete(() {
       _inFlight.remove(server);
     });
+  }
+
+  /// The calling user's own id on [serverName], loading it if this is the first ask.
+  /// Null on a server that has no `me` query, or when it could not be reached.
+  Future<String?> userIdFor(String? serverName) async {
+    final server = serverName ?? ClientManager.instance.lastClientUsed;
+    if (server == null) return null;
+    final cached = _userIds[server];
+    if (cached != null) return cached;
+    await adminStatusFor(server);
+    return _userIds[server];
+  }
+
+  /// The calling user's own id without going to the server; null when never loaded.
+  String? cachedUserIdFor(String? serverName) {
+    final server = serverName ?? ClientManager.instance.lastClientUsed;
+    if (server == null) return null;
+    return _userIds[server];
   }
 
   /// The last known status without going to the server; [AdminStatus.unknown] when never loaded.
@@ -67,9 +87,9 @@ class PermissionsService {
         }
         throw exception ?? Exception('empty me response');
       }
-      final status = Query$me.fromJson(result.data!).me.isAdmin
-          ? AdminStatus.admin
-          : AdminStatus.notAdmin;
+      final me = Query$me.fromJson(result.data!).me;
+      _userIds[server] = me.id;
+      final status = me.isAdmin ? AdminStatus.admin : AdminStatus.notAdmin;
       _cache[server] = status;
       await _prefs.setBool('perm_is_admin_$server', status == AdminStatus.admin);
       return status;
@@ -86,15 +106,14 @@ class PermissionsService {
 
   /// A GraphQL validation error for a field the server's schema does not have.
   bool _isFieldUndefined(OperationException exception) {
-    return exception.graphqlErrors.any((error) {
-      final message = error.message.toLowerCase();
-      return message.contains('validation') ||
-          message.contains('undefined') ||
-          message.contains("field 'me'") ||
-          message.contains('fielddefinition');
-    });
+    return isUnknownFieldError(exception) ||
+        exception.graphqlErrors
+            .any((error) => error.message.toLowerCase().contains("field 'me'"));
   }
 
   /// Drops the memory cache so the next read re-queries; used after switching user/server.
-  void invalidate(String serverName) => _cache.remove(serverName);
+  void invalidate(String serverName) {
+    _cache.remove(serverName);
+    _userIds.remove(serverName);
+  }
 }

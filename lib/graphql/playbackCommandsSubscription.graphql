@@ -4,6 +4,7 @@ subscription playbackCommands($playQueueId: ID!) {
         command
         positionInMilliseconds
         playQueueItemId
+        targetDeviceId
         timestamp
     }
 }

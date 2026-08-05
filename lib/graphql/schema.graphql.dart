@@ -2113,6 +2113,7 @@ enum Enum$PlaybackCommandType {
   SEEK,
   SKIP_TO_ITEM,
   QUEUE_CHANGED,
+  STOP_FOLLOW,
   $unknown;
 
   factory Enum$PlaybackCommandType.fromJson(String value) =>
@@ -2137,6 +2138,8 @@ String toJson$Enum$PlaybackCommandType(Enum$PlaybackCommandType e) {
       return r'SKIP_TO_ITEM';
     case Enum$PlaybackCommandType.QUEUE_CHANGED:
       return r'QUEUE_CHANGED';
+    case Enum$PlaybackCommandType.STOP_FOLLOW:
+      return r'STOP_FOLLOW';
     case Enum$PlaybackCommandType.$unknown:
       return r'$unknown';
   }
@@ -2158,6 +2161,8 @@ Enum$PlaybackCommandType fromJson$Enum$PlaybackCommandType(String value) {
       return Enum$PlaybackCommandType.SKIP_TO_ITEM;
     case r'QUEUE_CHANGED':
       return Enum$PlaybackCommandType.QUEUE_CHANGED;
+    case r'STOP_FOLLOW':
+      return Enum$PlaybackCommandType.STOP_FOLLOW;
     default:
       return Enum$PlaybackCommandType.$unknown;
   }

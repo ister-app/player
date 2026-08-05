@@ -2078,6 +2078,72 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 device listening along} other{{count} devices listening along}}'**
   String followersListening(int count);
 
+  /// Title of the sheet listing the devices that listen along with your session, grouped per user
+  ///
+  /// In en, this message translates to:
+  /// **'Listening along'**
+  String get followersSheetTitle;
+
+  /// Empty state of the listeners sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody is listening along right now'**
+  String get followersNone;
+
+  /// Error state of the listeners sheet, also shown on a server that does not know the query yet
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the listeners'**
+  String get followersCouldNotLoad;
+
+  /// Fallback name for a follower whose user name the server did not report
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown user'**
+  String get followerUnknownUser;
+
+  /// Fallback name for a following device that never registered itself
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown device'**
+  String get followerUnknownDevice;
+
+  /// Action that kicks one device off your session
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get followerRemove;
+
+  /// Action that kicks every device of one user off your session
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all their devices'**
+  String get followerRemoveUser;
+
+  /// Confirmation before kicking a follower; name is a device or a user name
+  ///
+  /// In en, this message translates to:
+  /// **'Stop {name} from listening along?'**
+  String followerRemoveConfirm(String name);
+
+  /// Toast after kicking a follower
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is no longer listening along'**
+  String followerRemoved(String name);
+
+  /// Toast when kicking a follower failed
+  ///
+  /// In en, this message translates to:
+  /// **'Could not remove that listener'**
+  String get followerRemoveFailed;
+
+  /// Toast on the follower's device after it was kicked off a session
+  ///
+  /// In en, this message translates to:
+  /// **'The session owner ended your listening along'**
+  String get followerRemovedByOwner;
+
   /// Action to leave follow mode on this device
   ///
   /// In en, this message translates to:

@@ -1316,6 +1316,60 @@
       }
     }
   },
+  "followersSheetTitle": "Listening along",
+  "@followersSheetTitle": {
+    "description": "Title of the sheet listing the devices that listen along with your session, grouped per user"
+  },
+  "followersNone": "Nobody is listening along right now",
+  "@followersNone": {
+    "description": "Empty state of the listeners sheet"
+  },
+  "followersCouldNotLoad": "Could not load the listeners",
+  "@followersCouldNotLoad": {
+    "description": "Error state of the listeners sheet, also shown on a server that does not know the query yet"
+  },
+  "followerUnknownUser": "Unknown user",
+  "@followerUnknownUser": {
+    "description": "Fallback name for a follower whose user name the server did not report"
+  },
+  "followerUnknownDevice": "Unknown device",
+  "@followerUnknownDevice": {
+    "description": "Fallback name for a following device that never registered itself"
+  },
+  "followerRemove": "Remove",
+  "@followerRemove": {
+    "description": "Action that kicks one device off your session"
+  },
+  "followerRemoveUser": "Remove all their devices",
+  "@followerRemoveUser": {
+    "description": "Action that kicks every device of one user off your session"
+  },
+  "followerRemoveConfirm": "Stop {name} from listening along?",
+  "@followerRemoveConfirm": {
+    "description": "Confirmation before kicking a follower; name is a device or a user name",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "followerRemoved": "{name} is no longer listening along",
+  "@followerRemoved": {
+    "description": "Toast after kicking a follower",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "followerRemoveFailed": "Could not remove that listener",
+  "@followerRemoveFailed": {
+    "description": "Toast when kicking a follower failed"
+  },
+  "followerRemovedByOwner": "The session owner ended your listening along",
+  "@followerRemovedByOwner": {
+    "description": "Toast on the follower's device after it was kicked off a session"
+  },
   "stopListeningAlong": "Stop listening along",
   "@stopListeningAlong": {
     "description": "Action to leave follow mode on this device"

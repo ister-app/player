@@ -1,0 +1,10 @@
+query sessionFollowers($playQueueId: ID!) {
+    sessionFollowers(playQueueId: $playQueueId) {
+        userId
+        userName
+        deviceId
+        deviceName
+        platform
+        since
+    }
+}

@@ -13,12 +13,14 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/DevicePickerSheet.dart';
 import '../components/LiveFeedBanner.dart';
+import '../components/SessionListenersSheet.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/AppMessenger.dart';
 import '../utils/ClientManager.dart';
 import '../utils/DeviceService.dart';
 import '../utils/LoggerService.dart';
 import '../utils/MediaPlayerHandler.dart';
+import '../utils/PermissionsService.dart';
 import '../utils/ResilientSubscription.dart';
 import '../utils/StreamTokenService.dart';
 import '../utils/WellKnownService.dart';
@@ -53,10 +55,18 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
   /// Drives the per-second interpolation while something is playing.
   Timer? _ticker;
 
+  /// This user's own id on the server; only their own sessions expose who is
+  /// listening along. Null until loaded, and on a server without the me query.
+  String? _ownUserId;
+
   @override
   void initState() {
     super.initState();
     final client = ClientManager.getClientForUrl(widget.serverName).value;
+
+    PermissionsService().userIdFor(widget.serverName).then((userId) {
+      if (mounted) setState(() => _ownUserId = userId);
+    });
 
     // Make sure image URLs can carry a valid stream token.
     StreamTokenService.ensureToken(widget.serverName).then((_) {
@@ -265,6 +275,14 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
               onListenAlongOnDevice: session.controllable
                   ? () => _listenAlongOnDevice(session.playQueueId)
                   : null,
+              // Who is listening along, and kicking them off, is the session
+              // owner's business alone — the server refuses it for anyone else.
+              onShowListeners:
+                  session.followerCount > 0 && session.userId == _ownUserId
+                      ? () => showSessionListenersSheet(context,
+                          serverName: widget.serverName,
+                          playQueueId: session.playQueueId)
+                      : null,
             ),
         ],
       );
@@ -288,6 +306,7 @@ class _SessionCard extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onListenAlong;
   final VoidCallback? onListenAlongOnDevice;
+  final VoidCallback? onShowListeners;
 
   const _SessionCard({
     required this.session,
@@ -298,6 +317,7 @@ class _SessionCard extends StatelessWidget {
     this.onTap,
     this.onListenAlong,
     this.onListenAlongOnDevice,
+    this.onShowListeners,
   });
 
   @override
@@ -363,6 +383,13 @@ class _SessionCard extends StatelessWidget {
                           tooltip: loc.deviceListenAlongOn,
                           visualDensity: VisualDensity.compact,
                           onPressed: onListenAlongOnDevice,
+                        ),
+                      if (onShowListeners != null)
+                        IconButton(
+                          icon: const Icon(Icons.groups),
+                          tooltip: loc.followersSheetTitle,
+                          visualDensity: VisualDensity.compact,
+                          onPressed: onShowListeners,
                         ),
                     ],
                   ),
