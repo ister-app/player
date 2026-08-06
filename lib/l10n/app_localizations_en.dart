@@ -1178,6 +1178,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get listenTogetherTitle => 'Listen together';
 
   @override
+  String get watchTogetherTitle => 'Watch together';
+
+  @override
+  String get followWatchAlong => 'Watch along';
+
+  @override
+  String get watchingBadge => 'Watching along';
+
+  @override
+  String get stopWatchingAlong => 'Stop watching along';
+
+  @override
   String get followingBadge => 'Listening along';
 
   @override

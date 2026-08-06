@@ -9,6 +9,7 @@ import 'package:http/testing.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:player/components/ListenTogetherSheet.dart';
 import 'package:player/graphql/fragmentMediafiles.graphql.dart';
+import 'package:player/graphql/fragmentMovie.graphql.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 import 'package:player/graphql/fragmentServerActivity.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
@@ -49,14 +50,29 @@ Fragment$fragmentPlayQueue$playQueueItems _trackItem(String id, double position)
       ),
     );
 
-Fragment$fragmentPlayQueue _queue() => Fragment$fragmentPlayQueue(
+Fragment$fragmentPlayQueue$playQueueItems _movieItem(String id, double position) =>
+    Fragment$fragmentPlayQueue$playQueueItems(
+      accessible: true,
+      id: id,
+      position: position,
+      movie: Fragment$fragmentMovie(
+        id: 'movie-$id',
+        name: 'The Movie',
+        releaseYear: 2020,
+        mediaFile: [_mediaFile('mf-$id')],
+      ),
+    );
+
+Fragment$fragmentPlayQueue _queue({List<Fragment$fragmentPlayQueue$playQueueItems>? items}) =>
+    Fragment$fragmentPlayQueue(
       id: _queueId,
       currentItemId: 'item-1',
       progressInMilliseconds: 30000,
       shuffle: false,
       sourceExhausted: true,
       controlAllowedUserIds: const [],
-      playQueueItems: [_trackItem('item-1', 1), _trackItem('item-2', 2)],
+      playQueueItems:
+          items ?? [_trackItem('item-1', 1), _trackItem('item-2', 2)],
     );
 
 Fragment$fragmentPlaybackSession _session() => Fragment$fragmentPlaybackSession(
@@ -94,6 +110,7 @@ MockClient _fakeGraphQL({
   Enum$FollowResult followResult = Enum$FollowResult.OK,
   List<Map<String, dynamic>>? followers,
   List<String>? operations,
+  Fragment$fragmentPlayQueue? queue,
 }) =>
     MockClient((request) async {
       final body = json.decode(request.body) as Map<String, dynamic>;
@@ -109,7 +126,10 @@ MockClient _fakeGraphQL({
         };
       } else if (query.contains('query getPlayQueue')) {
         payload = {
-          'data': {'__typename': 'Query', 'getPlayQueue': _queue().toJson()}
+          'data': {
+            '__typename': 'Query',
+            'getPlayQueue': (queue ?? _queue()).toJson()
+          }
         };
       } else if (query.contains('sessionFollowers')) {
         if (followers == null) {
@@ -196,12 +216,14 @@ void main() {
 
   /// Opens the sheet and settles it. The embedded followers list polls, so
   /// every test must close it again (see [close]) before finishing.
-  Future<void> openSheet(WidgetTester tester) async {
+  Future<void> openSheet(WidgetTester tester, {Enum$MediaType? mediaType}) async {
     await tester.pumpWidget(_app(Scaffold(
       body: Builder(
         builder: (context) => TextButton(
           onPressed: () => showListenTogetherSheet(context,
-              serverName: _server, playQueueId: _queueId),
+              serverName: _server,
+              playQueueId: _queueId,
+              mediaType: mediaType),
           child: const Text('open'),
         ),
       ),
@@ -292,6 +314,30 @@ void main() {
     // No join button for your own session.
     expect(find.widgetWithText(FilledButton, 'Listen along'), findsNothing);
 
+    await close(tester);
+  });
+
+  testWidgets('a movie session speaks of watching along', (tester) async {
+    final queue = _queue(items: [_movieItem('item-1', 1)]);
+    useClient(_fakeGraphQL(followers: [], queue: queue));
+    await openSheet(tester, mediaType: Enum$MediaType.MOVIE);
+
+    // Viewer wording comes from the session's media type.
+    expect(find.text('Watch together'), findsOneWidget);
+    final join = find.widgetWithText(FilledButton, 'Watch along');
+    expect(join, findsOneWidget);
+
+    // After joining, the live movie queue keeps the watch wording.
+    await tester.tap(join);
+    await tester.pumpAndSettle();
+    expect(handler.followMode, isTrue);
+    expect(find.text('Watching along'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Stop watching along'),
+        findsOneWidget);
+
+    // Leave follow mode inside the test, or its subscriptions outlive it.
+    await tester.tap(find.widgetWithText(FilledButton, 'Stop watching along'));
+    await tester.pumpAndSettle();
     await close(tester);
   });
 

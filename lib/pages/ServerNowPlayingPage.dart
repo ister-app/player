@@ -228,7 +228,8 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
                               widget.serverName, session.playQueueId))
                   ? () => showListenTogetherSheet(context,
                       serverName: widget.serverName,
-                      playQueueId: session.playQueueId)
+                      playQueueId: session.playQueueId,
+                      mediaType: session.mediaType)
                   : null,
             ),
         ],
@@ -268,6 +269,8 @@ class _SessionCard extends StatelessWidget {
     final theme = Theme.of(context);
     final mutedColor = theme.colorScheme.onSurfaceVariant;
     final paused = session.playState == Enum$PlayState.PAUSED;
+    final isVideo = session.mediaType == Enum$MediaType.MOVIE ||
+        session.mediaType == Enum$MediaType.EPISODE;
     final total = session.durationInMilliseconds;
     final fraction = (total != null && total > 0)
         ? (positionMs / total).clamp(0.0, 1.0)
@@ -315,8 +318,12 @@ class _SessionCard extends StatelessWidget {
                       _StateChip(paused: paused),
                       if (onListenTogether != null)
                         IconButton(
-                          icon: const Icon(Icons.headphones),
-                          tooltip: loc.listenTogetherTitle,
+                          icon: Icon(isVideo
+                              ? Icons.connected_tv
+                              : Icons.headphones),
+                          tooltip: isVideo
+                              ? loc.watchTogetherTitle
+                              : loc.listenTogetherTitle,
                           visualDensity: VisualDensity.compact,
                           onPressed: onListenTogether,
                         ),

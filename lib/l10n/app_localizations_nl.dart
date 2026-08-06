@@ -1179,6 +1179,18 @@ class AppLocalizationsNl extends AppLocalizations {
   String get listenTogetherTitle => 'Samen luisteren';
 
   @override
+  String get watchTogetherTitle => 'Samen kijken';
+
+  @override
+  String get followWatchAlong => 'Kijk mee';
+
+  @override
+  String get watchingBadge => 'Kijkt mee';
+
+  @override
+  String get stopWatchingAlong => 'Stop met meekijken';
+
+  @override
   String get followingBadge => 'Luistert mee';
 
   @override

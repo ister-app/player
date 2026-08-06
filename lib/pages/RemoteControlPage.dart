@@ -145,15 +145,19 @@ class _ListenAlongBanner extends StatelessWidget {
   const _ListenAlongBanner({
     required this.serverName,
     required this.playQueueId,
+    this.mediaType,
   });
 
   final String serverName;
   final String playQueueId;
+  final Enum$MediaType? mediaType;
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final handler = MediaPlayerHandler.instance;
+    final isWatch = mediaType == Enum$MediaType.MOVIE ||
+        mediaType == Enum$MediaType.EPISODE;
     return ValueListenableBuilder<bool>(
       valueListenable: handler.followModeNotifier,
       builder: (context, following, _) {
@@ -168,13 +172,16 @@ class _ListenAlongBanner extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Icon(Icons.headphones, color: Colors.white70, size: 18),
+              Icon(isWatch ? Icons.connected_tv : Icons.headphones,
+                  color: Colors.white70, size: 18),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   followingThisQueue
-                      ? loc.followingBadge
-                      : loc.followListenAlong,
+                      ? (isWatch ? loc.watchingBadge : loc.followingBadge)
+                      : (isWatch
+                          ? loc.followWatchAlong
+                          : loc.followListenAlong),
                   style: const TextStyle(color: Colors.white70, fontSize: 13),
                 ),
               ),
@@ -190,8 +197,10 @@ class _ListenAlongBanner extends StatelessWidget {
                   context,
                   serverName: serverName,
                   playQueueId: playQueueId,
+                  mediaType: mediaType,
                 ),
-                child: Text(loc.listenTogetherTitle),
+                child: Text(
+                    isWatch ? loc.watchTogetherTitle : loc.listenTogetherTitle),
               ),
             ],
           ),
@@ -359,6 +368,7 @@ class _RemotePlayerController
           _ListenAlongBanner(
             serverName: serverName,
             playQueueId: playQueueId,
+            mediaType: _session?.mediaType,
           ),
       ],
     );

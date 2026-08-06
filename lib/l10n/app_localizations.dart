@@ -2102,6 +2102,30 @@ abstract class AppLocalizations {
   /// **'Listen together'**
   String get listenTogetherTitle;
 
+  /// Title of the listen-together sheet and its opening buttons when the session plays a movie/episode
+  ///
+  /// In en, this message translates to:
+  /// **'Watch together'**
+  String get watchTogetherTitle;
+
+  /// Join button label when the session plays a movie/episode
+  ///
+  /// In en, this message translates to:
+  /// **'Watch along'**
+  String get followWatchAlong;
+
+  /// Indicator shown while this device follows a session that plays a movie/episode
+  ///
+  /// In en, this message translates to:
+  /// **'Watching along'**
+  String get watchingBadge;
+
+  /// Stop-following button label when the session plays a movie/episode
+  ///
+  /// In en, this message translates to:
+  /// **'Stop watching along'**
+  String get stopWatchingAlong;
+
   /// Indicator shown while this device follows another device's session
   ///
   /// In en, this message translates to:

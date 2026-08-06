@@ -29,6 +29,7 @@ Future<void> showListenTogetherSheet(
   BuildContext context, {
   required String serverName,
   required String playQueueId,
+  Enum$MediaType? mediaType,
   VoidCallback? onQueueMoved,
 }) {
   return showModalBottomSheet<void>(
@@ -38,6 +39,7 @@ Future<void> showListenTogetherSheet(
     builder: (context) => _ListenTogetherSheet(
       serverName: serverName,
       playQueueId: playQueueId,
+      mediaType: mediaType,
       onQueueMoved: onQueueMoved,
     ),
   );
@@ -47,11 +49,16 @@ class _ListenTogetherSheet extends StatefulWidget {
   const _ListenTogetherSheet({
     required this.serverName,
     required this.playQueueId,
+    this.mediaType,
     this.onQueueMoved,
   });
 
   final String serverName;
   final String playQueueId;
+
+  /// The session's current media kind, for the watch/listen wording when the
+  /// queue is not (yet) live on this device. A live queue overrides this.
+  final Enum$MediaType? mediaType;
 
   /// Called after the queue was handed off to another device, so the hosting
   /// player overlay can dismiss itself along with the playback it lost.
@@ -84,6 +91,18 @@ class _ListenTogetherSheetState extends State<_ListenTogetherSheet> {
     // The persisted tight-sync settings must be in their notifiers before the
     // sync controls render them.
     unawaited(SyncPreferences.ensureLoaded());
+  }
+
+  /// Watching (movie/episode) or listening — drives the sheet's wording. The
+  /// live queue on this device (own or followed) knows its current item and
+  /// stays correct across music↔video switches; otherwise the caller's session
+  /// media type decides.
+  bool get _isWatch {
+    if (_handler.playQueue?.id == widget.playQueueId) {
+      return _handler.movie != null || _handler.episode != null;
+    }
+    return widget.mediaType == Enum$MediaType.MOVIE ||
+        widget.mediaType == Enum$MediaType.EPISODE;
   }
 
   _Role _role() {
@@ -216,15 +235,16 @@ class _ListenTogetherSheetState extends State<_ListenTogetherSheet> {
 
   List<Widget> _followerContent(AppLocalizations loc) => [
         ListTile(
-          leading: const Icon(Icons.headphones),
-          title: Text(loc.followingBadge),
+          leading: Icon(_isWatch ? Icons.connected_tv : Icons.headphones),
+          title: Text(_isWatch ? loc.watchingBadge : loc.followingBadge),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: FilledButton.tonal(
             style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             onPressed: () => _handler.stopFollowing(),
-            child: Text(loc.stopListeningAlong),
+            child: Text(
+                _isWatch ? loc.stopWatchingAlong : loc.stopListeningAlong),
           ),
         ),
         const Padding(
@@ -244,8 +264,12 @@ class _ListenTogetherSheetState extends State<_ListenTogetherSheet> {
           child: FilledButton.icon(
             style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             onPressed: _sessionGone || _joining ? null : _join,
-            icon: const Icon(Icons.headphones),
-            label: Text(_sessionGone ? loc.sessionEnded : loc.followListenAlong),
+            icon: Icon(_isWatch ? Icons.connected_tv : Icons.headphones),
+            label: Text(_sessionGone
+                ? loc.sessionEnded
+                : _isWatch
+                    ? loc.followWatchAlong
+                    : loc.followListenAlong),
           ),
         ),
         SessionListenersList(
@@ -260,38 +284,46 @@ class _ListenTogetherSheetState extends State<_ListenTogetherSheet> {
     final loc = AppLocalizations.of(context)!;
     return ValueListenableBuilder<bool>(
       valueListenable: _handler.followModeNotifier,
-      builder: (context, _, __) {
-        final children = switch (_role()) {
-          _Role.owner => _ownerContent(loc),
-          _Role.follower => _followerContent(loc),
-          _Role.viewer => _viewerContent(loc),
-        };
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-                  child: Text(loc.listenTogetherTitle,
-                      style: Theme.of(context).textTheme.titleMedium),
-                ),
-                Flexible(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: children,
+      builder: (context, _, __) => StreamBuilder<Object?>(
+        // The wording (watch/listen) follows the live queue's current item, so
+        // the sheet rebuilds when the session switches between music and video.
+        stream: _handler.mediaItem,
+        builder: (context, _) {
+          final children = switch (_role()) {
+            _Role.owner => _ownerContent(loc),
+            _Role.follower => _followerContent(loc),
+            _Role.viewer => _viewerContent(loc),
+          };
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                    child: Text(
+                        _isWatch
+                            ? loc.watchTogetherTitle
+                            : loc.listenTogetherTitle,
+                        style: Theme.of(context).textTheme.titleMedium),
+                  ),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: children,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

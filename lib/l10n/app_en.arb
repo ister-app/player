@@ -1347,6 +1347,22 @@
   "@listenTogetherTitle": {
     "description": "Title of the listen-together sheet, and of the buttons that open it"
   },
+  "watchTogetherTitle": "Watch together",
+  "@watchTogetherTitle": {
+    "description": "Title of the listen-together sheet and its opening buttons when the session plays a movie/episode"
+  },
+  "followWatchAlong": "Watch along",
+  "@followWatchAlong": {
+    "description": "Join button label when the session plays a movie/episode"
+  },
+  "watchingBadge": "Watching along",
+  "@watchingBadge": {
+    "description": "Indicator shown while this device follows a session that plays a movie/episode"
+  },
+  "stopWatchingAlong": "Stop watching along",
+  "@stopWatchingAlong": {
+    "description": "Stop-following button label when the session plays a movie/episode"
+  },
   "followingBadge": "Listening along",
   "@followingBadge": {
     "description": "Indicator shown while this device follows another device's session"
