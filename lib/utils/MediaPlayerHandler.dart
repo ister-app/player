@@ -151,6 +151,12 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// instead of leaving the user to tap the mini player.
   final ValueNotifier<int> openMusicPlayerRequest = ValueNotifier(0);
 
+  /// Bumped when follow mode needs the current video item's page on screen:
+  /// joining a session that plays a movie/episode, and the leader switching to
+  /// one. Same globally-mounted listener as [openMusicPlayerRequest] — the mini
+  /// player — which navigates to the movie/episode page hosting the video.
+  final ValueNotifier<int> openVideoPageRequest = ValueNotifier(0);
+
   /// True from the moment a user-initiated new track begins loading until its
   /// [mediaItem] metadata is published. The music player shows a skeleton while
   /// this is set so it never displays the *previous* track's cover/title.
@@ -1521,6 +1527,12 @@ class MediaPlayerHandler extends BaseAudioHandler
         return;
       }
 
+      // Whether the item being replaced was on a video surface — decided
+      // before _currentMediaType is overwritten below, for the follow-mode
+      // navigation at the end of this method.
+      final wasVideo = _currentMediaType == IsterMediaTypes.movie ||
+          _currentMediaType == IsterMediaTypes.episode;
+
       // Make the tapped item current locally, before any player or network
       // work. The server update below is only a sync — the UI must not wait
       // for its round-trip, and player events firing while it is in flight
@@ -1611,6 +1623,18 @@ class MediaPlayerHandler extends BaseAudioHandler
           startTimeInMilliseconds: 0,
           mediaType: IsterMediaTypes.episode,
         );
+      }
+
+      // A leader-driven switch (never a heartbeat — same-item emissions don't
+      // reach this method) keeps the follower's screen on the right surface:
+      // video items get their page opened, and leaving video for audio brings
+      // up the music overlay. Track→track stays as it always was.
+      if (_followMode && _applyingRemoteSync) {
+        if (queueItem.movie != null || queueItem.episode != null) {
+          openVideoPageRequest.value++;
+        } else if (wasVideo) {
+          openMusicPlayerRequest.value++;
+        }
       }
 
       _onPlayingChanged(true);
@@ -2611,6 +2635,13 @@ class MediaPlayerHandler extends BaseAudioHandler
       // Music opens the full player, like every other music start path.
       _beginMediaLoading();
       openMusicPlayerRequest.value++;
+    }
+    if (current != null &&
+        (current.movie != null || current.episode != null) &&
+        _itemIsPlayable(current)) {
+      // Watching along needs the video's page on screen, or the follower
+      // would only hear the movie's audio.
+      openVideoPageRequest.value++;
     }
     if (current != null) {
       if (!_itemIsPlayable(current)) {

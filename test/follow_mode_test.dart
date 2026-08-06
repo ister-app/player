@@ -372,6 +372,47 @@ void main() {
     expect(operations, contains('followPlayQueue'));
   });
 
+  test('joining a video session requests the video page, not the music player',
+      () async {
+    final queue = _queue(items: [_movieItem('item-1', 1)]);
+    useClient(_fakeGraphQL(queue: queue, operations: []));
+    final videoBumps = handler.openVideoPageRequest.value;
+    final musicBumps = handler.openMusicPlayerRequest.value;
+
+    await handler.startFollowingQueue(_server, 'pq-follow');
+
+    expect(handler.openVideoPageRequest.value, videoBumps + 1);
+    expect(handler.openMusicPlayerRequest.value, musicBumps);
+  });
+
+  test('leader switches steer the follower between video page and music player',
+      () async {
+    final queue = _queue(items: [
+      _trackItem('item-1', 1),
+      _movieItem('item-2', 2),
+    ]);
+    useClient(_fakeGraphQL(queue: queue, operations: []));
+    await handler.startFollowingQueue(_server, 'pq-follow');
+    final videoBumps = handler.openVideoPageRequest.value;
+    final musicBumps = handler.openMusicPlayerRequest.value;
+
+    // Track → movie: open the video page, exactly once.
+    await handler.debugApplyFollowNowPlaying(
+        [_session(playQueueItemId: 'item-2', progressInMilliseconds: 0)]);
+    expect(handler.openVideoPageRequest.value, videoBumps + 1);
+
+    // The same emission again (a heartbeat) navigates nowhere.
+    await handler.debugApplyFollowNowPlaying(
+        [_session(playQueueItemId: 'item-2', progressInMilliseconds: 5000)]);
+    expect(handler.openVideoPageRequest.value, videoBumps + 1);
+
+    // Movie → track: bring the music overlay back.
+    await handler.debugApplyFollowNowPlaying(
+        [_session(playQueueItemId: 'item-1', progressInMilliseconds: 0)]);
+    expect(handler.openMusicPlayerRequest.value, musicBumps + 1);
+    expect(handler.openVideoPageRequest.value, videoBumps + 1);
+  });
+
   test('re-opening the followed queue itself keeps follow mode', () async {
     final queue = _queue(items: [_movieItem('item-1', 1)]);
     useClient(_fakeGraphQL(queue: queue, operations: []));
