@@ -1176,6 +1176,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get followListenAlong => 'Luister mee';
 
   @override
+  String get listenTogetherTitle => 'Samen luisteren';
+
+  @override
   String get followingBadge => 'Luistert mee';
 
   @override

@@ -15,9 +15,8 @@ import 'package:player/graphql/schema.graphql.dart';
 import '../components/LiveFeedBanner.dart';
 import '../routes/AppRouter.gr.dart';
 import '../l10n/app_localizations.dart';
-import '../utils/AppMessenger.dart';
+import '../components/ListenTogetherSheet.dart';
 import '../utils/MediaPlayerHandler.dart';
-import '../utils/SyncPreferences.dart';
 import '../utils/ClientManager.dart';
 import '../utils/LoggerService.dart';
 import '../utils/LoginManager.dart';
@@ -136,9 +135,11 @@ class _RemoteControlPageState extends State<RemoteControlPage> {
   }
 }
 
-/// Start/stop "listen along" for this session on *this* device. Anyone who
-/// can open the remote control may also follow (same server-side permission);
-/// the server still verifies and answers NOT_FOUND / NO_LIBRARY_ACCESS.
+/// Status strip for "listen along" on *this* device, with one clearly visible
+/// button into the listen-together sheet — joining, stopping and the sync
+/// controls all live there. Anyone who can open the remote control may also
+/// follow (same server-side permission); the server still verifies and answers
+/// NOT_FOUND / NO_LIBRARY_ACCESS when the sheet's join runs.
 class _ListenAlongBanner extends StatelessWidget {
   const _ListenAlongBanner({
     required this.serverName,
@@ -148,28 +149,10 @@ class _ListenAlongBanner extends StatelessWidget {
   final String serverName;
   final String playQueueId;
 
-  Future<void> _start(BuildContext context) async {
-    final loc = AppLocalizations.of(context)!;
-    final result = await MediaPlayerHandler.instance
-        .startFollowingQueue(serverName, playQueueId);
-    switch (result) {
-      case Enum$FollowResult.OK:
-        break;
-      case Enum$FollowResult.NO_LIBRARY_ACCESS:
-        showAppSnackBar(loc.followNoLibraryAccess);
-      case Enum$FollowResult.NOT_FOUND:
-      case Enum$FollowResult.$unknown:
-        showAppSnackBar(loc.followQueueUnavailable);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final handler = MediaPlayerHandler.instance;
-    // Make sure the persisted tight-sync settings are in their notifiers
-    // before the controls below render them.
-    unawaited(SyncPreferences.ensureLoaded());
     return ValueListenableBuilder<bool>(
       valueListenable: handler.followModeNotifier,
       builder: (context, following, _) {
@@ -177,92 +160,42 @@ class _ListenAlongBanner extends StatelessWidget {
             following && handler.playQueue?.id == playQueueId;
         return Container(
           margin: const EdgeInsets.only(top: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          child: Row(
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.headphones, color: Colors.white70, size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      followingThisQueue
-                          ? loc.followingBadge
-                          : loc.followListenAlong,
-                      style:
-                          const TextStyle(color: Colors.white70, fontSize: 13),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: followingThisQueue
-                        ? () => handler.stopFollowing()
-                        : () => _start(context),
-                    child: Text(followingThisQueue
-                        ? loc.stopListeningAlong
-                        : loc.followListenAlong),
-                  ),
-                ],
+              const Icon(Icons.headphones, color: Colors.white70, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  followingThisQueue
+                      ? loc.followingBadge
+                      : loc.followListenAlong,
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                ),
               ),
-              if (followingThisQueue) const _TightSyncControls(),
+              // The banner sits on the hard-coded dark player surface, where
+              // the ambient scheme's primary is unreadable in light theme —
+              // so the colours are explicit.
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black87,
+                ),
+                onPressed: () => showListenTogetherSheet(
+                  context,
+                  serverName: serverName,
+                  playQueueId: playQueueId,
+                ),
+                child: Text(loc.listenTogetherTitle),
+              ),
             ],
           ),
         );
       },
-    );
-  }
-}
-
-/// Tight-sync controls for a following device: the "same room" switch and,
-/// when enabled, the output-latency slider (the one thing software cannot
-/// measure — the user shifts it until the echo between devices disappears).
-class _TightSyncControls extends StatelessWidget {
-  const _TightSyncControls();
-
-  @override
-  Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
-    return ValueListenableBuilder<bool>(
-      valueListenable: SyncPreferences.tightSyncEnabled,
-      builder: (context, tightSync, _) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SwitchListTile(
-            dense: true,
-            contentPadding: EdgeInsets.zero,
-            title: Text(loc.tightSyncToggle,
-                style: const TextStyle(color: Colors.white70, fontSize: 13)),
-            value: tightSync,
-            onChanged: (enabled) =>
-                SyncPreferences.setTightSyncEnabled(enabled),
-          ),
-          if (tightSync)
-            ValueListenableBuilder<int>(
-              valueListenable: SyncPreferences.outputLatencyMs,
-              builder: (context, latency, _) => Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(loc.outputLatencySlider(latency),
-                      style: const TextStyle(
-                          color: Colors.white54, fontSize: 12)),
-                  Slider(
-                    value: latency.toDouble(),
-                    min: 0,
-                    max: 500,
-                    divisions: 50,
-                    onChanged: (value) =>
-                        SyncPreferences.setOutputLatencyMs(value.round()),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
     );
   }
 }

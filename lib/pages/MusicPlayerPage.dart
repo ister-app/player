@@ -136,14 +136,6 @@ class _LocalPlayerController extends QueuePlayerViewController<MediaItem> {
   String? get sessionSharingServerName => _handler.serverName;
 
   @override
-  Enum$RemoteControlScope? get sessionControlOverride =>
-      _handler.playQueue?.controlScopeOverride;
-
-  @override
-  List<String> get sessionControlAllowedUserIds =>
-      _handler.playQueue?.controlAllowedUserIds ?? const [];
-
-  @override
   bool get loading => _handler.mediaLoading.value;
 
   MediaItem? get _item => _handler.mediaItem.valueOrNull;

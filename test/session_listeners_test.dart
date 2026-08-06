@@ -90,14 +90,23 @@ void main() {
         );
   }
 
-  /// Opens the sheet and settles it. The sheet polls, so every test must close it
-  /// again (see [close]) before finishing, or its timer outlives the test.
+  /// Opens a sheet embedding the list and settles it. The list polls, so every
+  /// test must close it again (see [close]) before finishing, or its timer
+  /// outlives the test.
   Future<void> openSheet(WidgetTester tester) async {
     await tester.pumpWidget(_app(Scaffold(
       body: Builder(
         builder: (context) => TextButton(
-          onPressed: () => showSessionListenersSheet(context,
-              serverName: _server, playQueueId: _queueId),
+          onPressed: () => showModalBottomSheet<void>(
+            context: context,
+            builder: (_) => const SingleChildScrollView(
+              child: SessionListenersList(
+                serverName: _server,
+                playQueueId: _queueId,
+                canKick: true,
+              ),
+            ),
+          ),
           child: const Text('open'),
         ),
       ),

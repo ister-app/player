@@ -5,18 +5,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:player/components/DevicePickerSheet.dart';
-import 'package:player/components/SessionListenersSheet.dart';
-import 'package:player/components/SessionSharingSheet.dart';
+import 'package:player/components/ListenTogetherSheet.dart';
 import 'package:player/components/SleepTimerSheet.dart';
 import 'package:player/components/TvFocusable.dart';
-import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/AccentColorUtil.dart';
-import 'package:player/utils/AppMessenger.dart';
-import 'package:player/utils/DeviceService.dart';
-import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:player/utils/SleepTimerService.dart';
 import 'package:player/utils/DurationUtil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -126,12 +120,6 @@ abstract class PlayerViewController extends ChangeNotifier {
 
   /// Server that owns the session referenced by [sessionSharingQueueId].
   String? get sessionSharingServerName => null;
-
-  /// The session's current per-session remote-control override (null = the account default applies).
-  Enum$RemoteControlScope? get sessionControlOverride => null;
-
-  /// The session's own control allowlist (grantee user ids), used when the override is ALLOWLIST.
-  List<String> get sessionControlAllowedUserIds => const [];
 
   void skipToPrevious();
   void skipToNext();
@@ -507,13 +495,13 @@ class _PlayerViewState extends State<PlayerView>
     final loc = AppLocalizations.of(context)!;
     final controller = widget.controller;
     final headerTitle = controller.headerTitle;
-    // Session actions are owner-only and act on this device's own playback, so
-    // they are shown for the local session only — and not while this device is
-    // merely following someone else's queue.
-    final sessionQueueId = controller.isLocalSession &&
-            !MediaPlayerHandler.instance.followMode
-        ? controller.sessionSharingQueueId
-        : null;
+    // The listen-together sheet acts on this device's own playback — its own
+    // session, or the session it follows (sessionSharingQueueId is the
+    // followed queue then; the sheet adapts to that role itself) — so it is
+    // offered for the local session only. The remote control reaches the same
+    // sheet through its banner instead.
+    final sessionQueueId =
+        controller.isLocalSession ? controller.sessionSharingQueueId : null;
     final sessionServerName = controller.sessionSharingServerName;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -533,102 +521,18 @@ class _PlayerViewState extends State<PlayerView>
                   )
                 : const SizedBox.shrink(),
           ),
-          if (sessionQueueId != null)
-            IconButton(
-              icon: const Icon(Icons.ios_share, color: Colors.white70),
-              tooltip: loc.shareThisSession,
-              onPressed: () => _openSessionSharing(sessionQueueId),
-            ),
           if (sessionQueueId != null && sessionServerName != null)
             IconButton(
-              icon: const Icon(Icons.groups, color: Colors.white70),
-              tooltip: loc.followersSheetTitle,
-              onPressed: () => showSessionListenersSheet(
+              icon: const Icon(Icons.headphones, color: Colors.white),
+              tooltip: loc.listenTogetherTitle,
+              onPressed: () => showListenTogetherSheet(
                 context,
                 serverName: sessionServerName,
                 playQueueId: sessionQueueId,
+                onQueueMoved: dismiss,
               ),
             ),
-          if (sessionQueueId != null && sessionServerName != null)
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.devices, color: Colors.white70),
-              onSelected: (choice) {
-                if (choice == 'move') _moveQueueToDevice(sessionQueueId);
-                if (choice == 'follow') _listenAlongOnDevice(sessionQueueId);
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem(value: 'move', child: Text(loc.deviceMoveQueue)),
-                PopupMenuItem(
-                    value: 'follow', child: Text(loc.deviceListenAlongOn)),
-              ],
-            ),
         ],
-      ),
-    );
-  }
-
-  /// Hands the queue off to another device: pause (flushes progress), tell the
-  /// target to take over at the current position, and stop locally once the
-  /// server accepted. On refusal local playback resumes where it was.
-  Future<void> _moveQueueToDevice(String playQueueId) async {
-    final loc = AppLocalizations.of(context)!;
-    final serverName = widget.controller.sessionSharingServerName!;
-    final handler = MediaPlayerHandler.instance;
-    final device = await showDevicePickerSheet(context,
-        serverName: serverName, title: loc.deviceMoveQueue);
-    if (device == null) return;
-
-    final wasPlaying = handler.playbackState.value.playing;
-    await handler.pause();
-    final accepted = await DeviceService.instance.sendCommand(
-      serverName,
-      deviceId: device.deviceId,
-      command: Enum$DeviceCommandType.TAKEOVER_QUEUE,
-      playQueueId: playQueueId,
-      positionMs: handler.playbackState.value.position.inMilliseconds,
-    );
-    if (accepted) {
-      // Stop after the send: the target's first heartbeat (same user, so
-      // ownership holds) takes the session over from this device.
-      await handler.stop();
-      if (mounted) dismiss();
-    } else if (wasPlaying) {
-      await handler.play();
-    }
-    showAppSnackBar(accepted
-        ? loc.deviceCommandSent(device.name)
-        : loc.deviceCommandFailed);
-  }
-
-  /// Lets another of the user's devices listen along with the local queue.
-  Future<void> _listenAlongOnDevice(String playQueueId) async {
-    final loc = AppLocalizations.of(context)!;
-    final serverName = widget.controller.sessionSharingServerName!;
-    final device = await showDevicePickerSheet(context,
-        serverName: serverName, title: loc.deviceListenAlongOn);
-    if (device == null) return;
-    final accepted = await DeviceService.instance.sendCommand(
-      serverName,
-      deviceId: device.deviceId,
-      command: Enum$DeviceCommandType.START_FOLLOW,
-      playQueueId: playQueueId,
-    );
-    showAppSnackBar(accepted
-        ? loc.deviceCommandSent(device.name)
-        : loc.deviceCommandFailed);
-  }
-
-  Future<void> _openSessionSharing(String playQueueId) async {
-    final controller = widget.controller;
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (_) => SessionSharingSheet(
-        serverName: controller.sessionSharingServerName,
-        playQueueId: playQueueId,
-        currentOverride: controller.sessionControlOverride,
-        currentAllowedUserIds: controller.sessionControlAllowedUserIds,
       ),
     );
   }

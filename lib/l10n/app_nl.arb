@@ -332,6 +332,7 @@
   "filterOpIsSet": "is ingevuld",
   "filterOpIsNotSet": "is niet ingevuld",
   "followListenAlong": "Luister mee",
+  "listenTogetherTitle": "Samen luisteren",
   "followingBadge": "Luistert mee",
   "followQueueUnavailable": "Kan niet meeluisteren — deze sessie is niet meer beschikbaar",
   "followNoLibraryAccess": "Kan niet meeluisteren — je hebt geen toegang tot de bibliotheek van deze wachtrij",

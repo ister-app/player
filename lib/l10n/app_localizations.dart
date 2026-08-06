@@ -2096,6 +2096,12 @@ abstract class AppLocalizations {
   /// **'Listen along'**
   String get followListenAlong;
 
+  /// Title of the listen-together sheet, and of the buttons that open it
+  ///
+  /// In en, this message translates to:
+  /// **'Listen together'**
+  String get listenTogetherTitle;
+
   /// Indicator shown while this device follows another device's session
   ///
   /// In en, this message translates to:

@@ -8,48 +8,6 @@ import 'package:player/utils/PlayQueueService.dart';
 
 import '../l10n/app_localizations.dart';
 
-/// Bottom sheet listing every device listening along with one of the user's own sessions,
-/// with the option to remove one device or a whole user again.
-Future<void> showSessionListenersSheet(
-  BuildContext context, {
-  required String serverName,
-  required String playQueueId,
-}) {
-  return showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
-    isScrollControlled: true,
-    builder: (context) {
-      final loc = AppLocalizations.of(context)!;
-      return SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-                child: Text(loc.followersSheetTitle,
-                    style: Theme.of(context).textTheme.titleMedium),
-              ),
-              Flexible(
-                child: SingleChildScrollView(
-                  child: SessionListenersList(
-                    serverName: serverName,
-                    playQueueId: playQueueId,
-                    canKick: true,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    },
-  );
-}
-
 /// Embeddable list of every device listening along with a session, grouped per
 /// user, refreshed while mounted. With [canKick] the owner can remove one
 /// device or a whole user again; without it the list is read-only.

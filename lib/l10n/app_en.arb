@@ -1343,6 +1343,10 @@
   "@followListenAlong": {
     "description": "Action to start following another device's playback session on this device"
   },
+  "listenTogetherTitle": "Listen together",
+  "@listenTogetherTitle": {
+    "description": "Title of the listen-together sheet, and of the buttons that open it"
+  },
   "followingBadge": "Listening along",
   "@followingBadge": {
     "description": "Indicator shown while this device follows another device's session"

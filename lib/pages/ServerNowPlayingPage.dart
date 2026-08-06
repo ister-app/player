@@ -11,13 +11,10 @@ import 'package:player/graphql/serverActivitySnapshot.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../components/DevicePickerSheet.dart';
+import '../components/ListenTogetherSheet.dart';
 import '../components/LiveFeedBanner.dart';
-import '../components/SessionListenersSheet.dart';
 import '../l10n/app_localizations.dart';
-import '../utils/AppMessenger.dart';
 import '../utils/ClientManager.dart';
-import '../utils/DeviceService.dart';
 import '../utils/ImageUtil.dart';
 import '../utils/LoggerService.dart';
 import '../utils/MediaPlayerHandler.dart';
@@ -176,43 +173,6 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
     return hours > 0 ? '$hours:$mmss' : mmss;
   }
 
-  /// Makes one of the user's other online devices join [playQueueId] in follow
-  /// mode. The device executes the follow itself, so the usual follow
-  /// permission checks run there (same user, so they match this device's).
-  Future<void> _listenAlongOnDevice(String playQueueId) async {
-    final loc = AppLocalizations.of(context)!;
-    final device = await showDevicePickerSheet(context,
-        serverName: widget.serverName, title: loc.deviceListenAlongOn);
-    if (device == null) return;
-    final accepted = await DeviceService.instance.sendCommand(
-      widget.serverName,
-      deviceId: device.deviceId,
-      command: Enum$DeviceCommandType.START_FOLLOW,
-      playQueueId: playQueueId,
-    );
-    showAppSnackBar(accepted
-        ? loc.deviceCommandSent(device.name)
-        : loc.deviceCommandFailed);
-  }
-
-  /// Starts follow mode for [playQueueId] on this device. The server decides:
-  /// NOT_FOUND (session gone / permission revoked) and NO_LIBRARY_ACCESS get
-  /// their own explanation, OK starts playback via the media handler.
-  Future<void> _startListenAlong(String playQueueId) async {
-    final loc = AppLocalizations.of(context)!;
-    final result = await MediaPlayerHandler.instance
-        .startFollowingQueue(widget.serverName, playQueueId);
-    switch (result) {
-      case Enum$FollowResult.OK:
-        break;
-      case Enum$FollowResult.NO_LIBRARY_ACCESS:
-        showAppSnackBar(loc.followNoLibraryAccess);
-      case Enum$FollowResult.NOT_FOUND:
-      case Enum$FollowResult.$unknown:
-        showAppSnackBar(loc.followQueueUnavailable);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
@@ -258,26 +218,18 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
                       serverName: widget.serverName,
                       playQueueId: session.playQueueId))
                   : null,
-              // Listen along: anyone who may control the session may also
-              // play it along on this device (same permission server-side) —
-              // except for this device's own session, where following itself
-              // would only stop the playback it joins.
-              onListenAlong: session.controllable &&
-                      !MediaPlayerHandler.instance
-                          .isOwnLiveQueue(widget.serverName, session.playQueueId)
-                  ? () => _startListenAlong(session.playQueueId)
+              // Listen together: the owner manages the session (listeners,
+              // devices, sharing); anyone who may control it may also join it
+              // on this device — except for this device's own session as seen
+              // through another card, where the owner check already covers it.
+              onListenTogether: session.userId == _ownUserId ||
+                      (session.controllable &&
+                          !MediaPlayerHandler.instance.isOwnLiveQueue(
+                              widget.serverName, session.playQueueId))
+                  ? () => showListenTogetherSheet(context,
+                      serverName: widget.serverName,
+                      playQueueId: session.playQueueId)
                   : null,
-              onListenAlongOnDevice: session.controllable
-                  ? () => _listenAlongOnDevice(session.playQueueId)
-                  : null,
-              // Who is listening along, and kicking them off, is the session
-              // owner's business alone — the server refuses it for anyone else.
-              onShowListeners:
-                  session.followerCount > 0 && session.userId == _ownUserId
-                      ? () => showSessionListenersSheet(context,
-                          serverName: widget.serverName,
-                          playQueueId: session.playQueueId)
-                      : null,
             ),
         ],
       );
@@ -299,9 +251,7 @@ class _SessionCard extends StatelessWidget {
   final IconData mediaIcon;
   final String Function(int) formatProgress;
   final VoidCallback? onTap;
-  final VoidCallback? onListenAlong;
-  final VoidCallback? onListenAlongOnDevice;
-  final VoidCallback? onShowListeners;
+  final VoidCallback? onListenTogether;
 
   const _SessionCard({
     required this.session,
@@ -310,9 +260,7 @@ class _SessionCard extends StatelessWidget {
     required this.mediaIcon,
     required this.formatProgress,
     this.onTap,
-    this.onListenAlong,
-    this.onListenAlongOnDevice,
-    this.onShowListeners,
+    this.onListenTogether,
   });
 
   @override
@@ -365,26 +313,12 @@ class _SessionCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       _StateChip(paused: paused),
-                      if (onListenAlong != null)
+                      if (onListenTogether != null)
                         IconButton(
                           icon: const Icon(Icons.headphones),
-                          tooltip: loc.followListenAlong,
+                          tooltip: loc.listenTogetherTitle,
                           visualDensity: VisualDensity.compact,
-                          onPressed: onListenAlong,
-                        ),
-                      if (onListenAlongOnDevice != null)
-                        IconButton(
-                          icon: const Icon(Icons.devices),
-                          tooltip: loc.deviceListenAlongOn,
-                          visualDensity: VisualDensity.compact,
-                          onPressed: onListenAlongOnDevice,
-                        ),
-                      if (onShowListeners != null)
-                        IconButton(
-                          icon: const Icon(Icons.groups),
-                          tooltip: loc.followersSheetTitle,
-                          visualDensity: VisualDensity.compact,
-                          onPressed: onShowListeners,
+                          onPressed: onListenTogether,
                         ),
                     ],
                   ),
