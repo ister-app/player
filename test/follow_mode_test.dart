@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:player/graphql/fragmentMediafiles.graphql.dart';
+import 'package:player/graphql/fragmentMovie.graphql.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 import 'package:player/graphql/fragmentServerActivity.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
@@ -43,6 +44,21 @@ Fragment$fragmentPlayQueue$playQueueItems _trackItem(String id, double position,
             id: 'album-1', name: 'The Album'),
         mediaFile: [_mediaFile('mf-$id')],
       ),
+    );
+
+Fragment$fragmentMovie _movie({String id = 'movie-1'}) => Fragment$fragmentMovie(
+      id: id,
+      name: 'The Movie',
+      releaseYear: 2020,
+      mediaFile: [_mediaFile('mf-$id')],
+    );
+
+Fragment$fragmentPlayQueue$playQueueItems _movieItem(String id, double position) =>
+    Fragment$fragmentPlayQueue$playQueueItems(
+      accessible: true,
+      id: id,
+      position: position,
+      movie: _movie(id: 'movie-$id'),
     );
 
 Fragment$fragmentPlayQueue _queue({
@@ -338,5 +354,38 @@ void main() {
 
     expect(handler.followMode, isFalse);
     expect(operations, contains('followPlayQueue'));
+  });
+
+  test('starting own playback of another queue leaves follow mode', () async {
+    final operations = <String>[];
+    useClient(_fakeGraphQL(queue: _queue(), operations: operations));
+    await handler.startFollowingQueue(_server, 'pq-follow');
+    operations.clear();
+
+    await handler.startPlayQueueForMovie(
+        ClientManager.getClientForUrl(_server).value, null, _movie(), _server);
+    // The deregistration is fired without awaiting; let it land.
+    await Future<void>.delayed(Duration.zero);
+
+    expect(handler.followMode, isFalse);
+    expect(handler.followModeNotifier.value, isFalse);
+    expect(operations, contains('followPlayQueue'));
+  });
+
+  test('re-opening the followed queue itself keeps follow mode', () async {
+    final queue = _queue(items: [_movieItem('item-1', 1)]);
+    useClient(_fakeGraphQL(queue: queue, operations: []));
+    await handler.startFollowingQueue(_server, 'pq-follow');
+    expect(handler.movie, isNotNull);
+
+    // The follower's movie page re-enters through the same start entry point,
+    // with the followed queue's own id — that must not end the follow.
+    await handler.startPlayQueueForMovie(
+        ClientManager.getClientForUrl(_server).value,
+        'pq-follow',
+        handler.movie!,
+        _server);
+
+    expect(handler.followMode, isTrue);
   });
 }

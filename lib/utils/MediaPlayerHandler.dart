@@ -226,6 +226,10 @@ class MediaPlayerHandler extends BaseAudioHandler
     Fragment$fragmentEpisode newEpisode,
     String newServerName,
   ) async {
+    // Starting own playback ends listening/watching along — except when the
+    // page merely re-opens the followed queue itself (the follower's video
+    // surface goes through this same entry point).
+    if (followMode && playQueue?.id != playQueueId) await stopFollowing();
     _intendsToPlay = true;
     _loadRetries = 0;
     _startHeartbeat();
@@ -356,6 +360,8 @@ class MediaPlayerHandler extends BaseAudioHandler
     Fragment$fragmentMovie newMovie,
     String newServerName,
   ) async {
+    // Same follow-mode rule as startPlayQueue: only a *different* queue ends it.
+    if (followMode && playQueue?.id != playQueueId) await stopFollowing();
     _intendsToPlay = true;
     _loadRetries = 0;
     _startHeartbeat();
@@ -432,6 +438,8 @@ class MediaPlayerHandler extends BaseAudioHandler
     String trackId,
     String newServerName,
   ) async {
+    // Same follow-mode rule as startPlayQueue: only a *different* queue ends it.
+    if (followMode && playQueue?.id != playQueueId) await stopFollowing();
     _intendsToPlay = true;
     _loadRetries = 0;
     _startHeartbeat();
@@ -709,6 +717,8 @@ class MediaPlayerHandler extends BaseAudioHandler
   Future<void> _startFromPlayQueue(
       GraphQLClient client, Fragment$fragmentPlayQueue pq, String srv,
       {String? startMediaId, int? startTimeMs}) async {
+    // Same follow-mode rule as startPlayQueue: only a *different* queue ends it.
+    if (followMode && playQueue?.id != pq.id) await stopFollowing();
     _intendsToPlay = true;
     _loadRetries = 0;
     _startHeartbeat();
