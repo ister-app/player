@@ -344,6 +344,13 @@ class _RemotePlayerController
   bool get hasSession => _session != null;
 
   @override
+  IconData get artPlaceholderIcon => switch (_session?.mediaType) {
+        Enum$MediaType.MOVIE => Icons.movie,
+        Enum$MediaType.EPISODE => Icons.tv,
+        _ => Icons.music_note,
+      };
+
+  @override
   String? get headerTitle {
     final session = _session;
     if (session == null) return null;

@@ -110,6 +110,10 @@ abstract class PlayerViewController extends ChangeNotifier {
   /// Optional line next to the dismiss chevron (e.g. "user · device").
   String? get headerTitle => null;
 
+  /// Icon behind missing artwork. Video sessions override this — a music note
+  /// under a movie reads as the wrong session.
+  IconData get artPlaceholderIcon => Icons.music_note;
+
   /// Optional banner above the artwork (live feed broken, session ended,
   /// listening along). Rebuilt whenever the controller notifies.
   Widget? buildBanner(BuildContext context) => null;
@@ -600,7 +604,8 @@ class _PlayerViewState extends State<PlayerView>
   Widget _artPlaceholder(double size) {
     return Container(
       color: Colors.white12,
-      child: Icon(Icons.music_note, color: Colors.white54, size: size * 0.4),
+      child: Icon(widget.controller.artPlaceholderIcon,
+          color: Colors.white54, size: size * 0.4),
     );
   }
 

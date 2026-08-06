@@ -136,6 +136,13 @@ class _LocalPlayerController extends QueuePlayerViewController<MediaItem> {
   String? get sessionSharingServerName => _handler.serverName;
 
   @override
+  IconData get artPlaceholderIcon => _handler.movie != null
+      ? Icons.movie
+      : _handler.episode != null
+          ? Icons.tv
+          : Icons.music_note;
+
+  @override
   bool get loading => _handler.mediaLoading.value;
 
   MediaItem? get _item => _handler.mediaItem.valueOrNull;
