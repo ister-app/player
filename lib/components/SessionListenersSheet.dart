@@ -9,10 +9,7 @@ import 'package:player/utils/PlayQueueService.dart';
 import '../l10n/app_localizations.dart';
 
 /// Bottom sheet listing every device listening along with one of the user's own sessions,
-/// grouped per user, with the option to remove one device or a whole user again.
-///
-/// Only the session owner sees anything here — the server answers an empty list for anyone
-/// else — and an older server without the query is reported as "could not load".
+/// with the option to remove one device or a whole user again.
 Future<void> showSessionListenersSheet(
   BuildContext context, {
   required String serverName,
@@ -22,27 +19,64 @@ Future<void> showSessionListenersSheet(
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
-    builder: (context) => _SessionListenersSheet(
-      serverName: serverName,
-      playQueueId: playQueueId,
-    ),
+    builder: (context) {
+      final loc = AppLocalizations.of(context)!;
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                child: Text(loc.followersSheetTitle,
+                    style: Theme.of(context).textTheme.titleMedium),
+              ),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: SessionListenersList(
+                    serverName: serverName,
+                    playQueueId: playQueueId,
+                    canKick: true,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
   );
 }
 
-class _SessionListenersSheet extends StatefulWidget {
-  const _SessionListenersSheet({
+/// Embeddable list of every device listening along with a session, grouped per
+/// user, refreshed while mounted. With [canKick] the owner can remove one
+/// device or a whole user again; without it the list is read-only.
+///
+/// The server answers the full list for the session owner only; for anyone
+/// else it may be empty even while people are listening, and an older server
+/// without the query cannot answer at all. [hideWhenUnavailable] renders
+/// nothing in those cases instead of a misleading "nobody is listening".
+class SessionListenersList extends StatefulWidget {
+  const SessionListenersList({
+    super.key,
     required this.serverName,
     required this.playQueueId,
+    this.canKick = false,
+    this.hideWhenUnavailable = false,
   });
 
   final String serverName;
   final String playQueueId;
+  final bool canKick;
+  final bool hideWhenUnavailable;
 
   @override
-  State<_SessionListenersSheet> createState() => _SessionListenersSheetState();
+  State<SessionListenersList> createState() => _SessionListenersListState();
 }
 
-class _SessionListenersSheetState extends State<_SessionListenersSheet> {
+class _SessionListenersListState extends State<SessionListenersList> {
   /// Followers register on a ~20s heartbeat and expire at 60s, so a short poll keeps the
   /// list honest while the sheet is open.
   static const _refreshInterval = Duration(seconds: 5);
@@ -142,80 +176,70 @@ class _SessionListenersSheetState extends State<_SessionListenersSheet> {
     final loc = AppLocalizations.of(context)!;
     final followers = _followers;
 
-    Widget body;
+    if (widget.hideWhenUnavailable &&
+        (_failed || (followers != null && followers.isEmpty))) {
+      return const SizedBox.shrink();
+    }
     if (_failed) {
-      body = Padding(
+      return Padding(
         padding: const EdgeInsets.all(24),
         child: Center(child: Text(loc.followersCouldNotLoad)),
       );
-    } else if (followers == null) {
-      body = const Padding(
+    }
+    if (followers == null) {
+      return const Padding(
         padding: EdgeInsets.all(32),
         child: Center(child: CircularProgressIndicator()),
       );
-    } else if (followers.isEmpty) {
-      body = Padding(
+    }
+    if (followers.isEmpty) {
+      return Padding(
         padding: const EdgeInsets.all(24),
         child: Center(child: Text(loc.followersNone)),
       );
-    } else {
-      body = Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (final group in _grouped(followers)) ...[
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: Text(group.value.first.userName ?? loc.followerUnknownUser,
-                  maxLines: 1, overflow: TextOverflow.ellipsis),
-              subtitle: Text(loc.followersListening(group.value.length)),
-              trailing: IconButton(
-                icon: const Icon(Icons.person_remove),
-                tooltip: loc.followerRemoveUser,
-                onPressed: () => _remove(group.key,
-                    group.value.first.userName ?? loc.followerUnknownUser),
-              ),
-            ),
-            for (final follower in group.value)
-              ListTile(
-                dense: true,
-                contentPadding: const EdgeInsets.only(left: 56, right: 8),
-                leading: Icon(follower.platform == null
-                    ? Icons.devices_other
-                    : devicePlatformIcon(follower.platform!)),
-                title: Text(follower.deviceName ?? loc.followerUnknownDevice,
-                    maxLines: 1, overflow: TextOverflow.ellipsis),
-                trailing: IconButton(
-                  icon: const Icon(Icons.close),
-                  tooltip: loc.followerRemove,
-                  onPressed: () => _remove(
-                    group.key,
-                    follower.deviceName ?? loc.followerUnknownDevice,
-                    deviceId: follower.deviceId,
-                  ),
-                ),
-              ),
-          ],
-        ],
-      );
     }
-
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-              child: Text(loc.followersSheetTitle,
-                  style: Theme.of(context).textTheme.titleMedium),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final group in _grouped(followers)) ...[
+          ListTile(
+            leading: const Icon(Icons.person),
+            title: Text(group.value.first.userName ?? loc.followerUnknownUser,
+                maxLines: 1, overflow: TextOverflow.ellipsis),
+            subtitle: Text(loc.followersListening(group.value.length)),
+            trailing: widget.canKick
+                ? IconButton(
+                    icon: const Icon(Icons.person_remove),
+                    tooltip: loc.followerRemoveUser,
+                    onPressed: () => _remove(group.key,
+                        group.value.first.userName ?? loc.followerUnknownUser),
+                  )
+                : null,
+          ),
+          for (final follower in group.value)
+            ListTile(
+              dense: true,
+              contentPadding: const EdgeInsets.only(left: 56, right: 8),
+              leading: Icon(follower.platform == null
+                  ? Icons.devices_other
+                  : devicePlatformIcon(follower.platform!)),
+              title: Text(follower.deviceName ?? loc.followerUnknownDevice,
+                  maxLines: 1, overflow: TextOverflow.ellipsis),
+              trailing: widget.canKick
+                  ? IconButton(
+                      icon: const Icon(Icons.close),
+                      tooltip: loc.followerRemove,
+                      onPressed: () => _remove(
+                        group.key,
+                        follower.deviceName ?? loc.followerUnknownDevice,
+                        deviceId: follower.deviceId,
+                      ),
+                    )
+                  : null,
             ),
-            Flexible(child: SingleChildScrollView(child: body)),
-          ],
-        ),
-      ),
+        ],
+      ],
     );
   }
 }
