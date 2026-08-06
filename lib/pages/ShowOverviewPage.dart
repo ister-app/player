@@ -5,6 +5,7 @@ import 'package:player/graphql/showById.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../components/WatchTogetherButton.dart';
 import '../components/TvShowSeasonExpansionPanelList.dart';
 import '../utils/LoggerService.dart';
 
@@ -60,6 +61,11 @@ class ShowOverviewPage extends StatelessWidget {
           appBar: AppBar(
             leading: AutoLeadingButton(),
             title: title,
+            actions: [
+              WatchTogetherButton(
+                  matches: (handler) =>
+                      handler.episode?.$show?.id == showId),
+            ],
           ),
           body: body,
         );

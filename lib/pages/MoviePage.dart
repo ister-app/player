@@ -6,6 +6,7 @@ import 'package:player/graphql/movieById.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../components/WatchTogetherButton.dart';
 import '../components/AddToPlaylistSheet.dart';
 import '../components/AddToSessionSheet.dart';
 import '../components/DevicePickerSheet.dart';
@@ -122,7 +123,13 @@ class _MoviePageState extends State<MoviePage> {
               MetadataUtil.getTitle(movie?.metadata) ?? movie?.name ?? '',
               movie?.releaseYear);
           return Scaffold(
-            appBar: AppBar(title: Text(title)),
+            appBar: AppBar(
+              title: Text(title),
+              actions: [
+                WatchTogetherButton(
+                    matches: (handler) => handler.movie?.id == widget.movieId),
+              ],
+            ),
             body: SingleChildScrollView(
               child: _buildContent(
                 loadComplete,

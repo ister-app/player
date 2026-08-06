@@ -6,6 +6,7 @@ import 'package:media_kit_video/media_kit_video.dart';
 import '../utils/MediaPlayerHandler.dart';
 import '../utils/PlatformService.dart';
 import 'TvFocusable.dart';
+import 'WatchTogetherButton.dart';
 
 /// The video surface for an episode/movie page.
 ///
@@ -43,8 +44,16 @@ class _IsterPlayerState extends State<IsterPlayer> {
         await defaultExitNativeFullscreen();
         // On TV, fullscreen is the only playback surface, so leaving it (e.g.
         // the back button) pauses right away. Elsewhere the embedded view keeps
-        // playing.
-        if (PlatformService.isAndroidTvSync) _handler.pause();
+        // playing. While watching along, pause would halt the *whole* session
+        // (it becomes a remote command) and the leader's sync would restart
+        // playback anyway — backing out means leaving the watch party instead.
+        if (PlatformService.isAndroidTvSync) {
+          if (_handler.followMode) {
+            _handler.stopFollowing();
+          } else {
+            _handler.pause();
+          }
+        }
       },
     );
   }
@@ -118,34 +127,67 @@ class _IsterVideoControlsState extends State<_IsterVideoControls> {
     if (!isFullscreen(context)) enterFullscreen(context);
   }
 
+  /// Wraps [controls] in the media_kit control themes so a top button bar with
+  /// the watch-together entry point (and the "watching along" chip while
+  /// following) appears — crucial in fullscreen, the only playback surface on
+  /// TV, where the page's app bar is unreachable.
+  Widget _withTopBar(Widget controls) {
+    final topButtonBar = <Widget>[
+      const Spacer(),
+      const WatchingAlongChip(),
+      const SizedBox(width: 8),
+      const WatchTogetherButton(color: Colors.white),
+    ];
+    return MaterialDesktopVideoControlsTheme(
+      normal: kDefaultMaterialDesktopVideoControlsThemeData.copyWith(
+          topButtonBar: topButtonBar),
+      fullscreen: kDefaultMaterialDesktopVideoControlsThemeDataFullscreen
+          .copyWith(topButtonBar: topButtonBar),
+      child: MaterialVideoControlsTheme(
+        normal: kDefaultMaterialVideoControlsThemeData.copyWith(
+            topButtonBar: topButtonBar),
+        fullscreen: kDefaultMaterialVideoControlsThemeDataFullscreen.copyWith(
+            topButtonBar: topButtonBar),
+        child: controls,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isFullscreen(context)) {
-      return PlatformService.isAndroidTvSync
+      return _withTopBar(PlatformService.isAndroidTvSync
           ? MaterialDesktopVideoControls(widget.state)
-          : AdaptiveVideoControls(widget.state);
+          : AdaptiveVideoControls(widget.state));
     }
     // Embedded on a normal device: the standard controls, which include a
     // fullscreen button so the user can go fullscreen (and come back) at will.
     if (!PlatformService.isAndroidTvSync) {
-      return AdaptiveVideoControls(widget.state);
+      return _withTopBar(AdaptiveVideoControls(widget.state));
     }
     // Embedded on TV: transparent tap target over the (paused) video frame,
-    // with a hint icon. Focusable so a TV remote can select it.
+    // with a hint icon. Focusable so a TV remote can select it. The chip keeps
+    // the follow state visible here — there are no controls to carry it.
     return TvFocusable(
       onTap: _onTapEmbedded,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: _onTapEmbedded,
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              color: Colors.black45,
-              shape: BoxShape.circle,
+        child: Stack(
+          children: [
+            const Positioned(top: 8, left: 8, child: WatchingAlongChip()),
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: const BoxDecoration(
+                  color: Colors.black45,
+                  shape: BoxShape.circle,
+                ),
+                child:
+                    const Icon(Icons.fullscreen, size: 40, color: Colors.white),
+              ),
             ),
-            child: const Icon(Icons.fullscreen, size: 40, color: Colors.white),
-          ),
+          ],
         ),
       ),
     );
