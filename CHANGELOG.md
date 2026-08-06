@@ -1,5 +1,39 @@
 # Changelog
 
+## player v1.11.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.11.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(books): show whole-book progress in continue watching ([`762fd73`](https://github.com/ister-app/player/commit/762fd73))
+- feat(player): announce the sleep timer and let it count media items ([`a701ee7`](https://github.com/ister-app/player/commit/a701ee7))
+- feat(player): give the remote control the same player as local playback ([`2c336ba`](https://github.com/ister-app/player/commit/2c336ba))
+- feat(devices): show and remove the devices listening along ([`833c247`](https://github.com/ister-app/player/commit/833c247))
+
+### Fixes
+
+- fix(player): refresh the continue-watching row once per item switch ([`2bc8603`](https://github.com/ister-app/player/commit/2bc8603))
+- fix(player): hide listen-along for your own playing session ([`dd3c961`](https://github.com/ister-app/player/commit/dd3c961))
+
+### Other
+
+- refactor(player): share the queue logic between the local and remote player ([`d51d9bc`](https://github.com/ister-app/player/commit/d51d9bc))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.11.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.10.0...v1.11.0
+
 ## player v1.10.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
