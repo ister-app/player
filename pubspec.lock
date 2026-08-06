@@ -858,7 +858,7 @@ packages:
     description:
       path: media_kit
       ref: HEAD
-      resolved-ref: "765a7bef640b1c0c115ed8f8d8d1f969ce67b127"
+      resolved-ref: "59e969e54e6dab9c3df4cefd9916e325a2654de9"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.2.6"
@@ -903,7 +903,7 @@ packages:
     description:
       path: "libs/universal/media_kit_libs_video"
       ref: HEAD
-      resolved-ref: "765a7bef640b1c0c115ed8f8d8d1f969ce67b127"
+      resolved-ref: "59e969e54e6dab9c3df4cefd9916e325a2654de9"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.0.8"
@@ -921,7 +921,7 @@ packages:
     description:
       path: media_kit_video
       ref: HEAD
-      resolved-ref: "765a7bef640b1c0c115ed8f8d8d1f969ce67b127"
+      resolved-ref: "59e969e54e6dab9c3df4cefd9916e325a2654de9"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "2.0.1"
