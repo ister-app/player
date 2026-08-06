@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/utils/LoginManager.dart';
@@ -56,10 +58,41 @@ class ClientManager {
 
   static final Map<String, WebSocketLink> _webSocketLinks = {};
 
+  /// Per-server hand brake on the websocket: pushing disconnect+connect makes
+  /// the socket client drop its connection and re-register every live
+  /// subscription on a fresh one (see [resetWebSockets]).
+  static final Map<String, StreamController<ToggleConnectionState>>
+      _socketToggles = {};
+
+  /// After doze or a network switch, mobile OSes can leave a TCP connection
+  /// half-open: dead, but without ever surfacing a close or error to the app.
+  /// The graphql socket client cannot detect that state (its keepalive ping is
+  /// only re-armed by the matching pong, which never arrives), so every
+  /// subscription would silently stay frozen. This forces each connected
+  /// socket through a disconnect→connect cycle; sockets that are idle or
+  /// mid-(re)connect ignore the pulses.
+  static Future<void> resetWebSockets() async {
+    for (final toggle in _socketToggles.values) {
+      toggle.add(ToggleConnectionState.disconnect);
+    }
+    // The connect pulse is only honoured in the notConnected state; give the
+    // disconnect a beat to close the channel and get there.
+    await Future.delayed(const Duration(milliseconds: 300));
+    for (final toggle in _socketToggles.values) {
+      toggle.add(ToggleConnectionState.connect);
+    }
+  }
+
+  /// Observe the reset pulses [resetWebSockets] sends for [url].
+  @visibleForTesting
+  static Stream<ToggleConnectionState>? socketToggleStreamFor(String url) =>
+      _socketToggles[url]?.stream;
+
   /// Drops all per-server state for [url] (used when a server is deleted).
   static void removeClient(String url) {
     clients.remove(url);
     _webSocketLinks.remove(url)?.dispose();
+    _socketToggles.remove(url)?.close();
     if (instance._lastClientUsed == url) {
       instance.lastClientUsed = null;
     }
@@ -107,12 +140,15 @@ class ClientManager {
     // token. The socket only opens once something actually subscribes.
     final wsUrl =
         '${cachedInfo.serverUrl}/graphql'.replaceFirst(RegExp(r'^http'), 'ws');
+    final toggle = _socketToggles.putIfAbsent(
+        url, () => StreamController<ToggleConnectionState>.broadcast());
     final WebSocketLink wsLink = WebSocketLink(
       wsUrl,
       subProtocol: GraphQLProtocol.graphqlTransportWs,
       config: SocketClientConfig(
         autoReconnect: true,
         delayBetweenReconnectionAttempts: const Duration(seconds: 5),
+        toggleConnection: toggle.stream,
         initialPayload: () async {
           // A null Authorization guarantees the server closes with 4401, so
           // wait for a token rather than burning the connect attempt. The key

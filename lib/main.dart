@@ -85,10 +85,18 @@ class Main extends StatefulWidget {
 
 class _MainState extends State<Main> {
   late final RouterConfig<UrlState> _routerConfig;
+  late final AppLifecycleListener _lifecycleListener;
 
   @override
   void initState() {
     super.initState();
+    // Doze / a network switch while backgrounded can leave the GraphQL
+    // websocket half-open: HTTP recovers per request, but the socket never
+    // errors and every subscription silently freezes. Resume is exactly when
+    // that state becomes user-visible, so force a reconnect cycle here — the
+    // socket client re-registers all live subscriptions on the new connection.
+    _lifecycleListener =
+        AppLifecycleListener(onResume: ClientManager.resetWebSockets);
     final appRouter = AppRouter();
     _routerConfig = appRouter.config(
       deepLinkBuilder: widget.initialServer != null
@@ -110,6 +118,12 @@ class _MainState extends State<Main> {
         Permission.notification.request();
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _lifecycleListener.dispose();
+    super.dispose();
   }
 
   @override

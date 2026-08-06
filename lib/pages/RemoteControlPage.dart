@@ -11,6 +11,7 @@ import 'package:player/graphql/fragmentServerActivity.graphql.dart';
 import 'package:player/graphql/nowPlayingSubscription.graphql.dart';
 import 'package:player/graphql/playbackCommandsSubscription.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
+import 'package:player/graphql/serverActivitySnapshot.graphql.dart';
 
 import '../components/LiveFeedBanner.dart';
 import '../routes/AppRouter.gr.dart';
@@ -244,8 +245,14 @@ class _RemotePlayerController
     // trigger a rebuild — otherwise every cover goes stale mid-session.
     StreamTokenService.tokenVersion.addListener(_onTokenRefreshed);
 
-    // The server replays the latest session list on subscribe, so no separate
-    // snapshot query is needed to render the initial state.
+    // The server replays the latest session list on subscribe, so a healthy
+    // websocket renders the initial state by itself. But the subscription is
+    // this page's only data source, and after doze/a network switch the
+    // socket can be silently half-open and deliver nothing — so also seed the
+    // session over HTTP. The subscription stays authoritative: the seed only
+    // lands while nothing has arrived yet.
+    _seedFromSnapshot();
+
     _nowPlayingSubscription = ResilientSubscription(
       client: _client,
       document: documentNodeSubscriptionnowPlaying,
@@ -369,6 +376,29 @@ class _RemotePlayerController
 
   void _onTokenRefreshed() {
     if (!_disposed) notifyListeners();
+  }
+
+  /// One-shot HTTP fallback for the initial state (see the constructor). Never
+  /// flips [sessionEnded]: a session missing from the snapshot is the
+  /// subscription's call to make.
+  Future<void> _seedFromSnapshot() async {
+    final result = await _client.query(QueryOptions(
+      document: documentNodeQueryserverActivitySnapshot,
+      fetchPolicy: FetchPolicy.networkOnly,
+    ));
+    if (_disposed || _session != null || sessionEnded) return;
+    final data = result.data;
+    if (result.hasException || data == null) return;
+    final session = Query$serverActivitySnapshot.fromJson(data)
+        .serverActivitySnapshot
+        .nowPlaying
+        .where((s) => s.playQueueId == playQueueId)
+        .firstOrNull;
+    if (session == null) return;
+    _session = session;
+    _anchor = DateTime.now();
+    _syncTicker();
+    notifyListeners();
   }
 
   /// Applies commands (our own echoes and other controllers') optimistically
