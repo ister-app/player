@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
@@ -47,11 +48,11 @@ class MediaPlayerHandler extends BaseAudioHandler
     with SeekHandler, QueueHandler {
   MediaPlayerHandler._internal() {
     _player = Player(
-      configuration: const PlayerConfiguration(
+      configuration: PlayerConfiguration(
         libass: true,
         libassAndroidFont: 'assets/fonts/DroidSansFallback.ttf',
         libassAndroidFontName: 'Droid Sans Fallback',
-        bufferSize: 320 * 1024 * 1024,
+        bufferSize: _demuxerBufferSize(),
       ),
     );
 
@@ -116,6 +117,33 @@ class MediaPlayerHandler extends BaseAudioHandler
       LoggerService().logger.d('Applied mpv network reconnect options');
     } catch (e) {
       LoggerService().logger.w('Failed to set mpv network options: $e');
+    }
+  }
+
+  /// mpv demuxer cache budget. media_kit applies this value to *both*
+  /// demuxer-max-bytes and demuxer-max-back-bytes, so the real ceiling is
+  /// twice what is returned here. On low-RAM devices (2GB Android TV boxes)
+  /// the 320MB desktop default lets the process grow past 800MB RSS and the
+  /// lowmemorykiller SIGKILLs the app mid-playback — scale down there.
+  static int _demuxerBufferSize() {
+    const desktop = 320 * 1024 * 1024;
+    const lowRam = 32 * 1024 * 1024;
+    final totalRam = _totalPhysicalMemory();
+    if (totalRam != null && totalRam < 3 * 1024 * 1024 * 1024) return lowRam;
+    return desktop;
+  }
+
+  /// Total physical memory in bytes, or null when it cannot be determined
+  /// (web, non-procfs platforms).
+  static int? _totalPhysicalMemory() {
+    if (kIsWeb || !(Platform.isAndroid || Platform.isLinux)) return null;
+    try {
+      final memInfo = File('/proc/meminfo').readAsStringSync();
+      final match = RegExp(r'MemTotal:\s+(\d+) kB').firstMatch(memInfo);
+      if (match == null) return null;
+      return int.parse(match.group(1)!) * 1024;
+    } catch (_) {
+      return null;
     }
   }
 
