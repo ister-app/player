@@ -46,7 +46,14 @@ class StreamTokenService {
     final hadToken = getToken(serverName) != null;
     final client = ClientManager.getClientForUrl(serverName).value;
     final result = await client.mutate(
-      MutationOptions(document: documentNodeMutationcreateStreamTokenMutation),
+      MutationOptions(
+        document: documentNodeMutationcreateStreamTokenMutation,
+        // Fired from playback hot paths (token refresh timers, play()).
+        // Keep it out of the normalized cache: every cache write costs a
+        // deep-compare of all watched queries on low-end TVs.
+        fetchPolicy: FetchPolicy.noCache,
+        cacheRereadPolicy: CacheRereadPolicy.ignoreAll,
+      ),
     );
     if (result.hasException) {
       LoggerService().logger.e('Failed to fetch stream token: ${result.exception}');

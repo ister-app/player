@@ -112,6 +112,13 @@ class MediaPlayerHandler extends BaseAudioHandler
       // without setProperty, so a static call breaks dart2js/dart2wasm even
       // though this code is unreachable there.
       final dynamic native = platform;
+      // When video falls behind the audio clock (e.g. right after unpausing on
+      // a low-end TV), the default framedrop=vo only drops frames *after*
+      // they were decoded, copied and uploaded — on the mediacodec-copy path
+      // that keeps the pipeline saturated for seconds (a visible slideshow
+      // until it catches up). Dropping at the decoder as well skips the
+      // expensive part of the pipeline and recovers within a few frames.
+      await native.setProperty('framedrop', 'decoder+vo');
       await native.setProperty('network-timeout', '30');
       await native.setProperty('stream-lavf-o', reconnect);
       await native.setProperty('demuxer-lavf-o', reconnect);
@@ -363,7 +370,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// Starting the item that is already loaded should resume it — and restart
   /// it when it already played to the end — instead of doing nothing.
   Future<void> _resumeCurrentItem() async {
-    if (_player.state.completed) {
+    if (_player.state.completed && !ClientManager.usesTestClients) {
       await _player.seek(Duration.zero);
     }
     await play();
@@ -1172,7 +1179,11 @@ class MediaPlayerHandler extends BaseAudioHandler
       _startHeartbeat();
       _ensureCommandSubscription();
     }
-    final result = _player.play();
+    // Under flutter test there is no real mpv event loop and player calls
+    // never complete — same seam as _openMedia / _silenceForQueueSwitch.
+    final result = ClientManager.usesTestClients
+        ? Future<void>.value()
+        : _player.play();
     // Tell the server we resumed right away. playState is passed explicitly
     // because _player.state.playing hasn't flipped to true yet at this point.
     unawaited(_syncProgress(_player.state.position,
@@ -1190,7 +1201,8 @@ class MediaPlayerHandler extends BaseAudioHandler
     // (pause() below hasn't taken effect), so deriving it would report PLAYING.
     unawaited(_syncProgress(_player.state.position,
         force: true, playState: Enum$PlayState.PAUSED));
-    return _player.pause();
+    // Same test seam as play(): the real pause never completes under test.
+    return ClientManager.usesTestClients ? Future.value() : _player.pause();
   }
 
   @override
@@ -1306,7 +1318,8 @@ class MediaPlayerHandler extends BaseAudioHandler
         startTimeInMilliseconds: position.inMilliseconds,
         mediaType: _currentMediaType,
       );
-    } else {
+    } else if (!ClientManager.usesTestClients) {
+      // Same test seam as play()/pause(): raw seeks never complete under test.
       await _player.seek(position);
     }
   }
@@ -2643,6 +2656,16 @@ class MediaPlayerHandler extends BaseAudioHandler
     // On a following device the command bus is the normal transport — every
     // play/pause/skip would toast. Only queue edits stay worth announcing.
     if (_followMode && command != Enum$PlaybackCommandType.QUEUE_CHANGED) {
+      return;
+    }
+    // While a video is on screen, transport commands are already visible in
+    // the picture itself — and the snackbar's ~4s animation over the video
+    // texture is enough compositing load to turn playback into a slideshow
+    // on low-end TVs (the reported resume stutter after a remote play).
+    if ((episode != null || movie != null) &&
+        (command == Enum$PlaybackCommandType.PLAY ||
+            command == Enum$PlaybackCommandType.PAUSE ||
+            command == Enum$PlaybackCommandType.SEEK)) {
       return;
     }
     final loc = IsterMediaService.loc;
