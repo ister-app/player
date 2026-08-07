@@ -48,3 +48,26 @@ void openCurrentVideoPage(BuildContext context) {
         .navigate(ServerHomeRoute(serverName: playingServer, children: [route]));
   }
 }
+
+/// The video routes: the pages that host a video surface rather than a
+/// separate full-screen player route.
+const _videoRouteNames = {MovieRoute.name, ShowEpisodeRoute.name};
+
+/// Closes the video page(s) on top of the stack — the counterpart of
+/// [openCurrentVideoPage], used when playback ended on this device for good
+/// (the watch-along leader stopped, or the queue moved to another device) and
+/// leaving a dead player surface on screen would be wrong.
+///
+/// Only pops while a video page is actually the topmost route: a video page
+/// buried under something else (or in an inactive tab) is left alone, so this
+/// can never yank a page out from under the user.
+void closeCurrentVideoPage(BuildContext context) {
+  // Nullable lookup: this runs from a global listener, which can fire from a
+  // context outside any router (tests, headless audio-service startup).
+  final root = StackRouterScope.of(context)?.controller.root;
+  if (root == null) return;
+  while (_videoRouteNames.contains(root.topRoute.name)) {
+    final topMost = root.topMostRouter();
+    if (topMost is! StackRouter || !topMost.removeLast()) break;
+  }
+}

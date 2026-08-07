@@ -23,6 +23,14 @@ class IsterPlayer extends StatefulWidget {
     super.key,
   });
 
+  /// Leaves fullscreen, set by the controls instance that is *itself* showing
+  /// fullscreen (only that one has the [BuildContext] media_kit's
+  /// [exitFullscreen] needs). Null when no video is fullscreen. Used when
+  /// playback is torn down from the outside — the watch-along leader stopped,
+  /// or the queue moved to another device — so the fullscreen surface is left
+  /// before the page underneath is closed.
+  static Future<void> Function()? activeFullscreenExitHandler;
+
   @override
   State<IsterPlayer> createState() => _IsterPlayerState();
 }
@@ -49,7 +57,9 @@ class _IsterPlayerState extends State<IsterPlayer> {
         // playback anyway — backing out means leaving the watch party instead.
         if (PlatformService.isAndroidTvSync) {
           if (_handler.followMode) {
-            _handler.stopFollowing();
+            // Leaving the watch party means the shared media is gone from this
+            // device: end playback rather than leave a paused stream behind.
+            _handler.stopFollowing(teardown: true);
           } else {
             _handler.pause();
           }
@@ -83,6 +93,11 @@ class _IsterVideoControlsState extends State<_IsterVideoControls> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    // Register the fullscreen escape hatch from the fullscreen instance; the
+    // embedded copy of these controls has no fullscreen route to pop.
+    if (isFullscreen(context)) {
+      IsterPlayer.activeFullscreenExitHandler = _exitFullscreen;
+    }
     // Auto-fullscreen is TV-only. Elsewhere the embedded view stays embedded
     // until the user hits the fullscreen button. Only the embedded instance
     // drives it; the fullscreen copy of these controls just renders the UI.
@@ -100,7 +115,17 @@ class _IsterVideoControlsState extends State<_IsterVideoControls> {
   @override
   void dispose() {
     _playingSub?.cancel();
+    // Tear-offs of the same method on the same instance compare equal (they
+    // are not necessarily `identical`), so this only clears our own handler.
+    if (IsterPlayer.activeFullscreenExitHandler == _exitFullscreen) {
+      IsterPlayer.activeFullscreenExitHandler = null;
+    }
     super.dispose();
+  }
+
+  Future<void> _exitFullscreen() async {
+    if (!mounted || !isFullscreen(context)) return;
+    await exitFullscreen(context);
   }
 
   /// Enter fullscreen the first time playback becomes active after this view is

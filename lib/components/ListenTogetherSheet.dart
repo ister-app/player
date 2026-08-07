@@ -181,10 +181,15 @@ class _ListenTogetherSheetState extends State<_ListenTogetherSheet> {
       positionMs: _handler.playbackState.value.position.inMilliseconds,
     );
     if (accepted) {
-      // Stop after the send: the target's first heartbeat (same user, so
-      // ownership holds) takes the session over from this device.
-      await _handler.stop();
+      // Close this sheet first: the teardown below closes the video page/music
+      // overlay underneath it, which shouldn't happen while a modal of ours is
+      // still on top of them.
       if (mounted) Navigator.of(context).pop();
+      // End playback here after the send: the target's first heartbeat (same
+      // user, so ownership holds) takes the session over from this device.
+      // No progress flush — the pause above already wrote the position, and
+      // from here on the target owns it.
+      await _handler.endPlaybackLocally(flushProgress: false);
       widget.onQueueMoved?.call();
     } else if (wasPlaying) {
       await _handler.play();
@@ -233,6 +238,12 @@ class _ListenTogetherSheetState extends State<_ListenTogetherSheet> {
         ),
       ];
 
+  /// Leaves the session: the shared media is the leader's, so playback ends
+  /// here rather than staying paused (teardown) — the video page/music overlay
+  /// under this sheet closes with it. The sheet itself stays open and rebuilds
+  /// into its join state, so rejoining is one tap away.
+  void _stopFollowing() => unawaited(_handler.stopFollowing(teardown: true));
+
   List<Widget> _followerContent(AppLocalizations loc) => [
         ListTile(
           leading: Icon(_isWatch ? Icons.connected_tv : Icons.headphones),
@@ -242,7 +253,7 @@ class _ListenTogetherSheetState extends State<_ListenTogetherSheet> {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: FilledButton.tonal(
             style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-            onPressed: () => _handler.stopFollowing(),
+            onPressed: _stopFollowing,
             child: Text(
                 _isWatch ? loc.stopWatchingAlong : loc.stopListeningAlong),
           ),

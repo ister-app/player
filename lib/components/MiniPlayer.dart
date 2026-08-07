@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:audio_service/audio_service.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:player/components/IsterPlayer.dart';
 import 'package:player/components/PlayPauseButton.dart';
 import 'package:player/components/PlayerView.dart';
 import 'package:player/components/TvFocusable.dart';
@@ -32,6 +35,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
         .addListener(_onOpenPlayerRequested);
     MediaPlayerHandler.instance.openVideoPageRequest
         .addListener(_onOpenVideoPageRequested);
+    MediaPlayerHandler.instance.closePlaybackRequest
+        .addListener(_onPlaybackClosed);
   }
 
   @override
@@ -40,6 +45,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
         .removeListener(_onOpenPlayerRequested);
     MediaPlayerHandler.instance.openVideoPageRequest
         .removeListener(_onOpenVideoPageRequested);
+    MediaPlayerHandler.instance.closePlaybackRequest
+        .removeListener(_onPlaybackClosed);
     super.dispose();
   }
 
@@ -60,6 +67,24 @@ class _MiniPlayerState extends State<MiniPlayer> {
       PlayerView.activeBackHandler?.call();
     }
     openCurrentVideoPage(context);
+  }
+
+  /// Fired when playback was torn down on this device (the watch-along leader
+  /// stopped, or the queue was handed off). The bar itself disappears on the
+  /// null mediaItem; what remains is closing the surfaces that were opened for
+  /// the media — the music overlay and the video page.
+  void _onPlaybackClosed() => unawaited(_closePlaybackSurfaces());
+
+  Future<void> _closePlaybackSurfaces() async {
+    if (!mounted) return;
+    if (MediaPlayerHandler.instance.musicPlayerOpen.value) {
+      PlayerView.activeBackHandler?.call();
+    }
+    // Fullscreen first: its route sits on the root navigator, above the video
+    // page we are about to close.
+    await IsterPlayer.activeFullscreenExitHandler?.call();
+    if (!mounted) return;
+    closeCurrentVideoPage(context);
   }
 
   void _openAlbumPage(BuildContext context) {

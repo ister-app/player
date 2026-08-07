@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -289,12 +290,55 @@ void main() {
     useClient(_fakeGraphQL(queue: _queue(), operations: operations));
     await handler.startFollowingQueue(_server, 'pq-follow');
 
+    final closeRequests = handler.closePlaybackRequest.value;
+    operations.clear();
+
     await handler.debugApplyFollowNowPlaying(
         [_session(playQueueId: 'someone-elses-queue')]);
 
     expect(handler.followMode, isFalse);
     expect(handler.followModeNotifier.value, isFalse);
+    // The leader's media is gone: playback ends here rather than staying
+    // paused, so no mini player (null mediaItem) and no dead queue survive.
+    expect(handler.playQueue, isNull);
+    expect(handler.currentPlayQueueItem, isNull);
+    expect(handler.serverName, isNull);
+    expect(handler.mediaItem.valueOrNull, isNull);
+    expect(handler.queue.value, isEmpty);
+    expect(handler.playbackState.value.playing, isFalse);
+    expect(handler.playbackState.value.processingState,
+        AudioProcessingState.idle);
+    // The UI is asked to close what it opened for the media.
+    expect(handler.closePlaybackRequest.value, closeRequests + 1);
+    // A follower is not the progress writer for the shared queue, not even on
+    // its way out.
+    expect(operations, isNot(contains('updatePlayQueue')));
   });
+
+  test('endPlaybackLocally tears own playback down and can skip the flush',
+      () async {
+    final operations = <String>[];
+    useClient(_fakeGraphQL(queue: _queue(), operations: operations));
+    handler.serverName = _server;
+    handler.playQueue = _queue();
+    handler.currentPlayQueueItem = _trackItem('item-1', 1);
+    handler.graphQLClient = ClientManager.getClientForUrl(_server).value;
+    final closeRequests = handler.closePlaybackRequest.value;
+
+    // Handoff to another device: the target owns the progress from now on, so
+    // this device must not write one more position. (With no stream open the
+    // flush is a no-op either way here; what this pins down is the state that
+    // is left behind.)
+    await handler.endPlaybackLocally(flushProgress: false);
+
+    expect(handler.playQueue, isNull);
+    expect(handler.graphQLClient, isNull);
+    expect(handler.mediaItem.valueOrNull, isNull);
+    expect(handler.queue.value, isEmpty);
+    expect(handler.closePlaybackRequest.value, closeRequests + 1);
+    expect(operations, isNot(contains('updatePlayQueue')));
+  });
+
 
   test('an inaccessible current item stays silent but keeps the index',
       () async {

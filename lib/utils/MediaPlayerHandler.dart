@@ -157,6 +157,13 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// player — which navigates to the movie/episode page hosting the video.
   final ValueNotifier<int> openVideoPageRequest = ValueNotifier(0);
 
+  /// Bumped by [endPlaybackLocally]: playback was torn down for good on this
+  /// device (the watch-along leader stopped, or the queue moved to another
+  /// device), so the UI must close what it opened for it — the music overlay
+  /// and the video page/fullscreen. The mini player disappears on its own
+  /// because [mediaItem] goes null.
+  final ValueNotifier<int> closePlaybackRequest = ValueNotifier(0);
+
   /// True from the moment a user-initiated new track begins loading until its
   /// [mediaItem] metadata is published. The music player shows a skeleton while
   /// this is set so it never displays the *previous* track's cover/title.
@@ -1178,6 +1185,66 @@ class MediaPlayerHandler extends BaseAudioHandler
     await session.setActive(false);
   }
 
+  /// Ends playback on *this* device for good: unlike [stop] (which pauses and
+  /// keeps the item loaded so the notification/mini player can resume it) this
+  /// closes the stream and clears the loaded media entirely. Used when the
+  /// media is gone from this device rather than merely paused — the followed
+  /// session ended, or the queue was handed off to another device.
+  ///
+  /// [flushProgress] writes one last position to the server. Pass false after a
+  /// handoff: the target device owns the progress from that moment, and a late
+  /// flush from here would drag it back.
+  Future<void> endPlaybackLocally({bool flushProgress = true}) async {
+    await stopFollowing();
+    _intendsToPlay = false;
+    _stopHeartbeat();
+    _stopCommandSubscription();
+    if (flushProgress) {
+      unawaited(_syncProgress(_player.state.position,
+          force: true, playState: Enum$PlayState.PAUSED));
+    }
+    SleepTimerService.instance.notifyPlaybackStopped();
+    // In-flight progress responses must not resurrect the queue we clear below.
+    _syncGeneration++;
+    // stop(), not pause(): pausing leaves the HLS load (and the video texture)
+    // alive, which is exactly what this method exists to get rid of.
+    if (!ClientManager.usesTestClients) await _player.stop();
+
+    playQueue = null;
+    currentPlayQueueItem = null;
+    episode = null;
+    movie = null;
+    album = null;
+    currentTrackId = null;
+    serverName = null;
+    graphQLClient = null;
+    _currentMediaUrl = null;
+    _forcedAudio = null;
+    _forcedSubtitle = null;
+    _audioPreferenceApplied = false;
+    _subtitlePreferenceApplied = false;
+    _streamOpenPositionMs = 0;
+    _mediaOpenedAt = null;
+    _loadErrorSeen = false;
+    _loadRetries = 0;
+    _lastProgress = null;
+    _lastSyncSentAt = null;
+
+    queue.add(const []);
+    mediaItem.add(null);
+    updatePlaybackState();
+
+    if (!ClientManager.usesTestClients) {
+      try {
+        final session = await AudioSession.instance;
+        await session.setActive(false);
+      } catch (e) {
+        LoggerService().logger.w('Releasing audio focus on teardown failed: $e');
+      }
+    }
+    closePlaybackRequest.value++;
+  }
+
   @override
   Future<void> seek(Duration position) {
     if (_followMode && !_applyingRemoteSync) {
@@ -2037,6 +2104,22 @@ class MediaPlayerHandler extends BaseAudioHandler
   }
 
   void updatePlaybackState() {
+    // Nothing loaded (after endPlaybackLocally): publish an idle, control-less
+    // state so audio_service drops the notification instead of leaving a dead
+    // one behind.
+    if (playQueue == null && mediaItem.valueOrNull == null) {
+      playbackState.add(playbackState.value.copyWith(
+        controls: const [],
+        systemActions: const {},
+        processingState: AudioProcessingState.idle,
+        playing: false,
+        updatePosition: Duration.zero,
+        bufferedPosition: Duration.zero,
+        speed: 1.0,
+        queueIndex: null,
+      ));
+      return;
+    }
     AudioProcessingState processingState = AudioProcessingState.ready;
     if (_player.state.buffering) {
       processingState = AudioProcessingState.buffering;
@@ -2493,7 +2576,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (!_followMode || targetDeviceId == null) return;
     if (targetDeviceId != await DevicePreferences.getDeviceId()) return;
     showAppSnackBar(IsterMediaService.loc.followerRemovedByOwner);
-    await stopFollowing(notifyServer: false);
+    await stopFollowing(notifyServer: false, teardown: true);
   }
 
   /// Tells the user on this client that someone took the controls. Suppressed
@@ -2657,8 +2740,19 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   /// Leaves follow mode: tears down the follow subscriptions/heartbeat,
   /// deregisters at the server and silences playback. Safe to call twice.
-  Future<void> stopFollowing({bool notifyServer = true}) async {
-    if (!_followMode) return;
+  ///
+  /// [teardown] additionally ends playback on this device altogether (see
+  /// [endPlaybackLocally]) — for the paths where the shared media is *gone*
+  /// (the leader stopped, the owner kicked us, the user left the session)
+  /// rather than the ones that immediately start something else here.
+  Future<void> stopFollowing(
+      {bool notifyServer = true, bool teardown = false}) async {
+    if (!_followMode) {
+      // A teardown request still applies when we were never following (or a
+      // concurrent path already left follow mode).
+      if (teardown) await endPlaybackLocally(flushProgress: false);
+      return;
+    }
     _followMode = false;
     followModeNotifier.value = false;
     _intendsToPlay = false;
@@ -2680,6 +2774,12 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
     if (!ClientManager.usesTestClients) await _player.pause();
     updatePlaybackState();
+    // endPlaybackLocally calls stopFollowing itself; follow mode is already
+    // off by now, so this recurses exactly one level and stops there.
+    // No progress flush: a follower is never the progress writer for the
+    // shared queue, and follow mode is already off so the usual guard in
+    // _syncProgress no longer holds it back.
+    if (teardown) await endPlaybackLocally(flushProgress: false);
   }
 
   /// The follow registration doubles as a heartbeat (~20s; the server expires
@@ -2696,7 +2796,7 @@ class MediaPlayerHandler extends BaseAudioHandler
           client, pq.id, deviceId, true);
       if (_followMode && result == Enum$FollowResult.NOT_FOUND) {
         showAppSnackBar(IsterMediaService.loc.followLeaderStopped);
-        await stopFollowing(notifyServer: false);
+        await stopFollowing(notifyServer: false, teardown: true);
       }
     });
   }
@@ -2790,9 +2890,11 @@ class MediaPlayerHandler extends BaseAudioHandler
         sessions.where((s) => s.playQueueId == pqId).firstOrNull;
     if (session == null) {
       // The list is always complete: an emission without our session means
-      // the leader stopped (or timed out server-side).
+      // the leader stopped (or timed out server-side). The media is gone from
+      // this device with it: tear playback down rather than leaving a paused
+      // stream (and a mini player) behind.
       showAppSnackBar(IsterMediaService.loc.followLeaderStopped);
-      await stopFollowing(notifyServer: false);
+      await stopFollowing(notifyServer: false, teardown: true);
       return;
     }
     // Tight-sync anchor for the discipline loop; null when the leader doesn't
