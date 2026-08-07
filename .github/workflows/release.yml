@@ -355,8 +355,9 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/.pub-cache
+          # No restore-keys fallback: a stale cache's git mirrors poison pub's
+          # re-resolution after a pin bump (see workflow.yml).
           key: pub-${{ runner.os }}-${{ hashFiles('player/pubspec.lock') }}
-          restore-keys: pub-${{ runner.os }}-
 
       - name: Install dependencies from Apt
         run: |

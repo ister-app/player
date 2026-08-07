@@ -56,8 +56,10 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/.pub-cache
+          # No restore-keys fallback: a cache from an older pubspec.lock can hold the
+          # git-dependency mirrors without a newly pinned commit, and pub's mid-resolution
+          # fetch then drops their transitive deps and corrupts package_graph.json.
           key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
-          restore-keys: pub-${{ runner.os }}-
       - uses: actions/setup-java@v5
         with:
           java-version: 21
@@ -184,8 +186,8 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/.pub-cache
+          # No restore-keys fallback: see the pub cache step in the build job.
           key: pub-${{ runner.os }}-${{ hashFiles('player/pubspec.lock') }}
-          restore-keys: pub-${{ runner.os }}-
 
       - name: Install dependencies from Apt
         run: |
