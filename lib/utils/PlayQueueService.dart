@@ -362,6 +362,9 @@ class PlayQueueService {
   ) async {
     final QueryResult result = await graphQLClient.mutate(MutationOptions(
         document: documentNodeMutationfollowPlayQueue,
+        // Follower heartbeat — same cache-pressure reasoning as updateProgress.
+        fetchPolicy: FetchPolicy.noCache,
+        cacheRereadPolicy: CacheRereadPolicy.ignoreAll,
         variables: Variables$Mutation$followPlayQueue(
           playQueueId: playQueueId,
           deviceId: deviceId,
@@ -568,6 +571,12 @@ class PlayQueueService {
       Enum$RepeatMode? repeatMode}) async {
     final MutationOptions options = MutationOptions(
         document: documentNodeMutationupdatePlayQueue,
+        // This is the ~10s playback heartbeat. Its response (the full play
+        // queue) is applied by the caller; writing it into the normalized
+        // cache as well makes graphql deep-compare every watched query on
+        // each beat, which saturates the UI thread on low-end TVs.
+        fetchPolicy: FetchPolicy.noCache,
+        cacheRereadPolicy: CacheRereadPolicy.ignoreAll,
         variables: Variables$Mutation$updatePlayQueue(
           id: playQueueId,
           playQueueItemId: playQueueItemId,
