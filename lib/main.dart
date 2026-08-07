@@ -14,6 +14,7 @@ import 'package:player/utils/WellKnownService.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:player/utils/PlatformService.dart';
+import 'package:player/utils/TvDirectionalFocusPolicy.dart';
 
 import 'l10n/app_localizations.dart';
 
@@ -134,11 +135,18 @@ class _MainState extends State<Main> {
       // On Android TV use directional navigation mode. Among other things it
       // tells widgets like Slider to only bind left/right to adjustment and let
       // up/down move focus out — so the progress bar no longer traps the D-pad.
+      // The traversal policy keeps vertical D-pad moves inside the page's
+      // scrollable while unvisited items remain, so below-the-fold content
+      // (e.g. the season list on the show page) isn't shadowed by the mini
+      // player bar.
       builder: PlatformService.isAndroidTvSync
-          ? (context, child) => MediaQuery(
-                data: MediaQuery.of(context)
-                    .copyWith(navigationMode: NavigationMode.directional),
-                child: child ?? const SizedBox.shrink(),
+          ? (context, child) => FocusTraversalGroup(
+                policy: TvDirectionalFocusPolicy(),
+                child: MediaQuery(
+                  data: MediaQuery.of(context)
+                      .copyWith(navigationMode: NavigationMode.directional),
+                  child: child ?? const SizedBox.shrink(),
+                ),
               )
           : null,
       localizationsDelegates: [
