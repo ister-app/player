@@ -33,6 +33,7 @@ import '../graphql/fragmentEpisode.graphql.dart';
 import '../graphql/fragmentMovie.graphql.dart';
 import '../graphql/fragmentWatchStatus.graphql.dart';
 import '../graphql/fragmentPlayQueue.graphql.dart';
+import '../graphql/updatePlayQueueHeartbeat.graphql.dart';
 import '../graphql/fragmentServerActivity.graphql.dart';
 import '../graphql/nowPlayingSubscription.graphql.dart';
 import '../graphql/playbackCommandsSubscription.graphql.dart';
@@ -2368,6 +2369,34 @@ class MediaPlayerHandler extends BaseAudioHandler
     return send;
   }
 
+  /// The slim heartbeat twin of [_sendProgressUpdate]: same request chain (a
+  /// beat must not overtake an in-flight full update), minimal response.
+  Future<Mutation$updatePlayQueueHeartbeat$updatePlayQueue?>
+      _sendProgressHeartbeat(
+    GraphQLClient client,
+    String playQueueId,
+    String playQueueItemId,
+    Duration position, {
+    Enum$PlayState? playState,
+  }) {
+    final send = _progressChain.then((_) async {
+      final anchor = _timelineAnchor();
+      return _playQueueService.updateProgressHeartbeat(
+          client, playQueueId, playQueueItemId, position,
+          streamSettings: await _currentStreamSettings(),
+          playState: playState ??
+              (_player.state.playing
+                  ? Enum$PlayState.PLAYING
+                  : Enum$PlayState.PAUSED),
+          deviceId: await DevicePreferences.getDeviceId(),
+          anchorPositionMs: anchor?.positionMs,
+          anchorServerTimeMs: anchor?.serverTimeMs,
+          repeatMode: repeatModeToApi(_repeatMode));
+    });
+    _progressChain = send.then((_) {}, onError: (_) {});
+    return send;
+  }
+
   /// The tight-sync anchor for the currently playing stream, or null when the
   /// server clock hasn't been measured (yet) or nothing is open.
   ({int positionMs, double serverTimeMs})? _timelineAnchor() {
@@ -2453,21 +2482,21 @@ class MediaPlayerHandler extends BaseAudioHandler
 
     final generation = _syncGeneration;
     _lastSyncSentAt = DateTime.now();
-    final playQueueObject =
-        await _sendProgressUpdate(client, pq.id, itemId, pos, playState: playState);
+    final beat =
+        await _sendProgressHeartbeat(client, pq.id, itemId, pos, playState: playState);
     // Drop the response if the queue or current item changed while this
     // request was in flight — a slow response must not revert a skip or
     // reinstate a queue that was replaced in the meantime.
-    if (playQueueObject != null && generation == _syncGeneration) {
-      final before = playQueue?.playQueueItems?.length ?? 0;
-      if (!_applyServerPlayQueue(playQueueObject)) return;
-      final after = playQueue?.playQueueItems?.length ?? 0;
+    if (beat != null && generation == _syncGeneration) {
+      if (beat.id != playQueue?.id) return;
       // Sources with sourceExhausted == false grow server-side as playback
-      // advances; rebuild the visible queue when new items are appended.
-      if (after != before && serverName != null) {
-        queue.add(_buildQueueItems(playQueue!, serverName!));
-        updatePlaybackState();
-        PlayQueueService().playQueueChanged(playQueue!);
+      // advances. The heartbeat only carries item ids (parsing the full queue
+      // every beat is a visible hitch on low-end TVs); fetch the full queue
+      // once when the server reports a different item set.
+      final localCount = playQueue?.playQueueItems?.length ?? 0;
+      final serverCount = beat.playQueueItems?.length ?? 0;
+      if (serverCount != localCount) {
+        await _reloadPlayQueueFromServer();
       }
     }
   }

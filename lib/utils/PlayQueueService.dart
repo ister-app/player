@@ -18,6 +18,7 @@ import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/SchemaCompat.dart';
 
 import '../graphql/updatePlayQueue.graphql.dart';
+import '../graphql/updatePlayQueueHeartbeat.graphql.dart';
 
 /// One device listening along with a session, as its owner sees it.
 class SessionFollower {
@@ -558,6 +559,49 @@ class PlayQueueService {
   /// extrapolate the leader position from it locally.
   /// [repeatMode] is relayed onto the session so remote controls show the same
   /// repeat state as this device.
+  /// The slim ~10s heartbeat variant of [updateProgress]: same mutation, but
+  /// it only selects queue/item ids. Parsing the full-queue response of
+  /// [updateProgress] takes ~500ms on a low-end Android TV — a visible
+  /// playback hitch on every beat. Callers detect server-side queue growth
+  /// from the returned item ids and refetch the full queue only then.
+  Future<Mutation$updatePlayQueueHeartbeat$updatePlayQueue?>
+      updateProgressHeartbeat(
+          GraphQLClient graphQLClient,
+          String playQueueId,
+          String playQueueItemId,
+          Duration duration,
+          {Input$StreamSettingsInput? streamSettings,
+          Enum$PlayState? playState,
+          String? deviceId,
+          int? anchorPositionMs,
+          double? anchorServerTimeMs,
+          Enum$RepeatMode? repeatMode}) async {
+    final MutationOptions options = MutationOptions(
+        document: documentNodeMutationupdatePlayQueueHeartbeat,
+        // Heartbeat: stays out of the normalized cache (see updateProgress).
+        fetchPolicy: FetchPolicy.noCache,
+        cacheRereadPolicy: CacheRereadPolicy.ignoreAll,
+        variables: Variables$Mutation$updatePlayQueueHeartbeat(
+          id: playQueueId,
+          playQueueItemId: playQueueItemId,
+          progressInMilliseconds: duration.inMilliseconds,
+          streamSettings: streamSettings,
+          playState: playState,
+          deviceId: deviceId,
+          anchorPositionMs: anchorPositionMs,
+          anchorServerTimeMs: anchorServerTimeMs,
+          repeatMode: repeatMode,
+        ).toJson());
+    final QueryResult result = await graphQLClient.mutate(options);
+
+    if (result.hasException) {
+      LoggerService().logger.e(result.exception);
+      return null;
+    }
+    return Mutation$updatePlayQueueHeartbeat.fromJson(result.data!)
+        .updatePlayQueue;
+  }
+
   Future<Fragment$fragmentPlayQueue?> updateProgress(
       GraphQLClient graphQLClient,
       String playQueueId,

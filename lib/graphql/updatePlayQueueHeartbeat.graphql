@@ -1,0 +1,16 @@
+# The ~10s progress heartbeat. Selects the bare minimum instead of
+# fragmentPlayQueue: parsing the full queue (every item with its metadata and
+# images) in the heartbeat response takes ~500ms on a low-end Android TV — a
+# visible playback hitch every beat. The item ids are enough to detect
+# server-side queue growth (sourceExhausted sources append while playing);
+# the caller refetches the full queue only when that happens.
+mutation updatePlayQueueHeartbeat($id: ID!, $playQueueItemId: ID!, $progressInMilliseconds: Int!, $streamSettings: StreamSettingsInput, $playState: PlayState, $deviceId: ID, $anchorPositionMs: Int, $anchorServerTimeMs: Float, $repeatMode: RepeatMode) {
+    updatePlayQueue(id: $id, playQueueItemId: $playQueueItemId, progressInMilliseconds: $progressInMilliseconds, streamSettings: $streamSettings, playState: $playState, deviceId: $deviceId, anchorPositionMs: $anchorPositionMs, anchorServerTimeMs: $anchorServerTimeMs, repeatMode: $repeatMode) {
+        id
+        currentItemId
+        sourceExhausted
+        playQueueItems {
+            id
+        }
+    }
+}
