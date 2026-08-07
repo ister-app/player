@@ -3206,7 +3206,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     _lastAutoAdvance = DateTime.now();
     LoggerService().logger.w(
         '[STALL] Near-end stall detected (remaining=${dur - pos}, stalledFor=$stalledFor) — advancing to next');
-    _advanceAfterItemEnd();
+    advanceAfterItemEnd();
   }
 
   void _listenToCompletion() {
@@ -3241,19 +3241,34 @@ class MediaPlayerHandler extends BaseAudioHandler
         }
         // Mark so the stall watchdog doesn't double-advance.
         _lastAutoAdvance = DateTime.now();
-        _advanceAfterItemEnd();
+        advanceAfterItemEnd();
       }
     });
   }
 
   /// Auto-advance at the end of an item, unless an item-counting sleep timer
   /// just ran out — it stops playback itself, so nothing must follow.
-  void _advanceAfterItemEnd() {
+  @visibleForTesting
+  void advanceAfterItemEnd() {
     if (SleepTimerService.instance.notifyItemFinished()) return;
     if (_repeatMode == AudioServiceRepeatMode.one) {
       _repeatCurrent();
-    } else {
+      return;
+    }
+    final index = playbackState.value.queueIndex;
+    final hasNext = index != null && index + 1 < queue.value.length;
+    final wrapsAround =
+        _repeatMode == AudioServiceRepeatMode.all && queue.value.isNotEmpty;
+    if (hasNext || wrapsAround) {
       skipToNext();
+      return;
+    }
+    // The queue is exhausted. For video, a paused player on its last frame is
+    // a dead surface — end playback so the mini player closes the video page.
+    // Audio keeps the item loaded so the notification/mini player can resume
+    // or replay it.
+    if (episode != null || movie != null) {
+      unawaited(endPlaybackLocally());
     }
   }
 
