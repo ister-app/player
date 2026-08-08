@@ -7,10 +7,9 @@ import 'package:player/components/SleepTimerSheet.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/SleepTimerService.dart';
 
-/// Pins the sleep-timer UI chain in the full player: the timer lives behind
-/// the "…" overflow button (only shown for controllers that support it),
-/// its menu entry opens the sheet, a preset arms the shared service, and the
-/// overflow button then shows a countdown.
+/// Pins the sleep-timer UI chain in the full player: the bedtime button only
+/// shows for controllers that support it, tapping it opens the sheet, a
+/// preset arms the shared service, and the button then shows a countdown.
 class _FakeController extends PlayerViewController {
   _FakeController({this.sleepTimer = true});
 
@@ -78,13 +77,10 @@ void main() {
     SleepTimerService.instance.notifyPlaybackStopped();
   });
 
-  testWidgets('overflow button is absent when the controller lacks support',
+  testWidgets('bedtime button is absent when the controller lacks support',
       (tester) async {
-    // No sleep timer and no listen-together action: nothing would be in the
-    // menu, so the "…" button itself disappears.
     await tester.pumpWidget(_app(_FakeController(sleepTimer: false)));
     await tester.pump();
-    expect(find.byIcon(Icons.more_horiz), findsNothing);
     expect(find.byIcon(Icons.bedtime_outlined), findsNothing);
   });
 
@@ -93,9 +89,7 @@ void main() {
     await tester.pumpWidget(_app(_FakeController()));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.more_horiz));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Sleep timer'));
+    await tester.tap(find.byIcon(Icons.bedtime_outlined));
     await tester.pumpAndSettle();
     expect(find.byType(SleepTimerSheet), findsOneWidget);
 
@@ -103,6 +97,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(SleepTimerService.instance.isActive, isTrue);
+    expect(find.byIcon(Icons.bedtime), findsOneWidget);
     expect(find.text('15m'), findsOneWidget);
 
     // Disarm before the binding's pending-timer check runs (tearDown is too
@@ -116,14 +111,13 @@ void main() {
     await tester.pumpWidget(_app(_FakeController()));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.more_horiz));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Sleep timer'));
+    await tester.tap(find.byIcon(Icons.bedtime_outlined));
     await tester.pumpAndSettle();
     await tester.tap(find.text('3 items'));
     await tester.pumpAndSettle();
 
     expect(SleepTimerService.instance.remainingItems.value, 3);
+    expect(find.byIcon(Icons.bedtime), findsOneWidget);
     expect(find.text('3×'), findsOneWidget);
   });
 
@@ -147,15 +141,13 @@ void main() {
     await tester.pumpWidget(_app(_FakeController()));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.more_horiz));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Sleep timer'));
+    await tester.tap(find.byIcon(Icons.bedtime));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Cancel timer'));
     await tester.pumpAndSettle();
 
     expect(SleepTimerService.instance.isActive, isFalse);
-    expect(find.text('30m'), findsNothing);
+    expect(find.byIcon(Icons.bedtime_outlined), findsOneWidget);
   });
 
   test('expiry invokes the stop callback wired by the handler', () {

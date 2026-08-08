@@ -4,9 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:player/components/PlayerView.dart';
 import 'package:player/l10n/app_localizations.dart';
 
-/// Pins the stop button in the full player: only controllers that support it
-/// get one (the slot stays reserved so the row lines up), tapping it invokes
-/// the controller's stop, and a disabled transport greys it out.
+/// Pins the stop action in the full player: it lives in the "…" overflow
+/// menu, only controllers that support it get the entry, tapping it invokes
+/// the controller's stop, and a disabled transport disables the entry.
 class _FakeController extends PlayerViewController {
   _FakeController({this.stoppable = true, this.transportEnabled = true});
 
@@ -75,32 +75,39 @@ Widget _app(PlayerViewController controller) => MaterialApp(
     );
 
 void main() {
-  testWidgets('tapping the stop button invokes the controller', (tester) async {
+  testWidgets('stopping through the overflow menu invokes the controller',
+      (tester) async {
     final controller = _FakeController();
     await tester.pumpWidget(_app(controller));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.stop_circle_outlined));
-    await tester.pump();
+    await tester.tap(find.byIcon(Icons.more_horiz));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Stop playback'));
+    await tester.pumpAndSettle();
 
     expect(controller.stops, 1);
   });
 
-  testWidgets('the stop button is absent without support', (tester) async {
+  testWidgets('the overflow menu is absent without any entries',
+      (tester) async {
+    // No stop support and no artist/album routes: nothing would be in the
+    // menu, so the "…" button itself disappears.
     await tester.pumpWidget(_app(_FakeController(stoppable: false)));
     await tester.pump();
-    expect(find.byIcon(Icons.stop_circle_outlined), findsNothing);
+    expect(find.byIcon(Icons.more_horiz), findsNothing);
   });
 
-  testWidgets('a disabled transport disables the stop button', (tester) async {
+  testWidgets('a disabled transport disables the stop entry', (tester) async {
     // E.g. the remote control after the session already ended.
     final controller = _FakeController(transportEnabled: false);
     await tester.pumpWidget(_app(controller));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.stop_circle_outlined),
-        warnIfMissed: false);
-    await tester.pump();
+    await tester.tap(find.byIcon(Icons.more_horiz));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Stop playback'));
+    await tester.pumpAndSettle();
 
     expect(controller.stops, 0);
   });

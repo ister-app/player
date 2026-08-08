@@ -614,13 +614,16 @@ class _PlayerViewState extends State<PlayerView>
   }
 
   /// Full-width action bar at the bottom edge of the screen (reference-player
-  /// style): queue on the far left, then repeat, the "…" overflow menu and
-  /// stop. Slots are always reserved so the bar lines up in every player.
+  /// style): queue on the far left, then repeat, the "…" overflow menu in the
+  /// centre, and the sleep timer and listen-together to its right. Slots are
+  /// always reserved so the bar lines up in every player.
   Widget _buildBottomBar(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final controller = widget.controller;
-    final enabled = controller.enabled;
     final listenTogether = _listenTogetherAction;
+    final hasMenuEntries = controller.supportsStop ||
+        controller.artistRoute != null ||
+        controller.albumRoute != null;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
       child: Row(
@@ -644,20 +647,20 @@ class _PlayerViewState extends State<PlayerView>
             _RepeatButton(controller: controller, accent: _accent)
           else
             const SizedBox(width: 48),
-          if (controller.supportsSleepTimer || listenTogether != null)
-            _OverflowButton(
-                controller: controller,
-                accent: _accent,
-                onListenTogether: listenTogether)
+          if (hasMenuEntries)
+            _OverflowButton(controller: controller, onNavigate: _openMetaRoute)
           else
             const SizedBox(width: 48),
-          if (controller.supportsStop)
+          if (controller.supportsSleepTimer)
+            _SleepTimerButton(accent: _accent)
+          else
+            const SizedBox(width: 48),
+          if (listenTogether != null)
             IconButton(
-              icon: Icon(Icons.stop_circle_outlined,
-                  color: enabled ? Colors.white54 : Colors.white30),
+              icon: const Icon(Icons.headphones, color: Colors.white54),
               iconSize: 26,
-              tooltip: loc.stopPlayback,
-              onPressed: enabled ? controller.stop : null,
+              tooltip: loc.listenTogetherTitle,
+              onPressed: listenTogether,
             )
           else
             const SizedBox(width: 48),
@@ -1105,20 +1108,94 @@ class _Controls extends StatelessWidget {
   }
 }
 
-/// The "…" button opening the less-used player actions (sleep timer, listen
-/// together) in a bottom sheet. While a sleep timer runs, the icon takes the
-/// album accent and shows the remaining time in a compact label underneath —
-/// the countdown stays visible even though the timer moved into the menu.
+/// The "…" button opening the less-used player actions in a bottom sheet:
+/// stop, and jumping to the playing item's artist/album page (the same
+/// navigation the metadata lines offer, but discoverable as menu entries).
 class _OverflowButton extends StatelessWidget {
   const _OverflowButton({
     required this.controller,
-    required this.accent,
-    required this.onListenTogether,
+    this.onNavigate,
   });
 
   final PlayerViewController controller;
+
+  /// Invoked with the artist/album route of a tapped menu entry; the hosting
+  /// view navigates and dismisses itself. Null hides those entries.
+  final void Function(({String serverName, PageRouteInfo route}) target)?
+      onNavigate;
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    return IconButton(
+      icon: const Icon(Icons.more_horiz, color: Colors.white54),
+      iconSize: 28,
+      tooltip: loc.moreOptions,
+      onPressed: () => _showSheet(context),
+    );
+  }
+
+  void _showSheet(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final artistRoute = controller.artistRoute;
+    final albumRoute = controller.albumRoute;
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (artistRoute != null && onNavigate != null)
+              ListTile(
+                leading: const Icon(Icons.person_outline),
+                title: Text(loc.goToArtist),
+                subtitle: controller.artistLine != null
+                    ? Text(controller.artistLine!,
+                        maxLines: 1, overflow: TextOverflow.ellipsis)
+                    : null,
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  onNavigate!(artistRoute);
+                },
+              ),
+            if (albumRoute != null && onNavigate != null)
+              ListTile(
+                leading: const Icon(Icons.album_outlined),
+                title: Text(loc.goToAlbum),
+                subtitle: controller.albumLine != null
+                    ? Text(controller.albumLine!,
+                        maxLines: 1, overflow: TextOverflow.ellipsis)
+                    : null,
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  onNavigate!(albumRoute);
+                },
+              ),
+            if (controller.supportsStop)
+              ListTile(
+                leading: const Icon(Icons.stop_circle_outlined),
+                title: Text(loc.stopPlayback),
+                enabled: controller.enabled,
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  controller.stop();
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Sleep timer toggle: outlined and dim while inactive, filled and tinted
+/// with the album accent while counting down, with the remaining time in a
+/// compact label underneath. Tapping opens the [SleepTimerSheet].
+class _SleepTimerButton extends StatelessWidget {
+  const _SleepTimerButton({required this.accent});
+
   final ValueListenable<Color> accent;
-  final VoidCallback? onListenTogether;
 
   @override
   Widget build(BuildContext context) {
@@ -1131,13 +1208,12 @@ class _OverflowButton extends StatelessWidget {
           valueListenable: accent,
           builder: (context, color, _) {
             // Either a countdown or an item count is armed, never both.
-            final timerActive = controller.supportsSleepTimer &&
-                (remaining != null || items != null);
-            final label = !timerActive
-                ? null
-                : remaining != null
-                    ? _shortCountdown(remaining)
-                    : loc.sleepTimerItemsShort(items!);
+            final active = remaining != null || items != null;
+            final label = remaining != null
+                ? _shortCountdown(remaining)
+                : items != null
+                    ? loc.sleepTimerItemsShort(items)
+                    : null;
             return SizedBox(
               width: 48,
               child: Column(
@@ -1145,12 +1221,17 @@ class _OverflowButton extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: Icon(
-                      Icons.more_horiz,
-                      color: timerActive ? color : Colors.white54,
+                      active ? Icons.bedtime : Icons.bedtime_outlined,
+                      color: active ? color : Colors.white54,
                     ),
-                    iconSize: 28,
-                    tooltip: loc.moreOptions,
-                    onPressed: () => _showSheet(context, timerActive),
+                    iconSize: 24,
+                    tooltip: loc.sleepTimer,
+                    onPressed: () => showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      showDragHandle: true,
+                      builder: (_) => const SleepTimerSheet(),
+                    ),
                   ),
                   if (label != null)
                     Text(
@@ -1161,45 +1242,6 @@ class _OverflowButton extends StatelessWidget {
               ),
             );
           },
-        ),
-      ),
-    );
-  }
-
-  void _showSheet(BuildContext context, bool timerActive) {
-    final loc = AppLocalizations.of(context)!;
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (controller.supportsSleepTimer)
-              ListTile(
-                leading:
-                    Icon(timerActive ? Icons.bedtime : Icons.bedtime_outlined),
-                title: Text(loc.sleepTimer),
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  showModalBottomSheet<void>(
-                    context: context,
-                    isScrollControlled: true,
-                    showDragHandle: true,
-                    builder: (_) => const SleepTimerSheet(),
-                  );
-                },
-              ),
-            if (onListenTogether != null)
-              ListTile(
-                leading: const Icon(Icons.headphones),
-                title: Text(loc.listenTogetherTitle),
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  onListenTogether!();
-                },
-              ),
-          ],
         ),
       ),
     );
