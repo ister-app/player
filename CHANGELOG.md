@@ -1,5 +1,50 @@
 # Changelog
 
+## player v1.12.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.12.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(player): end playback locally when the shared session goes away ([`407f25e`](https://github.com/ister-app/player/commit/407f25e))
+- feat(player): media-type artwork placeholder in the player views ([`3478407`](https://github.com/ister-app/player/commit/3478407))
+- feat(player): watch-together entry points on the video surface ([`2377b90`](https://github.com/ister-app/player/commit/2377b90))
+- feat(follow): watch-together wording for video sessions ([`65492c3`](https://github.com/ister-app/player/commit/65492c3))
+- feat(follow): open the video page when following a watch session ([`934f342`](https://github.com/ister-app/player/commit/934f342))
+- feat(player): unify listen-along actions into one listen-together sheet ([`e498960`](https://github.com/ister-app/player/commit/e498960))
+
+### Fixes
+
+- fix(player): close the video page when the queue ends instead of freezing on the last frame ([`63e77e1`](https://github.com/ister-app/player/commit/63e77e1))
+- fix(tv): keep D-pad moves inside the scrollable so below-the-fold content is reachable ([`272134c`](https://github.com/ister-app/player/commit/272134c))
+- fix(player): scale the mpv demuxer cache to device RAM ([`d4c55f0`](https://github.com/ister-app/player/commit/d4c55f0))
+- fix(follow): leave follow mode when starting own playback ([`bf716e1`](https://github.com/ister-app/player/commit/bf716e1))
+- fix(player): recover from silently dead websockets ([`59b6402`](https://github.com/ister-app/player/commit/59b6402))
+
+### Other
+
+- ci: drop the stale pub-cache fallback that corrupts resolution after a git pin bump ([`e1b9846`](https://github.com/ister-app/player/commit/e1b9846))
+- build: refresh dependency lock ([`cd2c53c`](https://github.com/ister-app/player/commit/cd2c53c))
+- perf(player): quiet resume after a remote play command ([`457e2da`](https://github.com/ister-app/player/commit/457e2da))
+- perf(player): slim response for the progress heartbeat ([`7042ac9`](https://github.com/ister-app/player/commit/7042ac9))
+- perf(player): keep heartbeat mutations out of the GraphQL cache ([`0e776e4`](https://github.com/ister-app/player/commit/0e776e4))
+- build: bump media-kit fork for the linux triple-buffer black-flash fix ([`2d58cac`](https://github.com/ister-app/player/commit/2d58cac))
+- refactor(player): extract SessionListenersList from the listeners sheet ([`352a069`](https://github.com/ister-app/player/commit/352a069))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.12.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.11.0...v1.12.0
+
 ## player v1.11.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
