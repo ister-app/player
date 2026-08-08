@@ -260,6 +260,10 @@ class MediaPlayerHandler extends BaseAudioHandler
   // Bumped whenever the current item or queue changes; in-flight progress
   // responses from before the bump are dropped instead of applied.
   int _syncGeneration = 0;
+  // Trace every progress update/heartbeat in the integration suite: a watch
+  // status that never appears server-side is otherwise undebuggable from the
+  // CI logs (successful syncs are silent). Inert in production builds.
+  static const bool _traceProgressSync = bool.fromEnvironment('ISTER_TEST_MODE');
   // Remote-control ("party mode"): commands for the active queue arrive over
   // this subscription and are executed as if the user tapped the controls.
   ResilientSubscription? _commandSubscription;
@@ -2404,17 +2408,26 @@ class MediaPlayerHandler extends BaseAudioHandler
       // decoder reports. Omitted (nulls) until the clock has been measured;
       // followers then fall back to the coarse sync.
       final anchor = _timelineAnchor();
-      return _playQueueService.updateProgress(
+      final effectiveState = playState ??
+          (_player.state.playing
+              ? Enum$PlayState.PLAYING
+              : Enum$PlayState.PAUSED);
+      if (_traceProgressSync) {
+        LoggerService().logger.d(
+            '[PROGRESS] update ${position.inMilliseconds}ms state=${effectiveState.name} item=$playQueueItemId');
+      }
+      final result = await _playQueueService.updateProgress(
           client, playQueueId, playQueueItemId, position,
           streamSettings: await _currentStreamSettings(),
-          playState: playState ??
-              (_player.state.playing
-                  ? Enum$PlayState.PLAYING
-                  : Enum$PlayState.PAUSED),
+          playState: effectiveState,
           deviceId: await DevicePreferences.getDeviceId(),
           anchorPositionMs: anchor?.positionMs,
           anchorServerTimeMs: anchor?.serverTimeMs,
           repeatMode: repeatModeToApi(_repeatMode));
+      if (_traceProgressSync) {
+        LoggerService().logger.d('[PROGRESS] update ack=${result != null}');
+      }
+      return result;
     });
     _progressChain = send.then((_) {}, onError: (_) {});
     return send;
@@ -2432,17 +2445,26 @@ class MediaPlayerHandler extends BaseAudioHandler
   }) {
     final send = _progressChain.then((_) async {
       final anchor = _timelineAnchor();
-      return _playQueueService.updateProgressHeartbeat(
+      final effectiveState = playState ??
+          (_player.state.playing
+              ? Enum$PlayState.PLAYING
+              : Enum$PlayState.PAUSED);
+      if (_traceProgressSync) {
+        LoggerService().logger.d(
+            '[PROGRESS] heartbeat ${position.inMilliseconds}ms state=${effectiveState.name} item=$playQueueItemId');
+      }
+      final result = await _playQueueService.updateProgressHeartbeat(
           client, playQueueId, playQueueItemId, position,
           streamSettings: await _currentStreamSettings(),
-          playState: playState ??
-              (_player.state.playing
-                  ? Enum$PlayState.PLAYING
-                  : Enum$PlayState.PAUSED),
+          playState: effectiveState,
           deviceId: await DevicePreferences.getDeviceId(),
           anchorPositionMs: anchor?.positionMs,
           anchorServerTimeMs: anchor?.serverTimeMs,
           repeatMode: repeatModeToApi(_repeatMode));
+      if (_traceProgressSync) {
+        LoggerService().logger.d('[PROGRESS] heartbeat ack=${result != null}');
+      }
+      return result;
     });
     _progressChain = send.then((_) {}, onError: (_) {});
     return send;

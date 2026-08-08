@@ -53,7 +53,10 @@ void main() {
         });
         return seen;
       },
-      timeout: const Duration(seconds: 60),
+      // Generous window: the seek kicks off a fresh mid-file transcode, and on
+      // a starved CI node the write side of the server can lag well behind
+      // reads (a 60s window flaked exactly there).
+      timeout: const Duration(minutes: 3),
       description: 'the heartbeat recording a watch status for the movie',
     );
 
