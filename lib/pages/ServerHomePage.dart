@@ -114,6 +114,24 @@ class _ServerHomePageState extends State<ServerHomePage> {
   }
 
   @override
+  void didUpdateWidget(ServerHomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // replace()-ing ServerHomeRoute with another server reuses this State (the
+    // page key is the route name, not the path), so every per-server latch
+    // below still belongs to the previous server. Without this reset the new
+    // server never runs LoginManager.initIfNotExists and lands on a login page
+    // whose login button silently does nothing.
+    if (oldWidget.serverName != widget.serverName) {
+      _wellKnownFuture = WellKnownService.fetch(widget.serverName);
+      _initFuture = null;
+      _tokenFuture = null;
+      _restoreFuture = null;
+      _deviceInitFuture = null;
+      _deviceAuthResponse = null;
+    }
+  }
+
+  @override
   void dispose() {
     _railScope.dispose();
     _contentScope.dispose();
