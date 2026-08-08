@@ -176,9 +176,11 @@ void main() {
       expect(service.remainingItems.value, 1);
       expect(expiries, 0);
 
-      // The last allowed item ended: the caller must not advance.
+      // The last allowed item ended: the timer disarms and announces, but
+      // stopping (suspend + park on the next item) is the caller's job —
+      // onExpire stays reserved for the countdown mode.
       expect(service.notifyItemFinished(), isTrue);
-      expect(expiries, 1);
+      expect(expiries, 0);
       expect(service.isActive, isFalse);
       expect(service.remainingItems.value, isNull);
       expect(messages, hasLength(2));
@@ -187,7 +189,7 @@ void main() {
     test('one item stops at the end of what is playing', () {
       service.startItems(1);
       expect(service.notifyItemFinished(), isTrue);
-      expect(expiries, 1);
+      expect(expiries, 0);
     });
 
     test('item ends are ignored when no item timer is armed', () {

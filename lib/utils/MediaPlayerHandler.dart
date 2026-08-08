@@ -939,7 +939,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// at the leading device's position, whatever the item type).
   Future<void> _openQueueItem(
       Fragment$fragmentPlayQueue$playQueueItems item, String srv,
-      {int? startTimeMs}) async {
+      {int? startTimeMs, bool autoPlay = true}) async {
     currentPlayQueueItem = item;
     final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay(serverName: srv);
     final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode(serverName: srv);
@@ -961,6 +961,7 @@ class MediaPlayerHandler extends BaseAudioHandler
             '',
         startTimeInMilliseconds: startTimeMs,
         mediaType: IsterMediaTypes.track,
+        autoPlay: autoPlay,
       );
       _rememberLastPlayed(srv, t.album.id, t.id);
     } else if (item.chapter != null) {
@@ -980,6 +981,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         startTimeInMilliseconds:
             startTimeMs ?? _resumeMs(item.chapter?.watchStatus),
         mediaType: IsterMediaTypes.track,
+        autoPlay: autoPlay,
       );
     } else if (item.podcastEpisode != null) {
       // Podcast episodes behave exactly like tracks once downloaded.
@@ -998,6 +1000,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         startTimeInMilliseconds:
             startTimeMs ?? _resumeMs(item.podcastEpisode?.watchStatus),
         mediaType: IsterMediaTypes.track,
+        autoPlay: autoPlay,
       );
     } else if (item.movie != null) {
       movie = item.movie;
@@ -1014,6 +1017,7 @@ class MediaPlayerHandler extends BaseAudioHandler
             '',
         startTimeInMilliseconds: startTimeMs,
         mediaType: IsterMediaTypes.movie,
+        autoPlay: autoPlay,
       );
     } else {
       episode = item.episode;
@@ -1030,6 +1034,7 @@ class MediaPlayerHandler extends BaseAudioHandler
             '',
         startTimeInMilliseconds: startTimeMs,
         mediaType: IsterMediaTypes.episode,
+        autoPlay: autoPlay,
       );
     }
     _rememberLastMusicQueue();
@@ -1229,6 +1234,9 @@ class MediaPlayerHandler extends BaseAudioHandler
     unawaited(_syncProgress(_player.state.position,
         force: true, playState: Enum$PlayState.PAUSED));
     SleepTimerService.instance.notifyPlaybackStopped();
+    // Same test seam as play()/pause(): the real calls never complete under
+    // flutter test (no mpv event loop, no platform audio session).
+    if (ClientManager.usesTestClients) return;
     await _player.pause();
     // Explicit stop is the only place we release audio focus.
     final session = await AudioSession.instance;
@@ -3345,10 +3353,14 @@ class MediaPlayerHandler extends BaseAudioHandler
   }
 
   /// Auto-advance at the end of an item, unless an item-counting sleep timer
-  /// just ran out — it stops playback itself, so nothing must follow.
+  /// just ran out — then playback suspends and the queue parks on the next
+  /// item instead.
   @visibleForTesting
   void advanceAfterItemEnd() {
-    if (SleepTimerService.instance.notifyItemFinished()) return;
+    if (SleepTimerService.instance.notifyItemFinished()) {
+      unawaited(_parkOnNextItemAfterSleepTimer());
+      return;
+    }
     if (_repeatMode == AudioServiceRepeatMode.one) {
       _repeatCurrent();
       return;
@@ -3368,6 +3380,45 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (episode != null || movie != null) {
       unawaited(endPlaybackLocally());
     }
+  }
+
+  /// The item-counting sleep timer ran out at the end of an item: suspend
+  /// playback first, then leave the queue parked on the *next* item, paused
+  /// at its start — a later resume then continues with fresh material instead
+  /// of replaying the item the listener fell asleep to. The suspend must
+  /// complete first so its final progress flush still belongs to the finished
+  /// item. Parked, not advanced: no heartbeat, no [_intendsToPlay]. Skipped on
+  /// repeat-one (replaying the same item is that mode's contract) and on an
+  /// exhausted queue.
+  Future<void> _parkOnNextItemAfterSleepTimer() async {
+    await suspendPlayback();
+    if (_repeatMode == AudioServiceRepeatMode.one) return;
+    final q = queue.value;
+    final index = playbackState.value.queueIndex;
+    final hasNext = index != null && index + 1 < q.length;
+    final wrapsAround =
+        _repeatMode == AudioServiceRepeatMode.all && q.isNotEmpty;
+    if (!hasNext && !wrapsAround) return;
+    final nextIndex = hasNext ? index + 1 : 0;
+
+    final srv = serverName;
+    final pq = playQueue;
+    if (srv == null || pq == null) return;
+    final itemId = MediaItemId.byStringId(q[nextIndex].id).id;
+    final item =
+        pq.playQueueItems?.where((e) => e.id == itemId).firstOrNull;
+    // An unplayable next item would need the skip-ahead logic of a live
+    // advance; leave the finished item in place rather than guess.
+    if (item == null || !_itemHasMediaFile(item) || !item.accessible) return;
+
+    playQueue = pq.copyWith(currentItemId: item.id);
+    playbackState.add(playbackState.value.copyWith(queueIndex: nextIndex));
+    await _openQueueItem(item, srv, startTimeMs: 0, autoPlay: false);
+    // One last write so the server's queue resumes from the next item too —
+    // the heartbeat is already down, so this is the state that sticks.
+    unawaited(_syncProgress(Duration.zero,
+        force: true, playState: Enum$PlayState.PAUSED));
+    updatePlaybackState();
   }
 
   Future<void> _listenToSession() async {

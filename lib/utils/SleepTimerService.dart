@@ -107,7 +107,11 @@ class SleepTimerService {
 
   /// Called by the handler when an item played to its end, *before* it
   /// auto-advances. Returns true when this was the last item the timer allows
-  /// — the caller must then not advance; [onExpire] has already been fired.
+  /// — the timer is then already disarmed and announced, but stopping is left
+  /// to the caller: the handler suspends playback and *then* parks the queue
+  /// on the next item (so a later resume doesn't replay the item the listener
+  /// fell asleep to), which has to happen in that order. [onExpire] is not
+  /// fired here; it belongs to the countdown mode.
   bool notifyItemFinished() {
     final left = remainingItems.value;
     if (left == null) return false;
@@ -115,7 +119,8 @@ class SleepTimerService {
       remainingItems.value = left - 1;
       return false;
     }
-    _expire();
+    _reset();
+    showMessage(IsterMediaService.loc.sleepTimerExpiredMessage);
     return true;
   }
 
