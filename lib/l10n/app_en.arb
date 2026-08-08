@@ -373,29 +373,17 @@
   "@sortBy": {
     "description": "Tooltip for the library grid sort menu button"
   },
-  "sortNameAsc": "Name (A–Z)",
-  "@sortNameAsc": {
-    "description": "Library sort option: by name, ascending"
+  "sortByName": "Name",
+  "@sortByName": {
+    "description": "Library sort field: item name; clicking again flips the direction"
   },
-  "sortNameDesc": "Name (Z–A)",
-  "@sortNameDesc": {
-    "description": "Library sort option: by name, descending"
+  "sortByDateAdded": "Date added",
+  "@sortByDateAdded": {
+    "description": "Library sort field: date the item was added; clicking again flips the direction"
   },
-  "sortDateAddedNewest": "Date added (newest first)",
-  "@sortDateAddedNewest": {
-    "description": "Library sort option: by date added, newest first"
-  },
-  "sortDateAddedOldest": "Date added (oldest first)",
-  "@sortDateAddedOldest": {
-    "description": "Library sort option: by date added, oldest first"
-  },
-  "sortReleaseYearNewest": "Release year (newest first)",
-  "@sortReleaseYearNewest": {
-    "description": "Library sort option: by release year, newest first"
-  },
-  "sortReleaseYearOldest": "Release year (oldest first)",
-  "@sortReleaseYearOldest": {
-    "description": "Library sort option: by release year, oldest first"
+  "sortByReleaseYear": "Release year",
+  "@sortByReleaseYear": {
+    "description": "Library sort field: release year; clicking again flips the direction"
   },
   "artists": "Artists",
   "@artists": {
@@ -510,13 +498,9 @@
   "@viewAsList": {
     "description": "Tooltip of the layout toggle while the grid layout is active"
   },
-  "sortAirDateNewest": "Air date (newest first)",
-  "@sortAirDateNewest": {
-    "description": "Episode sort option: by air date, newest first"
-  },
-  "sortAirDateOldest": "Air date (oldest first)",
-  "@sortAirDateOldest": {
-    "description": "Episode sort option: by air date, oldest first"
+  "sortByAirDate": "Air date",
+  "@sortByAirDate": {
+    "description": "Episode sort field: air date; clicking again flips the direction"
   },
   "viewBrowse": "Browse",
   "@viewBrowse": {

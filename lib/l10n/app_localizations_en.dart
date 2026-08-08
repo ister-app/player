@@ -312,22 +312,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sortBy => 'Sort by';
 
   @override
-  String get sortNameAsc => 'Name (A–Z)';
+  String get sortByName => 'Name';
 
   @override
-  String get sortNameDesc => 'Name (Z–A)';
+  String get sortByDateAdded => 'Date added';
 
   @override
-  String get sortDateAddedNewest => 'Date added (newest first)';
-
-  @override
-  String get sortDateAddedOldest => 'Date added (oldest first)';
-
-  @override
-  String get sortReleaseYearNewest => 'Release year (newest first)';
-
-  @override
-  String get sortReleaseYearOldest => 'Release year (oldest first)';
+  String get sortByReleaseYear => 'Release year';
 
   @override
   String get artists => 'Artists';
@@ -413,10 +404,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewAsList => 'List view';
 
   @override
-  String get sortAirDateNewest => 'Air date (newest first)';
-
-  @override
-  String get sortAirDateOldest => 'Air date (oldest first)';
+  String get sortByAirDate => 'Air date';
 
   @override
   String get viewBrowse => 'Browse';

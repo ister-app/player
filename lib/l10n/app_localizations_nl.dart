@@ -313,22 +313,13 @@ class AppLocalizationsNl extends AppLocalizations {
   String get sortBy => 'Sorteren op';
 
   @override
-  String get sortNameAsc => 'Naam (A–Z)';
+  String get sortByName => 'Naam';
 
   @override
-  String get sortNameDesc => 'Naam (Z–A)';
+  String get sortByDateAdded => 'Toegevoegd';
 
   @override
-  String get sortDateAddedNewest => 'Toegevoegd (nieuwste eerst)';
-
-  @override
-  String get sortDateAddedOldest => 'Toegevoegd (oudste eerst)';
-
-  @override
-  String get sortReleaseYearNewest => 'Releasejaar (nieuwste eerst)';
-
-  @override
-  String get sortReleaseYearOldest => 'Releasejaar (oudste eerst)';
+  String get sortByReleaseYear => 'Releasejaar';
 
   @override
   String get artists => 'Artiesten';
@@ -414,10 +405,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get viewAsList => 'Lijstweergave';
 
   @override
-  String get sortAirDateNewest => 'Uitzenddatum (nieuwste eerst)';
-
-  @override
-  String get sortAirDateOldest => 'Uitzenddatum (oudste eerst)';
+  String get sortByAirDate => 'Uitzenddatum';
 
   @override
   String get viewBrowse => 'Bladeren';

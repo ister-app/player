@@ -650,41 +650,23 @@ abstract class AppLocalizations {
   /// **'Sort by'**
   String get sortBy;
 
-  /// Library sort option: by name, ascending
+  /// Library sort field: item name; clicking again flips the direction
   ///
   /// In en, this message translates to:
-  /// **'Name (A–Z)'**
-  String get sortNameAsc;
+  /// **'Name'**
+  String get sortByName;
 
-  /// Library sort option: by name, descending
+  /// Library sort field: date the item was added; clicking again flips the direction
   ///
   /// In en, this message translates to:
-  /// **'Name (Z–A)'**
-  String get sortNameDesc;
+  /// **'Date added'**
+  String get sortByDateAdded;
 
-  /// Library sort option: by date added, newest first
+  /// Library sort field: release year; clicking again flips the direction
   ///
   /// In en, this message translates to:
-  /// **'Date added (newest first)'**
-  String get sortDateAddedNewest;
-
-  /// Library sort option: by date added, oldest first
-  ///
-  /// In en, this message translates to:
-  /// **'Date added (oldest first)'**
-  String get sortDateAddedOldest;
-
-  /// Library sort option: by release year, newest first
-  ///
-  /// In en, this message translates to:
-  /// **'Release year (newest first)'**
-  String get sortReleaseYearNewest;
-
-  /// Library sort option: by release year, oldest first
-  ///
-  /// In en, this message translates to:
-  /// **'Release year (oldest first)'**
-  String get sortReleaseYearOldest;
+  /// **'Release year'**
+  String get sortByReleaseYear;
 
   /// Browse category for the artists in a music library (also used in Android Auto)
   ///
@@ -848,17 +830,11 @@ abstract class AppLocalizations {
   /// **'List view'**
   String get viewAsList;
 
-  /// Episode sort option: by air date, newest first
+  /// Episode sort field: air date; clicking again flips the direction
   ///
   /// In en, this message translates to:
-  /// **'Air date (newest first)'**
-  String get sortAirDateNewest;
-
-  /// Episode sort option: by air date, oldest first
-  ///
-  /// In en, this message translates to:
-  /// **'Air date (oldest first)'**
-  String get sortAirDateOldest;
+  /// **'Air date'**
+  String get sortByAirDate;
 
   /// Library view switch: the sortable grid view
   ///

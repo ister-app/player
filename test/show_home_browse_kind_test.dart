@@ -128,12 +128,19 @@ http.Response _json(Map<String, dynamic> data) => http.Response(
     );
 
 /// Routes on the query text; counts requests per root field so the tests can
-/// assert what a UI action did (and did not) re-query.
-MockClient _fakeGraphQL(Map<String, int> queryCounts) =>
+/// assert what a UI action did (and did not) re-query. Recorded
+/// setLibrarySorting variables land in [sortMutations] when given.
+MockClient _fakeGraphQL(Map<String, int> queryCounts,
+        {List<Map<String, dynamic>>? sortMutations}) =>
     MockClient((request) async {
-      final query = json.decode(request.body)['query'] as String? ?? '';
+      final body = json.decode(request.body) as Map<String, dynamic>;
+      final query = body['query'] as String? ?? '';
       void count(String kind) =>
           queryCounts[kind] = (queryCounts[kind] ?? 0) + 1;
+      if (query.contains('setLibrarySorting(')) {
+        sortMutations?.add(body['variables'] as Map<String, dynamic>);
+        return _json({'__typename': 'Mutation', 'setLibrarySorting': true});
+      }
       if (query.contains('tracks(')) {
         count('tracks');
         return _json(_page('tracks', 'TrackPage',
@@ -284,8 +291,10 @@ void main() {
       expect(counts['episodes'], 1);
       expect(find.text('Pilot Part 2'), findsOneWidget);
       expect(find.text('The Show • S1E2'), findsOneWidget);
-      // The episode feed defaults to newest-added first.
-      expect(find.text('Date added (newest first)'), findsOneWidget);
+      // The episode feed defaults to newest-added first: the trigger shows the
+      // field label plus a descending arrow.
+      expect(find.text('Date added'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_downward), findsOneWidget);
     });
 
     testWidgets('a movie library shows no kind pills', (tester) async {
@@ -299,6 +308,62 @@ void main() {
       // The sort control and layout toggle are still there.
       expect(find.byIcon(Icons.sort), findsOneWidget);
       expect(find.byIcon(Icons.view_list), findsOneWidget);
+    });
+
+    testWidgets(
+        'the sort menu lists each field once; a click selects it with its '
+        'default order and a second click reverses it', (tester) async {
+      final counts = <String, int>{};
+      final sortMutations = <Map<String, dynamic>>[];
+      final client = _fakeGraphQL(counts, sortMutations: sortMutations);
+      await _mountBrowse(tester, client, libraryId: 'music-lib-1');
+
+      // Default sort: name ascending — field label + up arrow on the trigger.
+      expect(find.text('Name'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_upward), findsOneWidget);
+
+      // One entry per field, no direction variants.
+      await tester.tap(find.byIcon(Icons.sort));
+      await _pump(tester);
+      expect(find.text('Name'), findsNWidgets(2)); // trigger + menu item
+      expect(find.text('Date added'), findsOneWidget);
+      expect(find.text('Release year'), findsOneWidget);
+      expect(find.textContaining('newest first'), findsNothing);
+      // The selected menu item carries the direction arrow too.
+      expect(find.byIcon(Icons.arrow_upward), findsNWidgets(2));
+
+      // Picking another field sorts by it in that field's default direction.
+      await tester.tap(find.text('Date added'));
+      await _pump(tester);
+      expect(sortMutations.single['sorting'], 'DATE_CREATED');
+      expect(sortMutations.single['sortingOrder'], 'DESCENDING');
+      expect(find.text('Date added'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_downward), findsOneWidget);
+
+      // Picking the same field again flips the direction.
+      await tester.tap(find.byIcon(Icons.sort));
+      await _pump(tester);
+      await tester.tap(find.text('Date added').last);
+      await _pump(tester);
+      expect(sortMutations, hasLength(2));
+      expect(sortMutations.last['sorting'], 'DATE_CREATED');
+      expect(sortMutations.last['sortingOrder'], 'ASCENDING');
+      expect(find.byIcon(Icons.arrow_upward), findsOneWidget);
+
+      // A non-default kind toggles through the device-local preference
+      // instead of the server mutation: tracks default to name ascending, so
+      // one click on the active field flips it to descending.
+      await tester.tap(find.text('Tracks'));
+      await _pump(tester);
+      await tester.tap(find.byIcon(Icons.sort));
+      await _pump(tester);
+      await tester.tap(find.text('Name').last);
+      await _pump(tester);
+      expect(sortMutations, hasLength(2));
+      expect(
+          await SharedPreferencesAsync().getString(
+              'library_kind_sorting_${_server}_music-lib-1_tracks'),
+          'NAME:DESCENDING');
     });
 
     testWidgets(

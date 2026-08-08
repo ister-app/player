@@ -382,6 +382,13 @@ class _ShowHomePageState extends State<ShowHomePage> {
         : (Enum$SortingEnum.NAME, Enum$SortingOrder.ASCENDING);
   }
 
+  /// The direction a sort field starts in when it is first selected: names
+  /// read A–Z, dates and years read newest-first.
+  static Enum$SortingOrder _defaultOrderFor(Enum$SortingEnum sorting) =>
+      sorting == Enum$SortingEnum.NAME
+          ? Enum$SortingOrder.ASCENDING
+          : Enum$SortingOrder.DESCENDING;
+
   Enum$SortingEnum get _effectiveSorting => _isDefaultKind
       ? _sorting
       : _kindSorting ?? _kindSortDefaults(_effectiveKind!).$1;
@@ -410,6 +417,17 @@ class _ShowHomePageState extends State<ShowHomePage> {
     _reflectUrl();
     await _prefs.setString('${_kBrowseLayoutKey}_${widget.serverName}',
         _listLayout ? 'list' : 'grid');
+  }
+
+  /// Selecting a new field sorts by it in that field's default direction;
+  /// selecting the already-active field flips the direction.
+  Future<void> _selectSortField(BuildContext context, Enum$SortingEnum sorting) {
+    final order = sorting == _effectiveSorting
+        ? (_effectiveSortingOrder == Enum$SortingOrder.ASCENDING
+            ? Enum$SortingOrder.DESCENDING
+            : Enum$SortingOrder.ASCENDING)
+        : _defaultOrderFor(sorting);
+    return _setSorting(context, sorting, order);
   }
 
   /// Persists the grid sort choice. For the type's default kind it goes to the
@@ -739,7 +757,19 @@ class _ShowHomePageState extends State<ShowHomePage> {
                         builder: (context, controller, child) {
                           return TextButton.icon(
                             icon: const Icon(Icons.sort),
-                            label: Text(_currentSortLabel(context)),
+                            label: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(_currentSortLabel(context)),
+                                const SizedBox(width: 4),
+                                Icon(
+                                    _effectiveSortingOrder ==
+                                            Enum$SortingOrder.ASCENDING
+                                        ? Icons.arrow_upward
+                                        : Icons.arrow_downward,
+                                    size: 16),
+                              ],
+                            ),
                             onPressed: () => controller.isOpen
                                 ? controller.close()
                                 : controller.open(),
@@ -911,20 +941,15 @@ class _ShowHomePageState extends State<ShowHomePage> {
 
   String _currentSortLabel(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final ascending = _effectiveSortingOrder == Enum$SortingOrder.ASCENDING;
-    final airDate = _effectiveKind == BrowseKind.episodes;
     switch (_effectiveSorting) {
       case Enum$SortingEnum.DATE_CREATED:
-        return ascending ? loc.sortDateAddedOldest : loc.sortDateAddedNewest;
+        return loc.sortByDateAdded;
       case Enum$SortingEnum.RELEASE_YEAR:
-        if (airDate) {
-          return ascending ? loc.sortAirDateOldest : loc.sortAirDateNewest;
-        }
-        return ascending
-            ? loc.sortReleaseYearOldest
-            : loc.sortReleaseYearNewest;
+        return _effectiveKind == BrowseKind.episodes
+            ? loc.sortByAirDate
+            : loc.sortByReleaseYear;
       default:
-        return ascending ? loc.sortNameAsc : loc.sortNameDesc;
+        return loc.sortByName;
     }
   }
 
@@ -1065,38 +1090,30 @@ class _ShowHomePageState extends State<ShowHomePage> {
     final loc = AppLocalizations.of(context)!;
     final kind = _effectiveKind;
     final items = <Widget>[
-      _sortMenuItem(context, loc.sortNameAsc,
-          Enum$SortingEnum.NAME, Enum$SortingOrder.ASCENDING),
-      _sortMenuItem(context, loc.sortNameDesc,
-          Enum$SortingEnum.NAME, Enum$SortingOrder.DESCENDING),
-      _sortMenuItem(context, loc.sortDateAddedNewest,
-          Enum$SortingEnum.DATE_CREATED, Enum$SortingOrder.DESCENDING),
-      _sortMenuItem(context, loc.sortDateAddedOldest,
-          Enum$SortingEnum.DATE_CREATED, Enum$SortingOrder.ASCENDING),
+      _sortMenuItem(context, loc.sortByName, Enum$SortingEnum.NAME),
+      _sortMenuItem(context, loc.sortByDateAdded, Enum$SortingEnum.DATE_CREATED),
     ];
     if (kind == BrowseKind.episodes) {
-      items.add(_sortMenuItem(context, loc.sortAirDateNewest,
-          Enum$SortingEnum.RELEASE_YEAR, Enum$SortingOrder.DESCENDING));
-      items.add(_sortMenuItem(context, loc.sortAirDateOldest,
-          Enum$SortingEnum.RELEASE_YEAR, Enum$SortingOrder.ASCENDING));
+      items.add(
+          _sortMenuItem(context, loc.sortByAirDate, Enum$SortingEnum.RELEASE_YEAR));
     } else if (_selectedLibraryType != Enum$LibraryType.PODCAST &&
         kind != BrowseKind.artists) {
-      items.add(_sortMenuItem(context, loc.sortReleaseYearNewest,
-          Enum$SortingEnum.RELEASE_YEAR, Enum$SortingOrder.DESCENDING));
-      items.add(_sortMenuItem(context, loc.sortReleaseYearOldest,
-          Enum$SortingEnum.RELEASE_YEAR, Enum$SortingOrder.ASCENDING));
+      items.add(_sortMenuItem(
+          context, loc.sortByReleaseYear, Enum$SortingEnum.RELEASE_YEAR));
     }
     return items;
   }
 
-  Widget _sortMenuItem(BuildContext context, String label,
-      Enum$SortingEnum sorting, Enum$SortingOrder order) {
-    final selected =
-        _effectiveSorting == sorting && _effectiveSortingOrder == order;
+  Widget _sortMenuItem(
+      BuildContext context, String label, Enum$SortingEnum sorting) {
+    final selected = _effectiveSorting == sorting;
+    final ascending = _effectiveSortingOrder == Enum$SortingOrder.ASCENDING;
     return MenuItemButton(
-      onPressed: () => _setSorting(context, sorting, order),
+      onPressed: () => _selectSortField(context, sorting),
       child: ListTile(
-        leading: Icon(selected ? Icons.check : Icons.sort),
+        leading: selected
+            ? Icon(ascending ? Icons.arrow_upward : Icons.arrow_downward)
+            : const SizedBox(width: 24),
         title: Text(label),
       ),
     );
