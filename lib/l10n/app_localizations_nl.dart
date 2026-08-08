@@ -738,6 +738,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get moreOptions => 'Meer opties';
 
   @override
+  String get showQueue => 'Wachtrij tonen';
+
+  @override
   String get tableOfContents => 'Inhoud';
 
   @override

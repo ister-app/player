@@ -869,6 +869,10 @@
   "@moreOptions": {
     "description": "Tooltip for the overflow (...) button in the player opening the less-used actions sheet"
   },
+  "showQueue": "Show queue",
+  "@showQueue": {
+    "description": "Tooltip for the bottom-bar button that scrolls the full player to the queue lists"
+  },
   "tableOfContents": "Contents",
   "readerSettings": "Reading settings",
   "fontSize": "Font size",

@@ -613,6 +613,59 @@ class _PlayerViewState extends State<PlayerView>
     );
   }
 
+  /// Full-width action bar at the bottom edge of the screen (reference-player
+  /// style): queue on the far left, then repeat, the "…" overflow menu and
+  /// stop. Slots are always reserved so the bar lines up in every player.
+  Widget _buildBottomBar(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final controller = widget.controller;
+    final enabled = controller.enabled;
+    final listenTogether = _listenTogetherAction;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          // Scrolls to the queue lists below — the bar's stand-in for the old
+          // scroll-down chevron; the overscroll gesture still works too.
+          IconButton(
+            icon: const Icon(Icons.queue_music, color: Colors.white54),
+            iconSize: 26,
+            tooltip: loc.showQueue,
+            onPressed: () {
+              _scrollController.animateTo(
+                _scrollController.position.maxScrollExtent,
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeInOut,
+              );
+            },
+          ),
+          if (controller.supportsRepeat)
+            _RepeatButton(controller: controller, accent: _accent)
+          else
+            const SizedBox(width: 48),
+          if (controller.supportsSleepTimer || listenTogether != null)
+            _OverflowButton(
+                controller: controller,
+                accent: _accent,
+                onListenTogether: listenTogether)
+          else
+            const SizedBox(width: 48),
+          if (controller.supportsStop)
+            IconButton(
+              icon: Icon(Icons.stop_circle_outlined,
+                  color: enabled ? Colors.white54 : Colors.white30),
+              iconSize: 26,
+              tooltip: loc.stopPlayback,
+              onPressed: enabled ? controller.stop : null,
+            )
+          else
+            const SizedBox(width: 48),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPortrait(BuildContext context, String? artUri, BoxConstraints constraints, bool loading) {
     final maxImageSize = min(constraints.maxWidth - 80, constraints.maxHeight - 340).clamp(80.0, 400.0);
     final previous = widget.controller.previous;
@@ -637,18 +690,10 @@ class _PlayerViewState extends State<PlayerView>
                 const Spacer(),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 4),
-                  child: _Controls(controller: widget.controller, accent: _accent, loading: loading, onNavigate: _openMetaRoute, onListenTogether: _listenTogetherAction),
+                  child: _Controls(controller: widget.controller, accent: _accent, loading: loading, onNavigate: _openMetaRoute),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white54, size: 28),
-                  onPressed: () {
-                    _scrollController.animateTo(
-                      _scrollController.position.maxScrollExtent,
-                      duration: const Duration(milliseconds: 400),
-                      curve: Curves.easeInOut,
-                    );
-                  },
-                ),
+                const SizedBox(height: 8),
+                _buildBottomBar(context),
               ],
             ),
           ),
@@ -716,20 +761,14 @@ class _PlayerViewState extends State<PlayerView>
                             child: Padding(
                               padding:
                                   const EdgeInsets.fromLTRB(32, 16, 32, 4),
-                              child: _Controls(controller: widget.controller, accent: _accent, loading: loading, onNavigate: _openMetaRoute, onListenTogether: _listenTogetherAction),
+                              child: _Controls(controller: widget.controller, accent: _accent, loading: loading, onNavigate: _openMetaRoute),
                             ),
                           ),
                         ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white54, size: 28),
-                        onPressed: () {
-                          _scrollController.animateTo(
-                            _scrollController.position.maxScrollExtent,
-                            duration: const Duration(milliseconds: 400),
-                            curve: Curves.easeInOut,
-                          );
-                        },
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 560),
+                        child: _buildBottomBar(context),
                       ),
                     ],
                   ),
@@ -920,16 +959,11 @@ class _Controls extends StatelessWidget {
     required this.accent,
     this.loading = false,
     this.onNavigate,
-    this.onListenTogether,
   });
 
   final PlayerViewController controller;
   final ValueListenable<Color> accent;
   final bool loading;
-
-  /// Opens the listen-together sheet; null when this surface doesn't offer it
-  /// (remote control, no shareable session).
-  final VoidCallback? onListenTogether;
 
   /// Invoked with the controller's artist/album route when that line is
   /// tapped; the hosting view navigates and dismisses itself.
@@ -954,7 +988,6 @@ class _Controls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
     // Mock metadata rendered under the skeleton so title/artist/album bones
     // have text to size themselves against while the real item loads.
     final artist = loading ? 'Artist name' : controller.artistLine;
@@ -1030,8 +1063,8 @@ class _Controls extends StatelessWidget {
         const SizedBox(height: 20),
         _SeekBar(controller: controller, accent: accent),
         const SizedBox(height: 8),
-        // Bare transport: the secondary actions live in their own row below,
-        // so previous/play/next keep the stage to themselves.
+        // Bare transport: the secondary actions live in the bottom action bar
+        // at the screen edge, so previous/play/next keep the stage.
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -1065,36 +1098,6 @@ class _Controls extends StatelessWidget {
               iconSize: 40,
               onPressed: hasNext ? controller.skipToNext : null,
             ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        // Secondary actions. Slots are always reserved, whether or not their
-        // button exists, so the row looks the same in every player; the
-        // less-used actions (sleep timer, listen together) sit behind "…".
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            if (controller.supportsRepeat)
-              _RepeatButton(controller: controller, accent: accent)
-            else
-              const SizedBox(width: 48),
-            if (controller.supportsStop)
-              IconButton(
-                icon: Icon(Icons.stop_circle_outlined,
-                    color: enabled ? Colors.white54 : Colors.white30),
-                iconSize: 28,
-                tooltip: loc.stopPlayback,
-                onPressed: enabled ? controller.stop : null,
-              )
-            else
-              const SizedBox(width: 48),
-            if (controller.supportsSleepTimer || onListenTogether != null)
-              _OverflowButton(
-                  controller: controller,
-                  accent: accent,
-                  onListenTogether: onListenTogether)
-            else
-              const SizedBox(width: 48),
           ],
         ),
       ],

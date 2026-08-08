@@ -1328,6 +1328,12 @@ abstract class AppLocalizations {
   /// **'More options'**
   String get moreOptions;
 
+  /// Tooltip for the bottom-bar button that scrolls the full player to the queue lists
+  ///
+  /// In en, this message translates to:
+  /// **'Show queue'**
+  String get showQueue;
+
   /// No description provided for @tableOfContents.
   ///
   /// In en, this message translates to:

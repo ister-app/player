@@ -737,6 +737,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moreOptions => 'More options';
 
   @override
+  String get showQueue => 'Show queue';
+
+  @override
   String get tableOfContents => 'Contents';
 
   @override
