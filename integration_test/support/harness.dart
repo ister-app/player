@@ -165,16 +165,24 @@ Future<GraphQLClient> appClient() async {
 
 /// Runs a raw GraphQL query/mutation through the app's client and returns the
 /// data map. Fails the test on errors.
+///
+/// FetchPolicy.noCache on both paths: these calls probe *server* state, so the
+/// app's normalized cache must not touch them in either direction. With
+/// networkOnly the default cache reread replaced fresh network data with the
+/// stale cached entity — a movie whose page had cached `watchStatus: []`
+/// polled as empty forever, no matter what the server had by then.
 Future<Map<String, dynamic>> gqlRaw(String document,
     {Map<String, dynamic> variables = const {}}) async {
   final client = await appClient();
   final result = document.trimLeft().startsWith('mutation')
-      ? await client.mutate(
-          MutationOptions(document: gql(document), variables: variables))
+      ? await client.mutate(MutationOptions(
+          document: gql(document),
+          variables: variables,
+          fetchPolicy: FetchPolicy.noCache))
       : await client.query(QueryOptions(
           document: gql(document),
           variables: variables,
-          fetchPolicy: FetchPolicy.networkOnly));
+          fetchPolicy: FetchPolicy.noCache));
   if (result.hasException) {
     fail('GraphQL failed: ${result.exception} for $document');
   }
