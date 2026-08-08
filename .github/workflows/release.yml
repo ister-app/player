@@ -293,6 +293,9 @@ jobs:
       - uses: actions/checkout@v7
         with:
           path: player
+          # Full history: ci/build-docs.sh stamps each doc file with its last
+          # commit date/author (last_update frontmatter for the docs site).
+          fetch-depth: 0
 
       # ci/e2e-pins.env pins which chart, testdata and server build the screenshots are
       # captured against. Only KEY=value lines may reach GITHUB_ENV.
