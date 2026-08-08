@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:player/l10n/app_localizations.dart';
 
 import '../utils/MediaPlayerHandler.dart';
 import '../utils/PlatformService.dart';
@@ -162,6 +163,14 @@ class _IsterVideoControlsState extends State<_IsterVideoControls> {
       const WatchingAlongChip(),
       const SizedBox(width: 8),
       const WatchTogetherButton(color: Colors.white),
+      const SizedBox(width: 8),
+      IconButton(
+        icon: const Icon(Icons.stop_circle_outlined, color: Colors.white),
+        tooltip: AppLocalizations.of(context)!.stopPlayback,
+        // Ends the session; fullscreen exit and closing the video page follow
+        // through the handler's closePlaybackRequest (see MiniPlayer).
+        onPressed: () => unawaited(_handler.stopPlayback()),
+      ),
     ];
     return MaterialDesktopVideoControlsTheme(
       normal: kDefaultMaterialDesktopVideoControlsThemeData.copyWith(

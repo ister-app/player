@@ -728,6 +728,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get remoteQueueChanged => 'Queue updated via remote control';
 
   @override
+  String get remoteStop => 'Playback stopped via remote control';
+
+  @override
+  String get stopPlayback => 'Stop playback';
+
+  @override
+  String get moreOptions => 'More options';
+
+  @override
   String get tableOfContents => 'Contents';
 
   @override

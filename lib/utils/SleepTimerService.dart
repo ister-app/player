@@ -21,7 +21,7 @@ class SleepTimerService {
   @visibleForTesting
   SleepTimerService.forTest();
 
-  /// Called once when the timer runs out; wired to MediaPlayerHandler.stop().
+  /// Called once when the timer runs out; wired to MediaPlayerHandler.suspendPlayback().
   Future<void> Function()? onExpire;
 
   /// Injectable clock for tests.
@@ -98,7 +98,7 @@ class SleepTimerService {
     start(Duration(minutes: schedule.durationMinutes));
   }
 
-  /// Called from MediaPlayerHandler.stop(): a stopped session makes the
+  /// Called from MediaPlayerHandler.suspendPlayback(): a stopped session makes the
   /// countdown moot and ends the suppression window.
   void notifyPlaybackStopped() {
     _autoStartSuppressed = false;

@@ -25,8 +25,19 @@ class MiniPlayer extends StatefulWidget {
 }
 
 class _MiniPlayerState extends State<MiniPlayer> {
+  /// Height of the bar body; the swipe-down gesture measures against it.
+  static const double _barHeight = 66;
+
   double? _dragStartY;
   bool _playerOpened = false;
+
+  /// Pixels the bar is currently dragged down; past the threshold the release
+  /// ends playback (the bar then disappears on the null mediaItem).
+  double _dragDown = 0;
+
+  /// True while the bar animates back after an aborted swipe-down; during the
+  /// drag itself the translation follows the finger without animation.
+  bool _snapBack = false;
 
   @override
   void initState() {
@@ -108,11 +119,13 @@ class _MiniPlayerState extends State<MiniPlayer> {
 
   void _openVideoPage(BuildContext context) => openCurrentVideoPage(context);
 
-  void _openPlayerPage(BuildContext context, {double initialControllerValue = 0.0}) {
+  void _openPlayerPage(BuildContext context,
+      {double initialControllerValue = 0.0}) {
     // Guard against a double tap pushing the player twice; the second copy's
     // dispose would clear the dismiss handler of the first.
     if (MediaPlayerHandler.instance.musicPlayerOpen.value) return;
-    MediaPlayerHandler.instance.playerInitialControllerValue = initialControllerValue;
+    MediaPlayerHandler.instance.playerInitialControllerValue =
+        initialControllerValue;
     AutoRouter.of(context).root.push(const MusicPlayerRoute());
   }
 
@@ -127,16 +140,48 @@ class _MiniPlayerState extends State<MiniPlayer> {
   void _onDragStart(DragStartDetails details) {
     _dragStartY = details.globalPosition.dy;
     _playerOpened = false;
+    _snapBack = false;
   }
 
-  void _onDragUpdate(DragUpdateDetails details) {
+  void _onDragUpdate(DragUpdateDetails details, {required bool isVideo}) {
     if (_playerOpened || _dragStartY == null) return;
     final draggedUp = _dragStartY! - details.globalPosition.dy;
-    if (draggedUp > 12) {
+    // Upward opens the music overlay; video has no such overlay.
+    if (draggedUp > 12 && !isVideo && _dragDown == 0) {
       _playerOpened = true;
       final screenHeight = MediaQuery.of(context).size.height;
       final initialValue = (draggedUp / screenHeight).clamp(0.0, 0.4);
       _openPlayerPage(context, initialControllerValue: initialValue);
+      return;
+    }
+    // Downward slides the bar along with the finger towards stopping.
+    final draggedDown = -draggedUp;
+    if (draggedDown > 0 || _dragDown > 0) {
+      setState(() {
+        _snapBack = false;
+        _dragDown = draggedDown.clamp(0.0, _barHeight * 1.5);
+      });
+    }
+  }
+
+  void _onDragEnd(DragEndDetails details) {
+    if (_playerOpened || _dragDown == 0) return;
+    final velocity = details.primaryVelocity ?? 0;
+    // Same feel as dismissing the full player: past ~40% of the travel, or a
+    // downward fling, ends playback; anything less springs back into place.
+    if (_dragDown > _barHeight * 0.4 || velocity > 600) {
+      unawaited(MediaPlayerHandler.instance.stopPlayback());
+      // The bar vanishes on the null mediaItem; reset so the bar of a future
+      // session starts in place instead of half-slid.
+      setState(() {
+        _dragDown = 0;
+        _snapBack = false;
+      });
+    } else {
+      setState(() {
+        _snapBack = true;
+        _dragDown = 0;
+      });
     }
   }
 
@@ -167,134 +212,159 @@ class _MiniPlayerState extends State<MiniPlayer> {
     );
   }
 
-  Widget _buildBar(BuildContext context, MediaItem item, {required bool isVideo}) {
-    final placeholderIcon =
-        isVideo ? Icons.movie_outlined : Icons.music_note;
-    return Material(
-      elevation: 4,
-      child: GestureDetector(
-        onTap: () =>
-            isVideo ? _openVideoPage(context) : _openPlayerPage(context),
-        // The drag-to-expand gesture opens the music overlay; video has no such
-        // overlay, so it's music-only.
-        onVerticalDragStart: isVideo ? null : _onDragStart,
-        onVerticalDragUpdate: isVideo ? null : _onDragUpdate,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            StreamBuilder<Duration>(
-              stream: MediaPlayerHandler.instance.positionSecondsStream,
-              initialData: MediaPlayerHandler.instance.player.state.position,
-              builder: (context, posSnapshot) {
-                return StreamBuilder<Duration>(
-                  stream: MediaPlayerHandler.instance.player.stream.duration,
-                  initialData: MediaPlayerHandler.instance.player.state.duration,
-                  builder: (context, durSnapshot) {
-                    final position = posSnapshot.data ?? Duration.zero;
-                    final duration = durSnapshot.data ?? Duration.zero;
-                    final progress = duration.inMilliseconds > 0
-                        ? (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
-                        : 0.0;
-                    return LinearProgressIndicator(
-                      value: progress,
-                      minHeight: 2,
-                      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                      valueColor: AlwaysStoppedAnimation(Theme.of(context).colorScheme.primary),
+  Widget _buildBar(BuildContext context, MediaItem item,
+      {required bool isVideo}) {
+    final placeholderIcon = isVideo ? Icons.movie_outlined : Icons.music_note;
+    return AnimatedSlide(
+      offset: Offset(0, _dragDown / _barHeight),
+      duration: _snapBack ? const Duration(milliseconds: 150) : Duration.zero,
+      curve: Curves.easeOut,
+      child: AnimatedOpacity(
+        opacity: (1 - _dragDown / (_barHeight * 1.5)).clamp(0.0, 1.0),
+        duration: _snapBack ? const Duration(milliseconds: 150) : Duration.zero,
+        child: Material(
+          elevation: 4,
+          child: GestureDetector(
+            onTap: () =>
+                isVideo ? _openVideoPage(context) : _openPlayerPage(context),
+            // Up opens the music overlay (music only — video has no overlay);
+            // down slides the bar away and stops playback.
+            onVerticalDragStart: _onDragStart,
+            onVerticalDragUpdate: (d) => _onDragUpdate(d, isVideo: isVideo),
+            onVerticalDragEnd: _onDragEnd,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                StreamBuilder<Duration>(
+                  stream: MediaPlayerHandler.instance.positionSecondsStream,
+                  initialData:
+                      MediaPlayerHandler.instance.player.state.position,
+                  builder: (context, posSnapshot) {
+                    return StreamBuilder<Duration>(
+                      stream:
+                          MediaPlayerHandler.instance.player.stream.duration,
+                      initialData:
+                          MediaPlayerHandler.instance.player.state.duration,
+                      builder: (context, durSnapshot) {
+                        final position = posSnapshot.data ?? Duration.zero;
+                        final duration = durSnapshot.data ?? Duration.zero;
+                        final progress = duration.inMilliseconds > 0
+                            ? (position.inMilliseconds /
+                                    duration.inMilliseconds)
+                                .clamp(0.0, 1.0)
+                            : 0.0;
+                        return LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 2,
+                          backgroundColor: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
+                          valueColor: AlwaysStoppedAnimation(
+                              Theme.of(context).colorScheme.primary),
+                        );
+                      },
                     );
                   },
-                );
-              },
-            ),
-            Container(
-              height: 64,
-              color: Theme.of(context).colorScheme.surfaceContainerHigh,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                children: [
-                  TvFocusable(
-                    onTap: () => isVideo
-                        ? _openVideoPage(context)
-                        : _openAlbumPage(context),
-                    borderRadius: BorderRadius.circular(4),
-                    child: GestureDetector(
-                    onTap: () => isVideo
-                        ? _openVideoPage(context)
-                        : _openAlbumPage(context),
-                    behavior: HitTestBehavior.opaque,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: SizedBox(
-                        width: 44,
-                        height: 44,
-                        child: item.artUri != null
-                            ? CachedNetworkImage(
-                                imageUrl: item.artUri.toString(),
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
-                                    _artPlaceholder(context, placeholderIcon),
-                              )
-                            : _artPlaceholder(context, placeholderIcon),
-                      ),
-                    ),
-                  ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TvFocusable(
-                    onTap: () =>
-                        isVideo ? _openVideoPage(context) : _openPlayerPage(context),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            // "Listening along": this device follows another
-                            // device's session (see MediaPlayerHandler).
-                            ValueListenableBuilder<bool>(
-                              valueListenable: MediaPlayerHandler
-                                  .instance.followModeNotifier,
-                              builder: (context, following, _) => following
-                                  ? const Padding(
-                                      padding: EdgeInsets.only(right: 4),
-                                      child: Icon(Icons.headphones, size: 14),
+                ),
+                Container(
+                  height: 64,
+                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
+                    children: [
+                      TvFocusable(
+                        onTap: () => isVideo
+                            ? _openVideoPage(context)
+                            : _openAlbumPage(context),
+                        borderRadius: BorderRadius.circular(4),
+                        child: GestureDetector(
+                          onTap: () => isVideo
+                              ? _openVideoPage(context)
+                              : _openAlbumPage(context),
+                          behavior: HitTestBehavior.opaque,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: SizedBox(
+                              width: 44,
+                              height: 44,
+                              child: item.artUri != null
+                                  ? CachedNetworkImage(
+                                      imageUrl: item.artUri.toString(),
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) =>
+                                          _artPlaceholder(
+                                              context, placeholderIcon),
                                     )
-                                  : const SizedBox.shrink(),
+                                  : _artPlaceholder(context, placeholderIcon),
                             ),
-                            Expanded(
-                              child: Text(
-                                item.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (item.artist != null)
-                          Text(
-                            item.artist!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodySmall,
                           ),
-                      ],
-                    ),
-                    ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TvFocusable(
+                          onTap: () => isVideo
+                              ? _openVideoPage(context)
+                              : _openPlayerPage(context),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  // "Listening along": this device follows another
+                                  // device's session (see MediaPlayerHandler).
+                                  ValueListenableBuilder<bool>(
+                                    valueListenable: MediaPlayerHandler
+                                        .instance.followModeNotifier,
+                                    builder: (context, following, _) =>
+                                        following
+                                            ? const Padding(
+                                                padding:
+                                                    EdgeInsets.only(right: 4),
+                                                child: Icon(Icons.headphones,
+                                                    size: 14),
+                                              )
+                                            : const SizedBox.shrink(),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      item.title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                              fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (item.artist != null)
+                                Text(
+                                  item.artist!,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const PlayPauseButton(iconSize: 32),
+                      IconButton(
+                        icon: const Icon(Icons.skip_next),
+                        iconSize: 32,
+                        onPressed: () =>
+                            MediaPlayerHandler.instance.skipToNext(),
+                      ),
+                    ],
                   ),
-                  const PlayPauseButton(iconSize: 32),
-                  IconButton(
-                    icon: const Icon(Icons.skip_next),
-                    iconSize: 32,
-                    onPressed: () => MediaPlayerHandler.instance.skipToNext(),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

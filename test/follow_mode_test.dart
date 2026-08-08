@@ -10,6 +10,7 @@ import 'package:player/graphql/fragmentMediafiles.graphql.dart';
 import 'package:player/graphql/fragmentMovie.graphql.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 import 'package:player/graphql/fragmentServerActivity.graphql.dart';
+import 'package:player/graphql/playbackCommandsSubscription.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
@@ -339,6 +340,72 @@ void main() {
     expect(operations, isNot(contains('updatePlayQueue')));
   });
 
+  test('stopPlayback as the owner publishes STOP and tears down', () async {
+    final operations = <String>[];
+    useClient(_fakeGraphQL(queue: _queue(), operations: operations));
+    handler.serverName = _server;
+    handler.playQueue = _queue();
+    handler.currentPlayQueueItem = _trackItem('item-1', 1);
+    handler.graphQLClient = ClientManager.getClientForUrl(_server).value;
+    final closeRequests = handler.closePlaybackRequest.value;
+
+    await handler.stopPlayback();
+
+    // Followers and remote controls learn about the stop over the bus.
+    expect(operations, contains('sendPlaybackCommand'));
+    expect(handler.playQueue, isNull);
+    expect(handler.mediaItem.valueOrNull, isNull);
+    expect(handler.queue.value, isEmpty);
+    expect(handler.closePlaybackRequest.value, closeRequests + 1);
+  });
+
+  test('stopPlayback on a follower only disconnects this device', () async {
+    final operations = <String>[];
+    useClient(_fakeGraphQL(queue: _queue(), operations: operations));
+    await handler.startFollowingQueue(_server, 'pq-follow');
+    operations.clear();
+
+    await handler.stopPlayback();
+
+    // No STOP on the bus: the leader's session keeps playing without us.
+    expect(operations, isNot(contains('sendPlaybackCommand')));
+    expect(handler.followMode, isFalse);
+    expect(handler.playQueue, isNull);
+    expect(handler.mediaItem.valueOrNull, isNull);
+  });
+
+  test('an incoming STOP ends playback without re-publishing', () async {
+    final operations = <String>[];
+    useClient(_fakeGraphQL(queue: _queue(), operations: operations));
+    handler.serverName = _server;
+    handler.playQueue = _queue();
+    handler.currentPlayQueueItem = _trackItem('item-1', 1);
+    handler.graphQLClient = ClientManager.getClientForUrl(_server).value;
+    final closeRequests = handler.closePlaybackRequest.value;
+
+    await handler.debugHandleRemoteCommand(
+        Subscription$playbackCommands$playbackCommands(
+      playQueueId: 'pq-follow',
+      command: Enum$PlaybackCommandType.STOP,
+      timestamp: '2026-08-08T12:00:00Z',
+    ));
+
+    // The fan-out already reached every participant; answering with another
+    // STOP would bounce between devices forever.
+    expect(operations, isNot(contains('sendPlaybackCommand')));
+    expect(handler.playQueue, isNull);
+    expect(handler.mediaItem.valueOrNull, isNull);
+    expect(handler.closePlaybackRequest.value, closeRequests + 1);
+
+    // A second STOP (e.g. the echo of our own) is a no-op on the empty state.
+    await handler.debugHandleRemoteCommand(
+        Subscription$playbackCommands$playbackCommands(
+      playQueueId: 'pq-follow',
+      command: Enum$PlaybackCommandType.STOP,
+      timestamp: '2026-08-08T12:00:01Z',
+    ));
+    expect(handler.closePlaybackRequest.value, closeRequests + 1);
+  });
 
   test('an inaccessible current item stays silent but keeps the index',
       () async {

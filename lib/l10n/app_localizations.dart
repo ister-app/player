@@ -1310,6 +1310,24 @@ abstract class AppLocalizations {
   /// **'Queue updated via remote control'**
   String get remoteQueueChanged;
 
+  /// No description provided for @remoteStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback stopped via remote control'**
+  String get remoteStop;
+
+  /// Tooltip/label for the stop button that ends the session and dismisses the mini player
+  ///
+  /// In en, this message translates to:
+  /// **'Stop playback'**
+  String get stopPlayback;
+
+  /// Tooltip for the overflow (...) button in the player opening the less-used actions sheet
+  ///
+  /// In en, this message translates to:
+  /// **'More options'**
+  String get moreOptions;
+
   /// No description provided for @tableOfContents.
   ///
   /// In en, this message translates to:

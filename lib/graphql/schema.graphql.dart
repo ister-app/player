@@ -2115,6 +2115,7 @@ enum Enum$PlaybackCommandType {
   QUEUE_CHANGED,
   STOP_FOLLOW,
   SET_REPEAT,
+  STOP,
   $unknown;
 
   factory Enum$PlaybackCommandType.fromJson(String value) =>
@@ -2143,6 +2144,8 @@ String toJson$Enum$PlaybackCommandType(Enum$PlaybackCommandType e) {
       return r'STOP_FOLLOW';
     case Enum$PlaybackCommandType.SET_REPEAT:
       return r'SET_REPEAT';
+    case Enum$PlaybackCommandType.STOP:
+      return r'STOP';
     case Enum$PlaybackCommandType.$unknown:
       return r'$unknown';
   }
@@ -2168,6 +2171,8 @@ Enum$PlaybackCommandType fromJson$Enum$PlaybackCommandType(String value) {
       return Enum$PlaybackCommandType.STOP_FOLLOW;
     case r'SET_REPEAT':
       return Enum$PlaybackCommandType.SET_REPEAT;
+    case r'STOP':
+      return Enum$PlaybackCommandType.STOP;
     default:
       return Enum$PlaybackCommandType.$unknown;
   }

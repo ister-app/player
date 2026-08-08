@@ -729,6 +729,15 @@ class AppLocalizationsNl extends AppLocalizations {
   String get remoteQueueChanged => 'Wachtrij bijgewerkt via afstandsbediening';
 
   @override
+  String get remoteStop => 'Afspelen gestopt via afstandsbediening';
+
+  @override
+  String get stopPlayback => 'Afspelen stoppen';
+
+  @override
+  String get moreOptions => 'Meer opties';
+
+  @override
   String get tableOfContents => 'Inhoud';
 
   @override

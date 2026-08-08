@@ -263,6 +263,14 @@ class _LocalPlayerController extends QueuePlayerViewController<MediaItem> {
   @override
   bool get supportsSleepTimer => true;
 
+  // Ends the session for good; the surfaces close themselves through the
+  // handler's closePlaybackRequest, so no local dismiss is needed here.
+  @override
+  bool get supportsStop => true;
+
+  @override
+  void stop() => unawaited(_handler.stopPlayback());
+
   @override
   bool get repeatActive => _repeatMode != AudioServiceRepeatMode.none;
 

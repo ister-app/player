@@ -440,6 +440,12 @@ class _RemotePlayerController
         _applyOverride(progressMs: 0);
       case Enum$PlaybackCommandType.SET_REPEAT:
         _applyOverride(repeatMode: command.repeatMode);
+      case Enum$PlaybackCommandType.STOP:
+        // The playing client tears its session down on this; flip the banner
+        // right away instead of waiting for the nowPlaying feed to notice.
+        sessionEnded = true;
+        _syncTicker();
+        notifyListeners();
       // Aimed at one following device, and changes nothing about the session.
       case Enum$PlaybackCommandType.STOP_FOLLOW:
       case Enum$PlaybackCommandType.$unknown:
@@ -741,6 +747,17 @@ class _RemotePlayerController
                   : Enum$PlaybackCommandType.PAUSE));
             },
     );
+  }
+
+  // Any allowed controller may end the whole session; the playing client
+  // tears down on the STOP and our own command echo flips [sessionEnded].
+  @override
+  bool get supportsStop => true;
+
+  @override
+  void stop() {
+    _applyOverride(paused: true);
+    unawaited(_sendCommand(Enum$PlaybackCommandType.STOP));
   }
 
   @override

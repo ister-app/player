@@ -92,7 +92,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       _applyMpvNetworkOptions();
       _startStallWatchdog();
       StreamTokenService.tokenVersion.addListener(_refreshArtworkTokens);
-      SleepTimerService.instance.onExpire = stop;
+      SleepTimerService.instance.onExpire = suspendPlayback;
       _listenersAdded = true;
     }
   }
@@ -1205,10 +1205,19 @@ class MediaPlayerHandler extends BaseAudioHandler
     return ClientManager.usesTestClients ? Future.value() : _player.pause();
   }
 
+  /// The stop control (notification, headset) means "make it go away", not
+  /// "pause harder": end the session outright so the mini player disappears
+  /// with it. Internal soft-stop callers use [suspendPlayback] instead.
   @override
-  Future<void> stop() async {
-    // Stopping a following device only stops *this* device: leave follow mode
-    // (deregistering at the server) without touching the leader's session.
+  Future<void> stop() => stopPlayback();
+
+  /// Suspends playback while keeping the loaded item resumable: pause, flush
+  /// progress, drop the heartbeat/command subscription and release audio
+  /// focus. The notification/mini player stay up so play() can pick the
+  /// session back up (sleep timer, unplayable-item fallback).
+  Future<void> suspendPlayback() async {
+    // Suspending a following device only affects *this* device: leave follow
+    // mode (deregistering at the server) without touching the leader's session.
     await stopFollowing();
     _intendsToPlay = false;
     // There is no explicit stop mutation: ending the heartbeat is the stop
@@ -1226,9 +1235,30 @@ class MediaPlayerHandler extends BaseAudioHandler
     await session.setActive(false);
   }
 
-  /// Ends playback on *this* device for good: unlike [stop] (which pauses and
-  /// keeps the item loaded so the notification/mini player can resume it) this
-  /// closes the stream and clears the loaded media entirely. Used when the
+  /// The user-facing hard stop (stop buttons, mini-player swipe-down,
+  /// notification stop). The owner of a live session publishes STOP on the
+  /// command bus first, so listening-along devices and remote controls see
+  /// the whole session end; a follower stays silent — its stop only
+  /// disconnects this device ([endPlaybackLocally] deregisters it).
+  Future<void> stopPlayback() async {
+    final client = graphQLClient;
+    final pq = playQueue;
+    if (!_followMode && client != null && pq != null) {
+      try {
+        await _playQueueService.sendPlaybackCommand(
+            client, pq.id, Enum$PlaybackCommandType.STOP);
+      } catch (e) {
+        // The session dies through the heartbeat ending regardless; a lost
+        // STOP only means followers coast until the server expires it.
+        LoggerService().logger.w('Publishing STOP failed: $e');
+      }
+    }
+    await endPlaybackLocally();
+  }
+
+  /// Ends playback on *this* device for good: unlike [suspendPlayback] (which
+  /// pauses and keeps the item loaded so the notification/mini player can
+  /// resume it) this closes the stream and clears the loaded media entirely. Used when the
   /// media is gone from this device rather than merely paused — the followed
   /// session ended, or the queue was handed off to another device.
   ///
@@ -2632,6 +2662,11 @@ class MediaPlayerHandler extends BaseAudioHandler
       case Enum$PlaybackCommandType.SET_REPEAT:
         final mode = command.repeatMode;
         if (mode != null) await setRepeatMode(repeatModeFromApi(mode));
+      case Enum$PlaybackCommandType.STOP:
+        // The whole session ends — for the owner and every follower alike;
+        // the fan-out already reached everyone, so nobody re-publishes. The
+        // null check swallows the owner's own echo racing its teardown.
+        if (playQueue != null) await endPlaybackLocally();
       // Handled before this switch; the owner's kick is not a transport command.
       case Enum$PlaybackCommandType.STOP_FOLLOW:
       case Enum$PlaybackCommandType.$unknown:
@@ -2690,6 +2725,10 @@ class MediaPlayerHandler extends BaseAudioHandler
                     const Duration(seconds: 3)
             ? null
             : loc.remoteQueueChanged;
+      case Enum$PlaybackCommandType.STOP:
+        // Suppress the owner's own echo: by the time it arrives the local
+        // teardown has usually already cleared the queue.
+        message = playQueue == null ? null : loc.remoteStop;
       case Enum$PlaybackCommandType.SET_REPEAT:
       case Enum$PlaybackCommandType.STOP_FOLLOW:
       case Enum$PlaybackCommandType.$unknown:
@@ -3038,6 +3077,13 @@ class MediaPlayerHandler extends BaseAudioHandler
           List<Fragment$fragmentPlaybackSession> sessions) =>
       _onFollowNowPlaying(sessions);
 
+  /// Test seam: handles a remote-control command as if it arrived over the
+  /// command subscription (the real one needs a live websocket).
+  @visibleForTesting
+  Future<void> debugHandleRemoteCommand(
+          Subscription$playbackCommands$playbackCommands command) =>
+      _onRemoteCommand(command);
+
   /// Test seam: the tight-sync anchor as last stored from a now-playing
   /// emission.
   @visibleForTesting
@@ -3226,7 +3272,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       if (nextPlayable != -1) {
         await skipToQueueItem(nextPlayable);
       } else {
-        await stop();
+        await suspendPlayback();
       }
     } finally {
       _handlingFailedLoad = false;

@@ -90,6 +90,11 @@ abstract class PlayerViewController extends ChangeNotifier {
   /// remote controller can't put someone else's device to sleep.
   bool get supportsSleepTimer => false;
 
+  /// Whether this surface can end the whole session (local playback tears
+  /// itself down; a remote control sends STOP over the command bus).
+  bool get supportsStop => false;
+  void stop() {}
+
   /// The inner play/pause button; the view wraps it in the accent-coloured
   /// circle. Local playback plugs in [PlayPauseButton] (with its spinner),
   /// the remote a plain toggle driven by the session state.
@@ -496,17 +501,8 @@ class _PlayerViewState extends State<PlayerView>
   }
 
   Widget _buildHeader() {
-    final loc = AppLocalizations.of(context)!;
     final controller = widget.controller;
     final headerTitle = controller.headerTitle;
-    // The listen-together sheet acts on this device's own playback — its own
-    // session, or the session it follows (sessionSharingQueueId is the
-    // followed queue then; the sheet adapts to that role itself) — so it is
-    // offered for the local session only. The remote control reaches the same
-    // sheet through its banner instead.
-    final sessionQueueId =
-        controller.isLocalSession ? controller.sessionSharingQueueId : null;
-    final sessionServerName = controller.sessionSharingServerName;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
@@ -525,20 +521,28 @@ class _PlayerViewState extends State<PlayerView>
                   )
                 : const SizedBox.shrink(),
           ),
-          if (sessionQueueId != null && sessionServerName != null)
-            IconButton(
-              icon: const Icon(Icons.headphones, color: Colors.white),
-              tooltip: loc.listenTogetherTitle,
-              onPressed: () => showListenTogetherSheet(
-                context,
-                serverName: sessionServerName,
-                playQueueId: sessionQueueId,
-                onQueueMoved: dismiss,
-              ),
-            ),
         ],
       ),
     );
+  }
+
+  /// Opens the listen-together sheet for this device's own playback — its own
+  /// session, or the session it follows (sessionSharingQueueId is the followed
+  /// queue then; the sheet adapts to that role itself) — so it is offered for
+  /// the local session only. The remote control reaches the same sheet through
+  /// its banner instead. Null hides the entry in the overflow menu.
+  VoidCallback? get _listenTogetherAction {
+    final controller = widget.controller;
+    final sessionQueueId =
+        controller.isLocalSession ? controller.sessionSharingQueueId : null;
+    final sessionServerName = controller.sessionSharingServerName;
+    if (sessionQueueId == null || sessionServerName == null) return null;
+    return () => showListenTogetherSheet(
+          context,
+          serverName: sessionServerName,
+          playQueueId: sessionQueueId,
+          onQueueMoved: dismiss,
+        );
   }
 
   Widget? _buildBanner() {
@@ -633,7 +637,7 @@ class _PlayerViewState extends State<PlayerView>
                 const Spacer(),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 4),
-                  child: _Controls(controller: widget.controller, accent: _accent, loading: loading, onNavigate: _openMetaRoute),
+                  child: _Controls(controller: widget.controller, accent: _accent, loading: loading, onNavigate: _openMetaRoute, onListenTogether: _listenTogetherAction),
                 ),
                 IconButton(
                   icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white54, size: 28),
@@ -712,7 +716,7 @@ class _PlayerViewState extends State<PlayerView>
                             child: Padding(
                               padding:
                                   const EdgeInsets.fromLTRB(32, 16, 32, 4),
-                              child: _Controls(controller: widget.controller, accent: _accent, loading: loading, onNavigate: _openMetaRoute),
+                              child: _Controls(controller: widget.controller, accent: _accent, loading: loading, onNavigate: _openMetaRoute, onListenTogether: _listenTogetherAction),
                             ),
                           ),
                         ),
@@ -916,11 +920,16 @@ class _Controls extends StatelessWidget {
     required this.accent,
     this.loading = false,
     this.onNavigate,
+    this.onListenTogether,
   });
 
   final PlayerViewController controller;
   final ValueListenable<Color> accent;
   final bool loading;
+
+  /// Opens the listen-together sheet; null when this surface doesn't offer it
+  /// (remote control, no shareable session).
+  final VoidCallback? onListenTogether;
 
   /// Invoked with the controller's artist/album route when that line is
   /// tapped; the hosting view navigates and dismisses itself.
@@ -945,6 +954,7 @@ class _Controls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     // Mock metadata rendered under the skeleton so title/artist/album bones
     // have text to size themselves against while the real item loads.
     final artist = loading ? 'Artist name' : controller.artistLine;
@@ -1020,15 +1030,11 @@ class _Controls extends StatelessWidget {
         const SizedBox(height: 20),
         _SeekBar(controller: controller, accent: accent),
         const SizedBox(height: 8),
+        // Bare transport: the secondary actions live in their own row below,
+        // so previous/play/next keep the stage to themselves.
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            // The outer slots are always reserved, whether or not their button
-            // exists, so the transport row looks the same in every player.
-            if (controller.supportsRepeat)
-              _RepeatButton(controller: controller, accent: accent)
-            else
-              const SizedBox(width: 48),
             IconButton(
               icon: Icon(Icons.skip_previous,
                   color: hasPrevious ? Colors.white : Colors.white30),
@@ -1059,8 +1065,34 @@ class _Controls extends StatelessWidget {
               iconSize: 40,
               onPressed: hasNext ? controller.skipToNext : null,
             ),
-            if (controller.supportsSleepTimer)
-              _SleepTimerButton(accent: accent)
+          ],
+        ),
+        const SizedBox(height: 4),
+        // Secondary actions. Slots are always reserved, whether or not their
+        // button exists, so the row looks the same in every player; the
+        // less-used actions (sleep timer, listen together) sit behind "…".
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            if (controller.supportsRepeat)
+              _RepeatButton(controller: controller, accent: accent)
+            else
+              const SizedBox(width: 48),
+            if (controller.supportsStop)
+              IconButton(
+                icon: Icon(Icons.stop_circle_outlined,
+                    color: enabled ? Colors.white54 : Colors.white30),
+                iconSize: 28,
+                tooltip: loc.stopPlayback,
+                onPressed: enabled ? controller.stop : null,
+              )
+            else
+              const SizedBox(width: 48),
+            if (controller.supportsSleepTimer || onListenTogether != null)
+              _OverflowButton(
+                  controller: controller,
+                  accent: accent,
+                  onListenTogether: onListenTogether)
             else
               const SizedBox(width: 48),
           ],
@@ -1070,13 +1102,20 @@ class _Controls extends StatelessWidget {
   }
 }
 
-/// Sleep timer toggle: outlined and dim while inactive, filled and tinted
-/// with the album accent while counting down, with the remaining time in a
-/// compact label underneath. Tapping opens the [SleepTimerSheet].
-class _SleepTimerButton extends StatelessWidget {
-  const _SleepTimerButton({required this.accent});
+/// The "…" button opening the less-used player actions (sleep timer, listen
+/// together) in a bottom sheet. While a sleep timer runs, the icon takes the
+/// album accent and shows the remaining time in a compact label underneath —
+/// the countdown stays visible even though the timer moved into the menu.
+class _OverflowButton extends StatelessWidget {
+  const _OverflowButton({
+    required this.controller,
+    required this.accent,
+    required this.onListenTogether,
+  });
 
+  final PlayerViewController controller;
   final ValueListenable<Color> accent;
+  final VoidCallback? onListenTogether;
 
   @override
   Widget build(BuildContext context) {
@@ -1089,12 +1128,13 @@ class _SleepTimerButton extends StatelessWidget {
           valueListenable: accent,
           builder: (context, color, _) {
             // Either a countdown or an item count is armed, never both.
-            final active = remaining != null || items != null;
-            final label = remaining != null
-                ? _shortCountdown(remaining)
-                : items != null
-                    ? loc.sleepTimerItemsShort(items)
-                    : null;
+            final timerActive = controller.supportsSleepTimer &&
+                (remaining != null || items != null);
+            final label = !timerActive
+                ? null
+                : remaining != null
+                    ? _shortCountdown(remaining)
+                    : loc.sleepTimerItemsShort(items!);
             return SizedBox(
               width: 48,
               child: Column(
@@ -1102,17 +1142,12 @@ class _SleepTimerButton extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: Icon(
-                      active ? Icons.bedtime : Icons.bedtime_outlined,
-                      color: active ? color : Colors.white54,
+                      Icons.more_horiz,
+                      color: timerActive ? color : Colors.white54,
                     ),
-                    iconSize: 24,
-                    tooltip: loc.sleepTimer,
-                    onPressed: () => showModalBottomSheet<void>(
-                      context: context,
-                      isScrollControlled: true,
-                      showDragHandle: true,
-                      builder: (_) => const SleepTimerSheet(),
-                    ),
+                    iconSize: 28,
+                    tooltip: loc.moreOptions,
+                    onPressed: () => _showSheet(context, timerActive),
                   ),
                   if (label != null)
                     Text(
@@ -1123,6 +1158,45 @@ class _SleepTimerButton extends StatelessWidget {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  void _showSheet(BuildContext context, bool timerActive) {
+    final loc = AppLocalizations.of(context)!;
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (controller.supportsSleepTimer)
+              ListTile(
+                leading:
+                    Icon(timerActive ? Icons.bedtime : Icons.bedtime_outlined),
+                title: Text(loc.sleepTimer),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  showModalBottomSheet<void>(
+                    context: context,
+                    isScrollControlled: true,
+                    showDragHandle: true,
+                    builder: (_) => const SleepTimerSheet(),
+                  );
+                },
+              ),
+            if (onListenTogether != null)
+              ListTile(
+                leading: const Icon(Icons.headphones),
+                title: Text(loc.listenTogetherTitle),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  onListenTogether!();
+                },
+              ),
+          ],
         ),
       ),
     );

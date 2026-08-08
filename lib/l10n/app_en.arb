@@ -860,6 +860,15 @@
   "remoteSeek": "Position changed via remote control",
   "remoteSkipToItem": "Queue item selected via remote control",
   "remoteQueueChanged": "Queue updated via remote control",
+  "remoteStop": "Playback stopped via remote control",
+  "stopPlayback": "Stop playback",
+  "@stopPlayback": {
+    "description": "Tooltip/label for the stop button that ends the session and dismisses the mini player"
+  },
+  "moreOptions": "More options",
+  "@moreOptions": {
+    "description": "Tooltip for the overflow (...) button in the player opening the less-used actions sheet"
+  },
   "tableOfContents": "Contents",
   "readerSettings": "Reading settings",
   "fontSize": "Font size",
