@@ -199,7 +199,8 @@ class MediaListPage extends StatelessWidget {
           fromJson: Query$rankedShows$libraryById$rankedShows$content.fromJson,
           childAspectRatio: 0.65,
           tile: (dynamic show) => _landscapeTile(
-              context, show, () => ShowOverviewRoute(showId: show.id)),
+              context, show, () => ShowOverviewRoute(showId: show.id),
+              subTitle: show.releaseYear > 0 ? '${show.releaseYear}' : ''),
         );
       case Enum$LibraryType.MUSIC:
         return _rankedContentView(
@@ -290,12 +291,13 @@ class MediaListPage extends StatelessWidget {
   // identical fields, so the tile takes them dynamically (the LibraryDiscoverView
   // rows do the same).
   Widget _landscapeTile(
-      BuildContext context, dynamic item, PageRouteInfo Function() route) {
+      BuildContext context, dynamic item, PageRouteInfo Function() route,
+      {String? subTitle}) {
     final img = ImageUtil.getImageByType(item.images, ImageTypes.cover);
     return CarouselItemView(
       serverName: serverName,
       title: MetadataUtil.getTitle(item.metadata) ?? item.name,
-      subTitle: MetadataUtil.getDescription(item.metadata) ?? '',
+      subTitle: subTitle ?? MetadataUtil.getDescription(item.metadata) ?? '',
       imageUrl: ImageUtil.buildUrl(img,
           token: StreamTokenService.getToken(serverName)),
       blurHash: img?.blurHash,

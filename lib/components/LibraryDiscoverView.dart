@@ -457,7 +457,7 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
     return CarouselItemView(
       serverName: widget.serverName,
       title: MetadataUtil.getTitle(show.metadata) ?? show.name,
-      subTitle: MetadataUtil.getDescription(show.metadata) ?? '',
+      subTitle: show.releaseYear > 0 ? '${show.releaseYear}' : '',
       imageUrl: ImageUtil.buildUrl(img,
           token: StreamTokenService.getToken(widget.serverName)),
       blurHash: img?.blurHash,

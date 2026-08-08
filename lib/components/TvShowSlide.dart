@@ -138,7 +138,7 @@ class _TvShowSlideState extends State<TvShowSlide> {
               return CarouselItemView(
                 serverName: widget.serverName,
                 title: MetadataUtil.getTitle(show.metadata) ?? '',
-                subTitle: MetadataUtil.getDescription(show.metadata) ?? '',
+                subTitle: show.releaseYear > 0 ? '${show.releaseYear}' : '',
                 imageUrl: ImageUtil.buildUrl(img,
                     token: StreamTokenService.getToken(widget.serverName)),
                 blurHash: img?.blurHash,
