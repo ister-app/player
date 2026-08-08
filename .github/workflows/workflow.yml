@@ -258,7 +258,9 @@ jobs:
           kubectl get events -n ister --sort-by=.lastTimestamp | tail -40 || true
           kubectl get pods -n ister -o name | while read -r p; do
             echo "----- $p"
-            kubectl logs -n ister "$p" --all-containers --prefix --tail=100 || true
+            # 2000, not 100: a single Java stacktrace is ~100 lines, so a small
+            # tail can show one exception and nothing of what preceded it.
+            kubectl logs -n ister "$p" --all-containers --prefix --tail=2000 || true
           done
 
   flatpak:
