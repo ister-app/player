@@ -11,6 +11,7 @@ import 'package:player/graphql/libraries.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
+import 'package:player/utils/WellKnownService.dart';
 
 import '../components/RecentCarouselView.dart';
 import '../components/RowHeader.dart';
@@ -38,6 +39,17 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
   Refetch? _refetchLibraries;
   final Map<String, Refetch> _refetchSlides = {};
   bool _recentViewEmpty = false;
+
+  /// Configured servers for the title switcher; loaded once from preferences.
+  List<String> _servers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    WellKnownService.getServers().then((servers) {
+      if (mounted) setState(() => _servers = servers);
+    });
+  }
 
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
@@ -76,43 +88,97 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
     });
   }
 
+  /// The server switcher, doubling as the page title: the current server's
+  /// friendly name in title typography with a dropdown of all configured
+  /// servers and a way back to the server overview (add/remove servers) —
+  /// the same pattern as the library switcher on the library tab. A
+  /// TextButton so it's D-pad focusable on its own.
+  Widget _serverTitle(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).colorScheme;
+    String nameOf(String id) => WellKnownService.getCached(id)?.name ?? id;
+    return MenuAnchor(
+      menuChildren: [
+        ..._servers.map((server) {
+          final isCurrent = server == widget.serverName;
+          return MenuItemButton(
+            onPressed: isCurrent
+                ? null
+                : () {
+                    // Same recipe as ServerList.goToServerRoute: remember the
+                    // pick so the next cold start lands here again.
+                    ClientManager.instance.lastClientUsed = server;
+                    AutoRouter.of(context)
+                        .replace(ServerHomeRoute(serverName: server));
+                  },
+            // A minimum width keeps short names from wrapping: the menu sizes
+            // to the items' intrinsic width, and the ListTile squeezes its
+            // title between the leading icon and the check otherwise.
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 220),
+              child: ListTile(
+                leading: const Icon(Icons.dns),
+                title: Text(nameOf(server)),
+                trailing: isCurrent ? const Icon(Icons.check) : null,
+              ),
+            ),
+          );
+        }),
+        if (_servers.isNotEmpty) const Divider(height: 1),
+        MenuItemButton(
+          onPressed: () {
+            // Without this, ServerList jumps straight back to the last used
+            // server instead of showing the overview.
+            ClientManager.instance.lastClientUsed = null;
+            AutoRouter.of(context).replace(HomeRoute());
+          },
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 220),
+            child: ListTile(
+              leading: const Icon(Icons.arrow_back),
+              title: Text(loc.backToServerOverview),
+            ),
+          ),
+        ),
+      ],
+      builder: (context, controller, child) {
+        return TextButton(
+          style: TextButton.styleFrom(
+            foregroundColor: colors.onSurface,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+          ),
+          onPressed: () =>
+              controller.isOpen ? controller.close() : controller.open(),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  nameOf(widget.serverName),
+                  style: Theme.of(context).textTheme.titleLarge,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const Icon(Icons.arrow_drop_down),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.serverName),
+        title: _serverTitle(context),
+        titleSpacing: 8,
         actions: [
-          MenuAnchor(
-            menuChildren: <Widget>[
-              MenuItemButton(
-                  onPressed: () => triggerRefresh(),
-                  child: ListTile(
-                    leading: const Icon(Icons.refresh),
-                    title: Text(AppLocalizations.of(context)!.refreshPage),
-                  )),
-              MenuItemButton(
-                  onPressed: () {
-                    ClientManager.instance.lastClientUsed = null;
-                    AutoRouter.of(context).replace(HomeRoute());
-                  },
-                  child: ListTile(
-                    leading: const Icon(Icons.logout),
-                    title: Text(AppLocalizations.of(context)!.switchServer),
-                  )),
-            ],
-            builder: (_, MenuController controller, Widget? child) {
-              return IconButton(
-                onPressed: () {
-                  if (controller.isOpen) {
-                    controller.close();
-                  } else {
-                    controller.open();
-                  }
-                },
-                icon: const Icon(Icons.more_vert),
-              );
-            },
-          )
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: AppLocalizations.of(context)!.refreshPage,
+            onPressed: triggerRefresh,
+          ),
         ],
       ),
       body: RefreshIndicator(

@@ -10,6 +10,8 @@ import 'package:player/components/MovieSlide.dart';
 import 'package:player/components/SeriesSlide.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/pages/ServerHomeContentPage.dart';
+import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 // One COMIC library — the case that used to fall through to MovieSlide.
@@ -86,8 +88,13 @@ Widget _app(http.Client client) => GraphQLProvider(
     );
 
 void main() {
-  setUp(() =>
-      VisibilityDetectorController.instance.updateInterval = Duration.zero);
+  setUp(() {
+    VisibilityDetectorController.instance.updateInterval = Duration.zero;
+    // The app bar's server switcher reads the configured servers from
+    // preferences during initState.
+    SharedPreferencesAsyncPlatform.instance =
+        InMemorySharedPreferencesAsync.empty();
+  });
 
   testWidgets('a COMIC library renders a SeriesSlide, not a MovieSlide',
       (tester) async {
