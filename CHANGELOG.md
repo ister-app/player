@@ -1,5 +1,46 @@
 # Changelog
 
+## player v1.13.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.13.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(player): toggle sort direction by re-clicking the sort field ([`829c84b`](https://github.com/ister-app/player/commit/829c84b))
+- feat: bake last_update frontmatter into the docs zip ([`32fb447`](https://github.com/ister-app/player/commit/32fb447))
+- feat(player): switch servers from the home title and surface refresh ([`a36d7fb`](https://github.com/ister-app/player/commit/a36d7fb))
+- feat(player): park the queue on the next item when the item sleep timer ends ([`e21e8e2`](https://github.com/ister-app/player/commit/e21e8e2))
+- feat(player): sleep timer and listen-together beside the overflow menu ([`758f18f`](https://github.com/ister-app/player/commit/758f18f))
+- feat(player): move the secondary player actions to a bottom action bar ([`0b17169`](https://github.com/ister-app/player/commit/0b17169))
+- feat(player): stop playback from the players and the mini player ([`edaffc0`](https://github.com/ister-app/player/commit/edaffc0))
+
+### Fixes
+
+- fix(e2e): stop the app cache from shadowing gqlRaw server-state probes ([`79186f7`](https://github.com/ister-app/player/commit/79186f7))
+- fix(ci): repoint the e2e server pin to the snapshot that has STOP ([`b677820`](https://github.com/ister-app/player/commit/b677820))
+- fix(player): show name on episode cards and year on show cards ([`8c53542`](https://github.com/ister-app/player/commit/8c53542))
+- fix(player): reset per-server state when switching servers in place ([`a15465f`](https://github.com/ister-app/player/commit/a15465f))
+
+### Other
+
+- test(e2e): dump the server-side queue when the watch-status wait fails ([`c8d05a4`](https://github.com/ister-app/player/commit/c8d05a4))
+- chore: drop stray resume-sync-play scratch file ([`e0b3ed0`](https://github.com/ister-app/player/commit/e0b3ed0))
+- test(e2e): harden the movie watch-status wait against starved CI nodes ([`45dd946`](https://github.com/ister-app/player/commit/45dd946))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.13.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.12.0...v1.13.0
+
 ## player v1.12.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
