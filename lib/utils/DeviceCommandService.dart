@@ -91,6 +91,15 @@ class DeviceCommandService {
         final playQueueId = command.playQueueId;
         if (playQueueId == null) return;
         await handler.startFollowingQueue(serverName, playQueueId);
+      case Enum$DeviceCommandType.HANDOFF_QUEUE:
+        final playQueueId = command.playQueueId;
+        final target = command.targetDeviceId;
+        if (playQueueId == null || target == null) return;
+        if (target == await DevicePreferences.getDeviceId()) return;
+        // A stale or superseded handoff must never touch whatever this device
+        // is playing now; only the exact live queue may leave.
+        if (!handler.isOwnLiveQueue(serverName, playQueueId)) return;
+        await handler.moveQueueToDevice(serverName, target);
       case Enum$DeviceCommandType.$unknown:
         LoggerService().logger.w('unknown device command ignored');
     }

@@ -6,7 +6,9 @@ import 'package:player/components/SessionListenersSheet.dart';
 import 'package:player/components/SessionSharingSheet.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/utils/AppMessenger.dart';
+import 'package:player/utils/DevicePreferences.dart';
 import 'package:player/utils/DeviceService.dart';
+import 'package:player/utils/PermissionsService.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:player/utils/SyncPreferences.dart';
 
@@ -31,6 +33,8 @@ Future<void> showListenTogetherSheet(
   required String playQueueId,
   Enum$MediaType? mediaType,
   VoidCallback? onQueueMoved,
+  String? sessionUserId,
+  String? sessionDeviceId,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -41,6 +45,8 @@ Future<void> showListenTogetherSheet(
       playQueueId: playQueueId,
       mediaType: mediaType,
       onQueueMoved: onQueueMoved,
+      sessionUserId: sessionUserId,
+      sessionDeviceId: sessionDeviceId,
     ),
   );
 }
@@ -51,10 +57,19 @@ class _ListenTogetherSheet extends StatefulWidget {
     required this.playQueueId,
     this.mediaType,
     this.onQueueMoved,
+    this.sessionUserId,
+    this.sessionDeviceId,
   });
 
   final String serverName;
   final String playQueueId;
+
+  /// Who owns the session and which device plays it, when the caller knows
+  /// (now-playing/remote-control surfaces). Together they decide whether the
+  /// "move to this device" pull action is offered: only for the user's own
+  /// session playing on another of their devices.
+  final String? sessionUserId;
+  final String? sessionDeviceId;
 
   /// The session's current media kind, for the watch/listen wording when the
   /// queue is not (yet) live on this device. A live queue overrides this.
@@ -85,13 +100,40 @@ class _ListenTogetherSheetState extends State<_ListenTogetherSheet> {
   late final bool _ownerAtOpen =
       _handler.isOwnLiveQueue(widget.serverName, widget.playQueueId);
 
+  /// Own identity, loaded async in initState; the pull action stays hidden
+  /// until both are known.
+  String? _ownUserId;
+  String? _ownDeviceId;
+
   @override
   void initState() {
     super.initState();
     // The persisted tight-sync settings must be in their notifiers before the
     // sync controls render them.
     unawaited(SyncPreferences.ensureLoaded());
+    if (widget.sessionUserId != null && widget.sessionDeviceId != null) {
+      unawaited(_loadOwnIdentity());
+    }
   }
+
+  Future<void> _loadOwnIdentity() async {
+    final userId = await PermissionsService().userIdFor(widget.serverName);
+    final deviceId = await DevicePreferences.getDeviceId();
+    if (!mounted) return;
+    setState(() {
+      _ownUserId = userId;
+      _ownDeviceId = deviceId;
+    });
+  }
+
+  /// The pull action: only for the user's own session, playing on another of
+  /// their devices, seen from a device that isn't the owner itself.
+  bool get _canPullHere =>
+      widget.sessionDeviceId != null &&
+      widget.sessionDeviceId != _ownDeviceId &&
+      _ownDeviceId != null &&
+      widget.sessionUserId != null &&
+      widget.sessionUserId == _ownUserId;
 
   /// Watching (movie/episode) or listening — drives the sheet's wording. The
   /// live queue on this device (own or followed) knows its current item and
@@ -171,34 +213,48 @@ class _ListenTogetherSheetState extends State<_ListenTogetherSheet> {
         serverName: widget.serverName, title: loc.deviceMoveQueue);
     if (device == null || !mounted) return;
 
-    final wasPlaying = _handler.playbackState.value.playing;
-    await _handler.pause();
-    final accepted = await DeviceService.instance.sendCommand(
+    final accepted = await _handler.moveQueueToDevice(
       widget.serverName,
-      deviceId: device.deviceId,
-      command: Enum$DeviceCommandType.TAKEOVER_QUEUE,
-      playQueueId: widget.playQueueId,
-      positionMs: _handler.playbackState.value.position.inMilliseconds,
+      device.deviceId,
+      // Close this sheet first: the teardown after acceptance closes the video
+      // page/music overlay underneath it, which shouldn't happen while a modal
+      // of ours is still on top of them.
+      onAccepted: () {
+        if (mounted) Navigator.of(context).pop();
+      },
     );
-    if (accepted) {
-      // Close this sheet first: the teardown below closes the video page/music
-      // overlay underneath it, which shouldn't happen while a modal of ours is
-      // still on top of them.
-      if (mounted) Navigator.of(context).pop();
-      // End playback here after the send: the target's first heartbeat (same
-      // user, so ownership holds) takes the session over from this device.
-      // No progress flush — the pause above already wrote the position, and
-      // from here on the target owns it.
-      await _handler.endPlaybackLocally(flushProgress: false);
-      widget.onQueueMoved?.call();
-    } else if (wasPlaying) {
-      await _handler.play();
-    }
+    if (accepted) widget.onQueueMoved?.call();
     // The sheet may just have popped itself, so use the app-level messenger.
     showAppSnackBar(accepted
         ? loc.deviceCommandSent(device.name)
         : loc.deviceCommandFailed);
   }
+
+  /// Pulls the session to this device: asks the playing device (over the
+  /// device-command channel) to hand its queue off to us. The source then runs
+  /// the normal handoff at its exact live position, so nothing more happens
+  /// here — playback appears once its TAKEOVER_QUEUE lands.
+  Future<void> _pullQueueHere() async {
+    final loc = AppLocalizations.of(context)!;
+    final accepted = await DeviceService.instance.sendCommand(
+      widget.serverName,
+      deviceId: widget.sessionDeviceId!,
+      command: Enum$DeviceCommandType.HANDOFF_QUEUE,
+      playQueueId: widget.playQueueId,
+      targetDeviceId: _ownDeviceId,
+    );
+    if (accepted && mounted) Navigator.of(context).pop();
+    // Tentative wording: accepted means published to the source device, and
+    // the queue only arrives once that device answers with its handoff.
+    showAppSnackBar(
+        accepted ? loc.devicePullRequested : loc.deviceCommandFailed);
+  }
+
+  ListTile _pullQueueHereTile(AppLocalizations loc) => ListTile(
+        leading: const Icon(Icons.mobile_screen_share),
+        title: Text(loc.devicePullQueueHere),
+        onTap: _pullQueueHere,
+      );
 
   Future<void> _openSessionSharing() {
     return showModalBottomSheet<void>(
@@ -262,6 +318,7 @@ class _ListenTogetherSheetState extends State<_ListenTogetherSheet> {
           padding: EdgeInsets.symmetric(horizontal: 24),
           child: _TightSyncControls(),
         ),
+        if (_canPullHere) _pullQueueHereTile(loc),
         SessionListenersList(
           serverName: widget.serverName,
           playQueueId: widget.playQueueId,
@@ -283,6 +340,7 @@ class _ListenTogetherSheetState extends State<_ListenTogetherSheet> {
                     : loc.followListenAlong),
           ),
         ),
+        if (_canPullHere) _pullQueueHereTile(loc),
         SessionListenersList(
           serverName: widget.serverName,
           playQueueId: widget.playQueueId,

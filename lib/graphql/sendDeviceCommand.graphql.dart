@@ -10,6 +10,7 @@ class Variables$Mutation$sendDeviceCommand {
     String? startId,
     String? playQueueId,
     double? positionInMilliseconds,
+    String? targetDeviceId,
   }) => Variables$Mutation$sendDeviceCommand._({
     r'deviceId': deviceId,
     r'command': command,
@@ -19,6 +20,7 @@ class Variables$Mutation$sendDeviceCommand {
     if (playQueueId != null) r'playQueueId': playQueueId,
     if (positionInMilliseconds != null)
       r'positionInMilliseconds': positionInMilliseconds,
+    if (targetDeviceId != null) r'targetDeviceId': targetDeviceId,
   });
 
   Variables$Mutation$sendDeviceCommand._(this._$data);
@@ -56,6 +58,10 @@ class Variables$Mutation$sendDeviceCommand {
       result$data['positionInMilliseconds'] = (l$positionInMilliseconds as num?)
           ?.toDouble();
     }
+    if (data.containsKey('targetDeviceId')) {
+      final l$targetDeviceId = data['targetDeviceId'];
+      result$data['targetDeviceId'] = (l$targetDeviceId as String?);
+    }
     return Variables$Mutation$sendDeviceCommand._(result$data);
   }
 
@@ -76,6 +82,8 @@ class Variables$Mutation$sendDeviceCommand {
 
   double? get positionInMilliseconds =>
       (_$data['positionInMilliseconds'] as double?);
+
+  String? get targetDeviceId => (_$data['targetDeviceId'] as String?);
 
   Map<String, dynamic> toJson() {
     final result$data = <String, dynamic>{};
@@ -104,6 +112,10 @@ class Variables$Mutation$sendDeviceCommand {
     if (_$data.containsKey('positionInMilliseconds')) {
       final l$positionInMilliseconds = positionInMilliseconds;
       result$data['positionInMilliseconds'] = l$positionInMilliseconds;
+    }
+    if (_$data.containsKey('targetDeviceId')) {
+      final l$targetDeviceId = targetDeviceId;
+      result$data['targetDeviceId'] = l$targetDeviceId;
     }
     return result$data;
   }
@@ -175,6 +187,15 @@ class Variables$Mutation$sendDeviceCommand {
     if (l$positionInMilliseconds != lOther$positionInMilliseconds) {
       return false;
     }
+    final l$targetDeviceId = targetDeviceId;
+    final lOther$targetDeviceId = other.targetDeviceId;
+    if (_$data.containsKey('targetDeviceId') !=
+        other._$data.containsKey('targetDeviceId')) {
+      return false;
+    }
+    if (l$targetDeviceId != lOther$targetDeviceId) {
+      return false;
+    }
     return true;
   }
 
@@ -187,6 +208,7 @@ class Variables$Mutation$sendDeviceCommand {
     final l$startId = startId;
     final l$playQueueId = playQueueId;
     final l$positionInMilliseconds = positionInMilliseconds;
+    final l$targetDeviceId = targetDeviceId;
     return Object.hashAll([
       l$deviceId,
       l$command,
@@ -197,6 +219,7 @@ class Variables$Mutation$sendDeviceCommand {
       _$data.containsKey('positionInMilliseconds')
           ? l$positionInMilliseconds
           : const {},
+      _$data.containsKey('targetDeviceId') ? l$targetDeviceId : const {},
     ]);
   }
 }
@@ -218,6 +241,7 @@ abstract class CopyWith$Variables$Mutation$sendDeviceCommand<TRes> {
     String? startId,
     String? playQueueId,
     double? positionInMilliseconds,
+    String? targetDeviceId,
   });
 }
 
@@ -242,6 +266,7 @@ class _CopyWithImpl$Variables$Mutation$sendDeviceCommand<TRes>
     Object? startId = _undefined,
     Object? playQueueId = _undefined,
     Object? positionInMilliseconds = _undefined,
+    Object? targetDeviceId = _undefined,
   }) => _then(
     Variables$Mutation$sendDeviceCommand._({
       ..._instance._$data,
@@ -255,6 +280,8 @@ class _CopyWithImpl$Variables$Mutation$sendDeviceCommand<TRes>
       if (playQueueId != _undefined) 'playQueueId': (playQueueId as String?),
       if (positionInMilliseconds != _undefined)
         'positionInMilliseconds': (positionInMilliseconds as double?),
+      if (targetDeviceId != _undefined)
+        'targetDeviceId': (targetDeviceId as String?),
     }),
   );
 }
@@ -273,6 +300,7 @@ class _CopyWithStubImpl$Variables$Mutation$sendDeviceCommand<TRes>
     String? startId,
     String? playQueueId,
     double? positionInMilliseconds,
+    String? targetDeviceId,
   }) => _res;
 }
 
@@ -443,6 +471,12 @@ const documentNodeMutationsendDeviceCommand = DocumentNode(
           defaultValue: DefaultValueNode(value: null),
           directives: [],
         ),
+        VariableDefinitionNode(
+          variable: VariableNode(name: NameNode(value: 'targetDeviceId')),
+          type: NamedTypeNode(name: NameNode(value: 'ID'), isNonNull: false),
+          defaultValue: DefaultValueNode(value: null),
+          directives: [],
+        ),
       ],
       directives: [],
       selectionSet: SelectionSetNode(
@@ -480,6 +514,10 @@ const documentNodeMutationsendDeviceCommand = DocumentNode(
                 value: VariableNode(
                   name: NameNode(value: 'positionInMilliseconds'),
                 ),
+              ),
+              ArgumentNode(
+                name: NameNode(value: 'targetDeviceId'),
+                value: VariableNode(name: NameNode(value: 'targetDeviceId')),
               ),
             ],
             directives: [],

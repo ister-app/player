@@ -2485,6 +2485,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The device did not accept the command. It may have just gone offline.'**
   String get deviceCommandFailed;
+
+  /// Listen-together action that pulls the session's queue from the device playing it to this device
+  ///
+  /// In en, this message translates to:
+  /// **'Play on this device'**
+  String get devicePullQueueHere;
+
+  /// Snackbar after the pull request was delivered to the playing device
+  ///
+  /// In en, this message translates to:
+  /// **'Moving playback to this device…'**
+  String get devicePullRequested;
 }
 
 class _AppLocalizationsDelegate

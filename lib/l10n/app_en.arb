@@ -1543,5 +1543,9 @@
   "deviceCommandSent": "Sent to {name}",
   "@deviceCommandSent": {"description": "Snackbar after a device command was accepted", "placeholders": {"name": {"type": "String"}}},
   "deviceCommandFailed": "The device did not accept the command. It may have just gone offline.",
-  "@deviceCommandFailed": {"description": "Snackbar when the server refuses a device command"}
+  "@deviceCommandFailed": {"description": "Snackbar when the server refuses a device command"},
+  "devicePullQueueHere": "Play on this device",
+  "@devicePullQueueHere": {"description": "Listen-together action that pulls the session's queue from the device playing it to this device"},
+  "devicePullRequested": "Moving playback to this device…",
+  "@devicePullRequested": {"description": "Snackbar after the pull request was delivered to the playing device"}
 }

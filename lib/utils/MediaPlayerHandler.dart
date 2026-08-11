@@ -15,6 +15,7 @@ import 'package:player/utils/AutoPreferences.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/ClockSyncService.dart';
 import 'package:player/utils/DevicePreferences.dart';
+import 'package:player/utils/DeviceService.dart';
 import 'package:player/utils/SyncPreferences.dart';
 import 'package:player/utils/LanguagePreferences.dart';
 import 'package:player/utils/LastMusicQueuePreferences.dart';
@@ -1266,6 +1267,38 @@ class MediaPlayerHandler extends BaseAudioHandler
       }
     }
     await endPlaybackLocally();
+  }
+
+  /// Hands the live queue off to [targetDeviceId]: pause (flushes progress),
+  /// tell the target to take over at the exact current position, and end
+  /// playback here once the server accepted. On refusal playback resumes
+  /// where it was. [onAccepted] runs after acceptance but before the local
+  /// teardown, so a hosting sheet can dismiss itself before the pages under
+  /// it close. Returns whether the server accepted the command.
+  Future<bool> moveQueueToDevice(String srv, String targetDeviceId,
+      {void Function()? onAccepted}) async {
+    final pq = playQueue;
+    if (pq == null) return false;
+    final wasPlaying = playbackState.value.playing;
+    await pause();
+    final accepted = await DeviceService.instance.sendCommand(
+      srv,
+      deviceId: targetDeviceId,
+      command: Enum$DeviceCommandType.TAKEOVER_QUEUE,
+      playQueueId: pq.id,
+      positionMs: playbackState.value.position.inMilliseconds,
+    );
+    if (accepted) {
+      onAccepted?.call();
+      // End playback here after the send: the target's first heartbeat (same
+      // user, so ownership holds) takes the session over from this device.
+      // No progress flush — the pause above already wrote the position, and
+      // from here on the target owns it.
+      await endPlaybackLocally(flushProgress: false);
+    } else if (wasPlaying) {
+      await play();
+    }
+    return accepted;
   }
 
   /// Ends playback on *this* device for good: unlike [suspendPlayback] (which

@@ -229,7 +229,9 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
                   ? () => showListenTogetherSheet(context,
                       serverName: widget.serverName,
                       playQueueId: session.playQueueId,
-                      mediaType: session.mediaType)
+                      mediaType: session.mediaType,
+                      sessionUserId: session.userId,
+                      sessionDeviceId: session.deviceId)
                   : null,
             ),
         ],

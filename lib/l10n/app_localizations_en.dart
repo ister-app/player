@@ -1436,4 +1436,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get deviceCommandFailed =>
       'The device did not accept the command. It may have just gone offline.';
+
+  @override
+  String get devicePullQueueHere => 'Play on this device';
+
+  @override
+  String get devicePullRequested => 'Moving playback to this device…';
 }

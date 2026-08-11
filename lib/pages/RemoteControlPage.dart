@@ -146,11 +146,18 @@ class _ListenAlongBanner extends StatelessWidget {
     required this.serverName,
     required this.playQueueId,
     this.mediaType,
+    this.sessionUserId,
+    this.sessionDeviceId,
   });
 
   final String serverName;
   final String playQueueId;
   final Enum$MediaType? mediaType;
+
+  /// Session identity, forwarded so the sheet can offer pulling the queue to
+  /// this device when it is the user's own session on another device.
+  final String? sessionUserId;
+  final String? sessionDeviceId;
 
   @override
   Widget build(BuildContext context) {
@@ -198,6 +205,8 @@ class _ListenAlongBanner extends StatelessWidget {
                   serverName: serverName,
                   playQueueId: playQueueId,
                   mediaType: mediaType,
+                  sessionUserId: sessionUserId,
+                  sessionDeviceId: sessionDeviceId,
                 ),
                 child: Text(
                     isWatch ? loc.watchTogetherTitle : loc.listenTogetherTitle),
@@ -376,6 +385,8 @@ class _RemotePlayerController
             serverName: serverName,
             playQueueId: playQueueId,
             mediaType: _session?.mediaType,
+            sessionUserId: _session?.userId,
+            sessionDeviceId: _session?.deviceId,
           ),
       ],
     );

@@ -396,5 +396,7 @@
   "deviceListenAlongOn": "Meeluisteren op apparaat\u2026",
   "devicePickerNoDevicesOnline": "Geen van je andere apparaten is online.",
   "deviceCommandSent": "Verstuurd naar {name}",
-  "deviceCommandFailed": "Het apparaat accepteerde de opdracht niet. Mogelijk is het net offline gegaan."
+  "deviceCommandFailed": "Het apparaat accepteerde de opdracht niet. Mogelijk is het net offline gegaan.",
+  "devicePullQueueHere": "Op dit apparaat afspelen",
+  "devicePullRequested": "Afspelen wordt naar dit apparaat verplaatst…"
 }

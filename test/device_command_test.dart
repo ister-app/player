@@ -11,6 +11,7 @@ import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/DeviceCommandService.dart';
+import 'package:player/utils/DevicePreferences.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
@@ -65,6 +66,7 @@ Subscription$deviceCommands$deviceCommands _command(
   String? startId,
   String? playQueueId,
   double? positionMs,
+  String? targetDeviceId,
   DateTime? sentAt,
 }) =>
     Subscription$deviceCommands$deviceCommands(
@@ -75,6 +77,7 @@ Subscription$deviceCommands$deviceCommands _command(
       startId: startId,
       playQueueId: playQueueId,
       positionInMilliseconds: positionMs,
+      targetDeviceId: targetDeviceId,
       timestamp: (sentAt ?? DateTime.now().toUtc()).toIso8601String(),
     );
 
@@ -87,6 +90,7 @@ void main() {
   /// GraphQL operations the mock server received, oldest first.
   final operations = <String>[];
   final creates = <Map<String, dynamic>>[];
+  final deviceCommandSends = <Map<String, dynamic>>[];
 
   MockClient fakeGraphQL() => MockClient((request) async {
         final body = json.decode(request.body) as Map<String, dynamic>;
@@ -111,6 +115,12 @@ void main() {
               'getPlayQueue':
                   _queue('pq-existing', 'item-1', progress: 42000).toJson(),
             }
+          };
+        } else if (query.contains('sendDeviceCommand')) {
+          operations.add('sendDeviceCommand');
+          deviceCommandSends.add(variables);
+          payload = {
+            'data': {'__typename': 'Mutation', 'sendDeviceCommand': true}
           };
         } else if (query.contains('followPlayQueue')) {
           operations.add('followPlayQueue');
@@ -144,6 +154,7 @@ void main() {
         );
     operations.clear();
     creates.clear();
+    deviceCommandSends.clear();
   });
 
   tearDown(() async {
@@ -194,6 +205,56 @@ void main() {
     expect(operations, contains('getPlayQueue'));
     expect(handler.playQueue?.id, 'pq-existing');
     expect(handler.currentPlayQueueItem?.id, 'item-1');
+  });
+
+  test('HANDOFF_QUEUE hands the live queue off to the target device', () async {
+    // Make pq-existing this device's own live queue first.
+    await service.debugExecute(
+        _server,
+        _command(Enum$DeviceCommandType.TAKEOVER_QUEUE,
+            playQueueId: 'pq-existing', positionMs: 42000));
+    expect(handler.isOwnLiveQueue(_server, 'pq-existing'), isTrue);
+
+    await service.debugExecute(
+        _server,
+        _command(Enum$DeviceCommandType.HANDOFF_QUEUE,
+            playQueueId: 'pq-existing', targetDeviceId: 'other-device'));
+
+    final sent = deviceCommandSends.single;
+    expect(sent['deviceId'], 'other-device');
+    expect(sent['command'], 'TAKEOVER_QUEUE');
+    expect(sent['playQueueId'], 'pq-existing');
+    expect(sent['positionInMilliseconds'], isNotNull);
+    // The queue left this device.
+    expect(handler.playQueue, isNull);
+  });
+
+  test('HANDOFF_QUEUE for a queue this device is not playing is ignored',
+      () async {
+    await service.debugExecute(
+        _server,
+        _command(Enum$DeviceCommandType.HANDOFF_QUEUE,
+            playQueueId: 'pq-existing', targetDeviceId: 'other-device'));
+
+    expect(deviceCommandSends, isEmpty);
+    expect(handler.playQueue, isNull);
+  });
+
+  test('HANDOFF_QUEUE targeting this device itself is ignored', () async {
+    await service.debugExecute(
+        _server,
+        _command(Enum$DeviceCommandType.TAKEOVER_QUEUE,
+            playQueueId: 'pq-existing', positionMs: 42000));
+    final ownDeviceId = await DevicePreferences.getDeviceId();
+
+    await service.debugExecute(
+        _server,
+        _command(Enum$DeviceCommandType.HANDOFF_QUEUE,
+            playQueueId: 'pq-existing', targetDeviceId: ownDeviceId));
+
+    expect(deviceCommandSends, isEmpty);
+    // Playback stays untouched on this device.
+    expect(handler.playQueue?.id, 'pq-existing');
   });
 
   test('START_FOLLOW registers this device as a follower', () async {

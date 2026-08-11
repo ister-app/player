@@ -1438,4 +1438,11 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get deviceCommandFailed =>
       'Het apparaat accepteerde de opdracht niet. Mogelijk is het net offline gegaan.';
+
+  @override
+  String get devicePullQueueHere => 'Op dit apparaat afspelen';
+
+  @override
+  String get devicePullRequested =>
+      'Afspelen wordt naar dit apparaat verplaatst…';
 }

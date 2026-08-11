@@ -2033,6 +2033,7 @@ enum Enum$DeviceCommandType {
   PLAY_MEDIA,
   TAKEOVER_QUEUE,
   START_FOLLOW,
+  HANDOFF_QUEUE,
   $unknown;
 
   factory Enum$DeviceCommandType.fromJson(String value) =>
@@ -2049,6 +2050,8 @@ String toJson$Enum$DeviceCommandType(Enum$DeviceCommandType e) {
       return r'TAKEOVER_QUEUE';
     case Enum$DeviceCommandType.START_FOLLOW:
       return r'START_FOLLOW';
+    case Enum$DeviceCommandType.HANDOFF_QUEUE:
+      return r'HANDOFF_QUEUE';
     case Enum$DeviceCommandType.$unknown:
       return r'$unknown';
   }
@@ -2062,6 +2065,8 @@ Enum$DeviceCommandType fromJson$Enum$DeviceCommandType(String value) {
       return Enum$DeviceCommandType.TAKEOVER_QUEUE;
     case r'START_FOLLOW':
       return Enum$DeviceCommandType.START_FOLLOW;
+    case r'HANDOFF_QUEUE':
+      return Enum$DeviceCommandType.HANDOFF_QUEUE;
     default:
       return Enum$DeviceCommandType.$unknown;
   }

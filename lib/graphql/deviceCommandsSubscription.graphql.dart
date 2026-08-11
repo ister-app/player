@@ -282,6 +282,13 @@ const documentNodeSubscriptiondeviceCommands = DocumentNode(
                   selectionSet: null,
                 ),
                 FieldNode(
+                  name: NameNode(value: 'targetDeviceId'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
                   name: NameNode(value: 'timestamp'),
                   alias: null,
                   arguments: [],
@@ -313,6 +320,7 @@ class Subscription$deviceCommands$deviceCommands {
     this.startId,
     this.playQueueId,
     this.positionInMilliseconds,
+    this.targetDeviceId,
     required this.timestamp,
     this.$__typename = 'DeviceCommand',
   });
@@ -327,6 +335,7 @@ class Subscription$deviceCommands$deviceCommands {
     final l$startId = json['startId'];
     final l$playQueueId = json['playQueueId'];
     final l$positionInMilliseconds = json['positionInMilliseconds'];
+    final l$targetDeviceId = json['targetDeviceId'];
     final l$timestamp = json['timestamp'];
     final l$$__typename = json['__typename'];
     return Subscription$deviceCommands$deviceCommands(
@@ -339,6 +348,7 @@ class Subscription$deviceCommands$deviceCommands {
       startId: (l$startId as String?),
       playQueueId: (l$playQueueId as String?),
       positionInMilliseconds: (l$positionInMilliseconds as num?)?.toDouble(),
+      targetDeviceId: (l$targetDeviceId as String?),
       timestamp: (l$timestamp as String),
       $__typename: (l$$__typename as String),
     );
@@ -357,6 +367,8 @@ class Subscription$deviceCommands$deviceCommands {
   final String? playQueueId;
 
   final double? positionInMilliseconds;
+
+  final String? targetDeviceId;
 
   final String timestamp;
 
@@ -380,6 +392,8 @@ class Subscription$deviceCommands$deviceCommands {
     _resultData['playQueueId'] = l$playQueueId;
     final l$positionInMilliseconds = positionInMilliseconds;
     _resultData['positionInMilliseconds'] = l$positionInMilliseconds;
+    final l$targetDeviceId = targetDeviceId;
+    _resultData['targetDeviceId'] = l$targetDeviceId;
     final l$timestamp = timestamp;
     _resultData['timestamp'] = l$timestamp;
     final l$$__typename = $__typename;
@@ -396,6 +410,7 @@ class Subscription$deviceCommands$deviceCommands {
     final l$startId = startId;
     final l$playQueueId = playQueueId;
     final l$positionInMilliseconds = positionInMilliseconds;
+    final l$targetDeviceId = targetDeviceId;
     final l$timestamp = timestamp;
     final l$$__typename = $__typename;
     return Object.hashAll([
@@ -406,6 +421,7 @@ class Subscription$deviceCommands$deviceCommands {
       l$startId,
       l$playQueueId,
       l$positionInMilliseconds,
+      l$targetDeviceId,
       l$timestamp,
       l$$__typename,
     ]);
@@ -455,6 +471,11 @@ class Subscription$deviceCommands$deviceCommands {
     if (l$positionInMilliseconds != lOther$positionInMilliseconds) {
       return false;
     }
+    final l$targetDeviceId = targetDeviceId;
+    final lOther$targetDeviceId = other.targetDeviceId;
+    if (l$targetDeviceId != lOther$targetDeviceId) {
+      return false;
+    }
     final l$timestamp = timestamp;
     final lOther$timestamp = other.timestamp;
     if (l$timestamp != lOther$timestamp) {
@@ -495,6 +516,7 @@ abstract class CopyWith$Subscription$deviceCommands$deviceCommands<TRes> {
     String? startId,
     String? playQueueId,
     double? positionInMilliseconds,
+    String? targetDeviceId,
     String? timestamp,
     String? $__typename,
   });
@@ -521,6 +543,7 @@ class _CopyWithImpl$Subscription$deviceCommands$deviceCommands<TRes>
     Object? startId = _undefined,
     Object? playQueueId = _undefined,
     Object? positionInMilliseconds = _undefined,
+    Object? targetDeviceId = _undefined,
     Object? timestamp = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
@@ -542,6 +565,9 @@ class _CopyWithImpl$Subscription$deviceCommands$deviceCommands<TRes>
       positionInMilliseconds: positionInMilliseconds == _undefined
           ? _instance.positionInMilliseconds
           : (positionInMilliseconds as double?),
+      targetDeviceId: targetDeviceId == _undefined
+          ? _instance.targetDeviceId
+          : (targetDeviceId as String?),
       timestamp: timestamp == _undefined || timestamp == null
           ? _instance.timestamp
           : (timestamp as String),
@@ -566,6 +592,7 @@ class _CopyWithStubImpl$Subscription$deviceCommands$deviceCommands<TRes>
     String? startId,
     String? playQueueId,
     double? positionInMilliseconds,
+    String? targetDeviceId,
     String? timestamp,
     String? $__typename,
   }) => _res;

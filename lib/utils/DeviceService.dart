@@ -178,6 +178,7 @@ class DeviceService {
     String? startId,
     String? playQueueId,
     int? positionMs,
+    String? targetDeviceId,
   }) async {
     try {
       final client = ClientManager.getClientForUrl(serverName).value;
@@ -191,6 +192,7 @@ class DeviceService {
           startId: startId,
           playQueueId: playQueueId,
           positionInMilliseconds: positionMs?.toDouble(),
+          targetDeviceId: targetDeviceId,
         ).toJson(),
       ));
       if (result.hasException || result.data == null) {
