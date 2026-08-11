@@ -110,7 +110,12 @@ class _MoviePageState extends State<MoviePage> {
           );
         } else {
           final MediaPlayerHandler handler = MediaPlayerHandler.instance;
-          if (movie != null && !_playQueueStarted) {
+          // A movie without an analyzed media file has nothing to play — the
+          // page renders the artwork fallback, so skip the auto-start instead
+          // of crashing on mediaFile!.first.
+          if (movie != null &&
+              movie!.mediaFile?.isNotEmpty == true &&
+              !_playQueueStarted) {
             _playQueueStarted = true;
             handler.startPlayQueueForMovie(
               GraphQLProvider.of(context).value,

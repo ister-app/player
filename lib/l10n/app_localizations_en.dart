@@ -1442,4 +1442,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get devicePullRequested => 'Moving playback to this device…';
+
+  @override
+  String get mediaNotReady =>
+      'This item cannot be played yet — the media file is still being processed.';
 }

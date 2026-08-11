@@ -2497,6 +2497,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Moving playback to this device…'**
   String get devicePullRequested;
+
+  /// Snackbar when playback is requested for an item whose media file has not been analyzed yet
+  ///
+  /// In en, this message translates to:
+  /// **'This item cannot be played yet — the media file is still being processed.'**
+  String get mediaNotReady;
 }
 
 class _AppLocalizationsDelegate

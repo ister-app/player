@@ -55,8 +55,18 @@ class MediaPlayerHandler extends BaseAudioHandler
         libassAndroidFont: 'assets/fonts/DroidSansFallback.ttf',
         libassAndroidFontName: 'Droid Sans Fallback',
         bufferSize: _demuxerBufferSize(),
+        // Surface mpv warnings/errors (underruns, HTTP failures, corrupt
+        // packets) — the default 'error' hides the signals needed to diagnose
+        // playback trouble on devices in the field.
+        logLevel: MPVLogLevel.warn,
       ),
     );
+    // debugPrint, not LoggerService: the logger's DevelopmentFilter drops
+    // everything in release builds, and these lines exist precisely to be
+    // readable in logcat on a deployed device.
+    _player.stream.log.listen((e) {
+      debugPrint('[mpv][${e.level}] ${e.prefix}: ${e.text}');
+    });
 
     _videoController = VideoController(
       _player,
@@ -280,6 +290,12 @@ class MediaPlayerHandler extends BaseAudioHandler
     Fragment$fragmentEpisode newEpisode,
     String newServerName,
   ) async {
+    // A not-yet-analyzed episode has no media file to open; bail out before
+    // touching the queue instead of crashing on mediaFile!.first below.
+    if (newEpisode.mediaFile?.firstOrNull == null) {
+      showAppSnackBar(IsterMediaService.loc.mediaNotReady);
+      return;
+    }
     // Starting own playback ends listening/watching along — except when the
     // page merely re-opens the followed queue itself (the follower's video
     // surface goes through this same entry point).
@@ -414,6 +430,11 @@ class MediaPlayerHandler extends BaseAudioHandler
     Fragment$fragmentMovie newMovie,
     String newServerName,
   ) async {
+    // Same not-ready rule as startPlayQueue: no media file, nothing to open.
+    if (newMovie.mediaFile?.firstOrNull == null) {
+      showAppSnackBar(IsterMediaService.loc.mediaNotReady);
+      return;
+    }
     // Same follow-mode rule as startPlayQueue: only a *different* queue ends it.
     if (followMode && playQueue?.id != playQueueId) await stopFollowing();
     _intendsToPlay = true;

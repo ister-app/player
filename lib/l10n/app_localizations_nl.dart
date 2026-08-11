@@ -1445,4 +1445,8 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get devicePullRequested =>
       'Afspelen wordt naar dit apparaat verplaatst…';
+
+  @override
+  String get mediaNotReady =>
+      'Dit item kan nog niet worden afgespeeld — het mediabestand wordt nog verwerkt.';
 }

@@ -152,7 +152,12 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
           );
         } else {
           final MediaPlayerHandler handler = MediaPlayerHandler.instance;
-          if (episode != null && !_playQueueStarted) {
+          // An episode whose media file has not been scanned/analyzed yet has
+          // nothing to play — getContent already renders the artwork fallback,
+          // so skip the auto-start instead of crashing on mediaFile!.first.
+          if (episode != null &&
+              episode!.mediaFile?.isNotEmpty == true &&
+              !_playQueueStarted) {
             _playQueueStarted = true;
             handler.startPlayQueue(GraphQLProvider.of(context).value,
                 widget.playQueueId, episode!, widget.serverName);

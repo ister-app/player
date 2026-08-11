@@ -1547,5 +1547,7 @@
   "devicePullQueueHere": "Play on this device",
   "@devicePullQueueHere": {"description": "Listen-together action that pulls the session's queue from the device playing it to this device"},
   "devicePullRequested": "Moving playback to this device…",
-  "@devicePullRequested": {"description": "Snackbar after the pull request was delivered to the playing device"}
+  "@devicePullRequested": {"description": "Snackbar after the pull request was delivered to the playing device"},
+  "mediaNotReady": "This item cannot be played yet — the media file is still being processed.",
+  "@mediaNotReady": {"description": "Snackbar when playback is requested for an item whose media file has not been analyzed yet"}
 }
