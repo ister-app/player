@@ -338,6 +338,13 @@ class _PlayerViewState extends State<PlayerView>
   }) {
     final loc = AppLocalizations.of(context)!;
     final items = _selectedTab == 0 ? previous : upNext;
+    // Show exactly as many rows as fit in one viewport and drop the rest: the
+    // queue stays a single screen and never scrolls beyond it. Deeper items
+    // are deliberately unreachable (not tappable/reorderable).
+    final maxRows = ((viewportHeight - _kQueueChromeHeight) / _kQueueRowHeight)
+        .floor()
+        .clamp(1, 1 << 30);
+    final visible = items.take(maxRows).toList();
 
     return [
       SliverToBoxAdapter(
@@ -360,8 +367,10 @@ class _PlayerViewState extends State<PlayerView>
       ),
       SliverToBoxAdapter(
         child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: (viewportHeight - 88).clamp(0.0, double.infinity)),
-          child: items.isEmpty
+          constraints: BoxConstraints(
+              minHeight: (viewportHeight - _kQueueChromeHeight)
+                  .clamp(0.0, double.infinity)),
+          child: visible.isEmpty
               ? Center(
                   child: Text(
                     _selectedTab == 0 ? loc.noPreviousTracks : loc.noNextTracks,
@@ -369,15 +378,15 @@ class _PlayerViewState extends State<PlayerView>
                   ),
                 )
               : _selectedTab == 1
-                  ? _buildUpNextList(items)
+                  ? _buildUpNextList(visible)
                   : Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        for (int i = 0; i < items.length; i++)
+                        for (int i = 0; i < visible.length; i++)
                           _dismissible(
-                            items[i],
+                            visible[i],
                             _QueueItem(
-                              entry: items[i],
+                              entry: visible[i],
                               onTap: () => widget.controller.tapPrevious(i),
                             ),
                           ),
@@ -868,6 +877,14 @@ class _BlurredBackgroundState extends State<_BlurredBackground> {
   }
 }
 
+/// Fixed height of one queue row (48px art + 2×8 vertical padding), pinned so
+/// the fit-to-viewport cap in `_buildQueueSlivers` cannot drift from reality.
+const double _kQueueRowHeight = 64;
+
+/// Height of the queue chrome around the rows: the tab strip plus the trailing
+/// spacer sliver — the same 88 the body's minHeight already subtracts.
+const double _kQueueChromeHeight = 88;
+
 class _QueueItem extends StatefulWidget {
   const _QueueItem({super.key, required this.entry, required this.onTap, this.trailing});
 
@@ -908,6 +925,7 @@ class _QueueItemState extends State<_QueueItem> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
+          height: _kQueueRowHeight,
           color: _hovered ? Colors.white.withValues(alpha: 0.1) : Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           child: Row(
