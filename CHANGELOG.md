@@ -1,5 +1,32 @@
 # Changelog
 
+## player v1.14.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.14.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(player): fit the queue tabs to the viewport instead of growing past it ([`6ee0abb`](https://github.com/ister-app/player/commit/6ee0abb))
+- feat(devices): pull a playing queue to this device (HANDOFF_QUEUE) ([`87395ec`](https://github.com/ister-app/player/commit/87395ec))
+
+### Fixes
+
+- fix(playback): don't crash starting an item whose media file isn't ready ([`05f997b`](https://github.com/ister-app/player/commit/05f997b))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.14.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.13.0...v1.14.0
+
 ## player v1.13.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
