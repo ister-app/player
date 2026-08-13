@@ -32,6 +32,14 @@ set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE}")
 # Use Unicode for all projects.
 add_definitions(-DUNICODE -D_UNICODE)
 
+# C++/WinRT falls back to <experimental/coroutine> below C++20, and MSVC 14.51 turned
+# including that header into a hard error. Every plugin that touches WinRT is hit —
+# audio_service_win and permission_handler_windows both fail to compile without this —
+# and none of them can be fixed from here, so silence it project-wide as the error
+# message itself suggests. Drop this once the Flutter Windows template compiles plugins
+# as C++20 (APPLY_STANDARD_SETTINGS below still pins cxx_std_17).
+add_definitions(-D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
+
 # Compilation settings that should be applied to most targets.
 #
 # Be cautious about adding new options here, as plugins use this function by
