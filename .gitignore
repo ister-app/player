@@ -35,6 +35,11 @@ player-docs-*.zip
 /build/
 repo/
 
+# macOS / CocoaPods (the pods themselves are resolved per build machine)
+**/macos/Pods/
+**/xcuserdata/
+**/.symlinks/
+
 # Symbolication related
 app.*.symbols
 
