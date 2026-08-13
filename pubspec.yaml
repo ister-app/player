@@ -35,6 +35,7 @@ dependencies:
   visibility_detector: ^0.4.0
   audio_service: ^0.18.18
   audio_service_mpris: ^0.2.0
+  audio_service_win: ^0.0.3 # SMTC on Windows, what audio_service_mpris is on Linux
   audio_session: ^0.2.2
   rxdart: ^0.28.0
   flutter_cache_manager: ^3.4.1
