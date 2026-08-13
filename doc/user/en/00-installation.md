@@ -1,10 +1,10 @@
 ---
-description: How to install the Ister media player on Android, Linux (Flatpak) and the web, and connect it to your self-hosted media server.
+description: How to install the Ister media player on Android, Linux (Flatpak), Windows, macOS and the web, and connect it to your self-hosted media server.
 ---
 
 # Installation
 
-Before you can add a server you need the app itself. Ister runs on Android, Linux and the web, and every version talks to the same servers — pick whichever fits the device in front of you. Once it's installed, continue with [Getting started](01-getting-started.md).
+Before you can add a server you need the app itself. Ister runs on Android, Linux, Windows, macOS and the web, and every version talks to the same servers — pick whichever fits the device in front of you. Once it's installed, continue with [Getting started](01-getting-started.md).
 
 ## On the web
 
@@ -31,6 +31,22 @@ flatpak install --user app.ister.Player.flatpak
 ```
 
 Then launch it from your application menu, or run `flatpak run app.ister.Player`. Installing a newer bundle the same way updates the app.
+
+## Windows
+
+Windows builds are new and still experimental. Download `player-windows-x64-<version>.zip` from the [latest release](https://github.com/ister-app/player/releases), unpack it wherever you like and run `player.exe` from the unpacked folder — keep the folder together, the app needs the files next to the executable. Windows may warn that the app is unrecognised, because the build isn't signed with a commercial certificate; choose **More info → Run anyway** if you trust the download. The first sign-in briefly opens a local port to catch the login redirect, so Windows Firewall may ask for permission. To update, unpack a newer zip over the old folder.
+
+## macOS
+
+macOS builds are new and still experimental. Download `player-macos-<version>.zip` from the [latest release](https://github.com/ister-app/player/releases), unzip it and drag `Ister player.app` to your Applications folder.
+
+The app isn't notarised by Apple, so macOS blocks it on first launch. Clear the download quarantine once from Terminal:
+
+```shell
+xattr -dr com.apple.quarantine "/Applications/Ister player.app"
+```
+
+After that it opens normally.
 
 ## Self-hosting the web build
 

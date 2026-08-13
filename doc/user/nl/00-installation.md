@@ -1,10 +1,10 @@
 ---
-description: Zo installeer je de Ister-mediaspeler op Android, Linux (Flatpak) en in de browser, klaar om te verbinden met je zelfgehoste mediaserver.
+description: Zo installeer je de Ister-mediaspeler op Android, Linux (Flatpak), Windows, macOS en in de browser, klaar om te verbinden met je zelfgehoste mediaserver.
 ---
 
 # Installatie
 
-Voordat je een server kunt toevoegen, heb je de app zelf nodig. Ister draait op Android, Linux en het web, en elke versie praat met dezelfde servers — kies wat past bij het apparaat dat je voor je hebt. Zodra de app geïnstalleerd is, ga je verder met [Aan de slag](01-getting-started.md).
+Voordat je een server kunt toevoegen, heb je de app zelf nodig. Ister draait op Android, Linux, Windows, macOS en het web, en elke versie praat met dezelfde servers — kies wat past bij het apparaat dat je voor je hebt. Zodra de app geïnstalleerd is, ga je verder met [Aan de slag](01-getting-started.md).
 
 ## In de browser
 
@@ -31,6 +31,22 @@ flatpak install --user app.ister.Player.flatpak
 ```
 
 Start de app daarna vanuit je programmamenu, of met `flatpak run app.ister.Player`. Een nieuwere bundel op dezelfde manier installeren werkt de app bij.
+
+## Windows
+
+Windows-builds zijn nieuw en nog experimenteel. Download `player-windows-x64-<versie>.zip` uit de [nieuwste release](https://github.com/ister-app/player/releases), pak het uit waar je wilt en start `player.exe` uit de uitgepakte map — houd die map bij elkaar, de app heeft de bestanden naast het programma nodig. Windows kan melden dat de app onbekend is, omdat de build niet met een commercieel certificaat is ondertekend; kies **Meer informatie → Toch uitvoeren** als je de download vertrouwt. Bij de eerste keer inloggen opent de app kort een lokale poort om de login-redirect op te vangen, dus Windows Firewall kan om toestemming vragen. Bijwerken doe je door een nieuwere zip over de oude map uit te pakken.
+
+## macOS
+
+macOS-builds zijn nieuw en nog experimenteel. Download `player-macos-<versie>.zip` uit de [nieuwste release](https://github.com/ister-app/player/releases), pak het uit en sleep `Ister player.app` naar je map Programma's.
+
+De app is niet door Apple genotariseerd, dus macOS blokkeert hem bij de eerste start. Haal de download-quarantaine er eenmalig af via Terminal:
+
+```shell
+xattr -dr com.apple.quarantine "/Applications/Ister player.app"
+```
+
+Daarna opent hij gewoon.
 
 ## Het web zelf hosten
 
