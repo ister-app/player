@@ -162,6 +162,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/.pub-cache
+          # No restore-keys fallback, for the same reason as the Linux job above.
           key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
       - run: flutter pub get
       - name: Build macOS
