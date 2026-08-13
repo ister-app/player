@@ -253,6 +253,103 @@ jobs:
           name: android-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
+  # The two desktop platforms that cannot be cross-built from the Linux runner. They are
+  # deliberately allowed to fail: they are the newest and least-proven part of the
+  # pipeline (both pull prebuilt native libs over the network at build time), and a flaky
+  # runner should cost the release those two zips, not the whole release. `publish`
+  # attaches whatever arrived.
+  build-windows:
+    needs: gate
+    if: needs.gate.outputs.release == 'true'
+    continue-on-error: true
+    runs-on: windows-latest
+    env:
+      # See the same setting in workflow.yml: %LOCALAPPDATA%\Pub\Cache is the real
+      # default on Windows, and media_kit downloads libmpv into the pub cache.
+      PUB_CACHE: ${{ github.workspace }}\.pub-cache
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set the release version
+        shell: bash
+        env:
+          VERSION: ${{ needs.gate.outputs.version }}
+          BUILD: ${{ needs.gate.outputs.build }}
+        run: |
+          sed -i -E "s|^version: .*|version: ${VERSION}+${BUILD}|" pubspec.yaml
+          grep -qx "version: ${VERSION}+${BUILD}" pubspec.yaml \
+            || { echo "version not written to pubspec.yaml" >&2; exit 1; }
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+      - run: flutter pub get
+
+      - name: Work out the commit hash
+        id: commit
+        shell: bash
+        run: echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Build Windows
+        run: flutter build windows --release --dart-define=GIT_COMMIT=${{ steps.commit.outputs.sha }}
+
+      - name: Package the Windows build
+        shell: pwsh
+        env:
+          VERSION: ${{ needs.gate.outputs.version }}
+        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath "player-windows-x64-$env:VERSION.zip"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: windows-zip
+          path: player-windows-x64-*.zip
+
+  build-macos:
+    needs: gate
+    if: needs.gate.outputs.release == 'true'
+    continue-on-error: true
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set the release version
+        env:
+          VERSION: ${{ needs.gate.outputs.version }}
+          BUILD: ${{ needs.gate.outputs.build }}
+        run: |
+          sed -i -E "s|^version: .*|version: ${VERSION}+${BUILD}|" pubspec.yaml
+          grep -qx "version: ${VERSION}+${BUILD}" pubspec.yaml \
+            || { echo "version not written to pubspec.yaml" >&2; exit 1; }
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+      - run: flutter pub get
+
+      - name: Work out the commit hash
+        id: commit
+        run: echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Build macOS
+        run: flutter build macos --release --dart-define=GIT_COMMIT=${{ steps.commit.outputs.sha }}
+
+      - name: Package the app bundle
+        env:
+          VERSION: ${{ needs.gate.outputs.version }}
+        # ditto, not zip: a plain zip flattens the symlinks inside the bundled
+        # frameworks and the .app will not launch after being downloaded.
+        run: |
+          cd build/macos/Build/Products/Release
+          ditto -c -k --sequesterRsrc --keepParent "Ister player.app" \
+            "${GITHUB_WORKSPACE}/player-macos-${VERSION}.zip"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: macos-zip
+          path: player-macos-*.zip
+
   flatpak:
     needs: [gate, build]
     runs-on: ubuntu-latest
@@ -416,7 +513,7 @@ jobs:
           done
 
   publish:
-    needs: [gate, build, flatpak, docs]
+    needs: [gate, build, build-windows, build-macos, flatpak, docs]
     runs-on: ubuntu-latest
     permissions:
       contents: write   # commit the bump, push the tag, create the release
@@ -445,6 +542,15 @@ jobs:
         continue-on-error: true
         with:
           name: docs-zip
+      # Likewise absent when the (continue-on-error) desktop builds failed.
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: windows-zip
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: macos-zip
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v4
@@ -544,6 +650,8 @@ jobs:
         run: |
           assets=(app-release.apk app.ister.Player.flatpak "player-web-${VERSION}.tar.gz")
           [ -f "player-docs-${VERSION}.zip" ] && assets+=("player-docs-${VERSION}.zip")
+          [ -f "player-windows-x64-${VERSION}.zip" ] && assets+=("player-windows-x64-${VERSION}.zip")
+          [ -f "player-macos-${VERSION}.zip" ] && assets+=("player-macos-${VERSION}.zip")
           gh release create "v${VERSION}" \
             --title "v${VERSION}" \
             --notes-file RELEASE_NOTES.md \
