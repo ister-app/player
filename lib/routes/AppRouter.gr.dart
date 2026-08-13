@@ -53,11 +53,11 @@ import 'package:player/pages/SleepTimerSettingsPage.dart' as _i36;
 /// [_i1.AdminLibrariesPage]
 class AdminLibrariesRoute extends _i37.PageRouteInfo<AdminLibrariesRouteArgs> {
   AdminLibrariesRoute({_i38.Key? key, List<_i37.PageRouteInfo>? children})
-      : super(
-          AdminLibrariesRoute.name,
-          args: AdminLibrariesRouteArgs(key: key),
-          initialChildren: children,
-        );
+    : super(
+        AdminLibrariesRoute.name,
+        args: AdminLibrariesRouteArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'AdminLibrariesRoute';
 
@@ -107,16 +107,16 @@ class AdminUserAccessRoute
     String? userName,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          AdminUserAccessRoute.name,
-          args: AdminUserAccessRouteArgs(
-            key: key,
-            userId: userId,
-            userName: userName,
-          ),
-          rawPathParams: {'userId': userId},
-          rawQueryParams: {'userName': userName},
-          initialChildren: children,
-        );
+         AdminUserAccessRoute.name,
+         args: AdminUserAccessRouteArgs(
+           key: key,
+           userId: userId,
+           userName: userName,
+         ),
+         rawPathParams: {'userId': userId},
+         rawQueryParams: {'userName': userName},
+         initialChildren: children,
+       );
 
   static const String name = 'AdminUserAccessRoute';
 
@@ -176,11 +176,11 @@ class AdminUserAccessRouteArgs {
 /// [_i3.AdminUsersPage]
 class AdminUsersRoute extends _i37.PageRouteInfo<AdminUsersRouteArgs> {
   AdminUsersRoute({_i38.Key? key, List<_i37.PageRouteInfo>? children})
-      : super(
-          AdminUsersRoute.name,
-          args: AdminUsersRouteArgs(key: key),
-          initialChildren: children,
-        );
+    : super(
+        AdminUsersRoute.name,
+        args: AdminUsersRouteArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'AdminUsersRoute';
 
@@ -230,17 +230,17 @@ class AlbumRoute extends _i37.PageRouteInfo<AlbumRouteArgs> {
     String? trackId,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          AlbumRoute.name,
-          args: AlbumRouteArgs(
-            key: key,
-            albumId: albumId,
-            playQueueId: playQueueId,
-            trackId: trackId,
-          ),
-          rawPathParams: {'albumId': albumId},
-          rawQueryParams: {'playQueueId': playQueueId, 'trackId': trackId},
-          initialChildren: children,
-        );
+         AlbumRoute.name,
+         args: AlbumRouteArgs(
+           key: key,
+           albumId: albumId,
+           playQueueId: playQueueId,
+           trackId: trackId,
+         ),
+         rawPathParams: {'albumId': albumId},
+         rawQueryParams: {'playQueueId': playQueueId, 'trackId': trackId},
+         initialChildren: children,
+       );
 
   static const String name = 'AlbumRoute';
 
@@ -312,16 +312,16 @@ class BookRoute extends _i37.PageRouteInfo<BookRouteArgs> {
     String? playQueueId,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          BookRoute.name,
-          args: BookRouteArgs(
-            key: key,
-            bookId: bookId,
-            playQueueId: playQueueId,
-          ),
-          rawPathParams: {'bookId': bookId},
-          rawQueryParams: {'playQueueId': playQueueId},
-          initialChildren: children,
-        );
+         BookRoute.name,
+         args: BookRouteArgs(
+           key: key,
+           bookId: bookId,
+           playQueueId: playQueueId,
+         ),
+         rawPathParams: {'bookId': bookId},
+         rawQueryParams: {'playQueueId': playQueueId},
+         initialChildren: children,
+       );
 
   static const String name = 'BookRoute';
 
@@ -383,20 +383,20 @@ class CastListRoute extends _i37.PageRouteInfo<CastListRouteArgs> {
     String? episodeId,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          CastListRoute.name,
-          args: CastListRouteArgs(
-            key: key,
-            showId: showId,
-            movieId: movieId,
-            episodeId: episodeId,
-          ),
-          rawQueryParams: {
-            'showId': showId,
-            'movieId': movieId,
-            'episodeId': episodeId,
-          },
-          initialChildren: children,
-        );
+         CastListRoute.name,
+         args: CastListRouteArgs(
+           key: key,
+           showId: showId,
+           movieId: movieId,
+           episodeId: episodeId,
+         ),
+         rawQueryParams: {
+           'showId': showId,
+           'movieId': movieId,
+           'episodeId': episodeId,
+         },
+         initialChildren: children,
+       );
 
   static const String name = 'CastListRoute';
 
@@ -472,25 +472,25 @@ class ComicReaderRoute extends _i37.PageRouteInfo<ComicReaderRouteArgs> {
     int? page,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          ComicReaderRoute.name,
-          args: ComicReaderRouteArgs(
-            key: key,
-            bookId: bookId,
-            mediaFileId: mediaFileId,
-            nodeUrl: nodeUrl,
-            title: title,
-            seriesId: seriesId,
-            page: page,
-          ),
-          rawPathParams: {'bookId': bookId, 'mediaFileId': mediaFileId},
-          rawQueryParams: {
-            'nodeUrl': nodeUrl,
-            'title': title,
-            'seriesId': seriesId,
-            'page': page,
-          },
-          initialChildren: children,
-        );
+         ComicReaderRoute.name,
+         args: ComicReaderRouteArgs(
+           key: key,
+           bookId: bookId,
+           mediaFileId: mediaFileId,
+           nodeUrl: nodeUrl,
+           title: title,
+           seriesId: seriesId,
+           page: page,
+         ),
+         rawPathParams: {'bookId': bookId, 'mediaFileId': mediaFileId},
+         rawQueryParams: {
+           'nodeUrl': nodeUrl,
+           'title': title,
+           'seriesId': seriesId,
+           'page': page,
+         },
+         initialChildren: children,
+       );
 
   static const String name = 'ComicReaderRoute';
 
@@ -581,7 +581,7 @@ class ComicReaderRouteArgs {
 /// [_i8.HomePage]
 class HomeRoute extends _i37.PageRouteInfo<void> {
   const HomeRoute({List<_i37.PageRouteInfo>? children})
-      : super(HomeRoute.name, initialChildren: children);
+    : super(HomeRoute.name, initialChildren: children);
 
   static const String name = 'HomeRoute';
 
@@ -603,20 +603,20 @@ class MediaListRoute extends _i37.PageRouteInfo<MediaListRouteArgs> {
     String? libraryTypeName,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          MediaListRoute.name,
-          args: MediaListRouteArgs(
-            key: key,
-            kindName: kindName,
-            libraryId: libraryId,
-            libraryTypeName: libraryTypeName,
-          ),
-          rawQueryParams: {
-            'kind': kindName,
-            'libraryId': libraryId,
-            'libraryType': libraryTypeName,
-          },
-          initialChildren: children,
-        );
+         MediaListRoute.name,
+         args: MediaListRouteArgs(
+           key: key,
+           kindName: kindName,
+           libraryId: libraryId,
+           libraryTypeName: libraryTypeName,
+         ),
+         rawQueryParams: {
+           'kind': kindName,
+           'libraryId': libraryId,
+           'libraryType': libraryTypeName,
+         },
+         initialChildren: children,
+       );
 
   static const String name = 'MediaListRoute';
 
@@ -691,16 +691,16 @@ class MovieRoute extends _i37.PageRouteInfo<MovieRouteArgs> {
     String? playQueueId,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          MovieRoute.name,
-          args: MovieRouteArgs(
-            key: key,
-            movieId: movieId,
-            playQueueId: playQueueId,
-          ),
-          rawPathParams: {'movieId': movieId},
-          rawQueryParams: {'playQueueId': playQueueId},
-          initialChildren: children,
-        );
+         MovieRoute.name,
+         args: MovieRouteArgs(
+           key: key,
+           movieId: movieId,
+           playQueueId: playQueueId,
+         ),
+         rawPathParams: {'movieId': movieId},
+         rawQueryParams: {'playQueueId': playQueueId},
+         initialChildren: children,
+       );
 
   static const String name = 'MovieRoute';
 
@@ -756,7 +756,7 @@ class MovieRouteArgs {
 /// [_i11.MusicPlayerPage]
 class MusicPlayerRoute extends _i37.PageRouteInfo<void> {
   const MusicPlayerRoute({List<_i37.PageRouteInfo>? children})
-      : super(MusicPlayerRoute.name, initialChildren: children);
+    : super(MusicPlayerRoute.name, initialChildren: children);
 
   static const String name = 'MusicPlayerRoute';
 
@@ -776,11 +776,11 @@ class PersonRoute extends _i37.PageRouteInfo<PersonRouteArgs> {
     required String personId,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          PersonRoute.name,
-          args: PersonRouteArgs(key: key, personId: personId),
-          rawPathParams: {'personId': personId},
-          initialChildren: children,
-        );
+         PersonRoute.name,
+         args: PersonRouteArgs(key: key, personId: personId),
+         rawPathParams: {'personId': personId},
+         initialChildren: children,
+       );
 
   static const String name = 'PersonRoute';
 
@@ -833,18 +833,18 @@ class PlaylistListRoute extends _i37.PageRouteInfo<PlaylistListRouteArgs> {
     String? libraryTypeName,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          PlaylistListRoute.name,
-          args: PlaylistListRouteArgs(
-            key: key,
-            libraryId: libraryId,
-            libraryTypeName: libraryTypeName,
-          ),
-          rawQueryParams: {
-            'libraryId': libraryId,
-            'libraryType': libraryTypeName,
-          },
-          initialChildren: children,
-        );
+         PlaylistListRoute.name,
+         args: PlaylistListRouteArgs(
+           key: key,
+           libraryId: libraryId,
+           libraryTypeName: libraryTypeName,
+         ),
+         rawQueryParams: {
+           'libraryId': libraryId,
+           'libraryType': libraryTypeName,
+         },
+         initialChildren: children,
+       );
 
   static const String name = 'PlaylistListRoute';
 
@@ -905,11 +905,11 @@ class PlaylistRoute extends _i37.PageRouteInfo<PlaylistRouteArgs> {
     required String playlistId,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          PlaylistRoute.name,
-          args: PlaylistRouteArgs(key: key, playlistId: playlistId),
-          rawPathParams: {'playlistId': playlistId},
-          initialChildren: children,
-        );
+         PlaylistRoute.name,
+         args: PlaylistRouteArgs(key: key, playlistId: playlistId),
+         rawPathParams: {'playlistId': playlistId},
+         initialChildren: children,
+       );
 
   static const String name = 'PlaylistRoute';
 
@@ -962,16 +962,16 @@ class PodcastRoute extends _i37.PageRouteInfo<PodcastRouteArgs> {
     String? playQueueId,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          PodcastRoute.name,
-          args: PodcastRouteArgs(
-            key: key,
-            podcastId: podcastId,
-            playQueueId: playQueueId,
-          ),
-          rawPathParams: {'podcastId': podcastId},
-          rawQueryParams: {'playQueueId': playQueueId},
-          initialChildren: children,
-        );
+         PodcastRoute.name,
+         args: PodcastRouteArgs(
+           key: key,
+           podcastId: podcastId,
+           playQueueId: playQueueId,
+         ),
+         rawPathParams: {'podcastId': podcastId},
+         rawQueryParams: {'playQueueId': playQueueId},
+         initialChildren: children,
+       );
 
   static const String name = 'PodcastRoute';
 
@@ -1036,25 +1036,25 @@ class ReaderRoute extends _i37.PageRouteInfo<ReaderRouteArgs> {
     bool readAloud = false,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          ReaderRoute.name,
-          args: ReaderRouteArgs(
-            key: key,
-            bookId: bookId,
-            mediaFileId: mediaFileId,
-            nodeUrl: nodeUrl,
-            title: title,
-            chapter: chapter,
-            readAloud: readAloud,
-          ),
-          rawPathParams: {'bookId': bookId, 'mediaFileId': mediaFileId},
-          rawQueryParams: {
-            'nodeUrl': nodeUrl,
-            'title': title,
-            'chapter': chapter,
-            'readAloud': readAloud,
-          },
-          initialChildren: children,
-        );
+         ReaderRoute.name,
+         args: ReaderRouteArgs(
+           key: key,
+           bookId: bookId,
+           mediaFileId: mediaFileId,
+           nodeUrl: nodeUrl,
+           title: title,
+           chapter: chapter,
+           readAloud: readAloud,
+         ),
+         rawPathParams: {'bookId': bookId, 'mediaFileId': mediaFileId},
+         rawQueryParams: {
+           'nodeUrl': nodeUrl,
+           'title': title,
+           'chapter': chapter,
+           'readAloud': readAloud,
+         },
+         initialChildren: children,
+       );
 
   static const String name = 'ReaderRoute';
 
@@ -1150,15 +1150,15 @@ class RemoteControlRoute extends _i37.PageRouteInfo<RemoteControlRouteArgs> {
     required String playQueueId,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          RemoteControlRoute.name,
-          args: RemoteControlRouteArgs(
-            key: key,
-            serverName: serverName,
-            playQueueId: playQueueId,
-          ),
-          rawPathParams: {'serverName': serverName, 'playQueueId': playQueueId},
-          initialChildren: children,
-        );
+         RemoteControlRoute.name,
+         args: RemoteControlRouteArgs(
+           key: key,
+           serverName: serverName,
+           playQueueId: playQueueId,
+         ),
+         rawPathParams: {'serverName': serverName, 'playQueueId': playQueueId},
+         initialChildren: children,
+       );
 
   static const String name = 'RemoteControlRoute';
 
@@ -1221,11 +1221,11 @@ class SearchRoute extends _i37.PageRouteInfo<SearchRouteArgs> {
     String? query,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          SearchRoute.name,
-          args: SearchRouteArgs(key: key, libraryId: libraryId, query: query),
-          rawQueryParams: {'libraryId': libraryId, 'q': query},
-          initialChildren: children,
-        );
+         SearchRoute.name,
+         args: SearchRouteArgs(key: key, libraryId: libraryId, query: query),
+         rawQueryParams: {'libraryId': libraryId, 'q': query},
+         initialChildren: children,
+       );
 
   static const String name = 'SearchRoute';
 
@@ -1285,11 +1285,11 @@ class SeriesRoute extends _i37.PageRouteInfo<SeriesRouteArgs> {
     required String seriesId,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          SeriesRoute.name,
-          args: SeriesRouteArgs(key: key, seriesId: seriesId),
-          rawPathParams: {'seriesId': seriesId},
-          initialChildren: children,
-        );
+         SeriesRoute.name,
+         args: SeriesRouteArgs(key: key, seriesId: seriesId),
+         rawPathParams: {'seriesId': seriesId},
+         initialChildren: children,
+       );
 
   static const String name = 'SeriesRoute';
 
@@ -1337,11 +1337,11 @@ class SeriesRouteArgs {
 /// [_i20.ServerActivityPage]
 class ServerActivityRoute extends _i37.PageRouteInfo<ServerActivityRouteArgs> {
   ServerActivityRoute({_i38.Key? key, List<_i37.PageRouteInfo>? children})
-      : super(
-          ServerActivityRoute.name,
-          args: ServerActivityRouteArgs(key: key),
-          initialChildren: children,
-        );
+    : super(
+        ServerActivityRoute.name,
+        args: ServerActivityRouteArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'ServerActivityRoute';
 
@@ -1386,11 +1386,11 @@ class ServerActivityRouteArgs {
 class ServerHomeContentRoute
     extends _i37.PageRouteInfo<ServerHomeContentRouteArgs> {
   ServerHomeContentRoute({_i38.Key? key, List<_i37.PageRouteInfo>? children})
-      : super(
-          ServerHomeContentRoute.name,
-          args: ServerHomeContentRouteArgs(key: key),
-          initialChildren: children,
-        );
+    : super(
+        ServerHomeContentRoute.name,
+        args: ServerHomeContentRouteArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'ServerHomeContentRoute';
 
@@ -1435,11 +1435,11 @@ class ServerHomeContentRouteArgs {
 class ServerHomeOverviewRoute
     extends _i37.PageRouteInfo<ServerHomeOverviewRouteArgs> {
   ServerHomeOverviewRoute({_i38.Key? key, List<_i37.PageRouteInfo>? children})
-      : super(
-          ServerHomeOverviewRoute.name,
-          args: ServerHomeOverviewRouteArgs(key: key),
-          initialChildren: children,
-        );
+    : super(
+        ServerHomeOverviewRoute.name,
+        args: ServerHomeOverviewRouteArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'ServerHomeOverviewRoute';
 
@@ -1487,11 +1487,11 @@ class ServerHomeRoute extends _i37.PageRouteInfo<ServerHomeRouteArgs> {
     required String serverName,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          ServerHomeRoute.name,
-          args: ServerHomeRouteArgs(key: key, serverName: serverName),
-          rawPathParams: {'serverName': serverName},
-          initialChildren: children,
-        );
+         ServerHomeRoute.name,
+         args: ServerHomeRouteArgs(key: key, serverName: serverName),
+         rawPathParams: {'serverName': serverName},
+         initialChildren: children,
+       );
 
   static const String name = 'ServerHomeRoute';
 
@@ -1536,11 +1536,11 @@ class ServerHomeRouteArgs {
 class ServerNowPlayingRoute
     extends _i37.PageRouteInfo<ServerNowPlayingRouteArgs> {
   ServerNowPlayingRoute({_i38.Key? key, List<_i37.PageRouteInfo>? children})
-      : super(
-          ServerNowPlayingRoute.name,
-          args: ServerNowPlayingRouteArgs(key: key),
-          initialChildren: children,
-        );
+    : super(
+        ServerNowPlayingRoute.name,
+        args: ServerNowPlayingRouteArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'ServerNowPlayingRoute';
 
@@ -1585,11 +1585,11 @@ class ServerNowPlayingRouteArgs {
 class ServerSettingsAboutRoute
     extends _i37.PageRouteInfo<ServerSettingsAboutRouteArgs> {
   ServerSettingsAboutRoute({_i38.Key? key, List<_i37.PageRouteInfo>? children})
-      : super(
-          ServerSettingsAboutRoute.name,
-          args: ServerSettingsAboutRouteArgs(key: key),
-          initialChildren: children,
-        );
+    : super(
+        ServerSettingsAboutRoute.name,
+        args: ServerSettingsAboutRouteArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'ServerSettingsAboutRoute';
 
@@ -1637,10 +1637,10 @@ class ServerSettingsClusterRoute
     _i38.Key? key,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          ServerSettingsClusterRoute.name,
-          args: ServerSettingsClusterRouteArgs(key: key),
-          initialChildren: children,
-        );
+         ServerSettingsClusterRoute.name,
+         args: ServerSettingsClusterRouteArgs(key: key),
+         initialChildren: children,
+       );
 
   static const String name = 'ServerSettingsClusterRoute';
 
@@ -1688,10 +1688,10 @@ class ServerSettingsDevicesRoute
     _i38.Key? key,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          ServerSettingsDevicesRoute.name,
-          args: ServerSettingsDevicesRouteArgs(key: key),
-          initialChildren: children,
-        );
+         ServerSettingsDevicesRoute.name,
+         args: ServerSettingsDevicesRouteArgs(key: key),
+         initialChildren: children,
+       );
 
   static const String name = 'ServerSettingsDevicesRoute';
 
@@ -1739,10 +1739,10 @@ class ServerSettingsLanguageRoute
     _i38.Key? key,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          ServerSettingsLanguageRoute.name,
-          args: ServerSettingsLanguageRouteArgs(key: key),
-          initialChildren: children,
-        );
+         ServerSettingsLanguageRoute.name,
+         args: ServerSettingsLanguageRouteArgs(key: key),
+         initialChildren: children,
+       );
 
   static const String name = 'ServerSettingsLanguageRoute';
 
@@ -1786,11 +1786,11 @@ class ServerSettingsLanguageRouteArgs {
 /// [_i29.ServerSettingsPage]
 class ServerSettingsRoute extends _i37.PageRouteInfo<ServerSettingsRouteArgs> {
   ServerSettingsRoute({_i39.Key? key, List<_i37.PageRouteInfo>? children})
-      : super(
-          ServerSettingsRoute.name,
-          args: ServerSettingsRouteArgs(key: key),
-          initialChildren: children,
-        );
+    : super(
+        ServerSettingsRoute.name,
+        args: ServerSettingsRouteArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'ServerSettingsRoute';
 
@@ -1838,10 +1838,10 @@ class ServerSettingsPlaybackRoute
     _i39.Key? key,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          ServerSettingsPlaybackRoute.name,
-          args: ServerSettingsPlaybackRouteArgs(key: key),
-          initialChildren: children,
-        );
+         ServerSettingsPlaybackRoute.name,
+         args: ServerSettingsPlaybackRouteArgs(key: key),
+         initialChildren: children,
+       );
 
   static const String name = 'ServerSettingsPlaybackRoute';
 
@@ -1889,10 +1889,10 @@ class ServerSettingsSharingRoute
     _i38.Key? key,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          ServerSettingsSharingRoute.name,
-          args: ServerSettingsSharingRouteArgs(key: key),
-          initialChildren: children,
-        );
+         ServerSettingsSharingRoute.name,
+         args: ServerSettingsSharingRouteArgs(key: key),
+         initialChildren: children,
+       );
 
   static const String name = 'ServerSettingsSharingRoute';
 
@@ -1942,17 +1942,17 @@ class ShowEpisodeRoute extends _i37.PageRouteInfo<ShowEpisodeRouteArgs> {
     String? playQueueId,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          ShowEpisodeRoute.name,
-          args: ShowEpisodeRouteArgs(
-            key: key,
-            showId: showId,
-            episodeId: episodeId,
-            playQueueId: playQueueId,
-          ),
-          rawPathParams: {'showId': showId, 'episodeId': episodeId},
-          rawQueryParams: {'playQueueId': playQueueId},
-          initialChildren: children,
-        );
+         ShowEpisodeRoute.name,
+         args: ShowEpisodeRouteArgs(
+           key: key,
+           showId: showId,
+           episodeId: episodeId,
+           playQueueId: playQueueId,
+         ),
+         rawPathParams: {'showId': showId, 'episodeId': episodeId},
+         rawQueryParams: {'playQueueId': playQueueId},
+         initialChildren: children,
+       );
 
   static const String name = 'ShowEpisodeRoute';
 
@@ -2030,24 +2030,24 @@ class ShowHomeRoute extends _i37.PageRouteInfo<ShowHomeRouteArgs> {
     String? filter,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          ShowHomeRoute.name,
-          args: ShowHomeRouteArgs(
-            key: key,
-            libraryId: libraryId,
-            view: view,
-            kind: kind,
-            layout: layout,
-            filter: filter,
-          ),
-          rawQueryParams: {
-            'libraryId': libraryId,
-            'view': view,
-            'kind': kind,
-            'layout': layout,
-            'filter': filter,
-          },
-          initialChildren: children,
-        );
+         ShowHomeRoute.name,
+         args: ShowHomeRouteArgs(
+           key: key,
+           libraryId: libraryId,
+           view: view,
+           kind: kind,
+           layout: layout,
+           filter: filter,
+         ),
+         rawQueryParams: {
+           'libraryId': libraryId,
+           'view': view,
+           'kind': kind,
+           'layout': layout,
+           'filter': filter,
+         },
+         initialChildren: children,
+       );
 
   static const String name = 'ShowHomeRoute';
 
@@ -2136,11 +2136,11 @@ class ShowOverviewContentRoute
     required String showId,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          ShowOverviewContentRoute.name,
-          args: ShowOverviewContentRouteArgs(key: key, showId: showId),
-          rawPathParams: {'showId': showId},
-          initialChildren: children,
-        );
+         ShowOverviewContentRoute.name,
+         args: ShowOverviewContentRouteArgs(key: key, showId: showId),
+         rawPathParams: {'showId': showId},
+         initialChildren: children,
+       );
 
   static const String name = 'ShowOverviewContentRoute';
 
@@ -2193,11 +2193,11 @@ class ShowOverviewRoute extends _i37.PageRouteInfo<ShowOverviewRouteArgs> {
     required String showId,
     List<_i37.PageRouteInfo>? children,
   }) : super(
-          ShowOverviewRoute.name,
-          args: ShowOverviewRouteArgs(key: key, showId: showId),
-          rawPathParams: {'showId': showId},
-          initialChildren: children,
-        );
+         ShowOverviewRoute.name,
+         args: ShowOverviewRouteArgs(key: key, showId: showId),
+         rawPathParams: {'showId': showId},
+         initialChildren: children,
+       );
 
   static const String name = 'ShowOverviewRoute';
 
@@ -2245,7 +2245,7 @@ class ShowOverviewRouteArgs {
 /// [_i36.SleepTimerSettingsPage]
 class SleepTimerSettingsRoute extends _i37.PageRouteInfo<void> {
   const SleepTimerSettingsRoute({List<_i37.PageRouteInfo>? children})
-      : super(SleepTimerSettingsRoute.name, initialChildren: children);
+    : super(SleepTimerSettingsRoute.name, initialChildren: children);
 
   static const String name = 'SleepTimerSettingsRoute';
 

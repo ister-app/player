@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "app.ister.player"
-    // permission_handler_android 13.x needs API 37; Flutter's default
+    // permission_handler_android 14.x needs API 37; Flutter's default
     // (flutter.compileSdkVersion) still resolves to 36.
     compileSdk = 37
     ndkVersion = "28.2.13676358"
