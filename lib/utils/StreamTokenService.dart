@@ -50,7 +50,9 @@ class StreamTokenService {
         document: documentNodeMutationcreateStreamTokenMutation,
         // Fired from playback hot paths (token refresh timers, play()).
         // Keep it out of the normalized cache: every cache write costs a
-        // deep-compare of all watched queries on low-end TVs.
+        // deep-compare of all watched queries — cheaper since the client
+        // uses optimizedDeepEquals, but still per-watcher UI-thread work
+        // for a response nothing ever reads from the cache.
         fetchPolicy: FetchPolicy.noCache,
         cacheRereadPolicy: CacheRereadPolicy.ignoreAll,
       ),

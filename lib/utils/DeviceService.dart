@@ -91,8 +91,9 @@ class DeviceService {
       await client.mutate(MutationOptions(
         document: documentNodeMutationpingDevice,
         // Periodic heartbeat: keep it out of the normalized cache, or every
-        // ping makes graphql deep-compare all watched queries — which
-        // saturates the UI thread on low-end TVs (see updateProgress).
+        // ping makes graphql deep-compare all watched queries — cheaper with
+        // optimizedDeepEquals, but still pointless UI-thread work for a
+        // response nothing reads from the cache (see updateProgress).
         fetchPolicy: FetchPolicy.noCache,
         cacheRereadPolicy: CacheRereadPolicy.ignoreAll,
         variables: Variables$Mutation$pingDevice(
