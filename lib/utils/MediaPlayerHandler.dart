@@ -1123,6 +1123,25 @@ class MediaPlayerHandler extends BaseAudioHandler
         // overlap until _player.open() finishes buffering the next item.
         await _player.stop();
         await _player.open(media, play: autoPlay);
+        // Web: open() fires element.play() and swallows a rejected play
+        // promise into the error stream (a load() from the detach/attach of
+        // the previous stream, or an autoplay veto, aborts it) — the element
+        // then sits loaded-but-paused and nothing retries. Re-issue the play
+        // once the new stream's metadata is in, unless a newer open took over
+        // or the user paused meanwhile.
+        if (kIsWeb && autoPlay) {
+          final urlAtOpen = mediaUrl;
+          unawaited(_player.stream.duration
+              .firstWhere((d) => d > Duration.zero)
+              .timeout(const Duration(seconds: 30))
+              .then((_) async {
+            if (_intendsToPlay &&
+                _currentMediaUrl == urlAtOpen &&
+                !_player.state.playing) {
+              await _player.play();
+            }
+          }).catchError((_) {}));
+        }
         // setVideoTrack throws UnsupportedError on web (media_kit); skipping it
         // there would otherwise abort _openMedia before mediaItem is published,
         // which is what the mini player gates its visibility on.
