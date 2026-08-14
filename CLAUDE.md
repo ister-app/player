@@ -29,6 +29,9 @@ flutter analyze
 flutter build linux --release
 flutter build apk --release
 flutter build web --release
+# Windows and macOS cannot be cross-built from Linux (MSVC resp. Xcode); CI builds these.
+flutter build windows --release
+flutter build macos --release
 
 # Linux flatpak
 flutter build linux
@@ -82,7 +85,7 @@ the pins.
 
 ## Architecture Overview
 
-This is a Flutter media player app for the "Ister" media management system. It supports multiple servers with OIDC authentication; browsing and playback of episodes, movies, music, podcasts and audiobooks/epubs; and language preferences and watch-progress tracking. It ships for Android (incl. Android TV and Android Auto), Linux (flatpak) and web.
+This is a Flutter media player app for the "Ister" media management system. It supports multiple servers with OIDC authentication; browsing and playback of episodes, movies, music, podcasts and audiobooks/epubs; and language preferences and watch-progress tracking. It ships for Android (incl. Android TV and Android Auto), Linux (flatpak), Windows, macOS and web.
 
 ### Layer Structure
 
@@ -115,6 +118,7 @@ This is a Flutter media player app for the "Ister" media management system. It s
 - **GraphQL widgets:** Pages use `Query(options: ..., builder: ...)` from `graphql_flutter`; raw `graphQLClient.query(...)` is used inside services. Paged lists (`PagedContentView`, `TvShowSlide`, `TvShowScroll`) store items **per page** in a `Map<int, List<T>>` and parse each result emission exactly once by comparing `result.timestamp` — do not reintroduce a boolean "initialized" latch, it pins the UI to the first cached result and breaks pull-to-refresh with `FetchPolicy.cacheAndNetwork`.
 - **Player overlays:** `MusicPlayerRoute` and `RemoteControlRoute` (party mode) are pushed on the root router as transparent routes; both render the shared `PlayerView` (`lib/components/PlayerView.dart`) — slide-up/drag-dismiss, portrait/landscape layouts, accent colour, queue tabs — through a `PlayerViewController` adapter (local `MediaPlayerHandler` vs. remote session subscriptions). `PlayerView.activeBackHandler` coordinates with `_MusicPlayerAwareDelegate.popRoute` in `AppRouter.dart` so the back button plays the dismiss animation instead of popping instantly; `MediaPlayerHandler.musicPlayerOpen` guards against double-pushing the music player.
 - **Background audio (Android):** `audio_service` provides notification controls and `MediaSession` integration; the foreground service stays alive while paused (`androidStopForegroundOnPause: false`) and audio focus is held across track gaps — Android 16 blocks re-acquiring either from the background. mpv gets reconnect/network-timeout options for backgrounded HLS.
+- **OS media controls per desktop:** `audio_service` itself only implements Android/iOS/macOS. Linux gets MPRIS from `audio_service_mpris` and Windows gets SMTC from `audio_service_win` — both are separate packages that replace `AudioServicePlatform.instance` when they register, so `MediaPlayerHandler` and `AudioService.init` stay platform-agnostic. Drop either dependency and that platform silently falls back to `NoOpAudioService`: playback keeps working, media keys stop.
 - **Code generation:** Two generators run together — `graphql_codegen` (GraphQL types) and `auto_route_generator` (routing). Always run `build_runner build` after changing `.graphql` files, adding `@RoutePage()` to a new page, or modifying `AppRouter.dart`.
 - **Artwork placeholders:** every album-cover surface falls back to a music-note placeholder (and uses `errorBuilder` on `CachedNetworkImage`, from the `cached_network_image_ce` fork — `errorWidget` is deprecated there).
 - **Android TV:** the same widget tree serves touch and D-pad. Wrap tappable items in `TvFocusable` (it adds the focus node, maps select/enter to `onTap`, and only draws the highlight during directional navigation) rather than branching the layout on `PlatformService.isAndroidTv`.

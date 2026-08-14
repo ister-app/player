@@ -1,10 +1,10 @@
 ---
-description: Zo past de Ister-mediaspeler zich aan op Android-telefoons en -tablets, Android TV, Android Auto, Linux-desktops en de browser.
+description: Zo past de Ister-mediaspeler zich aan op Android-telefoons en -tablets, Android TV, Android Auto, Linux-, Windows- en macOS-desktops en de browser.
 ---
 
 # Platforms
 
-Dezelfde app draait op Android-telefoons en -tablets, Android TV, Android Auto, Linux-desktops en het web. Dit hoofdstuk beschrijft wat er per platform anders is.
+Dezelfde app draait op Android-telefoons en -tablets, Android TV, Android Auto, Linux-, Windows- en macOS-desktops en het web. Dit hoofdstuk beschrijft wat er per platform anders is.
 
 ## Android
 
@@ -27,6 +27,10 @@ In de auto verschijnt Ister tussen de media-apps van Android Auto. Je krijgt een
 ## Linux
 
 Op Linux komt de app als flatpak, met de desktopindeling: navigatiebalk, toetsenbordnavigatie, schaalbare vensters. Alles werkt native — inclusief de e-boek- en stripslezer, die veel spelers op de desktop laten liggen.
+
+## Windows en macOS
+
+Beide desktopbuilds zijn nieuw en nog experimenteel — ze gebruiken dezelfde desktopindeling als Linux, lezers inbegrepen. Op Windows verschijnt wat er speelt in het mediapaneel van het systeem en werken de mediatoetsen van je toetsenbord; op macOS gebeurt hetzelfde via Now Playing. Geen van beide builds is al ondertekend, dus het besturingssysteem vraagt de eerste keer om bevestiging — zie [Installatie](00-installation.md).
 
 ## Web
 

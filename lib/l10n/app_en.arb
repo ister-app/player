@@ -222,6 +222,16 @@
       }
     }
   },
+  "combinedFileWith": "Combined file with {others}",
+  "@combinedFileWith": {
+    "description": "Shown on the episode page when the episode shares one media file with other episodes, e.g. 'Combined file with E7'.",
+    "placeholders": {
+      "others": {
+        "type": "String",
+        "example": "E7"
+      }
+    }
+  },
   "serverUnreachable": "Server unreachable",
   "@serverUnreachable": {
     "description": "Title shown when the server cannot be reached"

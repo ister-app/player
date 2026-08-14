@@ -51,8 +51,9 @@ class ResilientSubscription {
             // Events are consumed straight from this stream. Writing each one
             // into the normalized cache makes graphql deep-compare every
             // watched query per event (~400ms of UI-thread time on a low-end
-            // TV) — a remote pause+resume delivers two events and turned the
-            // video into a slideshow for seconds.
+            // TV before optimizedDeepEquals; still per-watcher work for data
+            // nothing reads from the cache) — a remote pause+resume delivers
+            // two events and turned the video into a slideshow for seconds.
             fetchPolicy: FetchPolicy.noCache,
             cacheRereadPolicy: CacheRereadPolicy.ignoreAll))
         .listen(

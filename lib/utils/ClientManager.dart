@@ -168,7 +168,16 @@ class ClientManager {
       authLink.concat(httpLink),
     );
     ValueNotifier<GraphQLClient> client = ValueNotifier(
-      GraphQLClient(link: link, cache: GraphQLCache(store: InMemoryStore()), queryRequestTimeout: Duration(seconds: 30)),
+      GraphQLClient(
+        link: link,
+        cache: GraphQLCache(store: InMemoryStore()),
+        queryRequestTimeout: Duration(seconds: 30),
+        // Every cache write rebroadcasts by deep-comparing all watched
+        // queries on the UI thread; the default DeepCollectionEquality makes
+        // that ~12x slower than this short-circuiting variant and freezes
+        // the UI on pages with many live queries (tool/bench_rebroadcast.dart).
+        deepEquals: optimizedDeepEquals,
+      ),
     );
     return client;
   }

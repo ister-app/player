@@ -618,7 +618,8 @@ class PlayQueueService {
         // This is the ~10s playback heartbeat. Its response (the full play
         // queue) is applied by the caller; writing it into the normalized
         // cache as well makes graphql deep-compare every watched query on
-        // each beat, which saturates the UI thread on low-end TVs.
+        // each beat — cheaper since optimizedDeepEquals, but still saturates
+        // the UI thread on low-end TVs and serves no reader.
         fetchPolicy: FetchPolicy.noCache,
         cacheRereadPolicy: CacheRereadPolicy.ignoreAll,
         variables: Variables$Mutation$updatePlayQueue(

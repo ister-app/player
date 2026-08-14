@@ -51,6 +51,7 @@
   "season": "Seizoen {number}",
   "episode": "Aflevering {number}",
   "episodePrefix": "A{number}",
+  "combinedFileWith": "Gecombineerd bestand met {others}",
   "serverUnreachable": "Server niet bereikbaar",
   "backToServerOverview": "Terug naar serveroverzicht",
   "close": "Sluiten",

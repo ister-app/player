@@ -185,6 +185,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String combinedFileWith(String others) {
+    return 'Combined file with $others';
+  }
+
+  @override
   String get serverUnreachable => 'Server unreachable';
 
   @override

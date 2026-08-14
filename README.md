@@ -1,7 +1,7 @@
 # player
 
 A media player for [Ister](https://github.com/ister-app), the self-hosted media server.
-Ships for Android (incl. Android TV and Android Auto), Linux (flatpak) and web.
+Ships for Android (incl. Android TV and Android Auto), Linux (flatpak), Windows, macOS and web.
 
 User guide: [ister.app/player](https://ister.app/player) — architecture docs for
 contributors: [ister.app/development](https://ister.app/development).
@@ -38,6 +38,16 @@ against; releases require hard pins (see the comments in that file).
 ## Iso 639-3 data
 
 https://iso639-3.sil.org/code_tables/download_tables
+
+## Desktop builds
+
+Windows and macOS need their own toolchain (MSVC resp. Xcode) and cannot be cross-built from
+Linux; CI builds them and attaches a zip to each release.
+
+```bash
+flutter build windows --release
+flutter build macos --release
+```
 
 ## Linux flatpak version
 

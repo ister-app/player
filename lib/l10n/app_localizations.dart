@@ -410,6 +410,12 @@ abstract class AppLocalizations {
   /// **'E{number}'**
   String episodePrefix(int number);
 
+  /// Shown on the episode page when the episode shares one media file with other episodes, e.g. 'Combined file with E7'.
+  ///
+  /// In en, this message translates to:
+  /// **'Combined file with {others}'**
+  String combinedFileWith(String others);
+
   /// Title shown when the server cannot be reached
   ///
   /// In en, this message translates to:

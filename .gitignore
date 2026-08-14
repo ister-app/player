@@ -5,9 +5,11 @@
 *.swp
 .DS_Store
 .atom/
+.build/
 .buildlog/
 .history
 .svn/
+.swiftpm/
 migrate_working_dir/
 
 # IntelliJ related
@@ -34,6 +36,11 @@ player-docs-*.zip
 .pub/
 /build/
 repo/
+
+# macOS / CocoaPods (the pods themselves are resolved per build machine)
+**/macos/Pods/
+**/xcuserdata/
+**/.symlinks/
 
 # Symbolication related
 app.*.symbols

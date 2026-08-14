@@ -12,7 +12,7 @@ query episodes($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: Sor
             metadata { ...fragmentMetadata }
             images { ...fragmentImages }
             watchStatus { ...fragmentWatchStatus }
-            mediaFile { durationInMilliseconds }
+            mediaFile { durationInMilliseconds episodes { id number } }
         }
         totalPages totalElements number size
     }

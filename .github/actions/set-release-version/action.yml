@@ -1,0 +1,31 @@
+name: Set the release version
+description: >-
+  Stamp the derived release version into pubspec.yaml and expose the short hash of the
+  commit the artifacts are built from (shown next to the version in the app's settings).
+inputs:
+  version:
+    description: The semver version, without the +build suffix
+    required: true
+  build:
+    description: The build number (the commit count)
+    required: true
+outputs:
+  sha:
+    description: Short hash of the commit being built
+    value: ${{ steps.stamp.outputs.sha }}
+runs:
+  using: composite
+  steps:
+    - id: stamp
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        BUILD: ${{ inputs.build }}
+      # Not `sed -i`: this also runs on the macOS runner, where BSD sed reads the flag
+      # after -i as the backup suffix instead of as a flag.
+      run: |
+        sed -E "s|^version: .*|version: ${VERSION}+${BUILD}|" pubspec.yaml > pubspec.yaml.tmp
+        mv pubspec.yaml.tmp pubspec.yaml
+        grep -qx "version: ${VERSION}+${BUILD}" pubspec.yaml \
+          || { echo "version not written to pubspec.yaml" >&2; exit 1; }
+        echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"

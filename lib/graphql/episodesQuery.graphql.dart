@@ -649,6 +649,37 @@ const documentNodeQueryepisodes = DocumentNode(
                               selectionSet: null,
                             ),
                             FieldNode(
+                              name: NameNode(value: 'episodes'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: SelectionSetNode(
+                                selections: [
+                                  FieldNode(
+                                    name: NameNode(value: 'id'),
+                                    alias: null,
+                                    arguments: [],
+                                    directives: [],
+                                    selectionSet: null,
+                                  ),
+                                  FieldNode(
+                                    name: NameNode(value: 'number'),
+                                    alias: null,
+                                    arguments: [],
+                                    directives: [],
+                                    selectionSet: null,
+                                  ),
+                                  FieldNode(
+                                    name: NameNode(value: '__typename'),
+                                    alias: null,
+                                    arguments: [],
+                                    directives: [],
+                                    selectionSet: null,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            FieldNode(
                               name: NameNode(value: '__typename'),
                               alias: null,
                               arguments: [],
@@ -1753,6 +1784,7 @@ class _CopyWithStubImpl$Query$episodes$episodes$content$season<TRes>
 class Query$episodes$episodes$content$mediaFile {
   Query$episodes$episodes$content$mediaFile({
     this.durationInMilliseconds,
+    this.episodes,
     this.$__typename = 'MediaFile',
   });
 
@@ -1760,14 +1792,24 @@ class Query$episodes$episodes$content$mediaFile {
     Map<String, dynamic> json,
   ) {
     final l$durationInMilliseconds = json['durationInMilliseconds'];
+    final l$episodes = json['episodes'];
     final l$$__typename = json['__typename'];
     return Query$episodes$episodes$content$mediaFile(
       durationInMilliseconds: (l$durationInMilliseconds as int?),
+      episodes: (l$episodes as List<dynamic>?)
+          ?.map(
+            (e) => Query$episodes$episodes$content$mediaFile$episodes.fromJson(
+              (e as Map<String, dynamic>),
+            ),
+          )
+          .toList(),
       $__typename: (l$$__typename as String),
     );
   }
 
   final int? durationInMilliseconds;
+
+  final List<Query$episodes$episodes$content$mediaFile$episodes>? episodes;
 
   final String $__typename;
 
@@ -1775,6 +1817,8 @@ class Query$episodes$episodes$content$mediaFile {
     final _resultData = <String, dynamic>{};
     final l$durationInMilliseconds = durationInMilliseconds;
     _resultData['durationInMilliseconds'] = l$durationInMilliseconds;
+    final l$episodes = episodes;
+    _resultData['episodes'] = l$episodes?.map((e) => e.toJson()).toList();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -1783,8 +1827,13 @@ class Query$episodes$episodes$content$mediaFile {
   @override
   int get hashCode {
     final l$durationInMilliseconds = durationInMilliseconds;
+    final l$episodes = episodes;
     final l$$__typename = $__typename;
-    return Object.hashAll([l$durationInMilliseconds, l$$__typename]);
+    return Object.hashAll([
+      l$durationInMilliseconds,
+      l$episodes == null ? null : Object.hashAll(l$episodes.map((v) => v)),
+      l$$__typename,
+    ]);
   }
 
   @override
@@ -1799,6 +1848,22 @@ class Query$episodes$episodes$content$mediaFile {
     final l$durationInMilliseconds = durationInMilliseconds;
     final lOther$durationInMilliseconds = other.durationInMilliseconds;
     if (l$durationInMilliseconds != lOther$durationInMilliseconds) {
+      return false;
+    }
+    final l$episodes = episodes;
+    final lOther$episodes = other.episodes;
+    if (l$episodes != null && lOther$episodes != null) {
+      if (l$episodes.length != lOther$episodes.length) {
+        return false;
+      }
+      for (int i = 0; i < l$episodes.length; i++) {
+        final l$episodes$entry = l$episodes[i];
+        final lOther$episodes$entry = lOther$episodes[i];
+        if (l$episodes$entry != lOther$episodes$entry) {
+          return false;
+        }
+      }
+    } else if (l$episodes != lOther$episodes) {
       return false;
     }
     final l$$__typename = $__typename;
@@ -1828,7 +1893,21 @@ abstract class CopyWith$Query$episodes$episodes$content$mediaFile<TRes> {
   factory CopyWith$Query$episodes$episodes$content$mediaFile.stub(TRes res) =
       _CopyWithStubImpl$Query$episodes$episodes$content$mediaFile;
 
-  TRes call({int? durationInMilliseconds, String? $__typename});
+  TRes call({
+    int? durationInMilliseconds,
+    List<Query$episodes$episodes$content$mediaFile$episodes>? episodes,
+    String? $__typename,
+  });
+  TRes episodes(
+    Iterable<Query$episodes$episodes$content$mediaFile$episodes>? Function(
+      Iterable<
+        CopyWith$Query$episodes$episodes$content$mediaFile$episodes<
+          Query$episodes$episodes$content$mediaFile$episodes
+        >
+      >?,
+    )
+    _fn,
+  );
 }
 
 class _CopyWithImpl$Query$episodes$episodes$content$mediaFile<TRes>
@@ -1846,16 +1925,41 @@ class _CopyWithImpl$Query$episodes$episodes$content$mediaFile<TRes>
 
   TRes call({
     Object? durationInMilliseconds = _undefined,
+    Object? episodes = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Query$episodes$episodes$content$mediaFile(
       durationInMilliseconds: durationInMilliseconds == _undefined
           ? _instance.durationInMilliseconds
           : (durationInMilliseconds as int?),
+      episodes: episodes == _undefined
+          ? _instance.episodes
+          : (episodes
+                as List<Query$episodes$episodes$content$mediaFile$episodes>?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
     ),
+  );
+
+  TRes episodes(
+    Iterable<Query$episodes$episodes$content$mediaFile$episodes>? Function(
+      Iterable<
+        CopyWith$Query$episodes$episodes$content$mediaFile$episodes<
+          Query$episodes$episodes$content$mediaFile$episodes
+        >
+      >?,
+    )
+    _fn,
+  ) => call(
+    episodes: _fn(
+      _instance.episodes?.map(
+        (e) => CopyWith$Query$episodes$episodes$content$mediaFile$episodes(
+          e,
+          (i) => i,
+        ),
+      ),
+    )?.toList(),
   );
 }
 
@@ -1865,5 +1969,153 @@ class _CopyWithStubImpl$Query$episodes$episodes$content$mediaFile<TRes>
 
   TRes _res;
 
-  call({int? durationInMilliseconds, String? $__typename}) => _res;
+  call({
+    int? durationInMilliseconds,
+    List<Query$episodes$episodes$content$mediaFile$episodes>? episodes,
+    String? $__typename,
+  }) => _res;
+
+  episodes(_fn) => _res;
+}
+
+class Query$episodes$episodes$content$mediaFile$episodes {
+  Query$episodes$episodes$content$mediaFile$episodes({
+    required this.id,
+    required this.number,
+    this.$__typename = 'Episode',
+  });
+
+  factory Query$episodes$episodes$content$mediaFile$episodes.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final l$id = json['id'];
+    final l$number = json['number'];
+    final l$$__typename = json['__typename'];
+    return Query$episodes$episodes$content$mediaFile$episodes(
+      id: (l$id as String),
+      number: (l$number as int),
+      $__typename: (l$$__typename as String),
+    );
+  }
+
+  final String id;
+
+  final int number;
+
+  final String $__typename;
+
+  Map<String, dynamic> toJson() {
+    final _resultData = <String, dynamic>{};
+    final l$id = id;
+    _resultData['id'] = l$id;
+    final l$number = number;
+    _resultData['number'] = l$number;
+    final l$$__typename = $__typename;
+    _resultData['__typename'] = l$$__typename;
+    return _resultData;
+  }
+
+  @override
+  int get hashCode {
+    final l$id = id;
+    final l$number = number;
+    final l$$__typename = $__typename;
+    return Object.hashAll([l$id, l$number, l$$__typename]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Query$episodes$episodes$content$mediaFile$episodes ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$id = id;
+    final lOther$id = other.id;
+    if (l$id != lOther$id) {
+      return false;
+    }
+    final l$number = number;
+    final lOther$number = other.number;
+    if (l$number != lOther$number) {
+      return false;
+    }
+    final l$$__typename = $__typename;
+    final lOther$$__typename = other.$__typename;
+    if (l$$__typename != lOther$$__typename) {
+      return false;
+    }
+    return true;
+  }
+}
+
+extension UtilityExtension$Query$episodes$episodes$content$mediaFile$episodes
+    on Query$episodes$episodes$content$mediaFile$episodes {
+  CopyWith$Query$episodes$episodes$content$mediaFile$episodes<
+    Query$episodes$episodes$content$mediaFile$episodes
+  >
+  get copyWith => CopyWith$Query$episodes$episodes$content$mediaFile$episodes(
+    this,
+    (i) => i,
+  );
+}
+
+abstract class CopyWith$Query$episodes$episodes$content$mediaFile$episodes<
+  TRes
+> {
+  factory CopyWith$Query$episodes$episodes$content$mediaFile$episodes(
+    Query$episodes$episodes$content$mediaFile$episodes instance,
+    TRes Function(Query$episodes$episodes$content$mediaFile$episodes) then,
+  ) = _CopyWithImpl$Query$episodes$episodes$content$mediaFile$episodes;
+
+  factory CopyWith$Query$episodes$episodes$content$mediaFile$episodes.stub(
+    TRes res,
+  ) = _CopyWithStubImpl$Query$episodes$episodes$content$mediaFile$episodes;
+
+  TRes call({String? id, int? number, String? $__typename});
+}
+
+class _CopyWithImpl$Query$episodes$episodes$content$mediaFile$episodes<TRes>
+    implements
+        CopyWith$Query$episodes$episodes$content$mediaFile$episodes<TRes> {
+  _CopyWithImpl$Query$episodes$episodes$content$mediaFile$episodes(
+    this._instance,
+    this._then,
+  );
+
+  final Query$episodes$episodes$content$mediaFile$episodes _instance;
+
+  final TRes Function(Query$episodes$episodes$content$mediaFile$episodes) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? id = _undefined,
+    Object? number = _undefined,
+    Object? $__typename = _undefined,
+  }) => _then(
+    Query$episodes$episodes$content$mediaFile$episodes(
+      id: id == _undefined || id == null ? _instance.id : (id as String),
+      number: number == _undefined || number == null
+          ? _instance.number
+          : (number as int),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
+}
+
+class _CopyWithStubImpl$Query$episodes$episodes$content$mediaFile$episodes<TRes>
+    implements
+        CopyWith$Query$episodes$episodes$content$mediaFile$episodes<TRes> {
+  _CopyWithStubImpl$Query$episodes$episodes$content$mediaFile$episodes(
+    this._res,
+  );
+
+  TRes _res;
+
+  call({String? id, int? number, String? $__typename}) => _res;
 }

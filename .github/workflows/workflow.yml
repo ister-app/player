@@ -116,6 +116,58 @@ jobs:
           name: android-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
+  # Compile-only gates for the two desktop platforms that cannot be built on the Linux
+  # runner. They produce no release artifact — release.yml builds and attaches those —
+  # but without them a Windows/macOS breakage would only surface in the nightly release.
+  # Tests and analysis already ran in `build`, so these do the build and nothing else.
+  build-windows:
+    name: Build Windows
+    if: ${{ github.event_name == 'pull_request' || !startsWith(github.event.head_commit.message, 'chore(release):') }}
+    runs-on: windows-latest
+    env:
+      # Dart's default cache on Windows is %LOCALAPPDATA%\Pub\Cache, which the cache
+      # step below would never see. It matters more here than elsewhere: media_kit's
+      # Windows libs download a prebuilt libmpv into the pub cache at CMake configure
+      # time, so a cache miss also re-downloads that.
+      PUB_CACHE: ${{ github.workspace }}\.pub-cache
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+      - name: Cache pub dependencies
+        uses: actions/cache@v6
+        with:
+          path: ${{ github.workspace }}\.pub-cache
+          # No restore-keys fallback, for the same reason as the Linux job above.
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+      - run: flutter pub get
+      - name: Build Windows
+        run: flutter build windows --release
+
+  build-macos:
+    name: Build macOS
+    if: ${{ github.event_name == 'pull_request' || !startsWith(github.event.head_commit.message, 'chore(release):') }}
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+      - name: Cache pub dependencies
+        uses: actions/cache@v6
+        with:
+          path: ~/.pub-cache
+          # No restore-keys fallback, for the same reason as the Linux job above.
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+      - run: flutter pub get
+      - name: Build macOS
+        run: flutter build macos --release
+
   # End-to-end: the real app against a real server in kind (deployed with the chart
   # repo's ci/up.sh, media from the testdata repo). Non-blocking while it beds in —
   # remove continue-on-error once it has proven stable.
