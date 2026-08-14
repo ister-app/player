@@ -48,8 +48,14 @@ class EpisodeScroll extends StatelessWidget {
   String _subtitle(Query$episodes$episodes$content episode) {
     final show = episode.$show?.name ?? '';
     final season = episode.season?.number;
-    final marker =
+    var marker =
         season != null ? 'S${season}E${episode.number}' : 'E${episode.number}';
+    // Mark episodes that share one media file with others (s04e06-e07.mkv).
+    final fileEpisodes = episode.mediaFile?.firstOrNull?.episodes;
+    if (fileEpisodes != null && fileEpisodes.length > 1) {
+      final numbers = fileEpisodes.map((e) => e.number).toList()..sort();
+      marker = '$marker ⧉ ${numbers.map((n) => 'E$n').join('+')}';
+    }
     return show.isEmpty ? marker : '$show • $marker';
   }
 

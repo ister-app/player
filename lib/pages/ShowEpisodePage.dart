@@ -175,6 +175,25 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
     );
   }
 
+  /// "Combined file with E7" when this episode shares its media file with
+  /// other episodes (s04e06-e07.mkv); null for normal files.
+  static String? _combinedFileLine(
+      BuildContext context, Fragment$fragmentEpisode? episode) {
+    final fileEpisodes = episode?.mediaFile?.firstOrNull?.episodes;
+    if (episode == null || fileEpisodes == null || fileEpisodes.length < 2) {
+      return null;
+    }
+    final others = (fileEpisodes
+            .map((e) => e.number)
+            .where((n) => n != episode.number)
+            .toList()
+          ..sort())
+        .map((n) => AppLocalizations.of(context)!.episodePrefix(n))
+        .join(", ");
+    if (others.isEmpty) return null;
+    return AppLocalizations.of(context)!.combinedFileWith(others);
+  }
+
   Column getContent(bool loadComplete, Fragment$fragmentEpisode? episode,
       String title, String description, BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -339,6 +358,22 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                 ),
+              ),
+            if (_combinedFileLine(context, episode) != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(Icons.call_merge,
+                      size: 16,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  const SizedBox(width: 4),
+                  Text(
+                    _combinedFileLine(context, episode)!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                ]),
               ),
             Text(description),
             Padding(

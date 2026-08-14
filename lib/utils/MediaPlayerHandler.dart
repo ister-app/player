@@ -340,13 +340,17 @@ class MediaPlayerHandler extends BaseAudioHandler
                     : null;
               }
 
+              // For an episode inside a multi-episode file the item lasts its
+              // own slice, not the double-length file.
+              final part = episodePartBounds(e.episode);
               return MediaItem(
                 id: MediaItemId(newServerName, IsterMediaTypes.episode, e.id).toString(),
                 title: MetadataUtil.getTitle(e.episode?.metadata) ?? "unknown",
                 artist: "ister",
                 duration: Duration(
-                    milliseconds:
-                        e.episode?.mediaFile?.firstOrNull?.durationInMilliseconds ??
+                    milliseconds: part != null
+                        ? part.endMs - part.startMs
+                        : e.episode?.mediaFile?.firstOrNull?.durationInMilliseconds ??
                           0),
                 artUri: imgUri,
               );
@@ -402,7 +406,25 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (ws != null && ws.isNotEmpty && !ws.first.watched) {
       return ws.first.progressInMilliseconds;
     }
-    return null;
+    // No resume position: an episode inside a multi-episode file starts at its
+    // own slice, not at the file's t=0 (which is a different episode).
+    final part = episodePartBounds(episode);
+    return part != null && part.startMs > 0 ? part.startMs : null;
+  }
+
+  /// The slice of [ep] within a multi-episode media file (s04e06-e07.mkv), in
+  /// absolute file time. Null for a normal single-episode file, and while the
+  /// server has not computed the slice boundaries yet (duration 0) — playback
+  /// then falls back to whole-file behavior.
+  static ({int startMs, int endMs})? episodePartBounds(
+      Fragment$fragmentEpisode? ep) {
+    final part = ep?.mediaFileParts?.firstOrNull;
+    if (part == null) return null;
+    if ((part.mediaFile.episodes?.length ?? 0) < 2) return null;
+    final durationMs = part.durationInMilliseconds.toInt();
+    if (durationMs <= 0) return null;
+    final startMs = part.startInMilliseconds.toInt();
+    return (startMs: startMs, endMs: startMs + durationMs);
   }
 
   int? get _movieStartTimeMs {
@@ -1822,10 +1844,12 @@ class MediaPlayerHandler extends BaseAudioHandler
         _currentMediaType = IsterMediaTypes.episode;
         final mediaFile = queueItem.episode?.mediaFile?.firstOrNull;
         if (mediaFile == null) return;
+        // An episode inside a multi-episode file starts at its own slice.
+        final partStart = episodePartBounds(queueItem.episode)?.startMs ?? 0;
         await _openMedia(
           serverName: mediaItemId.serverName,
           mediaUrl: ImageUtil.buildMediaFileUrl(mediaFile, token: StreamTokenService.getToken(mediaItemId.serverName), direct: directPlay, transcode: transcode) ?? '',
-          startTimeInMilliseconds: 0,
+          startTimeInMilliseconds: partStart,
           mediaType: IsterMediaTypes.episode,
         );
       }
@@ -1860,7 +1884,10 @@ class MediaPlayerHandler extends BaseAudioHandler
         ClientManager.getClientForUrl(mediaItemId.serverName).value,
         playQueue!.id,
         mediaItemId.id,
-        Duration.zero,
+        // Progress is absolute within the file: a multi-episode slice starts
+        // at its own offset, not at 0 (that would resume in the previous
+        // episode of the file).
+        Duration(milliseconds: episodePartBounds(queueItem.episode)?.startMs ?? 0),
       );
       if (playQueueObject != null &&
           generation == _syncGeneration &&
@@ -2420,8 +2447,33 @@ class MediaPlayerHandler extends BaseAudioHandler
         _lastPositionAdvance = DateTime.now();
       }
 
+      _maybeAdvancePastEpisodeBoundary(pos);
+
       await _syncProgress(pos);
     });
+  }
+
+  /// An episode inside a multi-episode file "ends" at its slice boundary,
+  /// which the player itself never reports as completed — the stream simply
+  /// runs on into the next episode. Advance the queue there instead.
+  void _maybeAdvancePastEpisodeBoundary(Duration pos) {
+    // A follower never advances on its own (same rule as _listenToCompletion).
+    if (_followMode) return;
+    if (_currentMediaType != IsterMediaTypes.episode) return;
+    if (!_player.state.playing) return;
+    final part = episodePartBounds(episode);
+    if (part == null) return;
+    if (pos.inMilliseconds < part.endMs) return;
+    // Debounce against the completion listener / stall watchdog.
+    final last = _lastAutoAdvance;
+    if (last != null &&
+        DateTime.now().difference(last) < const Duration(seconds: 8)) {
+      return;
+    }
+    _lastAutoAdvance = DateTime.now();
+    LoggerService().logger.d(
+        '[BOUNDARY] Passed multi-episode slice end (${part.endMs} ms) — advancing');
+    advanceAfterItemEnd();
   }
 
   // Progress updates are sent strictly one at a time, in submission order.

@@ -6,6 +6,7 @@ class Fragment$fragmentMediaFiles {
     required this.id,
     required this.path,
     required this.size,
+    this.episodes,
     required this.directory,
     this.mediaFileStreams,
     this.$__typename = 'MediaFile',
@@ -16,6 +17,7 @@ class Fragment$fragmentMediaFiles {
     final l$id = json['id'];
     final l$path = json['path'];
     final l$size = json['size'];
+    final l$episodes = json['episodes'];
     final l$directory = json['directory'];
     final l$mediaFileStreams = json['mediaFileStreams'];
     final l$$__typename = json['__typename'];
@@ -24,6 +26,13 @@ class Fragment$fragmentMediaFiles {
       id: (l$id as String),
       path: (l$path as String),
       size: (l$size as num).toDouble(),
+      episodes: (l$episodes as List<dynamic>?)
+          ?.map(
+            (e) => Fragment$fragmentMediaFiles$episodes.fromJson(
+              (e as Map<String, dynamic>),
+            ),
+          )
+          .toList(),
       directory: Fragment$fragmentMediaFiles$directory.fromJson(
         (l$directory as Map<String, dynamic>),
       ),
@@ -48,6 +57,8 @@ class Fragment$fragmentMediaFiles {
 
   final double size;
 
+  final List<Fragment$fragmentMediaFiles$episodes>? episodes;
+
   final Fragment$fragmentMediaFiles$directory directory;
 
   final List<Fragment$fragmentMediaFiles$mediaFileStreams?>? mediaFileStreams;
@@ -64,6 +75,8 @@ class Fragment$fragmentMediaFiles {
     _resultData['path'] = l$path;
     final l$size = size;
     _resultData['size'] = l$size;
+    final l$episodes = episodes;
+    _resultData['episodes'] = l$episodes?.map((e) => e.toJson()).toList();
     final l$directory = directory;
     _resultData['directory'] = l$directory.toJson();
     final l$mediaFileStreams = mediaFileStreams;
@@ -81,6 +94,7 @@ class Fragment$fragmentMediaFiles {
     final l$id = id;
     final l$path = path;
     final l$size = size;
+    final l$episodes = episodes;
     final l$directory = directory;
     final l$mediaFileStreams = mediaFileStreams;
     final l$$__typename = $__typename;
@@ -89,6 +103,7 @@ class Fragment$fragmentMediaFiles {
       l$id,
       l$path,
       l$size,
+      l$episodes == null ? null : Object.hashAll(l$episodes.map((v) => v)),
       l$directory,
       l$mediaFileStreams == null
           ? null
@@ -124,6 +139,22 @@ class Fragment$fragmentMediaFiles {
     final l$size = size;
     final lOther$size = other.size;
     if (l$size != lOther$size) {
+      return false;
+    }
+    final l$episodes = episodes;
+    final lOther$episodes = other.episodes;
+    if (l$episodes != null && lOther$episodes != null) {
+      if (l$episodes.length != lOther$episodes.length) {
+        return false;
+      }
+      for (int i = 0; i < l$episodes.length; i++) {
+        final l$episodes$entry = l$episodes[i];
+        final lOther$episodes$entry = lOther$episodes[i];
+        if (l$episodes$entry != lOther$episodes$entry) {
+          return false;
+        }
+      }
+    } else if (l$episodes != lOther$episodes) {
       return false;
     }
     final l$directory = directory;
@@ -176,10 +207,21 @@ abstract class CopyWith$Fragment$fragmentMediaFiles<TRes> {
     String? id,
     String? path,
     double? size,
+    List<Fragment$fragmentMediaFiles$episodes>? episodes,
     Fragment$fragmentMediaFiles$directory? directory,
     List<Fragment$fragmentMediaFiles$mediaFileStreams?>? mediaFileStreams,
     String? $__typename,
   });
+  TRes episodes(
+    Iterable<Fragment$fragmentMediaFiles$episodes>? Function(
+      Iterable<
+        CopyWith$Fragment$fragmentMediaFiles$episodes<
+          Fragment$fragmentMediaFiles$episodes
+        >
+      >?,
+    )
+    _fn,
+  );
   CopyWith$Fragment$fragmentMediaFiles$directory<TRes> get directory;
   TRes mediaFileStreams(
     Iterable<Fragment$fragmentMediaFiles$mediaFileStreams?>? Function(
@@ -208,6 +250,7 @@ class _CopyWithImpl$Fragment$fragmentMediaFiles<TRes>
     Object? id = _undefined,
     Object? path = _undefined,
     Object? size = _undefined,
+    Object? episodes = _undefined,
     Object? directory = _undefined,
     Object? mediaFileStreams = _undefined,
     Object? $__typename = _undefined,
@@ -223,6 +266,9 @@ class _CopyWithImpl$Fragment$fragmentMediaFiles<TRes>
       size: size == _undefined || size == null
           ? _instance.size
           : (size as double),
+      episodes: episodes == _undefined
+          ? _instance.episodes
+          : (episodes as List<Fragment$fragmentMediaFiles$episodes>?),
       directory: directory == _undefined || directory == null
           ? _instance.directory
           : (directory as Fragment$fragmentMediaFiles$directory),
@@ -234,6 +280,23 @@ class _CopyWithImpl$Fragment$fragmentMediaFiles<TRes>
           ? _instance.$__typename
           : ($__typename as String),
     ),
+  );
+
+  TRes episodes(
+    Iterable<Fragment$fragmentMediaFiles$episodes>? Function(
+      Iterable<
+        CopyWith$Fragment$fragmentMediaFiles$episodes<
+          Fragment$fragmentMediaFiles$episodes
+        >
+      >?,
+    )
+    _fn,
+  ) => call(
+    episodes: _fn(
+      _instance.episodes?.map(
+        (e) => CopyWith$Fragment$fragmentMediaFiles$episodes(e, (i) => i),
+      ),
+    )?.toList(),
   );
 
   CopyWith$Fragment$fragmentMediaFiles$directory<TRes> get directory {
@@ -278,10 +341,13 @@ class _CopyWithStubImpl$Fragment$fragmentMediaFiles<TRes>
     String? id,
     String? path,
     double? size,
+    List<Fragment$fragmentMediaFiles$episodes>? episodes,
     Fragment$fragmentMediaFiles$directory? directory,
     List<Fragment$fragmentMediaFiles$mediaFileStreams?>? mediaFileStreams,
     String? $__typename,
   }) => _res;
+
+  episodes(_fn) => _res;
 
   CopyWith$Fragment$fragmentMediaFiles$directory<TRes> get directory =>
       CopyWith$Fragment$fragmentMediaFiles$directory.stub(_res);
@@ -324,6 +390,37 @@ const fragmentDefinitionfragmentMediaFiles = FragmentDefinitionNode(
         arguments: [],
         directives: [],
         selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'episodes'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: SelectionSetNode(
+          selections: [
+            FieldNode(
+              name: NameNode(value: 'id'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'number'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: '__typename'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+          ],
+        ),
       ),
       FieldNode(
         name: NameNode(value: 'directory'),
@@ -459,6 +556,138 @@ const fragmentDefinitionfragmentMediaFiles = FragmentDefinitionNode(
 const documentNodeFragmentfragmentMediaFiles = DocumentNode(
   definitions: [fragmentDefinitionfragmentMediaFiles],
 );
+
+class Fragment$fragmentMediaFiles$episodes {
+  Fragment$fragmentMediaFiles$episodes({
+    required this.id,
+    required this.number,
+    this.$__typename = 'Episode',
+  });
+
+  factory Fragment$fragmentMediaFiles$episodes.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final l$id = json['id'];
+    final l$number = json['number'];
+    final l$$__typename = json['__typename'];
+    return Fragment$fragmentMediaFiles$episodes(
+      id: (l$id as String),
+      number: (l$number as int),
+      $__typename: (l$$__typename as String),
+    );
+  }
+
+  final String id;
+
+  final int number;
+
+  final String $__typename;
+
+  Map<String, dynamic> toJson() {
+    final _resultData = <String, dynamic>{};
+    final l$id = id;
+    _resultData['id'] = l$id;
+    final l$number = number;
+    _resultData['number'] = l$number;
+    final l$$__typename = $__typename;
+    _resultData['__typename'] = l$$__typename;
+    return _resultData;
+  }
+
+  @override
+  int get hashCode {
+    final l$id = id;
+    final l$number = number;
+    final l$$__typename = $__typename;
+    return Object.hashAll([l$id, l$number, l$$__typename]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Fragment$fragmentMediaFiles$episodes ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$id = id;
+    final lOther$id = other.id;
+    if (l$id != lOther$id) {
+      return false;
+    }
+    final l$number = number;
+    final lOther$number = other.number;
+    if (l$number != lOther$number) {
+      return false;
+    }
+    final l$$__typename = $__typename;
+    final lOther$$__typename = other.$__typename;
+    if (l$$__typename != lOther$$__typename) {
+      return false;
+    }
+    return true;
+  }
+}
+
+extension UtilityExtension$Fragment$fragmentMediaFiles$episodes
+    on Fragment$fragmentMediaFiles$episodes {
+  CopyWith$Fragment$fragmentMediaFiles$episodes<
+    Fragment$fragmentMediaFiles$episodes
+  >
+  get copyWith => CopyWith$Fragment$fragmentMediaFiles$episodes(this, (i) => i);
+}
+
+abstract class CopyWith$Fragment$fragmentMediaFiles$episodes<TRes> {
+  factory CopyWith$Fragment$fragmentMediaFiles$episodes(
+    Fragment$fragmentMediaFiles$episodes instance,
+    TRes Function(Fragment$fragmentMediaFiles$episodes) then,
+  ) = _CopyWithImpl$Fragment$fragmentMediaFiles$episodes;
+
+  factory CopyWith$Fragment$fragmentMediaFiles$episodes.stub(TRes res) =
+      _CopyWithStubImpl$Fragment$fragmentMediaFiles$episodes;
+
+  TRes call({String? id, int? number, String? $__typename});
+}
+
+class _CopyWithImpl$Fragment$fragmentMediaFiles$episodes<TRes>
+    implements CopyWith$Fragment$fragmentMediaFiles$episodes<TRes> {
+  _CopyWithImpl$Fragment$fragmentMediaFiles$episodes(
+    this._instance,
+    this._then,
+  );
+
+  final Fragment$fragmentMediaFiles$episodes _instance;
+
+  final TRes Function(Fragment$fragmentMediaFiles$episodes) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? id = _undefined,
+    Object? number = _undefined,
+    Object? $__typename = _undefined,
+  }) => _then(
+    Fragment$fragmentMediaFiles$episodes(
+      id: id == _undefined || id == null ? _instance.id : (id as String),
+      number: number == _undefined || number == null
+          ? _instance.number
+          : (number as int),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
+}
+
+class _CopyWithStubImpl$Fragment$fragmentMediaFiles$episodes<TRes>
+    implements CopyWith$Fragment$fragmentMediaFiles$episodes<TRes> {
+  _CopyWithStubImpl$Fragment$fragmentMediaFiles$episodes(this._res);
+
+  TRes _res;
+
+  call({String? id, int? number, String? $__typename}) => _res;
+}
 
 class Fragment$fragmentMediaFiles$directory {
   Fragment$fragmentMediaFiles$directory({

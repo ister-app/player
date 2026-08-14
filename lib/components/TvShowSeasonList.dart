@@ -75,19 +75,9 @@ class TvShowSeasonList extends StatelessWidget {
                             episode.id,
                             ImageUtil.buildUrl(imageByType, token: StreamTokenService.getToken(serverName)),
                             imageByType?.blurHash,
-                            episode.watchStatus != null &&
-                                    episode.watchStatus!.isNotEmpty &&
-                                    episode.watchStatus!.first.watched !=
-                                        true &&
-                                    (episode.mediaFile?.firstOrNull
-                                                ?.durationInMilliseconds ??
-                                            0) >
-                                        0
-                                ? episode.watchStatus!.first
-                                        .progressInMilliseconds /
-                                    episode.mediaFile!.first
-                                        .durationInMilliseconds!
-                                : null);
+                            _progressFraction(episode),
+                            combinedFileLabel:
+                                _combinedFileLabel(context, episode));
                       }).toList())
                   .toList());
               return Column(children: list);
@@ -100,6 +90,36 @@ class TvShowSeasonList extends StatelessWidget {
     }
   }
 
+  /// Watch progress within this episode's own slice: for an episode inside a
+  /// multi-episode file the fraction runs over the slice, not the whole file.
+  static double? _progressFraction(
+      Query$seasonById$seasonById$episodes episode) {
+    final ws = episode.watchStatus;
+    if (ws == null || ws.isEmpty || ws.first.watched == true) return null;
+    final progress = ws.first.progressInMilliseconds;
+    final part = episode.mediaFileParts?.firstOrNull;
+    if (part != null &&
+        (episode.mediaFile?.firstOrNull?.episodes?.length ?? 0) > 1 &&
+        part.durationInMilliseconds > 0) {
+      return ((progress - part.startInMilliseconds) /
+              part.durationInMilliseconds)
+          .clamp(0.0, 1.0);
+    }
+    final duration =
+        episode.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0;
+    if (duration <= 0) return null;
+    return progress / duration;
+  }
+
+  /// "⧉ E6+E7" when this episode shares one media file with others.
+  static String? _combinedFileLabel(
+      BuildContext context, Query$seasonById$seasonById$episodes episode) {
+    final fileEpisodes = episode.mediaFile?.firstOrNull?.episodes;
+    if (fileEpisodes == null || fileEpisodes.length < 2) return null;
+    final numbers = fileEpisodes.map((e) => e.number).toList()..sort();
+    return "⧉ ${numbers.map((n) => AppLocalizations.of(context)!.episodePrefix(n)).join("+")}";
+  }
+
   ListTile getListTile(
       BuildContext context,
       String title,
@@ -110,7 +130,8 @@ class TvShowSeasonList extends StatelessWidget {
       String episodeId,
       String? imageUrl,
       String? blurHash,
-      double? progress) {
+      double? progress,
+      {String? combinedFileLabel}) {
     return ListTile(
         contentPadding: EdgeInsets.all(0),
         subtitle: Row(children: [
@@ -172,6 +193,16 @@ class TvShowSeasonList extends StatelessWidget {
                             .bodySmall
                             ?.copyWith(color: Theme.of(context).colorScheme.onInverseSurface),
                       ),
+                      if (combinedFileLabel != null)
+                        Text(
+                          combinedFileLabel,
+                          overflow: TextOverflow.clip,
+                          softWrap: false,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: Theme.of(context).colorScheme.onInverseSurface),
+                        ),
                     ],
                   ),
                 )),

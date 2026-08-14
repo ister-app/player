@@ -186,6 +186,11 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String combinedFileWith(String others) {
+    return 'Gecombineerd bestand met $others';
+  }
+
+  @override
   String get serverUnreachable => 'Server niet bereikbaar';
 
   @override

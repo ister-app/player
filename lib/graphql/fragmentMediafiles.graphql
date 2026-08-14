@@ -3,6 +3,10 @@ fragment fragmentMediaFiles on MediaFile {
     id
     path
     size
+    episodes {
+        id
+        number
+    }
     directory {
         node {
             url
