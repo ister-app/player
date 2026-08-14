@@ -1,5 +1,27 @@
 # Changelog
 
+## player v1.14.1
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.14.1` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Other
+
+- build(flatpak): update the mpv stack to FFmpeg 9 ([`c2afc6a`](https://github.com/ister-app/player/commit/c2afc6a))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.14.1
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.14.0...v1.14.1
+
 ## player v1.14.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
