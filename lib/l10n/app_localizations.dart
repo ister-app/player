@@ -2563,6 +2563,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Subtitles not supported (image-based)'**
   String get subtitlesUnsupportedImageBased;
+
+  /// Tooltip of the zoom button when the video is letterboxed (activating crops it to fill)
+  ///
+  /// In en, this message translates to:
+  /// **'Fill screen'**
+  String get zoomToFill;
+
+  /// Tooltip of the zoom button when the video fills the surface (activating restores letterboxed fit)
+  ///
+  /// In en, this message translates to:
+  /// **'Fit to screen'**
+  String get zoomToFit;
 }
 
 class _AppLocalizationsDelegate

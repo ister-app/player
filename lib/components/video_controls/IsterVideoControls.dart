@@ -308,6 +308,7 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
         const SizedBox(width: 8),
         const PositionText(),
         const Spacer(),
+        ZoomToggleButton(state: widget.state),
         TrackMenuButton(controller: _tracks, onMenuOpenChanged: _setMenuOpen),
         if (!_isTv) const FullscreenToggleButton(),
       ],

@@ -15,6 +15,10 @@ fragment fragmentMediaFiles on MediaFile {
     mediaFileStreams {
         codecName
         codecType
+        cropHeight
+        cropWidth
+        cropX
+        cropY
         height
         id
         language

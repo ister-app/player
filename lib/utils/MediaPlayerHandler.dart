@@ -26,6 +26,7 @@ import 'package:player/utils/PlaybackPreferences.dart';
 import 'package:player/utils/ResilientSubscription.dart';
 import 'package:player/utils/QueueItemDisplay.dart';
 import 'package:player/utils/StreamTokenService.dart';
+import 'package:player/utils/VideoCrop.dart';
 import 'package:player/utils/WellKnownService.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -250,6 +251,11 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// True while a video is showing fullscreen. Guards the auto-fullscreen
   /// trigger in [IsterPlayer] against re-entering while already fullscreen.
   bool videoFullscreen = false;
+
+  /// Session-sticky zoom-to-fill preference (BoxFit.cover on the video
+  /// surface). Deliberately not persisted: filling is usually a per-film
+  /// choice and would surprise on the next differently-shaped file.
+  static bool videoZoomToFill = false;
 
   /// Repeat mode for the queue. Persisted in [playbackState] so notification
   /// controls and the music UI stay in sync. `one` replays the current track on
@@ -1176,6 +1182,8 @@ class MediaPlayerHandler extends BaseAudioHandler
         // stream carries no usable subtitle renditions (see
         // ImageUtil.subtitleFormat).
         unawaited(_loadExternalSubtitleTracks(serverName, mediaType));
+        // Remove server-detected baked-in black bars at render time.
+        unawaited(_applyServerDetectedCrop(mediaType));
       }
       final currentItemId = playQueue?.currentItemId;
       final found = currentItemId != null
@@ -1611,6 +1619,63 @@ class MediaPlayerHandler extends BaseAudioHandler
       } catch (e) {
         LoggerService().logger.w('sub-add failed for $title: $e');
       }
+    }
+  }
+
+  /// Applies the server-detected baked-in black-bar crop (mpv `video-crop`)
+  /// for the current video item, scaled to the actually-decoded dimensions —
+  /// the playing HLS variant may be downscaled. Clears the crop for items
+  /// without one: the property is player-global and would leak to the next
+  /// stream. Native only; the server cannot crop the direct-play variant.
+  Future<void> _applyServerDetectedCrop(IsterMediaTypes mediaType) async {
+    if (kIsWeb) return;
+    final platform = _player.platform;
+    if (platform is! NativePlayer) return;
+    // Dynamic dispatch: see _applyMpvNetworkOptions.
+    final dynamic native = platform;
+    try {
+      final isVideo = mediaType == IsterMediaTypes.movie ||
+          mediaType == IsterMediaTypes.episode;
+      final video = isVideo
+          ? currentVideoFileStreams
+              .where((s) =>
+                  s != null && s.codecType == 'VIDEO' && (s.width) > 0)
+              .firstOrNull
+          : null;
+      if (video == null || video.cropWidth == null) {
+        await native.setProperty('video-crop', '');
+        return;
+      }
+      final urlAtOpen = _currentMediaUrl;
+      // The decoded dimensions are only known once the stream produces them.
+      var actualW = _player.state.width ?? 0;
+      var actualH = _player.state.height ?? 0;
+      if (actualW <= 0 || actualH <= 0) {
+        try {
+          await _player.stream.height
+              .firstWhere((h) => (h ?? 0) > 0)
+              .timeout(const Duration(seconds: 30));
+        } catch (_) {
+          return;
+        }
+        actualW = _player.state.width ?? 0;
+        actualH = _player.state.height ?? 0;
+      }
+      // A queue skip or re-open may have replaced the stream while waiting.
+      if (_currentMediaUrl != urlAtOpen || _currentMediaUrl == null) return;
+      final crop = mpvCropString(
+        srcW: video.width,
+        srcH: video.height,
+        cropX: video.cropX,
+        cropY: video.cropY,
+        cropW: video.cropWidth,
+        cropH: video.cropHeight,
+        actualW: actualW,
+        actualH: actualH,
+      );
+      await native.setProperty('video-crop', crop ?? '');
+    } catch (e) {
+      LoggerService().logger.w('applying video crop failed: $e');
     }
   }
 

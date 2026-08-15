@@ -1480,4 +1480,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get subtitlesUnsupportedImageBased =>
       'Subtitles not supported (image-based)';
+
+  @override
+  String get zoomToFill => 'Fill screen';
+
+  @override
+  String get zoomToFit => 'Fit to screen';
 }

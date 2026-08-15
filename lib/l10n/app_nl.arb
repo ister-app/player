@@ -410,5 +410,7 @@
   "subtitlesTrackLabel": "Ondertitels",
   "mute": "Dempen",
   "unmute": "Dempen opheffen",
-  "subtitlesUnsupportedImageBased": "Ondertitels niet ondersteund (beeldgebaseerd)"
+  "subtitlesUnsupportedImageBased": "Ondertitels niet ondersteund (beeldgebaseerd)",
+  "zoomToFill": "Scherm vullen",
+  "zoomToFit": "Passend weergeven"
 }

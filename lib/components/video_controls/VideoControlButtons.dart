@@ -273,6 +273,38 @@ class _VolumeButtonState extends State<VolumeButton> {
   }
 }
 
+/// Zoom-to-fill toggle: crops the video to fill the surface (BoxFit.cover)
+/// instead of letterboxing it (BoxFit.contain). Pure Flutter — works on every
+/// platform including web — and carries into/out of fullscreen because the
+/// fullscreen route shares the same view parameters. Session-sticky via
+/// [MediaPlayerHandler.videoZoomToFill].
+class ZoomToggleButton extends StatelessWidget {
+  const ZoomToggleButton({super.key, required this.state});
+
+  final VideoState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    return ValueListenableBuilder(
+      valueListenable: state.videoViewParametersNotifier,
+      builder: (context, params, _) {
+        final filling = params.fit == BoxFit.cover;
+        return IconButton(
+          color: Colors.white,
+          style: videoControlButtonStyle(context),
+          tooltip: filling ? loc.zoomToFit : loc.zoomToFill,
+          icon: Icon(filling ? Icons.fit_screen_outlined : Icons.fit_screen),
+          onPressed: () {
+            MediaPlayerHandler.videoZoomToFill = !filling;
+            state.update(fit: filling ? BoxFit.contain : BoxFit.cover);
+          },
+        );
+      },
+    );
+  }
+}
+
 /// Enter/exit fullscreen for the surrounding media_kit `Video`.
 class FullscreenToggleButton extends StatelessWidget {
   const FullscreenToggleButton({super.key});

@@ -485,6 +485,34 @@ const fragmentDefinitionfragmentMediaFiles = FragmentDefinitionNode(
               selectionSet: null,
             ),
             FieldNode(
+              name: NameNode(value: 'cropHeight'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'cropWidth'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'cropX'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'cropY'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
               name: NameNode(value: 'height'),
               alias: null,
               arguments: [],
@@ -945,6 +973,10 @@ class Fragment$fragmentMediaFiles$mediaFileStreams {
   Fragment$fragmentMediaFiles$mediaFileStreams({
     required this.codecName,
     required this.codecType,
+    this.cropHeight,
+    this.cropWidth,
+    this.cropX,
+    this.cropY,
     required this.height,
     required this.id,
     this.language,
@@ -960,6 +992,10 @@ class Fragment$fragmentMediaFiles$mediaFileStreams {
   ) {
     final l$codecName = json['codecName'];
     final l$codecType = json['codecType'];
+    final l$cropHeight = json['cropHeight'];
+    final l$cropWidth = json['cropWidth'];
+    final l$cropX = json['cropX'];
+    final l$cropY = json['cropY'];
     final l$height = json['height'];
     final l$id = json['id'];
     final l$language = json['language'];
@@ -971,6 +1007,10 @@ class Fragment$fragmentMediaFiles$mediaFileStreams {
     return Fragment$fragmentMediaFiles$mediaFileStreams(
       codecName: (l$codecName as String),
       codecType: (l$codecType as String),
+      cropHeight: (l$cropHeight as int?),
+      cropWidth: (l$cropWidth as int?),
+      cropX: (l$cropX as int?),
+      cropY: (l$cropY as int?),
       height: (l$height as int),
       id: (l$id as String),
       language: (l$language as String?),
@@ -985,6 +1025,14 @@ class Fragment$fragmentMediaFiles$mediaFileStreams {
   final String codecName;
 
   final String codecType;
+
+  final int? cropHeight;
+
+  final int? cropWidth;
+
+  final int? cropX;
+
+  final int? cropY;
 
   final int height;
 
@@ -1008,6 +1056,14 @@ class Fragment$fragmentMediaFiles$mediaFileStreams {
     _resultData['codecName'] = l$codecName;
     final l$codecType = codecType;
     _resultData['codecType'] = l$codecType;
+    final l$cropHeight = cropHeight;
+    _resultData['cropHeight'] = l$cropHeight;
+    final l$cropWidth = cropWidth;
+    _resultData['cropWidth'] = l$cropWidth;
+    final l$cropX = cropX;
+    _resultData['cropX'] = l$cropX;
+    final l$cropY = cropY;
+    _resultData['cropY'] = l$cropY;
     final l$height = height;
     _resultData['height'] = l$height;
     final l$id = id;
@@ -1031,6 +1087,10 @@ class Fragment$fragmentMediaFiles$mediaFileStreams {
   int get hashCode {
     final l$codecName = codecName;
     final l$codecType = codecType;
+    final l$cropHeight = cropHeight;
+    final l$cropWidth = cropWidth;
+    final l$cropX = cropX;
+    final l$cropY = cropY;
     final l$height = height;
     final l$id = id;
     final l$language = language;
@@ -1042,6 +1102,10 @@ class Fragment$fragmentMediaFiles$mediaFileStreams {
     return Object.hashAll([
       l$codecName,
       l$codecType,
+      l$cropHeight,
+      l$cropWidth,
+      l$cropX,
+      l$cropY,
       l$height,
       l$id,
       l$language,
@@ -1070,6 +1134,26 @@ class Fragment$fragmentMediaFiles$mediaFileStreams {
     final l$codecType = codecType;
     final lOther$codecType = other.codecType;
     if (l$codecType != lOther$codecType) {
+      return false;
+    }
+    final l$cropHeight = cropHeight;
+    final lOther$cropHeight = other.cropHeight;
+    if (l$cropHeight != lOther$cropHeight) {
+      return false;
+    }
+    final l$cropWidth = cropWidth;
+    final lOther$cropWidth = other.cropWidth;
+    if (l$cropWidth != lOther$cropWidth) {
+      return false;
+    }
+    final l$cropX = cropX;
+    final lOther$cropX = other.cropX;
+    if (l$cropX != lOther$cropX) {
+      return false;
+    }
+    final l$cropY = cropY;
+    final lOther$cropY = other.cropY;
+    if (l$cropY != lOther$cropY) {
       return false;
     }
     final l$height = height;
@@ -1137,6 +1221,10 @@ abstract class CopyWith$Fragment$fragmentMediaFiles$mediaFileStreams<TRes> {
   TRes call({
     String? codecName,
     String? codecType,
+    int? cropHeight,
+    int? cropWidth,
+    int? cropX,
+    int? cropY,
     int? height,
     String? id,
     String? language,
@@ -1164,6 +1252,10 @@ class _CopyWithImpl$Fragment$fragmentMediaFiles$mediaFileStreams<TRes>
   TRes call({
     Object? codecName = _undefined,
     Object? codecType = _undefined,
+    Object? cropHeight = _undefined,
+    Object? cropWidth = _undefined,
+    Object? cropX = _undefined,
+    Object? cropY = _undefined,
     Object? height = _undefined,
     Object? id = _undefined,
     Object? language = _undefined,
@@ -1180,6 +1272,14 @@ class _CopyWithImpl$Fragment$fragmentMediaFiles$mediaFileStreams<TRes>
       codecType: codecType == _undefined || codecType == null
           ? _instance.codecType
           : (codecType as String),
+      cropHeight: cropHeight == _undefined
+          ? _instance.cropHeight
+          : (cropHeight as int?),
+      cropWidth: cropWidth == _undefined
+          ? _instance.cropWidth
+          : (cropWidth as int?),
+      cropX: cropX == _undefined ? _instance.cropX : (cropX as int?),
+      cropY: cropY == _undefined ? _instance.cropY : (cropY as int?),
       height: height == _undefined || height == null
           ? _instance.height
           : (height as int),
@@ -1213,6 +1313,10 @@ class _CopyWithStubImpl$Fragment$fragmentMediaFiles$mediaFileStreams<TRes>
   call({
     String? codecName,
     String? codecType,
+    int? cropHeight,
+    int? cropWidth,
+    int? cropX,
+    int? cropY,
     int? height,
     String? id,
     String? language,

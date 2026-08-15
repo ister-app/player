@@ -1577,5 +1577,9 @@
   "unmute": "Unmute",
   "@unmute": {"description": "Tooltip of the unmute button in the video controls"},
   "subtitlesUnsupportedImageBased": "Subtitles not supported (image-based)",
-  "@subtitlesUnsupportedImageBased": {"description": "Disabled track-menu entry when the file only has image-based (DVD/PGS) subtitles the stream cannot offer"}
+  "@subtitlesUnsupportedImageBased": {"description": "Disabled track-menu entry when the file only has image-based (DVD/PGS) subtitles the stream cannot offer"},
+  "zoomToFill": "Fill screen",
+  "@zoomToFill": {"description": "Tooltip of the zoom button when the video is letterboxed (activating crops it to fill)"},
+  "zoomToFit": "Fit to screen",
+  "@zoomToFit": {"description": "Tooltip of the zoom button when the video fills the surface (activating restores letterboxed fit)"}
 }

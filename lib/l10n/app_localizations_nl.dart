@@ -1483,4 +1483,10 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get subtitlesUnsupportedImageBased =>
       'Ondertitels niet ondersteund (beeldgebaseerd)';
+
+  @override
+  String get zoomToFill => 'Scherm vullen';
+
+  @override
+  String get zoomToFit => 'Passend weergeven';
 }
