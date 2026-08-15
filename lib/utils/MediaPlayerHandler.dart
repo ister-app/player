@@ -122,12 +122,12 @@ class MediaPlayerHandler extends BaseAudioHandler
     const reconnect =
         'reconnect=1,reconnect_streamed=1,reconnect_on_network_error=1,reconnect_delay_max=30';
     // Setting demuxer-lavf-o here REPLACES the options media_kit configured at
-    // player init (seg_max_retry, allowed_extensions) — merge them back in,
-    // and relax ffmpeg ≥ 7.1's segment-extension strictness (extension_picky)
-    // so non-.vtt/.ts segment names don't silently drop a rendition. Older
-    // ffmpeg logs an unknown-option warning for extension_picky and moves on.
+    // player init (seg_max_retry, allowed_extensions) — merge them back in.
+    // Deliberately NOT extension_picky=0: ffmpeg dropping the `.srt` subtitle
+    // renditions is what keeps them out of the track list — subtitles are
+    // side-loaded as external files instead (_loadExternalSubtitleTracks).
     const demuxerExtras =
-        'seg_max_retry=5,strict=experimental,allowed_extensions=ALL,extension_picky=0';
+        'seg_max_retry=5,strict=experimental,allowed_extensions=ALL';
     try {
       // Dynamic dispatch: on web media_kit substitutes a stub NativePlayer
       // without setProperty, so a static call breaks dart2js/dart2wasm even
@@ -1172,6 +1172,10 @@ class MediaPlayerHandler extends BaseAudioHandler
         // HLS can deliver the real track list without a `tracks` event; make
         // sure preferences/forced tracks still get applied then.
         _armLateTracksReread();
+        // Native video gets its subtitles as external whole-file SRTs; the
+        // stream carries no usable subtitle renditions (see
+        // ImageUtil.subtitleFormat).
+        unawaited(_loadExternalSubtitleTracks(serverName, mediaType));
       }
       final currentItemId = playQueue?.currentItemId;
       final found = currentItemId != null
@@ -1525,6 +1529,78 @@ class MediaPlayerHandler extends BaseAudioHandler
       await native.setProperty('sid', sid);
     } catch (e) {
       LoggerService().logger.w('Subtitle decoder refresh failed: $e');
+    }
+  }
+
+  /// Subtitle codecs ffmpeg can convert to SRT; image codecs (DVD/PGS
+  /// bitmaps) have no SRT endpoint — the server OCRs those at scan time into
+  /// EXTERNAL_SUBTITLE rows.
+  static const Set<String> _textSubtitleCodecs = {
+    'subrip', 'ass', 'ssa', 'mov_text', 'webvtt', 'text', 'subtitle srt',
+  };
+
+  /// Side-loads the current video's subtitles as external whole-file SRT
+  /// tracks (mpv `sub-add`). In-manifest HLS subtitles are deliberately not
+  /// used on native: ffmpeg's HLS demuxer re-delivers segment cues on every
+  /// refetch/reconnect and libass stacks the duplicates on screen. A single
+  /// SRT file is fetched once, demuxed natively, and survives seeks in both
+  /// directions. Must be re-run after every open — a fresh demuxer forgets
+  /// external tracks.
+  Future<void> _loadExternalSubtitleTracks(
+      String serverName, IsterMediaTypes mediaType) async {
+    if (kIsWeb) return;
+    if (mediaType != IsterMediaTypes.movie &&
+        mediaType != IsterMediaTypes.episode) {
+      return;
+    }
+    final platform = _player.platform;
+    if (platform is! NativePlayer) return;
+    final mediaFile =
+        movie?.mediaFile?.firstOrNull ?? episode?.mediaFile?.firstOrNull;
+    final streams = mediaFile?.mediaFileStreams;
+    if (mediaFile == null || streams == null || streams.isEmpty) return;
+    final token = StreamTokenService.getToken(serverName);
+    if (token == null) return;
+    final nodeUrl = mediaFile.directory.node.url;
+    final urlAtOpen = _currentMediaUrl;
+
+    // One entry per stream index: the OCR'd/extracted EXTERNAL_SUBTITLE row
+    // wins over the raw embedded row it was derived from.
+    final byIndex = <int, Fragment$fragmentMediaFiles$mediaFileStreams>{};
+    for (final s in streams) {
+      final index = s?.streamIndex;
+      if (s == null || index == null) continue;
+      final codec = s.codecName.toLowerCase();
+      if (s.codecType == 'EXTERNAL_SUBTITLE') {
+        byIndex[index] = s;
+      } else if (s.codecType == 'SUBTITLE' &&
+          _textSubtitleCodecs.contains(codec)) {
+        byIndex.putIfAbsent(index, () => s);
+      }
+    }
+    if (byIndex.isEmpty) return;
+
+    // Dynamic dispatch: see _applyMpvNetworkOptions.
+    final dynamic native = platform;
+    var n = 0;
+    for (final s in byIndex.values) {
+      // A queue skip or re-open may have replaced the stream while adding.
+      if (_currentMediaUrl != urlAtOpen || _currentMediaUrl == null) return;
+      n++;
+      final url = '$nodeUrl/hls/${mediaFile.id}/sub_${s.id}.srt?token=$token';
+      final title = (s.title?.isNotEmpty ?? false)
+          ? s.title!
+          : (s.language?.isNotEmpty ?? false)
+              ? s.language!
+              : 'Subtitle $n';
+      final lang = (s.language?.isNotEmpty ?? false) ? s.language! : 'und';
+      try {
+        // 'auto' loads without selecting; the language preference / forced
+        // restore in _applyTrackPreferences picks the track afterwards.
+        await native.command(['sub-add', url, 'auto', title, lang]);
+      } catch (e) {
+        LoggerService().logger.w('sub-add failed for $title: $e');
+      }
     }
   }
 

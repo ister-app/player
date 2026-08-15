@@ -21,7 +21,7 @@ Future<void> main(List<String> args) async {
   // Same demuxer options as MediaPlayerHandler._applyMpvNetworkOptions.
   final dynamic native = player.platform;
   await native.setProperty('demuxer-lavf-o',
-      'seg_max_retry=5,strict=experimental,allowed_extensions=ALL,extension_picky=0');
+      'seg_max_retry=5,strict=experimental,allowed_extensions=ALL');
 
   var maxLines = 0;
   var samples = 0;
@@ -76,6 +76,19 @@ Future<void> main(List<String> args) async {
       await native.setProperty('sid', 'no');
       await native.setProperty('sid', sub.id);
       await Future.delayed(const Duration(seconds: 22));
+    case 'external':
+      // Side-loaded whole-file SRT (the app's native path): deselect the
+      // manifest track, sub-add the external file, then hammer forward and
+      // backward seeks the way arrow keys do.
+      await player.setSubtitleTrack(SubtitleTrack.no());
+      await native.command(['sub-add', args[2], 'select', 'ext', 'nor']);
+      await player.seek(const Duration(seconds: 40));
+      await Future.delayed(const Duration(seconds: 6));
+      for (final target in [42, 44, 46, 48, 50, 44, 46]) {
+        await player.seek(Duration(seconds: target));
+        await Future.delayed(const Duration(seconds: 2));
+      }
+      await Future.delayed(const Duration(seconds: 8));
     case 'resume':
       // Mid-file open like a watch-progress resume.
       await player.stop();

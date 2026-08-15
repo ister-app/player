@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:player/graphql/fragmentImages.graphql.dart';
 import 'package:player/graphql/fragmentMediafiles.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
@@ -54,13 +55,14 @@ class ImageUtil {
   /// Subtitle format requested on the HLS master playlist; keep in sync with
   /// the StreamSettingsInput sent on progress updates (prefetching).
   ///
-  /// WEBVTT everywhere. ffmpeg's HLS demuxer (mpv's backend on native) only
-  /// truly supports WebVTT subtitle renditions: `.srt` segments fail its
-  /// allowed_segment_extensions check (ffmpeg ≥ 7.1), and even with
-  /// `extension_picky=0` the segments are demuxed as WebVTT and yield no
-  /// cues (verified with tool/sub_stack_probe.dart). hls.js on web wants
-  /// WebVTT anyway.
-  static const String subtitleFormat = 'WEBVTT';
+  /// Web (hls.js) uses the in-manifest WEBVTT renditions. Native does NOT use
+  /// in-manifest subtitles at all: mpv side-loads whole-file SRTs as external
+  /// tracks (MediaPlayerHandler._loadExternalSubtitleTracks) — in-manifest
+  /// subtitles through ffmpeg's HLS demuxer re-deliver cues on every segment
+  /// refetch/reconnect, stacking duplicates on screen. Requesting SRT here
+  /// makes ffmpeg drop the renditions (its segment-extension check), so no
+  /// dead in-manifest tracks show up next to the external ones.
+  static const String subtitleFormat = kIsWeb ? 'WEBVTT' : 'SRT';
 
   static String? buildMediaFileUrl(Fragment$fragmentMediaFiles? mediaFile, {String? token, bool direct = true, bool transcode = true}) {
     if (mediaFile == null) return null;
