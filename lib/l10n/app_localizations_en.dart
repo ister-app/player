@@ -1452,4 +1452,28 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get mediaNotReady =>
       'This item cannot be played yet — the media file is still being processed.';
+
+  @override
+  String get pause => 'Pause';
+
+  @override
+  String get skipNext => 'Next';
+
+  @override
+  String get skipPrevious => 'Previous';
+
+  @override
+  String get audioAndSubtitles => 'Audio & subtitles';
+
+  @override
+  String get audioTrackLabel => 'Audio';
+
+  @override
+  String get subtitlesTrackLabel => 'Subtitles';
+
+  @override
+  String get mute => 'Mute';
+
+  @override
+  String get unmute => 'Unmute';
 }

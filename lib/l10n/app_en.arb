@@ -1559,5 +1559,21 @@
   "devicePullRequested": "Moving playback to this device…",
   "@devicePullRequested": {"description": "Snackbar after the pull request was delivered to the playing device"},
   "mediaNotReady": "This item cannot be played yet — the media file is still being processed.",
-  "@mediaNotReady": {"description": "Snackbar when playback is requested for an item whose media file has not been analyzed yet"}
+  "@mediaNotReady": {"description": "Snackbar when playback is requested for an item whose media file has not been analyzed yet"},
+  "pause": "Pause",
+  "@pause": {"description": "Tooltip of the pause button in the video controls"},
+  "skipNext": "Next",
+  "@skipNext": {"description": "Tooltip of the next-item button in the video controls"},
+  "skipPrevious": "Previous",
+  "@skipPrevious": {"description": "Tooltip of the previous-item button in the video controls"},
+  "audioAndSubtitles": "Audio & subtitles",
+  "@audioAndSubtitles": {"description": "Tooltip of the track-selection menu button in the video controls"},
+  "audioTrackLabel": "Audio",
+  "@audioTrackLabel": {"description": "Submenu header for audio track selection"},
+  "subtitlesTrackLabel": "Subtitles",
+  "@subtitlesTrackLabel": {"description": "Submenu header for subtitle track selection"},
+  "mute": "Mute",
+  "@mute": {"description": "Tooltip of the mute button in the video controls"},
+  "unmute": "Unmute",
+  "@unmute": {"description": "Tooltip of the unmute button in the video controls"}
 }

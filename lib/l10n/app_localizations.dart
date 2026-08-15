@@ -2509,6 +2509,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This item cannot be played yet — the media file is still being processed.'**
   String get mediaNotReady;
+
+  /// Tooltip of the pause button in the video controls
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get pause;
+
+  /// Tooltip of the next-item button in the video controls
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get skipNext;
+
+  /// Tooltip of the previous-item button in the video controls
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get skipPrevious;
+
+  /// Tooltip of the track-selection menu button in the video controls
+  ///
+  /// In en, this message translates to:
+  /// **'Audio & subtitles'**
+  String get audioAndSubtitles;
+
+  /// Submenu header for audio track selection
+  ///
+  /// In en, this message translates to:
+  /// **'Audio'**
+  String get audioTrackLabel;
+
+  /// Submenu header for subtitle track selection
+  ///
+  /// In en, this message translates to:
+  /// **'Subtitles'**
+  String get subtitlesTrackLabel;
+
+  /// Tooltip of the mute button in the video controls
+  ///
+  /// In en, this message translates to:
+  /// **'Mute'**
+  String get mute;
+
+  /// Tooltip of the unmute button in the video controls
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute'**
+  String get unmute;
 }
 
 class _AppLocalizationsDelegate

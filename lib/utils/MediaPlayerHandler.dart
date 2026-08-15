@@ -75,10 +75,12 @@ class MediaPlayerHandler extends BaseAudioHandler
       ),
     );
 
-    // Route the in-video controls' seek bar through seekAware so backward HLS
-    // seeks with an active subtitle track re-open the stream instead of
-    // freezing the subtitles. The audio_service seek() override also uses
-    // seekAware, but the media_kit video UI seeks via the controller directly.
+    // Route controller-level seeks through seekAware so backward HLS seeks
+    // with an active subtitle track re-open the stream instead of freezing
+    // the subtitles. The app's own video controls call seek() directly; this
+    // seam covers anything inside media_kit that still seeks via the
+    // controller (kept until the stock controls are provably out of every
+    // path).
     _videoController.seekHandler = seekAware;
 
     _playQueueService = PlayQueueService();
@@ -3361,8 +3363,8 @@ class MediaPlayerHandler extends BaseAudioHandler
       return;
     }
     // A stream with known duration that isn't buffering did load — it is
-    // paused (e.g. via the in-video controls, which bypass pause() and leave
-    // _intendsToPlay set), not hung.
+    // paused by something outside pause() (which would have cleared
+    // _intendsToPlay), e.g. mpv itself or a platform interruption — not hung.
     if (!_player.state.buffering && _player.state.duration > Duration.zero) {
       return;
     }

@@ -2,17 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart';
-import 'package:player/l10n/app_localizations.dart';
 
 import '../utils/MediaPlayerHandler.dart';
 import '../utils/PlatformService.dart';
 import 'TvFocusable.dart';
 import 'WatchTogetherButton.dart';
+import 'video_controls/IsterVideoControls.dart';
 
 /// The video surface for an episode/movie page.
 ///
 /// On a normal device the video plays both embedded and fullscreen, with the
-/// standard media_kit controls (including a fullscreen toggle) shown in both;
+/// app's own controls overlay (including a fullscreen toggle) shown in both;
 /// leaving fullscreen keeps playing.
 ///
 /// On Android TV playback is fullscreen-only: when playback starts the embedded
@@ -70,11 +70,10 @@ class _IsterPlayerState extends State<IsterPlayer> {
   }
 }
 
-/// Controls for [IsterPlayer]. In fullscreen it shows the normal media_kit
-/// controls (desktop/D-pad ones on TV). Embedded on a normal device it shows
-/// the standard controls too (with a fullscreen toggle); on TV it's just a tap
-/// target that enters fullscreen, and it auto-enters once playback becomes
-/// active.
+/// Controls for [IsterPlayer]. In fullscreen — and embedded on a normal
+/// device — it shows the app's own [IsterVideoControls] overlay. Embedded on
+/// TV it's just a tap target that enters fullscreen, and it auto-enters once
+/// playback becomes active.
 class _IsterVideoControls extends StatefulWidget {
   const _IsterVideoControls({required this.state});
 
@@ -153,51 +152,14 @@ class _IsterVideoControlsState extends State<_IsterVideoControls> {
     if (!isFullscreen(context)) enterFullscreen(context);
   }
 
-  /// Wraps [controls] in the media_kit control themes so a top button bar with
-  /// the watch-together entry point (and the "watching along" chip while
-  /// following) appears — crucial in fullscreen, the only playback surface on
-  /// TV, where the page's app bar is unreachable.
-  Widget _withTopBar(Widget controls) {
-    final topButtonBar = <Widget>[
-      const Spacer(),
-      const WatchingAlongChip(),
-      const SizedBox(width: 8),
-      const WatchTogetherButton(color: Colors.white),
-      const SizedBox(width: 8),
-      IconButton(
-        icon: const Icon(Icons.stop_circle_outlined, color: Colors.white),
-        tooltip: AppLocalizations.of(context)!.stopPlayback,
-        // Ends the session; fullscreen exit and closing the video page follow
-        // through the handler's closePlaybackRequest (see MiniPlayer).
-        onPressed: () => unawaited(_handler.stopPlayback()),
-      ),
-    ];
-    return MaterialDesktopVideoControlsTheme(
-      normal: kDefaultMaterialDesktopVideoControlsThemeData.copyWith(
-          topButtonBar: topButtonBar),
-      fullscreen: kDefaultMaterialDesktopVideoControlsThemeDataFullscreen
-          .copyWith(topButtonBar: topButtonBar),
-      child: MaterialVideoControlsTheme(
-        normal: kDefaultMaterialVideoControlsThemeData.copyWith(
-            topButtonBar: topButtonBar),
-        fullscreen: kDefaultMaterialVideoControlsThemeDataFullscreen.copyWith(
-            topButtonBar: topButtonBar),
-        child: controls,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (isFullscreen(context)) {
-      return _withTopBar(PlatformService.isAndroidTvSync
-          ? MaterialDesktopVideoControls(widget.state)
-          : AdaptiveVideoControls(widget.state));
-    }
-    // Embedded on a normal device: the standard controls, which include a
-    // fullscreen button so the user can go fullscreen (and come back) at will.
-    if (!PlatformService.isAndroidTvSync) {
-      return _withTopBar(AdaptiveVideoControls(widget.state));
+    // Fullscreen (any device) and embedded on a normal device get the app's
+    // own controls overlay — including the fullscreen toggle to go back and
+    // forth, and the watch-together/stop top bar that is crucial in
+    // fullscreen, where the page's app bar is unreachable.
+    if (isFullscreen(context) || !PlatformService.isAndroidTvSync) {
+      return IsterVideoControls(state: widget.state);
     }
     // Embedded on TV: transparent tap target over the (paused) video frame,
     // with a hint icon. Focusable so a TV remote can select it. The chip keeps

@@ -16,7 +16,6 @@ import '../components/SourceAttribution.dart';
 import '../components/CastRow.dart';
 import '../components/IsterPlayer.dart';
 import '../components/RatingStars.dart';
-import '../components/TrackSelectionWidget.dart';
 import '../graphql/fragmentEpisode.graphql.dart';
 import '../graphql/schema.graphql.dart';
 import '../graphql/fragmentPlayQueue.graphql.dart';
@@ -383,8 +382,6 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
             ),
           ])),
       PagedCastRow(serverName: widget.serverName, episodeId: widget.episodeId),
-      if (loadComplete && episode != null && episode.mediaFile != null && episode.mediaFile!.isNotEmpty)
-        const TrackSelectionWidget(),
     ]);
   }
 

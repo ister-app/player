@@ -14,7 +14,6 @@ import '../components/SourceAttribution.dart';
 import '../components/CastRow.dart';
 import '../components/IsterPlayer.dart';
 import '../components/RatingStars.dart';
-import '../components/TrackSelectionWidget.dart';
 import '../graphql/schema.graphql.dart';
 import '../graphql/fragmentMovie.graphql.dart';
 import '../utils/ImageTypes.dart';
@@ -323,8 +322,6 @@ class _MoviePageState extends State<MoviePage> {
             ),
           ])),
       PagedCastRow(serverName: widget.serverName, movieId: widget.movieId),
-      if (loadComplete && movie != null && movie.mediaFile != null && movie.mediaFile!.isNotEmpty)
-        const TrackSelectionWidget(),
     ]);
   }
 }

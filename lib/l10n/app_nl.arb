@@ -401,5 +401,13 @@
   "devicePullQueueHere": "Op dit apparaat afspelen",
   "devicePullRequested": "Afspelen wordt naar dit apparaat verplaatst…",
   "mediaNotReady": "Dit item kan nog niet worden afgespeeld — het mediabestand wordt nog verwerkt.",
-  "@mediaNotReady": {"description": "Snackbar when playback is requested for an item whose media file has not been analyzed yet"}
+  "@mediaNotReady": {"description": "Snackbar when playback is requested for an item whose media file has not been analyzed yet"},
+  "pause": "Pauzeren",
+  "skipNext": "Volgende",
+  "skipPrevious": "Vorige",
+  "audioAndSubtitles": "Audio en ondertiteling",
+  "audioTrackLabel": "Audio",
+  "subtitlesTrackLabel": "Ondertitels",
+  "mute": "Dempen",
+  "unmute": "Dempen opheffen"
 }

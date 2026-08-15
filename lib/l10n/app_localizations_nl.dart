@@ -1455,4 +1455,28 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get mediaNotReady =>
       'Dit item kan nog niet worden afgespeeld — het mediabestand wordt nog verwerkt.';
+
+  @override
+  String get pause => 'Pauzeren';
+
+  @override
+  String get skipNext => 'Volgende';
+
+  @override
+  String get skipPrevious => 'Vorige';
+
+  @override
+  String get audioAndSubtitles => 'Audio en ondertiteling';
+
+  @override
+  String get audioTrackLabel => 'Audio';
+
+  @override
+  String get subtitlesTrackLabel => 'Ondertitels';
+
+  @override
+  String get mute => 'Dempen';
+
+  @override
+  String get unmute => 'Dempen opheffen';
 }
