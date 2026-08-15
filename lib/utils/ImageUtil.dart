@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:player/graphql/fragmentImages.graphql.dart';
 import 'package:player/graphql/fragmentMediafiles.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
@@ -55,10 +54,12 @@ class ImageUtil {
   /// Subtitle format requested on the HLS master playlist; keep in sync with
   /// the StreamSettingsInput sent on progress updates (prefetching).
   ///
-  /// WEBVTT everywhere: ffmpeg's HLS demuxer (mpv's backend on native) only
-  /// supports WebVTT subtitle renditions — SRT segments fail its
-  /// allowed_segment_extensions check (ffmpeg ≥ 7.1) and the tracks silently
-  /// never appear. hls.js on web wants WebVTT anyway.
+  /// WEBVTT everywhere. ffmpeg's HLS demuxer (mpv's backend on native) only
+  /// truly supports WebVTT subtitle renditions: `.srt` segments fail its
+  /// allowed_segment_extensions check (ffmpeg ≥ 7.1), and even with
+  /// `extension_picky=0` the segments are demuxed as WebVTT and yield no
+  /// cues (verified with tool/sub_stack_probe.dart). hls.js on web wants
+  /// WebVTT anyway.
   static const String subtitleFormat = 'WEBVTT';
 
   static String? buildMediaFileUrl(Fragment$fragmentMediaFiles? mediaFile, {String? token, bool direct = true, bool transcode = true}) {
