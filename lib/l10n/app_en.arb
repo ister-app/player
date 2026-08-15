@@ -1575,5 +1575,7 @@
   "mute": "Mute",
   "@mute": {"description": "Tooltip of the mute button in the video controls"},
   "unmute": "Unmute",
-  "@unmute": {"description": "Tooltip of the unmute button in the video controls"}
+  "@unmute": {"description": "Tooltip of the unmute button in the video controls"},
+  "subtitlesUnsupportedImageBased": "Subtitles not supported (image-based)",
+  "@subtitlesUnsupportedImageBased": {"description": "Disabled track-menu entry when the file only has image-based (DVD/PGS) subtitles the stream cannot offer"}
 }

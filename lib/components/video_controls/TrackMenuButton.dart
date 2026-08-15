@@ -54,7 +54,15 @@ class _TrackMenuButtonState extends State<TrackMenuButton> {
                 ],
                 child: Text(loc.audioTrackLabel),
               ),
-            if (tracks.hasSubtitles)
+            if (tracks.fileHasUnsupportedSubtitles)
+              // The file has subtitle streams the stream can't offer
+              // (image-based); explain instead of showing a lone "None".
+              MenuItemButton(
+                leadingIcon: const Icon(Icons.subtitles_off, size: 18),
+                onPressed: null,
+                child: Text(loc.subtitlesUnsupportedImageBased),
+              )
+            else if (tracks.hasSubtitles)
               SubmenuButton(
                 leadingIcon: const Icon(Icons.subtitles, size: 18),
                 menuChildren: [

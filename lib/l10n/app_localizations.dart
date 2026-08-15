@@ -2557,6 +2557,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unmute'**
   String get unmute;
+
+  /// Disabled track-menu entry when the file only has image-based (DVD/PGS) subtitles the stream cannot offer
+  ///
+  /// In en, this message translates to:
+  /// **'Subtitles not supported (image-based)'**
+  String get subtitlesUnsupportedImageBased;
 }
 
 class _AppLocalizationsDelegate

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -16,13 +17,22 @@ import 'VideoControlButtons.dart';
 /// tick. On TV the bar is focusable: D-pad left/right seeks ±10s, select
 /// toggles play/pause.
 class VideoSeekBar extends StatefulWidget {
-  const VideoSeekBar({super.key, this.onDragActive, this.focusNode});
+  const VideoSeekBar({
+    super.key,
+    this.onDragActive,
+    this.focusNode,
+    this.previewPosition,
+  });
 
   /// Reports drag begin/end so the controls shell can suspend auto-hide.
   final ValueChanged<bool>? onDragActive;
 
   /// Focus node supplied by the shell on TV for traversal ordering.
   final FocusNode? focusNode;
+
+  /// Externally supplied pending seek target (the shell's debounced keyboard
+  /// seeking); while non-null the bar renders it exactly like a drag preview.
+  final ValueListenable<Duration?>? previewPosition;
 
   @override
   State<VideoSeekBar> createState() => _VideoSeekBarState();
@@ -53,10 +63,25 @@ class _VideoSeekBarState extends State<VideoSeekBar> {
     }));
     _subs.add(player.stream.duration.listen((d) => setState(() => _duration = d)));
     _subs.add(player.stream.buffer.listen((b) => setState(() => _buffer = b)));
+    widget.previewPosition?.addListener(_onPreviewChanged);
+  }
+
+  void _onPreviewChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void didUpdateWidget(covariant VideoSeekBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.previewPosition != widget.previewPosition) {
+      oldWidget.previewPosition?.removeListener(_onPreviewChanged);
+      widget.previewPosition?.addListener(_onPreviewChanged);
+    }
   }
 
   @override
   void dispose() {
+    widget.previewPosition?.removeListener(_onPreviewChanged);
     for (final s in _subs) {
       s.cancel();
     }
@@ -66,7 +91,9 @@ class _VideoSeekBarState extends State<VideoSeekBar> {
   double get _fraction {
     if (_dragging) return _dragFraction;
     if (_duration.inMilliseconds <= 0) return 0;
-    return (_position.inMilliseconds / _duration.inMilliseconds).clamp(0.0, 1.0);
+    final preview = widget.previewPosition?.value;
+    final position = preview ?? _position;
+    return (position.inMilliseconds / _duration.inMilliseconds).clamp(0.0, 1.0);
   }
 
   double get _bufferFraction {
@@ -130,7 +157,10 @@ class _VideoSeekBarState extends State<VideoSeekBar> {
   Widget build(BuildContext context) {
     final accent = videoAccentOf(context);
     final focusGlow = Theme.of(context).colorScheme.primary;
-    final active = _hovered || _dragging || _focused;
+    final active = _hovered ||
+        _dragging ||
+        _focused ||
+        widget.previewPosition?.value != null;
     final barHeight = active ? 6.0 : 4.0;
 
     Widget bar = LayoutBuilder(builder: (context, constraints) {

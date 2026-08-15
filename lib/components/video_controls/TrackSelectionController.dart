@@ -68,7 +68,23 @@ class TrackSelectionController extends ChangeNotifier {
 
   bool get hasSubtitles => _subtitleTracks.isNotEmpty;
 
-  bool get hasAnyMenu => hasMultipleAudio || hasSubtitles;
+  /// True when mpv reports no real subtitle track while the server's analysis
+  /// of the file *does* list subtitle streams: those are the image-based subs
+  /// (DVD/PGS bitmaps) the server dropped from the HLS master playlist. The
+  /// menu then shows a disabled explanation instead of hiding entirely.
+  bool get fileHasUnsupportedSubtitles => unsupportedSubtitlesFor(
+      _subtitleTracks,
+      _handler.currentVideoFileStreams.map((s) => s?.codecType));
+
+  static bool unsupportedSubtitlesFor(
+      List<SubtitleTrack> mpvTracks, Iterable<String?> fileStreamCodecTypes) {
+    final hasRealTrack = mpvTracks.any((t) => t.id != 'no' && t.id != 'auto');
+    if (hasRealTrack) return false;
+    return fileStreamCodecTypes.any((t) => t == 'SUBTITLE');
+  }
+
+  bool get hasAnyMenu =>
+      hasMultipleAudio || hasSubtitles || fileHasUnsupportedSubtitles;
 
   AudioTrack get currentAudio => effectiveAudio(_currentAudio, _audioTracks);
 

@@ -120,6 +120,28 @@ void main() {
           SubtitleTrack.no());
     });
 
+    test('unsupported-subtitles hint fires only without real mpv tracks', () {
+      final placeholders = [SubtitleTrack.auto(), SubtitleTrack.no()];
+      // File has a dropped image sub, mpv only placeholders → hint.
+      expect(
+          TrackSelectionController.unsupportedSubtitlesFor(
+              placeholders, ['VIDEO', 'AUDIO', 'SUBTITLE']),
+          isTrue);
+      // mpv offers a real rendition → no hint, whatever the file rows say.
+      expect(
+          TrackSelectionController.unsupportedSubtitlesFor(
+              [...placeholders, const SubtitleTrack('3', 'Dutch', 'nld')],
+              ['SUBTITLE']),
+          isFalse);
+      // File has no subtitle rows at all → no hint.
+      expect(
+          TrackSelectionController.unsupportedSubtitlesFor(
+              placeholders, ['VIDEO', 'AUDIO', 'EXTERNAL_SUBTITLE']),
+          isFalse);
+      expect(TrackSelectionController.unsupportedSubtitlesFor(placeholders, []),
+          isFalse);
+    });
+
     test('labels join title and language, and localize the sentinels', () {
       expect(
           TrackSelectionController.audioLabel(

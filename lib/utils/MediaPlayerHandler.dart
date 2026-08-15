@@ -31,6 +31,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '../graphql/fragmentAlbum.graphql.dart';
 import '../graphql/fragmentEpisode.graphql.dart';
+import '../graphql/fragmentMediafiles.graphql.dart';
 import '../graphql/fragmentMovie.graphql.dart';
 import '../graphql/fragmentWatchStatus.graphql.dart';
 import '../graphql/fragmentPlayQueue.graphql.dart';
@@ -120,6 +121,13 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (platform is! NativePlayer) return;
     const reconnect =
         'reconnect=1,reconnect_streamed=1,reconnect_on_network_error=1,reconnect_delay_max=30';
+    // Setting demuxer-lavf-o here REPLACES the options media_kit configured at
+    // player init (seg_max_retry, allowed_extensions) — merge them back in,
+    // and relax ffmpeg ≥ 7.1's segment-extension strictness (extension_picky)
+    // so non-.vtt/.ts segment names don't silently drop a rendition. Older
+    // ffmpeg logs an unknown-option warning for extension_picky and moves on.
+    const demuxerExtras =
+        'seg_max_retry=5,strict=experimental,allowed_extensions=ALL,extension_picky=0';
     try {
       // Dynamic dispatch: on web media_kit substitutes a stub NativePlayer
       // without setProperty, so a static call breaks dart2js/dart2wasm even
@@ -134,7 +142,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       await native.setProperty('framedrop', 'decoder+vo');
       await native.setProperty('network-timeout', '30');
       await native.setProperty('stream-lavf-o', reconnect);
-      await native.setProperty('demuxer-lavf-o', reconnect);
+      await native.setProperty('demuxer-lavf-o', '$reconnect,$demuxerExtras');
       LoggerService().logger.d('Applied mpv network reconnect options');
     } catch (e) {
       LoggerService().logger.w('Failed to set mpv network options: $e');
@@ -253,6 +261,16 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   Fragment$fragmentEpisode? episode;
   Fragment$fragmentMovie? movie;
+
+  /// Subtitle-relevant streams of the current video item's media file, as the
+  /// server analyzed them. The track menu uses this to explain that a file
+  /// *has* subtitles when the HLS stream offers none (image-based subs the
+  /// server can't convert are dropped from the master playlist).
+  List<Fragment$fragmentMediaFiles$mediaFileStreams?> get currentVideoFileStreams {
+    final mediaFile =
+        movie?.mediaFile?.firstOrNull ?? episode?.mediaFile?.firstOrNull;
+    return mediaFile?.mediaFileStreams ?? const [];
+  }
   Fragment$fragmentAlbum? album;
   String? currentTrackId;
   // The kind of media currently loaded. Replaces the old parallel
@@ -1151,6 +1169,9 @@ class MediaPlayerHandler extends BaseAudioHandler
           await _player.setVideoTrack(
               mediaType == IsterMediaTypes.track ? VideoTrack.no() : VideoTrack.auto());
         }
+        // HLS can deliver the real track list without a `tracks` event; make
+        // sure preferences/forced tracks still get applied then.
+        _armLateTracksReread();
       }
       final currentItemId = playQueue?.currentItemId;
       final found = currentItemId != null
@@ -1434,33 +1455,92 @@ class MediaPlayerHandler extends BaseAudioHandler
     return seekAware(position);
   }
 
-  /// Seek with subtitle awareness. When seeking backward with an active subtitle
-  /// track, mpv's HLS subtitle rendering stalls (it does not re-fire sub-text
-  /// events after a backward seek). Reloading the stream from [position]
-  /// ensures HLS subtitle segments are fetched fresh from that point, fixing
-  /// subtitle display. Forward seeks are passed straight through to the player.
+  /// Seek with subtitle/HLS awareness.
+  ///
+  /// A seek to before [_streamOpenPositionMs] targets HLS segments that were
+  /// never fetched (the stream was opened mid-file with `start:`), so the only
+  /// way to land there is re-opening the stream from the new position. Every
+  /// other seek is a plain in-player seek: the demuxer keeps an equally large
+  /// *back* buffer, so no reload is needed.
+  ///
+  /// After a plain backward seek with an active subtitle track, mpv's HLS
+  /// subtitle rendering can stall (it does not re-fire sub events after the
+  /// backward seek), so the subtitle decoder is refreshed with a sid cycle —
+  /// mpv's `sub-reload` is not an option, it only works for external subtitle
+  /// files. This replaces the old behaviour of re-opening the whole stream on
+  /// every backward seek, which showed as a jarring reload while scrubbing.
   Future<void> seekAware(Duration position) async {
-    final currentPosition = _player.state.position;
-    final isBackward = position < currentPosition;
     final sub = _player.state.track.subtitle;
     final hasActiveSub = sub.id != 'no' && sub.id != 'auto';
     final url = _currentMediaUrl;
 
-    if (!kIsWeb && isBackward && hasActiveSub && url != null && serverName != null) {
-      _forcedSubtitle = sub;
+    final beforeOpenPosition = position.inMilliseconds < _streamOpenPositionMs;
+    if (!kIsWeb && beforeOpenPosition && url != null && serverName != null) {
+      _forcedSubtitle = hasActiveSub ? sub : SubtitleTrack.no();
       _forcedAudio = _player.state.track.audio;
       _audioPreferenceApplied = false;
       _subtitlePreferenceApplied = false;
+      // A re-open right after scrubbing must not count toward the watchdog's
+      // failed-load retries for this item.
+      _loadRetries = 0;
       await _openMedia(
         serverName: serverName!,
-        mediaUrl: url,
+        mediaUrl: _restampToken(url),
         startTimeInMilliseconds: position.inMilliseconds,
         mediaType: _currentMediaType,
       );
     } else if (!ClientManager.usesTestClients) {
+      final isBackward = position < _player.state.position;
       // Same test seam as play()/pause(): raw seeks never complete under test.
       await _player.seek(position);
+      if (!kIsWeb && isBackward && hasActiveSub) {
+        unawaited(_refreshSubtitleDecoder(sub.id));
+      }
     }
+  }
+
+  /// Kicks mpv's subtitle decoder after a backward seek by cycling `sid`
+  /// off/on, which drops and re-selects the subtitle substream at the current
+  /// position. Waits for the seek to settle first (buffering=false is the
+  /// observable edge; media_kit does not expose mpv's `seeking` property).
+  Future<void> _refreshSubtitleDecoder(String sid) async {
+    final platform = _player.platform;
+    if (platform is! NativePlayer) return;
+    final openedUrl = _currentMediaUrl;
+    try {
+      if (_player.state.buffering) {
+        await _player.stream.buffering
+            .firstWhere((b) => !b)
+            .timeout(const Duration(seconds: 3));
+      }
+    } catch (_) {
+      // Still buffering after 3s — refresh anyway; worst case it's a no-op.
+    }
+    // A queue skip or teardown may have replaced the stream while waiting.
+    if (_currentMediaUrl != openedUrl || _currentMediaUrl == null) return;
+    try {
+      // Dynamic dispatch: see _applyMpvNetworkOptions.
+      final dynamic native = platform;
+      await native.setProperty('sid', 'no');
+      await native.setProperty('sid', sid);
+    } catch (e) {
+      LoggerService().logger.w('Subtitle decoder refresh failed: $e');
+    }
+  }
+
+  /// Re-stamps the stream token on a media URL captured at first open, so a
+  /// re-open minutes later doesn't reuse an expired token.
+  String _restampToken(String url) {
+    final serverName = this.serverName;
+    if (serverName == null) return url;
+    final fresh = StreamTokenService.getToken(serverName);
+    if (fresh == null) return url;
+    final uri = Uri.parse(url);
+    final restamped = uri.replace(
+      queryParameters: {...uri.queryParameters, 'token': fresh},
+    ).toString();
+    _currentMediaUrl = restamped;
+    return restamped;
   }
 
   @override
@@ -2374,7 +2454,26 @@ class MediaPlayerHandler extends BaseAudioHandler
   }
 
   void _listenToTracks() {
-    _player.stream.tracks.listen((tracks) async {
+    _player.stream.tracks.listen(_applyTrackPreferences);
+  }
+
+  /// One-shot re-read for streams whose real track list arrives without a
+  /// `tracks` event (HLS on Linux does this): without it the forced/preferred
+  /// track silently never gets applied. Mirrors the same 800ms re-read in
+  /// TrackSelectionController.
+  Timer? _lateTracksTimer;
+
+  void _armLateTracksReread() {
+    _lateTracksTimer?.cancel();
+    if (kIsWeb) return;
+    _lateTracksTimer = Timer(const Duration(milliseconds: 800), () {
+      if (!_audioPreferenceApplied || !_subtitlePreferenceApplied) {
+        unawaited(_applyTrackPreferences(_player.state.tracks));
+      }
+    });
+  }
+
+  Future<void> _applyTrackPreferences(Tracks tracks) async {
       debugPrint('[TRACKS_HANDLER] audioApplied=$_audioPreferenceApplied subApplied=$_subtitlePreferenceApplied | audio=${tracks.audio.map((t) => t.id).join(",")} sub=${tracks.subtitle.map((t) => t.id).join(",")}');
 
       if (!_audioPreferenceApplied &&
@@ -2428,14 +2527,19 @@ class MediaPlayerHandler extends BaseAudioHandler
           );
         }
         debugPrint('[TRACKS_HANDLER] subtitle applied: ${_player.state.track.subtitle.id}');
-      }
-    });
+    }
   }
 
-  /// Switches the subtitle track by reloading the stream at the current
-  /// position. This is necessary because with a large buffer (320 MB) the
-  /// HLS fetcher is far ahead and a plain setSubtitleTrack only takes effect
-  /// on segments that haven't been fetched yet — which could be minutes away.
+  /// Escape hatch: revert to the old reload-based subtitle switching if the
+  /// in-place switch below turns out not to stick on some platform. With a
+  /// large read-ahead (320 MB) a plain setSubtitleTrack only affects segments
+  /// that haven't been fetched yet — the re-seek to the current position in
+  /// the soft path resets the read head so the new rendition is fetched from
+  /// now (the same trick TrackSelectionController.selectAudio relies on).
+  static const bool _reopenOnSubtitleSwitch = false;
+
+  /// Switches the subtitle track in place: select, re-seek to the current
+  /// position (read-head reset), and refresh the subtitle decoder.
   Future<void> switchSubtitleTrack(SubtitleTrack track) async {
     if (kIsWeb) {
       // On web, hls.js applies subtitle track changes immediately — no reload needed.
@@ -2446,17 +2550,28 @@ class MediaPlayerHandler extends BaseAudioHandler
     final url = _currentMediaUrl;
     if (url == null || serverName == null) return;
 
-    _forcedSubtitle = track;
-    _forcedAudio = _player.state.track.audio;
-    _audioPreferenceApplied = false;
-    _subtitlePreferenceApplied = false;
+    // ignore: dead_code
+    if (_reopenOnSubtitleSwitch) {
+      _forcedSubtitle = track;
+      _forcedAudio = _player.state.track.audio;
+      _audioPreferenceApplied = false;
+      _subtitlePreferenceApplied = false;
+      await _openMedia(
+        serverName: serverName!,
+        mediaUrl: _restampToken(url),
+        startTimeInMilliseconds: _player.state.position.inMilliseconds,
+        mediaType: _currentMediaType,
+      );
+      return;
+    }
 
-    await _openMedia(
-      serverName: serverName!,
-      mediaUrl: url,
-      startTimeInMilliseconds: _player.state.position.inMilliseconds,
-      mediaType: _currentMediaType,
-    );
+    await _player.setSubtitleTrack(track);
+    if (!ClientManager.usesTestClients) {
+      await _player.seek(_player.state.position);
+    }
+    if (track.id != 'no' && track.id != 'auto') {
+      unawaited(_refreshSubtitleDecoder(track.id));
+    }
   }
 
   void _listenToPosition() {
@@ -3392,7 +3507,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         '[LOADSTALL] Stream not playing 12s+ after open — re-opening (retry $_loadRetries)');
     _openMedia(
       serverName: serverName!,
-      mediaUrl: url,
+      mediaUrl: _restampToken(url),
       startTimeInMilliseconds: _streamOpenPositionMs,
       mediaType: _currentMediaType,
     );

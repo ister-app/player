@@ -1479,4 +1479,8 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get unmute => 'Dempen opheffen';
+
+  @override
+  String get subtitlesUnsupportedImageBased =>
+      'Ondertitels niet ondersteund (beeldgebaseerd)';
 }

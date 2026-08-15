@@ -409,5 +409,6 @@
   "audioTrackLabel": "Audio",
   "subtitlesTrackLabel": "Ondertitels",
   "mute": "Dempen",
-  "unmute": "Dempen opheffen"
+  "unmute": "Dempen opheffen",
+  "subtitlesUnsupportedImageBased": "Ondertitels niet ondersteund (beeldgebaseerd)"
 }

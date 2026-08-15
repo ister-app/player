@@ -43,6 +43,11 @@ class _IsterPlayerState extends State<IsterPlayer> {
   Widget build(BuildContext context) {
     return Video(
       controller: _handler.videoController,
+      // libass (inside mpv) renders the subtitles into the video texture;
+      // media_kit's Flutter SubtitleView would draw the same cues a second
+      // time on top, unstyled.
+      subtitleViewConfiguration:
+          const SubtitleViewConfiguration(visible: false),
       controls: (state) => _IsterVideoControls(state: state),
       onEnterFullscreen: () async {
         _handler.videoFullscreen = true;

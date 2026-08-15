@@ -54,7 +54,12 @@ class ImageUtil {
 
   /// Subtitle format requested on the HLS master playlist; keep in sync with
   /// the StreamSettingsInput sent on progress updates (prefetching).
-  static const String subtitleFormat = kIsWeb ? 'WEBVTT' : 'SRT';
+  ///
+  /// WEBVTT everywhere: ffmpeg's HLS demuxer (mpv's backend on native) only
+  /// supports WebVTT subtitle renditions — SRT segments fail its
+  /// allowed_segment_extensions check (ffmpeg ≥ 7.1) and the tracks silently
+  /// never appear. hls.js on web wants WebVTT anyway.
+  static const String subtitleFormat = 'WEBVTT';
 
   static String? buildMediaFileUrl(Fragment$fragmentMediaFiles? mediaFile, {String? token, bool direct = true, bool transcode = true}) {
     if (mediaFile == null) return null;

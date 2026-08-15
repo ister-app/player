@@ -88,6 +88,9 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
 
   @override
   void dispose() {
+    // Don't drop an accumulated keyboard seek on teardown.
+    if (_seekDebounce != null) _firePendingSeek();
+    _seekPreview.dispose();
     _hideTimer?.cancel();
     _playingSub?.cancel();
     _tracks.dispose();
@@ -145,12 +148,31 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
     unawaited(_player.state.playing ? _handler.pause() : _handler.play());
   }
 
+  /// Debounced keyboard seeking: rapid arrow presses accumulate into one
+  /// target and fire a single handler.seek after a short quiet period — a
+  /// backward seek can re-open the HLS stream (see seekAware), which must not
+  /// happen per keypress. The pending target shows on the seek bar as a
+  /// preview via [_seekPreview].
+  final ValueNotifier<Duration?> _seekPreview = ValueNotifier(null);
+  Timer? _seekDebounce;
+
   void _seekRelative(Duration delta) {
     final duration = _player.state.duration;
-    var target = _player.state.position + delta;
+    var target = (_seekPreview.value ?? _player.state.position) + delta;
     if (target < Duration.zero) target = Duration.zero;
     if (duration > Duration.zero && target > duration) target = duration;
-    unawaited(_handler.seek(target));
+    _seekPreview.value = target;
+    _show();
+    _seekDebounce?.cancel();
+    _seekDebounce = Timer(const Duration(milliseconds: 300), _firePendingSeek);
+  }
+
+  void _firePendingSeek() {
+    _seekDebounce?.cancel();
+    _seekDebounce = null;
+    final target = _seekPreview.value;
+    _seekPreview.value = null;
+    if (target != null) unawaited(_handler.seek(target));
   }
 
   void _changeVolume(double delta) {
@@ -325,7 +347,10 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  VideoSeekBar(onDragActive: _setSeekDragging),
+                  VideoSeekBar(
+                    onDragActive: _setSeekDragging,
+                    previewPosition: _seekPreview,
+                  ),
                   bottomBar,
                 ],
               ),

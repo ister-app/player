@@ -1476,4 +1476,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unmute => 'Unmute';
+
+  @override
+  String get subtitlesUnsupportedImageBased =>
+      'Subtitles not supported (image-based)';
 }
