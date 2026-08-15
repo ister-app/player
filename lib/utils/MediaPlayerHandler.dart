@@ -1582,6 +1582,16 @@ class MediaPlayerHandler extends BaseAudioHandler
 
     // Dynamic dispatch: see _applyMpvNetworkOptions.
     final dynamic native = platform;
+    try {
+      // The server bakes a +1480ms shift into its SRTs (SUBTITLE_OFFSET_MS,
+      // compensating the browser timeline that starts at 0 while the TS
+      // timeline starts at the muxer delay). mpv aligns external subs against
+      // the un-rebased TS timeline, which already carries that delay — so
+      // without this correction every cue shows ~1.5s late.
+      await native.setProperty('sub-delay', '-1.48');
+    } catch (e) {
+      LoggerService().logger.w('setting sub-delay failed: $e');
+    }
     var n = 0;
     for (final s in byIndex.values) {
       // A queue skip or re-open may have replaced the stream while adding.

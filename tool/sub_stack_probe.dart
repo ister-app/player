@@ -89,6 +89,28 @@ Future<void> main(List<String> args) async {
         await Future.delayed(const Duration(seconds: 2));
       }
       await Future.delayed(const Duration(seconds: 8));
+    case 'synccheck':
+      // Log time-pos at each cue appearance so manifest vs external timing
+      // can be diffed. Pass an external SRT as args[2] to test that path.
+      if (args.length > 2) {
+        await player.setSubtitleTrack(SubtitleTrack.no());
+        await native.command(['sub-add', args[2], 'select', 'ext', 'nor']);
+        await native.setProperty('sub-delay', '-1.48');
+      }
+      String last = '';
+      final syncPoll =
+          Timer.periodic(const Duration(milliseconds: 100), (_) async {
+        final raw = await native.getProperty('sub-text');
+        if (raw == last) return;
+        last = raw;
+        if (raw.isEmpty) return;
+        final pos = await native.getProperty('time-pos');
+        stdout.writeln(
+            '[SYNC] pos=$pos cue="${raw.split('\n').first}"');
+      });
+      await player.seek(const Duration(seconds: 40));
+      await Future.delayed(const Duration(seconds: 25));
+      syncPoll.cancel();
     case 'resume':
       // Mid-file open like a watch-progress resume.
       await player.stop();
