@@ -73,22 +73,28 @@ void main() {
       description: 'the forward seek to land',
     );
 
-    // The backward seek under test: must land quickly (plain seek, the
-    // demuxer back-buffer serves it) and keep the subtitle selection.
-    final before = DateTime.now();
+    // The backward seek under test: must be a plain seek and keep the
+    // subtitle selection. A stream re-open is directly observable: mpv
+    // rebuilds the track list, emitting a placeholders-only (auto/no)
+    // `tracks` event — a plain seek never does that.
+    var sawTrackListReset = false;
+    final tracksSub = player.stream.tracks.listen((tracks) {
+      if (tracks.subtitle.every((t) => t.id == 'auto' || t.id == 'no')) {
+        sawTrackListReset = true;
+      }
+    });
     await handler.seek(const Duration(seconds: 60));
     await pumpUntil(
       tester,
       () => (player.state.position - const Duration(seconds: 60)).abs() <
           const Duration(seconds: 8),
-      timeout: const Duration(seconds: 30),
+      timeout: const Duration(minutes: 1),
       description: 'the backward seek to land',
     );
-    final elapsed = DateTime.now().difference(before);
-    // A full stream re-open on this stack takes well over 10s (fresh HLS
-    // manifest + first segment transcode); a plain seek is near-instant.
-    expect(elapsed, lessThan(const Duration(seconds: 10)),
-        reason: 'backward seek should not re-open the stream');
+    await tracksSub.cancel();
+    expect(sawTrackListReset, isFalse,
+        reason: 'backward seek should not re-open the stream '
+            '(a re-open resets the track list to placeholders)');
 
     // The sid cycle must have restored the same subtitle selection.
     await pumpUntil(
