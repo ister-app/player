@@ -46,6 +46,21 @@ Future<void> main(List<String> args) async {
       '${tracks.subtitle.map((t) => t.id).join(',')} -> selecting ${sub.id}');
   await player.setSubtitleTrack(sub);
   final scenario = args.length > 1 ? args[1] : 'play';
+  // stream.subtitle dedups repeated lines (media_kit fork); libass renders the
+  // RAW sub-text, so poll the property directly to see what's on screen.
+  var maxRawLines = 0;
+  var rawDupes = 0;
+  final rawPoll =
+      Timer.periodic(const Duration(milliseconds: 500), (_) async {
+    final raw = await native.getProperty('sub-text');
+    if (raw.isEmpty) return;
+    final lines = raw.split('\n');
+    if (lines.length > maxRawLines) maxRawLines = lines.length;
+    if (lines.length != lines.toSet().length) {
+      rawDupes++;
+      stdout.writeln('[RAW-DUPE] "${raw.replaceAll('\n', ' | ')}"');
+    }
+  });
   switch (scenario) {
     case 'play':
       await player.seek(const Duration(seconds: 40));
@@ -75,7 +90,9 @@ Future<void> main(List<String> args) async {
           .firstWhere((x) => x.id != 'auto' && x.id != 'no'));
       await Future.delayed(const Duration(seconds: 25));
   }
-  stdout.writeln('RESULT samples=$samples maxLines=$maxLines');
+  rawPoll.cancel();
+  stdout.writeln(
+      'RESULT samples=$samples maxLines=$maxLines maxRawLines=$maxRawLines rawDupes=$rawDupes');
   await player.dispose();
   exit(0);
 }
