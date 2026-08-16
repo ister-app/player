@@ -1213,6 +1213,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get followingBadge => 'Luistert mee';
 
   @override
+  String get followControlDenied => 'Je kunt deze sessie niet bedienen';
+
+  @override
   String get followQueueUnavailable =>
       'Kan niet meeluisteren — deze sessie is niet meer beschikbaar';
 

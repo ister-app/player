@@ -6,6 +6,7 @@ import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:player/components/ListenTogetherSheet.dart';
+import 'package:player/components/video_controls/SegmentOverlayButtons.dart';
 import 'package:player/components/SleepTimerSheet.dart';
 import 'package:player/components/TvFocusable.dart';
 import 'package:player/l10n/app_localizations.dart';
@@ -129,6 +130,16 @@ abstract class PlayerViewController extends ChangeNotifier {
 
   /// Server that owns the session referenced by [sessionSharingQueueId].
   String? get sessionSharingServerName => null;
+
+  /// Skip-intro / next-episode prompt for the current item, from the
+  /// server-detected segments. Surfaces that know the playing episode's
+  /// segments (remote control, local video sessions) override this; the
+  /// default keeps pure-music surfaces untouched.
+  SegmentActions get segmentActions => (skipIntro: false, nextEpisode: false);
+
+  /// Seek past the detected intro; only invoked while
+  /// [segmentActions].skipIntro is true.
+  void skipIntro() {}
 
   void skipToPrevious();
   void skipToNext();
@@ -1083,6 +1094,7 @@ class _Controls extends StatelessWidget {
         ],
         const SizedBox(height: 20),
         _SeekBar(controller: controller, accent: accent),
+        _SegmentActionSlot(controller: controller),
         const SizedBox(height: 8),
         // Bare transport: the secondary actions live in the bottom action bar
         // at the screen edge, so previous/play/next keep the stage.
@@ -1122,6 +1134,60 @@ class _Controls extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+/// The skip-intro / next-episode prompt between the seek bar and the
+/// transport, driven by [PlayerViewController.segmentActions]. Rebuilds on the
+/// 1 Hz position ticker (visibility is a pure function of position) and on
+/// structural controller changes; collapses to nothing for music.
+class _SegmentActionSlot extends StatelessWidget {
+  const _SegmentActionSlot({required this.controller});
+
+  final PlayerViewController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    return ListenableBuilder(
+      listenable: Listenable.merge([controller, controller.positionTicker]),
+      builder: (context, _) {
+        final actions = controller.segmentActions;
+        Widget child;
+        if (actions.skipIntro) {
+          child = _button(
+              Icons.fast_forward, loc.skipIntro, controller.skipIntro);
+        } else if (actions.nextEpisode) {
+          child = _button(
+              Icons.skip_next, loc.nextEpisode, controller.skipToNext);
+        } else {
+          child = const SizedBox.shrink();
+        }
+        return AnimatedSize(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+          alignment: Alignment.topCenter,
+          child: child,
+        );
+      },
+    );
+  }
+
+  Widget _button(IconData icon, String label, VoidCallback onPressed) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: FilledButton.icon(
+        style: FilledButton.styleFrom(
+          backgroundColor: Colors.black.withValues(alpha: 0.35),
+          foregroundColor: Colors.white,
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.6)),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        ),
+        icon: Icon(icon, size: 18),
+        label: Text(label),
+        onPressed: onPressed,
+      ),
     );
   }
 }

@@ -2162,6 +2162,12 @@ abstract class AppLocalizations {
   /// **'Listening along'**
   String get followingBadge;
 
+  /// Toast when a transport command from a follower is refused by the session owner's sharing settings
+  ///
+  /// In en, this message translates to:
+  /// **'You can\'t control this session'**
+  String get followControlDenied;
+
   /// Toast when starting to follow fails because the session stopped or the caller lost control permission
   ///
   /// In en, this message translates to:

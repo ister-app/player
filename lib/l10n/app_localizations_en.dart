@@ -1212,6 +1212,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get followingBadge => 'Listening along';
 
   @override
+  String get followControlDenied => 'You can\'t control this session';
+
+  @override
   String get followQueueUnavailable =>
       'Can\'t listen along — this session is no longer available';
 

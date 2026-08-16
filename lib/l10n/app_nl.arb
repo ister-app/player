@@ -343,6 +343,7 @@
   "watchingBadge": "Kijkt mee",
   "stopWatchingAlong": "Stop met meekijken",
   "followingBadge": "Luistert mee",
+  "followControlDenied": "Je kunt deze sessie niet bedienen",
   "followQueueUnavailable": "Kan niet meeluisteren — deze sessie is niet meer beschikbaar",
   "followNoLibraryAccess": "Kan niet meeluisteren — je hebt geen toegang tot de bibliotheek van deze wachtrij",
   "followTrackNotAvailable": "'{title}' is voor jou niet beschikbaar — wacht op het volgende nummer",

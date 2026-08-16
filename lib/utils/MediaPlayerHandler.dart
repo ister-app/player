@@ -3644,8 +3644,14 @@ class MediaPlayerHandler extends BaseAudioHandler
     final client = graphQLClient;
     final pq = playQueue;
     if (client == null || pq == null) return;
-    await _playQueueService.sendPlaybackCommand(client, pq.id, command,
+    final ok = await _playQueueService.sendPlaybackCommand(client, pq.id, command,
         position: position, playQueueItemId: playQueueItemId);
+    // false = the server refused (no control permission on this session);
+    // without feedback the tapped control appears simply broken. null is a
+    // transport error and stays silent, like before.
+    if (ok == false) {
+      showAppSnackBar(IsterMediaService.loc.followControlDenied);
+    }
   }
 
   /// Skips to the queue item with [playQueueItemId]. The item may sit outside

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:player/components/PlayPauseButton.dart';
 import 'package:player/components/PlayerView.dart';
 import 'package:player/components/QueuePlayerViewController.dart';
+import 'package:player/components/video_controls/SegmentOverlayButtons.dart';
 import 'package:player/components/RatingStars.dart';
 import 'package:player/dto/IsterMediaItem.dart';
 import 'package:player/dto/MediaItemId.dart';
@@ -337,6 +338,23 @@ class _LocalPlayerController extends QueuePlayerViewController<MediaItem> {
 
   @override
   void skipToNext() => _handler.skipToNext();
+
+  /// Naturally inert for music: the handler's segment bounds are only non-null
+  /// while an episode with detected segments is playing.
+  @override
+  SegmentActions get segmentActions => SegmentOverlayButtons.visibilityFor(
+        posMs: positionMs,
+        intro: _handler.currentIntroBounds,
+        outro: _handler.currentOutroBounds,
+        hasNext: hasNext,
+      );
+
+  @override
+  void skipIntro() {
+    final intro = _handler.currentIntroBounds;
+    if (intro == null) return;
+    _handler.seek(Duration(milliseconds: intro.endMs));
+  }
 
   @override
   void seek(Duration position) => _handler.seek(position);

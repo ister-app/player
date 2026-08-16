@@ -1390,6 +1390,10 @@
   "@followingBadge": {
     "description": "Indicator shown while this device follows another device's session"
   },
+  "followControlDenied": "You can't control this session",
+  "@followControlDenied": {
+    "description": "Toast when a transport command from a follower is refused by the session owner's sharing settings"
+  },
   "followQueueUnavailable": "Can't listen along — this session is no longer available",
   "@followQueueUnavailable": {
     "description": "Toast when starting to follow fails because the session stopped or the caller lost control permission"

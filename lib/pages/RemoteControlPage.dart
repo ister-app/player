@@ -6,6 +6,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/components/PlayerView.dart';
 import 'package:player/components/RatingStars.dart';
 import 'package:player/components/QueuePlayerViewController.dart';
+import 'package:player/components/video_controls/SegmentOverlayButtons.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 import 'package:player/graphql/fragmentServerActivity.graphql.dart';
 import 'package:player/graphql/nowPlayingSubscription.graphql.dart';
@@ -788,6 +789,28 @@ class _RemotePlayerController
     _applyOverride(progressMs: position.inMilliseconds);
     unawaited(
         _sendCommand(Enum$PlaybackCommandType.SEEK, position: position));
+  }
+
+  /// Skip-intro/next-episode from the detected segments of the playing
+  /// episode. The queue items already carry the episode fragment (and thus
+  /// the segments), and heartbeat positions are absolute file time — the same
+  /// timeline the segments use — so this is pure local math plus a SEEK.
+  @override
+  SegmentActions get segmentActions => SegmentOverlayButtons.visibilityFor(
+        posMs: positionMs,
+        intro: MediaPlayerHandler.segmentBounds(
+            _currentItem?.episode, Enum$MediaSegmentType.INTRO),
+        outro: MediaPlayerHandler.segmentBounds(
+            _currentItem?.episode, Enum$MediaSegmentType.OUTRO),
+        hasNext: hasNext,
+      );
+
+  @override
+  void skipIntro() {
+    final intro = MediaPlayerHandler.segmentBounds(
+        _currentItem?.episode, Enum$MediaSegmentType.INTRO);
+    if (intro == null) return;
+    seek(Duration(milliseconds: intro.endMs));
   }
 
   void _skipToItem(Fragment$fragmentPlayQueue$playQueueItems item) {
