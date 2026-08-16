@@ -1096,12 +1096,14 @@ class Input$UserSettingsInput {
     required bool directPlay,
     required bool transcode,
     int? maxVideoHeight,
+    bool? autoSkipIntro,
   }) => Input$UserSettingsInput._({
     r'preferredAudioLanguages': preferredAudioLanguages,
     r'preferredSubtitleLanguages': preferredSubtitleLanguages,
     r'directPlay': directPlay,
     r'transcode': transcode,
     if (maxVideoHeight != null) r'maxVideoHeight': maxVideoHeight,
+    if (autoSkipIntro != null) r'autoSkipIntro': autoSkipIntro,
   });
 
   Input$UserSettingsInput._(this._$data);
@@ -1126,6 +1128,10 @@ class Input$UserSettingsInput {
       final l$maxVideoHeight = data['maxVideoHeight'];
       result$data['maxVideoHeight'] = (l$maxVideoHeight as int?);
     }
+    if (data.containsKey('autoSkipIntro')) {
+      final l$autoSkipIntro = data['autoSkipIntro'];
+      result$data['autoSkipIntro'] = (l$autoSkipIntro as bool);
+    }
     return Input$UserSettingsInput._(result$data);
   }
 
@@ -1142,6 +1148,8 @@ class Input$UserSettingsInput {
   bool get transcode => (_$data['transcode'] as bool);
 
   int? get maxVideoHeight => (_$data['maxVideoHeight'] as int?);
+
+  bool? get autoSkipIntro => (_$data['autoSkipIntro'] as bool?);
 
   Map<String, dynamic> toJson() {
     final result$data = <String, dynamic>{};
@@ -1160,6 +1168,10 @@ class Input$UserSettingsInput {
     if (_$data.containsKey('maxVideoHeight')) {
       final l$maxVideoHeight = maxVideoHeight;
       result$data['maxVideoHeight'] = l$maxVideoHeight;
+    }
+    if (_$data.containsKey('autoSkipIntro')) {
+      final l$autoSkipIntro = autoSkipIntro;
+      result$data['autoSkipIntro'] = (l$autoSkipIntro as bool);
     }
     return result$data;
   }
@@ -1225,6 +1237,15 @@ class Input$UserSettingsInput {
     if (l$maxVideoHeight != lOther$maxVideoHeight) {
       return false;
     }
+    final l$autoSkipIntro = autoSkipIntro;
+    final lOther$autoSkipIntro = other.autoSkipIntro;
+    if (_$data.containsKey('autoSkipIntro') !=
+        other._$data.containsKey('autoSkipIntro')) {
+      return false;
+    }
+    if (l$autoSkipIntro != lOther$autoSkipIntro) {
+      return false;
+    }
     return true;
   }
 
@@ -1235,12 +1256,14 @@ class Input$UserSettingsInput {
     final l$directPlay = directPlay;
     final l$transcode = transcode;
     final l$maxVideoHeight = maxVideoHeight;
+    final l$autoSkipIntro = autoSkipIntro;
     return Object.hashAll([
       Object.hashAll(l$preferredAudioLanguages.map((v) => v)),
       Object.hashAll(l$preferredSubtitleLanguages.map((v) => v)),
       l$directPlay,
       l$transcode,
       _$data.containsKey('maxVideoHeight') ? l$maxVideoHeight : const {},
+      _$data.containsKey('autoSkipIntro') ? l$autoSkipIntro : const {},
     ]);
   }
 }
@@ -1260,6 +1283,7 @@ abstract class CopyWith$Input$UserSettingsInput<TRes> {
     bool? directPlay,
     bool? transcode,
     int? maxVideoHeight,
+    bool? autoSkipIntro,
   });
 }
 
@@ -1279,6 +1303,7 @@ class _CopyWithImpl$Input$UserSettingsInput<TRes>
     Object? directPlay = _undefined,
     Object? transcode = _undefined,
     Object? maxVideoHeight = _undefined,
+    Object? autoSkipIntro = _undefined,
   }) => _then(
     Input$UserSettingsInput._({
       ..._instance._$data,
@@ -1295,6 +1320,8 @@ class _CopyWithImpl$Input$UserSettingsInput<TRes>
         'transcode': (transcode as bool),
       if (maxVideoHeight != _undefined)
         'maxVideoHeight': (maxVideoHeight as int?),
+      if (autoSkipIntro != _undefined && autoSkipIntro != null)
+        'autoSkipIntro': (autoSkipIntro as bool),
     }),
   );
 }
@@ -1311,6 +1338,7 @@ class _CopyWithStubImpl$Input$UserSettingsInput<TRes>
     bool? directPlay,
     bool? transcode,
     int? maxVideoHeight,
+    bool? autoSkipIntro,
   }) => _res;
 }
 
@@ -3015,6 +3043,39 @@ Enum$DirectoryType fromJson$Enum$DirectoryType(String value) {
       return Enum$DirectoryType.CACHE;
     default:
       return Enum$DirectoryType.$unknown;
+  }
+}
+
+enum Enum$MediaSegmentType {
+  INTRO,
+  OUTRO,
+  $unknown;
+
+  factory Enum$MediaSegmentType.fromJson(String value) =>
+      fromJson$Enum$MediaSegmentType(value);
+
+  String toJson() => toJson$Enum$MediaSegmentType(this);
+}
+
+String toJson$Enum$MediaSegmentType(Enum$MediaSegmentType e) {
+  switch (e) {
+    case Enum$MediaSegmentType.INTRO:
+      return r'INTRO';
+    case Enum$MediaSegmentType.OUTRO:
+      return r'OUTRO';
+    case Enum$MediaSegmentType.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$MediaSegmentType fromJson$Enum$MediaSegmentType(String value) {
+  switch (value) {
+    case r'INTRO':
+      return Enum$MediaSegmentType.INTRO;
+    case r'OUTRO':
+      return Enum$MediaSegmentType.OUTRO;
+    default:
+      return Enum$MediaSegmentType.$unknown;
   }
 }
 

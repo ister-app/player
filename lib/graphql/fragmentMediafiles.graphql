@@ -12,6 +12,13 @@ fragment fragmentMediaFiles on MediaFile {
             url
         }
     }
+    segments {
+        id
+        type
+        startInMilliseconds
+        endInMilliseconds
+        episodeId
+    }
     mediaFileStreams {
         codecName
         codecType

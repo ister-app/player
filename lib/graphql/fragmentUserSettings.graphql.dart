@@ -7,6 +7,7 @@ class Fragment$fragmentUserSettings {
     required this.directPlay,
     required this.transcode,
     this.maxVideoHeight,
+    required this.autoSkipIntro,
     this.$__typename = 'UserSettings',
   });
 
@@ -16,6 +17,7 @@ class Fragment$fragmentUserSettings {
     final l$directPlay = json['directPlay'];
     final l$transcode = json['transcode'];
     final l$maxVideoHeight = json['maxVideoHeight'];
+    final l$autoSkipIntro = json['autoSkipIntro'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentUserSettings(
       preferredAudioLanguages: (l$preferredAudioLanguages as List<dynamic>)
@@ -28,6 +30,7 @@ class Fragment$fragmentUserSettings {
       directPlay: (l$directPlay as bool),
       transcode: (l$transcode as bool),
       maxVideoHeight: (l$maxVideoHeight as int?),
+      autoSkipIntro: (l$autoSkipIntro as bool),
       $__typename: (l$$__typename as String),
     );
   }
@@ -41,6 +44,8 @@ class Fragment$fragmentUserSettings {
   final bool transcode;
 
   final int? maxVideoHeight;
+
+  final bool autoSkipIntro;
 
   final String $__typename;
 
@@ -60,6 +65,8 @@ class Fragment$fragmentUserSettings {
     _resultData['transcode'] = l$transcode;
     final l$maxVideoHeight = maxVideoHeight;
     _resultData['maxVideoHeight'] = l$maxVideoHeight;
+    final l$autoSkipIntro = autoSkipIntro;
+    _resultData['autoSkipIntro'] = l$autoSkipIntro;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -72,6 +79,7 @@ class Fragment$fragmentUserSettings {
     final l$directPlay = directPlay;
     final l$transcode = transcode;
     final l$maxVideoHeight = maxVideoHeight;
+    final l$autoSkipIntro = autoSkipIntro;
     final l$$__typename = $__typename;
     return Object.hashAll([
       Object.hashAll(l$preferredAudioLanguages.map((v) => v)),
@@ -79,6 +87,7 @@ class Fragment$fragmentUserSettings {
       l$directPlay,
       l$transcode,
       l$maxVideoHeight,
+      l$autoSkipIntro,
       l$$__typename,
     ]);
   }
@@ -138,6 +147,11 @@ class Fragment$fragmentUserSettings {
     if (l$maxVideoHeight != lOther$maxVideoHeight) {
       return false;
     }
+    final l$autoSkipIntro = autoSkipIntro;
+    final lOther$autoSkipIntro = other.autoSkipIntro;
+    if (l$autoSkipIntro != lOther$autoSkipIntro) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -168,6 +182,7 @@ abstract class CopyWith$Fragment$fragmentUserSettings<TRes> {
     bool? directPlay,
     bool? transcode,
     int? maxVideoHeight,
+    bool? autoSkipIntro,
     String? $__typename,
   });
 }
@@ -188,6 +203,7 @@ class _CopyWithImpl$Fragment$fragmentUserSettings<TRes>
     Object? directPlay = _undefined,
     Object? transcode = _undefined,
     Object? maxVideoHeight = _undefined,
+    Object? autoSkipIntro = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentUserSettings(
@@ -210,6 +226,9 @@ class _CopyWithImpl$Fragment$fragmentUserSettings<TRes>
       maxVideoHeight: maxVideoHeight == _undefined
           ? _instance.maxVideoHeight
           : (maxVideoHeight as int?),
+      autoSkipIntro: autoSkipIntro == _undefined || autoSkipIntro == null
+          ? _instance.autoSkipIntro
+          : (autoSkipIntro as bool),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -229,6 +248,7 @@ class _CopyWithStubImpl$Fragment$fragmentUserSettings<TRes>
     bool? directPlay,
     bool? transcode,
     int? maxVideoHeight,
+    bool? autoSkipIntro,
     String? $__typename,
   }) => _res;
 }
@@ -271,6 +291,13 @@ const fragmentDefinitionfragmentUserSettings = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'maxVideoHeight'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'autoSkipIntro'),
         alias: null,
         arguments: [],
         directives: [],
