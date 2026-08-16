@@ -1214,6 +1214,246 @@ abstract class AppLocalizations {
   /// **'Idle'**
   String get idle;
 
+  /// No description provided for @busyNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Working on now'**
+  String get busyNow;
+
+  /// No description provided for @queuedWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Queued work'**
+  String get queuedWork;
+
+  /// No description provided for @allQueuesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'All queues are empty'**
+  String get allQueuesEmpty;
+
+  /// No description provided for @queueDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Queue details'**
+  String get queueDetails;
+
+  /// No description provided for @serverIdle.
+  ///
+  /// In en, this message translates to:
+  /// **'The server is idle'**
+  String get serverIdle;
+
+  /// No description provided for @serverIdleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is being processed and no work is queued.'**
+  String get serverIdleSubtitle;
+
+  /// No description provided for @lastSeenAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Last seen {time}'**
+  String lastSeenAgo(String time);
+
+  /// No description provided for @backgroundTag.
+  ///
+  /// In en, this message translates to:
+  /// **'background'**
+  String get backgroundTag;
+
+  /// No description provided for @transcodesTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcoding'**
+  String get transcodesTag;
+
+  /// No description provided for @activityKindAnalyzeFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing media file'**
+  String get activityKindAnalyzeFile;
+
+  /// No description provided for @activityKindScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Scanning for new files'**
+  String get activityKindScan;
+
+  /// No description provided for @activityKindAnalyzeLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing library'**
+  String get activityKindAnalyzeLibrary;
+
+  /// No description provided for @activityKindMetadata.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching metadata'**
+  String get activityKindMetadata;
+
+  /// No description provided for @activityKindImportFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing files'**
+  String get activityKindImportFiles;
+
+  /// No description provided for @activityKindArtwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing artwork'**
+  String get activityKindArtwork;
+
+  /// No description provided for @activityKindTranscode.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcoding'**
+  String get activityKindTranscode;
+
+  /// No description provided for @activityKindPodcast.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating podcasts'**
+  String get activityKindPodcast;
+
+  /// No description provided for @activityKindContinueWatching.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating continue watching'**
+  String get activityKindContinueWatching;
+
+  /// No description provided for @activityKindSegments.
+  ///
+  /// In en, this message translates to:
+  /// **'Detecting intros and outros'**
+  String get activityKindSegments;
+
+  /// No description provided for @activityKindSearchIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating search index'**
+  String get activityKindSearchIndex;
+
+  /// No description provided for @activityKindOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Working'**
+  String get activityKindOther;
+
+  /// No description provided for @activityQueuedAnalyzeFile.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} files to analyze'**
+  String activityQueuedAnalyzeFile(int count);
+
+  /// No description provided for @activityQueuedScan.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} scan jobs waiting'**
+  String activityQueuedScan(int count);
+
+  /// No description provided for @activityQueuedMetadata.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items awaiting metadata'**
+  String activityQueuedMetadata(int count);
+
+  /// No description provided for @activityQueuedArtwork.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} images to process'**
+  String activityQueuedArtwork(int count);
+
+  /// No description provided for @activityQueuedTranscode.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} transcode jobs waiting'**
+  String activityQueuedTranscode(int count);
+
+  /// No description provided for @activityQueuedSegments.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} seasons to check for intros'**
+  String activityQueuedSegments(int count);
+
+  /// No description provided for @activityQueuedGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} waiting — {label}'**
+  String activityQueuedGeneric(int count, String label);
+
+  /// No description provided for @activityStepProbe.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading streams'**
+  String get activityStepProbe;
+
+  /// No description provided for @activityStepCrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Detecting black bars'**
+  String get activityStepCrop;
+
+  /// No description provided for @activityStepSubtitles.
+  ///
+  /// In en, this message translates to:
+  /// **'Extracting subtitles'**
+  String get activityStepSubtitles;
+
+  /// No description provided for @activityStepBoundaries.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding episode boundaries'**
+  String get activityStepBoundaries;
+
+  /// No description provided for @activityStepStill.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating background still'**
+  String get activityStepStill;
+
+  /// No description provided for @activityStepFingerprint.
+  ///
+  /// In en, this message translates to:
+  /// **'Fingerprinting audio'**
+  String get activityStepFingerprint;
+
+  /// No description provided for @activityStepMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Matching intros and outros'**
+  String get activityStepMatch;
+
+  /// No description provided for @activityStepTranscode.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcoding'**
+  String get activityStepTranscode;
+
+  /// No description provided for @relativeSecondsAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}s ago'**
+  String relativeSecondsAgo(int count);
+
+  /// No description provided for @relativeMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min ago'**
+  String relativeMinutesAgo(int count);
+
+  /// No description provided for @relativeHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} hr ago'**
+  String relativeHoursAgo(int count);
+
+  /// No description provided for @relativeDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days ago'**
+  String relativeDaysAgo(int count);
+
   /// No description provided for @statePlaying.
   ///
   /// In en, this message translates to:

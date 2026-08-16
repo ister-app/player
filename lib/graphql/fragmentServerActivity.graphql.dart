@@ -445,6 +445,287 @@ const documentNodeFragmentfragmentEventFailure = DocumentNode(
   definitions: [fragmentDefinitionfragmentEventFailure],
 );
 
+class Fragment$fragmentTranscodePass {
+  Fragment$fragmentTranscodePass({
+    required this.nodeName,
+    required this.mediaFileId,
+    this.title,
+    required this.quality,
+    required this.background,
+    required this.startedAt,
+    this.$__typename = 'TranscodePass',
+  });
+
+  factory Fragment$fragmentTranscodePass.fromJson(Map<String, dynamic> json) {
+    final l$nodeName = json['nodeName'];
+    final l$mediaFileId = json['mediaFileId'];
+    final l$title = json['title'];
+    final l$quality = json['quality'];
+    final l$background = json['background'];
+    final l$startedAt = json['startedAt'];
+    final l$$__typename = json['__typename'];
+    return Fragment$fragmentTranscodePass(
+      nodeName: (l$nodeName as String),
+      mediaFileId: (l$mediaFileId as String),
+      title: (l$title as String?),
+      quality: (l$quality as String),
+      background: (l$background as bool),
+      startedAt: (l$startedAt as String),
+      $__typename: (l$$__typename as String),
+    );
+  }
+
+  final String nodeName;
+
+  final String mediaFileId;
+
+  final String? title;
+
+  final String quality;
+
+  final bool background;
+
+  final String startedAt;
+
+  final String $__typename;
+
+  Map<String, dynamic> toJson() {
+    final _resultData = <String, dynamic>{};
+    final l$nodeName = nodeName;
+    _resultData['nodeName'] = l$nodeName;
+    final l$mediaFileId = mediaFileId;
+    _resultData['mediaFileId'] = l$mediaFileId;
+    final l$title = title;
+    _resultData['title'] = l$title;
+    final l$quality = quality;
+    _resultData['quality'] = l$quality;
+    final l$background = background;
+    _resultData['background'] = l$background;
+    final l$startedAt = startedAt;
+    _resultData['startedAt'] = l$startedAt;
+    final l$$__typename = $__typename;
+    _resultData['__typename'] = l$$__typename;
+    return _resultData;
+  }
+
+  @override
+  int get hashCode {
+    final l$nodeName = nodeName;
+    final l$mediaFileId = mediaFileId;
+    final l$title = title;
+    final l$quality = quality;
+    final l$background = background;
+    final l$startedAt = startedAt;
+    final l$$__typename = $__typename;
+    return Object.hashAll([
+      l$nodeName,
+      l$mediaFileId,
+      l$title,
+      l$quality,
+      l$background,
+      l$startedAt,
+      l$$__typename,
+    ]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Fragment$fragmentTranscodePass ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$nodeName = nodeName;
+    final lOther$nodeName = other.nodeName;
+    if (l$nodeName != lOther$nodeName) {
+      return false;
+    }
+    final l$mediaFileId = mediaFileId;
+    final lOther$mediaFileId = other.mediaFileId;
+    if (l$mediaFileId != lOther$mediaFileId) {
+      return false;
+    }
+    final l$title = title;
+    final lOther$title = other.title;
+    if (l$title != lOther$title) {
+      return false;
+    }
+    final l$quality = quality;
+    final lOther$quality = other.quality;
+    if (l$quality != lOther$quality) {
+      return false;
+    }
+    final l$background = background;
+    final lOther$background = other.background;
+    if (l$background != lOther$background) {
+      return false;
+    }
+    final l$startedAt = startedAt;
+    final lOther$startedAt = other.startedAt;
+    if (l$startedAt != lOther$startedAt) {
+      return false;
+    }
+    final l$$__typename = $__typename;
+    final lOther$$__typename = other.$__typename;
+    if (l$$__typename != lOther$$__typename) {
+      return false;
+    }
+    return true;
+  }
+}
+
+extension UtilityExtension$Fragment$fragmentTranscodePass
+    on Fragment$fragmentTranscodePass {
+  CopyWith$Fragment$fragmentTranscodePass<Fragment$fragmentTranscodePass>
+  get copyWith => CopyWith$Fragment$fragmentTranscodePass(this, (i) => i);
+}
+
+abstract class CopyWith$Fragment$fragmentTranscodePass<TRes> {
+  factory CopyWith$Fragment$fragmentTranscodePass(
+    Fragment$fragmentTranscodePass instance,
+    TRes Function(Fragment$fragmentTranscodePass) then,
+  ) = _CopyWithImpl$Fragment$fragmentTranscodePass;
+
+  factory CopyWith$Fragment$fragmentTranscodePass.stub(TRes res) =
+      _CopyWithStubImpl$Fragment$fragmentTranscodePass;
+
+  TRes call({
+    String? nodeName,
+    String? mediaFileId,
+    String? title,
+    String? quality,
+    bool? background,
+    String? startedAt,
+    String? $__typename,
+  });
+}
+
+class _CopyWithImpl$Fragment$fragmentTranscodePass<TRes>
+    implements CopyWith$Fragment$fragmentTranscodePass<TRes> {
+  _CopyWithImpl$Fragment$fragmentTranscodePass(this._instance, this._then);
+
+  final Fragment$fragmentTranscodePass _instance;
+
+  final TRes Function(Fragment$fragmentTranscodePass) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? nodeName = _undefined,
+    Object? mediaFileId = _undefined,
+    Object? title = _undefined,
+    Object? quality = _undefined,
+    Object? background = _undefined,
+    Object? startedAt = _undefined,
+    Object? $__typename = _undefined,
+  }) => _then(
+    Fragment$fragmentTranscodePass(
+      nodeName: nodeName == _undefined || nodeName == null
+          ? _instance.nodeName
+          : (nodeName as String),
+      mediaFileId: mediaFileId == _undefined || mediaFileId == null
+          ? _instance.mediaFileId
+          : (mediaFileId as String),
+      title: title == _undefined ? _instance.title : (title as String?),
+      quality: quality == _undefined || quality == null
+          ? _instance.quality
+          : (quality as String),
+      background: background == _undefined || background == null
+          ? _instance.background
+          : (background as bool),
+      startedAt: startedAt == _undefined || startedAt == null
+          ? _instance.startedAt
+          : (startedAt as String),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
+}
+
+class _CopyWithStubImpl$Fragment$fragmentTranscodePass<TRes>
+    implements CopyWith$Fragment$fragmentTranscodePass<TRes> {
+  _CopyWithStubImpl$Fragment$fragmentTranscodePass(this._res);
+
+  TRes _res;
+
+  call({
+    String? nodeName,
+    String? mediaFileId,
+    String? title,
+    String? quality,
+    bool? background,
+    String? startedAt,
+    String? $__typename,
+  }) => _res;
+}
+
+const fragmentDefinitionfragmentTranscodePass = FragmentDefinitionNode(
+  name: NameNode(value: 'fragmentTranscodePass'),
+  typeCondition: TypeConditionNode(
+    on: NamedTypeNode(name: NameNode(value: 'TranscodePass'), isNonNull: false),
+  ),
+  directives: [],
+  selectionSet: SelectionSetNode(
+    selections: [
+      FieldNode(
+        name: NameNode(value: 'nodeName'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'mediaFileId'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'title'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'quality'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'background'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'startedAt'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: '__typename'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+    ],
+  ),
+);
+const documentNodeFragmentfragmentTranscodePass = DocumentNode(
+  definitions: [fragmentDefinitionfragmentTranscodePass],
+);
+
 class Fragment$fragmentServerActivityEvent {
   Fragment$fragmentServerActivityEvent({
     required this.type,
@@ -455,6 +736,7 @@ class Fragment$fragmentServerActivityEvent {
     this.failedCount,
     this.queueStats,
     this.failure,
+    this.transcodes,
     this.$__typename = 'ServerActivityEvent',
   });
 
@@ -469,6 +751,7 @@ class Fragment$fragmentServerActivityEvent {
     final l$failedCount = json['failedCount'];
     final l$queueStats = json['queueStats'];
     final l$failure = json['failure'];
+    final l$transcodes = json['transcodes'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentServerActivityEvent(
       type: fromJson$Enum$ServerActivityEventType((l$type as String)),
@@ -495,6 +778,13 @@ class Fragment$fragmentServerActivityEvent {
           : Fragment$fragmentEventFailure.fromJson(
               (l$failure as Map<String, dynamic>),
             ),
+      transcodes: (l$transcodes as List<dynamic>?)
+          ?.map(
+            (e) => Fragment$fragmentTranscodePass.fromJson(
+              (e as Map<String, dynamic>),
+            ),
+          )
+          .toList(),
       $__typename: (l$$__typename as String),
     );
   }
@@ -514,6 +804,8 @@ class Fragment$fragmentServerActivityEvent {
   final List<Fragment$fragmentQueueStat>? queueStats;
 
   final Fragment$fragmentEventFailure? failure;
+
+  final List<Fragment$fragmentTranscodePass>? transcodes;
 
   final String $__typename;
 
@@ -535,6 +827,8 @@ class Fragment$fragmentServerActivityEvent {
     _resultData['queueStats'] = l$queueStats?.map((e) => e.toJson()).toList();
     final l$failure = failure;
     _resultData['failure'] = l$failure?.toJson();
+    final l$transcodes = transcodes;
+    _resultData['transcodes'] = l$transcodes?.map((e) => e.toJson()).toList();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -550,6 +844,7 @@ class Fragment$fragmentServerActivityEvent {
     final l$failedCount = failedCount;
     final l$queueStats = queueStats;
     final l$failure = failure;
+    final l$transcodes = transcodes;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$type,
@@ -560,6 +855,7 @@ class Fragment$fragmentServerActivityEvent {
       l$failedCount,
       l$queueStats == null ? null : Object.hashAll(l$queueStats.map((v) => v)),
       l$failure,
+      l$transcodes == null ? null : Object.hashAll(l$transcodes.map((v) => v)),
       l$$__typename,
     ]);
   }
@@ -635,6 +931,22 @@ class Fragment$fragmentServerActivityEvent {
     if (l$failure != lOther$failure) {
       return false;
     }
+    final l$transcodes = transcodes;
+    final lOther$transcodes = other.transcodes;
+    if (l$transcodes != null && lOther$transcodes != null) {
+      if (l$transcodes.length != lOther$transcodes.length) {
+        return false;
+      }
+      for (int i = 0; i < l$transcodes.length; i++) {
+        final l$transcodes$entry = l$transcodes[i];
+        final lOther$transcodes$entry = lOther$transcodes[i];
+        if (l$transcodes$entry != lOther$transcodes$entry) {
+          return false;
+        }
+      }
+    } else if (l$transcodes != lOther$transcodes) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -670,6 +982,7 @@ abstract class CopyWith$Fragment$fragmentServerActivityEvent<TRes> {
     int? failedCount,
     List<Fragment$fragmentQueueStat>? queueStats,
     Fragment$fragmentEventFailure? failure,
+    List<Fragment$fragmentTranscodePass>? transcodes,
     String? $__typename,
   });
   TRes processing(
@@ -691,6 +1004,14 @@ abstract class CopyWith$Fragment$fragmentServerActivityEvent<TRes> {
     _fn,
   );
   CopyWith$Fragment$fragmentEventFailure<TRes> get failure;
+  TRes transcodes(
+    Iterable<Fragment$fragmentTranscodePass>? Function(
+      Iterable<
+        CopyWith$Fragment$fragmentTranscodePass<Fragment$fragmentTranscodePass>
+      >?,
+    )
+    _fn,
+  );
 }
 
 class _CopyWithImpl$Fragment$fragmentServerActivityEvent<TRes>
@@ -715,6 +1036,7 @@ class _CopyWithImpl$Fragment$fragmentServerActivityEvent<TRes>
     Object? failedCount = _undefined,
     Object? queueStats = _undefined,
     Object? failure = _undefined,
+    Object? transcodes = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentServerActivityEvent(
@@ -743,6 +1065,9 @@ class _CopyWithImpl$Fragment$fragmentServerActivityEvent<TRes>
       failure: failure == _undefined
           ? _instance.failure
           : (failure as Fragment$fragmentEventFailure?),
+      transcodes: transcodes == _undefined
+          ? _instance.transcodes
+          : (transcodes as List<Fragment$fragmentTranscodePass>?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -793,6 +1118,21 @@ class _CopyWithImpl$Fragment$fragmentServerActivityEvent<TRes>
             (e) => call(failure: e),
           );
   }
+
+  TRes transcodes(
+    Iterable<Fragment$fragmentTranscodePass>? Function(
+      Iterable<
+        CopyWith$Fragment$fragmentTranscodePass<Fragment$fragmentTranscodePass>
+      >?,
+    )
+    _fn,
+  ) => call(
+    transcodes: _fn(
+      _instance.transcodes?.map(
+        (e) => CopyWith$Fragment$fragmentTranscodePass(e, (i) => i),
+      ),
+    )?.toList(),
+  );
 }
 
 class _CopyWithStubImpl$Fragment$fragmentServerActivityEvent<TRes>
@@ -810,6 +1150,7 @@ class _CopyWithStubImpl$Fragment$fragmentServerActivityEvent<TRes>
     int? failedCount,
     List<Fragment$fragmentQueueStat>? queueStats,
     Fragment$fragmentEventFailure? failure,
+    List<Fragment$fragmentTranscodePass>? transcodes,
     String? $__typename,
   }) => _res;
 
@@ -819,6 +1160,8 @@ class _CopyWithStubImpl$Fragment$fragmentServerActivityEvent<TRes>
 
   CopyWith$Fragment$fragmentEventFailure<TRes> get failure =>
       CopyWith$Fragment$fragmentEventFailure.stub(_res);
+
+  transcodes(_fn) => _res;
 }
 
 const fragmentDefinitionfragmentServerActivityEvent = FragmentDefinitionNode(
@@ -876,6 +1219,20 @@ const fragmentDefinitionfragmentServerActivityEvent = FragmentDefinitionNode(
             ),
             FieldNode(
               name: NameNode(value: 'startedAt'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'subject'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'step'),
               alias: null,
               arguments: [],
               directives: [],
@@ -948,6 +1305,27 @@ const fragmentDefinitionfragmentServerActivityEvent = FragmentDefinitionNode(
         ),
       ),
       FieldNode(
+        name: NameNode(value: 'transcodes'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: SelectionSetNode(
+          selections: [
+            FragmentSpreadNode(
+              name: NameNode(value: 'fragmentTranscodePass'),
+              directives: [],
+            ),
+            FieldNode(
+              name: NameNode(value: '__typename'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+          ],
+        ),
+      ),
+      FieldNode(
         name: NameNode(value: '__typename'),
         alias: null,
         arguments: [],
@@ -962,6 +1340,7 @@ const documentNodeFragmentfragmentServerActivityEvent = DocumentNode(
     fragmentDefinitionfragmentServerActivityEvent,
     fragmentDefinitionfragmentQueueStat,
     fragmentDefinitionfragmentEventFailure,
+    fragmentDefinitionfragmentTranscodePass,
   ],
 );
 
@@ -970,6 +1349,8 @@ class Fragment$fragmentServerActivityEvent$processing {
     required this.queue,
     required this.eventType,
     required this.startedAt,
+    this.subject,
+    this.step,
     this.$__typename = 'ProcessingItem',
   });
 
@@ -979,11 +1360,15 @@ class Fragment$fragmentServerActivityEvent$processing {
     final l$queue = json['queue'];
     final l$eventType = json['eventType'];
     final l$startedAt = json['startedAt'];
+    final l$subject = json['subject'];
+    final l$step = json['step'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentServerActivityEvent$processing(
       queue: (l$queue as String),
       eventType: (l$eventType as String),
       startedAt: (l$startedAt as String),
+      subject: (l$subject as String?),
+      step: (l$step as String?),
       $__typename: (l$$__typename as String),
     );
   }
@@ -993,6 +1378,10 @@ class Fragment$fragmentServerActivityEvent$processing {
   final String eventType;
 
   final String startedAt;
+
+  final String? subject;
+
+  final String? step;
 
   final String $__typename;
 
@@ -1004,6 +1393,10 @@ class Fragment$fragmentServerActivityEvent$processing {
     _resultData['eventType'] = l$eventType;
     final l$startedAt = startedAt;
     _resultData['startedAt'] = l$startedAt;
+    final l$subject = subject;
+    _resultData['subject'] = l$subject;
+    final l$step = step;
+    _resultData['step'] = l$step;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -1014,8 +1407,17 @@ class Fragment$fragmentServerActivityEvent$processing {
     final l$queue = queue;
     final l$eventType = eventType;
     final l$startedAt = startedAt;
+    final l$subject = subject;
+    final l$step = step;
     final l$$__typename = $__typename;
-    return Object.hashAll([l$queue, l$eventType, l$startedAt, l$$__typename]);
+    return Object.hashAll([
+      l$queue,
+      l$eventType,
+      l$startedAt,
+      l$subject,
+      l$step,
+      l$$__typename,
+    ]);
   }
 
   @override
@@ -1040,6 +1442,16 @@ class Fragment$fragmentServerActivityEvent$processing {
     final l$startedAt = startedAt;
     final lOther$startedAt = other.startedAt;
     if (l$startedAt != lOther$startedAt) {
+      return false;
+    }
+    final l$subject = subject;
+    final lOther$subject = other.subject;
+    if (l$subject != lOther$subject) {
+      return false;
+    }
+    final l$step = step;
+    final lOther$step = other.step;
+    if (l$step != lOther$step) {
       return false;
     }
     final l$$__typename = $__typename;
@@ -1074,6 +1486,8 @@ abstract class CopyWith$Fragment$fragmentServerActivityEvent$processing<TRes> {
     String? queue,
     String? eventType,
     String? startedAt,
+    String? subject,
+    String? step,
     String? $__typename,
   });
 }
@@ -1095,6 +1509,8 @@ class _CopyWithImpl$Fragment$fragmentServerActivityEvent$processing<TRes>
     Object? queue = _undefined,
     Object? eventType = _undefined,
     Object? startedAt = _undefined,
+    Object? subject = _undefined,
+    Object? step = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentServerActivityEvent$processing(
@@ -1107,6 +1523,8 @@ class _CopyWithImpl$Fragment$fragmentServerActivityEvent$processing<TRes>
       startedAt: startedAt == _undefined || startedAt == null
           ? _instance.startedAt
           : (startedAt as String),
+      subject: subject == _undefined ? _instance.subject : (subject as String?),
+      step: step == _undefined ? _instance.step : (step as String?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -1124,6 +1542,8 @@ class _CopyWithStubImpl$Fragment$fragmentServerActivityEvent$processing<TRes>
     String? queue,
     String? eventType,
     String? startedAt,
+    String? subject,
+    String? step,
     String? $__typename,
   }) => _res;
 }

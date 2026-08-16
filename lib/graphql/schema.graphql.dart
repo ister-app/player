@@ -2286,6 +2286,7 @@ enum Enum$ServerActivityEventType {
   NODE_ACTIVITY,
   QUEUE_STATS,
   FAILURE,
+  TRANSCODE_ACTIVITY,
   $unknown;
 
   factory Enum$ServerActivityEventType.fromJson(String value) =>
@@ -2302,6 +2303,8 @@ String toJson$Enum$ServerActivityEventType(Enum$ServerActivityEventType e) {
       return r'QUEUE_STATS';
     case Enum$ServerActivityEventType.FAILURE:
       return r'FAILURE';
+    case Enum$ServerActivityEventType.TRANSCODE_ACTIVITY:
+      return r'TRANSCODE_ACTIVITY';
     case Enum$ServerActivityEventType.$unknown:
       return r'$unknown';
   }
@@ -2317,6 +2320,8 @@ Enum$ServerActivityEventType fromJson$Enum$ServerActivityEventType(
       return Enum$ServerActivityEventType.QUEUE_STATS;
     case r'FAILURE':
       return Enum$ServerActivityEventType.FAILURE;
+    case r'TRANSCODE_ACTIVITY':
+      return Enum$ServerActivityEventType.TRANSCODE_ACTIVITY;
     default:
       return Enum$ServerActivityEventType.$unknown;
   }

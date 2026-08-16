@@ -12,5 +12,8 @@ query serverActivitySnapshot {
         nowPlaying {
             ...fragmentPlaybackSession
         }
+        transcodes {
+            ...fragmentTranscodePass
+        }
     }
 }

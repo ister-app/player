@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -7,16 +9,19 @@ import 'package:player/graphql/serverActivitySnapshot.graphql.dart';
 import 'package:player/graphql/serverActivitySubscription.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import '../components/LiveFeedBanner.dart';
+import '../components/ServerActivityBody.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/ClientManager.dart';
 import '../utils/LoggerService.dart';
 import '../utils/ResilientSubscription.dart';
 
-/// Live server-activity dashboard: per-node processing, queue depths and
-/// recent failures. Seeded from serverActivitySnapshot, then kept current by
-/// merging serverActivity events (NODE_ACTIVITY replaces that node's entry,
-/// QUEUE_STATS replaces the whole list, FAILURE is prepended).
+/// Live server-activity dashboard: what the server is working on right now
+/// (with subject and sub-step), queued work per kind, running transcodes,
+/// nodes and recent failures. Seeded from serverActivitySnapshot, then kept
+/// current by merging serverActivity events (NODE_ACTIVITY replaces that
+/// node's entry, TRANSCODE_ACTIVITY replaces that node's transcode passes,
+/// QUEUE_STATS replaces the whole list, FAILURE is prepended). A 30s ticker
+/// keeps the elapsed/relative times moving between events.
 @RoutePage()
 class ServerActivityPage extends StatefulWidget {
   final String serverName;
@@ -37,14 +42,21 @@ class _ServerActivityPageState extends State<ServerActivityPage> {
   String? _error;
   bool _liveFeedBroken = false;
   final Map<String, Fragment$fragmentServerActivityEvent> _nodes = {};
+  final Map<String, List<Fragment$fragmentTranscodePass>> _transcodesByNode =
+      {};
   List<Fragment$fragmentQueueStat> _queueStats = [];
   List<Fragment$fragmentEventFailure> _failures = [];
   ResilientSubscription? _subscription;
+  Timer? _ticker;
 
   @override
   void initState() {
     super.initState();
     final client = ClientManager.getClientForUrl(widget.serverName).value;
+
+    _ticker = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted && _loaded) setState(() {});
+    });
 
     _subscription = ResilientSubscription(
       client: client,
@@ -87,6 +99,14 @@ class _ServerActivityPageState extends State<ServerActivityPage> {
         for (final node in snapshot.nodes) {
           _nodes.putIfAbsent(node.nodeName, () => node);
         }
+        final snapshotTranscodes =
+            <String, List<Fragment$fragmentTranscodePass>>{};
+        for (final pass in snapshot.transcodes) {
+          snapshotTranscodes.putIfAbsent(pass.nodeName, () => []).add(pass);
+        }
+        for (final entry in snapshotTranscodes.entries) {
+          _transcodesByNode.putIfAbsent(entry.key, () => entry.value);
+        }
         if (_queueStats.isEmpty) _queueStats = snapshot.queueStats;
         if (_failures.isEmpty) _failures = snapshot.recentFailures;
       });
@@ -97,6 +117,9 @@ class _ServerActivityPageState extends State<ServerActivityPage> {
     switch (event.type) {
       case Enum$ServerActivityEventType.NODE_ACTIVITY:
         _nodes[event.nodeName] = event;
+        break;
+      case Enum$ServerActivityEventType.TRANSCODE_ACTIVITY:
+        _transcodesByNode[event.nodeName] = event.transcodes ?? [];
         break;
       case Enum$ServerActivityEventType.QUEUE_STATS:
         _queueStats = event.queueStats ?? _queueStats;
@@ -114,116 +137,46 @@ class _ServerActivityPageState extends State<ServerActivityPage> {
 
   @override
   void dispose() {
+    _ticker?.cancel();
     _subscription?.dispose();
     super.dispose();
   }
 
-  Widget _sectionLabel(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4.0, top: 16.0, bottom: 4.0),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-      ),
-    );
-  }
-
-  Chip _countChip(BuildContext context, String label) {
-    return Chip(
-      label: Text(label, style: Theme.of(context).textTheme.bodySmall),
-      padding: EdgeInsets.zero,
-      visualDensity: VisualDensity.compact,
-    );
-  }
-
-  Widget _nodeTile(
-      BuildContext context, Fragment$fragmentServerActivityEvent node) {
-    final loc = AppLocalizations.of(context)!;
+  Widget _skeleton(BuildContext context, AppLocalizations loc) {
     final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
-    final processing = node.processing ?? const [];
-
-    return ListTile(
-      leading: Icon(Icons.storage, size: 20, color: mutedColor),
-      title: Text(
-        node.nodeName,
-        style: Theme.of(context).textTheme.bodyMedium,
-      ),
-      subtitle: Text(
-        processing.isEmpty
-            ? loc.idle
-            : processing.map((p) => '${p.queue} · ${p.eventType}').join('\n'),
-        style: Theme.of(context).textTheme.bodySmall,
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
+    Widget sectionLabel(String title) => Padding(
+          padding: const EdgeInsets.only(left: 4.0, top: 16.0, bottom: 4.0),
+          child: Text(
+            title,
+            style: Theme.of(context)
+                .textTheme
+                .labelMedium
+                ?.copyWith(color: mutedColor),
+          ),
+        );
+    Widget card(int count, IconData icon) => Card(
+          child: Column(
+            children: [
+              for (int i = 0; i < count; i++) ...[
+                if (i > 0) const Divider(height: 1, indent: 56),
+                ListTile(
+                  leading: Icon(icon, size: 20, color: mutedColor),
+                  title: Text(BoneMock.name),
+                  subtitle: Text(BoneMock.words(2)),
+                ),
+              ],
+            ],
+          ),
+        );
+    return Skeletonizer(
+      enabled: true,
+      child: ListView(
+        padding: const EdgeInsets.all(16.0),
         children: [
-          _countChip(context, loc.processedCount(node.processedCount ?? 0)),
-          const SizedBox(width: 4),
-          _countChip(context, loc.failedCount(node.failedCount ?? 0)),
-        ],
-      ),
-    );
-  }
-
-  Widget _queueTile(BuildContext context, Fragment$fragmentQueueStat stat) {
-    final loc = AppLocalizations.of(context)!;
-    final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
-    final busy = stat.depth > 0;
-
-    return ListTile(
-      leading: Icon(Icons.list_alt, size: 20, color: mutedColor),
-      title: Text(
-        stat.queue,
-        style: Theme.of(context).textTheme.bodyMedium,
-      ),
-      subtitle: Text(
-        loc.consumers(stat.consumers),
-        style: Theme.of(context).textTheme.bodySmall,
-      ),
-      trailing: Chip(
-        label: Text(
-          loc.queueDepth(stat.depth),
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: busy ? Theme.of(context).colorScheme.primary : null,
-              ),
-        ),
-        padding: EdgeInsets.zero,
-        visualDensity: VisualDensity.compact,
-      ),
-    );
-  }
-
-  Widget _failureTile(
-      BuildContext context, Fragment$fragmentEventFailure failure) {
-    final errorColor = Theme.of(context).colorScheme.error;
-
-    return ListTile(
-      leading: Icon(Icons.error_outline, size: 20, color: errorColor),
-      title: Text(
-        [failure.queue, if (failure.eventType != null) failure.eventType!]
-            .join(' · '),
-        style: Theme.of(context).textTheme.bodyMedium,
-      ),
-      subtitle: Text(
-        [
-          if (failure.errorMessage != null) failure.errorMessage!,
-          '${failure.nodeName} · ${failure.occurredAt}',
-        ].join('\n'),
-        style: Theme.of(context).textTheme.bodySmall,
-      ),
-    );
-  }
-
-  Widget _sectionCard(List<Widget> tiles) {
-    return Card(
-      child: Column(
-        children: [
-          for (int i = 0; i < tiles.length; i++) ...[
-            if (i > 0) const Divider(height: 1, indent: 56),
-            tiles[i],
-          ],
+          sectionLabel(loc.busyNow),
+          card(2, Icons.troubleshoot),
+          sectionLabel(loc.queuedWork),
+          card(3, Icons.list_alt),
         ],
       ),
     );
@@ -242,64 +195,17 @@ class _ServerActivityPageState extends State<ServerActivityPage> {
         ),
       );
     } else if (!_loaded) {
-      final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
-      body = Skeletonizer(
-        enabled: true,
-        child: ListView(
-          padding: const EdgeInsets.all(16.0),
-          children: [
-            _sectionLabel(context, loc.nodes),
-            _sectionCard(List.generate(
-              2,
-              (i) => ListTile(
-                leading: Icon(Icons.storage, size: 20, color: mutedColor),
-                title: Text(BoneMock.name),
-                subtitle: Text(BoneMock.words(2)),
-              ),
-            )),
-            _sectionLabel(context, loc.queues),
-            _sectionCard(List.generate(
-              3,
-              (i) => ListTile(
-                leading: Icon(Icons.list_alt, size: 20, color: mutedColor),
-                title: Text(BoneMock.name),
-                subtitle: Text(BoneMock.words(2)),
-              ),
-            )),
-          ],
-        ),
-      );
+      body = _skeleton(context, loc);
     } else {
-      final nodes = _nodes.values.toList()
-        ..sort((a, b) => a.nodeName.compareTo(b.nodeName));
-      body = ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          if (_liveFeedBroken) const LiveFeedBanner(),
-          if (nodes.isNotEmpty) ...[
-            _sectionLabel(context, loc.nodes),
-            _sectionCard([for (final node in nodes) _nodeTile(context, node)]),
-          ],
-          if (_queueStats.isNotEmpty) ...[
-            _sectionLabel(context, loc.queues),
-            _sectionCard(
-                [for (final stat in _queueStats) _queueTile(context, stat)]),
-          ],
-          _sectionLabel(context, loc.recentFailures),
-          if (_failures.isEmpty)
-            Card(
-              child: ListTile(
-                title: Text(
-                  loc.noRecentFailures,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ),
-            )
-          else
-            _sectionCard([
-              for (final failure in _failures) _failureTile(context, failure)
-            ]),
+      body = ServerActivityBody(
+        nodes: _nodes.values.toList(),
+        queueStats: _queueStats,
+        failures: _failures,
+        transcodes: [
+          for (final passes in _transcodesByNode.values) ...passes,
         ],
+        liveFeedBroken: _liveFeedBroken,
+        now: DateTime.now().toUtc(),
       );
     }
 

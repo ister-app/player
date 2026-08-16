@@ -853,6 +853,133 @@
     }
   },
   "idle": "Idle",
+  "busyNow": "Working on now",
+  "queuedWork": "Queued work",
+  "allQueuesEmpty": "All queues are empty",
+  "queueDetails": "Queue details",
+  "serverIdle": "The server is idle",
+  "serverIdleSubtitle": "Nothing is being processed and no work is queued.",
+  "lastSeenAgo": "Last seen {time}",
+  "@lastSeenAgo": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "backgroundTag": "background",
+  "transcodesTag": "Transcoding",
+  "activityKindAnalyzeFile": "Analyzing media file",
+  "activityKindScan": "Scanning for new files",
+  "activityKindAnalyzeLibrary": "Analyzing library",
+  "activityKindMetadata": "Fetching metadata",
+  "activityKindImportFiles": "Importing files",
+  "activityKindArtwork": "Processing artwork",
+  "activityKindTranscode": "Transcoding",
+  "activityKindPodcast": "Updating podcasts",
+  "activityKindContinueWatching": "Updating continue watching",
+  "activityKindSegments": "Detecting intros and outros",
+  "activityKindSearchIndex": "Updating search index",
+  "activityKindOther": "Working",
+  "activityQueuedAnalyzeFile": "{count} files to analyze",
+  "@activityQueuedAnalyzeFile": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityQueuedScan": "{count} scan jobs waiting",
+  "@activityQueuedScan": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityQueuedMetadata": "{count} items awaiting metadata",
+  "@activityQueuedMetadata": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityQueuedArtwork": "{count} images to process",
+  "@activityQueuedArtwork": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityQueuedTranscode": "{count} transcode jobs waiting",
+  "@activityQueuedTranscode": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityQueuedSegments": "{count} seasons to check for intros",
+  "@activityQueuedSegments": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityQueuedGeneric": "{count} waiting — {label}",
+  "@activityQueuedGeneric": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "activityStepProbe": "Reading streams",
+  "activityStepCrop": "Detecting black bars",
+  "activityStepSubtitles": "Extracting subtitles",
+  "activityStepBoundaries": "Finding episode boundaries",
+  "activityStepStill": "Creating background still",
+  "activityStepFingerprint": "Fingerprinting audio",
+  "activityStepMatch": "Matching intros and outros",
+  "activityStepTranscode": "Transcoding",
+  "relativeSecondsAgo": "{count}s ago",
+  "@relativeSecondsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "relativeMinutesAgo": "{count} min ago",
+  "@relativeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "relativeHoursAgo": "{count} hr ago",
+  "@relativeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "relativeDaysAgo": "{count} days ago",
+  "@relativeDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "statePlaying": "Playing",
   "statePaused": "Paused",
   "liveUpdatesUnavailable": "Live updates interrupted — reconnecting",
@@ -1531,75 +1658,177 @@
   "removeFromPlaylist": "Remove from playlist",
   "editFilter": "Edit filter",
   "devicesTitle": "Devices",
-  "@devicesTitle": {"description": "Settings tile + page title for the user's registered devices"},
+  "@devicesTitle": {
+    "description": "Settings tile + page title for the user's registered devices"
+  },
   "devicesSubtitle": "Your devices, play on or hand off to another device",
-  "@devicesSubtitle": {"description": "Subtitle of the devices tile on the settings page"},
+  "@devicesSubtitle": {
+    "description": "Subtitle of the devices tile on the settings page"
+  },
   "deviceThisDevice": "This device",
-  "@deviceThisDevice": {"description": "Chip marking the row of the device the app runs on"},
+  "@deviceThisDevice": {
+    "description": "Chip marking the row of the device the app runs on"
+  },
   "deviceOnlineNow": "Online",
-  "@deviceOnlineNow": {"description": "Last-seen label when the device is online right now"},
+  "@deviceOnlineNow": {
+    "description": "Last-seen label when the device is online right now"
+  },
   "deviceLastSeenUnknown": "Last online: unknown",
-  "@deviceLastSeenUnknown": {"description": "Last-seen label when the server sent no usable timestamp"},
+  "@deviceLastSeenUnknown": {
+    "description": "Last-seen label when the server sent no usable timestamp"
+  },
   "deviceLastSeenMinutesAgo": "Last online {count, plural, =1{1 minute} other{{count} minutes}} ago",
-  "@deviceLastSeenMinutesAgo": {"placeholders": {"count": {"type": "int"}}},
+  "@deviceLastSeenMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "deviceLastSeenHoursAgo": "Last online {count, plural, =1{1 hour} other{{count} hours}} ago",
-  "@deviceLastSeenHoursAgo": {"placeholders": {"count": {"type": "int"}}},
+  "@deviceLastSeenHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "deviceLastSeenDaysAgo": "Last online {count, plural, =1{1 day} other{{count} days}} ago",
-  "@deviceLastSeenDaysAgo": {"placeholders": {"count": {"type": "int"}}},
+  "@deviceLastSeenDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "deviceNowPlaying": "Now playing: {title}",
-  "@deviceNowPlaying": {"description": "Device row subtitle while that device is playing something", "placeholders": {"title": {"type": "String"}}},
+  "@deviceNowPlaying": {
+    "description": "Device row subtitle while that device is playing something",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "deviceRename": "Rename",
-  "@deviceRename": {"description": "Menu item + dialog title to rename a device"},
+  "@deviceRename": {
+    "description": "Menu item + dialog title to rename a device"
+  },
   "deviceRemove": "Remove",
-  "@deviceRemove": {"description": "Menu item + confirm button to remove a device"},
+  "@deviceRemove": {
+    "description": "Menu item + confirm button to remove a device"
+  },
   "deviceRemoveConfirm": "Remove device '{name}'?",
-  "@deviceRemoveConfirm": {"placeholders": {"name": {"type": "String"}}},
+  "@deviceRemoveConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "deviceRemoveThisDeviceConfirm": "Remove this device ('{name}')? It re-registers itself the next time the app starts.",
-  "@deviceRemoveThisDeviceConfirm": {"placeholders": {"name": {"type": "String"}}},
+  "@deviceRemoveThisDeviceConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "deviceCouldNotLoad": "Could not load devices. The server may not support them yet.",
-  "@deviceCouldNotLoad": {"description": "Devices page error state, also shown against older servers"},
+  "@deviceCouldNotLoad": {
+    "description": "Devices page error state, also shown against older servers"
+  },
   "deviceCouldNotSave": "Could not save the change.",
-  "@deviceCouldNotSave": {"description": "Snackbar when a device rename/remove fails"},
+  "@deviceCouldNotSave": {
+    "description": "Snackbar when a device rename/remove fails"
+  },
   "deviceNoDevices": "No devices registered yet.",
-  "@deviceNoDevices": {"description": "Devices page empty state"},
-  "devicePlayOn": "Play on device\u2026",
-  "@devicePlayOn": {"description": "Context action that plays an item on another of your devices"},
-  "deviceMoveQueue": "Move playback to device\u2026",
-  "@deviceMoveQueue": {"description": "Player menu action that hands the queue off to another device"},
-  "deviceListenAlongOn": "Listen along on device\u2026",
-  "@deviceListenAlongOn": {"description": "Action that makes another of your devices join this queue in follow mode"},
+  "@deviceNoDevices": {
+    "description": "Devices page empty state"
+  },
+  "devicePlayOn": "Play on device…",
+  "@devicePlayOn": {
+    "description": "Context action that plays an item on another of your devices"
+  },
+  "deviceMoveQueue": "Move playback to device…",
+  "@deviceMoveQueue": {
+    "description": "Player menu action that hands the queue off to another device"
+  },
+  "deviceListenAlongOn": "Listen along on device…",
+  "@deviceListenAlongOn": {
+    "description": "Action that makes another of your devices join this queue in follow mode"
+  },
   "devicePickerNoDevicesOnline": "None of your other devices are online.",
-  "@devicePickerNoDevicesOnline": {"description": "Device picker empty state"},
+  "@devicePickerNoDevicesOnline": {
+    "description": "Device picker empty state"
+  },
   "deviceCommandSent": "Sent to {name}",
-  "@deviceCommandSent": {"description": "Snackbar after a device command was accepted", "placeholders": {"name": {"type": "String"}}},
+  "@deviceCommandSent": {
+    "description": "Snackbar after a device command was accepted",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "deviceCommandFailed": "The device did not accept the command. It may have just gone offline.",
-  "@deviceCommandFailed": {"description": "Snackbar when the server refuses a device command"},
+  "@deviceCommandFailed": {
+    "description": "Snackbar when the server refuses a device command"
+  },
   "devicePullQueueHere": "Play on this device",
-  "@devicePullQueueHere": {"description": "Listen-together action that pulls the session's queue from the device playing it to this device"},
+  "@devicePullQueueHere": {
+    "description": "Listen-together action that pulls the session's queue from the device playing it to this device"
+  },
   "devicePullRequested": "Moving playback to this device…",
-  "@devicePullRequested": {"description": "Snackbar after the pull request was delivered to the playing device"},
+  "@devicePullRequested": {
+    "description": "Snackbar after the pull request was delivered to the playing device"
+  },
   "mediaNotReady": "This item cannot be played yet — the media file is still being processed.",
-  "@mediaNotReady": {"description": "Snackbar when playback is requested for an item whose media file has not been analyzed yet"},
+  "@mediaNotReady": {
+    "description": "Snackbar when playback is requested for an item whose media file has not been analyzed yet"
+  },
   "pause": "Pause",
-  "@pause": {"description": "Tooltip of the pause button in the video controls"},
+  "@pause": {
+    "description": "Tooltip of the pause button in the video controls"
+  },
   "skipNext": "Next",
-  "@skipNext": {"description": "Tooltip of the next-item button in the video controls"},
+  "@skipNext": {
+    "description": "Tooltip of the next-item button in the video controls"
+  },
   "skipPrevious": "Previous",
-  "@skipPrevious": {"description": "Tooltip of the previous-item button in the video controls"},
+  "@skipPrevious": {
+    "description": "Tooltip of the previous-item button in the video controls"
+  },
   "audioAndSubtitles": "Audio & subtitles",
-  "@audioAndSubtitles": {"description": "Tooltip of the track-selection menu button in the video controls"},
+  "@audioAndSubtitles": {
+    "description": "Tooltip of the track-selection menu button in the video controls"
+  },
   "audioTrackLabel": "Audio",
-  "@audioTrackLabel": {"description": "Submenu header for audio track selection"},
+  "@audioTrackLabel": {
+    "description": "Submenu header for audio track selection"
+  },
   "subtitlesTrackLabel": "Subtitles",
-  "@subtitlesTrackLabel": {"description": "Submenu header for subtitle track selection"},
+  "@subtitlesTrackLabel": {
+    "description": "Submenu header for subtitle track selection"
+  },
   "mute": "Mute",
-  "@mute": {"description": "Tooltip of the mute button in the video controls"},
+  "@mute": {
+    "description": "Tooltip of the mute button in the video controls"
+  },
   "unmute": "Unmute",
-  "@unmute": {"description": "Tooltip of the unmute button in the video controls"},
+  "@unmute": {
+    "description": "Tooltip of the unmute button in the video controls"
+  },
   "subtitlesUnsupportedImageBased": "Subtitles not supported (image-based)",
-  "@subtitlesUnsupportedImageBased": {"description": "Disabled track-menu entry when the file only has image-based (DVD/PGS) subtitles the stream cannot offer"},
+  "@subtitlesUnsupportedImageBased": {
+    "description": "Disabled track-menu entry when the file only has image-based (DVD/PGS) subtitles the stream cannot offer"
+  },
   "zoomToFill": "Fill screen",
-  "@zoomToFill": {"description": "Tooltip of the zoom button when the video is letterboxed (activating crops it to fill)"},
+  "@zoomToFill": {
+    "description": "Tooltip of the zoom button when the video is letterboxed (activating crops it to fill)"
+  },
   "zoomToFit": "Fit to screen",
-  "@zoomToFit": {"description": "Tooltip of the zoom button when the video fills the surface (activating restores letterboxed fit)"}
+  "@zoomToFit": {
+    "description": "Tooltip of the zoom button when the video fills the surface (activating restores letterboxed fit)"
+  }
 }

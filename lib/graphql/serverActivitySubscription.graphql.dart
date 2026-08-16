@@ -140,5 +140,6 @@ const documentNodeSubscriptionserverActivity = DocumentNode(
     fragmentDefinitionfragmentServerActivityEvent,
     fragmentDefinitionfragmentQueueStat,
     fragmentDefinitionfragmentEventFailure,
+    fragmentDefinitionfragmentTranscodePass,
   ],
 );

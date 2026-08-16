@@ -67,6 +67,7 @@ MockClient _fakeGraphQL(List<Map<String, dynamic>> devices,
               'nodes': [],
               'queueStats': [],
               'recentFailures': [],
+              'transcodes': [],
               'nowPlaying': [],
             },
           }

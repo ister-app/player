@@ -239,6 +239,27 @@ const documentNodeQueryserverActivitySnapshot = DocumentNode(
                   ),
                 ),
                 FieldNode(
+                  name: NameNode(value: 'transcodes'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: SelectionSetNode(
+                    selections: [
+                      FragmentSpreadNode(
+                        name: NameNode(value: 'fragmentTranscodePass'),
+                        directives: [],
+                      ),
+                      FieldNode(
+                        name: NameNode(value: '__typename'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                    ],
+                  ),
+                ),
+                FieldNode(
                   name: NameNode(value: '__typename'),
                   alias: null,
                   arguments: [],
@@ -261,6 +282,7 @@ const documentNodeQueryserverActivitySnapshot = DocumentNode(
     fragmentDefinitionfragmentServerActivityEvent,
     fragmentDefinitionfragmentQueueStat,
     fragmentDefinitionfragmentEventFailure,
+    fragmentDefinitionfragmentTranscodePass,
     fragmentDefinitionfragmentPlaybackSession,
   ],
 );
@@ -271,6 +293,7 @@ class Query$serverActivitySnapshot$serverActivitySnapshot {
     required this.queueStats,
     required this.recentFailures,
     required this.nowPlaying,
+    required this.transcodes,
     this.$__typename = 'ServerActivitySnapshot',
   });
 
@@ -281,6 +304,7 @@ class Query$serverActivitySnapshot$serverActivitySnapshot {
     final l$queueStats = json['queueStats'];
     final l$recentFailures = json['recentFailures'];
     final l$nowPlaying = json['nowPlaying'];
+    final l$transcodes = json['transcodes'];
     final l$$__typename = json['__typename'];
     return Query$serverActivitySnapshot$serverActivitySnapshot(
       nodes: (l$nodes as List<dynamic>)
@@ -311,6 +335,13 @@ class Query$serverActivitySnapshot$serverActivitySnapshot {
             ),
           )
           .toList(),
+      transcodes: (l$transcodes as List<dynamic>)
+          .map(
+            (e) => Fragment$fragmentTranscodePass.fromJson(
+              (e as Map<String, dynamic>),
+            ),
+          )
+          .toList(),
       $__typename: (l$$__typename as String),
     );
   }
@@ -322,6 +353,8 @@ class Query$serverActivitySnapshot$serverActivitySnapshot {
   final List<Fragment$fragmentEventFailure> recentFailures;
 
   final List<Fragment$fragmentPlaybackSession> nowPlaying;
+
+  final List<Fragment$fragmentTranscodePass> transcodes;
 
   final String $__typename;
 
@@ -337,6 +370,8 @@ class Query$serverActivitySnapshot$serverActivitySnapshot {
         .toList();
     final l$nowPlaying = nowPlaying;
     _resultData['nowPlaying'] = l$nowPlaying.map((e) => e.toJson()).toList();
+    final l$transcodes = transcodes;
+    _resultData['transcodes'] = l$transcodes.map((e) => e.toJson()).toList();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -348,12 +383,14 @@ class Query$serverActivitySnapshot$serverActivitySnapshot {
     final l$queueStats = queueStats;
     final l$recentFailures = recentFailures;
     final l$nowPlaying = nowPlaying;
+    final l$transcodes = transcodes;
     final l$$__typename = $__typename;
     return Object.hashAll([
       Object.hashAll(l$nodes.map((v) => v)),
       Object.hashAll(l$queueStats.map((v) => v)),
       Object.hashAll(l$recentFailures.map((v) => v)),
       Object.hashAll(l$nowPlaying.map((v) => v)),
+      Object.hashAll(l$transcodes.map((v) => v)),
       l$$__typename,
     ]);
   }
@@ -415,6 +452,18 @@ class Query$serverActivitySnapshot$serverActivitySnapshot {
         return false;
       }
     }
+    final l$transcodes = transcodes;
+    final lOther$transcodes = other.transcodes;
+    if (l$transcodes.length != lOther$transcodes.length) {
+      return false;
+    }
+    for (int i = 0; i < l$transcodes.length; i++) {
+      final l$transcodes$entry = l$transcodes[i];
+      final lOther$transcodes$entry = lOther$transcodes[i];
+      if (l$transcodes$entry != lOther$transcodes$entry) {
+        return false;
+      }
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -452,6 +501,7 @@ abstract class CopyWith$Query$serverActivitySnapshot$serverActivitySnapshot<
     List<Fragment$fragmentQueueStat>? queueStats,
     List<Fragment$fragmentEventFailure>? recentFailures,
     List<Fragment$fragmentPlaybackSession>? nowPlaying,
+    List<Fragment$fragmentTranscodePass>? transcodes,
     String? $__typename,
   });
   TRes nodes(
@@ -488,6 +538,14 @@ abstract class CopyWith$Query$serverActivitySnapshot$serverActivitySnapshot<
     )
     _fn,
   );
+  TRes transcodes(
+    Iterable<Fragment$fragmentTranscodePass> Function(
+      Iterable<
+        CopyWith$Fragment$fragmentTranscodePass<Fragment$fragmentTranscodePass>
+      >,
+    )
+    _fn,
+  );
 }
 
 class _CopyWithImpl$Query$serverActivitySnapshot$serverActivitySnapshot<TRes>
@@ -510,6 +568,7 @@ class _CopyWithImpl$Query$serverActivitySnapshot$serverActivitySnapshot<TRes>
     Object? queueStats = _undefined,
     Object? recentFailures = _undefined,
     Object? nowPlaying = _undefined,
+    Object? transcodes = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Query$serverActivitySnapshot$serverActivitySnapshot(
@@ -525,6 +584,9 @@ class _CopyWithImpl$Query$serverActivitySnapshot$serverActivitySnapshot<TRes>
       nowPlaying: nowPlaying == _undefined || nowPlaying == null
           ? _instance.nowPlaying
           : (nowPlaying as List<Fragment$fragmentPlaybackSession>),
+      transcodes: transcodes == _undefined || transcodes == null
+          ? _instance.transcodes
+          : (transcodes as List<Fragment$fragmentTranscodePass>),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -592,6 +654,21 @@ class _CopyWithImpl$Query$serverActivitySnapshot$serverActivitySnapshot<TRes>
       ),
     ).toList(),
   );
+
+  TRes transcodes(
+    Iterable<Fragment$fragmentTranscodePass> Function(
+      Iterable<
+        CopyWith$Fragment$fragmentTranscodePass<Fragment$fragmentTranscodePass>
+      >,
+    )
+    _fn,
+  ) => call(
+    transcodes: _fn(
+      _instance.transcodes.map(
+        (e) => CopyWith$Fragment$fragmentTranscodePass(e, (i) => i),
+      ),
+    ).toList(),
+  );
 }
 
 class _CopyWithStubImpl$Query$serverActivitySnapshot$serverActivitySnapshot<
@@ -610,6 +687,7 @@ class _CopyWithStubImpl$Query$serverActivitySnapshot$serverActivitySnapshot<
     List<Fragment$fragmentQueueStat>? queueStats,
     List<Fragment$fragmentEventFailure>? recentFailures,
     List<Fragment$fragmentPlaybackSession>? nowPlaying,
+    List<Fragment$fragmentTranscodePass>? transcodes,
     String? $__typename,
   }) => _res;
 
@@ -620,4 +698,6 @@ class _CopyWithStubImpl$Query$serverActivitySnapshot$serverActivitySnapshot<
   recentFailures(_fn) => _res;
 
   nowPlaying(_fn) => _res;
+
+  transcodes(_fn) => _res;
 }

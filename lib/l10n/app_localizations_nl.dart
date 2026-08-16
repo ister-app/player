@@ -684,6 +684,151 @@ class AppLocalizationsNl extends AppLocalizations {
   String get idle => 'Inactief';
 
   @override
+  String get busyNow => 'Nu bezig met';
+
+  @override
+  String get queuedWork => 'Wachtrij';
+
+  @override
+  String get allQueuesEmpty => 'Alle wachtrijen zijn leeg';
+
+  @override
+  String get queueDetails => 'Wachtrijdetails';
+
+  @override
+  String get serverIdle => 'De server is inactief';
+
+  @override
+  String get serverIdleSubtitle =>
+      'Er wordt niets verwerkt en er staat geen werk in de wachtrij.';
+
+  @override
+  String lastSeenAgo(String time) {
+    return 'Laatst gezien $time';
+  }
+
+  @override
+  String get backgroundTag => 'achtergrond';
+
+  @override
+  String get transcodesTag => 'Transcoderen';
+
+  @override
+  String get activityKindAnalyzeFile => 'Mediabestand analyseren';
+
+  @override
+  String get activityKindScan => 'Zoeken naar nieuwe bestanden';
+
+  @override
+  String get activityKindAnalyzeLibrary => 'Bibliotheek analyseren';
+
+  @override
+  String get activityKindMetadata => 'Metadata ophalen';
+
+  @override
+  String get activityKindImportFiles => 'Bestanden importeren';
+
+  @override
+  String get activityKindArtwork => 'Afbeeldingen verwerken';
+
+  @override
+  String get activityKindTranscode => 'Transcoderen';
+
+  @override
+  String get activityKindPodcast => 'Podcasts bijwerken';
+
+  @override
+  String get activityKindContinueWatching => 'Verder kijken bijwerken';
+
+  @override
+  String get activityKindSegments => 'Intro\'s en outro\'s detecteren';
+
+  @override
+  String get activityKindSearchIndex => 'Zoekindex bijwerken';
+
+  @override
+  String get activityKindOther => 'Bezig';
+
+  @override
+  String activityQueuedAnalyzeFile(int count) {
+    return 'Nog $count bestanden analyseren';
+  }
+
+  @override
+  String activityQueuedScan(int count) {
+    return '$count scantaken in de wachtrij';
+  }
+
+  @override
+  String activityQueuedMetadata(int count) {
+    return '$count items wachten op metadata';
+  }
+
+  @override
+  String activityQueuedArtwork(int count) {
+    return 'Nog $count afbeeldingen verwerken';
+  }
+
+  @override
+  String activityQueuedTranscode(int count) {
+    return '$count transcodeertaken in de wachtrij';
+  }
+
+  @override
+  String activityQueuedSegments(int count) {
+    return 'Nog $count seizoenen controleren op intro\'s';
+  }
+
+  @override
+  String activityQueuedGeneric(int count, String label) {
+    return '$count in de wachtrij — $label';
+  }
+
+  @override
+  String get activityStepProbe => 'Streams lezen';
+
+  @override
+  String get activityStepCrop => 'Zwarte balken detecteren';
+
+  @override
+  String get activityStepSubtitles => 'Ondertitels uitpakken';
+
+  @override
+  String get activityStepBoundaries => 'Afleveringsgrenzen bepalen';
+
+  @override
+  String get activityStepStill => 'Achtergrondafbeelding maken';
+
+  @override
+  String get activityStepFingerprint => 'Audio fingerprinten';
+
+  @override
+  String get activityStepMatch => 'Intro\'s en outro\'s vergelijken';
+
+  @override
+  String get activityStepTranscode => 'Transcoderen';
+
+  @override
+  String relativeSecondsAgo(int count) {
+    return '${count}s geleden';
+  }
+
+  @override
+  String relativeMinutesAgo(int count) {
+    return '$count min geleden';
+  }
+
+  @override
+  String relativeHoursAgo(int count) {
+    return '$count uur geleden';
+  }
+
+  @override
+  String relativeDaysAgo(int count) {
+    return '$count dagen geleden';
+  }
+
+  @override
   String get statePlaying => 'Speelt af';
 
   @override

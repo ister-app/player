@@ -12,6 +12,15 @@ fragment fragmentEventFailure on EventFailure {
     occurredAt
 }
 
+fragment fragmentTranscodePass on TranscodePass {
+    nodeName
+    mediaFileId
+    title
+    quality
+    background
+    startedAt
+}
+
 fragment fragmentServerActivityEvent on ServerActivityEvent {
     type
     nodeName
@@ -20,6 +29,8 @@ fragment fragmentServerActivityEvent on ServerActivityEvent {
         queue
         eventType
         startedAt
+        subject
+        step
     }
     processedCount
     failedCount
@@ -28,6 +39,9 @@ fragment fragmentServerActivityEvent on ServerActivityEvent {
     }
     failure {
         ...fragmentEventFailure
+    }
+    transcodes {
+        ...fragmentTranscodePass
     }
 }
 

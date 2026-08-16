@@ -683,6 +683,151 @@ class AppLocalizationsEn extends AppLocalizations {
   String get idle => 'Idle';
 
   @override
+  String get busyNow => 'Working on now';
+
+  @override
+  String get queuedWork => 'Queued work';
+
+  @override
+  String get allQueuesEmpty => 'All queues are empty';
+
+  @override
+  String get queueDetails => 'Queue details';
+
+  @override
+  String get serverIdle => 'The server is idle';
+
+  @override
+  String get serverIdleSubtitle =>
+      'Nothing is being processed and no work is queued.';
+
+  @override
+  String lastSeenAgo(String time) {
+    return 'Last seen $time';
+  }
+
+  @override
+  String get backgroundTag => 'background';
+
+  @override
+  String get transcodesTag => 'Transcoding';
+
+  @override
+  String get activityKindAnalyzeFile => 'Analyzing media file';
+
+  @override
+  String get activityKindScan => 'Scanning for new files';
+
+  @override
+  String get activityKindAnalyzeLibrary => 'Analyzing library';
+
+  @override
+  String get activityKindMetadata => 'Fetching metadata';
+
+  @override
+  String get activityKindImportFiles => 'Importing files';
+
+  @override
+  String get activityKindArtwork => 'Processing artwork';
+
+  @override
+  String get activityKindTranscode => 'Transcoding';
+
+  @override
+  String get activityKindPodcast => 'Updating podcasts';
+
+  @override
+  String get activityKindContinueWatching => 'Updating continue watching';
+
+  @override
+  String get activityKindSegments => 'Detecting intros and outros';
+
+  @override
+  String get activityKindSearchIndex => 'Updating search index';
+
+  @override
+  String get activityKindOther => 'Working';
+
+  @override
+  String activityQueuedAnalyzeFile(int count) {
+    return '$count files to analyze';
+  }
+
+  @override
+  String activityQueuedScan(int count) {
+    return '$count scan jobs waiting';
+  }
+
+  @override
+  String activityQueuedMetadata(int count) {
+    return '$count items awaiting metadata';
+  }
+
+  @override
+  String activityQueuedArtwork(int count) {
+    return '$count images to process';
+  }
+
+  @override
+  String activityQueuedTranscode(int count) {
+    return '$count transcode jobs waiting';
+  }
+
+  @override
+  String activityQueuedSegments(int count) {
+    return '$count seasons to check for intros';
+  }
+
+  @override
+  String activityQueuedGeneric(int count, String label) {
+    return '$count waiting — $label';
+  }
+
+  @override
+  String get activityStepProbe => 'Reading streams';
+
+  @override
+  String get activityStepCrop => 'Detecting black bars';
+
+  @override
+  String get activityStepSubtitles => 'Extracting subtitles';
+
+  @override
+  String get activityStepBoundaries => 'Finding episode boundaries';
+
+  @override
+  String get activityStepStill => 'Creating background still';
+
+  @override
+  String get activityStepFingerprint => 'Fingerprinting audio';
+
+  @override
+  String get activityStepMatch => 'Matching intros and outros';
+
+  @override
+  String get activityStepTranscode => 'Transcoding';
+
+  @override
+  String relativeSecondsAgo(int count) {
+    return '${count}s ago';
+  }
+
+  @override
+  String relativeMinutesAgo(int count) {
+    return '$count min ago';
+  }
+
+  @override
+  String relativeHoursAgo(int count) {
+    return '$count hr ago';
+  }
+
+  @override
+  String relativeDaysAgo(int count) {
+    return '$count days ago';
+  }
+
+  @override
   String get statePlaying => 'Playing';
 
   @override

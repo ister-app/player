@@ -185,6 +185,133 @@
   "processedCount": "{count} verwerkt",
   "failedCount": "{count} mislukt",
   "idle": "Inactief",
+  "busyNow": "Nu bezig met",
+  "queuedWork": "Wachtrij",
+  "allQueuesEmpty": "Alle wachtrijen zijn leeg",
+  "queueDetails": "Wachtrijdetails",
+  "serverIdle": "De server is inactief",
+  "serverIdleSubtitle": "Er wordt niets verwerkt en er staat geen werk in de wachtrij.",
+  "lastSeenAgo": "Laatst gezien {time}",
+  "@lastSeenAgo": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "backgroundTag": "achtergrond",
+  "transcodesTag": "Transcoderen",
+  "activityKindAnalyzeFile": "Mediabestand analyseren",
+  "activityKindScan": "Zoeken naar nieuwe bestanden",
+  "activityKindAnalyzeLibrary": "Bibliotheek analyseren",
+  "activityKindMetadata": "Metadata ophalen",
+  "activityKindImportFiles": "Bestanden importeren",
+  "activityKindArtwork": "Afbeeldingen verwerken",
+  "activityKindTranscode": "Transcoderen",
+  "activityKindPodcast": "Podcasts bijwerken",
+  "activityKindContinueWatching": "Verder kijken bijwerken",
+  "activityKindSegments": "Intro's en outro's detecteren",
+  "activityKindSearchIndex": "Zoekindex bijwerken",
+  "activityKindOther": "Bezig",
+  "activityQueuedAnalyzeFile": "Nog {count} bestanden analyseren",
+  "@activityQueuedAnalyzeFile": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityQueuedScan": "{count} scantaken in de wachtrij",
+  "@activityQueuedScan": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityQueuedMetadata": "{count} items wachten op metadata",
+  "@activityQueuedMetadata": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityQueuedArtwork": "Nog {count} afbeeldingen verwerken",
+  "@activityQueuedArtwork": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityQueuedTranscode": "{count} transcodeertaken in de wachtrij",
+  "@activityQueuedTranscode": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityQueuedSegments": "Nog {count} seizoenen controleren op intro's",
+  "@activityQueuedSegments": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityQueuedGeneric": "{count} in de wachtrij — {label}",
+  "@activityQueuedGeneric": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "activityStepProbe": "Streams lezen",
+  "activityStepCrop": "Zwarte balken detecteren",
+  "activityStepSubtitles": "Ondertitels uitpakken",
+  "activityStepBoundaries": "Afleveringsgrenzen bepalen",
+  "activityStepStill": "Achtergrondafbeelding maken",
+  "activityStepFingerprint": "Audio fingerprinten",
+  "activityStepMatch": "Intro's en outro's vergelijken",
+  "activityStepTranscode": "Transcoderen",
+  "relativeSecondsAgo": "{count}s geleden",
+  "@relativeSecondsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "relativeMinutesAgo": "{count} min geleden",
+  "@relativeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "relativeHoursAgo": "{count} uur geleden",
+  "@relativeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "relativeDaysAgo": "{count} dagen geleden",
+  "@relativeDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "statePlaying": "Speelt af",
   "statePaused": "Gepauzeerd",
   "liveUpdatesUnavailable": "Live updates onderbroken — opnieuw verbinden",
@@ -397,16 +524,18 @@
   "deviceCouldNotLoad": "Kan apparaten niet laden. Mogelijk ondersteunt de server ze nog niet.",
   "deviceCouldNotSave": "Kan de wijziging niet opslaan.",
   "deviceNoDevices": "Nog geen apparaten geregistreerd.",
-  "devicePlayOn": "Afspelen op apparaat\u2026",
-  "deviceMoveQueue": "Afspelen verplaatsen naar apparaat\u2026",
-  "deviceListenAlongOn": "Meeluisteren op apparaat\u2026",
+  "devicePlayOn": "Afspelen op apparaat…",
+  "deviceMoveQueue": "Afspelen verplaatsen naar apparaat…",
+  "deviceListenAlongOn": "Meeluisteren op apparaat…",
   "devicePickerNoDevicesOnline": "Geen van je andere apparaten is online.",
   "deviceCommandSent": "Verstuurd naar {name}",
   "deviceCommandFailed": "Het apparaat accepteerde de opdracht niet. Mogelijk is het net offline gegaan.",
   "devicePullQueueHere": "Op dit apparaat afspelen",
   "devicePullRequested": "Afspelen wordt naar dit apparaat verplaatst…",
   "mediaNotReady": "Dit item kan nog niet worden afgespeeld — het mediabestand wordt nog verwerkt.",
-  "@mediaNotReady": {"description": "Snackbar when playback is requested for an item whose media file has not been analyzed yet"},
+  "@mediaNotReady": {
+    "description": "Snackbar when playback is requested for an item whose media file has not been analyzed yet"
+  },
   "pause": "Pauzeren",
   "skipNext": "Volgende",
   "skipPrevious": "Vorige",

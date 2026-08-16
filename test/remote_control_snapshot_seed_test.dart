@@ -57,6 +57,7 @@ MockClient _fakeGraphQL() => MockClient((request) async {
               'nodes': [],
               'queueStats': [],
               'recentFailures': [],
+              'transcodes': [],
               'nowPlaying': [_session()],
             },
           },
