@@ -1,5 +1,54 @@
 # Changelog
 
+## player v1.15.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.15.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(player): apply server-detected crop and add zoom-to-fill toggle ([`d45ccaa`](https://github.com/ister-app/player/commit/d45ccaa))
+- feat(player): custom video player controls ([`42d90e3`](https://github.com/ister-app/player/commit/42d90e3))
+- feat(episodes): play and surface multi-episode files (s04e06-e07) ([`977f87f`](https://github.com/ister-app/player/commit/977f87f))
+- feat(windows): system media controls through SMTC ([`7195979`](https://github.com/ister-app/player/commit/7195979))
+- feat(desktop): add the windows and macos runner projects ([`51db4d8`](https://github.com/ister-app/player/commit/51db4d8))
+
+### Fixes
+
+- fix(player): correct external-subtitle timing against the TS timeline ([`959ea1d`](https://github.com/ister-app/player/commit/959ea1d))
+- fix(player): side-load native subtitles as external SRTs ([`ee2fd0f`](https://github.com/ister-app/player/commit/ee2fd0f))
+- fix(player): seek without stream re-open and surface HLS subtitles again ([`196fa24`](https://github.com/ister-app/player/commit/196fa24))
+- fix(ci): repoint the e2e server pin to 2.13.0 for targetDeviceId and mediaFileParts ([`e651e6e`](https://github.com/ister-app/player/commit/e651e6e))
+- fix(web): retry playback after a swallowed autoplay rejection ([`b617e4c`](https://github.com/ister-app/player/commit/b617e4c))
+- fix(windows): silence the experimental-coroutine deprecation error ([`ac1a3b9`](https://github.com/ister-app/player/commit/ac1a3b9))
+- fix(linux): drop the unused runner/ copy of the GTK runner ([`8b3d235`](https://github.com/ister-app/player/commit/8b3d235))
+
+### Other
+
+- test(player): detect stream re-open via track-list reset instead of timing ([`406eddc`](https://github.com/ister-app/player/commit/406eddc))
+- test(player): probe raw sub-text for duplicate cue rendering ([`7601682`](https://github.com/ister-app/player/commit/7601682))
+- docs(player): pin down why native subtitles must be WEBVTT, add mpv probe ([`0b750c5`](https://github.com/ister-app/player/commit/0b750c5))
+- build(player): bump media-kit pin for dependency refresh and hls.js 1.7.0 ([`5187ea5`](https://github.com/ister-app/player/commit/5187ea5))
+- build(player): bump media-kit pin for subtitle cleanup and extension_picky ([`e21b65d`](https://github.com/ister-app/player/commit/e21b65d))
+- perf(player): use optimizedDeepEquals for cache rebroadcasts ([`72aa60e`](https://github.com/ister-app/player/commit/72aa60e))
+- ci: dedupe release version stamping and cache the desktop release builds ([`8c05351`](https://github.com/ister-app/player/commit/8c05351))
+- chore: ignore the Swift Package Manager build directories ([`9fa2178`](https://github.com/ister-app/player/commit/9fa2178))
+- docs: document the windows and macos builds ([`0eae09f`](https://github.com/ister-app/player/commit/0eae09f))
+- ci: build windows and macos, and attach their zips to the release ([`5e78636`](https://github.com/ister-app/player/commit/5e78636))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.15.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.14.1...v1.15.0
+
 ## player v1.14.1
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
