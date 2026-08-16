@@ -453,6 +453,41 @@ class MediaPlayerHandler extends BaseAudioHandler
     return (startMs: startMs, endMs: startMs + durationMs);
   }
 
+  /// The detected intro or outro of [ep], in absolute file time (the same
+  /// timeline as [episodePartBounds] and the player position). Null while the
+  /// server has not detected segments for the file, and for the sibling
+  /// episodes' segments in a multi-episode file.
+  static ({int startMs, int endMs})? segmentBounds(
+      Fragment$fragmentEpisode? ep, Enum$MediaSegmentType type) {
+    if (ep == null) return null;
+    final file =
+        ep.mediaFileParts?.firstOrNull?.mediaFile ?? ep.mediaFile?.firstOrNull;
+    final segments = file?.segments;
+    if (segments == null) return null;
+    final multiEpisode = (file!.episodes?.length ?? 0) >= 2;
+    for (final segment in segments) {
+      if (segment.type != type) continue;
+      if (multiEpisode && segment.episodeId != ep.id) continue;
+      final startMs = segment.startInMilliseconds.toInt();
+      final endMs = segment.endInMilliseconds.toInt();
+      if (endMs <= startMs) continue;
+      return (startMs: startMs, endMs: endMs);
+    }
+    return null;
+  }
+
+  /// The playing episode's detected intro, in absolute file time.
+  ({int startMs, int endMs})? get currentIntroBounds =>
+      _currentMediaType == IsterMediaTypes.episode
+          ? segmentBounds(episode, Enum$MediaSegmentType.INTRO)
+          : null;
+
+  /// The playing episode's detected outro (credits), in absolute file time.
+  ({int startMs, int endMs})? get currentOutroBounds =>
+      _currentMediaType == IsterMediaTypes.episode
+          ? segmentBounds(episode, Enum$MediaSegmentType.OUTRO)
+          : null;
+
   int? get _movieStartTimeMs {
     final ws = movie?.watchStatus;
     if (ws != null && ws.isNotEmpty && !ws.first.watched) {
@@ -2735,9 +2770,74 @@ class MediaPlayerHandler extends BaseAudioHandler
       }
 
       _maybeAdvancePastEpisodeBoundary(pos);
+      maybeAutoSkipIntro(pos);
 
       await _syncProgress(pos);
     });
+  }
+
+  /// Cached autoSkipIntro preference, refreshed once per item — the position
+  /// listener runs every frame and must never await preferences.
+  bool _autoSkipIntro = false;
+  String? _autoSkipPrefForMediaId;
+
+  /// Item id an auto-skip already fired for: one skip per item, so seeking
+  /// back into the intro shows only the button instead of force-skipping again.
+  String? _autoSkippedForMediaId;
+
+  @visibleForTesting
+  void resetAutoSkipState({bool autoSkipIntro = false}) {
+    _autoSkipIntro = autoSkipIntro;
+    // Marking the pref fresh for the current item keeps the async refresh from
+    // overwriting the value a test just installed.
+    _autoSkipPrefForMediaId = mediaItem.value?.id;
+    _autoSkippedForMediaId = null;
+  }
+
+  /// Whether the auto-skip already fired for the current item.
+  @visibleForTesting
+  bool get introAutoSkipped =>
+      _autoSkippedForMediaId != null &&
+      _autoSkippedForMediaId == mediaItem.value?.id;
+
+  /// Seeks past the detected intro when the user enabled autoSkipIntro.
+  @visibleForTesting
+  void maybeAutoSkipIntro(Duration pos) {
+    // A follower never skips on its own: the leader's seek is forwarded as a
+    // SEEK command (same rule as _maybeAdvancePastEpisodeBoundary).
+    if (_followMode) return;
+    if (_currentMediaType != IsterMediaTypes.episode) return;
+    if (!_player.state.playing && !ClientManager.usesTestClients) return;
+    final mediaId = mediaItem.value?.id;
+    if (mediaId == null) return;
+    if (_autoSkipPrefForMediaId != mediaId) {
+      _autoSkipPrefForMediaId = mediaId;
+      unawaited(PlaybackPreferences.getAutoSkipIntro(serverName: serverName)
+          .then((value) => _autoSkipIntro = value)
+          .catchError((_) {}));
+    }
+    if (!_autoSkipIntro) return;
+    if (_autoSkippedForMediaId == mediaId) return;
+    final target = autoSkipIntroTarget(
+        posMs: pos.inMilliseconds, intro: currentIntroBounds);
+    if (target == null) return;
+    _autoSkippedForMediaId = mediaId;
+    LoggerService()
+        .logger
+        .d('[SEGMENT] Auto-skipping intro to $target ms');
+    unawaited(seek(Duration(milliseconds: target)));
+  }
+
+  /// Where an auto-skip should land, or null when the position is not inside
+  /// the skippable part of the intro. The first second is left alone so a
+  /// deliberate seek to the intro start is not instantly overridden, and the
+  /// last seconds aren't worth a micro-seek.
+  static int? autoSkipIntroTarget(
+      {required int posMs, required ({int startMs, int endMs})? intro}) {
+    if (intro == null) return null;
+    if (posMs < intro.startMs + 1000) return null;
+    if (posMs >= intro.endMs - 3000) return null;
+    return intro.endMs;
   }
 
   /// An episode inside a multi-episode file "ends" at its slice boundary,

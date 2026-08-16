@@ -23,6 +23,7 @@ class _ServerSettingsPlaybackPageState
     extends State<ServerSettingsPlaybackPage> {
   bool _directPlay = true;
   bool _transcode = true;
+  bool _autoSkipIntro = false;
   int? _maxVideoHeight;
   late Future<void> _preferencesFuture;
 
@@ -38,11 +39,14 @@ class _ServerSettingsPlaybackPageState
     final transcode = await PlaybackPreferences.getTranscode(serverName: server);
     final maxVideoHeight =
         await PlaybackPreferences.getMaxVideoHeight(serverName: server);
+    final autoSkipIntro =
+        await PlaybackPreferences.getAutoSkipIntro(serverName: server);
     if (!mounted) return;
     setState(() {
       _directPlay = directPlay;
       _transcode = transcode;
       _maxVideoHeight = maxVideoHeight;
+      _autoSkipIntro = autoSkipIntro;
     });
   }
 
@@ -87,6 +91,19 @@ class _ServerSettingsPlaybackPageState
                               serverName: server);
                           setState(() => _transcode = value);
                         },
+                ),
+              ),
+              Card(
+                child: SwitchListTile(
+                  secondary: const Icon(Icons.skip_next_outlined),
+                  title: Text(loc.autoSkipIntro),
+                  subtitle: Text(loc.autoSkipIntroDescription),
+                  value: _autoSkipIntro,
+                  onChanged: (value) {
+                    PlaybackPreferences.setAutoSkipIntro(value,
+                        serverName: server);
+                    setState(() => _autoSkipIntro = value);
+                  },
                 ),
               ),
               Card(

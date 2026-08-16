@@ -238,6 +238,19 @@ class AppLocalizationsNl extends AppLocalizations {
       'Origineel bestand streamen zonder transcodering';
 
   @override
+  String get autoSkipIntro => 'Intro\'s automatisch overslaan';
+
+  @override
+  String get autoSkipIntroDescription =>
+      'Spring zonder vragen voorbij gedetecteerde intro\'s';
+
+  @override
+  String get skipIntro => 'Intro overslaan';
+
+  @override
+  String get nextEpisode => 'Volgende aflevering';
+
+  @override
   String get analyzeMedia => 'Analyseer media';
 
   @override

@@ -237,6 +237,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Stream the original file without transcoding';
 
   @override
+  String get autoSkipIntro => 'Skip intros automatically';
+
+  @override
+  String get autoSkipIntroDescription =>
+      'Jump past detected intros without asking';
+
+  @override
+  String get skipIntro => 'Skip intro';
+
+  @override
+  String get nextEpisode => 'Next episode';
+
+  @override
   String get analyzeMedia => 'Analyze media';
 
   @override

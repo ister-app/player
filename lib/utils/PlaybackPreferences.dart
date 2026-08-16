@@ -26,6 +26,18 @@ class PlaybackPreferences {
     await service.save(serverName, current.copyWith(transcode: value));
   }
 
+  /// Auto-seek past detected intros during playback.
+  static Future<bool> getAutoSkipIntro({String? serverName}) async {
+    final settings = await UserSettingsService().settingsFor(serverName);
+    return settings.autoSkipIntro;
+  }
+
+  static Future<void> setAutoSkipIntro(bool value, {String? serverName}) async {
+    final service = UserSettingsService();
+    final current = await service.settingsFor(serverName);
+    await service.save(serverName, current.copyWith(autoSkipIntro: value));
+  }
+
   /// Highest video variant to play and pre-transcode (720 / 480); null means no cap.
   static Future<int?> getMaxVideoHeight({String? serverName}) async {
     final settings = await UserSettingsService().settingsFor(serverName);

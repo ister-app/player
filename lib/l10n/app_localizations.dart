@@ -500,6 +500,30 @@ abstract class AppLocalizations {
   /// **'Stream the original file without transcoding'**
   String get directPlayDescription;
 
+  /// Label for the auto-skip-intro toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Skip intros automatically'**
+  String get autoSkipIntro;
+
+  /// Subtitle for the auto-skip-intro toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Jump past detected intros without asking'**
+  String get autoSkipIntroDescription;
+
+  /// Overlay button shown during a detected intro
+  ///
+  /// In en, this message translates to:
+  /// **'Skip intro'**
+  String get skipIntro;
+
+  /// Overlay button shown during the closing credits
+  ///
+  /// In en, this message translates to:
+  /// **'Next episode'**
+  String get nextEpisode;
+
   /// Menu item to trigger media analysis for an episode, movie or show
   ///
   /// In en, this message translates to:

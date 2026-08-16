@@ -279,6 +279,22 @@
   "@directPlayDescription": {
     "description": "Subtitle for the direct play toggle"
   },
+  "autoSkipIntro": "Skip intros automatically",
+  "@autoSkipIntro": {
+    "description": "Label for the auto-skip-intro toggle"
+  },
+  "autoSkipIntroDescription": "Jump past detected intros without asking",
+  "@autoSkipIntroDescription": {
+    "description": "Subtitle for the auto-skip-intro toggle"
+  },
+  "skipIntro": "Skip intro",
+  "@skipIntro": {
+    "description": "Overlay button shown during a detected intro"
+  },
+  "nextEpisode": "Next episode",
+  "@nextEpisode": {
+    "description": "Overlay button shown during the closing credits"
+  },
   "analyzeMedia": "Analyze media",
   "@analyzeMedia": {
     "description": "Menu item to trigger media analysis for an episode, movie or show"

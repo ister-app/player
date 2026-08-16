@@ -10,6 +10,7 @@ import '../../l10n/app_localizations.dart';
 import '../../utils/MediaPlayerHandler.dart';
 import '../../utils/PlatformService.dart';
 import '../WatchTogetherButton.dart';
+import 'SegmentOverlayButtons.dart';
 import 'TrackMenuButton.dart';
 import 'TrackSelectionController.dart';
 import 'VideoControlButtons.dart';
@@ -388,6 +389,15 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
             onTap: _toggle,
           ),
         overlay,
+        // Outside the auto-hiding overlay on purpose: the skip-intro /
+        // next-episode prompt must stay visible while the chrome is hidden.
+        // Sits above the seek bar; on TV it is only reachable while the
+        // controls are revealed (descendantsAreFocusable gates the D-pad).
+        Positioned(
+          right: 24,
+          bottom: fullscreen && touch ? 110 : 84,
+          child: const SegmentOverlayButtons(),
+        ),
         _bufferingIndicator(),
       ],
     );
