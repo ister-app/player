@@ -1682,20 +1682,15 @@ class MediaPlayerHandler extends BaseAudioHandler
         return;
       }
       final urlAtOpen = _currentMediaUrl;
-      // The decoded dimensions are only known once the stream produces them.
-      var actualW = _player.state.width ?? 0;
-      var actualH = _player.state.height ?? 0;
-      if (actualW <= 0 || actualH <= 0) {
-        try {
-          await _player.stream.height
-              .firstWhere((h) => (h ?? 0) > 0)
-              .timeout(const Duration(seconds: 30));
-        } catch (_) {
-          return;
-        }
-        actualW = _player.state.width ?? 0;
-        actualH = _player.state.height ?? 0;
-      }
+      // The crop must be expressed in the decoded stream's pixels — a
+      // transcoded HLS variant may be downscaled. Wait briefly for mpv to
+      // report them (videoParams; the fork does not observe bare
+      // width/height, and the render rect only updates once a video surface
+      // is attached), then fall back to the source dimensions — exact for
+      // direct play, which is the desktop default.
+      final decoded = await _waitForDecodedVideoSize();
+      final actualW = decoded?.$1 ?? video.width;
+      final actualH = decoded?.$2 ?? video.height;
       // A queue skip or re-open may have replaced the stream while waiting.
       if (_currentMediaUrl != urlAtOpen || _currentMediaUrl == null) return;
       final crop = mpvCropString(
@@ -1711,6 +1706,43 @@ class MediaPlayerHandler extends BaseAudioHandler
       await native.setProperty('video-crop', crop ?? '');
     } catch (e) {
       LoggerService().logger.w('applying video crop failed: $e');
+    }
+  }
+
+  /// The decoded video's dimensions, from mpv's videoParams or the video
+  /// controller's render rect — whichever reports first. Null when neither
+  /// does within the timeout (e.g. video decode hasn't started).
+  Future<(int, int)?> _waitForDecodedVideoSize(
+      {Duration timeout = const Duration(seconds: 10)}) async {
+    final params = _player.state.videoParams;
+    if ((params.dw ?? 0) > 0 && (params.dh ?? 0) > 0) {
+      return (params.dw!, params.dh!);
+    }
+    final rect = _videoController.rect.value;
+    if (rect != null && rect.width > 1 && rect.height > 1) {
+      return (rect.width.round(), rect.height.round());
+    }
+    final completer = Completer<(int, int)?>();
+    void completeWith(int w, int h) {
+      if (!completer.isCompleted) completer.complete((w, h));
+    }
+
+    final sub = _player.stream.videoParams.listen((p) {
+      if ((p.dw ?? 0) > 0 && (p.dh ?? 0) > 0) completeWith(p.dw!, p.dh!);
+    });
+    void rectListener() {
+      final r = _videoController.rect.value;
+      if (r != null && r.width > 1 && r.height > 1) {
+        completeWith(r.width.round(), r.height.round());
+      }
+    }
+
+    _videoController.rect.addListener(rectListener);
+    try {
+      return await completer.future.timeout(timeout, onTimeout: () => null);
+    } finally {
+      await sub.cancel();
+      _videoController.rect.removeListener(rectListener);
     }
   }
 
