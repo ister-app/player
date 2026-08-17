@@ -1,5 +1,38 @@
 # Changelog
 
+## player v1.16.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.16.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(player): human-readable server activity screen ([`03c3aff`](https://github.com/ister-app/player/commit/03c3aff))
+- feat(player): surface segment skip in the shared player view and remote control ([`b3a757e`](https://github.com/ister-app/player/commit/b3a757e))
+- feat(player): skip-intro and next-episode buttons with auto-skip setting ([`5fa9ea4`](https://github.com/ister-app/player/commit/5fa9ea4))
+- feat(player): expose media segments and autoSkipIntro in schema and fragments ([`97047bd`](https://github.com/ister-app/player/commit/97047bd))
+
+### Fixes
+
+- fix(player): read decoded video size from videoParams/rect for the crop ([`c03d43c`](https://github.com/ister-app/player/commit/c03d43c))
+
+### Other
+
+- test(player): cover intro/outro skip end-to-end and pin the segment fixtures ([`4875808`](https://github.com/ister-app/player/commit/4875808))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.16.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.15.0...v1.16.0
+
 ## player v1.15.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
