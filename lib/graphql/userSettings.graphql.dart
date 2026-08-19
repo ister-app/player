@@ -1,4 +1,5 @@
 import 'fragmentUserSettings.graphql.dart';
+
 import 'package:gql/ast.dart';
 
 class Query$userSettings {

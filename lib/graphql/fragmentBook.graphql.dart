@@ -1,5 +1,6 @@
 import 'fragmentImages.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
+
 import 'package:gql/ast.dart';
 
 class Fragment$fragmentBook {

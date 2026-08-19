@@ -3,6 +3,7 @@ import 'fragmentBookProgress.graphql.dart';
 import 'fragmentChapter.graphql.dart';
 import 'fragmentImages.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
+
 import 'package:gql/ast.dart';
 
 class Variables$Query$bookById {

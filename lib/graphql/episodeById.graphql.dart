@@ -3,6 +3,7 @@ import 'fragmentEpisode.graphql.dart';
 import 'fragmentImages.graphql.dart';
 import 'fragmentMediafiles.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
+
 import 'package:gql/ast.dart';
 
 class Variables$Query$episodeById {

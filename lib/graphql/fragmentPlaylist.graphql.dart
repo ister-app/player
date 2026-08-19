@@ -1,5 +1,7 @@
 import 'fragmentImages.graphql.dart';
+
 import 'package:gql/ast.dart';
+
 import 'schema.graphql.dart';
 
 class Fragment$fragmentPlaylist {

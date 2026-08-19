@@ -1,4 +1,5 @@
 import 'fragmentDevice.graphql.dart';
+
 import 'package:gql/ast.dart';
 
 class Variables$Mutation$renameDevice {

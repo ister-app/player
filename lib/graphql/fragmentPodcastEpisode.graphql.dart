@@ -1,5 +1,6 @@
 import 'fragmentMediafiles.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
+
 import 'package:gql/ast.dart';
 
 class Fragment$fragmentPodcastEpisode {

@@ -1,5 +1,6 @@
 import 'fragmentCredit.graphql.dart';
 import 'fragmentImages.graphql.dart';
+
 import 'package:gql/ast.dart';
 
 class Variables$Query$castByParent {

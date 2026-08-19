@@ -1,7 +1,9 @@
 import 'fragmentImages.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
 import 'fragmentSeries.graphql.dart';
+
 import 'package:gql/ast.dart';
+
 import 'schema.graphql.dart';
 
 class Variables$Query$rankedSeries {

@@ -1,5 +1,7 @@
 import 'fragmentDevice.graphql.dart';
+
 import 'package:gql/ast.dart';
+
 import 'schema.graphql.dart';
 
 class Variables$Mutation$registerDevice {

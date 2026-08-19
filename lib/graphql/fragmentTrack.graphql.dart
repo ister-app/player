@@ -1,4 +1,5 @@
 import 'fragmentMetadata.graphql.dart';
+
 import 'package:gql/ast.dart';
 
 class Fragment$fragmentTrack {

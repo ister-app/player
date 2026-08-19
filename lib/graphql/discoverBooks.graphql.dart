@@ -1,6 +1,7 @@
 import 'fragmentBook.graphql.dart';
 import 'fragmentImages.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
+
 import 'package:gql/ast.dart';
 
 class Variables$Query$discoverBooks {

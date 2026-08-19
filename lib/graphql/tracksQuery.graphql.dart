@@ -2,7 +2,9 @@ import 'fragmentAlbum.graphql.dart';
 import 'fragmentImages.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
 import 'fragmentTrack.graphql.dart';
+
 import 'package:gql/ast.dart';
+
 import 'schema.graphql.dart';
 
 class Variables$Query$tracks {

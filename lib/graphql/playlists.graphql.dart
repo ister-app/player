@@ -8,7 +8,9 @@ import 'fragmentMovie.graphql.dart';
 import 'fragmentPlaylist.graphql.dart';
 import 'fragmentPlaylistItem.graphql.dart';
 import 'fragmentWatchStatus.graphql.dart';
+
 import 'package:gql/ast.dart';
+
 import 'schema.graphql.dart';
 
 class Variables$Query$playlists {

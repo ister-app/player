@@ -1,4 +1,5 @@
 import 'fragmentPlaybackSharingSettings.graphql.dart';
+
 import 'package:gql/ast.dart';
 
 class Query$playbackSharingSettings {

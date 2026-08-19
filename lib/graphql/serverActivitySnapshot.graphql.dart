@@ -1,4 +1,5 @@
 import 'fragmentServerActivity.graphql.dart';
+
 import 'package:gql/ast.dart';
 
 class Query$serverActivitySnapshot {
