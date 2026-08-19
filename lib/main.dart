@@ -8,6 +8,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:player/routes/AppRouter.dart';
+import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/AppMessenger.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/WellKnownService.dart';
@@ -97,6 +98,22 @@ const _pageTransitionsTheme = PageTransitionsTheme(
   },
 );
 
+/// The stack the app boots into when [lastServer] was already in use, for a
+/// launch that carries no deep link of its own.
+///
+/// Built from the route rather than from the path `/server/<name>`: a path
+/// deep link also prefix-matches "/", which would leave [HomeRoute] — the
+/// server list — sitting underneath the server's shell, so the Android back
+/// button would surface that list instead of leaving the app. Going through
+/// the route also keeps a server identifier that contains a path
+/// (`localhost:8080/api`) out of a URL round-trip it does not survive.
+DeepLink bootDeepLink(PlatformDeepLink platformDeepLink, String lastServer) {
+  if (platformDeepLink.path.isEmpty || platformDeepLink.path == '/') {
+    return DeepLink.single(ServerHomeRoute(serverName: lastServer));
+  }
+  return platformDeepLink;
+}
+
 class Main extends StatefulWidget {
   const Main({super.key, this.initialServer});
 
@@ -123,13 +140,8 @@ class _MainState extends State<Main> {
     final appRouter = AppRouter();
     _routerConfig = appRouter.config(
       deepLinkBuilder: widget.initialServer != null
-          ? (platformDeepLink) {
-              if (platformDeepLink.path == '/' || platformDeepLink.path.isEmpty) {
-                return DeepLink.path(
-                    '/server/${Uri.encodeComponent(widget.initialServer!)}');
-              }
-              return platformDeepLink;
-            }
+          ? (platformDeepLink) =>
+              bootDeepLink(platformDeepLink, widget.initialServer!)
           : null,
     );
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
