@@ -298,12 +298,14 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
     final bottomBar = Row(
       children: [
         if (!centerTransport) ...[
+          SkipButtons(
+              iconSize: 24 * iconScale, side: SkipButtonSide.previous),
           PlayPauseButton(
             iconSize: 32 * iconScale,
             focusNode: _isTv ? _tvPlayPauseNode : null,
             autofocus: _isTv,
           ),
-          SkipButtons(iconSize: 24 * iconScale),
+          SkipButtons(iconSize: 24 * iconScale, side: SkipButtonSide.next),
         ],
         if (pointer) const VolumeButton(),
         const SizedBox(width: 8),
@@ -336,9 +338,11 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: const [
-                    SkipButtons(iconSize: 36),
+                    SkipButtons(iconSize: 36, side: SkipButtonSide.previous),
                     SizedBox(width: 24),
                     PlayPauseButton(iconSize: 56),
+                    SizedBox(width: 24),
+                    SkipButtons(iconSize: 36, side: SkipButtonSide.next),
                   ],
                 ),
               ),

@@ -1,11 +1,88 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:player/components/video_controls/TrackSelectionController.dart';
 import 'package:player/components/video_controls/VideoControlButtons.dart';
+import 'package:player/l10n/app_localizations.dart';
 import 'package:player/l10n/app_localizations_en.dart';
+import 'package:player/utils/MediaPlayerHandler.dart';
+
+Widget _app(Widget home) => MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('en')],
+      home: Scaffold(body: home),
+    );
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  // No video output plugin in a widget test: answer the texture-create call
+  // with null so the handler's VideoController setup idles instead of failing
+  // the suite with an unhandled MissingPluginException (see gesture_math_test).
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(
+          const MethodChannel('com.alexmercerind/media_kit_video'),
+          (call) async => null);
+  MediaKit.ensureInitialized();
+
+  group('SkipButtons sides', () {
+    final handler = MediaPlayerHandler.instance;
+
+    void seedQueue({required int? index, int length = 2}) {
+      handler.queue.add([
+        for (var i = 0; i < length; i++)
+          MediaItem(id: 'item-$i', title: 'Episode $i'),
+      ]);
+      handler.playbackState
+          .add(handler.playbackState.value.copyWith(queueIndex: index));
+    }
+
+    tearDown(() => seedQueue(index: null, length: 0));
+
+    testWidgets('each side renders only its own button', (tester) async {
+      seedQueue(index: 1, length: 3);
+
+      await tester.pumpWidget(
+          _app(const SkipButtons(side: SkipButtonSide.previous)));
+      expect(find.byIcon(Icons.skip_previous), findsOneWidget);
+      expect(find.byIcon(Icons.skip_next), findsNothing);
+
+      await tester
+          .pumpWidget(_app(const SkipButtons(side: SkipButtonSide.next)));
+      expect(find.byIcon(Icons.skip_next), findsOneWidget);
+      expect(find.byIcon(Icons.skip_previous), findsNothing);
+    });
+
+    testWidgets('both sides vanish together without a queue', (tester) async {
+      seedQueue(index: null, length: 0);
+
+      await tester.pumpWidget(
+          _app(const SkipButtons(side: SkipButtonSide.previous)));
+      expect(find.byIcon(Icons.skip_previous), findsNothing);
+
+      await tester
+          .pumpWidget(_app(const SkipButtons(side: SkipButtonSide.next)));
+      expect(find.byIcon(Icons.skip_next), findsNothing);
+    });
+
+    testWidgets('an unreachable direction stays visible but disabled',
+        (tester) async {
+      seedQueue(index: 0, length: 2);
+
+      await tester.pumpWidget(
+          _app(const SkipButtons(side: SkipButtonSide.previous)));
+      expect(
+          tester.widget<IconButton>(find.byType(IconButton)).onPressed, isNull);
+    });
+  });
+
   group('SkipButtons.availabilityFor', () {
     test('unknown queue index disables both directions', () {
       final skip = SkipButtons.availabilityFor(

@@ -79,13 +79,27 @@ class PlayPauseButton extends StatelessWidget {
 /// What the queue allows right now; drives the skip buttons' visibility.
 typedef SkipAvailability = ({bool hasPrevious, bool hasNext});
 
+/// Which of the two skip buttons a [SkipButtons] instance renders. The
+/// transport places play/pause *between* previous and next, so each side is
+/// mounted separately; both sides share the same availability rule and thus
+/// appear and disappear together.
+enum SkipButtonSide { previous, next, both }
+
 /// Previous/next buttons wired to the handler's play queue. The stock skip
 /// buttons never appeared: they watch mpv's playlist, which always holds a
 /// single `Media` — queue advance lives entirely in [MediaPlayerHandler].
 class SkipButtons extends StatelessWidget {
-  const SkipButtons({super.key, this.iconSize = 24});
+  const SkipButtons({
+    super.key,
+    this.iconSize = 24,
+    this.side = SkipButtonSide.both,
+  });
 
   final double iconSize;
+
+  /// Renders only the previous or only the next button when set, so the
+  /// caller can wrap them around play/pause.
+  final SkipButtonSide side;
 
   /// Visibility rules, kept static and pure so they can be unit tested: a
   /// manual next/previous wraps only in repeat-all (matching `skipToNext`);
@@ -131,26 +145,28 @@ class SkipButtons extends StatelessWidget {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            IconButton(
-              iconSize: iconSize,
-              color: Colors.white,
-              style: videoControlButtonStyle(context),
-              tooltip: loc.skipPrevious,
-              icon: const Icon(Icons.skip_previous),
-              onPressed: skip.hasPrevious
-                  ? () => unawaited(handler.skipToPrevious())
-                  : null,
-            ),
-            IconButton(
-              iconSize: iconSize,
-              color: Colors.white,
-              style: videoControlButtonStyle(context),
-              tooltip: loc.skipNext,
-              icon: const Icon(Icons.skip_next),
-              onPressed: skip.hasNext
-                  ? () => unawaited(handler.skipToNext())
-                  : null,
-            ),
+            if (side != SkipButtonSide.next)
+              IconButton(
+                iconSize: iconSize,
+                color: Colors.white,
+                style: videoControlButtonStyle(context),
+                tooltip: loc.skipPrevious,
+                icon: const Icon(Icons.skip_previous),
+                onPressed: skip.hasPrevious
+                    ? () => unawaited(handler.skipToPrevious())
+                    : null,
+              ),
+            if (side != SkipButtonSide.previous)
+              IconButton(
+                iconSize: iconSize,
+                color: Colors.white,
+                style: videoControlButtonStyle(context),
+                tooltip: loc.skipNext,
+                icon: const Icon(Icons.skip_next),
+                onPressed: skip.hasNext
+                    ? () => unawaited(handler.skipToNext())
+                    : null,
+              ),
           ],
         );
       },
