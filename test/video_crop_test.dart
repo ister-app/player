@@ -31,6 +31,19 @@ void main() {
           '1280x532+0+92');
     });
 
+    test('scales to an upscaled anamorphic transcode variant', () {
+      // Anamorphic 720x480 (DAR 4:3) source transcoded to a coded 1280x720
+      // HLS variant. The crop must stay inside the coded frame — scaling to
+      // the aspect-corrected display size (1280x960) instead used to produce
+      // 1280x728+0+112, which mpv silently ignores as out of bounds.
+      expect(
+          mpvCropString(
+              srcW: 720, srcH: 480,
+              cropX: 0, cropY: 56, cropW: 720, cropH: 364,
+              actualW: 1280, actualH: 720),
+          '1280x546+0+84');
+    });
+
     test('missing or degenerate inputs yield no crop', () {
       expect(
           mpvCropString(
