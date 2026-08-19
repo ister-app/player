@@ -49,6 +49,8 @@ dependencies:
   scrollable_positioned_list: ^0.3.8
   pdfrx: ^2.4.7
   wakelock_plus: ^1.2.10
+  volume_controller: ^3.4.0 # Device volume for the fullscreen swipe gesture
+  screen_brightness: ^2.1.1 # Window brightness for the fullscreen swipe gesture
   permission_handler: ^13.0.0
   url_launcher: ^6.3.2
 

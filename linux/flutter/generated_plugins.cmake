@@ -8,6 +8,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   media_kit_video
   oidc_linux
   url_launcher_linux
+  volume_controller
   window_to_front
 )
 
