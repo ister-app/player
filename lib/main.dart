@@ -75,6 +75,28 @@ Future<void> main() async {
   runApp(Main(initialServer: initialServer));
 }
 
+/// Page transitions with snapshotting switched off.
+///
+/// The default zoom transition rasterises the outgoing page once via
+/// `OffsetLayer.toImageSync()`. A `TextureLayer` — the video surface — does not
+/// report itself as unrasterisable the way a platform view does, so it is
+/// dragged into that snapshot; the engine then paints it with a `PaintContext`
+/// that carries neither an Impeller nor a Skia context and dereferences the
+/// null `GrDirectContext`, segfaulting the raster thread. Leaving a video page
+/// (e.g. tapping "home" mid-playback) therefore killed the app. Painting the
+/// page live instead looks identical and costs nothing here.
+const _pageTransitionsTheme = PageTransitionsTheme(
+  builders: <TargetPlatform, PageTransitionsBuilder>{
+    TargetPlatform.linux: ZoomPageTransitionsBuilder(allowSnapshotting: false),
+    TargetPlatform.windows:
+        ZoomPageTransitionsBuilder(allowSnapshotting: false),
+    // Android's predictive-back builder falls back to the same zoom
+    // transition, and its external textures crash the same way.
+    TargetPlatform.android:
+        ZoomPageTransitionsBuilder(allowSnapshotting: false),
+  },
+);
+
 class Main extends StatefulWidget {
   const Main({super.key, this.initialServer});
 
@@ -163,11 +185,13 @@ class _MainState extends State<Main> {
         colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFF4D7C0F)),
         brightness: Brightness.light,
         fontFamily: 'Roboto',
+        pageTransitionsTheme: _pageTransitionsTheme,
       ),
       darkTheme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFF4D7C0F), brightness: Brightness.dark),
         brightness: Brightness.dark,
         fontFamily: 'Roboto',
+        pageTransitionsTheme: _pageTransitionsTheme,
       ),
       routerConfig: _routerConfig,
     );
