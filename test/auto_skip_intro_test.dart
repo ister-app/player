@@ -136,6 +136,34 @@ void main() {
       await positions.close();
     });
 
+    testWidgets('counts down in the button while auto-skip is armed',
+        (tester) async {
+      handler.resetAutoSkipState(autoSkipIntro: true);
+      final positions = StreamController<Duration>.broadcast();
+      await tester.pumpWidget(
+          _app(SegmentOverlayButtons(positionStream: positions.stream)));
+
+      // Lead-in: the button is already up, counting down to the auto-skip at
+      // intro start + 5 s.
+      positions.add(const Duration(milliseconds: 27000));
+      await tester.pump();
+      expect(find.text('Skip intro (8)'), findsOneWidget);
+
+      positions.add(const Duration(milliseconds: 34500));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('Skip intro (1)'), findsOneWidget);
+
+      // Past the deadline the countdown is gone; a plain button remains for a
+      // viewer who seeked back into the intro.
+      handler.maybeAutoSkipIntro(const Duration(milliseconds: 36000));
+      positions.add(const Duration(milliseconds: 36000));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('Skip intro'), findsOneWidget);
+      await positions.close();
+    });
+
     testWidgets('shows next episode during the outro only with a next item',
         (tester) async {
       final positions = StreamController<Duration>.broadcast();

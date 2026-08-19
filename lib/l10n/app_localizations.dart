@@ -518,6 +518,12 @@ abstract class AppLocalizations {
   /// **'Skip intro'**
   String get skipIntro;
 
+  /// Skip-intro button while auto-skip counts down
+  ///
+  /// In en, this message translates to:
+  /// **'Skip intro ({seconds})'**
+  String skipIntroCountdown(int seconds);
+
   /// Overlay button shown during the closing credits
   ///
   /// In en, this message translates to:

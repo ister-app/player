@@ -291,6 +291,15 @@
   "@skipIntro": {
     "description": "Overlay button shown during a detected intro"
   },
+  "skipIntroCountdown": "Skip intro ({seconds})",
+  "@skipIntroCountdown": {
+    "description": "Skip-intro button while auto-skip counts down",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
   "nextEpisode": "Next episode",
   "@nextEpisode": {
     "description": "Overlay button shown during the closing credits"

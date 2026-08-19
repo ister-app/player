@@ -8,8 +8,10 @@ import '../../l10n/app_localizations.dart';
 import '../../utils/MediaPlayerHandler.dart';
 import 'VideoControlButtons.dart';
 
-/// What the segment overlay should offer right now.
-typedef SegmentActions = ({bool skipIntro, bool nextEpisode});
+/// What the segment overlay should offer right now. [countdown] is the whole
+/// number of seconds left before an armed auto-skip fires (null when no
+/// auto-skip is pending), shown inside the skip-intro button.
+typedef SegmentActions = ({bool skipIntro, bool nextEpisode, int? countdown});
 
 /// Netflix-style overlay actions driven by the server-detected segments of the
 /// playing episode: "Skip intro" during the intro, "Next episode" during the
@@ -24,23 +26,40 @@ class SegmentOverlayButtons extends StatelessWidget {
   @visibleForTesting
   final Stream<Duration>? positionStream;
 
+  /// How long before the detected intro starts the skip button already
+  /// appears: detection lands on the first frame of the title card, and by
+  /// then a viewer reaching for the button has already sat through it.
+  static const int skipIntroLeadMs = 5000;
+
   /// Visibility rules, static and pure for unit tests. All values are in
   /// absolute file time — the same timeline the player position reports.
-  /// The skip button retires 1 s before the intro ends (a skip that saves
-  /// less than a second is noise), and the intro wins should the server ever
-  /// produce overlapping segments.
+  /// The button appears [skipIntroLeadMs] before the intro and retires 1 s
+  /// before it ends (a skip that saves less than a second is noise); the intro
+  /// wins should the server ever produce overlapping segments.
+  ///
+  /// [autoSkipAtMs] is the pending auto-skip deadline
+  /// ([MediaPlayerHandler.autoSkipIntroDeadlineMs]) for surfaces that drive a
+  /// local player; null on remote surfaces, where the leader does the skipping.
   static SegmentActions visibilityFor({
     required int posMs,
     required ({int startMs, int endMs})? intro,
     required ({int startMs, int endMs})? outro,
     required bool hasNext,
+    int? autoSkipAtMs,
   }) {
     final skipIntro = intro != null &&
-        posMs >= intro.startMs &&
+        posMs >= intro.startMs - skipIntroLeadMs &&
         posMs < intro.endMs - 1000;
     final nextEpisode =
         !skipIntro && outro != null && hasNext && posMs >= outro.startMs;
-    return (skipIntro: skipIntro, nextEpisode: nextEpisode);
+    final countdown = skipIntro && autoSkipAtMs != null && posMs < autoSkipAtMs
+        ? ((autoSkipAtMs - posMs) / 1000).ceil()
+        : null;
+    return (
+      skipIntro: skipIntro,
+      nextEpisode: nextEpisode,
+      countdown: countdown
+    );
   }
 
   @override
@@ -62,16 +81,19 @@ class SegmentOverlayButtons extends StatelessWidget {
             queueLength: queue.length,
             repeatMode: state.repeatMode,
           ).hasNext,
+          autoSkipAtMs: handler.autoSkipIntroDeadlineMs,
         ),
       ),
-      initialData: const (skipIntro: false, nextEpisode: false),
+      initialData: const (skipIntro: false, nextEpisode: false, countdown: null),
       builder: (context, snapshot) {
         final actions = snapshot.data!;
         if (actions.skipIntro) {
           return _button(
             context,
             icon: Icons.fast_forward,
-            label: loc.skipIntro,
+            label: actions.countdown != null
+                ? loc.skipIntroCountdown(actions.countdown!)
+                : loc.skipIntro,
             onPressed: () {
               final intro = handler.currentIntroBounds;
               if (intro == null) return;

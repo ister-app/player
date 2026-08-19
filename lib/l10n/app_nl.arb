@@ -69,6 +69,7 @@
   "autoSkipIntro": "Intro's automatisch overslaan",
   "autoSkipIntroDescription": "Spring zonder vragen voorbij gedetecteerde intro's",
   "skipIntro": "Intro overslaan",
+  "skipIntroCountdown": "Intro overslaan ({seconds})",
   "nextEpisode": "Volgende aflevering",
   "analyzeMedia": "Analyseer media",
   "switchServer": "Wissel van server",

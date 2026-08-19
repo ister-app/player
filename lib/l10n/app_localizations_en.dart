@@ -247,6 +247,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get skipIntro => 'Skip intro';
 
   @override
+  String skipIntroCountdown(int seconds) {
+    return 'Skip intro ($seconds)';
+  }
+
+  @override
   String get nextEpisode => 'Next episode';
 
   @override

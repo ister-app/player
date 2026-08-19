@@ -135,7 +135,8 @@ abstract class PlayerViewController extends ChangeNotifier {
   /// server-detected segments. Surfaces that know the playing episode's
   /// segments (remote control, local video sessions) override this; the
   /// default keeps pure-music surfaces untouched.
-  SegmentActions get segmentActions => (skipIntro: false, nextEpisode: false);
+  SegmentActions get segmentActions =>
+      (skipIntro: false, nextEpisode: false, countdown: null);
 
   /// Seek past the detected intro; only invoked while
   /// [segmentActions].skipIntro is true.
@@ -1157,7 +1158,11 @@ class _SegmentActionSlot extends StatelessWidget {
         Widget child;
         if (actions.skipIntro) {
           child = _button(
-              Icons.fast_forward, loc.skipIntro, controller.skipIntro);
+              Icons.fast_forward,
+              actions.countdown != null
+                  ? loc.skipIntroCountdown(actions.countdown!)
+                  : loc.skipIntro,
+              controller.skipIntro);
         } else if (actions.nextEpisode) {
           child = _button(
               Icons.skip_next, loc.nextEpisode, controller.skipToNext);

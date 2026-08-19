@@ -10,7 +10,7 @@ import 'package:player/l10n/app_localizations.dart';
 /// controller reports one; the default controller reports none, keeping
 /// music surfaces untouched.
 class _FakeController extends PlayerViewController {
-  _FakeController({this.actions = (skipIntro: false, nextEpisode: false)});
+  _FakeController({this.actions = (skipIntro: false, nextEpisode: false, countdown: null)});
 
   SegmentActions actions;
   int skipIntroCalls = 0;
@@ -87,7 +87,7 @@ void main() {
   testWidgets('skip intro prompt shows and taps through to the controller',
       (tester) async {
     final controller =
-        _FakeController(actions: (skipIntro: true, nextEpisode: false));
+        _FakeController(actions: (skipIntro: true, nextEpisode: false, countdown: null));
     await tester.pumpWidget(_app(controller));
     await tester.pump(const Duration(milliseconds: 400));
 
@@ -104,7 +104,7 @@ void main() {
 
     // The remote controller flips the actions as its interpolated position
     // enters the outro and pings the 1 Hz ticker — no structural notify.
-    controller.actions = (skipIntro: false, nextEpisode: true);
+    controller.actions = (skipIntro: false, nextEpisode: true, countdown: null);
     controller.positionTicker.notify();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));

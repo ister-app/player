@@ -347,6 +347,7 @@ class _LocalPlayerController extends QueuePlayerViewController<MediaItem> {
         intro: _handler.currentIntroBounds,
         outro: _handler.currentOutroBounds,
         hasNext: hasNext,
+        autoSkipAtMs: _handler.autoSkipIntroDeadlineMs,
       );
 
   @override

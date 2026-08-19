@@ -248,6 +248,11 @@ class AppLocalizationsNl extends AppLocalizations {
   String get skipIntro => 'Intro overslaan';
 
   @override
+  String skipIntroCountdown(int seconds) {
+    return 'Intro overslaan ($seconds)';
+  }
+
+  @override
   String get nextEpisode => 'Volgende aflevering';
 
   @override

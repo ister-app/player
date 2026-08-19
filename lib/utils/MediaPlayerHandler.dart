@@ -2849,16 +2849,36 @@ class MediaPlayerHandler extends BaseAudioHandler
     unawaited(seek(Duration(milliseconds: target)));
   }
 
+  /// Grace period between the intro start and an armed auto-skip firing: the
+  /// skip button counts this down on screen, so the jump is announced instead
+  /// of yanking the picture away. It also leaves a deliberate seek to the
+  /// intro start alone for a few seconds.
+  static const int autoSkipIntroDelayMs = 5000;
+
   /// Where an auto-skip should land, or null when the position is not inside
-  /// the skippable part of the intro. The first second is left alone so a
-  /// deliberate seek to the intro start is not instantly overridden, and the
-  /// last seconds aren't worth a micro-seek.
+  /// the skippable part of the intro. The first [autoSkipIntroDelayMs] are the
+  /// countdown window, and the last seconds aren't worth a micro-seek.
   static int? autoSkipIntroTarget(
       {required int posMs, required ({int startMs, int endMs})? intro}) {
     if (intro == null) return null;
-    if (posMs < intro.startMs + 1000) return null;
+    if (posMs < intro.startMs + autoSkipIntroDelayMs) return null;
     if (posMs >= intro.endMs - 3000) return null;
     return intro.endMs;
+  }
+
+  /// Absolute file time an armed auto-skip will fire at, or null when no
+  /// auto-skip is pending for the playing item (preference off, already
+  /// skipped, following someone else's session, no detected intro, or an intro
+  /// too short for the countdown to beat the micro-seek guard). Drives the
+  /// countdown the skip button shows.
+  int? get autoSkipIntroDeadlineMs {
+    if (!_autoSkipIntro || _followMode) return null;
+    if (introAutoSkipped) return null;
+    final intro = currentIntroBounds;
+    if (intro == null) return null;
+    final deadline = intro.startMs + autoSkipIntroDelayMs;
+    if (deadline >= intro.endMs - 3000) return null;
+    return deadline;
   }
 
   /// An episode inside a multi-episode file "ends" at its slice boundary,

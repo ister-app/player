@@ -119,10 +119,10 @@ void main() {
           90000);
     });
 
-    test('leaves the first second alone', () {
-      expect(MediaPlayerHandler.autoSkipIntroTarget(posMs: 30500, intro: intro),
+    test('leaves the countdown window alone', () {
+      expect(MediaPlayerHandler.autoSkipIntroTarget(posMs: 34999, intro: intro),
           isNull);
-      expect(MediaPlayerHandler.autoSkipIntroTarget(posMs: 31000, intro: intro),
+      expect(MediaPlayerHandler.autoSkipIntroTarget(posMs: 35000, intro: intro),
           90000);
     });
 
@@ -142,41 +142,90 @@ void main() {
     const intro = (startMs: 30000, endMs: 90000);
     const outro = (startMs: 2300000, endMs: 2390000);
 
-    test('skip intro shows during the intro, minus the last second', () {
+    test('skip intro shows from the lead-in, minus the last second', () {
+      expect(
+          SegmentOverlayButtons.visibilityFor(
+              posMs: 25000, intro: intro, outro: outro, hasNext: true),
+          (skipIntro: true, nextEpisode: false, countdown: null));
+      expect(
+          SegmentOverlayButtons.visibilityFor(
+              posMs: 24999, intro: intro, outro: outro, hasNext: true),
+          (skipIntro: false, nextEpisode: false, countdown: null));
       expect(
           SegmentOverlayButtons.visibilityFor(
               posMs: 30000, intro: intro, outro: outro, hasNext: true),
-          (skipIntro: true, nextEpisode: false));
+          (skipIntro: true, nextEpisode: false, countdown: null));
       expect(
           SegmentOverlayButtons.visibilityFor(
               posMs: 88999, intro: intro, outro: outro, hasNext: true),
-          (skipIntro: true, nextEpisode: false));
+          (skipIntro: true, nextEpisode: false, countdown: null));
       expect(
           SegmentOverlayButtons.visibilityFor(
               posMs: 89000, intro: intro, outro: outro, hasNext: true),
-          (skipIntro: false, nextEpisode: false));
+          (skipIntro: false, nextEpisode: false, countdown: null));
     });
 
     test('next episode shows from the outro start, only with a next item', () {
       expect(
           SegmentOverlayButtons.visibilityFor(
               posMs: 2300000, intro: intro, outro: outro, hasNext: true),
-          (skipIntro: false, nextEpisode: true));
+          (skipIntro: false, nextEpisode: true, countdown: null));
       expect(
           SegmentOverlayButtons.visibilityFor(
               posMs: 2300000, intro: intro, outro: outro, hasNext: false),
-          (skipIntro: false, nextEpisode: false));
+          (skipIntro: false, nextEpisode: false, countdown: null));
       expect(
           SegmentOverlayButtons.visibilityFor(
               posMs: 1000000, intro: intro, outro: outro, hasNext: true),
-          (skipIntro: false, nextEpisode: false));
+          (skipIntro: false, nextEpisode: false, countdown: null));
+    });
+
+    test('an armed auto-skip counts down in whole seconds', () {
+      expect(
+          SegmentOverlayButtons.visibilityFor(
+                  posMs: 30000,
+                  intro: intro,
+                  outro: outro,
+                  hasNext: true,
+                  autoSkipAtMs: 35000)
+              .countdown,
+          5);
+      expect(
+          SegmentOverlayButtons.visibilityFor(
+                  posMs: 34200,
+                  intro: intro,
+                  outro: outro,
+                  hasNext: true,
+                  autoSkipAtMs: 35000)
+              .countdown,
+          1);
+      // Past the deadline (the skip is in flight) and outside the button's
+      // window there is nothing to count down.
+      expect(
+          SegmentOverlayButtons.visibilityFor(
+                  posMs: 35000,
+                  intro: intro,
+                  outro: outro,
+                  hasNext: true,
+                  autoSkipAtMs: 35000)
+              .countdown,
+          isNull);
+      expect(
+          SegmentOverlayButtons.visibilityFor(
+                  posMs: 10000,
+                  intro: intro,
+                  outro: outro,
+                  hasNext: true,
+                  autoSkipAtMs: 35000)
+              .countdown,
+          isNull);
     });
 
     test('nothing without segments', () {
       expect(
           SegmentOverlayButtons.visibilityFor(
               posMs: 45000, intro: null, outro: null, hasNext: true),
-          (skipIntro: false, nextEpisode: false));
+          (skipIntro: false, nextEpisode: false, countdown: null));
     });
   });
 }
