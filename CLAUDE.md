@@ -83,6 +83,32 @@ an unreleased player and the two repos would otherwise deadlock) or when the pin
 version — stripped of `-SNAPSHOT` — was never released; the release commit strips `-SNAPSHOT` from
 the pins.
 
+## The media_kit fork and the libmpv builds
+
+The player does not use upstream media_kit: `pubspec.yaml` pins **`ister-app/media-kit`** by commit
+sha (`media_kit`, `media_kit_video`, `media_kit_libs_*`). That fork in turn pins libmpv builds from
+three more `ister-app` repos — `libmpv-darwin-build` (macOS/iOS xcframeworks, by tag),
+`libmpv-android-video-build` (per-ABI jars, by md5) and `libmpv-win32-video-cmake` (`mpv-dev-*.7z`,
+by md5). Each of those has its own `CLAUDE.md`; local clones live in `~/Projecten/`.
+
+Bumping anything in that chain means: build in the libmpv repo (CI only — none of them build on
+this machine except Linux, which uses the system libmpv), publish a release, update the URL/md5 or
+checksum in the media-kit fork, push, then re-pin the fork's sha here and run `flutter pub get`.
+
+Platform notes that bit before:
+
+- **Linux** uses the system libmpv (and the flatpak builds its own), so it never exercises these
+  pins — a green Linux run says nothing about the other platforms.
+- **macOS/iOS** shipped mpv 0.36 for a long time, which predates `--video-crop`: the auto-crop was
+  silently dropped there while working everywhere else.
+- **Android's** libmpv is built against API 24. Raising the app's `minSdk` above that is fine;
+  lowering it below is not.
+- **Windows** can be exercised from Linux by running the built `mpv.exe` under Proton's wine
+  against a real stream — see that repo's `CLAUDE.md`.
+- ffmpeg ≥ 7 calls `psa_crypto_init()` on every TLS connection, so any libmpv built against
+  mbedtls **must** enable `MBEDTLS_THREADING_C`, or the app aborts on a double free the moment
+  several HLS connections open at once.
+
 ## Architecture Overview
 
 This is a Flutter media player app for the "Ister" media management system. It supports multiple servers with OIDC authentication; browsing and playback of episodes, movies, music, podcasts and audiobooks/epubs; and language preferences and watch-progress tracking. It ships for Android (incl. Android TV and Android Auto), Linux (flatpak), Windows, macOS and web.
