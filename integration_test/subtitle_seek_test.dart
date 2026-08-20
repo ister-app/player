@@ -63,7 +63,7 @@ void main() {
     );
 
     // Get far enough in that a backward seek stays after the stream-open
-    // position (the fixtures are 3 minutes).
+    // position.
     await handler.seek(const Duration(seconds: 90));
     await pumpUntil(
       tester,
@@ -71,6 +71,18 @@ void main() {
           const Duration(seconds: 8),
       timeout: const Duration(minutes: 2),
       description: 'the forward seek to land',
+    );
+
+    // A long forward seek flushes mpv's demuxer cache, so let it play on for a
+    // bit: the back buffer the scrub-back relies on only exists for what was
+    // actually demuxed since. Without this the backward seek targets data the
+    // demuxer never held and mpv re-opens the stream no matter what the app
+    // does — which is not what this test is about.
+    await pumpUntil(
+      tester,
+      () => player.state.position > const Duration(seconds: 105),
+      timeout: const Duration(minutes: 1),
+      description: 'a back buffer to build up after the forward seek',
     );
 
     // The backward seek under test: must be a plain seek and keep the
@@ -83,10 +95,10 @@ void main() {
         sawTrackListReset = true;
       }
     });
-    await handler.seek(const Duration(seconds: 60));
+    await handler.seek(const Duration(seconds: 95));
     await pumpUntil(
       tester,
-      () => (player.state.position - const Duration(seconds: 60)).abs() <
+      () => (player.state.position - const Duration(seconds: 95)).abs() <
           const Duration(seconds: 8),
       timeout: const Duration(minutes: 1),
       description: 'the backward seek to land',
