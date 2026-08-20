@@ -1,5 +1,41 @@
 # Changelog
 
+## player v1.17.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.17.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(player): wrap the skip buttons around play/pause ([`955a2da`](https://github.com/ister-app/player/commit/955a2da))
+- feat(player): show skip-intro earlier and count down the auto-skip ([`ad4ec82`](https://github.com/ister-app/player/commit/ad4ec82))
+- feat(player): brightness/device-volume swipes and exponential seek ([`13fc8b3`](https://github.com/ister-app/player/commit/13fc8b3))
+
+### Fixes
+
+- fix(player): pin media-kit with the Android video-out-params surface fix ([`0ebe457`](https://github.com/ister-app/player/commit/0ebe457))
+- fix(player): boot straight into the server shell, without the list below it ([`79cd8c4`](https://github.com/ister-app/player/commit/79cd8c4))
+- fix(player): stop snapshotting page transitions over the video texture ([`3c76e4b`](https://github.com/ister-app/player/commit/3c76e4b))
+- fix(player): bump media-kit fork so video-crop resizes the texture ([`46c1bf8`](https://github.com/ister-app/player/commit/46c1bf8))
+- fix(player): scale the video crop to mpv's coded frame, not the display size ([`df60d1c`](https://github.com/ister-app/player/commit/df60d1c))
+
+### Dependency updates
+
+- chore(deps): upgrade locked dependencies ([`08c642e`](https://github.com/ister-app/player/commit/08c642e))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.17.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.16.0...v1.17.0
+
 ## player v1.16.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
