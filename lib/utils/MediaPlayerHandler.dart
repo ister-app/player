@@ -1537,12 +1537,34 @@ class MediaPlayerHandler extends BaseAudioHandler
         mediaType: _currentMediaType,
       );
     } else if (!ClientManager.usesTestClients) {
+      // mpv rejects a seek while the file is still loading (duration 0, not yet
+      // seekable) and media_kit only logs that error — the seek would silently
+      // vanish. That is reachable in normal use: resuming an item seeks to the
+      // saved position, and a tap on the seek bar can land in the same window
+      // right after `playing` flips to true.
+      await _awaitSeekable();
       final isBackward = position < _player.state.position;
       // Same test seam as play()/pause(): raw seeks never complete under test.
       await _player.seek(position);
       if (!kIsWeb && isBackward && hasActiveSub) {
         unawaited(_refreshSubtitleDecoder(sub.id));
       }
+    }
+  }
+
+  /// Waits until mpv can accept a seek, i.e. until the demuxer knows the
+  /// duration. Returns at once for a loaded file, and gives up after
+  /// [timeout] so a stream that never reports a duration (a live stream) still
+  /// gets its seek attempt instead of hanging the caller.
+  Future<void> _awaitSeekable(
+      {Duration timeout = const Duration(seconds: 15)}) async {
+    if (_player.state.duration > Duration.zero) return;
+    try {
+      await _player.stream.duration
+          .firstWhere((d) => d > Duration.zero)
+          .timeout(timeout);
+    } catch (_) {
+      // Timed out or the stream closed — fall through and seek anyway.
     }
   }
 
