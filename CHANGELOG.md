@@ -1,5 +1,23 @@
 # Changelog
 
+## player v1.17.2
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.17.2` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.17.2
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.17.1...v1.17.2
+
 ## player v1.17.1
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
