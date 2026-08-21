@@ -1,5 +1,34 @@
 # Changelog
 
+## player v1.17.1
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.17.1` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Fixes
+
+- fix(player): stop losing a seek issued while the file still loads ([`46edc38`](https://github.com/ister-app/player/commit/46edc38))
+- fix(player): re-pin media-kit so mpv's event pump keeps running on Android ([`dfb182b`](https://github.com/ister-app/player/commit/dfb182b))
+
+### Other
+
+- ci: pin the chart that publishes the e2e API port ([`4bdee09`](https://github.com/ister-app/player/commit/4bdee09))
+- test(player): scrub back inside the demuxer's back buffer ([`6117d24`](https://github.com/ister-app/player/commit/6117d24))
+- docs: describe the media_kit fork and the libmpv build chain ([`1dd80ab`](https://github.com/ister-app/player/commit/1dd80ab))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.17.1
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.17.0...v1.17.1
+
 ## player v1.17.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
