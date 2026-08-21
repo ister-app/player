@@ -95,6 +95,15 @@ Bumping anything in that chain means: build in the libmpv repo (CI only — none
 this machine except Linux, which uses the system libmpv), publish a release, update the URL/md5 or
 checksum in the media-kit fork, push, then re-pin the fork's sha here and run `flutter pub get`.
 
+For the darwin pins specifically: the macOS/iOS builds consume libmpv through **SwiftPM**, so the
+authoritative pins are the four `Package.swift` files (macos/ios × video/audio; the audio pair
+uses the `-full` variant) — each xcframework zip by url + sha256. The CocoaPods Makefiles carry a
+parallel tarball pin that must be kept in sync but is effectively dead code, and the podspec's
+`system("make")` swallows failures. A green macOS build therefore proves nothing about which
+libmpv got embedded: after a bump, check the `LC_UUID` of `Mpv.framework` inside the released
+`player-macos-*.zip` against the new libmpv release asset (this exact miss shipped v1.17.2 with
+the old crashing mpv).
+
 Platform notes that bit before:
 
 - **Linux** uses the system libmpv (and the flatpak builds its own), so it never exercises these
