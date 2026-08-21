@@ -64,42 +64,42 @@ dependency_overrides:
     git:
       url: https://github.com/ister-app/media-kit
       path: media_kit
-      ref: ed4140f85499a1d4a5f9d24a5317c362c697c6af
+      ref: 5d1148477df096610cdee3546481eecacf514772
   media_kit_video:
     git:
       url: https://github.com/ister-app/media-kit
       path: media_kit_video
-      ref: ed4140f85499a1d4a5f9d24a5317c362c697c6af
+      ref: 5d1148477df096610cdee3546481eecacf514772
   media_kit_libs_video:
     git:
       url: https://github.com/ister-app/media-kit
       path: libs/universal/media_kit_libs_video
-      ref: ed4140f85499a1d4a5f9d24a5317c362c697c6af
+      ref: 5d1148477df096610cdee3546481eecacf514772
   media_kit_libs_linux:
     git:
       url: https://github.com/ister-app/media-kit
       path: libs/linux/media_kit_libs_linux
-      ref: ed4140f85499a1d4a5f9d24a5317c362c697c6af
+      ref: 5d1148477df096610cdee3546481eecacf514772
   media_kit_libs_android_video:
     git:
       url: https://github.com/ister-app/media-kit
       path: libs/android/media_kit_libs_android_video
-      ref: ed4140f85499a1d4a5f9d24a5317c362c697c6af
+      ref: 5d1148477df096610cdee3546481eecacf514772
   media_kit_libs_ios_video:
     git:
       url: https://github.com/ister-app/media-kit
       path: libs/ios/media_kit_libs_ios_video
-      ref: ed4140f85499a1d4a5f9d24a5317c362c697c6af
+      ref: 5d1148477df096610cdee3546481eecacf514772
   media_kit_libs_macos_video:
     git:
       url: https://github.com/ister-app/media-kit
       path: libs/macos/media_kit_libs_macos_video
-      ref: ed4140f85499a1d4a5f9d24a5317c362c697c6af
+      ref: 5d1148477df096610cdee3546481eecacf514772
   media_kit_libs_windows_video:
     git:
       url: https://github.com/ister-app/media-kit
       path: libs/windows/media_kit_libs_windows_video
-      ref: ed4140f85499a1d4a5f9d24a5317c362c697c6af
+      ref: 5d1148477df096610cdee3546481eecacf514772
 
 dev_dependencies:
   flutter_test:
