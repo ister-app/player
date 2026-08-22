@@ -245,6 +245,20 @@ class AppLocalizationsNl extends AppLocalizations {
       'Spring zonder vragen voorbij gedetecteerde intro\'s';
 
   @override
+  String get realHdr => 'Echte HDR-weergave';
+
+  @override
+  String get realHdrDescription =>
+      'Toon HDR-video in HDR op het scherm in plaats van omzetten naar SDR. Actief na herstart van de app.';
+
+  @override
+  String get matchFrameRate => 'Beeldsnelheid volgen';
+
+  @override
+  String get matchFrameRateDescription =>
+      'Schakel het scherm naar de beeldsnelheid van de video wanneer dat naadloos kan. Actief na herstart van de app.';
+
+  @override
   String get skipIntro => 'Intro overslaan';
 
   @override

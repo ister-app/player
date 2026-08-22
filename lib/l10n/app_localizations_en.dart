@@ -244,6 +244,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Jump past detected intros without asking';
 
   @override
+  String get realHdr => 'Real HDR output';
+
+  @override
+  String get realHdrDescription =>
+      'Show HDR video in HDR on the display instead of converting it to SDR. Takes effect after restarting the app.';
+
+  @override
+  String get matchFrameRate => 'Match content frame rate';
+
+  @override
+  String get matchFrameRateDescription =>
+      'Switch the display to the video\'s frame rate when it can do so seamlessly. Takes effect after restarting the app.';
+
+  @override
   String get skipIntro => 'Skip intro';
 
   @override

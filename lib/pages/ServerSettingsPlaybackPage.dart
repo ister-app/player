@@ -1,6 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:player/utils/DisplayPreferences.dart';
+import 'package:player/utils/PlatformService.dart';
 import 'package:player/utils/PlaybackPreferences.dart';
 
 import '../l10n/app_localizations.dart';
@@ -25,7 +27,13 @@ class _ServerSettingsPlaybackPageState
   bool _transcode = true;
   bool _autoSkipIntro = false;
   int? _maxVideoHeight;
+  bool _realHdr = false;
+  bool _matchFrameRate = false;
   late Future<void> _preferencesFuture;
+
+  /// The SurfaceView/HDR path only exists on Android with an HDR display
+  /// (phone or TV); hide the device-local toggles everywhere else.
+  bool get _showDisplaySettings => PlatformService.isHdrDisplaySync;
 
   @override
   void initState() {
@@ -47,6 +55,8 @@ class _ServerSettingsPlaybackPageState
       _transcode = transcode;
       _maxVideoHeight = maxVideoHeight;
       _autoSkipIntro = autoSkipIntro;
+      _realHdr = DisplayPreferences.realHdrSync;
+      _matchFrameRate = DisplayPreferences.matchFrameRateSync;
     });
   }
 
@@ -126,6 +136,32 @@ class _ServerSettingsPlaybackPageState
                   ),
                 ),
               ),
+              if (_showDisplaySettings) ...[
+                Card(
+                  child: SwitchListTile(
+                    secondary: const Icon(Icons.hdr_on_outlined),
+                    title: Text(loc.realHdr),
+                    subtitle: Text(loc.realHdrDescription),
+                    value: _realHdr,
+                    onChanged: (value) {
+                      DisplayPreferences.setRealHdr(value);
+                      setState(() => _realHdr = value);
+                    },
+                  ),
+                ),
+                Card(
+                  child: SwitchListTile(
+                    secondary: const Icon(Icons.slow_motion_video_outlined),
+                    title: Text(loc.matchFrameRate),
+                    subtitle: Text(loc.matchFrameRateDescription),
+                    value: _matchFrameRate,
+                    onChanged: (value) {
+                      DisplayPreferences.setMatchFrameRate(value);
+                      setState(() => _matchFrameRate = value);
+                    },
+                  ),
+                ),
+              ],
             ],
           );
         },

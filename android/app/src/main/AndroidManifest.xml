@@ -13,15 +13,19 @@
     <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
     <uses-feature android:name="android.software.leanback" android:required="false"/>
 
+    <!-- usesCleartextTraffic: the app deliberately talks plain http to
+         localhost/LAN-IP servers (ClientManager.getHttpOrHttps); without this
+         Android 9+ silently blocks those connections. -->
     <application
         android:label="@string/app_name"
+        android:usesCleartextTraffic="true"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:banner="@drawable/banner"
         android:fullBackupContent="@xml/backup_rules"
         android:dataExtractionRules="@xml/data_extraction_rules">
         <activity
-            android:name="com.ryanheise.audioservice.AudioServiceActivity"
+            android:name="app.ister.player.MainActivity"
             android:exported="true"
             android:launchMode="standard"
             android:theme="@style/LaunchTheme"
@@ -45,6 +49,16 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Hybrid Composition++ for platform views: composits the HDR
+             SurfaceView through SurfaceControl transactions instead of merging
+             Flutter's raster work onto the Android main thread (which caused
+             visible jank while the SurfaceView video path is on screen).
+             Requires API 34 + Impeller/Vulkan; older devices (the TV boxes)
+             fall back to regular hybrid composition automatically. -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableHcpp"
+            android:value="true" />
 
         <meta-data android:name="com.google.android.gms.car.application"
                    android:resource="@xml/automotive_app_desc"/>

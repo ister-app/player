@@ -512,6 +512,30 @@ abstract class AppLocalizations {
   /// **'Jump past detected intros without asking'**
   String get autoSkipIntroDescription;
 
+  /// Label for the HDR passthrough toggle (Android TV with HDR display only)
+  ///
+  /// In en, this message translates to:
+  /// **'Real HDR output'**
+  String get realHdr;
+
+  /// Subtitle for the HDR passthrough toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Show HDR video in HDR on the display instead of converting it to SDR. Takes effect after restarting the app.'**
+  String get realHdrDescription;
+
+  /// Label for the display frame-rate matching toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Match content frame rate'**
+  String get matchFrameRate;
+
+  /// Subtitle for the display frame-rate matching toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Switch the display to the video\'s frame rate when it can do so seamlessly. Takes effect after restarting the app.'**
+  String get matchFrameRateDescription;
+
   /// Overlay button shown during a detected intro
   ///
   /// In en, this message translates to:

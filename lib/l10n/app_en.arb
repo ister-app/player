@@ -287,6 +287,22 @@
   "@autoSkipIntroDescription": {
     "description": "Subtitle for the auto-skip-intro toggle"
   },
+  "realHdr": "Real HDR output",
+  "@realHdr": {
+    "description": "Label for the HDR passthrough toggle (Android TV with HDR display only)"
+  },
+  "realHdrDescription": "Show HDR video in HDR on the display instead of converting it to SDR. Takes effect after restarting the app.",
+  "@realHdrDescription": {
+    "description": "Subtitle for the HDR passthrough toggle"
+  },
+  "matchFrameRate": "Match content frame rate",
+  "@matchFrameRate": {
+    "description": "Label for the display frame-rate matching toggle"
+  },
+  "matchFrameRateDescription": "Switch the display to the video's frame rate when it can do so seamlessly. Takes effect after restarting the app.",
+  "@matchFrameRateDescription": {
+    "description": "Subtitle for the display frame-rate matching toggle"
+  },
   "skipIntro": "Skip intro",
   "@skipIntro": {
     "description": "Overlay button shown during a detected intro"

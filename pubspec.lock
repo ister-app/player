@@ -864,20 +864,16 @@ packages:
   media_kit:
     dependency: "direct main"
     description:
-      path: media_kit
-      ref: "5d1148477df096610cdee3546481eecacf514772"
-      resolved-ref: "5d1148477df096610cdee3546481eecacf514772"
-      url: "https://github.com/ister-app/media-kit"
-    source: git
+      path: "/home/gerben/Projecten/media-kit/media_kit"
+      relative: false
+    source: path
     version: "1.2.6"
   media_kit_libs_android_video:
     dependency: "direct overridden"
     description:
-      path: "libs/android/media_kit_libs_android_video"
-      ref: "5d1148477df096610cdee3546481eecacf514772"
-      resolved-ref: "5d1148477df096610cdee3546481eecacf514772"
-      url: "https://github.com/ister-app/media-kit"
-    source: git
+      path: "/home/gerben/Projecten/media-kit/libs/android/media_kit_libs_android_video"
+      relative: false
+    source: path
     version: "1.3.9"
   media_kit_libs_ios_video:
     dependency: "direct overridden"
@@ -927,11 +923,9 @@ packages:
   media_kit_video:
     dependency: "direct main"
     description:
-      path: media_kit_video
-      ref: "5d1148477df096610cdee3546481eecacf514772"
-      resolved-ref: "5d1148477df096610cdee3546481eecacf514772"
-      url: "https://github.com/ister-app/media-kit"
-    source: git
+      path: "/home/gerben/Projecten/media-kit/media_kit_video"
+      relative: false
+    source: path
     version: "2.0.1"
   meta:
     dependency: transitive

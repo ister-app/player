@@ -60,16 +60,13 @@ dependency_overrides:
       url: https://github.com/ister-app/audio_service
       path: audio_service
       ref: fix/restore-listener-on-service-recreate
+  # TODO(hdr-spike): the three path overrides below consume the local fork
+  # clone (SurfaceView/HDR work); swap back to the git pin once the fork is
+  # pushed and re-pinned.
   media_kit:
-    git:
-      url: https://github.com/ister-app/media-kit
-      path: media_kit
-      ref: 5d1148477df096610cdee3546481eecacf514772
+    path: /home/gerben/Projecten/media-kit/media_kit
   media_kit_video:
-    git:
-      url: https://github.com/ister-app/media-kit
-      path: media_kit_video
-      ref: 5d1148477df096610cdee3546481eecacf514772
+    path: /home/gerben/Projecten/media-kit/media_kit_video
   media_kit_libs_video:
     git:
       url: https://github.com/ister-app/media-kit
@@ -81,10 +78,7 @@ dependency_overrides:
       path: libs/linux/media_kit_libs_linux
       ref: 5d1148477df096610cdee3546481eecacf514772
   media_kit_libs_android_video:
-    git:
-      url: https://github.com/ister-app/media-kit
-      path: libs/android/media_kit_libs_android_video
-      ref: 5d1148477df096610cdee3546481eecacf514772
+    path: /home/gerben/Projecten/media-kit/libs/android/media_kit_libs_android_video
   media_kit_libs_ios_video:
     git:
       url: https://github.com/ister-app/media-kit

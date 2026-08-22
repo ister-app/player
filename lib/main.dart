@@ -14,6 +14,7 @@ import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/WellKnownService.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
+import 'package:player/utils/DisplayPreferences.dart';
 import 'package:player/utils/PlatformService.dart';
 import 'package:player/utils/TvDirectionalFocusPolicy.dart';
 
@@ -38,8 +39,10 @@ Future<void> main() async {
   // screen.
   await WellKnownService.hydrateCacheFromPrefs();
   final initialServer = ClientManager.instance.lastClientUsed;
-  // Detect Android TV up front so the UI can branch synchronously in build().
+  // Detect Android TV and HDR display up front so the UI and the
+  // MediaPlayerHandler constructor can branch synchronously.
   await PlatformService.ensureInitialized();
+  await DisplayPreferences.ensureInitialized();
   if (PlatformService.isAndroidTvSync) {
     // Android defaults to "touch" focus-highlight mode and doesn't reliably
     // flip to "traditional" for a D-pad remote, leaving focus rings invisible.

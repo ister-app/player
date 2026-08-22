@@ -15,6 +15,8 @@ import 'package:player/utils/AutoPreferences.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/ClockSyncService.dart';
 import 'package:player/utils/DevicePreferences.dart';
+import 'package:player/utils/DisplayPreferences.dart';
+import 'package:player/utils/PlatformService.dart';
 import 'package:player/utils/DeviceService.dart';
 import 'package:player/utils/SyncPreferences.dart';
 import 'package:player/utils/LanguagePreferences.dart';
@@ -59,7 +61,10 @@ class MediaPlayerHandler extends BaseAudioHandler
         bufferSize: _demuxerBufferSize(),
         // Surface mpv warnings/errors (underruns, HTTP failures, corrupt
         // packets) — the default 'error' hides the signals needed to diagnose
-        // playback trouble on devices in the field.
+        // playback trouble on devices in the field. (Do not raise to 'info':
+        // the flood of opener-thread log messages hits a wakeup race in
+        // libmpv's client list and SIGSEGVs — seen on Android during the HDR
+        // spike.)
         logLevel: MPVLogLevel.warn,
       ),
     );
@@ -70,10 +75,30 @@ class MediaPlayerHandler extends BaseAudioHandler
       debugPrint('[mpv][${e.level}] ${e.prefix}: ${e.text}');
     });
 
+    // The SurfaceView path (HDR passthrough + frame-rate matching) is a
+    // creation-time decision; all gates are warmed up in main() before the
+    // handler exists. Requires an HDR-capable display and the user's
+    // "real HDR" setting — phones and TVs alike (the platform-view route was
+    // validated on-device incl. embedded views and fullscreen transitions).
+    final surfaceView = !kIsWeb &&
+        Platform.isAndroid &&
+        PlatformService.isHdrDisplaySync &&
+        DisplayPreferences.realHdrSync;
     _videoController = VideoController(
       _player,
-      configuration: const VideoControllerConfiguration(
+      configuration: VideoControllerConfiguration(
         enableHardwareAcceleration: true,
+        androidSurfaceView: surfaceView,
+        // On phones the embedded player keeps the proven texture path (SDR
+        // tone-mapped) and only fullscreen switches to the SurfaceView/HDR
+        // output — embedded platform views in a scrolling UI jank or show
+        // overlay artifacts, and fullscreen is where HDR viewing happens.
+        // On TV video is always fullscreen, so the SurfaceView path is
+        // simply always on there.
+        androidSurfaceViewFullscreenOnly:
+            surfaceView && !PlatformService.isAndroidTvSync,
+        androidMatchContentFrameRate:
+            surfaceView && DisplayPreferences.matchFrameRateSync,
       ),
     );
 
@@ -105,6 +130,8 @@ class MediaPlayerHandler extends BaseAudioHandler
       _listenToErrors();
       _listenToSession();
       _applyMpvNetworkOptions();
+      _applyMpvVideoQualityOptions();
+      _listenToHdrContent();
       _startStallWatchdog();
       StreamTokenService.tokenVersion.addListener(_refreshArtworkTokens);
       SleepTimerService.instance.onExpire = suspendPlayback;
@@ -147,6 +174,37 @@ class MediaPlayerHandler extends BaseAudioHandler
       LoggerService().logger.d('Applied mpv network reconnect options');
     } catch (e) {
       LoggerService().logger.w('Failed to set mpv network options: $e');
+    }
+  }
+
+  /// HDR sources have to be tone-mapped down to SDR everywhere the video ends
+  /// up in a Flutter texture (8-bit compositing). media_kit ships mpv-android's
+  /// "low-end" profile — hdr-compute-peak=no and the cheapest tone-mapping
+  /// defaults — on every platform, which leaves HDR content washed out with
+  /// clipped highlights.
+  Future<void> _applyMpvVideoQualityOptions() async {
+    if (kIsWeb) return;
+    final platform = _player.platform;
+    if (platform is! NativePlayer) return;
+    try {
+      final dynamic native = platform;
+      // bt.2446a preserves highlight detail and overall brightness far better
+      // than mpv's default curve for HDR→SDR on TV-style content.
+      await native.setProperty('tone-mapping', 'bt.2446a');
+      // The HLS master carries the original stream next to transcode variants;
+      // left to its own bandwidth guess mpv picks a lower h264 rung and the
+      // original (incl. HDR) never plays. Direct play means: play the
+      // original — always take the highest-bitrate variant.
+      await native.setProperty('hls-bitrate', 'max');
+      if (!Platform.isAndroid) {
+        // Per-scene peak detection: noticeably better tone mapping, but a GPU
+        // compute pass per frame — leave it off on Android, where the weakest
+        // TV boxes already run close to their limit.
+        await native.setProperty('hdr-compute-peak', 'yes');
+      }
+      LoggerService().logger.d('Applied mpv HDR tone-mapping options');
+    } catch (e) {
+      LoggerService().logger.w('Failed to set mpv tone-mapping options: $e');
     }
   }
 
@@ -1730,6 +1788,23 @@ class MediaPlayerHandler extends BaseAudioHandler
     } catch (e) {
       LoggerService().logger.w('applying video crop failed: $e');
     }
+  }
+
+  /// Whether the playing video is HDR (PQ/HLG transfer). Follows mpv's
+  /// videoParams; false while nothing (or SDR content) is playing.
+  final ValueNotifier<bool> hdrContent = ValueNotifier(false);
+
+  void _listenToHdrContent() {
+    _player.stream.videoParams.listen((p) {
+      final isHdr = p.gamma == 'pq' || p.gamma == 'hlg';
+      if (isHdr != hdrContent.value) {
+        hdrContent.value = isHdr;
+        if (isHdr) {
+          LoggerService().logger.i(
+              'HDR content detected (gamma=${p.gamma}, primaries=${p.primaries}, sigPeak=${p.sigPeak})');
+        }
+      }
+    });
   }
 
   /// The decoded video's *coded* dimensions from mpv's videoParams (w/h).
