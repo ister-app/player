@@ -27,6 +27,19 @@ void main() {
           e['number'] == 8,
     );
     final showId = episode['show']['id'] as String;
+
+    // The episode entity exists from metadata alone; playback needs its media
+    // file. Fail loud when the fixture file was not generated/scanned — the
+    // episode page silently skips auto-start then, and the playback wait below
+    // would burn its full timeout on a misleading message.
+    final withFile = await gqlRaw(
+        '{ episodeById(id: "${episode['id']}") { mediaFile { id } } }');
+    expect((withFile['episodeById']?['mediaFile'] as List?) ?? const [],
+        isNotEmpty,
+        reason: 'Dragonfly s01e08 has no media file: the subtitle fixture '
+            '(testdata create_mkv.sh create_subtitle_fixture) is missing from '
+            'this deployment or has not been scanned');
+
     // ShowEpisodeRoute is nested under the show's overview route.
     await pushRoute(
         tester,
