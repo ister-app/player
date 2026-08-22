@@ -7,12 +7,14 @@ import 'package:gql/ast.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/albumsQuery.graphql.dart';
 import 'package:player/graphql/analyzeDataForPerson.graphql.dart';
+import 'package:player/graphql/appearsOnAlbums.graphql.dart';
 import 'package:player/graphql/artistById.graphql.dart';
 import 'package:player/graphql/booksQuery.graphql.dart';
 import 'package:player/graphql/fragmentAlbum.graphql.dart';
 import 'package:player/graphql/fragmentBook.graphql.dart';
 import 'package:player/graphql/fragmentCredit.graphql.dart';
 import 'package:player/graphql/fragmentImages.graphql.dart';
+import 'package:player/graphql/recentlyAddedTracksByArtist.graphql.dart';
 import 'package:player/graphql/recentlyPlayedTracksByArtist.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/graphql/topPlayedTracksByArtist.graphql.dart';
@@ -116,10 +118,11 @@ class _PersonPageState extends State<PersonPage> {
               ? null
               : Query$artistById.fromJson(result.data!).artistById;
 
-          // Albums and books are fetched through their own top-level, server-sorted
-          // queries (newest first) instead of the person's unsorted association.
-          // All three queries key off personId, which is known up-front, so these
-          // nested Query widgets fire their network requests in parallel.
+          // Albums, appears-on albums and books are fetched through their own
+          // top-level, server-sorted queries (newest first) instead of the
+          // person's unsorted association. All of them key off personId, which
+          // is known up-front, so these nested Query widgets fire their network
+          // requests in parallel.
           return Query(
             options: QueryOptions(
               document: documentNodeQueryalbums,
@@ -139,41 +142,62 @@ class _PersonPageState extends State<PersonPage> {
                   : (Query$albums.fromJson(albumsResult.data!).albums?.content ??
                       const <Fragment$fragmentAlbum>[]);
 
+              // Compilations and guest appearances: albums the person is
+              // credited on without owning them (disjoint from the query above).
               return Query(
                 options: QueryOptions(
-                  document: documentNodeQuerybooks,
-                  variables: {
-                    'authorId': personId,
-                    'sorting': Enum$SortingEnum.RELEASE_YEAR,
-                    'sortingOrder': Enum$SortingOrder.DESCENDING,
-                    'page': 0,
-                    'size': 200,
-                  },
+                  document: documentNodeQueryappearsOnAlbums,
+                  variables: {'id': personId},
                   fetchPolicy: FetchPolicy.cacheAndNetwork,
                 ),
-                builder: (QueryResult booksResult,
+                builder: (QueryResult appearsOnResult,
                     {VoidCallback? refetch, FetchMore? fetchMore}) {
-                  final books = booksResult.data == null
-                      ? const <Fragment$fragmentBook>[]
-                      : (Query$books.fromJson(booksResult.data!).books?.content ??
-                          const <Fragment$fragmentBook>[]);
+                  final appearsOn = appearsOnResult.data == null
+                      ? const <Fragment$fragmentAlbum>[]
+                      : (Query$appearsOnAlbums.fromJson(appearsOnResult.data!)
+                              .albums
+                              ?.content ??
+                          const <Fragment$fragmentAlbum>[]);
 
-                  if (!loading && artist == null) {
-                    return Scaffold(
-                      appBar: AppBar(),
-                      body: Center(
-                          child:
-                              Text(AppLocalizations.of(context)!.personNotFound)),
-                    );
-                  }
+                  return Query(
+                    options: QueryOptions(
+                      document: documentNodeQuerybooks,
+                      variables: {
+                        'authorId': personId,
+                        'sorting': Enum$SortingEnum.RELEASE_YEAR,
+                        'sortingOrder': Enum$SortingOrder.DESCENDING,
+                        'page': 0,
+                        'size': 200,
+                      },
+                      fetchPolicy: FetchPolicy.cacheAndNetwork,
+                    ),
+                    builder: (QueryResult booksResult,
+                        {VoidCallback? refetch, FetchMore? fetchMore}) {
+                      final books = booksResult.data == null
+                          ? const <Fragment$fragmentBook>[]
+                          : (Query$books.fromJson(booksResult.data!)
+                                  .books
+                                  ?.content ??
+                              const <Fragment$fragmentBook>[]);
 
-                  final content =
-                      _buildContent(context, artist, albums, books);
+                      if (!loading && artist == null) {
+                        return Scaffold(
+                          appBar: AppBar(),
+                          body: Center(
+                              child: Text(AppLocalizations.of(context)!
+                                  .personNotFound)),
+                        );
+                      }
 
-                  return Scaffold(
-                    body: loading
-                        ? Skeletonizer(enabled: true, child: content)
-                        : content,
+                      final content = _buildContent(
+                          context, artist, albums, appearsOn, books);
+
+                      return Scaffold(
+                        body: loading
+                            ? Skeletonizer(enabled: true, child: content)
+                            : content,
+                      );
+                    },
                   );
                 },
               );
@@ -188,11 +212,13 @@ class _PersonPageState extends State<PersonPage> {
       BuildContext context,
       Query$artistById$artistById? artist,
       List<Fragment$fragmentAlbum> albums,
+      List<Fragment$fragmentAlbum> appearsOn,
       List<Fragment$fragmentBook> books) {
     final loc = AppLocalizations.of(context)!;
     final credits = artist?.credits ?? [];
     final description = artist != null ? MetadataUtil.getDescription(artist.metadata) : null;
     final hasAlbums = albums.isNotEmpty;
+    final hasAppearsOn = appearsOn.isNotEmpty;
     final hasBooks = books.isNotEmpty;
 
     return CustomScrollView(
@@ -218,7 +244,8 @@ class _PersonPageState extends State<PersonPage> {
           ],
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
-            background: _buildHero(context, loc, artist, albums, books),
+            background:
+                _buildHero(context, loc, artist, albums, appearsOn, books),
           ),
         ),
         if (hasAlbums)
@@ -311,44 +338,16 @@ class _PersonPageState extends State<PersonPage> {
             personId: personId,
           ),
         ),
-        if (hasAlbums) _sectionHeader(context, loc.albums),
-        if (hasAlbums)
-        SliverToBoxAdapter(
-          child: Center(
-            child: Container(
-              width: double.infinity,
-              constraints: const BoxConstraints(maxWidth: 1600),
-              child: GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.zero,
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 300,
-                  childAspectRatio: 1.0,
-                  mainAxisSpacing: 0,
-                  crossAxisSpacing: 0,
-                ),
-                itemCount: albums.length,
-                itemBuilder: (context, index) {
-                  final album = albums[index];
-                  final img =
-                      ImageUtil.getImageByType(album.images, ImageTypes.cover);
-                  return CarouselItemView(
-                    serverName: serverName,
-                    title: MetadataUtil.getTitle(album.metadata) ?? album.name,
-                    subTitle: album.artist.name,
-                    imageUrl: ImageUtil.buildUrl(img,
-                        token: StreamTokenService.getToken(serverName)),
-                    blurHash: img?.blurHash,
-                    placeholderIcon: Icons.music_note,
-                    onTap: () => AutoRouter.of(context)
-                        .push(AlbumRoute(albumId: album.id)),
-                  );
-                },
-              ),
-            ),
-          ),
-        ),
+        if (hasAlbums) ...[
+          _sectionHeader(context, loc.albums),
+          _albumGrid(context, albums),
+        ],
+        // Compilations and guest appearances, newest added first; the tile
+        // subtitle (the album artist) is what tells these apart.
+        if (hasAppearsOn) ...[
+          _sectionHeader(context, loc.appearsOn),
+          _albumGrid(context, appearsOn),
+        ],
         if (hasBooks) ...[
           _sectionHeader(context, loc.books),
           SliverToBoxAdapter(
@@ -378,6 +377,45 @@ class _PersonPageState extends State<PersonPage> {
         ],
         if (credits.isNotEmpty) _buildFilmography(context, loc, credits),
       ],
+    );
+  }
+
+  Widget _albumGrid(BuildContext context, List<Fragment$fragmentAlbum> albums) {
+    return SliverToBoxAdapter(
+      child: Center(
+        child: Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(maxWidth: 1600),
+          child: GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 300,
+              childAspectRatio: 1.0,
+              mainAxisSpacing: 0,
+              crossAxisSpacing: 0,
+            ),
+            itemCount: albums.length,
+            itemBuilder: (context, index) {
+              final album = albums[index];
+              final img =
+                  ImageUtil.getImageByType(album.images, ImageTypes.cover);
+              return CarouselItemView(
+                serverName: serverName,
+                title: MetadataUtil.getTitle(album.metadata) ?? album.name,
+                subTitle: album.artist.name,
+                imageUrl: ImageUtil.buildUrl(img,
+                    token: StreamTokenService.getToken(serverName)),
+                blurHash: img?.blurHash,
+                placeholderIcon: Icons.music_note,
+                onTap: () =>
+                    AutoRouter.of(context).push(AlbumRoute(albumId: album.id)),
+              );
+            },
+          ),
+        ),
+      ),
     );
   }
 
@@ -634,6 +672,7 @@ class _PersonPageState extends State<PersonPage> {
       AppLocalizations loc,
       Query$artistById$artistById? artist,
       List<Fragment$fragmentAlbum> albums,
+      List<Fragment$fragmentAlbum> appearsOn,
       List<Fragment$fragmentBook> books) {
     final backgroundImg = artist != null
         ? ImageUtil.getImageByType(artist.images, ImageTypes.background)
@@ -644,7 +683,10 @@ class _PersonPageState extends State<PersonPage> {
     final personCoverImg = artist != null
         ? ImageUtil.getImageByType(artist.images, ImageTypes.cover)
         : null;
-    final firstAlbum = albums.isNotEmpty ? albums.first : null;
+    // Guest artists without an album of their own still get a cover: the
+    // newest album they appear on.
+    final firstAlbum =
+        albums.isNotEmpty ? albums.first : appearsOn.firstOrNull;
     final firstAlbumCoverImg = firstAlbum != null
         ? ImageUtil.getImageByType(firstAlbum.images, ImageTypes.cover)
         : null;
@@ -1018,6 +1060,19 @@ class _ArtistTrackTabsState extends State<_ArtistTrackTabs> {
             .map((t) => ArtistTrackListItem(track: t, album: t.album))
             .toList(),
       ),
+      // Not a per-user ranking: the newest tracks by this artist (incl. guest
+      // spots) by the date they were added to the library.
+      _ArtistTrackTabConfig(
+        title: loc.recentlyAdded,
+        variant: ArtistTrackListVariant.added,
+        document: documentNodeQueryrecentlyAddedTracksByArtist,
+        parse: (data) => (Query$recentlyAddedTracksByArtist.fromJson(data)
+                    .tracks
+                    ?.content ??
+                const [])
+            .map((t) => ArtistTrackListItem(track: t, album: t.album))
+            .toList(),
+      ),
     ];
 
     return _TrackListQuery(
@@ -1029,11 +1084,16 @@ class _ArtistTrackTabsState extends State<_ArtistTrackTabs> {
         builder: (recency) => _TrackListQuery(
           personId: widget.personId,
           config: configs[2],
-          builder: (rating) => _buildTabs(context, [
-            (config: configs[0], items: plays),
-            (config: configs[1], items: recency),
-            (config: configs[2], items: rating),
-          ]),
+          builder: (rating) => _TrackListQuery(
+            personId: widget.personId,
+            config: configs[3],
+            builder: (added) => _buildTabs(context, [
+              (config: configs[0], items: plays),
+              (config: configs[1], items: recency),
+              (config: configs[2], items: rating),
+              (config: configs[3], items: added),
+            ]),
+          ),
         ),
       ),
     );

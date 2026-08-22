@@ -387,6 +387,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get appearsIn => 'Verschijnt in';
 
   @override
+  String get appearsOn => 'Verschijnt op';
+
+  @override
   String get personNotFound => 'Persoon niet gevonden';
 
   @override

@@ -386,6 +386,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appearsIn => 'Appears in';
 
   @override
+  String get appearsOn => 'Appears on';
+
+  @override
   String get personNotFound => 'Person not found';
 
   @override

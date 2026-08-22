@@ -113,6 +113,7 @@
   "ratingValue": "{value}/10",
   "ratingFailed": "Kon je beoordeling niet opslaan",
   "appearsIn": "Verschijnt in",
+  "appearsOn": "Verschijnt op",
   "personNotFound": "Persoon niet gevonden",
   "readMore": "Lees meer",
   "mostPlayedTracks": "Meest afgespeeld",

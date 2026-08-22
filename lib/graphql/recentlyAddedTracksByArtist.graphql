@@ -1,0 +1,13 @@
+# The newest tracks by this artist — as primary or featured artist, or on an
+# album they own — by the date they were added to the library. The full album
+# fragment is what MediaPlayerHandler.startPlayQueueForAlbum needs, so a tapped
+# track plays its album without an extra albumById round-trip.
+query recentlyAddedTracksByArtist($id: ID) {
+    tracks(artistId: $id, sorting: DATE_CREATED, sortingOrder: DESCENDING, page: 0, size: 10) {
+        content {
+            ...fragmentTrack
+            album { ...fragmentAlbum }
+        }
+        totalPages totalElements number size
+    }
+}

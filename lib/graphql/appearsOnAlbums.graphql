@@ -1,0 +1,8 @@
+# Albums the person is credited on without owning them (compilations, guest
+# appearances) — disjoint from albums(artistId:). Newest added first.
+query appearsOnAlbums($id: ID) {
+    albums(appearsOnArtistId: $id, sorting: DATE_CREATED, sortingOrder: DESCENDING, page: 0, size: 200) {
+        content { ...fragmentAlbum }
+        totalPages totalElements number size
+    }
+}

@@ -782,6 +782,12 @@ abstract class AppLocalizations {
   /// **'Appears in'**
   String get appearsIn;
 
+  /// Section header on a person page listing albums they are credited on without being the album artist (compilations, guest appearances)
+  ///
+  /// In en, this message translates to:
+  /// **'Appears on'**
+  String get appearsOn;
+
   /// Shown on the person page when the person does not exist or is not accessible
   ///
   /// In en, this message translates to:

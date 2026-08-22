@@ -3198,6 +3198,39 @@ Enum$CreditType fromJson$Enum$CreditType(String value) {
   }
 }
 
+enum Enum$TrackCreditType {
+  PRIMARY,
+  FEATURED,
+  $unknown;
+
+  factory Enum$TrackCreditType.fromJson(String value) =>
+      fromJson$Enum$TrackCreditType(value);
+
+  String toJson() => toJson$Enum$TrackCreditType(this);
+}
+
+String toJson$Enum$TrackCreditType(Enum$TrackCreditType e) {
+  switch (e) {
+    case Enum$TrackCreditType.PRIMARY:
+      return r'PRIMARY';
+    case Enum$TrackCreditType.FEATURED:
+      return r'FEATURED';
+    case Enum$TrackCreditType.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$TrackCreditType fromJson$Enum$TrackCreditType(String value) {
+  switch (value) {
+    case r'PRIMARY':
+      return Enum$TrackCreditType.PRIMARY;
+    case r'FEATURED':
+      return Enum$TrackCreditType.FEATURED;
+    default:
+      return Enum$TrackCreditType.$unknown;
+  }
+}
+
 enum Enum$BookProgressMode {
   READING,
   LISTENING,

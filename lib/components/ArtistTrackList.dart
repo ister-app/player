@@ -30,14 +30,20 @@ enum ArtistTrackListVariant {
   recency,
 
   /// Rating stars + duration ("Highest rated").
-  rating;
+  rating,
+
+  /// Duration only ("Recently added"): the newest tracks by the date they were
+  /// added to the library. The server exposes no date to show.
+  added;
 
   /// The server-side ranking this list renders; playing the list creates an
-  /// ARTIST play queue for the same ranking.
-  Enum$RankKind get rankKind => switch (this) {
+  /// ARTIST play queue for the same ranking. Null for [added], which has no
+  /// server ranking — tapping a row plays the track's album instead.
+  Enum$RankKind? get rankKind => switch (this) {
         plays => Enum$RankKind.MOST_PLAYED,
         recency => Enum$RankKind.RECENTLY_PLAYED,
         rating => Enum$RankKind.HIGHEST_RATED,
+        added => null,
       };
 }
 
@@ -101,11 +107,23 @@ class _ArtistTrackListState extends State<ArtistTrackList> {
 
   void _playTrack(BuildContext context, ArtistTrackListItem item) {
     final client = GraphQLProvider.of(context).value;
+    final rankKind = widget.variant.rankKind;
+    if (rankKind == null) {
+      // No server ranking to play through: play the album from this track.
+      MediaPlayerHandler.instance.startPlayQueueForAlbum(
+        client,
+        null,
+        item.album,
+        item.track.id,
+        widget.serverName,
+      );
+      return;
+    }
     MediaPlayerHandler.instance.startPlayQueueForArtistRankedList(
       client,
       widget.serverName,
       widget.personId,
-      widget.variant.rankKind,
+      rankKind,
       item.track.id,
     );
   }
@@ -355,6 +373,7 @@ class _ArtistTrackListState extends State<ArtistTrackList> {
           style: style,
         );
       case ArtistTrackListVariant.rating:
+      case ArtistTrackListVariant.added:
         return Text(
           durationMs != null
               ? DurationUtil.format(Duration(milliseconds: durationMs))

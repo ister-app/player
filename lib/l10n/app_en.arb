@@ -477,6 +477,10 @@
   "@appearsIn": {
     "description": "Section header on a person page listing the movies and shows they appear in"
   },
+  "appearsOn": "Appears on",
+  "@appearsOn": {
+    "description": "Section header on a person page listing albums they are credited on without being the album artist (compilations, guest appearances)"
+  },
   "personNotFound": "Person not found",
   "@personNotFound": {
     "description": "Shown on the person page when the person does not exist or is not accessible"

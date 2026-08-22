@@ -92,6 +92,21 @@ http.Response _json(Map<String, dynamic> data) => http.Response(
       headers: {'content-type': 'application/json'},
     );
 
+Map<String, dynamic> _compilationAlbum() => {
+      '__typename': 'Album',
+      'id': 'album-comp',
+      'name': 'Rocky IV: Original Motion Picture Score',
+      'releaseYear': 1985,
+      'artist': {
+        '__typename': 'Person',
+        'id': 'person-2',
+        'name': 'Vince DiCola',
+      },
+      'images': [],
+      'metadata': [],
+      'rating': null,
+    };
+
 Map<String, dynamic> _emptyPage(String field) => {
       '__typename': 'Query',
       field: {
@@ -104,12 +119,41 @@ Map<String, dynamic> _emptyPage(String field) => {
       },
     };
 
-MockClient _fakeGraphQL({Map<String, dynamic>? person}) =>
+MockClient _fakeGraphQL({
+  Map<String, dynamic>? person,
+  List<Map<String, dynamic>> appearsOn = const [],
+}) =>
     MockClient((request) async {
       final query =
           (json.decode(request.body) as Map<String, dynamic>)['query'] as String;
       if (query.contains('artistById')) {
         return _json({'__typename': 'Query', 'artistById': person});
+      }
+      if (query.contains('query appearsOnAlbums')) {
+        return _json({
+          '__typename': 'Query',
+          'albums': {
+            '__typename': 'AlbumPage',
+            'content': appearsOn,
+            'totalPages': 1,
+            'totalElements': appearsOn.length,
+            'number': 0,
+            'size': 200,
+          },
+        });
+      }
+      if (query.contains('recentlyAddedTracksByArtist')) {
+        return _json({
+          '__typename': 'Query',
+          'tracks': {
+            '__typename': 'TrackPage',
+            'content': [],
+            'totalPages': 0,
+            'totalElements': 0,
+            'number': 0,
+            'size': 10,
+          },
+        });
       }
       if (query.contains('query albums')) {
         return _json(_emptyPage('albums'));
@@ -204,6 +248,33 @@ void main() {
     expect(find.byType(DraggableScrollableSheet), findsOneWidget);
     // Show name appears in the row and again in the sheet header.
     expect(find.text('Tulsa King'), findsNWidgets(2));
+  });
+
+  testWidgets('lists compilations and guest appearances under "Appears on"',
+      (tester) async {
+    final client = _fakeGraphQL(
+        person: _person(), appearsOn: [_compilationAlbum()]);
+    useClient(client);
+    await tester.pumpWidget(_app(client));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Appears on'), findsOneWidget);
+    expect(find.text('Rocky IV: Original Motion Picture Score'), findsOneWidget);
+    // The tile's subtitle names the album artist, which is what sets these
+    // apart from the person's own albums.
+    expect(find.text('Vince DiCola'), findsOneWidget);
+    // No albums of their own: the "Albums" section stays away.
+    expect(find.text('Albums'), findsNothing);
+  });
+
+  testWidgets('hides "Appears on" when the person is on no other albums',
+      (tester) async {
+    final client = _fakeGraphQL(person: _person());
+    useClient(client);
+    await tester.pumpWidget(_app(client));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Appears on'), findsNothing);
   });
 
   testWidgets('shows not-found instead of an eternal skeleton', (tester) async {

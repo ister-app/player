@@ -99,6 +99,7 @@ MockClient _fakeGraphQL({
   List<Map<String, dynamic>> topPlayed = const [],
   List<Map<String, dynamic>> recentlyPlayed = const [],
   List<Map<String, dynamic>> topRated = const [],
+  List<Map<String, dynamic>> recentlyAdded = const [],
   List<Map<String, dynamic>>? createPlayQueueRequests,
 }) =>
     MockClient((request) async {
@@ -127,6 +128,22 @@ MockClient _fakeGraphQL({
       }
       if (query.contains('topRatedTracks')) {
         return _json(_personWithTracks('topRatedTracks', topRated));
+      }
+      if (query.contains('recentlyAddedTracksByArtist')) {
+        return _json({
+          '__typename': 'Query',
+          'tracks': {
+            '__typename': 'TrackPage',
+            'content': recentlyAdded,
+            'totalPages': 1,
+            'totalElements': recentlyAdded.length,
+            'number': 0,
+            'size': 10,
+          },
+        });
+      }
+      if (query.contains('query appearsOnAlbums')) {
+        return _json(_emptyPage('albums'));
       }
       if (query.contains('artistById')) {
         return _json({'__typename': 'Query', 'artistById': _person()});
@@ -288,6 +305,56 @@ void main() {
     expect(input['sourceId'], 'person-1');
     expect(input['rankKind'], 'MOST_PLAYED');
     expect(input['startId'], 'track-2');
+  });
+
+  testWidgets('shows the recently added list with durations', (tester) async {
+    final client = _fakeGraphQL(recentlyAdded: [
+      _track(1, 'Rain On Me'),
+      _track(2, 'Alice'),
+    ]);
+    useClient(client);
+    await tester.pumpWidget(_app(client));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Recently added'), findsOneWidget);
+    expect(find.text('Rain On Me'), findsOneWidget);
+    expect(find.text('Alice'), findsOneWidget);
+    expect(find.text('3:35'), findsNWidgets(2));
+    // The per-user lists received no tracks and stay hidden.
+    expect(find.text('Most played'), findsNothing);
+    expect(find.text('Last played'), findsNothing);
+    expect(find.text('Highest rated'), findsNothing);
+  });
+
+  testWidgets('tapping a recently added row plays its album from that track',
+      (tester) async {
+    final createRequests = <Map<String, dynamic>>[];
+    final client = _fakeGraphQL(
+      recentlyAdded: [
+        _track(1, 'Rain On Me'),
+        _track(2, 'Alice'),
+      ],
+      createPlayQueueRequests: createRequests,
+    );
+    useClient(client);
+    await tester.pumpWidget(_app(client));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Alice'));
+    await tester.pumpAndSettle();
+
+    // No server ranking exists for "recently added", so the row plays the
+    // track's album (an ALBUM queue) instead of an ARTIST ranked queue.
+    expect(createRequests, hasLength(1));
+    final input = createRequests.single['input'] as Map<String, dynamic>;
+    expect(input['sourceType'], 'ALBUM');
+    expect(input['sourceId'], 'album-1');
+    expect(input['rankKind'], isNull);
+    expect(input['startId'], 'track-2');
+
+    // startPlayQueueForAlbum armed the session heartbeat before the (stubbed)
+    // queue creation failed; a periodic timer must not outlive the test.
+    MediaPlayerHandler.instance.debugStopHeartbeat();
   });
 
   testWidgets('collapses long lists behind a show-more toggle',
