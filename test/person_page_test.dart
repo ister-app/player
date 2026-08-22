@@ -142,16 +142,13 @@ MockClient _fakeGraphQL({
           },
         });
       }
-      if (query.contains('recentlyAddedTracksByArtist')) {
+      if (query.contains('recentlyAddedTracks')) {
         return _json({
           '__typename': 'Query',
-          'tracks': {
-            '__typename': 'TrackPage',
-            'content': [],
-            'totalPages': 0,
-            'totalElements': 0,
-            'number': 0,
-            'size': 10,
+          'personById': {
+            '__typename': 'Person',
+            'id': 'person-1',
+            'recentlyAddedTracks': [],
           },
         });
       }

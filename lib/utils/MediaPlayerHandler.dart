@@ -3174,12 +3174,6 @@ class MediaPlayerHandler extends BaseAudioHandler
     _heartbeat = null;
   }
 
-  /// Cancels the session heartbeat without the full [stop] (which awaits the
-  /// audio session, never available in widget tests) — so a test that started
-  /// playback leaves no periodic timer behind.
-  @visibleForTesting
-  void debugStopHeartbeat() => _stopHeartbeat();
-
   // ── Remote control ("party mode") ────────────────────────────────────────
 
   /// Subscribes to remote-control commands for the active queue. Idempotent:

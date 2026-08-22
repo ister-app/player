@@ -32,18 +32,16 @@ enum ArtistTrackListVariant {
   /// Rating stars + duration ("Highest rated").
   rating,
 
-  /// Duration only ("Recently added"): the newest tracks by the date they were
-  /// added to the library. The server exposes no date to show.
+  /// Relative added-to-library time ("Recently added").
   added;
 
   /// The server-side ranking this list renders; playing the list creates an
-  /// ARTIST play queue for the same ranking. Null for [added], which has no
-  /// server ranking — tapping a row plays the track's album instead.
-  Enum$RankKind? get rankKind => switch (this) {
+  /// ARTIST play queue for the same ranking.
+  Enum$RankKind get rankKind => switch (this) {
         plays => Enum$RankKind.MOST_PLAYED,
         recency => Enum$RankKind.RECENTLY_PLAYED,
         rating => Enum$RankKind.HIGHEST_RATED,
-        added => null,
+        added => Enum$RankKind.RECENTLY_ADDED,
       };
 }
 
@@ -55,12 +53,14 @@ class ArtistTrackListItem {
     required this.album,
     this.playCount,
     this.lastPlayedAt,
+    this.dateAdded,
   });
 
   final Fragment$fragmentTrack track;
   final Fragment$fragmentAlbum album;
   final int? playCount;
   final DateTime? lastPlayedAt;
+  final DateTime? dateAdded;
 }
 
 /// A ranked track list for the artist page (most played / last played /
@@ -107,23 +107,11 @@ class _ArtistTrackListState extends State<ArtistTrackList> {
 
   void _playTrack(BuildContext context, ArtistTrackListItem item) {
     final client = GraphQLProvider.of(context).value;
-    final rankKind = widget.variant.rankKind;
-    if (rankKind == null) {
-      // No server ranking to play through: play the album from this track.
-      MediaPlayerHandler.instance.startPlayQueueForAlbum(
-        client,
-        null,
-        item.album,
-        item.track.id,
-        widget.serverName,
-      );
-      return;
-    }
     MediaPlayerHandler.instance.startPlayQueueForArtistRankedList(
       client,
       widget.serverName,
       widget.personId,
-      rankKind,
+      widget.variant.rankKind,
       item.track.id,
     );
   }
@@ -372,8 +360,13 @@ class _ArtistTrackListState extends State<ArtistTrackList> {
           lastPlayedAt != null ? _relativeTime(loc, lastPlayedAt) : '',
           style: style,
         );
-      case ArtistTrackListVariant.rating:
       case ArtistTrackListVariant.added:
+        final dateAdded = item.dateAdded;
+        return Text(
+          dateAdded != null ? _relativeTime(loc, dateAdded) : '',
+          style: style,
+        );
+      case ArtistTrackListVariant.rating:
         return Text(
           durationMs != null
               ? DurationUtil.format(Duration(milliseconds: durationMs))

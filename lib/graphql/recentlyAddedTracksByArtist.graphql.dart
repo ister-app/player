@@ -113,31 +113,34 @@ class _CopyWithStubImpl$Variables$Query$recentlyAddedTracksByArtist<TRes>
 }
 
 class Query$recentlyAddedTracksByArtist {
-  Query$recentlyAddedTracksByArtist({this.tracks, this.$__typename = 'Query'});
+  Query$recentlyAddedTracksByArtist({
+    this.personById,
+    this.$__typename = 'Query',
+  });
 
   factory Query$recentlyAddedTracksByArtist.fromJson(
     Map<String, dynamic> json,
   ) {
-    final l$tracks = json['tracks'];
+    final l$personById = json['personById'];
     final l$$__typename = json['__typename'];
     return Query$recentlyAddedTracksByArtist(
-      tracks: l$tracks == null
+      personById: l$personById == null
           ? null
-          : Query$recentlyAddedTracksByArtist$tracks.fromJson(
-              (l$tracks as Map<String, dynamic>),
+          : Query$recentlyAddedTracksByArtist$personById.fromJson(
+              (l$personById as Map<String, dynamic>),
             ),
       $__typename: (l$$__typename as String),
     );
   }
 
-  final Query$recentlyAddedTracksByArtist$tracks? tracks;
+  final Query$recentlyAddedTracksByArtist$personById? personById;
 
   final String $__typename;
 
   Map<String, dynamic> toJson() {
     final _resultData = <String, dynamic>{};
-    final l$tracks = tracks;
-    _resultData['tracks'] = l$tracks?.toJson();
+    final l$personById = personById;
+    _resultData['personById'] = l$personById?.toJson();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -145,9 +148,9 @@ class Query$recentlyAddedTracksByArtist {
 
   @override
   int get hashCode {
-    final l$tracks = tracks;
+    final l$personById = personById;
     final l$$__typename = $__typename;
-    return Object.hashAll([l$tracks, l$$__typename]);
+    return Object.hashAll([l$personById, l$$__typename]);
   }
 
   @override
@@ -159,9 +162,9 @@ class Query$recentlyAddedTracksByArtist {
         runtimeType != other.runtimeType) {
       return false;
     }
-    final l$tracks = tracks;
-    final lOther$tracks = other.tracks;
-    if (l$tracks != lOther$tracks) {
+    final l$personById = personById;
+    final lOther$personById = other.personById;
+    if (l$personById != lOther$personById) {
       return false;
     }
     final l$$__typename = $__typename;
@@ -189,10 +192,10 @@ abstract class CopyWith$Query$recentlyAddedTracksByArtist<TRes> {
       _CopyWithStubImpl$Query$recentlyAddedTracksByArtist;
 
   TRes call({
-    Query$recentlyAddedTracksByArtist$tracks? tracks,
+    Query$recentlyAddedTracksByArtist$personById? personById,
     String? $__typename,
   });
-  CopyWith$Query$recentlyAddedTracksByArtist$tracks<TRes> get tracks;
+  CopyWith$Query$recentlyAddedTracksByArtist$personById<TRes> get personById;
 }
 
 class _CopyWithImpl$Query$recentlyAddedTracksByArtist<TRes>
@@ -205,27 +208,29 @@ class _CopyWithImpl$Query$recentlyAddedTracksByArtist<TRes>
 
   static const _undefined = <dynamic, dynamic>{};
 
-  TRes call({Object? tracks = _undefined, Object? $__typename = _undefined}) =>
-      _then(
-        Query$recentlyAddedTracksByArtist(
-          tracks: tracks == _undefined
-              ? _instance.tracks
-              : (tracks as Query$recentlyAddedTracksByArtist$tracks?),
-          $__typename: $__typename == _undefined || $__typename == null
-              ? _instance.$__typename
-              : ($__typename as String),
-        ),
-      );
+  TRes call({
+    Object? personById = _undefined,
+    Object? $__typename = _undefined,
+  }) => _then(
+    Query$recentlyAddedTracksByArtist(
+      personById: personById == _undefined
+          ? _instance.personById
+          : (personById as Query$recentlyAddedTracksByArtist$personById?),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 
-  CopyWith$Query$recentlyAddedTracksByArtist$tracks<TRes> get tracks {
-    final local$tracks = _instance.tracks;
-    return local$tracks == null
-        ? CopyWith$Query$recentlyAddedTracksByArtist$tracks.stub(
+  CopyWith$Query$recentlyAddedTracksByArtist$personById<TRes> get personById {
+    final local$personById = _instance.personById;
+    return local$personById == null
+        ? CopyWith$Query$recentlyAddedTracksByArtist$personById.stub(
             _then(_instance),
           )
-        : CopyWith$Query$recentlyAddedTracksByArtist$tracks(
-            local$tracks,
-            (e) => call(tracks: e),
+        : CopyWith$Query$recentlyAddedTracksByArtist$personById(
+            local$personById,
+            (e) => call(personById: e),
           );
   }
 }
@@ -237,12 +242,12 @@ class _CopyWithStubImpl$Query$recentlyAddedTracksByArtist<TRes>
   TRes _res;
 
   call({
-    Query$recentlyAddedTracksByArtist$tracks? tracks,
+    Query$recentlyAddedTracksByArtist$personById? personById,
     String? $__typename,
   }) => _res;
 
-  CopyWith$Query$recentlyAddedTracksByArtist$tracks<TRes> get tracks =>
-      CopyWith$Query$recentlyAddedTracksByArtist$tracks.stub(_res);
+  CopyWith$Query$recentlyAddedTracksByArtist$personById<TRes> get personById =>
+      CopyWith$Query$recentlyAddedTracksByArtist$personById.stub(_res);
 }
 
 const documentNodeQueryrecentlyAddedTracksByArtist = DocumentNode(
@@ -262,43 +267,46 @@ const documentNodeQueryrecentlyAddedTracksByArtist = DocumentNode(
       selectionSet: SelectionSetNode(
         selections: [
           FieldNode(
-            name: NameNode(value: 'tracks'),
+            name: NameNode(value: 'personById'),
             alias: null,
             arguments: [
               ArgumentNode(
-                name: NameNode(value: 'artistId'),
+                name: NameNode(value: 'id'),
                 value: VariableNode(name: NameNode(value: 'id')),
-              ),
-              ArgumentNode(
-                name: NameNode(value: 'sorting'),
-                value: EnumValueNode(name: NameNode(value: 'DATE_CREATED')),
-              ),
-              ArgumentNode(
-                name: NameNode(value: 'sortingOrder'),
-                value: EnumValueNode(name: NameNode(value: 'DESCENDING')),
-              ),
-              ArgumentNode(
-                name: NameNode(value: 'page'),
-                value: IntValueNode(value: '0'),
-              ),
-              ArgumentNode(
-                name: NameNode(value: 'size'),
-                value: IntValueNode(value: '10'),
               ),
             ],
             directives: [],
             selectionSet: SelectionSetNode(
               selections: [
                 FieldNode(
-                  name: NameNode(value: 'content'),
+                  name: NameNode(value: 'id'),
                   alias: null,
                   arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'recentlyAddedTracks'),
+                  alias: null,
+                  arguments: [
+                    ArgumentNode(
+                      name: NameNode(value: 'limit'),
+                      value: IntValueNode(value: '10'),
+                    ),
+                  ],
                   directives: [],
                   selectionSet: SelectionSetNode(
                     selections: [
                       FragmentSpreadNode(
                         name: NameNode(value: 'fragmentTrack'),
                         directives: [],
+                      ),
+                      FieldNode(
+                        name: NameNode(value: 'dateAdded'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
                       ),
                       FieldNode(
                         name: NameNode(value: 'album'),
@@ -332,34 +340,6 @@ const documentNodeQueryrecentlyAddedTracksByArtist = DocumentNode(
                   ),
                 ),
                 FieldNode(
-                  name: NameNode(value: 'totalPages'),
-                  alias: null,
-                  arguments: [],
-                  directives: [],
-                  selectionSet: null,
-                ),
-                FieldNode(
-                  name: NameNode(value: 'totalElements'),
-                  alias: null,
-                  arguments: [],
-                  directives: [],
-                  selectionSet: null,
-                ),
-                FieldNode(
-                  name: NameNode(value: 'number'),
-                  alias: null,
-                  arguments: [],
-                  directives: [],
-                  selectionSet: null,
-                ),
-                FieldNode(
-                  name: NameNode(value: 'size'),
-                  alias: null,
-                  arguments: [],
-                  directives: [],
-                  selectionSet: null,
-                ),
-                FieldNode(
                   name: NameNode(value: '__typename'),
                   alias: null,
                   arguments: [],
@@ -386,65 +366,48 @@ const documentNodeQueryrecentlyAddedTracksByArtist = DocumentNode(
   ],
 );
 
-class Query$recentlyAddedTracksByArtist$tracks {
-  Query$recentlyAddedTracksByArtist$tracks({
-    required this.content,
-    required this.totalPages,
-    required this.totalElements,
-    required this.number,
-    required this.size,
-    this.$__typename = 'TrackPage',
+class Query$recentlyAddedTracksByArtist$personById {
+  Query$recentlyAddedTracksByArtist$personById({
+    required this.id,
+    required this.recentlyAddedTracks,
+    this.$__typename = 'Person',
   });
 
-  factory Query$recentlyAddedTracksByArtist$tracks.fromJson(
+  factory Query$recentlyAddedTracksByArtist$personById.fromJson(
     Map<String, dynamic> json,
   ) {
-    final l$content = json['content'];
-    final l$totalPages = json['totalPages'];
-    final l$totalElements = json['totalElements'];
-    final l$number = json['number'];
-    final l$size = json['size'];
+    final l$id = json['id'];
+    final l$recentlyAddedTracks = json['recentlyAddedTracks'];
     final l$$__typename = json['__typename'];
-    return Query$recentlyAddedTracksByArtist$tracks(
-      content: (l$content as List<dynamic>)
+    return Query$recentlyAddedTracksByArtist$personById(
+      id: (l$id as String),
+      recentlyAddedTracks: (l$recentlyAddedTracks as List<dynamic>)
           .map(
-            (e) => Query$recentlyAddedTracksByArtist$tracks$content.fromJson(
-              (e as Map<String, dynamic>),
-            ),
+            (e) =>
+                Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks.fromJson(
+                  (e as Map<String, dynamic>),
+                ),
           )
           .toList(),
-      totalPages: (l$totalPages as int),
-      totalElements: (l$totalElements as int),
-      number: (l$number as int),
-      size: (l$size as int),
       $__typename: (l$$__typename as String),
     );
   }
 
-  final List<Query$recentlyAddedTracksByArtist$tracks$content> content;
+  final String id;
 
-  final int totalPages;
-
-  final int totalElements;
-
-  final int number;
-
-  final int size;
+  final List<Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks>
+  recentlyAddedTracks;
 
   final String $__typename;
 
   Map<String, dynamic> toJson() {
     final _resultData = <String, dynamic>{};
-    final l$content = content;
-    _resultData['content'] = l$content.map((e) => e.toJson()).toList();
-    final l$totalPages = totalPages;
-    _resultData['totalPages'] = l$totalPages;
-    final l$totalElements = totalElements;
-    _resultData['totalElements'] = l$totalElements;
-    final l$number = number;
-    _resultData['number'] = l$number;
-    final l$size = size;
-    _resultData['size'] = l$size;
+    final l$id = id;
+    _resultData['id'] = l$id;
+    final l$recentlyAddedTracks = recentlyAddedTracks;
+    _resultData['recentlyAddedTracks'] = l$recentlyAddedTracks
+        .map((e) => e.toJson())
+        .toList();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -452,18 +415,12 @@ class Query$recentlyAddedTracksByArtist$tracks {
 
   @override
   int get hashCode {
-    final l$content = content;
-    final l$totalPages = totalPages;
-    final l$totalElements = totalElements;
-    final l$number = number;
-    final l$size = size;
+    final l$id = id;
+    final l$recentlyAddedTracks = recentlyAddedTracks;
     final l$$__typename = $__typename;
     return Object.hashAll([
-      Object.hashAll(l$content.map((v) => v)),
-      l$totalPages,
-      l$totalElements,
-      l$number,
-      l$size,
+      l$id,
+      Object.hashAll(l$recentlyAddedTracks.map((v) => v)),
       l$$__typename,
     ]);
   }
@@ -473,41 +430,26 @@ class Query$recentlyAddedTracksByArtist$tracks {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! Query$recentlyAddedTracksByArtist$tracks ||
+    if (other is! Query$recentlyAddedTracksByArtist$personById ||
         runtimeType != other.runtimeType) {
       return false;
     }
-    final l$content = content;
-    final lOther$content = other.content;
-    if (l$content.length != lOther$content.length) {
+    final l$id = id;
+    final lOther$id = other.id;
+    if (l$id != lOther$id) {
       return false;
     }
-    for (int i = 0; i < l$content.length; i++) {
-      final l$content$entry = l$content[i];
-      final lOther$content$entry = lOther$content[i];
-      if (l$content$entry != lOther$content$entry) {
+    final l$recentlyAddedTracks = recentlyAddedTracks;
+    final lOther$recentlyAddedTracks = other.recentlyAddedTracks;
+    if (l$recentlyAddedTracks.length != lOther$recentlyAddedTracks.length) {
+      return false;
+    }
+    for (int i = 0; i < l$recentlyAddedTracks.length; i++) {
+      final l$recentlyAddedTracks$entry = l$recentlyAddedTracks[i];
+      final lOther$recentlyAddedTracks$entry = lOther$recentlyAddedTracks[i];
+      if (l$recentlyAddedTracks$entry != lOther$recentlyAddedTracks$entry) {
         return false;
       }
-    }
-    final l$totalPages = totalPages;
-    final lOther$totalPages = other.totalPages;
-    if (l$totalPages != lOther$totalPages) {
-      return false;
-    }
-    final l$totalElements = totalElements;
-    final lOther$totalElements = other.totalElements;
-    if (l$totalElements != lOther$totalElements) {
-      return false;
-    }
-    final l$number = number;
-    final lOther$number = other.number;
-    if (l$number != lOther$number) {
-      return false;
-    }
-    final l$size = size;
-    final lOther$size = other.size;
-    if (l$size != lOther$size) {
-      return false;
     }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
@@ -518,37 +460,36 @@ class Query$recentlyAddedTracksByArtist$tracks {
   }
 }
 
-extension UtilityExtension$Query$recentlyAddedTracksByArtist$tracks
-    on Query$recentlyAddedTracksByArtist$tracks {
-  CopyWith$Query$recentlyAddedTracksByArtist$tracks<
-    Query$recentlyAddedTracksByArtist$tracks
+extension UtilityExtension$Query$recentlyAddedTracksByArtist$personById
+    on Query$recentlyAddedTracksByArtist$personById {
+  CopyWith$Query$recentlyAddedTracksByArtist$personById<
+    Query$recentlyAddedTracksByArtist$personById
   >
   get copyWith =>
-      CopyWith$Query$recentlyAddedTracksByArtist$tracks(this, (i) => i);
+      CopyWith$Query$recentlyAddedTracksByArtist$personById(this, (i) => i);
 }
 
-abstract class CopyWith$Query$recentlyAddedTracksByArtist$tracks<TRes> {
-  factory CopyWith$Query$recentlyAddedTracksByArtist$tracks(
-    Query$recentlyAddedTracksByArtist$tracks instance,
-    TRes Function(Query$recentlyAddedTracksByArtist$tracks) then,
-  ) = _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks;
+abstract class CopyWith$Query$recentlyAddedTracksByArtist$personById<TRes> {
+  factory CopyWith$Query$recentlyAddedTracksByArtist$personById(
+    Query$recentlyAddedTracksByArtist$personById instance,
+    TRes Function(Query$recentlyAddedTracksByArtist$personById) then,
+  ) = _CopyWithImpl$Query$recentlyAddedTracksByArtist$personById;
 
-  factory CopyWith$Query$recentlyAddedTracksByArtist$tracks.stub(TRes res) =
-      _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$tracks;
+  factory CopyWith$Query$recentlyAddedTracksByArtist$personById.stub(TRes res) =
+      _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$personById;
 
   TRes call({
-    List<Query$recentlyAddedTracksByArtist$tracks$content>? content,
-    int? totalPages,
-    int? totalElements,
-    int? number,
-    int? size,
+    String? id,
+    List<Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks>?
+    recentlyAddedTracks,
     String? $__typename,
   });
-  TRes content(
-    Iterable<Query$recentlyAddedTracksByArtist$tracks$content> Function(
+  TRes recentlyAddedTracks(
+    Iterable<Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks>
+    Function(
       Iterable<
-        CopyWith$Query$recentlyAddedTracksByArtist$tracks$content<
-          Query$recentlyAddedTracksByArtist$tracks$content
+        CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks<
+          Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks
         >
       >,
     )
@@ -556,89 +497,81 @@ abstract class CopyWith$Query$recentlyAddedTracksByArtist$tracks<TRes> {
   );
 }
 
-class _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks<TRes>
-    implements CopyWith$Query$recentlyAddedTracksByArtist$tracks<TRes> {
-  _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks(
+class _CopyWithImpl$Query$recentlyAddedTracksByArtist$personById<TRes>
+    implements CopyWith$Query$recentlyAddedTracksByArtist$personById<TRes> {
+  _CopyWithImpl$Query$recentlyAddedTracksByArtist$personById(
     this._instance,
     this._then,
   );
 
-  final Query$recentlyAddedTracksByArtist$tracks _instance;
+  final Query$recentlyAddedTracksByArtist$personById _instance;
 
-  final TRes Function(Query$recentlyAddedTracksByArtist$tracks) _then;
+  final TRes Function(Query$recentlyAddedTracksByArtist$personById) _then;
 
   static const _undefined = <dynamic, dynamic>{};
 
   TRes call({
-    Object? content = _undefined,
-    Object? totalPages = _undefined,
-    Object? totalElements = _undefined,
-    Object? number = _undefined,
-    Object? size = _undefined,
+    Object? id = _undefined,
+    Object? recentlyAddedTracks = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
-    Query$recentlyAddedTracksByArtist$tracks(
-      content: content == _undefined || content == null
-          ? _instance.content
-          : (content as List<Query$recentlyAddedTracksByArtist$tracks$content>),
-      totalPages: totalPages == _undefined || totalPages == null
-          ? _instance.totalPages
-          : (totalPages as int),
-      totalElements: totalElements == _undefined || totalElements == null
-          ? _instance.totalElements
-          : (totalElements as int),
-      number: number == _undefined || number == null
-          ? _instance.number
-          : (number as int),
-      size: size == _undefined || size == null ? _instance.size : (size as int),
+    Query$recentlyAddedTracksByArtist$personById(
+      id: id == _undefined || id == null ? _instance.id : (id as String),
+      recentlyAddedTracks:
+          recentlyAddedTracks == _undefined || recentlyAddedTracks == null
+          ? _instance.recentlyAddedTracks
+          : (recentlyAddedTracks
+                as List<
+                  Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks
+                >),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
     ),
   );
 
-  TRes content(
-    Iterable<Query$recentlyAddedTracksByArtist$tracks$content> Function(
+  TRes recentlyAddedTracks(
+    Iterable<Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks>
+    Function(
       Iterable<
-        CopyWith$Query$recentlyAddedTracksByArtist$tracks$content<
-          Query$recentlyAddedTracksByArtist$tracks$content
+        CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks<
+          Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks
         >
       >,
     )
     _fn,
   ) => call(
-    content: _fn(
-      _instance.content.map(
-        (e) => CopyWith$Query$recentlyAddedTracksByArtist$tracks$content(
-          e,
-          (i) => i,
-        ),
+    recentlyAddedTracks: _fn(
+      _instance.recentlyAddedTracks.map(
+        (e) =>
+            CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks(
+              e,
+              (i) => i,
+            ),
       ),
     ).toList(),
   );
 }
 
-class _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$tracks<TRes>
-    implements CopyWith$Query$recentlyAddedTracksByArtist$tracks<TRes> {
-  _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$tracks(this._res);
+class _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$personById<TRes>
+    implements CopyWith$Query$recentlyAddedTracksByArtist$personById<TRes> {
+  _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$personById(this._res);
 
   TRes _res;
 
   call({
-    List<Query$recentlyAddedTracksByArtist$tracks$content>? content,
-    int? totalPages,
-    int? totalElements,
-    int? number,
-    int? size,
+    String? id,
+    List<Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks>?
+    recentlyAddedTracks,
     String? $__typename,
   }) => _res;
 
-  content(_fn) => _res;
+  recentlyAddedTracks(_fn) => _res;
 }
 
-class Query$recentlyAddedTracksByArtist$tracks$content
+class Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks
     implements Fragment$fragmentTrack {
-  Query$recentlyAddedTracksByArtist$tracks$content({
+  Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks({
     required this.id,
     required this.number,
     required this.discNumber,
@@ -647,10 +580,11 @@ class Query$recentlyAddedTracksByArtist$tracks$content
     this.mediaFile,
     this.rating,
     this.$__typename = 'Track',
+    this.dateAdded,
     required this.album,
   });
 
-  factory Query$recentlyAddedTracksByArtist$tracks$content.fromJson(
+  factory Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks.fromJson(
     Map<String, dynamic> json,
   ) {
     final l$id = json['id'];
@@ -661,14 +595,16 @@ class Query$recentlyAddedTracksByArtist$tracks$content
     final l$mediaFile = json['mediaFile'];
     final l$rating = json['rating'];
     final l$$__typename = json['__typename'];
+    final l$dateAdded = json['dateAdded'];
     final l$album = json['album'];
-    return Query$recentlyAddedTracksByArtist$tracks$content(
+    return Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks(
       id: (l$id as String),
       number: (l$number as int),
       discNumber: (l$discNumber as int),
-      artist: Query$recentlyAddedTracksByArtist$tracks$content$artist.fromJson(
-        (l$artist as Map<String, dynamic>),
-      ),
+      artist:
+          Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist.fromJson(
+            (l$artist as Map<String, dynamic>),
+          ),
       metadata: (l$metadata as List<dynamic>?)
           ?.map(
             (e) =>
@@ -678,13 +614,14 @@ class Query$recentlyAddedTracksByArtist$tracks$content
       mediaFile: (l$mediaFile as List<dynamic>?)
           ?.map(
             (e) =>
-                Query$recentlyAddedTracksByArtist$tracks$content$mediaFile.fromJson(
+                Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile.fromJson(
                   (e as Map<String, dynamic>),
                 ),
           )
           .toList(),
       rating: (l$rating as int?),
       $__typename: (l$$__typename as String),
+      dateAdded: (l$dateAdded as String?),
       album: Fragment$fragmentAlbum.fromJson((l$album as Map<String, dynamic>)),
     );
   }
@@ -695,16 +632,21 @@ class Query$recentlyAddedTracksByArtist$tracks$content
 
   final int discNumber;
 
-  final Query$recentlyAddedTracksByArtist$tracks$content$artist artist;
+  final Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist
+  artist;
 
   final List<Fragment$fragmentMetadata>? metadata;
 
-  final List<Query$recentlyAddedTracksByArtist$tracks$content$mediaFile>?
+  final List<
+    Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile
+  >?
   mediaFile;
 
   final int? rating;
 
   final String $__typename;
+
+  final String? dateAdded;
 
   final Fragment$fragmentAlbum album;
 
@@ -726,6 +668,8 @@ class Query$recentlyAddedTracksByArtist$tracks$content
     _resultData['rating'] = l$rating;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
+    final l$dateAdded = dateAdded;
+    _resultData['dateAdded'] = l$dateAdded;
     final l$album = album;
     _resultData['album'] = l$album.toJson();
     return _resultData;
@@ -741,6 +685,7 @@ class Query$recentlyAddedTracksByArtist$tracks$content
     final l$mediaFile = mediaFile;
     final l$rating = rating;
     final l$$__typename = $__typename;
+    final l$dateAdded = dateAdded;
     final l$album = album;
     return Object.hashAll([
       l$id,
@@ -751,6 +696,7 @@ class Query$recentlyAddedTracksByArtist$tracks$content
       l$mediaFile == null ? null : Object.hashAll(l$mediaFile.map((v) => v)),
       l$rating,
       l$$__typename,
+      l$dateAdded,
       l$album,
     ]);
   }
@@ -760,7 +706,8 @@ class Query$recentlyAddedTracksByArtist$tracks$content
     if (identical(this, other)) {
       return true;
     }
-    if (other is! Query$recentlyAddedTracksByArtist$tracks$content ||
+    if (other
+            is! Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks ||
         runtimeType != other.runtimeType) {
       return false;
     }
@@ -826,6 +773,11 @@ class Query$recentlyAddedTracksByArtist$tracks$content
     if (l$$__typename != lOther$$__typename) {
       return false;
     }
+    final l$dateAdded = dateAdded;
+    final lOther$dateAdded = other.dateAdded;
+    if (l$dateAdded != lOther$dateAdded) {
+      return false;
+    }
     final l$album = album;
     final lOther$album = other.album;
     if (l$album != lOther$album) {
@@ -835,37 +787,52 @@ class Query$recentlyAddedTracksByArtist$tracks$content
   }
 }
 
-extension UtilityExtension$Query$recentlyAddedTracksByArtist$tracks$content
-    on Query$recentlyAddedTracksByArtist$tracks$content {
-  CopyWith$Query$recentlyAddedTracksByArtist$tracks$content<
-    Query$recentlyAddedTracksByArtist$tracks$content
+extension UtilityExtension$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks
+    on Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks {
+  CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks<
+    Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks
   >
   get copyWith =>
-      CopyWith$Query$recentlyAddedTracksByArtist$tracks$content(this, (i) => i);
+      CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks(
+        this,
+        (i) => i,
+      );
 }
 
-abstract class CopyWith$Query$recentlyAddedTracksByArtist$tracks$content<TRes> {
-  factory CopyWith$Query$recentlyAddedTracksByArtist$tracks$content(
-    Query$recentlyAddedTracksByArtist$tracks$content instance,
-    TRes Function(Query$recentlyAddedTracksByArtist$tracks$content) then,
-  ) = _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content;
+abstract class CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks<
+  TRes
+> {
+  factory CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks(
+    Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks instance,
+    TRes Function(
+      Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks,
+    )
+    then,
+  ) = _CopyWithImpl$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks;
 
-  factory CopyWith$Query$recentlyAddedTracksByArtist$tracks$content.stub(
+  factory CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks.stub(
     TRes res,
-  ) = _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$tracks$content;
+  ) = _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks;
 
   TRes call({
     String? id,
     int? number,
     int? discNumber,
-    Query$recentlyAddedTracksByArtist$tracks$content$artist? artist,
+    Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist?
+    artist,
     List<Fragment$fragmentMetadata>? metadata,
-    List<Query$recentlyAddedTracksByArtist$tracks$content$mediaFile>? mediaFile,
+    List<
+      Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile
+    >?
+    mediaFile,
     int? rating,
     String? $__typename,
+    String? dateAdded,
     Fragment$fragmentAlbum? album,
   });
-  CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$artist<TRes>
+  CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist<
+    TRes
+  >
   get artist;
   TRes metadata(
     Iterable<Fragment$fragmentMetadata>? Function(
@@ -874,11 +841,13 @@ abstract class CopyWith$Query$recentlyAddedTracksByArtist$tracks$content<TRes> {
     _fn,
   );
   TRes mediaFile(
-    Iterable<Query$recentlyAddedTracksByArtist$tracks$content$mediaFile>?
+    Iterable<
+      Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile
+    >?
     Function(
       Iterable<
-        CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile<
-          Query$recentlyAddedTracksByArtist$tracks$content$mediaFile
+        CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile<
+          Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile
         >
       >?,
     )
@@ -887,16 +856,25 @@ abstract class CopyWith$Query$recentlyAddedTracksByArtist$tracks$content<TRes> {
   CopyWith$Fragment$fragmentAlbum<TRes> get album;
 }
 
-class _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content<TRes>
-    implements CopyWith$Query$recentlyAddedTracksByArtist$tracks$content<TRes> {
-  _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content(
+class _CopyWithImpl$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks<
+  TRes
+>
+    implements
+        CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks<
+          TRes
+        > {
+  _CopyWithImpl$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks(
     this._instance,
     this._then,
   );
 
-  final Query$recentlyAddedTracksByArtist$tracks$content _instance;
+  final Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks
+  _instance;
 
-  final TRes Function(Query$recentlyAddedTracksByArtist$tracks$content) _then;
+  final TRes Function(
+    Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks,
+  )
+  _then;
 
   static const _undefined = <dynamic, dynamic>{};
 
@@ -909,9 +887,10 @@ class _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content<TRes>
     Object? mediaFile = _undefined,
     Object? rating = _undefined,
     Object? $__typename = _undefined,
+    Object? dateAdded = _undefined,
     Object? album = _undefined,
   }) => _then(
-    Query$recentlyAddedTracksByArtist$tracks$content(
+    Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks(
       id: id == _undefined || id == null ? _instance.id : (id as String),
       number: number == _undefined || number == null
           ? _instance.number
@@ -921,7 +900,8 @@ class _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content<TRes>
           : (discNumber as int),
       artist: artist == _undefined || artist == null
           ? _instance.artist
-          : (artist as Query$recentlyAddedTracksByArtist$tracks$content$artist),
+          : (artist
+                as Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist),
       metadata: metadata == _undefined
           ? _instance.metadata
           : (metadata as List<Fragment$fragmentMetadata>?),
@@ -929,22 +909,27 @@ class _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content<TRes>
           ? _instance.mediaFile
           : (mediaFile
                 as List<
-                  Query$recentlyAddedTracksByArtist$tracks$content$mediaFile
+                  Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile
                 >?),
       rating: rating == _undefined ? _instance.rating : (rating as int?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
+      dateAdded: dateAdded == _undefined
+          ? _instance.dateAdded
+          : (dateAdded as String?),
       album: album == _undefined || album == null
           ? _instance.album
           : (album as Fragment$fragmentAlbum),
     ),
   );
 
-  CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$artist<TRes>
+  CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist<
+    TRes
+  >
   get artist {
     final local$artist = _instance.artist;
-    return CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$artist(
+    return CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist(
       local$artist,
       (e) => call(artist: e),
     );
@@ -964,11 +949,13 @@ class _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content<TRes>
   );
 
   TRes mediaFile(
-    Iterable<Query$recentlyAddedTracksByArtist$tracks$content$mediaFile>?
+    Iterable<
+      Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile
+    >?
     Function(
       Iterable<
-        CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile<
-          Query$recentlyAddedTracksByArtist$tracks$content$mediaFile
+        CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile<
+          Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile
         >
       >?,
     )
@@ -977,7 +964,7 @@ class _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content<TRes>
     mediaFile: _fn(
       _instance.mediaFile?.map(
         (e) =>
-            CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile(
+            CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile(
               e,
               (i) => i,
             ),
@@ -991,9 +978,16 @@ class _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content<TRes>
   }
 }
 
-class _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$tracks$content<TRes>
-    implements CopyWith$Query$recentlyAddedTracksByArtist$tracks$content<TRes> {
-  _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$tracks$content(this._res);
+class _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks<
+  TRes
+>
+    implements
+        CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks<
+          TRes
+        > {
+  _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks(
+    this._res,
+  );
 
   TRes _res;
 
@@ -1001,17 +995,24 @@ class _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$tracks$content<TRes>
     String? id,
     int? number,
     int? discNumber,
-    Query$recentlyAddedTracksByArtist$tracks$content$artist? artist,
+    Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist?
+    artist,
     List<Fragment$fragmentMetadata>? metadata,
-    List<Query$recentlyAddedTracksByArtist$tracks$content$mediaFile>? mediaFile,
+    List<
+      Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile
+    >?
+    mediaFile,
     int? rating,
     String? $__typename,
+    String? dateAdded,
     Fragment$fragmentAlbum? album,
   }) => _res;
 
-  CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$artist<TRes>
+  CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist<
+    TRes
+  >
   get artist =>
-      CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$artist.stub(
+      CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist.stub(
         _res,
       );
 
@@ -1023,21 +1024,21 @@ class _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$tracks$content<TRes>
       CopyWith$Fragment$fragmentAlbum.stub(_res);
 }
 
-class Query$recentlyAddedTracksByArtist$tracks$content$artist
+class Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist
     implements Fragment$fragmentTrack$artist {
-  Query$recentlyAddedTracksByArtist$tracks$content$artist({
+  Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist({
     required this.id,
     required this.name,
     this.$__typename = 'Person',
   });
 
-  factory Query$recentlyAddedTracksByArtist$tracks$content$artist.fromJson(
+  factory Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist.fromJson(
     Map<String, dynamic> json,
   ) {
     final l$id = json['id'];
     final l$name = json['name'];
     final l$$__typename = json['__typename'];
-    return Query$recentlyAddedTracksByArtist$tracks$content$artist(
+    return Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist(
       id: (l$id as String),
       name: (l$name as String),
       $__typename: (l$$__typename as String),
@@ -1074,7 +1075,8 @@ class Query$recentlyAddedTracksByArtist$tracks$content$artist
     if (identical(this, other)) {
       return true;
     }
-    if (other is! Query$recentlyAddedTracksByArtist$tracks$content$artist ||
+    if (other
+            is! Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist ||
         runtimeType != other.runtimeType) {
       return false;
     }
@@ -1097,46 +1099,55 @@ class Query$recentlyAddedTracksByArtist$tracks$content$artist
   }
 }
 
-extension UtilityExtension$Query$recentlyAddedTracksByArtist$tracks$content$artist
-    on Query$recentlyAddedTracksByArtist$tracks$content$artist {
-  CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$artist<
-    Query$recentlyAddedTracksByArtist$tracks$content$artist
+extension UtilityExtension$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist
+    on Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist {
+  CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist<
+    Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist
   >
   get copyWith =>
-      CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$artist(
+      CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist(
         this,
         (i) => i,
       );
 }
 
-abstract class CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$artist<
+abstract class CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist<
   TRes
 > {
-  factory CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$artist(
-    Query$recentlyAddedTracksByArtist$tracks$content$artist instance,
-    TRes Function(Query$recentlyAddedTracksByArtist$tracks$content$artist) then,
-  ) = _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content$artist;
+  factory CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist(
+    Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist
+    instance,
+    TRes Function(
+      Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist,
+    )
+    then,
+  ) = _CopyWithImpl$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist;
 
-  factory CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$artist.stub(
+  factory CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist.stub(
     TRes res,
-  ) = _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$tracks$content$artist;
+  ) = _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist;
 
   TRes call({String? id, String? name, String? $__typename});
 }
 
-class _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content$artist<
+class _CopyWithImpl$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist<
   TRes
 >
     implements
-        CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$artist<TRes> {
-  _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content$artist(
+        CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist<
+          TRes
+        > {
+  _CopyWithImpl$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist(
     this._instance,
     this._then,
   );
 
-  final Query$recentlyAddedTracksByArtist$tracks$content$artist _instance;
+  final Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist
+  _instance;
 
-  final TRes Function(Query$recentlyAddedTracksByArtist$tracks$content$artist)
+  final TRes Function(
+    Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist,
+  )
   _then;
 
   static const _undefined = <dynamic, dynamic>{};
@@ -1146,7 +1157,7 @@ class _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content$artist<
     Object? name = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
-    Query$recentlyAddedTracksByArtist$tracks$content$artist(
+    Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist(
       id: id == _undefined || id == null ? _instance.id : (id as String),
       name: name == _undefined || name == null
           ? _instance.name
@@ -1158,12 +1169,14 @@ class _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content$artist<
   );
 }
 
-class _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$tracks$content$artist<
+class _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist<
   TRes
 >
     implements
-        CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$artist<TRes> {
-  _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$tracks$content$artist(
+        CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist<
+          TRes
+        > {
+  _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$artist(
     this._res,
   );
 
@@ -1172,19 +1185,19 @@ class _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$tracks$content$artist<
   call({String? id, String? name, String? $__typename}) => _res;
 }
 
-class Query$recentlyAddedTracksByArtist$tracks$content$mediaFile
+class Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile
     implements Fragment$fragmentTrack$mediaFile {
-  Query$recentlyAddedTracksByArtist$tracks$content$mediaFile({
+  Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile({
     this.durationInMilliseconds,
     this.$__typename = 'MediaFile',
   });
 
-  factory Query$recentlyAddedTracksByArtist$tracks$content$mediaFile.fromJson(
+  factory Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile.fromJson(
     Map<String, dynamic> json,
   ) {
     final l$durationInMilliseconds = json['durationInMilliseconds'];
     final l$$__typename = json['__typename'];
-    return Query$recentlyAddedTracksByArtist$tracks$content$mediaFile(
+    return Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile(
       durationInMilliseconds: (l$durationInMilliseconds as int?),
       $__typename: (l$$__typename as String),
     );
@@ -1215,7 +1228,8 @@ class Query$recentlyAddedTracksByArtist$tracks$content$mediaFile
     if (identical(this, other)) {
       return true;
     }
-    if (other is! Query$recentlyAddedTracksByArtist$tracks$content$mediaFile ||
+    if (other
+            is! Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile ||
         runtimeType != other.runtimeType) {
       return false;
     }
@@ -1233,50 +1247,54 @@ class Query$recentlyAddedTracksByArtist$tracks$content$mediaFile
   }
 }
 
-extension UtilityExtension$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile
-    on Query$recentlyAddedTracksByArtist$tracks$content$mediaFile {
-  CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile<
-    Query$recentlyAddedTracksByArtist$tracks$content$mediaFile
+extension UtilityExtension$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile
+    on Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile {
+  CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile<
+    Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile
   >
   get copyWith =>
-      CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile(
+      CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile(
         this,
         (i) => i,
       );
 }
 
-abstract class CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile<
+abstract class CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile<
   TRes
 > {
-  factory CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile(
-    Query$recentlyAddedTracksByArtist$tracks$content$mediaFile instance,
-    TRes Function(Query$recentlyAddedTracksByArtist$tracks$content$mediaFile)
+  factory CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile(
+    Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile
+    instance,
+    TRes Function(
+      Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile,
+    )
     then,
-  ) = _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile;
+  ) = _CopyWithImpl$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile;
 
-  factory CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile.stub(
+  factory CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile.stub(
     TRes res,
-  ) = _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile;
+  ) = _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile;
 
   TRes call({int? durationInMilliseconds, String? $__typename});
 }
 
-class _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile<
+class _CopyWithImpl$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile<
   TRes
 >
     implements
-        CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile<
+        CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile<
           TRes
         > {
-  _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile(
+  _CopyWithImpl$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile(
     this._instance,
     this._then,
   );
 
-  final Query$recentlyAddedTracksByArtist$tracks$content$mediaFile _instance;
+  final Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile
+  _instance;
 
   final TRes Function(
-    Query$recentlyAddedTracksByArtist$tracks$content$mediaFile,
+    Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile,
   )
   _then;
 
@@ -1286,7 +1304,7 @@ class _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile<
     Object? durationInMilliseconds = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
-    Query$recentlyAddedTracksByArtist$tracks$content$mediaFile(
+    Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile(
       durationInMilliseconds: durationInMilliseconds == _undefined
           ? _instance.durationInMilliseconds
           : (durationInMilliseconds as int?),
@@ -1297,14 +1315,14 @@ class _CopyWithImpl$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile<
   );
 }
 
-class _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile<
+class _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile<
   TRes
 >
     implements
-        CopyWith$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile<
+        CopyWith$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile<
           TRes
         > {
-  _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$tracks$content$mediaFile(
+  _CopyWithStubImpl$Query$recentlyAddedTracksByArtist$personById$recentlyAddedTracks$mediaFile(
     this._res,
   );
 

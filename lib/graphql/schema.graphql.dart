@@ -2682,6 +2682,7 @@ enum Enum$RankKind {
   RECENTLY_PLAYED,
   MOST_PLAYED,
   HIGHEST_RATED,
+  RECENTLY_ADDED,
   $unknown;
 
   factory Enum$RankKind.fromJson(String value) => fromJson$Enum$RankKind(value);
@@ -2697,6 +2698,8 @@ String toJson$Enum$RankKind(Enum$RankKind e) {
       return r'MOST_PLAYED';
     case Enum$RankKind.HIGHEST_RATED:
       return r'HIGHEST_RATED';
+    case Enum$RankKind.RECENTLY_ADDED:
+      return r'RECENTLY_ADDED';
     case Enum$RankKind.$unknown:
       return r'$unknown';
   }
@@ -2710,6 +2713,8 @@ Enum$RankKind fromJson$Enum$RankKind(String value) {
       return Enum$RankKind.MOST_PLAYED;
     case r'HIGHEST_RATED':
       return Enum$RankKind.HIGHEST_RATED;
+    case r'RECENTLY_ADDED':
+      return Enum$RankKind.RECENTLY_ADDED;
     default:
       return Enum$RankKind.$unknown;
   }

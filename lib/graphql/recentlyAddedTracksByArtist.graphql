@@ -1,13 +1,13 @@
-# The newest tracks by this artist — as primary or featured artist, or on an
-# album they own — by the date they were added to the library. The full album
-# fragment is what MediaPlayerHandler.startPlayQueueForAlbum needs, so a tapped
-# track plays its album without an extra albumById round-trip.
+# The newest tracks of this artist (as primary/featured artist or album
+# artist) by the date they were added to the library. Same shape as the other
+# per-artist lists so the tab plays through an ARTIST queue (RECENTLY_ADDED).
 query recentlyAddedTracksByArtist($id: ID) {
-    tracks(artistId: $id, sorting: DATE_CREATED, sortingOrder: DESCENDING, page: 0, size: 10) {
-        content {
+    personById(id: $id) {
+        id
+        recentlyAddedTracks(limit: 10) {
             ...fragmentTrack
+            dateAdded
             album { ...fragmentAlbum }
         }
-        totalPages totalElements number size
     }
 }

@@ -1067,10 +1067,15 @@ class _ArtistTrackTabsState extends State<_ArtistTrackTabs> {
         variant: ArtistTrackListVariant.added,
         document: documentNodeQueryrecentlyAddedTracksByArtist,
         parse: (data) => (Query$recentlyAddedTracksByArtist.fromJson(data)
-                    .tracks
-                    ?.content ??
+                    .personById
+                    ?.recentlyAddedTracks ??
                 const [])
-            .map((t) => ArtistTrackListItem(track: t, album: t.album))
+            .map((t) => ArtistTrackListItem(
+                track: t,
+                album: t.album,
+                dateAdded: t.dateAdded != null
+                    ? DateTime.tryParse(t.dateAdded!)?.toLocal()
+                    : null))
             .toList(),
       ),
     ];
