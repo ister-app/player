@@ -138,12 +138,19 @@ class _DownloadsPageState extends State<DownloadsPage> {
               builder: (context, _, __) {
                 final entries = service.entriesFor(widget.serverName);
                 if (entries.isEmpty) return _empty(context);
-                final groups = _groups(entries);
+                // Automatically cached music sits under one "Music cache"
+                // entry (albums, then tracks); everything else is its own group.
+                final cached = entries
+                    .where((e) => e.kind == DownloadKind.track && !e.pinned)
+                    .toList();
+                final groups = _groups(
+                    entries.where((e) => !cached.contains(e)).toList());
                 return ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
                     _summary(context, entries),
                     const SizedBox(height: 8),
+                    if (cached.isNotEmpty) _cacheTile(context, cached),
                     for (final g in groups) _groupTile(context, g),
                   ],
                 );
@@ -189,15 +196,39 @@ class _DownloadsPageState extends State<DownloadsPage> {
     );
   }
 
-  Widget _groupTile(BuildContext context, _Group g) {
+  /// The music cache as one entry: its albums inside, their tracks below.
+  Widget _cacheTile(BuildContext context, List<DownloadEntry> cached) {
+    final loc = AppLocalizations.of(context)!;
+    final albums = _groups(cached);
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: ExpansionTile(
+        leading: const SizedBox(
+          width: 48,
+          height: 48,
+          child: Icon(Icons.library_music_outlined),
+        ),
+        title: Text(loc.musicCache),
+        subtitle: Text(
+            '${loc.downloadItemsCount(cached.length)} · ${formatBytes(sumUniqueBytes(cached))}'),
+        children: [
+          for (final g in albums)
+            Padding(
+              padding: const EdgeInsets.only(left: 16),
+              child: _groupTile(context, g, nested: true),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _groupTile(BuildContext context, _Group g, {bool nested = false}) {
     final loc = AppLocalizations.of(context)!;
     final service = DownloadService.instance;
     final first = g.entries.firstWhere((e) => e.artworkFile != null,
         orElse: () => g.entries.first);
     final art = service.localArtworkFor(widget.serverName, first.mediaFileId);
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: ExpansionTile(
+    final tile = ExpansionTile(
         leading: SizedBox(
           width: 48,
           height: 48,
@@ -226,8 +257,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
               )
             : null,
         children: [for (final e in g.entries) _entryTile(context, g, e)],
-      ),
     );
+    if (nested) return tile;
+    return Card(clipBehavior: Clip.antiAlias, child: tile);
   }
 
   Widget _entryTile(BuildContext context, _Group g, DownloadEntry e) {
