@@ -402,6 +402,13 @@ const documentNodeQueryrecentlyWatched = DocumentNode(
                         selectionSet: SelectionSetNode(
                           selections: [
                             FieldNode(
+                              name: NameNode(value: 'id'),
+                              alias: null,
+                              arguments: [],
+                              directives: [],
+                              selectionSet: null,
+                            ),
+                            FieldNode(
                               name: NameNode(value: 'number'),
                               alias: null,
                               arguments: [],
@@ -2474,6 +2481,7 @@ class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$episode$show<TRes>
 
 class Query$recentlyWatched$recentlyWatched$episode$season {
   Query$recentlyWatched$recentlyWatched$episode$season({
+    required this.id,
     required this.number,
     this.$__typename = 'Season',
   });
@@ -2481,13 +2489,17 @@ class Query$recentlyWatched$recentlyWatched$episode$season {
   factory Query$recentlyWatched$recentlyWatched$episode$season.fromJson(
     Map<String, dynamic> json,
   ) {
+    final l$id = json['id'];
     final l$number = json['number'];
     final l$$__typename = json['__typename'];
     return Query$recentlyWatched$recentlyWatched$episode$season(
+      id: (l$id as String),
       number: (l$number as int),
       $__typename: (l$$__typename as String),
     );
   }
+
+  final String id;
 
   final int number;
 
@@ -2495,6 +2507,8 @@ class Query$recentlyWatched$recentlyWatched$episode$season {
 
   Map<String, dynamic> toJson() {
     final _resultData = <String, dynamic>{};
+    final l$id = id;
+    _resultData['id'] = l$id;
     final l$number = number;
     _resultData['number'] = l$number;
     final l$$__typename = $__typename;
@@ -2504,9 +2518,10 @@ class Query$recentlyWatched$recentlyWatched$episode$season {
 
   @override
   int get hashCode {
+    final l$id = id;
     final l$number = number;
     final l$$__typename = $__typename;
-    return Object.hashAll([l$number, l$$__typename]);
+    return Object.hashAll([l$id, l$number, l$$__typename]);
   }
 
   @override
@@ -2516,6 +2531,11 @@ class Query$recentlyWatched$recentlyWatched$episode$season {
     }
     if (other is! Query$recentlyWatched$recentlyWatched$episode$season ||
         runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$id = id;
+    final lOther$id = other.id;
+    if (l$id != lOther$id) {
       return false;
     }
     final l$number = number;
@@ -2555,7 +2575,7 @@ abstract class CopyWith$Query$recentlyWatched$recentlyWatched$episode$season<
     TRes res,
   ) = _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$episode$season;
 
-  TRes call({int? number, String? $__typename});
+  TRes call({String? id, int? number, String? $__typename});
 }
 
 class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$episode$season<TRes>
@@ -2573,17 +2593,21 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$episode$season<TRes>
 
   static const _undefined = <dynamic, dynamic>{};
 
-  TRes call({Object? number = _undefined, Object? $__typename = _undefined}) =>
-      _then(
-        Query$recentlyWatched$recentlyWatched$episode$season(
-          number: number == _undefined || number == null
-              ? _instance.number
-              : (number as int),
-          $__typename: $__typename == _undefined || $__typename == null
-              ? _instance.$__typename
-              : ($__typename as String),
-        ),
-      );
+  TRes call({
+    Object? id = _undefined,
+    Object? number = _undefined,
+    Object? $__typename = _undefined,
+  }) => _then(
+    Query$recentlyWatched$recentlyWatched$episode$season(
+      id: id == _undefined || id == null ? _instance.id : (id as String),
+      number: number == _undefined || number == null
+          ? _instance.number
+          : (number as int),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 }
 
 class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$episode$season<
@@ -2597,7 +2621,7 @@ class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$episode$season<
 
   TRes _res;
 
-  call({int? number, String? $__typename}) => _res;
+  call({String? id, int? number, String? $__typename}) => _res;
 }
 
 class Query$recentlyWatched$recentlyWatched$episode$watchStatus {

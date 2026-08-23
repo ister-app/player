@@ -5,7 +5,10 @@ query recentlyWatched($libraryId: ID) {
             id
             number
             show { id metadata { ...fragmentMetadata } images { ...fragmentImages } }
-            season { number }
+            # `id` keeps Season a normalized entity here too: episodeById writes
+            # `season { id }` as a reference, and an id-less `{ number }` written
+            # inline on the same Episode field makes the cache re-read return null.
+            season { id number }
             watchStatus { id playQueueItemId progressInMilliseconds watched }
             mediaFile { id durationInMilliseconds }
             metadata { ...fragmentMetadata }
