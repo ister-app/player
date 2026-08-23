@@ -4,7 +4,6 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/components/TvFocusable.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/download/DownloadModels.dart';
-import 'package:player/utils/download/DownloadLoaders.dart';
 import 'package:player/utils/download/DownloadService.dart';
 
 /// What a page offers to download: one item (tracked by [kind]/[mediaId] for
@@ -45,10 +44,6 @@ Future<void> runDownloadAction(BuildContext context, DownloadAction action) asyn
   final List<DownloadRequest> requests;
   try {
     requests = await action.load(client);
-  } on DownloadUnsupported {
-    messenger.showSnackBar(
-        SnackBar(content: Text(loc.downloadMultiPartUnsupported)));
-    return;
   } catch (e) {
     messenger.showSnackBar(
         SnackBar(content: Text(loc.downloadFailedLocal(e.toString()))));
@@ -73,10 +68,6 @@ Future<void> enqueueDownloads(BuildContext context, String serverName,
   final List<DownloadRequest> requests;
   try {
     requests = await load(client);
-  } on DownloadUnsupported {
-    messenger.showSnackBar(
-        SnackBar(content: Text(loc.downloadMultiPartUnsupported)));
-    return;
   } catch (e) {
     messenger.showSnackBar(
         SnackBar(content: Text(loc.downloadFailedLocal(e.toString()))));

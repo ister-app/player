@@ -68,6 +68,10 @@ class DownloadService {
   final ValueNotifier<int> runningCount = ValueNotifier(0);
 
   final Map<String, DownloadCancelToken> _running = {};
+
+  /// mediaFileId per running key: one file is never mirrored twice at once,
+  /// however many episode entries share it.
+  final Map<String, String> _runningFiles = {};
   final Map<String, ValueNotifier<DownloadProgress?>> _progress = {};
   Future<void>? _starting;
   bool _pumping = false;
@@ -102,10 +106,36 @@ class DownloadService {
 
   DownloadEntry? entryFor(String server, String key) => store.get(server, key);
 
-  DownloadEntry? entryForMediaFile(String server, String mediaFileId) => store
-      .entries(server)
-      .where((e) => e.mediaFileId == mediaFileId)
-      .firstOrNull;
+  /// The entry that best represents a media file on disk: a complete one
+  /// wins over a downloading one over the rest (siblings share the files).
+  DownloadEntry? entryForMediaFile(String server, String mediaFileId) {
+    final siblings = _siblings(server, mediaFileId).toList();
+    if (siblings.isEmpty) return null;
+    int rank(DownloadEntry e) => switch (e.status) {
+          DownloadStatus.complete => 0,
+          DownloadStatus.downloading => 1,
+          _ => 2,
+        };
+    siblings.sort((a, b) => rank(a).compareTo(rank(b)));
+    return siblings.first;
+  }
+
+  Iterable<DownloadEntry> _siblings(String server, String mediaFileId,
+          {String? except}) =>
+      store
+          .entries(server)
+          .where((e) => e.mediaFileId == mediaFileId && e.key != except);
+
+  /// Entries currently being downloaded, with their server.
+  List<(String, DownloadEntry)> runningEntries() => [
+        for (final runKey in _running.keys)
+          () {
+            final sep = runKey.indexOf('|');
+            final server = runKey.substring(0, sep);
+            final entry = store.get(server, runKey.substring(sep + 1));
+            return entry == null ? null : (server, entry);
+          }()
+      ].whereType<(String, DownloadEntry)>().toList();
 
   /// Absolute path of the local master playlist — only for a complete
   /// download, and only once the store has started.
@@ -140,10 +170,9 @@ class DownloadService {
   bool isRunning(String server, String key) =>
       _running.containsKey(_runKey(server, key));
 
-  int bytesFor(String server, {bool? pinned}) => store
+  int bytesFor(String server, {bool? pinned}) => sumUniqueBytes(store
       .entries(server)
-      .where((e) => pinned == null || e.pinned == pinned)
-      .fold(0, (sum, e) => sum + e.bytes);
+      .where((e) => pinned == null || e.pinned == pinned));
 
   // ---- mutations ---------------------------------------------------------
 
@@ -182,7 +211,10 @@ class DownloadService {
     if (entry == null) return;
     _running[_runKey(server, key)]?.cancel();
     await store.remove(server, key);
-    await store.deleteItemDir(server, entry.mediaFileId);
+    // The files stay while another episode of the same media file needs them.
+    if (_siblings(server, entry.mediaFileId).isEmpty) {
+      await store.deleteItemDir(server, entry.mediaFileId);
+    }
     _progress.remove(_runKey(server, key))?.value = null;
     revision.value++;
     unawaited(_pump());
@@ -211,10 +243,13 @@ class DownloadService {
 
   /// Records that the local copy was played (cache eviction order).
   Future<void> touch(String server, String mediaFileId) async {
-    final entry = entryForMediaFile(server, mediaFileId);
-    if (entry == null) return;
+    final siblings = _siblings(server, mediaFileId).toList();
+    if (siblings.isEmpty) return;
     try {
-      await store.put(server, entry.copyWith(lastPlayedAt: DateTime.now()));
+      final now = DateTime.now();
+      for (final entry in siblings) {
+        await store.put(server, entry.copyWith(lastPlayedAt: now));
+      }
     } catch (e) {
       // Fire-and-forget from the playback hot path; a failed stamp is harmless.
       LoggerService().logger.w('could not stamp lastPlayedAt: $e');
@@ -306,6 +341,7 @@ class DownloadService {
         for (final entry in queued) {
           if (paused.value) return;
           if (_running.length >= limit) return;
+          if (_runningFiles.values.contains(entry.mediaFileId)) continue;
           if (!entry.pinned && unmeteredOnly) {
             unmetered ??= await _isUnmetered();
             if (!unmetered) continue;
@@ -323,9 +359,18 @@ class DownloadService {
     if (_running.containsKey(runKey)) return;
     final cancel = DownloadCancelToken();
     _running[runKey] = cancel;
+    _runningFiles[runKey] = entry.mediaFileId;
     runningCount.value = _running.length;
     final progress = progressOf(server, entry.key);
     try {
+      // Another episode of the same file already mirrored it: adopt its result.
+      final done = _siblings(server, entry.mediaFileId, except: entry.key)
+          .where((e) => e.isComplete)
+          .firstOrNull;
+      if (done != null) {
+        await store.put(server, _adoptResult(entry, done));
+        return;
+      }
       await store.put(server, entry.copyWith(status: DownloadStatus.downloading, clearError: true));
       revision.value++;
       final item = entry.queueItem;
@@ -358,20 +403,25 @@ class DownloadService {
       );
       final current = store.get(server, entry.key);
       if (current == null) return; // removed meanwhile
-      await store.put(
-          server,
-          current.copyWith(
-            status: DownloadStatus.complete,
-            bytes: result.bytes,
-            segmentsDone: result.segmentsDone,
-            segmentsTotal: result.segmentsTotal,
-            audioStreamIndexes: result.audioStreamIndexes,
-            subtitleStreamIds: result.subtitleStreamIds,
-            artworkFile: result.artworkFile,
-            downloadedAt: DateTime.now(),
-            videoQuality: videoQuality,
-            clearError: true,
-          ));
+      final completed = current.copyWith(
+        status: DownloadStatus.complete,
+        bytes: result.bytes,
+        segmentsDone: result.segmentsDone,
+        segmentsTotal: result.segmentsTotal,
+        audioStreamIndexes: result.audioStreamIndexes,
+        subtitleStreamIds: result.subtitleStreamIds,
+        artworkFile: result.artworkFile,
+        downloadedAt: DateTime.now(),
+        videoQuality: videoQuality,
+        clearError: true,
+      );
+      await store.put(server, completed);
+      // Siblings waiting on the same file are done too.
+      for (final s in _siblings(server, entry.mediaFileId, except: entry.key)
+          .where((e) => !e.isComplete && e.status != DownloadStatus.downloading)
+          .toList()) {
+        await store.put(server, _adoptResult(s, completed));
+      }
     } on DownloadCancelled {
       final current = store.get(server, entry.key);
       if (current != null) {
@@ -397,12 +447,29 @@ class DownloadService {
       }
     } finally {
       _running.remove(runKey);
+      _runningFiles.remove(runKey);
       runningCount.value = _running.length;
       progress.value = null;
       revision.value++;
       unawaited(_pump());
     }
   }
+
+  /// [entry] marked complete with the on-disk result of [done], which
+  /// mirrored the same media file.
+  static DownloadEntry _adoptResult(DownloadEntry entry, DownloadEntry done) =>
+      entry.copyWith(
+        status: DownloadStatus.complete,
+        bytes: done.bytes,
+        segmentsDone: done.segmentsDone,
+        segmentsTotal: done.segmentsTotal,
+        audioStreamIndexes: done.audioStreamIndexes,
+        subtitleStreamIds: done.subtitleStreamIds,
+        artworkFile: done.artworkFile,
+        downloadedAt: DateTime.now(),
+        videoQuality: done.videoQuality,
+        clearError: true,
+      );
 
   Future<int> _bytesOnDisk(String server, String mediaFileId) async {
     final path = store.itemDirPathSync(server, mediaFileId);

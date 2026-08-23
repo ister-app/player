@@ -1880,7 +1880,6 @@
     }
   },
   "downloadNoSpace": "Not enough storage space",
-  "downloadMultiPartUnsupported": "Episodes that share one file cannot be downloaded yet",
   "downloadStatusQueued": "Queued",
   "downloadStatusDownloading": "Downloading",
   "downloadStatusFailed": "Failed",

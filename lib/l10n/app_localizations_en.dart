@@ -1718,10 +1718,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get downloadNoSpace => 'Not enough storage space';
 
   @override
-  String get downloadMultiPartUnsupported =>
-      'Episodes that share one file cannot be downloaded yet';
-
-  @override
   String get downloadStatusQueued => 'Queued';
 
   @override

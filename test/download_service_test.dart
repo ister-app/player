@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:player/graphql/fragmentEpisode.graphql.dart';
 import 'package:player/graphql/fragmentMediafiles.graphql.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 import 'package:player/utils/ClientManager.dart';
@@ -169,6 +170,59 @@ void main() {
     expect(service.localMasterFor(_server, 'mf-t2'), isNull);
   });
 
+  test('episodes sharing one file mirror it once and share the directory',
+      () async {
+    final file = Fragment$fragmentMediaFiles(
+      id: 'mf-shared',
+      path: '/tv/s04e06-e07.mkv',
+      size: 1,
+      durationInMilliseconds: 2400000,
+      directory: Fragment$fragmentMediaFiles$directory(
+        node: Fragment$fragmentMediaFiles$directory$node(url: 'https://node.example'),
+      ),
+      episodes: [
+        Fragment$fragmentMediaFiles$episodes(id: 'e6', number: 6),
+        Fragment$fragmentMediaFiles$episodes(id: 'e7', number: 7),
+      ],
+      mediaFileStreams: [
+        Fragment$fragmentMediaFiles$mediaFileStreams(
+            codecName: 'aac', codecType: 'AUDIO', height: 0, width: 0, id: 's0', path: '', streamIndex: 0),
+      ],
+    );
+    final e6 = episodePartItem(6, file, startMs: 0, durationMs: 1200000);
+    final e7 = episodePartItem(7, file, startMs: 1200000, durationMs: 1200000);
+    await service.enqueueAll(_server, [
+      DownloadRequest(item: e6, groupTitle: 'Show', sortKey: 6),
+      DownloadRequest(item: e7, groupTitle: 'Show', sortKey: 7),
+    ]);
+    final k6 = DownloadEntry.keyFor(DownloadKind.episode, 'e6');
+    final k7 = DownloadEntry.keyFor(DownloadKind.episode, 'e7');
+    await _waitFor(() =>
+        (service.entryFor(_server, k6)?.isComplete ?? false) &&
+        (service.entryFor(_server, k7)?.isComplete ?? false));
+
+    expect(requests.where((r) => r == 'master.m3u8'), hasLength(1),
+        reason: 'the shared file is mirrored once');
+    expect(service.entryFor(_server, k7)!.segmentsTotal, 2);
+    expect(service.bytesFor(_server), service.entryFor(_server, k6)!.bytes,
+        reason: 'shared bytes count once');
+    final dir = Directory(service.store.itemDirPathSync(_server, 'mf-shared')!);
+
+    await service.remove(_server, k6);
+    expect(dir.existsSync(), isTrue, reason: 'e7 still needs the files');
+    expect(service.localMasterFor(_server, 'mf-shared'), isNotNull);
+
+    // Enqueued again after the fact: adopts the mirrored file, no HTTP.
+    final fetched = requests.length;
+    await service.enqueue(_server, DownloadRequest(item: e6, groupTitle: 'Show'));
+    await _waitFor(() => service.entryFor(_server, k6)?.isComplete ?? false);
+    expect(requests.length, fetched);
+
+    await service.remove(_server, k6);
+    await service.remove(_server, k7);
+    expect(dir.existsSync(), isFalse);
+  });
+
   test('pause stops the run and resume finishes it', () async {
     await service.pauseAll();
     await service.enqueue(_server, DownloadRequest(item: trackItem('t3')));
@@ -180,4 +234,24 @@ void main() {
     await service.resumeAll();
     await _waitFor(() => service.entryFor(_server, key)?.isComplete ?? false);
   });
+}
+
+// ---- multi-episode files -------------------------------------------------
+
+Fragment$fragmentPlayQueue$playQueueItems episodePartItem(
+    int number, Fragment$fragmentMediaFiles file,
+    {required int startMs, required int durationMs}) {
+  final ep = Fragment$fragmentEpisode(
+    id: 'e$number',
+    number: number,
+    mediaFile: [file],
+    mediaFileParts: [
+      Fragment$fragmentEpisode$mediaFileParts(
+          startInMilliseconds: startMs.toDouble(),
+          durationInMilliseconds: durationMs.toDouble(),
+          mediaFile: file),
+    ],
+  );
+  return Fragment$fragmentPlayQueue$playQueueItems(
+      accessible: true, id: 'local:episode:e$number', position: number.toDouble(), episode: ep);
 }

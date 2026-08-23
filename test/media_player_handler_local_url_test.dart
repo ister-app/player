@@ -17,7 +17,8 @@ import 'package:player/utils/download/LocalPlayQueue.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
-import 'download_service_test.dart' show trackItem;
+import 'download_service_test.dart' show trackItem, episodePartItem;
+import 'package:player/graphql/fragmentMediafiles.graphql.dart';
 
 const _server = 'test-server';
 
@@ -130,5 +131,50 @@ void main() {
     expect(handler.queue.value, hasLength(2));
     expect(handler.queue.value.first.id, contains('local:track:t1'));
     expect(await LastMusicQueuePreferences.get(), isNull);
+  });
+
+  test('a local queue opens a multi-episode slice at its own start', () async {
+    final file = Fragment$fragmentMediaFiles(
+      id: 'mf-shared',
+      path: '/tv/s04e06-e07.mkv',
+      size: 1,
+      durationInMilliseconds: 2400000,
+      directory: Fragment$fragmentMediaFiles$directory(
+        node: Fragment$fragmentMediaFiles$directory$node(url: 'https://node.example'),
+      ),
+      episodes: [
+        Fragment$fragmentMediaFiles$episodes(id: 'e6', number: 6),
+        Fragment$fragmentMediaFiles$episodes(id: 'e7', number: 7),
+      ],
+    );
+    final e7 = episodePartItem(7, file, startMs: 1200000, durationMs: 1200000);
+    final entry = DownloadEntry(
+      kind: DownloadKind.episode,
+      mediaId: 'e7',
+      mediaFileId: 'mf-shared',
+      nodeUrl: 'https://node.example',
+      groupId: 'show',
+      groupTitle: 'Show',
+      title: 'E7',
+      queueItemJson: e7.toJson(),
+      createdAt: DateTime.now(),
+      status: DownloadStatus.complete,
+      sortKey: 7,
+    );
+    await store.put(_server, entry);
+    final pq = LocalPlayQueue.build(_server, [entry], startKey: entry.key);
+
+    await handler.startLocalPlayQueue(_server, pq,
+        startItemId: pq.currentItemId, startTimeMs: null, openPlayer: false);
+    expect(handler.currentMediaUrl, endsWith('/mf-shared/master.m3u8'));
+    expect(handler.lastStartTimeMs, 1200000);
+
+    // A position inside the slice is kept; one before it is clamped.
+    await handler.startLocalPlayQueue(_server, pq,
+        startItemId: pq.currentItemId, startTimeMs: 1500000, openPlayer: false);
+    expect(handler.lastStartTimeMs, 1500000);
+    await handler.startLocalPlayQueue(_server, pq,
+        startItemId: pq.currentItemId, startTimeMs: 0, openPlayer: false);
+    expect(handler.lastStartTimeMs, 1200000);
   });
 }

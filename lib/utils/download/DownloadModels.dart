@@ -225,6 +225,17 @@ class DownloadEntry {
       v is String ? DateTime.tryParse(v) : null;
 }
 
+/// Bytes on disk for [entries], counting a media file shared by several
+/// entries (a multi-episode file) once.
+int sumUniqueBytes(Iterable<DownloadEntry> entries) {
+  final seen = <String>{};
+  var total = 0;
+  for (final e in entries) {
+    if (seen.add(e.mediaFileId)) total += e.bytes;
+  }
+  return total;
+}
+
 /// Live progress of one running download, published by the service.
 class DownloadProgress {
   const DownloadProgress({

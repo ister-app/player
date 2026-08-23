@@ -318,12 +318,8 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
       final picked = NextUnwatched.select(episodes, n);
       final requests = <DownloadRequest>[];
       for (final e in picked) {
-        try {
-          requests.addAll(
-              await DownloadLoaders.episode(client, e.id, groupTitle: title));
-        } on DownloadUnsupported {
-          // Skip multi-episode files; the rest still downloads.
-        }
+        requests.addAll(
+            await DownloadLoaders.episode(client, e.id, groupTitle: title));
       }
       return requests;
     });

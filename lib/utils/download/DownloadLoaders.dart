@@ -11,12 +11,6 @@ import 'package:player/utils/download/DownloadModels.dart';
 import 'package:player/utils/download/DownloadService.dart';
 import 'package:player/utils/download/QueueItemFactory.dart';
 
-/// A download the app refuses (for now) rather than one that failed.
-class DownloadUnsupported implements Exception {
-  const DownloadUnsupported.multiPart() : multiPart = true;
-  final bool multiPart;
-}
-
 /// Turns what the pages have (ids, page fragments) into the full play-queue
 /// item snapshots a download stores — fetching the *ForDownload shapes where
 /// the page's own fragment is too thin (tracks, chapters lack the node url).
@@ -102,12 +96,8 @@ class DownloadLoaders {
       {String? groupTitle}) {
     final item = QueueItemFactory.fromJsonParts(
         kind: DownloadKind.episode, mediaId: episodeId, json: episodeJson);
-    final ep = item.episode!;
-    // An episode inside a multi-episode file would need the whole file plus
-    // the part bounds; refused until that is supported.
-    if ((ep.mediaFile?.firstOrNull?.episodes?.length ?? 0) > 1) {
-      throw const DownloadUnsupported.multiPart();
-    }
+    // Episodes sharing one media file each get their own entry; the file is
+    // mirrored once and the entries share its directory (DownloadService).
     return DownloadRequest(
       item: item,
       groupTitle: groupTitle,

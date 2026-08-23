@@ -566,7 +566,6 @@
   "retryDownload": "Download opnieuw proberen",
   "downloadFailedLocal": "Download mislukt: {error}",
   "downloadNoSpace": "Niet genoeg opslagruimte",
-  "downloadMultiPartUnsupported": "Afleveringen die één bestand delen kunnen nog niet gedownload worden",
   "downloadStatusQueued": "In wachtrij",
   "downloadStatusDownloading": "Bezig met downloaden",
   "downloadStatusFailed": "Mislukt",

@@ -6,6 +6,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/seasonById.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/MetadataUtil.dart';
+import 'package:player/utils/EpisodeParts.dart';
 import 'package:flutter/foundation.dart';
 import 'package:player/components/download/DownloadMenuItem.dart';
 import 'package:player/utils/download/DownloadLoaders.dart';
@@ -118,10 +119,10 @@ class TvShowSeasonList extends StatelessWidget {
   /// "⧉ E6+E7" when this episode shares one media file with others.
   static String? _combinedFileLabel(
       BuildContext context, Query$seasonById$seasonById$episodes episode) {
-    final fileEpisodes = episode.mediaFile?.firstOrNull?.episodes;
-    if (fileEpisodes == null || fileEpisodes.length < 2) return null;
-    final numbers = fileEpisodes.map((e) => e.number).toList()..sort();
-    return "⧉ ${numbers.map((n) => AppLocalizations.of(context)!.episodePrefix(n)).join("+")}";
+    final numbers = EpisodeParts.sharedNumbers(
+        episode.mediaFile?.firstOrNull?.episodes?.map((e) => e.number));
+    if (numbers == null) return null;
+    return EpisodeParts.label(AppLocalizations.of(context)!, numbers);
   }
 
   ListTile getListTile(

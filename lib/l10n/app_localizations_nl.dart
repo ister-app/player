@@ -1721,10 +1721,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get downloadNoSpace => 'Niet genoeg opslagruimte';
 
   @override
-  String get downloadMultiPartUnsupported =>
-      'Afleveringen die één bestand delen kunnen nog niet gedownload worden';
-
-  @override
   String get downloadStatusQueued => 'In wachtrij';
 
   @override

@@ -7,6 +7,7 @@ import 'package:player/components/download/DownloadMenuItem.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/DurationUtil.dart';
+import 'package:player/utils/EpisodeParts.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:player/utils/download/DownloadModels.dart';
 import 'package:player/utils/download/DownloadService.dart';
@@ -49,7 +50,7 @@ class _Group {
   final String title;
   final List<DownloadEntry> entries = [];
 
-  int get bytes => entries.fold(0, (s, e) => s + e.bytes);
+  int get bytes => sumUniqueBytes(entries);
   bool get playable => entries.any((e) => e.isComplete);
   DateTime get newest => entries
       .map((e) => e.createdAt)
@@ -163,7 +164,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
 
   Widget _summary(BuildContext context, List<DownloadEntry> entries) {
     final loc = AppLocalizations.of(context)!;
-    final total = entries.fold(0, (s, e) => s + e.bytes);
+    final total = sumUniqueBytes(entries);
     final active = entries.where((e) => e.isActive).length;
     return Card(
       child: ListTile(
@@ -231,8 +232,14 @@ class _DownloadsPageState extends State<DownloadsPage> {
           : loc.downloadFailedLocal(e.error ?? ''),
     };
     final progress = OfflineProgressStore.instance.get(widget.serverName, e.key);
+    final shared = e.kind == DownloadKind.episode
+        ? EpisodeParts.sharedNumbers(e.queueItem.episode?.mediaFile?.firstOrNull
+            ?.episodes
+            ?.map((x) => x.number))
+        : null;
     final parts = [
       if (e.subtitle != null && e.subtitle!.isNotEmpty) e.subtitle!,
+      if (shared != null) EpisodeParts.label(loc, shared),
       if (e.durationMs > 0) DurationUtil.format(Duration(milliseconds: e.durationMs)),
       if (e.bytes > 0) formatBytes(e.bytes),
       if (status != null) status,
@@ -310,16 +317,25 @@ class _DownloadsPageState extends State<DownloadsPage> {
     int? startMs;
     final local = OfflineProgressStore.instance.get(server, start.key);
     if (isVideo) {
-      if (local != null && !local.finished) {
+      final item = start.queueItem;
+      // An episode inside a multi-episode file lives in [startMs, endMs) of
+      // the file; positions outside its slice belong to a sibling.
+      final part = EpisodeParts.bounds(item.episode);
+      bool inSlice(int ms) =>
+          part == null || (ms >= part.startMs && ms < part.endMs);
+      if (local != null && !local.finished && inSlice(local.positionMs)) {
         startMs = local.positionMs;
       } else {
-        final item = start.queueItem;
         final movieWs = item.movie?.watchStatus?.firstOrNull;
         final episodeWs = item.episode?.watchStatus?.firstOrNull;
         if (movieWs != null && !movieWs.watched) {
           startMs = movieWs.progressInMilliseconds;
-        } else if (episodeWs != null && !episodeWs.watched) {
+        } else if (episodeWs != null &&
+            !episodeWs.watched &&
+            inSlice(episodeWs.progressInMilliseconds)) {
           startMs = episodeWs.progressInMilliseconds;
+        } else {
+          startMs = part?.startMs;
         }
       }
     }

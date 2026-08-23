@@ -27,6 +27,7 @@ import 'package:player/utils/ResilientSubscription.dart';
 import 'package:player/utils/QueueItemDisplay.dart';
 import 'package:player/utils/StreamTokenService.dart';
 import 'package:player/utils/download/DownloadService.dart';
+import 'package:player/utils/EpisodeParts.dart';
 import 'package:player/utils/download/LocalPlayQueue.dart';
 import 'package:player/utils/download/MusicCacheService.dart';
 import 'package:player/utils/download/PlayHistoryStore.dart';
@@ -447,15 +448,8 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// server has not computed the slice boundaries yet (duration 0) — playback
   /// then falls back to whole-file behavior.
   static ({int startMs, int endMs})? episodePartBounds(
-      Fragment$fragmentEpisode? ep) {
-    final part = ep?.mediaFileParts?.firstOrNull;
-    if (part == null) return null;
-    if ((part.mediaFile.episodes?.length ?? 0) < 2) return null;
-    final durationMs = part.durationInMilliseconds.toInt();
-    if (durationMs <= 0) return null;
-    final startMs = part.startInMilliseconds.toInt();
-    return (startMs: startMs, endMs: startMs + durationMs);
-  }
+          Fragment$fragmentEpisode? ep) =>
+      EpisodeParts.bounds(ep);
 
   /// The detected intro or outro of [ep], in absolute file time (the same
   /// timeline as [episodePartBounds] and the player position). Null while the
@@ -1166,10 +1160,18 @@ class MediaPlayerHandler extends BaseAudioHandler
       _currentMediaType = IsterMediaTypes.episode;
       final mf = item.episode?.mediaFile?.firstOrNull;
       if (mf == null) return;
+      // An episode inside a multi-episode file never starts before its own
+      // slice: a null/0 start (fresh queue, end-of-queue pre-arm) would open
+      // the previous episode's footage.
+      final partStart = episodePartBounds(item.episode)?.startMs;
+      final start = partStart != null &&
+              (startTimeMs == null || startTimeMs < partStart)
+          ? partStart
+          : startTimeMs;
       await _openMedia(
         serverName: srv,
         mediaUrl: await _resolveMediaUrl(srv, mf),
-        startTimeInMilliseconds: startTimeMs,
+        startTimeInMilliseconds: start,
         mediaType: IsterMediaTypes.episode,
         autoPlay: autoPlay,
       );
@@ -1179,6 +1181,10 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   @visibleForTesting
   String? get currentMediaUrl => _currentMediaUrl;
+
+  /// The start position handed to the last [_openMedia] (tests).
+  @visibleForTesting
+  int? lastStartTimeMs;
 
   /// True for media opened from the local download mirror (an absolute path
   /// or file URI) rather than a tokenized server URL.
@@ -1218,6 +1224,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     bool autoPlay = true,
   }) async {
     _currentMediaUrl = mediaUrl;
+    lastStartTimeMs = startTimeInMilliseconds;
     _streamOpenPositionMs = startTimeInMilliseconds ?? 0;
     _mediaOpenedAt = DateTime.now();
     // Reset stall tracking for the newly opened stream.
@@ -3178,11 +3185,14 @@ class MediaPlayerHandler extends BaseAudioHandler
       final item = currentPlayQueueItem;
       final srv = serverName;
       if (item != null && srv != null) {
-        final duration = _player.state.duration.inMilliseconds;
+        // A slice of a multi-episode file ends at its part boundary, not at
+        // the end of the file.
+        final endMs = episodePartBounds(item.episode)?.endMs ??
+            _player.state.duration.inMilliseconds;
         await OfflineProgressStore.instance.record(srv, item,
             positionMs: pos.inMilliseconds,
-            durationMs: duration,
-            finished: duration > 0 && pos.inMilliseconds >= duration - 5000);
+            durationMs: endMs,
+            finished: endMs > 0 && pos.inMilliseconds >= endMs - 5000);
       }
       return;
     }

@@ -2960,12 +2960,6 @@ abstract class AppLocalizations {
   /// **'Not enough storage space'**
   String get downloadNoSpace;
 
-  /// No description provided for @downloadMultiPartUnsupported.
-  ///
-  /// In en, this message translates to:
-  /// **'Episodes that share one file cannot be downloaded yet'**
-  String get downloadMultiPartUnsupported;
-
   /// No description provided for @downloadStatusQueued.
   ///
   /// In en, this message translates to:
