@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
@@ -428,7 +429,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
       }
     }
     if (isVideo) {
-      await AutoRouter.of(context).push(LocalVideoRoute(serverName: server));
+      // Not awaited: push() completes when the page is popped again, and
+      // playback must start while it is showing.
+      unawaited(AutoRouter.of(context).push(LocalVideoRoute(serverName: server)));
     }
     await MediaPlayerHandler.instance.startLocalPlayQueue(server, pq,
         startItemId: pq.currentItemId, startTimeMs: startMs, openPlayer: !isVideo);

@@ -47,10 +47,15 @@ class _LocalVideoPageState extends State<LocalVideoPage> {
     final handler = MediaPlayerHandler.instance;
     return Scaffold(
       appBar: AppBar(
-        title: StreamBuilder(
-          stream: handler.mediaItem,
-          builder: (context, snapshot) =>
-              Text(snapshot.data?.title ?? handler.mediaItem.value?.title ?? ''),
+        title: ValueListenableBuilder<bool>(
+          valueListenable: handler.mediaLoading,
+          builder: (context, loading, _) => loading
+              ? const SizedBox.shrink()
+              : StreamBuilder(
+                  stream: handler.mediaItem,
+                  builder: (context, snapshot) => Text(
+                      snapshot.data?.title ?? handler.mediaItem.value?.title ?? ''),
+                ),
         ),
       ),
       body: Column(
