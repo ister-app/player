@@ -7,6 +7,27 @@ import 'package:player/utils/download/DownloadService.dart';
 import 'package:player/utils/download/MusicCachePreferences.dart';
 import 'package:player/utils/download/PlayHistoryStore.dart';
 
+/// What one cache run did — for the settings page's feedback.
+class MusicCacheRunResult {
+  const MusicCacheRunResult({
+    this.enabled = true,
+    this.historyCount = 0,
+    this.queued = 0,
+    this.evicted = 0,
+    this.skipped = false,
+  });
+
+  final bool enabled;
+
+  /// Tracks in the local play history (the cache's only source).
+  final int historyCount;
+  final int queued;
+  final int evicted;
+
+  /// Another run was in progress; this one was merged into it.
+  final bool skipped;
+}
+
 class MusicCachePlan {
   const MusicCachePlan({required this.toDownload, required this.toEvict});
 
@@ -137,20 +158,21 @@ class MusicCacheService {
 
   /// Brings [server]'s cache in line with its settings now. Serialized per
   /// server; a call during a run queues one more run.
-  Future<void> run(String server, {String? playingMediaFileId}) async {
-    if (kIsWeb) return;
+  Future<MusicCacheRunResult> run(String server, {String? playingMediaFileId}) async {
+    if (kIsWeb) return const MusicCacheRunResult(enabled: false);
     if (_running.contains(server)) {
       _rerun.add(server);
-      return;
+      return const MusicCacheRunResult(skipped: true);
     }
     _running.add(server);
     try {
       final settings = await MusicCachePreferences.get(server);
-      if (!settings.enabled) return;
+      if (!settings.enabled) return const MusicCacheRunResult(enabled: false);
       await downloads.ensureStarted();
       await downloads.store.load(server);
+      final recent = await history.recent(server);
       final plan = planMusicCache(
-        history: await history.recent(server),
+        history: recent,
         entries: downloads.entriesFor(server),
         maxTracks: settings.maxTracks,
         maxBytes: settings.maxBytes,
@@ -168,8 +190,14 @@ class MusicCacheService {
                 item: h.item, pinned: false, audioQuality: settings.quality),
         ]);
       }
+      return MusicCacheRunResult(
+        historyCount: recent.length,
+        queued: plan.toDownload.length,
+        evicted: plan.toEvict.length,
+      );
     } catch (e) {
       LoggerService().logger.w('music cache run failed for $server: $e');
+      return const MusicCacheRunResult();
     } finally {
       _running.remove(server);
       if (_rerun.remove(server)) unawaited(run(server));

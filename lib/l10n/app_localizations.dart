@@ -3241,6 +3241,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'read-aloud edition'**
   String get readAloudEdition;
+
+  /// Snackbar after 'Fill cache now'
+  ///
+  /// In en, this message translates to:
+  /// **'{queued, plural, =0{Nothing new to download} =1{1 track queued for download} other{{queued} tracks queued for download}}{evicted, plural, =0{} =1{, 1 removed} other{, {evicted} removed}}'**
+  String musicCacheFillQueued(int queued, int evicted);
+
+  /// No description provided for @musicCacheNoHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No play history yet — the cache fills with tracks you play for at least 30 seconds'**
+  String get musicCacheNoHistory;
+
+  /// No description provided for @musicCacheUpToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'The music cache is up to date'**
+  String get musicCacheUpToDate;
+
+  /// No description provided for @musicCacheFillBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'The cache is already being updated'**
+  String get musicCacheFillBusy;
 }
 
 class _AppLocalizationsDelegate

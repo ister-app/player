@@ -1968,5 +1968,20 @@
   },
   "downloadEpub": "Download book (EPUB)",
   "downloadComic": "Download comic",
-  "readAloudEdition": "read-aloud edition"
+  "readAloudEdition": "read-aloud edition",
+  "musicCacheFillQueued": "{queued, plural, =0{Nothing new to download} =1{1 track queued for download} other{{queued} tracks queued for download}}{evicted, plural, =0{} =1{, 1 removed} other{, {evicted} removed}}",
+  "@musicCacheFillQueued": {
+    "description": "Snackbar after 'Fill cache now'",
+    "placeholders": {
+      "queued": {
+        "type": "int"
+      },
+      "evicted": {
+        "type": "int"
+      }
+    }
+  },
+  "musicCacheNoHistory": "No play history yet — the cache fills with tracks you play for at least 30 seconds",
+  "musicCacheUpToDate": "The music cache is up to date",
+  "musicCacheFillBusy": "The cache is already being updated"
 }

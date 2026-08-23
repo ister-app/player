@@ -4,6 +4,7 @@ import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/download/DownloadModels.dart';
 import 'package:player/utils/download/DownloadPreferences.dart';
 import 'package:player/utils/download/DownloadService.dart';
+import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/download/MusicCachePreferences.dart';
 import 'package:player/utils/download/MusicCacheService.dart';
 import 'package:player/pages/DownloadsPage.dart' show formatBytes;
@@ -258,9 +259,7 @@ class _DownloadSettingsPageState extends State<DownloadSettingsPage> {
                         leading: const Icon(Icons.cloud_download_outlined),
                         title: Text(loc.fillCacheNow),
                         enabled: _cache.enabled,
-                        onTap: _cache.enabled
-                            ? () => MusicCacheService.instance.run(server)
-                            : null,
+                        onTap: _cache.enabled ? () => _fillNow(context) : null,
                       ),
                       const Divider(height: 1, indent: 56),
                       ListTile(
@@ -283,6 +282,38 @@ class _DownloadSettingsPageState extends State<DownloadSettingsPage> {
               ],
             ),
     );
+  }
+
+  /// "Fill now" with feedback: the run itself is silent (the download
+  /// notification is low-priority by design), so say what it queued and
+  /// offer the way to the downloads page.
+  Future<void> _fillNow(BuildContext context) async {
+    final loc = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final router = context.router.root;
+    final server = widget.serverName;
+    final result = await MusicCacheService.instance.run(server);
+    final String text;
+    if (result.skipped) {
+      text = loc.musicCacheFillBusy;
+    } else if (result.historyCount == 0) {
+      text = loc.musicCacheNoHistory;
+    } else if (result.queued == 0 && result.evicted == 0) {
+      text = loc.musicCacheUpToDate;
+    } else {
+      text = loc.musicCacheFillQueued(result.queued, result.evicted);
+    }
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(text),
+        action: result.queued > 0
+            ? SnackBarAction(
+                label: loc.openDownloads,
+                onPressed: () => router.push(DownloadsRoute(serverName: server)),
+              )
+            : null,
+      ));
   }
 
   Future<void> _saveCache(MusicCacheSettings next) async {

@@ -1897,4 +1897,33 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get readAloudEdition => 'voorleeseditie';
+
+  @override
+  String musicCacheFillQueued(int queued, int evicted) {
+    String _temp0 = intl.Intl.pluralLogic(
+      queued,
+      locale: localeName,
+      other: '$queued nummers in de downloadwachtrij',
+      one: '1 nummer in de downloadwachtrij',
+      zero: 'Niets nieuws om te downloaden',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      evicted,
+      locale: localeName,
+      other: ', $evicted verwijderd',
+      one: ', 1 verwijderd',
+      zero: '',
+    );
+    return '$_temp0$_temp1';
+  }
+
+  @override
+  String get musicCacheNoHistory =>
+      'Nog geen afspeelhistorie — de cache vult zich met nummers die je minstens 30 seconden afspeelt';
+
+  @override
+  String get musicCacheUpToDate => 'De muziekcache is bijgewerkt';
+
+  @override
+  String get musicCacheFillBusy => 'De cache wordt al bijgewerkt';
 }

@@ -612,5 +612,9 @@
   "downloadNotificationText": "{count, plural, =1{1 download · {percent}%} other{{count} downloads · {percent}%}}",
   "downloadEpub": "Boek downloaden (EPUB)",
   "downloadComic": "Strip downloaden",
-  "readAloudEdition": "voorleeseditie"
+  "readAloudEdition": "voorleeseditie",
+  "musicCacheFillQueued": "{queued, plural, =0{Niets nieuws om te downloaden} =1{1 nummer in de downloadwachtrij} other{{queued} nummers in de downloadwachtrij}}{evicted, plural, =0{} =1{, 1 verwijderd} other{, {evicted} verwijderd}}",
+  "musicCacheNoHistory": "Nog geen afspeelhistorie — de cache vult zich met nummers die je minstens 30 seconden afspeelt",
+  "musicCacheUpToDate": "De muziekcache is bijgewerkt",
+  "musicCacheFillBusy": "De cache wordt al bijgewerkt"
 }

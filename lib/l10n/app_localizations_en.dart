@@ -1892,4 +1892,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get readAloudEdition => 'read-aloud edition';
+
+  @override
+  String musicCacheFillQueued(int queued, int evicted) {
+    String _temp0 = intl.Intl.pluralLogic(
+      queued,
+      locale: localeName,
+      other: '$queued tracks queued for download',
+      one: '1 track queued for download',
+      zero: 'Nothing new to download',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      evicted,
+      locale: localeName,
+      other: ', $evicted removed',
+      one: ', 1 removed',
+      zero: '',
+    );
+    return '$_temp0$_temp1';
+  }
+
+  @override
+  String get musicCacheNoHistory =>
+      'No play history yet — the cache fills with tracks you play for at least 30 seconds';
+
+  @override
+  String get musicCacheUpToDate => 'The music cache is up to date';
+
+  @override
+  String get musicCacheFillBusy => 'The cache is already being updated';
 }
