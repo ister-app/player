@@ -12,11 +12,14 @@ class DownloadCancelToken {
 
 class DownloadCancelled implements Exception {}
 
-/// A download that cannot succeed by retrying (file gone, no disk space).
+/// A download that stopped. [transient] failures (network gone, server
+/// unreachable, timeouts after all retries) are retried automatically by the
+/// service later; the others (file gone, no disk space) wait for the user.
 class DownloadFailure implements Exception {
-  DownloadFailure(this.message, {this.noSpace = false});
+  DownloadFailure(this.message, {this.noSpace = false, this.transient = false});
   final String message;
   final bool noSpace;
+  final bool transient;
   @override
   String toString() => message;
 }
@@ -111,7 +114,9 @@ class DownloadHttp {
         transient = e;
       } on http.ClientException catch (e) {
         transient = e;
-      } on SocketException catch (e) {
+      } on IOException catch (e) {
+        // DNS failure, TLS handshake, connection reset: the network, not
+        // the file.
         transient = e;
       }
       if (response != null) {
@@ -130,7 +135,7 @@ class DownloadHttp {
         transient = 'HTTP $code';
       }
       if (attempt + 1 >= attempts) {
-        throw DownloadFailure('giving up on $url: $transient');
+        throw DownloadFailure('giving up on $url: $transient', transient: true);
       }
       await sleepCancellable(_backoff(attempt), cancel);
     }

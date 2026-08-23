@@ -3265,6 +3265,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The cache is already being updated'**
   String get musicCacheFillBusy;
+
+  /// No description provided for @downloadRetryLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Network problem — retrying automatically'**
+  String get downloadRetryLater;
 }
 
 class _AppLocalizationsDelegate

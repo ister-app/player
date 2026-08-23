@@ -1921,4 +1921,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get musicCacheFillBusy => 'The cache is already being updated';
+
+  @override
+  String get downloadRetryLater => 'Network problem — retrying automatically';
 }

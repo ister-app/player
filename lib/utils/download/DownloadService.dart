@@ -85,11 +85,15 @@ class DownloadService {
     EpubDownloader? epubDownloader,
     ComicDownloader? comicDownloader,
     Future<bool> Function()? isUnmetered,
+    Stream<void>? connectivityChanges,
+    DateTime Function()? now,
   })  : store = store ?? DownloadStore(),
         downloader = downloader ?? HlsDownloader(),
         epubDownloader = epubDownloader ?? EpubDownloader(),
         comicDownloader = comicDownloader ?? ComicDownloader(),
-        _isUnmetered = isUnmetered ?? NetworkPolicy.isUnmetered;
+        _isUnmetered = isUnmetered ?? NetworkPolicy.isUnmetered,
+        _connectivityChanges = connectivityChanges,
+        _now = now ?? DateTime.now;
 
   static DownloadService _instance = DownloadService();
   static DownloadService get instance => _instance;
@@ -102,6 +106,17 @@ class DownloadService {
   final EpubDownloader epubDownloader;
   final ComicDownloader comicDownloader;
   final Future<bool> Function() _isUnmetered;
+  final Stream<void>? _connectivityChanges;
+  final DateTime Function() _now;
+  StreamSubscription<void>? _connectivitySub;
+  Timer? _retryTimer;
+
+  /// Auto-retry spacing for transient failures: 5 min, 10, 20 … capped at an
+  /// hour. A connectivity change retries right away regardless.
+  static Duration retryDelay(int retryCount) {
+    final minutes = 5 * (1 << retryCount.clamp(0, 6));
+    return Duration(minutes: minutes.clamp(5, 60));
+  }
 
   /// Bumped on every manifest change; list UIs rebuild on it.
   final ValueNotifier<int> revision = ValueNotifier(0);
@@ -136,11 +151,47 @@ class DownloadService {
           }
         }
         revision.value++;
+        _watchNetwork();
         unawaited(_pump());
       } catch (e) {
         LoggerService().logger.e('download store failed to start: $e');
       }
     }();
+  }
+
+  void _watchNetwork() {
+    try {
+      _connectivitySub ??= (_connectivityChanges ?? NetworkPolicy.changes())
+          .listen((_) => unawaited(retryFailed(immediately: true)),
+              onError: (_) {});
+    } catch (e) {
+      // No platform channel (tests, headless start): the scheduled sweep
+      // still retries.
+      LoggerService().logger.w('connectivity watch unavailable: $e');
+    }
+    _retryTimer ??= Timer.periodic(
+        const Duration(minutes: 1), (_) => unawaited(retryFailed()));
+  }
+
+  /// Re-queues transiently failed entries whose retry time has come (all of
+  /// them with [immediately], e.g. after a connectivity change), then pumps.
+  Future<void> retryFailed({bool immediately = false}) async {
+    var changed = false;
+    final now = _now();
+    for (final server in store.loadedServers.toList()) {
+      for (final e in store.entries(server)) {
+        if (e.status != DownloadStatus.failed || !e.retryable) continue;
+        final due = e.nextRetryAt == null || !e.nextRetryAt!.isAfter(now);
+        if (!immediately && !due) continue;
+        await store.put(server,
+            e.copyWith(status: DownloadStatus.queued, clearError: true));
+        changed = true;
+      }
+    }
+    if (changed) {
+      revision.value++;
+      unawaited(_pump());
+    }
   }
 
   // ---- queries -----------------------------------------------------------
@@ -302,7 +353,7 @@ class DownloadService {
     final entry = store.get(server, key);
     if (entry == null || entry.status != DownloadStatus.failed) return;
     await store.put(server,
-        entry.copyWith(status: DownloadStatus.queued, clearError: true));
+        entry.copyWith(status: DownloadStatus.queued, clearError: true, clearRetry: true));
     revision.value++;
     unawaited(_pump());
   }
@@ -518,6 +569,7 @@ class DownloadService {
         downloadedAt: DateTime.now(),
         videoQuality: videoQuality,
         clearError: true,
+        clearRetry: true,
       );
       await store.put(server, completed);
       // Siblings waiting on the same file are done too.
@@ -541,10 +593,16 @@ class DownloadService {
         final message = e is DownloadFailure
             ? (e.noSpace ? 'no-space' : e.message)
             : e.toString();
+        // Network trouble and unexpected errors are retried on their own;
+        // a missing file or a full disk waits for the user.
+        final retryable = e is DownloadFailure ? e.transient : true;
         LoggerService().logger.w('download failed for ${entry.key}: $e');
         await store.put(server, current.copyWith(
             status: DownloadStatus.failed,
             error: message,
+            retryable: retryable,
+            retryCount: retryable ? current.retryCount + 1 : 0,
+            nextRetryAt: retryable ? _now().add(retryDelay(current.retryCount)) : null,
             bytes: await _bytesOnDisk(server, entry.mediaFileId),
             segmentsDone: progress.value?.segmentsDone,
             segmentsTotal: progress.value?.segmentsTotal));
@@ -601,6 +659,7 @@ class DownloadService {
           pageCount: current.pageCount ?? (current.format == BookFormat.epub ? null : result.itemsTotal),
           downloadedAt: DateTime.now(),
           clearError: true,
+          clearRetry: true,
         ));
   }
 

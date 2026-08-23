@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -74,19 +75,22 @@ Fragment$fragmentPlayQueue$playQueueItems trackItem(String id, {int number = 1})
       ),
     );
 
-MockClient _hlsClient(List<String> log) => MockClient((req) async {
+Future<http.Response> Function(http.Request) _hlsHandler(List<String> log) =>
+    (req) async {
       final name = req.url.pathSegments.last;
       log.add(name);
       if (name == 'master.m3u8') return http.Response(_master, 200);
       if (name.endsWith('.m3u8')) return http.Response(_playlist, 200);
       if (name.endsWith('.ts')) return http.Response('x' * 100, 200);
       return http.Response('', 404);
-    });
+    };
 
-Future<void> _waitFor(bool Function() done) async {
+MockClient _hlsClient(List<String> log) => MockClient(_hlsHandler(log));
+
+Future<void> _waitFor(bool Function() done, {String Function()? describe}) async {
   final end = DateTime.now().add(const Duration(seconds: 10));
   while (!done()) {
-    if (DateTime.now().isAfter(end)) fail('timed out');
+    if (DateTime.now().isAfter(end)) fail('timed out: ${describe?.call()}');
     await Future.delayed(const Duration(milliseconds: 20));
   }
 }
@@ -276,6 +280,63 @@ void main() {
 
     await reading.remove(_server, key);
     expect(Directory(dir!).existsSync(), isFalse);
+  });
+
+  test('a network failure is retried on its own: on connectivity change and on schedule',
+      () async {
+    var online = false;
+    final log = <String>[];
+    final flaky = MockClient((req) async {
+      if (!online) throw const SocketException('Failed host lookup');
+      return _hlsHandler(log)(req);
+    });
+    final network = StreamController<void>.broadcast();
+    var clock = DateTime(2026, 1, 1, 12);
+    final svc = DownloadService(
+      store: DownloadStore(rootOverride: root),
+      downloader: HlsDownloader(
+          httpClient: flaky,
+          tokenProvider: (_) async => 'tok',
+          backoff: (_) => const Duration(milliseconds: 1),
+          maxAttempts: 2),
+      connectivityChanges: network.stream,
+      now: () => clock,
+    );
+    DownloadService.instance = svc;
+    await svc.enqueue(_server, DownloadRequest(item: trackItem('t9')));
+    final key = DownloadEntry.keyFor(DownloadKind.track, 't9');
+    String state() { final e = svc.entryFor(_server, key); return '${e?.status} ${e?.error} rc=${e?.retryCount}'; }
+    await _waitFor(() => svc.entryFor(_server, key)?.status == DownloadStatus.failed, describe: state);
+    final failed = svc.entryFor(_server, key)!;
+    expect(failed.retryable, isTrue);
+    expect(failed.retryCount, 1);
+    expect(failed.nextRetryAt, clock.add(const Duration(minutes: 5)));
+
+    // Not due yet: the scheduled sweep leaves it alone.
+    await svc.retryFailed();
+    expect(svc.entryFor(_server, key)!.status, DownloadStatus.failed);
+
+    // Connectivity changes while still offline: retried at once, fails again
+    // with a longer delay.
+    network.add(null);
+    await _waitFor(() => svc.entryFor(_server, key)?.retryCount == 2, describe: state);
+    expect(svc.entryFor(_server, key)!.nextRetryAt,
+        clock.add(const Duration(minutes: 10)));
+
+    // Back online and the retry time has come: completes.
+    online = true;
+    clock = clock.add(const Duration(minutes: 11));
+    await svc.retryFailed();
+    await _waitFor(() => svc.entryFor(_server, key)?.isComplete ?? false, describe: state);
+    expect(svc.entryFor(_server, key)!.retryCount, 0);
+    await network.close();
+  });
+
+  test('retryDelay doubles from five minutes up to an hour', () {
+    expect(DownloadService.retryDelay(0), const Duration(minutes: 5));
+    expect(DownloadService.retryDelay(1), const Duration(minutes: 10));
+    expect(DownloadService.retryDelay(3), const Duration(minutes: 40));
+    expect(DownloadService.retryDelay(8), const Duration(minutes: 60));
   });
 
   test('pause stops the run and resume finishes it', () async {

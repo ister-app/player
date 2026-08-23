@@ -232,7 +232,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
       DownloadStatus.complete => null,
       DownloadStatus.failed => e.error == 'no-space'
           ? loc.downloadNoSpace
-          : loc.downloadFailedLocal(e.error ?? ''),
+          : e.retryable
+              ? loc.downloadRetryLater
+              : loc.downloadFailedLocal(e.error ?? ''),
     };
     final progress = OfflineProgressStore.instance.get(widget.serverName, e.key);
     if (e.isReading) return _readingTile(context, e);
@@ -312,7 +314,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
       DownloadStatus.complete => null,
       DownloadStatus.failed => e.error == 'no-space'
           ? loc.downloadNoSpace
-          : loc.downloadFailedLocal(e.error ?? ''),
+          : e.retryable
+              ? loc.downloadRetryLater
+              : loc.downloadFailedLocal(e.error ?? ''),
     };
     final parts = [
       e.format?.name.toUpperCase() ?? '',

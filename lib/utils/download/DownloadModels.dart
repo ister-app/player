@@ -58,6 +58,9 @@ class DownloadEntry {
     this.mediaOverlays = false,
     this.pageCount,
     this.artworkUrl,
+    this.retryable = false,
+    this.retryCount = 0,
+    this.nextRetryAt,
   });
 
   static String keyFor(DownloadKind kind, String mediaId) =>
@@ -95,6 +98,12 @@ class DownloadEntry {
   final bool mediaOverlays;
   final int? pageCount;
   final String? artworkUrl;
+
+  /// A failed entry the service retries on its own (network trouble) —
+  /// after [nextRetryAt], or right away when connectivity changes.
+  final bool retryable;
+  final int retryCount;
+  final DateTime? nextRetryAt;
 
   /// File name inside the item directory, when the cover was fetched.
   final String? artworkFile;
@@ -154,6 +163,10 @@ class DownloadEntry {
     List<int>? audioStreamIndexes,
     List<String>? subtitleStreamIds,
     int? pageCount,
+    bool? retryable,
+    int? retryCount,
+    DateTime? nextRetryAt,
+    bool clearRetry = false,
   }) =>
       DownloadEntry(
         kind: kind,
@@ -185,6 +198,9 @@ class DownloadEntry {
         mediaOverlays: mediaOverlays,
         pageCount: pageCount ?? this.pageCount,
         artworkUrl: artworkUrl,
+        retryable: clearRetry ? false : (retryable ?? this.retryable),
+        retryCount: clearRetry ? 0 : (retryCount ?? this.retryCount),
+        nextRetryAt: clearRetry ? null : (nextRetryAt ?? this.nextRetryAt),
       );
 
   Map<String, dynamic> toJson() => {
@@ -217,6 +233,9 @@ class DownloadEntry {
         'mediaOverlays': mediaOverlays,
         'pageCount': pageCount,
         'artworkUrl': artworkUrl,
+        'retryable': retryable,
+        'retryCount': retryCount,
+        'nextRetryAt': nextRetryAt?.toIso8601String(),
       };
 
   static DownloadEntry fromJson(Map<String, dynamic> json) => DownloadEntry(
@@ -263,6 +282,9 @@ class DownloadEntry {
         mediaOverlays: json['mediaOverlays'] as bool? ?? false,
         pageCount: (json['pageCount'] as num?)?.toInt(),
         artworkUrl: json['artworkUrl'] as String?,
+        retryable: json['retryable'] as bool? ?? false,
+        retryCount: (json['retryCount'] as num?)?.toInt() ?? 0,
+        nextRetryAt: _date(json['nextRetryAt']),
       );
 
   static DateTime? _date(Object? v) =>

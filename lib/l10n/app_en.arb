@@ -1983,5 +1983,6 @@
   },
   "musicCacheNoHistory": "No play history yet — the cache fills with tracks you play for at least 30 seconds",
   "musicCacheUpToDate": "The music cache is up to date",
-  "musicCacheFillBusy": "The cache is already being updated"
+  "musicCacheFillBusy": "The cache is already being updated",
+  "downloadRetryLater": "Network problem — retrying automatically"
 }
