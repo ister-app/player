@@ -499,9 +499,31 @@ jobs:
         run: |
           kubectl get pods -n ister -o wide || true
           kubectl get events -n ister --sort-by=.lastTimestamp | tail -40 || true
+          # Why a container died: the doc tour failed two nights in a row on postgres
+          # being hard-killed mid-tour ("database system was not properly shut down",
+          # RESTARTS 1) — get pods/events/logs never said by whom. The restarted
+          # containers' last state carries the reason (OOMKilled / Error) and exit code.
+          echo "----- restarted containers"
+          kubectl get pods -n ister -o json | jq -r '
+            .items[] | .metadata.name as $pod
+            | (.status.containerStatuses // [])[]
+            | select(.restartCount > 0)
+            | "\($pod)/\(.name): restarts=\(.restartCount) last=\(.lastState.terminated // {} | tojson)"' || true
+          kubectl describe pods -n ister | grep -E "^Name:|^Containers:|^  [a-z-]+:$|Last State|Reason|Exit Code|Started|Finished|Limits|Requests|memory|cpu|OOM" || true
+          echo "----- node / runner memory"
+          kubectl describe node | sed -n '/Conditions:/,/^Events/p' | grep -E "MemoryPressure|DiskPressure|PIDPressure|Allocated|memory|cpu" || true
+          kubectl top pods -n ister --containers || true
+          free -m || true
+          docker exec ister-control-plane dmesg 2>/dev/null | grep -iE "oom|killed process|out of memory" | tail -20 || true
+          sudo dmesg 2>/dev/null | grep -iE "oom|killed process|out of memory" | tail -20 || true
           kubectl get pods -n ister -o name | while read -r p; do
             echo "----- $p"
-            kubectl logs -n ister "$p" --all-containers --prefix --tail=100 || true
+            # 2000, not 100: a single Java stacktrace is ~100 lines, so a small
+            # tail can show one exception and nothing of what preceded it.
+            kubectl logs -n ister "$p" --all-containers --prefix --tail=2000 || true
+            # The log of the *previous* instance of a restarted container is where
+            # the final moments before the kill are.
+            kubectl logs -n ister "$p" --all-containers --prefix --previous --tail=200 2>/dev/null || true
           done
 
   publish:
