@@ -1,0 +1,14 @@
+# An audiobook's chapters in the play-queue `chapter` shape.
+query bookForDownload($id: ID) {
+    bookById(id: $id) {
+        id title
+        chapters {
+            id number
+            author { id name }
+            book { id title metadata { ...fragmentMetadata } images { ...fragmentImages } }
+            metadata { ...fragmentMetadata }
+            mediaFile { ...fragmentMediaFiles }
+            watchStatus { ...fragmentWatchStatus }
+        }
+    }
+}

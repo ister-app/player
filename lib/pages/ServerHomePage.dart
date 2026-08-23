@@ -17,6 +17,8 @@ import '../utils/MediaPlayerHandler.dart';
 import '../utils/PlatformService.dart';
 import '../utils/ReaderFullscreen.dart';
 import '../utils/StreamTokenService.dart';
+import '../components/download/OfflineDownloadsButton.dart';
+import '../utils/download/OfflineSyncService.dart';
 import '../utils/TabNavigationNotifier.dart';
 
 @RoutePage()
@@ -75,6 +77,7 @@ class _ServerHomePageState extends State<ServerHomePage> {
   Future<void>? _initFuture;
   Future<String?>? _tokenFuture;
   Future<void>? _restoreFuture;
+  Future<int>? _offlineSyncFuture;
   Future<void>? _deviceInitFuture;
   OidcDeviceAuthorizationResponse? _deviceAuthResponse;
 
@@ -327,6 +330,8 @@ class _ServerHomePageState extends State<ServerHomePage> {
                     icon: const Icon(Icons.arrow_back),
                     label: Text(loc.backToServerOverview),
                   ),
+                  const SizedBox(height: 12),
+                  OfflineDownloadsButton(serverName: widget.serverName),
                 ],
               ),
             ),
@@ -366,13 +371,24 @@ class _ServerHomePageState extends State<ServerHomePage> {
                       builder: (context, _, __) {
                         if (StreamTokenService.getToken(widget.serverName) ==
                             null) {
+                          // The token fetch retries forever while the server
+                          // is unreachable; downloads stay reachable meanwhile.
                           return Scaffold(
                             appBar: AppBar(
                               leading: _backToServers(context),
                               title: Text(info.name),
                             ),
-                            body: const Center(
-                                child: CircularProgressIndicator()),
+                            body: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const CircularProgressIndicator(),
+                                  const SizedBox(height: 24),
+                                  OfflineDownloadsButton(
+                                      serverName: widget.serverName),
+                                ],
+                              ),
+                            ),
                           );
                         }
                         // Authenticated and stream token in hand: reload the
@@ -380,6 +396,9 @@ class _ServerHomePageState extends State<ServerHomePage> {
                         // Fire-and-forget — the shell must not wait for it.
                         _restoreFuture ??= MediaPlayerHandler.instance
                             .restoreLastMusicQueue(widget.serverName);
+                        // Replay progress made while offline (once per run).
+                        _offlineSyncFuture ??=
+                            OfflineSyncService.trySync(widget.serverName);
                         // Register this device and open its command channel
                         // (play-on/handoff/listen-along targets). Both are
                         // idempotent and degrade silently on older servers.

@@ -79,6 +79,15 @@ class ServerSettingsPage extends StatelessWidget {
                     onTap: () => AutoRouter.of(context)
                         .push(const SleepTimerSettingsRoute()),
                   ),
+                  const Divider(height: 1, indent: 56),
+                  ListTile(
+                    leading: const Icon(Icons.download_for_offline_outlined),
+                    title: Text(loc.downloads),
+                    subtitle: Text(loc.downloadsSubtitle),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.router.root
+                        .push(DownloadsRoute(serverName: serverName)),
+                  ),
                 ],
                 const Divider(height: 1, indent: 56),
                 ListTile(

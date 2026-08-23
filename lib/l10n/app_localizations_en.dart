@@ -157,13 +157,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get download => 'Download';
 
   @override
-  String get downloadStarted =>
-      'Download started — the episode appears shortly';
-
-  @override
-  String get downloadFailed => 'Download request failed';
-
-  @override
   String get watchNext => 'Continue watching';
 
   @override
@@ -1655,4 +1648,229 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get zoomToFit => 'Fit to screen';
+
+  @override
+  String get fetchToServerStarted =>
+      'Download started — the episode appears shortly';
+
+  @override
+  String get fetchToServerFailed => 'Download request failed';
+
+  @override
+  String get fetchToServer => 'Fetch to server';
+
+  @override
+  String get downloads => 'Downloads';
+
+  @override
+  String get downloadsSubtitle => 'Media stored on this device';
+
+  @override
+  String get downloadSettings => 'Download settings';
+
+  @override
+  String get downloadAlbum => 'Download album';
+
+  @override
+  String get downloadAudiobook => 'Download audiobook';
+
+  @override
+  String get downloadNextUnwatched => 'Download next unwatched…';
+
+  @override
+  String get downloadNextUnlistened => 'Download next unlistened…';
+
+  @override
+  String get downloadNextDialogTitle => 'Download the next episodes';
+
+  @override
+  String get downloadNextDialogHint => 'Number of episodes';
+
+  @override
+  String downloadQueued(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items queued for download',
+      one: '1 item queued for download',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get downloadNothingToDownload => 'Nothing to download';
+
+  @override
+  String get cancelDownload => 'Cancel download';
+
+  @override
+  String get removeDownload => 'Remove download';
+
+  @override
+  String get retryDownload => 'Retry download';
+
+  @override
+  String downloadFailedLocal(String error) {
+    return 'Download failed: $error';
+  }
+
+  @override
+  String get downloadNoSpace => 'Not enough storage space';
+
+  @override
+  String get downloadMultiPartUnsupported =>
+      'Episodes that share one file cannot be downloaded yet';
+
+  @override
+  String get downloadStatusQueued => 'Queued';
+
+  @override
+  String get downloadStatusDownloading => 'Downloading';
+
+  @override
+  String get downloadStatusFailed => 'Failed';
+
+  @override
+  String get downloadStatusComplete => 'Downloaded';
+
+  @override
+  String get pauseAllDownloads => 'Pause downloads';
+
+  @override
+  String get resumeAllDownloads => 'Resume downloads';
+
+  @override
+  String get clearAllDownloads => 'Remove all downloads';
+
+  @override
+  String get clearAllDownloadsConfirm =>
+      'Remove every download on this device for this server?';
+
+  @override
+  String storageUsed(String size) {
+    return '$size used';
+  }
+
+  @override
+  String downloadItemsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noDownloadsYet => 'No downloads yet';
+
+  @override
+  String get noDownloadsHint =>
+      'Use \"Download\" in the menu of a movie, episode, track, album, podcast episode or audiobook.';
+
+  @override
+  String get videoDownloadQuality => 'Video download quality';
+
+  @override
+  String get videoDownloadQualityDescription =>
+      'Original copies the file as is; 720p/480p make the server re-encode it first (slower, smaller)';
+
+  @override
+  String get audioDownloadQuality => 'Audio download quality';
+
+  @override
+  String get qualityOriginal => 'Original';
+
+  @override
+  String get qualityCompact => 'Compact (192 kbit/s)';
+
+  @override
+  String get downloadSubtitles => 'Download subtitles';
+
+  @override
+  String get unmeteredOnly => 'Only on Wi‑Fi';
+
+  @override
+  String get unmeteredOnlySubtitle =>
+      'Applies to automatic downloads (music cache); manual downloads always run';
+
+  @override
+  String get concurrentDownloads => 'Simultaneous downloads';
+
+  @override
+  String get defaultNextCount => 'Default for \"download next episodes\"';
+
+  @override
+  String get openDownloads => 'Open downloads';
+
+  @override
+  String get offlineMode => 'Offline';
+
+  @override
+  String get playOffline => 'Play';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get syncOfflineProgress => 'Sync offline progress';
+
+  @override
+  String offlineProgressSynced(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count plays synced',
+      one: '1 play synced',
+      zero: 'Nothing to sync',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String downloadsForServer(String server) {
+    return 'Downloads · $server';
+  }
+
+  @override
+  String get musicCache => 'Music cache';
+
+  @override
+  String get musicCacheEnabled => 'Keep recently played music on this device';
+
+  @override
+  String get musicCacheDescription =>
+      'The most recently played tracks are downloaded automatically and the oldest removed when a limit is reached. Manual downloads are never removed.';
+
+  @override
+  String get musicCacheMaxTracks => 'Maximum number of tracks';
+
+  @override
+  String get musicCacheMaxSize => 'Maximum size';
+
+  @override
+  String get musicCacheQuality => 'Cache quality';
+
+  @override
+  String get fillCacheNow => 'Fill cache now';
+
+  @override
+  String get clearMusicCache => 'Remove cached music';
+
+  @override
+  String get musicCacheDisableKeep => 'Keep files';
+
+  @override
+  String get musicCacheDisableRemove => 'Remove files';
+
+  @override
+  String get musicCacheDisableTitle => 'Keep the cached music?';
+
+  @override
+  String get musicCacheDisableBody =>
+      'The cache will no longer be filled. The tracks already on this device can stay or be removed now.';
+
+  @override
+  String get cachedDownloads => 'Music cache';
 }

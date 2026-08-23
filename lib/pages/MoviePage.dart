@@ -15,6 +15,10 @@ import '../components/CastRow.dart';
 import '../components/IsterPlayer.dart';
 import '../components/RatingStars.dart';
 import '../graphql/schema.graphql.dart';
+import '../components/download/DownloadMenuItem.dart';
+import '../utils/download/DownloadModels.dart';
+import '../utils/download/DownloadService.dart';
+import '../utils/download/QueueItemFactory.dart';
 import '../graphql/fragmentMovie.graphql.dart';
 import '../utils/ImageTypes.dart';
 import '../utils/ImageUtil.dart';
@@ -224,6 +228,21 @@ class _MoviePageState extends State<MoviePage> {
                         child: ListTile(
                           leading: const Icon(Icons.info),
                           title: Text(AppLocalizations.of(context)!.rawData),
+                        ),
+                      ),
+                    if (movie != null)
+                      DownloadMenuItem(
+                        action: DownloadAction(
+                          serverName: widget.serverName,
+                          kind: DownloadKind.movie,
+                          mediaId: movie.id,
+                          load: (_) async => [
+                            DownloadRequest(
+                                item: QueueItemFactory.fromJsonParts(
+                                    kind: DownloadKind.movie,
+                                    mediaId: movie.id,
+                                    json: movie.toJson())),
+                          ],
                         ),
                       ),
                     if (movie != null && _showAdminActions)

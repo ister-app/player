@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,8 @@ import 'package:player/utils/PlatformService.dart';
 import 'package:player/utils/TvDirectionalFocusPolicy.dart';
 
 import 'l10n/app_localizations.dart';
+import 'utils/download/DownloadService.dart';
+import 'utils/download/MusicCacheService.dart';
 
 Future<void> main() async {
   configureUrlStrategy();
@@ -72,6 +75,14 @@ Future<void> main() async {
       },
     ),
   );
+
+  // Resume queued downloads and make completed ones playable (no-op on web).
+  unawaited(DownloadService.instance.ensureStarted().then((_) {
+    MusicCacheService.instance.ensurePeriodic();
+    for (final server in DownloadService.instance.store.loadedServers) {
+      MusicCacheService.instance.schedule(server, delay: const Duration(seconds: 15));
+    }
+  }));
 
   runApp(Main(initialServer: initialServer));
 }

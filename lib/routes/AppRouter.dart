@@ -65,6 +65,11 @@ class AppRouter extends RootStackRouter {
     // Party-mode remote control: the same full-screen overlay presentation as
     // the music player, so it sits above nested server routes and mini player.
     CustomRoute(path: '/remote/:serverName/:playQueueId', page: RemoteControlRoute.page, opaque: false, barrierColor: Colors.transparent, duration: Duration.zero, reverseDuration: Duration.zero),
+    // Downloads live outside the server shell: they must render (and play)
+    // when the server is unreachable, so nothing here runs a GraphQL query.
+    AutoRoute(path: '/downloads/:serverName', page: DownloadsRoute.page),
+    AutoRoute(path: '/downloads/:serverName/settings', page: DownloadSettingsRoute.page),
+    AutoRoute(path: '/downloads/:serverName/play', page: LocalVideoRoute.page),
     AutoRoute(path: "/server/:serverName", page: ServerHomeRoute.page,
         children: [
           AutoRoute(path: '', page: ServerHomeOverviewRoute.page, initial: true,

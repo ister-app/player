@@ -4,6 +4,9 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/bookById.graphql.dart';
 import 'package:player/graphql/fragmentChapter.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
+import 'package:flutter/foundation.dart';
+import 'package:player/components/download/DownloadMenuItem.dart';
+import 'package:player/utils/download/DownloadLoaders.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/BookProgressUtil.dart';
 import 'package:player/utils/DurationUtil.dart';
@@ -322,6 +325,27 @@ class _BookPageState extends State<BookPage> {
                       padding: const EdgeInsets.symmetric(
                           vertical: 14, horizontal: 20),
                     ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        if (_hasListenableChapter && book != null && !kIsWeb)
+          SliverToBoxAdapter(
+            child: _constrained(
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton.icon(
+                    onPressed: () => enqueueDownloads(
+                        context,
+                        widget.serverName,
+                        (client) => DownloadLoaders.book(client, book.id)),
+                    icon: const Icon(Icons.download_for_offline_outlined),
+                    label: Text(loc.downloadAudiobook),
+                    style: OutlinedButton.styleFrom(
+                        shape: const StadiumBorder()),
                   ),
                 ),
               ),

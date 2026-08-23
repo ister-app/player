@@ -14,6 +14,12 @@ import 'package:player/graphql/fragmentMetadata.graphql.dart';
 import 'package:player/graphql/seasonById.graphql.dart';
 import 'package:player/graphql/fragmentCredit.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
+import 'package:flutter/foundation.dart';
+import 'package:player/components/download/DownloadMenuItem.dart';
+import 'package:player/utils/download/DownloadLoaders.dart';
+import 'package:player/utils/download/DownloadPreferences.dart';
+import 'package:player/utils/download/DownloadService.dart';
+import 'package:player/utils/download/NextUnwatched.dart';
 import 'package:player/graphql/showById.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/ImageTypes.dart';
@@ -186,6 +192,14 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
                           title: Text(AppLocalizations.of(context)!.rawData),
                         ),
                       ),
+                      if (!kIsWeb)
+                        MenuItemButton(
+                          onPressed: () => _downloadNextUnwatched(context),
+                          child: ListTile(
+                            leading: const Icon(Icons.download_for_offline_outlined),
+                            title: Text(AppLocalizations.of(context)!.downloadNextUnwatched),
+                          ),
+                        ),
                       if (_showAdminActions)
                         MenuItemButton(
                           onPressed: () async {
@@ -258,33 +272,63 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
   /// session". showById only carries season ids, so the episodes are fetched
   /// per season — sequentially, seasons in order — once a session was chosen.
   Future<List<AddToSessionItem>> _loadShowEpisodes(GraphQLClient client) async {
+    final (_, episodes) = await _loadShowEpisodeList(client);
+    return [
+      for (final episode in episodes)
+        if (episode.mediaFile != null && episode.mediaFile!.isNotEmpty)
+          (Enum$MediaType.EPISODE, episode.id),
+    ];
+  }
+
+  /// The show's name and every episode in season/episode order.
+  Future<(String?, List<Query$seasonById$seasonById$episodes>)>
+      _loadShowEpisodeList(GraphQLClient client) async {
     final showResult = await client.query(QueryOptions(
         document: documentNodeQueryshowById, variables: {'id': showId}));
     if (showResult.hasException) throw showResult.exception!;
-    final seasons = List.of(
-        Query$showById.fromJson(showResult.data!).showById?.seasons ?? [])
+    final show = Query$showById.fromJson(showResult.data!).showById;
+    final seasons = List.of(show?.seasons ?? [])
       ..sort((a, b) => a.number.compareTo(b.number));
 
-    final items = <AddToSessionItem>[];
+    final episodes = <Query$seasonById$seasonById$episodes>[];
     for (final season in seasons) {
       final seasonResult = await client.query(QueryOptions(
           document: documentNodeQueryseasonById,
           variables: {'id': season.id}));
       if (seasonResult.hasException) throw seasonResult.exception!;
-      final episodes = List.of(Query$seasonById
+      episodes.addAll(List.of(Query$seasonById
               .fromJson(seasonResult.data!)
               .seasonById
               ?.episodes ??
           [])
-        ..sort((a, b) => a.number.compareTo(b.number));
-      for (final episode in episodes) {
-        if (episode.mediaFile != null && episode.mediaFile!.isNotEmpty) {
-          items.add((Enum$MediaType.EPISODE, episode.id));
+        ..sort((a, b) => a.number.compareTo(b.number)));
+    }
+    return (show?.name, episodes);
+  }
+
+  /// "Download the next N unwatched": continues from the last episode that
+  /// was watched or started (a started one counts as the first of the N).
+  Future<void> _downloadNextUnwatched(BuildContext context) async {
+    final n = await showDownloadNextDialog(context,
+        defaultCount:
+            await DownloadPreferences.getDefaultNextCount(widget.serverName));
+    if (n == null || n <= 0 || !context.mounted) return;
+    await enqueueDownloads(context, widget.serverName, (client) async {
+      final (title, episodes) = await _loadShowEpisodeList(client);
+      final picked = NextUnwatched.select(episodes, n);
+      final requests = <DownloadRequest>[];
+      for (final e in picked) {
+        try {
+          requests.addAll(
+              await DownloadLoaders.episode(client, e.id, groupTitle: title));
+        } on DownloadUnsupported {
+          // Skip multi-episode files; the rest still downloads.
         }
       }
-    }
-    return items;
+      return requests;
+    });
   }
+
 
   Future<void> _dialogBuilder(BuildContext context, String json) {
     return showDialog<void>(

@@ -8,6 +8,10 @@ import 'package:player/graphql/analyzeDataForTrack.graphql.dart';
 import 'package:player/graphql/fragmentAlbum.graphql.dart';
 import 'package:player/graphql/fragmentTrack.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
+import 'package:flutter/foundation.dart';
+import 'package:player/components/download/DownloadMenuItem.dart';
+import 'package:player/utils/download/DownloadLoaders.dart';
+import 'package:player/utils/download/DownloadModels.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/AccentColorUtil.dart';
 import 'package:player/utils/DurationUtil.dart';
@@ -276,6 +280,13 @@ class _AlbumPageState extends State<AlbumPage> {
                   mediaType: Enum$MediaType.TRACK,
                   mediaId: album.id,
                 ),
+              ),
+            if (album != null && tracks.any(_trackHasFile) && !kIsWeb)
+              IconButton(
+                icon: const Icon(Icons.download_for_offline_outlined),
+                tooltip: loc.downloadAlbum,
+                onPressed: () => enqueueDownloads(context, widget.serverName,
+                    (client) => DownloadLoaders.album(client, album.id)),
               ),
             if (album != null && tracks.any(_trackHasFile))
               IconButton(
@@ -624,6 +635,11 @@ class _AlbumPageState extends State<AlbumPage> {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              DownloadStatusIcon(
+                  serverName: widget.serverName,
+                  kind: DownloadKind.track,
+                  mediaId: track.id),
+              const SizedBox(width: 6),
               if (durationText != null)
                 Text(
                   durationText,
@@ -635,6 +651,16 @@ class _AlbumPageState extends State<AlbumPage> {
               MenuAnchor(
                 controller: menuController,
                 menuChildren: [
+                        DownloadMenuItem(
+                          enabled: hasFile,
+                          action: DownloadAction(
+                            serverName: widget.serverName,
+                            kind: DownloadKind.track,
+                            mediaId: track.id,
+                            load: (client) =>
+                                DownloadLoaders.track(client, track.id),
+                          ),
+                        ),
                         MenuItemButton(
                           onPressed: hasFile
                               ? () => _addTrackToQueue(context, track.id)

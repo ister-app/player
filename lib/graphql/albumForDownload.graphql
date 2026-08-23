@@ -1,0 +1,15 @@
+# An album's tracks in the play-queue `track` shape (see trackForDownload).
+query albumForDownload($id: ID) {
+    albumById(id: $id) {
+        id name
+        images { ...fragmentImages }
+        tracks {
+            id number discNumber
+            artist { id name }
+            album { id name images { ...fragmentImages } }
+            metadata { ...fragmentMetadata }
+            mediaFile { ...fragmentMediaFiles }
+            rating
+        }
+    }
+}

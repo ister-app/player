@@ -6,6 +6,10 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/seasonById.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/MetadataUtil.dart';
+import 'package:flutter/foundation.dart';
+import 'package:player/components/download/DownloadMenuItem.dart';
+import 'package:player/utils/download/DownloadLoaders.dart';
+import 'package:player/utils/download/DownloadModels.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../l10n/app_localizations.dart';
@@ -215,8 +219,39 @@ class TvShowSeasonList extends StatelessWidget {
                       value: progress,
                     ))
                 : Container(),
+            Positioned(
+              left: 4,
+              top: 4,
+              child: DownloadStatusIcon(
+                  serverName: serverName,
+                  kind: DownloadKind.episode,
+                  mediaId: episodeId),
+            ),
           ]),
         ]),
+        trailing: showId.isEmpty || kIsWeb
+            ? null
+            : MenuAnchor(
+                menuChildren: [
+                  DownloadMenuItem(
+                    action: DownloadAction(
+                      serverName: serverName,
+                      kind: DownloadKind.episode,
+                      mediaId: episodeId,
+                      load: (client) async => DownloadLoaders.episode(
+                          client, episodeId,
+                          groupTitle:
+                              await DownloadLoaders.showTitle(client, showId)),
+                    ),
+                  ),
+                ],
+                builder: (context, controller, _) => IconButton(
+                  icon: const Icon(Icons.more_vert),
+                  onPressed: () => controller.isOpen
+                      ? controller.close()
+                      : controller.open(),
+                ),
+              ),
         onTap: showId.isEmpty
             ? null
             : () => AutoRouter.innerRouterOf(context, ShowOverviewRoute.name)

@@ -66,7 +66,15 @@ class ImageUtil {
 
   static String? buildMediaFileUrl(Fragment$fragmentMediaFiles? mediaFile, {String? token, bool direct = true, bool transcode = true}) {
     if (mediaFile == null) return null;
-    final base = '${mediaFile.directory.node.url}/hls/${mediaFile.id}/master.m3u8?direct=$direct&transcode=$transcode&subtitleFormat=$subtitleFormat';
+    return buildMasterUrl(mediaFile.directory.node.url, mediaFile.id,
+        token: token, direct: direct, transcode: transcode);
+  }
+
+  /// The HLS master URL for a media file known by node and id (downloads
+  /// resume without the fragment object).
+  static String buildMasterUrl(String nodeUrl, String mediaFileId,
+      {String? token, bool direct = true, bool transcode = true}) {
+    final base = '$nodeUrl/hls/$mediaFileId/master.m3u8?direct=$direct&transcode=$transcode&subtitleFormat=$subtitleFormat';
     return token != null ? '$base&token=$token' : base;
   }
 }

@@ -26,6 +26,12 @@ import 'package:player/utils/PlaybackPreferences.dart';
 import 'package:player/utils/ResilientSubscription.dart';
 import 'package:player/utils/QueueItemDisplay.dart';
 import 'package:player/utils/StreamTokenService.dart';
+import 'package:player/utils/download/DownloadService.dart';
+import 'package:player/utils/download/LocalPlayQueue.dart';
+import 'package:player/utils/download/MusicCacheService.dart';
+import 'package:player/utils/download/PlayHistoryStore.dart';
+import 'package:player/utils/download/OfflineProgressStore.dart';
+import 'package:player/utils/download/SubtitleStreams.dart';
 import 'package:player/utils/VideoCrop.dart';
 import 'package:player/utils/WellKnownService.dart';
 import 'package:rxdart/rxdart.dart';
@@ -388,11 +394,9 @@ class MediaPlayerHandler extends BaseAudioHandler
       _ensureCommandSubscription();
       currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
-      final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay(serverName: newServerName);
-      final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode(serverName: newServerName);
       await _openMedia(
         serverName: newServerName,
-        mediaUrl: ImageUtil.buildMediaFileUrl(newEpisode.mediaFile!.first, token: StreamTokenService.getToken(newServerName), direct: directPlay, transcode: transcode) ?? '',
+        mediaUrl: await _resolveMediaUrl(newServerName, newEpisode.mediaFile!.first),
         startTimeInMilliseconds: _startTimeMs,
       );
     } else {
@@ -574,11 +578,9 @@ class MediaPlayerHandler extends BaseAudioHandler
       _ensureCommandSubscription();
       currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
-      final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay(serverName: newServerName);
-      final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode(serverName: newServerName);
       await _openMedia(
         serverName: newServerName,
-        mediaUrl: ImageUtil.buildMediaFileUrl(newMovie.mediaFile!.first, token: StreamTokenService.getToken(newServerName), direct: directPlay, transcode: transcode) ?? '',
+        mediaUrl: await _resolveMediaUrl(newServerName, newMovie.mediaFile!.first),
         startTimeInMilliseconds: _movieStartTimeMs,
         mediaType: IsterMediaTypes.movie,
       );
@@ -672,15 +674,9 @@ class MediaPlayerHandler extends BaseAudioHandler
 
       if (currentTrack?.mediaFile != null &&
           currentTrack!.mediaFile!.isNotEmpty) {
-        final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay(serverName: newServerName);
-        final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode(serverName: newServerName);
         await _openMedia(
           serverName: newServerName,
-          mediaUrl: ImageUtil.buildMediaFileUrl(currentTrack.mediaFile!.first,
-                  token: StreamTokenService.getToken(newServerName),
-                  direct: directPlay,
-                  transcode: transcode) ??
-              '',
+          mediaUrl: await _resolveMediaUrl(newServerName, currentTrack.mediaFile!.first),
           mediaType: IsterMediaTypes.track,
         );
       } else {
@@ -693,6 +689,11 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
     updatePlaybackState();
     _rememberLastPlayed(newServerName, newAlbum.id, trackId);
+    _armPlayHistory(
+        newServerName,
+        playQueue?.playQueueItems
+            ?.where((e) => e.track?.id == trackId)
+            .firstOrNull);
     _rememberLastMusicQueue();
   }
 
@@ -718,6 +719,10 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (_followMode) return;
     final srv = serverName;
     final queueId = playQueue?.id;
+    if (isLocalQueue) {
+      unawaited(LastMusicQueuePreferences.clear());
+      return;
+    }
     if (_currentMediaType == IsterMediaTypes.track &&
         currentTrackId != null &&
         srv != null &&
@@ -918,6 +923,49 @@ class MediaPlayerHandler extends BaseAudioHandler
           GraphQLClient client, Fragment$fragmentPlayQueue pq, String srv) =>
       _startFromPlayQueue(client, pq, srv);
 
+  /// Whether the current queue lives only on this device (played from the
+  /// download mirror while the server is unreachable): no client, no
+  /// heartbeat, progress goes to [OfflineProgressStore].
+  bool get isLocalQueue => LocalPlayQueue.isLocal(playQueue?.id);
+
+  /// Starts a queue built from downloads ([LocalPlayQueue.build]): the same
+  /// open path as a server queue, minus everything that talks to the server.
+  Future<void> startLocalPlayQueue(
+      String srv, Fragment$fragmentPlayQueue pq,
+      {String? startItemId, int? startTimeMs, bool openPlayer = true}) async {
+    if (followMode) await stopFollowing();
+    _intendsToPlay = true;
+    _loadRetries = 0;
+    _syncGeneration++;
+    serverName = srv;
+    graphQLClient = null;
+    _commandSubscription?.dispose();
+    _commandSubscription = null;
+    _commandQueueId = null;
+    unawaited(SleepTimerService.instance.notifyPlaybackStarted());
+
+    _beginMediaLoading();
+    if (openPlayer) openMusicPlayerRequest.value++;
+
+    final items = PlayQueueService.sortedItems(pq);
+    if (items.isEmpty) {
+      mediaLoading.value = false;
+      return;
+    }
+    final current = items.where((e) => e.id == startItemId).firstOrNull ??
+        PlayQueueService.getCurrentPlayQueueItem(pq) ??
+        items.first;
+    playQueue = pq.currentItemId == current.id
+        ? pq
+        : pq.copyWith(currentItemId: current.id);
+    queueTitle.add("Now Playing");
+    queue.add(_buildQueueItems(playQueue!, srv));
+    currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
+
+    await _openQueueItem(current, srv, startTimeMs: startTimeMs);
+    updatePlaybackState();
+  }
+
   /// Resumes an existing play queue on this device — the receiving side of a
   /// queue handoff. Opens the queue's current item at [positionMs] (the
   /// position the sending device flushed before handing off) and takes over
@@ -985,17 +1033,9 @@ class MediaPlayerHandler extends BaseAudioHandler
     var startMs = pq.progressInMilliseconds;
     if (duration != null && startMs >= duration - 5000) startMs = 0;
 
-    final directPlay =
-        kIsWeb ? false : await PlaybackPreferences.getDirectPlay(serverName: srv);
-    final transcode =
-        kIsWeb ? true : await PlaybackPreferences.getTranscode(serverName: srv);
     await _openMedia(
       serverName: srv,
-      mediaUrl: ImageUtil.buildMediaFileUrl(mf,
-              token: StreamTokenService.getToken(srv),
-              direct: directPlay,
-              transcode: transcode) ??
-          '',
+      mediaUrl: await _resolveMediaUrl(srv, mf),
       startTimeInMilliseconds: startMs,
       mediaType: IsterMediaTypes.track,
       autoPlay: false,
@@ -1050,9 +1090,6 @@ class MediaPlayerHandler extends BaseAudioHandler
       Fragment$fragmentPlayQueue$playQueueItems item, String srv,
       {int? startTimeMs, bool autoPlay = true}) async {
     currentPlayQueueItem = item;
-    final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay(serverName: srv);
-    final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode(serverName: srv);
-    final token = StreamTokenService.getToken(srv);
 
     if (item.track != null) {
       final t = item.track!;
@@ -1065,14 +1102,13 @@ class MediaPlayerHandler extends BaseAudioHandler
       if (mf == null) return;
       await _openMedia(
         serverName: srv,
-        mediaUrl: ImageUtil.buildMediaFileUrl(mf,
-                token: token, direct: directPlay, transcode: transcode) ??
-            '',
+        mediaUrl: await _resolveMediaUrl(srv, mf),
         startTimeInMilliseconds: startTimeMs,
         mediaType: IsterMediaTypes.track,
         autoPlay: autoPlay,
       );
       _rememberLastPlayed(srv, t.album.id, t.id);
+      _armPlayHistory(srv, item);
     } else if (item.chapter != null) {
       // Audiobook chapters behave exactly like tracks: audio-only HLS.
       episode = null;
@@ -1084,9 +1120,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       if (mf == null) return;
       await _openMedia(
         serverName: srv,
-        mediaUrl: ImageUtil.buildMediaFileUrl(mf,
-                token: token, direct: directPlay, transcode: transcode) ??
-            '',
+        mediaUrl: await _resolveMediaUrl(srv, mf),
         startTimeInMilliseconds:
             startTimeMs ?? _resumeMs(item.chapter?.watchStatus),
         mediaType: IsterMediaTypes.track,
@@ -1103,9 +1137,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       if (mf == null) return;
       await _openMedia(
         serverName: srv,
-        mediaUrl: ImageUtil.buildMediaFileUrl(mf,
-                token: token, direct: directPlay, transcode: transcode) ??
-            '',
+        mediaUrl: await _resolveMediaUrl(srv, mf),
         startTimeInMilliseconds:
             startTimeMs ?? _resumeMs(item.podcastEpisode?.watchStatus),
         mediaType: IsterMediaTypes.track,
@@ -1121,9 +1153,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       if (mf == null) return;
       await _openMedia(
         serverName: srv,
-        mediaUrl: ImageUtil.buildMediaFileUrl(mf,
-                token: token, direct: directPlay, transcode: transcode) ??
-            '',
+        mediaUrl: await _resolveMediaUrl(srv, mf),
         startTimeInMilliseconds: startTimeMs,
         mediaType: IsterMediaTypes.movie,
         autoPlay: autoPlay,
@@ -1138,15 +1168,44 @@ class MediaPlayerHandler extends BaseAudioHandler
       if (mf == null) return;
       await _openMedia(
         serverName: srv,
-        mediaUrl: ImageUtil.buildMediaFileUrl(mf,
-                token: token, direct: directPlay, transcode: transcode) ??
-            '',
+        mediaUrl: await _resolveMediaUrl(srv, mf),
         startTimeInMilliseconds: startTimeMs,
         mediaType: IsterMediaTypes.episode,
         autoPlay: autoPlay,
       );
     }
     _rememberLastMusicQueue();
+  }
+
+  @visibleForTesting
+  String? get currentMediaUrl => _currentMediaUrl;
+
+  /// True for media opened from the local download mirror (an absolute path
+  /// or file URI) rather than a tokenized server URL.
+  static bool isLocalMediaUrl(String url) =>
+      url.startsWith('/') || url.startsWith('file:');
+
+  /// The URL [_openMedia] gets for [mf]: the local download when one is
+  /// complete on this device, else the server's HLS master with the user's
+  /// direct-play/transcode settings.
+  Future<String> _resolveMediaUrl(
+      String srv, Fragment$fragmentMediaFiles mf) async {
+    if (!kIsWeb) {
+      final local = DownloadService.instance.localMasterFor(srv, mf.id);
+      if (local != null) {
+        unawaited(DownloadService.instance.touch(srv, mf.id));
+        return local;
+      }
+    }
+    final directPlay =
+        kIsWeb ? false : await PlaybackPreferences.getDirectPlay(serverName: srv);
+    final transcode =
+        kIsWeb ? true : await PlaybackPreferences.getTranscode(serverName: srv);
+    return ImageUtil.buildMediaFileUrl(mf,
+            token: StreamTokenService.getToken(srv),
+            direct: directPlay,
+            transcode: transcode) ??
+        '';
   }
 
   Future<void> _openMedia({
@@ -1248,7 +1307,11 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// matches. Static and pure so it can be unit-tested without a [Player].
   static MediaItem restampArtToken(MediaItem item, String token) {
     final art = item.artUri;
-    if (art == null || art.queryParameters['token'] == token) return item;
+    if (art == null ||
+        art.scheme == 'file' ||
+        art.queryParameters['token'] == token) {
+      return item;
+    }
     return item.copyWith(
       artUri: art.replace(
           queryParameters: {...art.queryParameters, 'token': token}),
@@ -1597,13 +1660,6 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
   }
 
-  /// Subtitle codecs ffmpeg can convert to SRT; image codecs (DVD/PGS
-  /// bitmaps) have no SRT endpoint — the server OCRs those at scan time into
-  /// EXTERNAL_SUBTITLE rows.
-  static const Set<String> _textSubtitleCodecs = {
-    'subrip', 'ass', 'ssa', 'mov_text', 'webvtt', 'text', 'subtitle srt',
-  };
-
   /// Side-loads the current video's subtitles as external whole-file SRT
   /// tracks (mpv `sub-add`). In-manifest HLS subtitles are deliberately not
   /// used on native: ffmpeg's HLS demuxer re-delivers segment cues on every
@@ -1624,26 +1680,23 @@ class MediaPlayerHandler extends BaseAudioHandler
         movie?.mediaFile?.firstOrNull ?? episode?.mediaFile?.firstOrNull;
     final streams = mediaFile?.mediaFileStreams;
     if (mediaFile == null || streams == null || streams.isEmpty) return;
-    final token = StreamTokenService.getToken(serverName);
-    if (token == null) return;
-    final nodeUrl = mediaFile.directory.node.url;
     final urlAtOpen = _currentMediaUrl;
+    final local = urlAtOpen != null && isLocalMediaUrl(urlAtOpen);
+    final token = local ? null : StreamTokenService.getToken(serverName);
+    if (!local && token == null) return;
+    final nodeUrl = mediaFile.directory.node.url;
 
-    // One entry per stream index: the OCR'd/extracted EXTERNAL_SUBTITLE row
-    // wins over the raw embedded row it was derived from.
-    final byIndex = <int, Fragment$fragmentMediaFiles$mediaFileStreams>{};
-    for (final s in streams) {
-      final index = s?.streamIndex;
-      if (s == null || index == null) continue;
-      final codec = s.codecName.toLowerCase();
-      if (s.codecType == 'EXTERNAL_SUBTITLE') {
-        byIndex[index] = s;
-      } else if (s.codecType == 'SUBTITLE' &&
-          _textSubtitleCodecs.contains(codec)) {
-        byIndex.putIfAbsent(index, () => s);
-      }
-    }
-    if (byIndex.isEmpty) return;
+    // Local playback side-loads the mirrored SRT files; online the server's.
+    final sideloadable = SubtitleStreams.sideloadable(streams);
+    final localFiles = local
+        ? Map.fromEntries(DownloadService.instance
+            .localSubtitleFiles(serverName, mediaFile.id)
+            .map((e) => MapEntry(e.$1, e.$2)))
+        : const <String, String>{};
+    final tracks = local
+        ? sideloadable.where((s) => localFiles.containsKey(s.id)).toList()
+        : sideloadable;
+    if (tracks.isEmpty) return;
 
     // Dynamic dispatch: see _applyMpvNetworkOptions.
     final dynamic native = platform;
@@ -1658,11 +1711,13 @@ class MediaPlayerHandler extends BaseAudioHandler
       LoggerService().logger.w('setting sub-delay failed: $e');
     }
     var n = 0;
-    for (final s in byIndex.values) {
+    for (final s in tracks) {
       // A queue skip or re-open may have replaced the stream while adding.
       if (_currentMediaUrl != urlAtOpen || _currentMediaUrl == null) return;
       n++;
-      final url = '$nodeUrl/hls/${mediaFile.id}/sub_${s.id}.srt?token=$token';
+      final url = local
+          ? localFiles[s.id]!
+          : '$nodeUrl/hls/${mediaFile.id}/sub_${s.id}.srt?token=$token';
       final title = (s.title?.isNotEmpty ?? false)
           ? s.title!
           : (s.language?.isNotEmpty ?? false)
@@ -1760,6 +1815,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// Re-stamps the stream token on a media URL captured at first open, so a
   /// re-open minutes later doesn't reuse an expired token.
   String _restampToken(String url) {
+    if (isLocalMediaUrl(url)) return url;
     final serverName = this.serverName;
     if (serverName == null) return url;
     final fresh = StreamTokenService.getToken(serverName);
@@ -2105,8 +2161,6 @@ class MediaPlayerHandler extends BaseAudioHandler
         PlayQueueService().playQueueChanged(playQueue!, optimistic: true);
       }
 
-      final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay(serverName: mediaItemId.serverName);
-      final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode(serverName: mediaItemId.serverName);
 
       if (queueItem.track != null) {
         final track = queueItem.track!;
@@ -2118,7 +2172,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         if (mediaFile == null) return;
         await _openMedia(
           serverName: mediaItemId.serverName,
-          mediaUrl: ImageUtil.buildMediaFileUrl(mediaFile, token: StreamTokenService.getToken(mediaItemId.serverName), direct: directPlay, transcode: transcode) ?? '',
+          mediaUrl: await _resolveMediaUrl(mediaItemId.serverName, mediaFile),
           startTimeInMilliseconds: 0,
           mediaType: IsterMediaTypes.track,
         );
@@ -2133,7 +2187,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         if (mediaFile == null) return;
         await _openMedia(
           serverName: mediaItemId.serverName,
-          mediaUrl: ImageUtil.buildMediaFileUrl(mediaFile, token: StreamTokenService.getToken(mediaItemId.serverName), direct: directPlay, transcode: transcode) ?? '',
+          mediaUrl: await _resolveMediaUrl(mediaItemId.serverName, mediaFile),
           startTimeInMilliseconds: _resumeMs(queueItem.chapter?.watchStatus),
           mediaType: IsterMediaTypes.track,
         );
@@ -2148,7 +2202,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         if (mediaFile == null) return;
         await _openMedia(
           serverName: mediaItemId.serverName,
-          mediaUrl: ImageUtil.buildMediaFileUrl(mediaFile, token: StreamTokenService.getToken(mediaItemId.serverName), direct: directPlay, transcode: transcode) ?? '',
+          mediaUrl: await _resolveMediaUrl(mediaItemId.serverName, mediaFile),
           startTimeInMilliseconds: _resumeMs(queueItem.podcastEpisode?.watchStatus),
           mediaType: IsterMediaTypes.track,
         );
@@ -2162,7 +2216,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         if (mediaFile == null) return;
         await _openMedia(
           serverName: mediaItemId.serverName,
-          mediaUrl: ImageUtil.buildMediaFileUrl(mediaFile, token: StreamTokenService.getToken(mediaItemId.serverName), direct: directPlay, transcode: transcode) ?? '',
+          mediaUrl: await _resolveMediaUrl(mediaItemId.serverName, mediaFile),
           startTimeInMilliseconds: 0,
           mediaType: IsterMediaTypes.movie,
         );
@@ -2178,7 +2232,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         final partStart = episodePartBounds(queueItem.episode)?.startMs ?? 0;
         await _openMedia(
           serverName: mediaItemId.serverName,
-          mediaUrl: ImageUtil.buildMediaFileUrl(mediaFile, token: StreamTokenService.getToken(mediaItemId.serverName), direct: directPlay, transcode: transcode) ?? '',
+          mediaUrl: await _resolveMediaUrl(mediaItemId.serverName, mediaFile),
           startTimeInMilliseconds: partStart,
           mediaType: IsterMediaTypes.episode,
         );
@@ -2200,6 +2254,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       final track = queueItem.track;
       if (track != null) {
         _rememberLastPlayed(mediaItemId.serverName, track.album.id, track.id);
+        _armPlayHistory(mediaItemId.serverName, queueItem);
       }
       _rememberLastMusicQueue();
 
@@ -2803,6 +2858,31 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
   }
 
+  /// The track whose play is not yet counted in the local history: it is
+  /// recorded once 30s (or half of it) played, so skipping through an album
+  /// does not fill the music cache with tracks nobody listened to.
+  (String, Fragment$fragmentPlayQueue$playQueueItems)? _pendingHistory;
+
+  void _armPlayHistory(String srv, Fragment$fragmentPlayQueue$playQueueItems? item) {
+    _pendingHistory = item?.track == null ? null : (srv, item!);
+  }
+
+  void _recordPlayHistoryIfDue(Duration pos) {
+    final pending = _pendingHistory;
+    if (pending == null || kIsWeb) return;
+    final duration = _player.state.duration;
+    final due = pos >= const Duration(seconds: 30) ||
+        (duration > Duration.zero && pos >= duration ~/ 2);
+    if (!due) return;
+    _pendingHistory = null;
+    final (srv, item) = pending;
+    unawaited(PlayHistoryStore.instance.record(srv, item).then((_) {
+      MusicCacheService.instance.schedule(srv);
+    }).catchError((e) {
+      LoggerService().logger.w('play history record failed: $e');
+    }));
+  }
+
   void _listenToPosition() {
     _player.stream.position.listen((pos) async {
       // Track real forward progress so the stall watchdog can tell the
@@ -2811,6 +2891,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         _lastObservedPosition = pos;
         _lastPositionAdvance = DateTime.now();
       }
+      _recordPlayHistoryIfDue(pos);
 
       _maybeAdvancePastEpisodeBoundary(pos);
       maybeAutoSkipIntro(pos);
@@ -3092,7 +3173,20 @@ class MediaPlayerHandler extends BaseAudioHandler
 
     final client = graphQLClient;
     final pq = playQueue;
-    if (pq == null || client == null) return;
+    if (pq == null) return;
+    if (isLocalQueue) {
+      final item = currentPlayQueueItem;
+      final srv = serverName;
+      if (item != null && srv != null) {
+        final duration = _player.state.duration.inMilliseconds;
+        await OfflineProgressStore.instance.record(srv, item,
+            positionMs: pos.inMilliseconds,
+            durationMs: duration,
+            finished: duration > 0 && pos.inMilliseconds >= duration - 5000);
+      }
+      return;
+    }
+    if (client == null) return;
 
     // The current queue item is the item id; chapters and podcast episodes have
     // no typed handler field to reconstruct it from (episode/movie/track are all

@@ -18,6 +18,9 @@ import '../components/IsterPlayer.dart';
 import '../components/RatingStars.dart';
 import '../graphql/fragmentEpisode.graphql.dart';
 import '../graphql/schema.graphql.dart';
+import '../components/download/DownloadMenuItem.dart';
+import '../utils/download/DownloadLoaders.dart';
+import '../utils/download/DownloadModels.dart';
 import '../graphql/fragmentPlayQueue.graphql.dart';
 import '../l10n/app_localizations.dart';
 import '../routes/AppRouter.gr.dart';
@@ -267,6 +270,20 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                         child: ListTile(
                           leading: const Icon(Icons.info),
                           title: Text(AppLocalizations.of(context)!.rawData),
+                        ),
+                      ),
+                    if (episode != null)
+                      DownloadMenuItem(
+                        action: DownloadAction(
+                          serverName: widget.serverName,
+                          kind: DownloadKind.episode,
+                          mediaId: episode.id,
+                          load: (client) async => [
+                            DownloadLoaders.episodeRequest(
+                                episode.toJson(), episode.id, episode.number,
+                                groupTitle: await DownloadLoaders.showTitle(
+                                    client, widget.showId)),
+                          ],
                         ),
                       ),
                     if (episode != null && _showAdminActions)

@@ -176,14 +176,6 @@
   "@download": {
     "description": "Tooltip on the episode download button."
   },
-  "downloadStarted": "Download started — the episode appears shortly",
-  "@downloadStarted": {
-    "description": "Snackbar after requesting an episode download."
-  },
-  "downloadFailed": "Download request failed",
-  "@downloadFailed": {
-    "description": "Snackbar when requesting an episode download failed."
-  },
   "watchNext": "Continue watching",
   "@watchNext": {
     "description": "Text above recently watched media"
@@ -1843,5 +1835,123 @@
   "zoomToFit": "Fit to screen",
   "@zoomToFit": {
     "description": "Tooltip of the zoom button when the video fills the surface (activating restores letterboxed fit)"
-  }
+  },
+  "fetchToServerStarted": "Download started — the episode appears shortly",
+  "@fetchToServerStarted": {
+    "description": "Snackbar after requesting an episode download."
+  },
+  "fetchToServerFailed": "Download request failed",
+  "@fetchToServerFailed": {
+    "description": "Snackbar when requesting an episode download failed."
+  },
+  "fetchToServer": "Fetch to server",
+  "@fetchToServer": {
+    "description": "Podcast episode action: the server downloads the episode audio into its cache"
+  },
+  "downloads": "Downloads",
+  "downloadsSubtitle": "Media stored on this device",
+  "downloadSettings": "Download settings",
+  "downloadAlbum": "Download album",
+  "downloadAudiobook": "Download audiobook",
+  "downloadNextUnwatched": "Download next unwatched…",
+  "downloadNextUnlistened": "Download next unlistened…",
+  "downloadNextDialogTitle": "Download the next episodes",
+  "downloadNextDialogHint": "Number of episodes",
+  "downloadQueued": "{count, plural, =1{1 item queued for download} other{{count} items queued for download}}",
+  "@downloadQueued": {
+    "description": "Snackbar after enqueueing downloads",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadNothingToDownload": "Nothing to download",
+  "cancelDownload": "Cancel download",
+  "removeDownload": "Remove download",
+  "retryDownload": "Retry download",
+  "downloadFailedLocal": "Download failed: {error}",
+  "@downloadFailedLocal": {
+    "description": "Download failure with the error text",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadNoSpace": "Not enough storage space",
+  "downloadMultiPartUnsupported": "Episodes that share one file cannot be downloaded yet",
+  "downloadStatusQueued": "Queued",
+  "downloadStatusDownloading": "Downloading",
+  "downloadStatusFailed": "Failed",
+  "downloadStatusComplete": "Downloaded",
+  "pauseAllDownloads": "Pause downloads",
+  "resumeAllDownloads": "Resume downloads",
+  "clearAllDownloads": "Remove all downloads",
+  "clearAllDownloadsConfirm": "Remove every download on this device for this server?",
+  "storageUsed": "{size} used",
+  "@storageUsed": {
+    "description": "Storage summary on the downloads page",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadItemsCount": "{count, plural, =1{1 item} other{{count} items}}",
+  "@downloadItemsCount": {
+    "description": "Item count in a download group header",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noDownloadsYet": "No downloads yet",
+  "noDownloadsHint": "Use \"Download\" in the menu of a movie, episode, track, album, podcast episode or audiobook.",
+  "videoDownloadQuality": "Video download quality",
+  "videoDownloadQualityDescription": "Original copies the file as is; 720p/480p make the server re-encode it first (slower, smaller)",
+  "audioDownloadQuality": "Audio download quality",
+  "qualityOriginal": "Original",
+  "qualityCompact": "Compact (192 kbit/s)",
+  "downloadSubtitles": "Download subtitles",
+  "unmeteredOnly": "Only on Wi‑Fi",
+  "unmeteredOnlySubtitle": "Applies to automatic downloads (music cache); manual downloads always run",
+  "concurrentDownloads": "Simultaneous downloads",
+  "defaultNextCount": "Default for \"download next episodes\"",
+  "openDownloads": "Open downloads",
+  "offlineMode": "Offline",
+  "playOffline": "Play",
+  "cancel": "Cancel",
+  "syncOfflineProgress": "Sync offline progress",
+  "offlineProgressSynced": "{count, plural, =0{Nothing to sync} =1{1 play synced} other{{count} plays synced}}",
+  "@offlineProgressSynced": {
+    "description": "Snackbar after replaying offline progress to the server",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadsForServer": "Downloads · {server}",
+  "@downloadsForServer": {
+    "placeholders": {
+      "server": {
+        "type": "String"
+      }
+    }
+  },
+  "musicCache": "Music cache",
+  "musicCacheEnabled": "Keep recently played music on this device",
+  "musicCacheDescription": "The most recently played tracks are downloaded automatically and the oldest removed when a limit is reached. Manual downloads are never removed.",
+  "musicCacheMaxTracks": "Maximum number of tracks",
+  "musicCacheMaxSize": "Maximum size",
+  "musicCacheQuality": "Cache quality",
+  "fillCacheNow": "Fill cache now",
+  "clearMusicCache": "Remove cached music",
+  "musicCacheDisableKeep": "Keep files",
+  "musicCacheDisableRemove": "Remove files",
+  "musicCacheDisableTitle": "Keep the cached music?",
+  "musicCacheDisableBody": "The cache will no longer be filled. The tracks already on this device can stay or be removed now.",
+  "cachedDownloads": "Music cache"
 }

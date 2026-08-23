@@ -158,13 +158,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get download => 'Downloaden';
 
   @override
-  String get downloadStarted =>
-      'Download gestart — de aflevering verschijnt zo';
-
-  @override
-  String get downloadFailed => 'Downloadverzoek mislukt';
-
-  @override
   String get watchNext => 'Blijf kijken';
 
   @override
@@ -1658,4 +1651,231 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get zoomToFit => 'Passend weergeven';
+
+  @override
+  String get fetchToServerStarted =>
+      'Download gestart — de aflevering verschijnt zo';
+
+  @override
+  String get fetchToServerFailed => 'Downloadverzoek mislukt';
+
+  @override
+  String get fetchToServer => 'Ophalen naar server';
+
+  @override
+  String get downloads => 'Downloads';
+
+  @override
+  String get downloadsSubtitle => 'Media opgeslagen op dit apparaat';
+
+  @override
+  String get downloadSettings => 'Downloadinstellingen';
+
+  @override
+  String get downloadAlbum => 'Album downloaden';
+
+  @override
+  String get downloadAudiobook => 'Luisterboek downloaden';
+
+  @override
+  String get downloadNextUnwatched => 'Volgende onbekeken downloaden…';
+
+  @override
+  String get downloadNextUnlistened => 'Volgende onbeluisterde downloaden…';
+
+  @override
+  String get downloadNextDialogTitle => 'De volgende afleveringen downloaden';
+
+  @override
+  String get downloadNextDialogHint => 'Aantal afleveringen';
+
+  @override
+  String downloadQueued(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items in de downloadwachtrij',
+      one: '1 item in de downloadwachtrij',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get downloadNothingToDownload => 'Niets om te downloaden';
+
+  @override
+  String get cancelDownload => 'Download annuleren';
+
+  @override
+  String get removeDownload => 'Download verwijderen';
+
+  @override
+  String get retryDownload => 'Download opnieuw proberen';
+
+  @override
+  String downloadFailedLocal(String error) {
+    return 'Download mislukt: $error';
+  }
+
+  @override
+  String get downloadNoSpace => 'Niet genoeg opslagruimte';
+
+  @override
+  String get downloadMultiPartUnsupported =>
+      'Afleveringen die één bestand delen kunnen nog niet gedownload worden';
+
+  @override
+  String get downloadStatusQueued => 'In wachtrij';
+
+  @override
+  String get downloadStatusDownloading => 'Bezig met downloaden';
+
+  @override
+  String get downloadStatusFailed => 'Mislukt';
+
+  @override
+  String get downloadStatusComplete => 'Gedownload';
+
+  @override
+  String get pauseAllDownloads => 'Downloads pauzeren';
+
+  @override
+  String get resumeAllDownloads => 'Downloads hervatten';
+
+  @override
+  String get clearAllDownloads => 'Alle downloads verwijderen';
+
+  @override
+  String get clearAllDownloadsConfirm =>
+      'Alle downloads van deze server op dit apparaat verwijderen?';
+
+  @override
+  String storageUsed(String size) {
+    return '$size in gebruik';
+  }
+
+  @override
+  String downloadItemsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noDownloadsYet => 'Nog geen downloads';
+
+  @override
+  String get noDownloadsHint =>
+      'Gebruik \"Download\" in het menu van een film, aflevering, nummer, album, podcastaflevering of luisterboek.';
+
+  @override
+  String get videoDownloadQuality => 'Videokwaliteit bij downloaden';
+
+  @override
+  String get videoDownloadQualityDescription =>
+      'Origineel kopieert het bestand; bij 720p/480p codeert de server eerst om (trager, kleiner)';
+
+  @override
+  String get audioDownloadQuality => 'Audiokwaliteit bij downloaden';
+
+  @override
+  String get qualityOriginal => 'Origineel';
+
+  @override
+  String get qualityCompact => 'Compact (192 kbit/s)';
+
+  @override
+  String get downloadSubtitles => 'Ondertitels downloaden';
+
+  @override
+  String get unmeteredOnly => 'Alleen via wifi';
+
+  @override
+  String get unmeteredOnlySubtitle =>
+      'Geldt voor automatische downloads (muziekcache); handmatige downloads lopen altijd';
+
+  @override
+  String get concurrentDownloads => 'Gelijktijdige downloads';
+
+  @override
+  String get defaultNextCount =>
+      'Standaard voor \"volgende afleveringen downloaden\"';
+
+  @override
+  String get openDownloads => 'Downloads openen';
+
+  @override
+  String get offlineMode => 'Offline';
+
+  @override
+  String get playOffline => 'Afspelen';
+
+  @override
+  String get cancel => 'Annuleren';
+
+  @override
+  String get syncOfflineProgress => 'Offline voortgang synchroniseren';
+
+  @override
+  String offlineProgressSynced(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count afspeelbeurten gesynchroniseerd',
+      one: '1 afspeelbeurt gesynchroniseerd',
+      zero: 'Niets te synchroniseren',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String downloadsForServer(String server) {
+    return 'Downloads · $server';
+  }
+
+  @override
+  String get musicCache => 'Muziekcache';
+
+  @override
+  String get musicCacheEnabled =>
+      'Recent afgespeelde muziek op dit apparaat bewaren';
+
+  @override
+  String get musicCacheDescription =>
+      'De recentst afgespeelde nummers worden automatisch gedownload en de oudste verwijderd zodra een limiet is bereikt. Handmatige downloads worden nooit verwijderd.';
+
+  @override
+  String get musicCacheMaxTracks => 'Maximaal aantal nummers';
+
+  @override
+  String get musicCacheMaxSize => 'Maximale grootte';
+
+  @override
+  String get musicCacheQuality => 'Cachekwaliteit';
+
+  @override
+  String get fillCacheNow => 'Cache nu vullen';
+
+  @override
+  String get clearMusicCache => 'Gecachte muziek verwijderen';
+
+  @override
+  String get musicCacheDisableKeep => 'Bestanden bewaren';
+
+  @override
+  String get musicCacheDisableRemove => 'Bestanden verwijderen';
+
+  @override
+  String get musicCacheDisableTitle => 'Gecachte muziek bewaren?';
+
+  @override
+  String get musicCacheDisableBody =>
+      'De cache wordt niet meer gevuld. De nummers die al op dit apparaat staan kunnen blijven of nu verwijderd worden.';
+
+  @override
+  String get cachedDownloads => 'Muziekcache';
 }

@@ -1,0 +1,12 @@
+# A track in exactly the shape of a play-queue item's `track`, so its JSON can
+# be stored as the offline snapshot of a download.
+query trackForDownload($id: ID) {
+    trackById(id: $id) {
+        id number discNumber
+        artist { id name }
+        album { id name images { ...fragmentImages } }
+        metadata { ...fragmentMetadata }
+        mediaFile { ...fragmentMediaFiles }
+        rating
+    }
+}

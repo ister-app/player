@@ -368,18 +368,6 @@ abstract class AppLocalizations {
   /// **'Download'**
   String get download;
 
-  /// Snackbar after requesting an episode download.
-  ///
-  /// In en, this message translates to:
-  /// **'Download started — the episode appears shortly'**
-  String get downloadStarted;
-
-  /// Snackbar when requesting an episode download failed.
-  ///
-  /// In en, this message translates to:
-  /// **'Download request failed'**
-  String get downloadFailed;
-
   /// Text above recently watched media
   ///
   /// In en, this message translates to:
@@ -2857,6 +2845,378 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Fit to screen'**
   String get zoomToFit;
+
+  /// Snackbar after requesting an episode download.
+  ///
+  /// In en, this message translates to:
+  /// **'Download started — the episode appears shortly'**
+  String get fetchToServerStarted;
+
+  /// Snackbar when requesting an episode download failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download request failed'**
+  String get fetchToServerFailed;
+
+  /// Podcast episode action: the server downloads the episode audio into its cache
+  ///
+  /// In en, this message translates to:
+  /// **'Fetch to server'**
+  String get fetchToServer;
+
+  /// No description provided for @downloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads'**
+  String get downloads;
+
+  /// No description provided for @downloadsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Media stored on this device'**
+  String get downloadsSubtitle;
+
+  /// No description provided for @downloadSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Download settings'**
+  String get downloadSettings;
+
+  /// No description provided for @downloadAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'Download album'**
+  String get downloadAlbum;
+
+  /// No description provided for @downloadAudiobook.
+  ///
+  /// In en, this message translates to:
+  /// **'Download audiobook'**
+  String get downloadAudiobook;
+
+  /// No description provided for @downloadNextUnwatched.
+  ///
+  /// In en, this message translates to:
+  /// **'Download next unwatched…'**
+  String get downloadNextUnwatched;
+
+  /// No description provided for @downloadNextUnlistened.
+  ///
+  /// In en, this message translates to:
+  /// **'Download next unlistened…'**
+  String get downloadNextUnlistened;
+
+  /// No description provided for @downloadNextDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download the next episodes'**
+  String get downloadNextDialogTitle;
+
+  /// No description provided for @downloadNextDialogHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Number of episodes'**
+  String get downloadNextDialogHint;
+
+  /// Snackbar after enqueueing downloads
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item queued for download} other{{count} items queued for download}}'**
+  String downloadQueued(int count);
+
+  /// No description provided for @downloadNothingToDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to download'**
+  String get downloadNothingToDownload;
+
+  /// No description provided for @cancelDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel download'**
+  String get cancelDownload;
+
+  /// No description provided for @removeDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove download'**
+  String get removeDownload;
+
+  /// No description provided for @retryDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry download'**
+  String get retryDownload;
+
+  /// Download failure with the error text
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed: {error}'**
+  String downloadFailedLocal(String error);
+
+  /// No description provided for @downloadNoSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough storage space'**
+  String get downloadNoSpace;
+
+  /// No description provided for @downloadMultiPartUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Episodes that share one file cannot be downloaded yet'**
+  String get downloadMultiPartUnsupported;
+
+  /// No description provided for @downloadStatusQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'Queued'**
+  String get downloadStatusQueued;
+
+  /// No description provided for @downloadStatusDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading'**
+  String get downloadStatusDownloading;
+
+  /// No description provided for @downloadStatusFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get downloadStatusFailed;
+
+  /// No description provided for @downloadStatusComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded'**
+  String get downloadStatusComplete;
+
+  /// No description provided for @pauseAllDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause downloads'**
+  String get pauseAllDownloads;
+
+  /// No description provided for @resumeAllDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume downloads'**
+  String get resumeAllDownloads;
+
+  /// No description provided for @clearAllDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all downloads'**
+  String get clearAllDownloads;
+
+  /// No description provided for @clearAllDownloadsConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove every download on this device for this server?'**
+  String get clearAllDownloadsConfirm;
+
+  /// Storage summary on the downloads page
+  ///
+  /// In en, this message translates to:
+  /// **'{size} used'**
+  String storageUsed(String size);
+
+  /// Item count in a download group header
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item} other{{count} items}}'**
+  String downloadItemsCount(int count);
+
+  /// No description provided for @noDownloadsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No downloads yet'**
+  String get noDownloadsYet;
+
+  /// No description provided for @noDownloadsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use \"Download\" in the menu of a movie, episode, track, album, podcast episode or audiobook.'**
+  String get noDownloadsHint;
+
+  /// No description provided for @videoDownloadQuality.
+  ///
+  /// In en, this message translates to:
+  /// **'Video download quality'**
+  String get videoDownloadQuality;
+
+  /// No description provided for @videoDownloadQualityDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Original copies the file as is; 720p/480p make the server re-encode it first (slower, smaller)'**
+  String get videoDownloadQualityDescription;
+
+  /// No description provided for @audioDownloadQuality.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio download quality'**
+  String get audioDownloadQuality;
+
+  /// No description provided for @qualityOriginal.
+  ///
+  /// In en, this message translates to:
+  /// **'Original'**
+  String get qualityOriginal;
+
+  /// No description provided for @qualityCompact.
+  ///
+  /// In en, this message translates to:
+  /// **'Compact (192 kbit/s)'**
+  String get qualityCompact;
+
+  /// No description provided for @downloadSubtitles.
+  ///
+  /// In en, this message translates to:
+  /// **'Download subtitles'**
+  String get downloadSubtitles;
+
+  /// No description provided for @unmeteredOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Only on Wi‑Fi'**
+  String get unmeteredOnly;
+
+  /// No description provided for @unmeteredOnlySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to automatic downloads (music cache); manual downloads always run'**
+  String get unmeteredOnlySubtitle;
+
+  /// No description provided for @concurrentDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Simultaneous downloads'**
+  String get concurrentDownloads;
+
+  /// No description provided for @defaultNextCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Default for \"download next episodes\"'**
+  String get defaultNextCount;
+
+  /// No description provided for @openDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Open downloads'**
+  String get openDownloads;
+
+  /// No description provided for @offlineMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline'**
+  String get offlineMode;
+
+  /// No description provided for @playOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get playOffline;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @syncOfflineProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync offline progress'**
+  String get syncOfflineProgress;
+
+  /// Snackbar after replaying offline progress to the server
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nothing to sync} =1{1 play synced} other{{count} plays synced}}'**
+  String offlineProgressSynced(int count);
+
+  /// No description provided for @downloadsForServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads · {server}'**
+  String downloadsForServer(String server);
+
+  /// No description provided for @musicCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Music cache'**
+  String get musicCache;
+
+  /// No description provided for @musicCacheEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep recently played music on this device'**
+  String get musicCacheEnabled;
+
+  /// No description provided for @musicCacheDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The most recently played tracks are downloaded automatically and the oldest removed when a limit is reached. Manual downloads are never removed.'**
+  String get musicCacheDescription;
+
+  /// No description provided for @musicCacheMaxTracks.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum number of tracks'**
+  String get musicCacheMaxTracks;
+
+  /// No description provided for @musicCacheMaxSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum size'**
+  String get musicCacheMaxSize;
+
+  /// No description provided for @musicCacheQuality.
+  ///
+  /// In en, this message translates to:
+  /// **'Cache quality'**
+  String get musicCacheQuality;
+
+  /// No description provided for @fillCacheNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill cache now'**
+  String get fillCacheNow;
+
+  /// No description provided for @clearMusicCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove cached music'**
+  String get clearMusicCache;
+
+  /// No description provided for @musicCacheDisableKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep files'**
+  String get musicCacheDisableKeep;
+
+  /// No description provided for @musicCacheDisableRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove files'**
+  String get musicCacheDisableRemove;
+
+  /// No description provided for @musicCacheDisableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the cached music?'**
+  String get musicCacheDisableTitle;
+
+  /// No description provided for @musicCacheDisableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The cache will no longer be filled. The tracks already on this device can stay or be removed now.'**
+  String get musicCacheDisableBody;
+
+  /// No description provided for @cachedDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Music cache'**
+  String get cachedDownloads;
 }
 
 class _AppLocalizationsDelegate

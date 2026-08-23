@@ -1,0 +1,412 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
+import 'package:player/utils/LanguagePreferences.dart';
+import 'package:player/utils/LoggerService.dart';
+import 'package:player/utils/QueueItemDisplay.dart';
+import 'package:player/utils/download/DownloadModels.dart';
+import 'package:player/utils/download/DownloadPreferences.dart';
+import 'package:player/utils/download/DownloadStore.dart';
+import 'package:player/utils/download/HlsDownloader.dart';
+import 'package:player/utils/download/NetworkPolicy.dart';
+import 'package:player/utils/download/QueueItemFactory.dart';
+
+/// What a page asks to download: the play-queue item snapshot plus the
+/// grouping the page knows better than the item does (a show's title, an
+/// episode's "S2 E5" line).
+class DownloadRequest {
+  const DownloadRequest({
+    required this.item,
+    this.pinned = true,
+    this.groupId,
+    this.groupTitle,
+    this.subtitle,
+    this.sortKey,
+    this.videoQuality,
+    this.audioQuality,
+  });
+
+  final Fragment$fragmentPlayQueue$playQueueItems item;
+  final bool pinned;
+  final String? groupId;
+  final String? groupTitle;
+  final String? subtitle;
+  final int? sortKey;
+  final DownloadVideoQuality? videoQuality;
+  final DownloadAudioQuality? audioQuality;
+}
+
+/// Owns the download queue: persists entries through [DownloadStore], runs
+/// them through [HlsDownloader] a few at a time, and answers the playback
+/// hot path's "is this media file on disk?" synchronously.
+class DownloadService {
+  DownloadService({
+    DownloadStore? store,
+    HlsDownloader? downloader,
+    Future<bool> Function()? isUnmetered,
+  })  : store = store ?? DownloadStore(),
+        downloader = downloader ?? HlsDownloader(),
+        _isUnmetered = isUnmetered ?? NetworkPolicy.isUnmetered;
+
+  static DownloadService _instance = DownloadService();
+  static DownloadService get instance => _instance;
+
+  @visibleForTesting
+  static set instance(DownloadService s) => _instance = s;
+
+  final DownloadStore store;
+  final HlsDownloader downloader;
+  final Future<bool> Function() _isUnmetered;
+
+  /// Bumped on every manifest change; list UIs rebuild on it.
+  final ValueNotifier<int> revision = ValueNotifier(0);
+  final ValueNotifier<bool> paused = ValueNotifier(false);
+
+  /// Servers with at least one running download (for global indicators).
+  final ValueNotifier<int> runningCount = ValueNotifier(0);
+
+  final Map<String, DownloadCancelToken> _running = {};
+  final Map<String, ValueNotifier<DownloadProgress?>> _progress = {};
+  Future<void>? _starting;
+  bool _pumping = false;
+
+  static String _runKey(String server, String key) => '$server|$key';
+
+  /// Loads every manifest and resumes whatever was queued. Idempotent; a
+  /// no-op on web.
+  Future<void> ensureStarted() {
+    if (kIsWeb) return Future.value();
+    return _starting ??= () async {
+      try {
+        final servers = await store.loadAll();
+        for (final server in servers) {
+          for (final e in store.entries(server)) {
+            if (e.status == DownloadStatus.downloading) {
+              await store.put(server, e.copyWith(status: DownloadStatus.queued));
+            }
+          }
+        }
+        revision.value++;
+        unawaited(_pump());
+      } catch (e) {
+        LoggerService().logger.e('download store failed to start: $e');
+      }
+    }();
+  }
+
+  // ---- queries -----------------------------------------------------------
+
+  List<DownloadEntry> entriesFor(String server) => store.entries(server);
+
+  DownloadEntry? entryFor(String server, String key) => store.get(server, key);
+
+  DownloadEntry? entryForMediaFile(String server, String mediaFileId) => store
+      .entries(server)
+      .where((e) => e.mediaFileId == mediaFileId)
+      .firstOrNull;
+
+  /// Absolute path of the local master playlist — only for a complete
+  /// download, and only once the store has started.
+  String? localMasterFor(String server, String mediaFileId) {
+    if (kIsWeb) return null;
+    final entry = entryForMediaFile(server, mediaFileId);
+    if (entry == null || !entry.isComplete) return null;
+    final dir = store.itemDirPathSync(server, mediaFileId);
+    return dir == null ? null : '$dir/master.m3u8';
+  }
+
+  String? localArtworkFor(String server, String mediaFileId) {
+    final entry = entryForMediaFile(server, mediaFileId);
+    final dir = store.itemDirPathSync(server, mediaFileId);
+    if (entry?.artworkFile == null || dir == null) return null;
+    return '$dir/${entry!.artworkFile}';
+  }
+
+  /// `(streamId, absolute path)` of the mirrored SRT sidecars.
+  List<(String, String)> localSubtitleFiles(String server, String mediaFileId) {
+    final entry = entryForMediaFile(server, mediaFileId);
+    final dir = store.itemDirPathSync(server, mediaFileId);
+    if (entry == null || dir == null) return const [];
+    return entry.subtitleStreamIds
+        .map((id) => (id, '$dir/sub_$id.srt'))
+        .toList();
+  }
+
+  ValueNotifier<DownloadProgress?> progressOf(String server, String key) =>
+      _progress.putIfAbsent(_runKey(server, key), () => ValueNotifier(null));
+
+  bool isRunning(String server, String key) =>
+      _running.containsKey(_runKey(server, key));
+
+  int bytesFor(String server, {bool? pinned}) => store
+      .entries(server)
+      .where((e) => pinned == null || e.pinned == pinned)
+      .fold(0, (sum, e) => sum + e.bytes);
+
+  // ---- mutations ---------------------------------------------------------
+
+  Future<void> enqueue(String server, DownloadRequest request) =>
+      enqueueAll(server, [request]);
+
+  Future<void> enqueueAll(String server, List<DownloadRequest> requests) async {
+    if (kIsWeb) return;
+    await ensureStarted();
+    await store.load(server);
+    for (final req in requests) {
+      final entry = _entryFrom(req);
+      if (entry == null) continue;
+      final existing = store.get(server, entry.key);
+      if (existing == null) {
+        await store.put(server, entry);
+      } else if (existing.status == DownloadStatus.failed) {
+        await store.put(
+            server,
+            existing.copyWith(
+                status: DownloadStatus.queued,
+                clearError: true,
+                pinned: existing.pinned || req.pinned));
+      } else if (req.pinned && !existing.pinned) {
+        await store.put(server, existing.copyWith(pinned: true));
+      }
+    }
+    revision.value++;
+    unawaited(_pump());
+  }
+
+  /// Cancels a running/queued download and deletes whatever it wrote; also
+  /// removes a complete one.
+  Future<void> remove(String server, String key) async {
+    final entry = store.get(server, key);
+    if (entry == null) return;
+    _running[_runKey(server, key)]?.cancel();
+    await store.remove(server, key);
+    await store.deleteItemDir(server, entry.mediaFileId);
+    _progress.remove(_runKey(server, key))?.value = null;
+    revision.value++;
+    unawaited(_pump());
+  }
+
+  Future<void> retry(String server, String key) async {
+    final entry = store.get(server, key);
+    if (entry == null || entry.status != DownloadStatus.failed) return;
+    await store.put(server,
+        entry.copyWith(status: DownloadStatus.queued, clearError: true));
+    revision.value++;
+    unawaited(_pump());
+  }
+
+  Future<void> pauseAll() async {
+    paused.value = true;
+    for (final t in _running.values) {
+      t.cancel();
+    }
+  }
+
+  Future<void> resumeAll() async {
+    paused.value = false;
+    unawaited(_pump());
+  }
+
+  /// Records that the local copy was played (cache eviction order).
+  Future<void> touch(String server, String mediaFileId) async {
+    final entry = entryForMediaFile(server, mediaFileId);
+    if (entry == null) return;
+    try {
+      await store.put(server, entry.copyWith(lastPlayedAt: DateTime.now()));
+    } catch (e) {
+      // Fire-and-forget from the playback hot path; a failed stamp is harmless.
+      LoggerService().logger.w('could not stamp lastPlayedAt: $e');
+    }
+  }
+
+  /// Drops cache (non-pinned) entries or everything for a server.
+  Future<void> removeAll(String server, {bool onlyCache = false}) async {
+    for (final e in store.entries(server)) {
+      if (onlyCache && e.pinned) continue;
+      await remove(server, e.key);
+    }
+  }
+
+  // ---- internals ---------------------------------------------------------
+
+  DownloadEntry? _entryFrom(DownloadRequest req) {
+    final item = req.item;
+    final mf = QueueItemFactory.mediaFileOf(item);
+    if (mf == null) return null;
+    final kind = QueueItemFactory.kindOf(item);
+    final mediaId = QueueItemFactory.mediaIdOf(item);
+    final display = QueueItemDisplay.of(item);
+    String groupId;
+    String groupTitle;
+    String? subtitle = req.subtitle ?? display.artist;
+    var sortKey = req.sortKey ?? 0;
+    switch (kind) {
+      case DownloadKind.track:
+        final t = item.track!;
+        groupId = t.album.id;
+        groupTitle = t.album.name;
+        sortKey = req.sortKey ?? (t.discNumber * 1000 + t.number);
+      case DownloadKind.chapter:
+        final c = item.chapter!;
+        groupId = c.book.id;
+        groupTitle = display.album ?? c.book.title;
+        sortKey = req.sortKey ?? c.number;
+      case DownloadKind.podcastEpisode:
+        final pe = item.podcastEpisode!;
+        groupId = pe.podcast.id;
+        groupTitle = pe.podcast.title;
+        subtitle = req.subtitle ?? pe.publishedAt;
+      case DownloadKind.movie:
+        groupId = item.movie!.id;
+        groupTitle = item.movie!.name;
+        subtitle = req.subtitle;
+      case DownloadKind.episode:
+        final ep = item.episode!;
+        groupId = ep.$show?.id ?? ep.id;
+        groupTitle = req.groupTitle ?? display.title;
+        subtitle = req.subtitle;
+    }
+    return DownloadEntry(
+      kind: kind,
+      mediaId: mediaId,
+      mediaFileId: mf.id,
+      nodeUrl: mf.directory.node.url,
+      groupId: req.groupId ?? groupId,
+      groupTitle: req.groupTitle ?? groupTitle,
+      title: display.title,
+      subtitle: subtitle,
+      sortKey: sortKey,
+      durationMs: display.duration.inMilliseconds,
+      queueItemJson: item.toJson(),
+      createdAt: DateTime.now(),
+      pinned: req.pinned,
+      videoQuality: req.videoQuality,
+      audioQuality: req.audioQuality ?? DownloadAudioQuality.original,
+    );
+  }
+
+  Future<void> _pump() async {
+    if (_pumping || paused.value) return;
+    _pumping = true;
+    try {
+      for (final server in store.loadedServers.toList()) {
+        final limit = await DownloadPreferences.getConcurrent(server);
+        final unmeteredOnly = await DownloadPreferences.getUnmeteredOnly(server);
+        bool? unmetered;
+        final queued = store
+            .entries(server)
+            .where((e) => e.status == DownloadStatus.queued)
+            .toList()
+          ..sort((a, b) {
+            if (a.pinned != b.pinned) return a.pinned ? -1 : 1;
+            return a.createdAt.compareTo(b.createdAt);
+          });
+        for (final entry in queued) {
+          if (paused.value) return;
+          if (_running.length >= limit) return;
+          if (!entry.pinned && unmeteredOnly) {
+            unmetered ??= await _isUnmetered();
+            if (!unmetered) continue;
+          }
+          unawaited(_run(server, entry));
+        }
+      }
+    } finally {
+      _pumping = false;
+    }
+  }
+
+  Future<void> _run(String server, DownloadEntry entry) async {
+    final runKey = _runKey(server, entry.key);
+    if (_running.containsKey(runKey)) return;
+    final cancel = DownloadCancelToken();
+    _running[runKey] = cancel;
+    runningCount.value = _running.length;
+    final progress = progressOf(server, entry.key);
+    try {
+      await store.put(server, entry.copyWith(status: DownloadStatus.downloading, clearError: true));
+      revision.value++;
+      final item = entry.queueItem;
+      final mf = QueueItemFactory.mediaFileOf(item);
+      final videoQuality = entry.videoQuality ??
+          await DownloadPreferences.getVideoQuality(server);
+      List<String> spoken = const [];
+      try {
+        spoken = await LanguagePreferences.getSpokenLanguages(serverName: server);
+      } catch (_) {}
+      final selection = DownloadSelection(
+        videoQuality: videoQuality,
+        audioQuality: entry.audioQuality,
+        spokenLanguages: spoken,
+        downloadSubtitles: await DownloadPreferences.getDownloadSubtitles(server),
+      );
+      final dir = await store.itemDir(server, entry.mediaFileId);
+      final result = await downloader.download(
+        serverName: server,
+        dir: dir,
+        nodeUrl: entry.nodeUrl,
+        mediaFileId: entry.mediaFileId,
+        streams: mf?.mediaFileStreams,
+        selection: selection,
+        artworkUrl: QueueItemDisplay.of(item).artUrl,
+        cancel: cancel,
+        onProgress: (p) {
+          progress.value = p;
+        },
+      );
+      final current = store.get(server, entry.key);
+      if (current == null) return; // removed meanwhile
+      await store.put(
+          server,
+          current.copyWith(
+            status: DownloadStatus.complete,
+            bytes: result.bytes,
+            segmentsDone: result.segmentsDone,
+            segmentsTotal: result.segmentsTotal,
+            audioStreamIndexes: result.audioStreamIndexes,
+            subtitleStreamIds: result.subtitleStreamIds,
+            artworkFile: result.artworkFile,
+            downloadedAt: DateTime.now(),
+            videoQuality: videoQuality,
+            clearError: true,
+          ));
+    } on DownloadCancelled {
+      final current = store.get(server, entry.key);
+      if (current != null) {
+        await store.put(server, current.copyWith(
+            status: DownloadStatus.queued,
+            bytes: await _bytesOnDisk(server, entry.mediaFileId),
+            segmentsDone: progress.value?.segmentsDone,
+            segmentsTotal: progress.value?.segmentsTotal));
+      }
+    } catch (e) {
+      final current = store.get(server, entry.key);
+      if (current != null) {
+        final message = e is DownloadFailure
+            ? (e.noSpace ? 'no-space' : e.message)
+            : e.toString();
+        LoggerService().logger.w('download failed for ${entry.key}: $e');
+        await store.put(server, current.copyWith(
+            status: DownloadStatus.failed,
+            error: message,
+            bytes: await _bytesOnDisk(server, entry.mediaFileId),
+            segmentsDone: progress.value?.segmentsDone,
+            segmentsTotal: progress.value?.segmentsTotal));
+      }
+    } finally {
+      _running.remove(runKey);
+      runningCount.value = _running.length;
+      progress.value = null;
+      revision.value++;
+      unawaited(_pump());
+    }
+  }
+
+  Future<int> _bytesOnDisk(String server, String mediaFileId) async {
+    final path = store.itemDirPathSync(server, mediaFileId);
+    if (path == null) return 0;
+    return DownloadStore.dirSize(Directory(path));
+  }
+}

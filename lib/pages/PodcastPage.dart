@@ -8,6 +8,11 @@ import 'package:player/graphql/fragmentPodcastEpisode.graphql.dart';
 import 'package:player/graphql/podcastById.graphql.dart';
 import 'package:player/graphql/podcastEpisodesQuery.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
+import 'package:flutter/foundation.dart';
+import 'package:player/components/download/DownloadMenuItem.dart';
+import 'package:player/utils/download/DownloadLoaders.dart';
+import 'package:player/utils/download/DownloadModels.dart';
+import 'package:player/utils/download/DownloadPreferences.dart';
 import 'package:player/graphql/setPodcastEpisodeOrder.graphql.dart';
 import 'package:player/graphql/unsubscribePodcast.graphql.dart';
 import 'package:player/utils/DurationUtil.dart';
@@ -169,8 +174,31 @@ class _PodcastPageState extends State<PodcastPage> {
     if (!mounted) return;
     messenger.showSnackBar(SnackBar(
         content: Text(result.hasException
-            ? loc.downloadFailed
-            : loc.downloadStarted)));
+            ? loc.fetchToServerFailed
+            : loc.fetchToServerStarted)));
+  }
+
+  /// The next N episodes (in the page's order) that were not listened to and
+  /// that the server already holds — loading further pages until N are found.
+  Future<void> _downloadNextUnlistened(BuildContext context) async {
+    final podcast = _podcast;
+    if (podcast == null) return;
+    final n = await showDownloadNextDialog(context,
+        defaultCount:
+            await DownloadPreferences.getDefaultNextCount(widget.serverName));
+    if (n == null || n <= 0 || !context.mounted) return;
+    bool candidate(Fragment$fragmentPodcastEpisode e) =>
+        e.downloaded &&
+        (e.mediaFile?.isNotEmpty ?? false) &&
+        e.watchStatus?.firstOrNull?.watched != true;
+    while (_episodes.where(candidate).length < n && _hasMoreEpisodes) {
+      await _loadMoreEpisodes();
+      if (!mounted) return;
+    }
+    final picked = _episodes.where(candidate).take(n).toList();
+    if (!context.mounted) return;
+    await enqueueDownloads(context, widget.serverName,
+        (_) async => [for (final e in picked) DownloadLoaders.podcastEpisode(e, podcast)]);
   }
 
   Future<void> _unsubscribe(BuildContext context) async {
@@ -239,6 +267,14 @@ class _PodcastPageState extends State<PodcastPage> {
                         context, loc.newestFirst, Enum$SortingOrder.DESCENDING),
                     _orderMenuItem(
                         context, loc.oldestFirst, Enum$SortingOrder.ASCENDING),
+                    if (!kIsWeb)
+                      MenuItemButton(
+                        onPressed: () => _downloadNextUnlistened(context),
+                        child: ListTile(
+                          leading: const Icon(Icons.download_for_offline_outlined),
+                          title: Text(loc.downloadNextUnlistened),
+                        ),
+                      ),
                     if (_showAdminActions)
                       MenuItemButton(
                         onPressed: () => _unsubscribe(context),
@@ -399,13 +435,40 @@ class _PodcastPageState extends State<PodcastPage> {
                   .bodySmall
                   ?.copyWith(color: mutedColor),
             ),
-      trailing: episode.downloaded
-          ? null
-          : IconButton(
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          DownloadStatusIcon(
+              serverName: widget.serverName,
+              kind: DownloadKind.podcastEpisode,
+              mediaId: episode.id),
+          if (!episode.downloaded)
+            IconButton(
               icon: const Icon(Icons.download),
-              tooltip: loc.download,
+              tooltip: loc.fetchToServer,
               onPressed: () => _download(context, episode.id),
+            )
+          else if (_podcast != null && !kIsWeb)
+            MenuAnchor(
+              menuChildren: [
+                DownloadMenuItem(
+                  action: DownloadAction(
+                    serverName: widget.serverName,
+                    kind: DownloadKind.podcastEpisode,
+                    mediaId: episode.id,
+                    load: (_) async =>
+                        [DownloadLoaders.podcastEpisode(episode, _podcast!)],
+                  ),
+                ),
+              ],
+              builder: (context, controller, _) => IconButton(
+                icon: const Icon(Icons.more_vert),
+                onPressed: () =>
+                    controller.isOpen ? controller.close() : controller.open(),
+              ),
             ),
+        ],
+      ),
       onTap: () {
         if (episode.downloaded) {
           _play(context, episodeId: episode.id);
