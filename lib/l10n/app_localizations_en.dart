@@ -1934,4 +1934,99 @@ class AppLocalizationsEn extends AppLocalizations {
   String seasonEpisodeLabel(int season, int episode) {
     return 'Season $season · Episode $episode';
   }
+
+  @override
+  String get welcomeTitle => 'Welcome to Ister';
+
+  @override
+  String get welcomeBody =>
+      'Add your self-hosted Ister media server to start watching, listening and reading.';
+
+  @override
+  String get addServerTitle => 'Add a server';
+
+  @override
+  String get serverAddressLabel => 'Server address';
+
+  @override
+  String get serverAddressExamples =>
+      'For example media.example.com or 192.168.1.10:8080/api';
+
+  @override
+  String get serverAddressInvalid => 'Enter a server address without spaces';
+
+  @override
+  String get connect => 'Connect';
+
+  @override
+  String connecting(Object server) {
+    return 'Connecting to $server…';
+  }
+
+  @override
+  String get serverFound => 'Server found';
+
+  @override
+  String get addAndSignIn => 'Add and sign in';
+
+  @override
+  String get notAnIsterServer =>
+      'No Ister server was found at this address. Check the address — it is usually the one you use in the browser.';
+
+  @override
+  String serverUnreachableHint(Object server) {
+    return '$server could not be reached. Check the address and your network connection.';
+  }
+
+  @override
+  String get serverAlreadyAdded => 'This server is already in your list.';
+
+  @override
+  String get open => 'Open';
+
+  @override
+  String get retry => 'Try again';
+
+  @override
+  String get removeServer => 'Remove';
+
+  @override
+  String removeServerTitle(Object server) {
+    return 'Remove $server?';
+  }
+
+  @override
+  String get removeServerBody =>
+      'The server is removed from this device together with your sign-in. Your data on the server is untouched.';
+
+  @override
+  String get statusConnected => 'Connected';
+
+  @override
+  String get statusUnreachable => 'Unreachable';
+
+  @override
+  String get statusOfflineAvailable => 'Available offline';
+
+  @override
+  String get chooseAnotherServer => 'Choose another server';
+
+  @override
+  String get loginExplanation =>
+      'You will be taken to this server\'s sign-in page and returned to the app automatically.';
+
+  @override
+  String get waitingForLogin => 'Waiting for sign-in…';
+
+  @override
+  String get addServerMenu => 'Add a server…';
+
+  @override
+  String get serverUnreachableBody =>
+      'The app could not reach this server. Check your network connection, or open what you downloaded earlier.';
+
+  @override
+  String connectingTo(Object server) {
+    return 'Connecting to $server…';
+  }
 }

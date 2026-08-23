@@ -93,6 +93,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Other Server'), findsOneWidget);
+    expect(find.text('Add a server…'), findsOneWidget);
     expect(find.text('Back to server overview'), findsOneWidget);
     // The current server is marked, not tappable into a self-switch.
     expect(find.byIcon(Icons.check), findsOneWidget);

@@ -20,7 +20,7 @@ On phones these sit in a bar at the bottom of the screen. On desktop, web and TV
 
 ## Switching servers
 
-The app is built for more than one server. To switch, go back from the server's home screen to the **server overview** — the list you saw when you first opened the app. Pick another server and you're in, signed in with that server's own account.
+The app is built for more than one server. Tap the server's name at the top of the **Home** tab: a menu lists all your servers — pick one and you're in, signed in with that server's own account. The same menu has **Add a server…** and **Back to server overview**, the list of all your servers where you can also remove one.
 
 Playback keeps going while you switch: you can browse one server while music from another keeps playing, and the mini player stays visible wherever you are.
 

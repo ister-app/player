@@ -126,6 +126,16 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
         }),
         if (_servers.isNotEmpty) const Divider(height: 1),
         MenuItemButton(
+          onPressed: () => AutoRouter.of(context).push(AddServerRoute()),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 220),
+            child: ListTile(
+              leading: const Icon(Icons.add),
+              title: Text(loc.addServerMenu),
+            ),
+          ),
+        ),
+        MenuItemButton(
           onPressed: () {
             // Without this, ServerList jumps straight back to the last used
             // server instead of showing the overview.

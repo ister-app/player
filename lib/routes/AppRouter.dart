@@ -61,6 +61,7 @@ class AppRouter extends RootStackRouter {
   @override
   List<AutoRoute> get routes => [
     AutoRoute(path: "/", page: HomeRoute.page),
+    AutoRoute(path: "/add-server", page: AddServerRoute.page),
     CustomRoute(path: '/player', page: MusicPlayerRoute.page, opaque: false, barrierColor: Colors.transparent, duration: Duration.zero, reverseDuration: Duration.zero),
     // Party-mode remote control: the same full-screen overlay presentation as
     // the music player, so it sits above nested server routes and mini player.

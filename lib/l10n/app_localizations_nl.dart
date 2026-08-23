@@ -1940,4 +1940,99 @@ class AppLocalizationsNl extends AppLocalizations {
   String seasonEpisodeLabel(int season, int episode) {
     return 'Seizoen $season · Aflevering $episode';
   }
+
+  @override
+  String get welcomeTitle => 'Welkom bij Ister';
+
+  @override
+  String get welcomeBody =>
+      'Voeg je eigen Ister-mediaserver toe om te kijken, luisteren en lezen.';
+
+  @override
+  String get addServerTitle => 'Server toevoegen';
+
+  @override
+  String get serverAddressLabel => 'Serveradres';
+
+  @override
+  String get serverAddressExamples =>
+      'Bijvoorbeeld media.example.com of 192.168.1.10:8080/api';
+
+  @override
+  String get serverAddressInvalid => 'Voer een serveradres zonder spaties in';
+
+  @override
+  String get connect => 'Verbinden';
+
+  @override
+  String connecting(Object server) {
+    return 'Verbinden met $server…';
+  }
+
+  @override
+  String get serverFound => 'Server gevonden';
+
+  @override
+  String get addAndSignIn => 'Toevoegen en aanmelden';
+
+  @override
+  String get notAnIsterServer =>
+      'Op dit adres is geen Ister-server gevonden. Controleer het adres — meestal is het hetzelfde als in de browser.';
+
+  @override
+  String serverUnreachableHint(Object server) {
+    return '$server is niet bereikbaar. Controleer het adres en je netwerkverbinding.';
+  }
+
+  @override
+  String get serverAlreadyAdded => 'Deze server staat al in je lijst.';
+
+  @override
+  String get open => 'Openen';
+
+  @override
+  String get retry => 'Opnieuw proberen';
+
+  @override
+  String get removeServer => 'Verwijderen';
+
+  @override
+  String removeServerTitle(Object server) {
+    return '$server verwijderen?';
+  }
+
+  @override
+  String get removeServerBody =>
+      'De server wordt van dit apparaat verwijderd, samen met je aanmelding. Je gegevens op de server blijven staan.';
+
+  @override
+  String get statusConnected => 'Verbonden';
+
+  @override
+  String get statusUnreachable => 'Niet bereikbaar';
+
+  @override
+  String get statusOfflineAvailable => 'Offline beschikbaar';
+
+  @override
+  String get chooseAnotherServer => 'Andere server kiezen';
+
+  @override
+  String get loginExplanation =>
+      'Je gaat naar de aanmeldpagina van deze server en komt daarna automatisch terug in de app.';
+
+  @override
+  String get waitingForLogin => 'Wachten op aanmelding…';
+
+  @override
+  String get addServerMenu => 'Server toevoegen…';
+
+  @override
+  String get serverUnreachableBody =>
+      'De app kan deze server niet bereiken. Controleer je netwerkverbinding, of open wat je eerder hebt gedownload.';
+
+  @override
+  String connectingTo(Object server) {
+    return 'Verbinden met $server…';
+  }
 }

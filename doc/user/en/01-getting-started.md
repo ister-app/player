@@ -8,11 +8,15 @@ Ister is your personal media server, and this app is how you watch, listen and r
 
 ## Adding a server
 
-When you open the app for the first time you land on the server overview. Tap **Add server** and type the address of your Ister server — for example `media.example.com` or `192.168.1.10:8080/api`.
+When you open the app for the first time you are welcomed with a single button: **Add a server**. Tap it and type the address of your Ister server — for example `media.example.com` or `192.168.1.10:8080/api` — then tap **Connect**. You can paste the address straight from your browser; a leading `https://` or trailing slash is cleaned up for you.
 
-![The server overview with the add-server field](../images/en/server-overview.png)
+![Adding a server: the address is checked before it is saved](../images/en/add-server.png)
 
-You don't need to know any technical details beyond the address: the app asks the server to describe itself and automatically discovers its name and how to sign in. If the address is right, the server's name appears and you can continue.
+You don't need to know any technical details beyond the address: the app asks the server to describe itself and shows what it found — the server's name and address — before anything is saved. If that looks right, tap **Add and sign in**. If the address doesn't answer, or answers but isn't an Ister server, the page tells you so and you can correct the address in place.
+
+Once you have at least one server, the app opens the last one you used automatically. The **server overview** — the list of all your servers — is one tap away (see [Navigation](02-navigation.md)); add more servers there with the **Add a server** button.
+
+![The server overview](../images/en/server-overview.png)
 
 ## Signing in
 
@@ -24,7 +28,7 @@ After signing in you arrive at the server's home dashboard: what you were recent
 
 ![The home dashboard after signing in](../images/en/home-dashboard.png)
 
-You can add as many servers as you like; each keeps its own login and settings. Switching between them is covered in [Navigation](02-navigation.md). To remove a server, tap the trash icon next to it on the overview — that also forgets its stored sign-in.
+You can add as many servers as you like; each keeps its own login and settings. Switching between them is covered in [Navigation](02-navigation.md). Each server on the overview shows whether it is currently reachable; an unreachable one can still be opened to reach what you [downloaded](07-settings.md) earlier. To remove a server, open its menu (⋮) and choose **Remove** — after confirming, the server and its stored sign-in are forgotten on this device; nothing changes on the server itself.
 
 ## Where to next
 

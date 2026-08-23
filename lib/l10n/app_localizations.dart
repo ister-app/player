@@ -3283,6 +3283,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Season {season} · Episode {episode}'**
   String seasonEpisodeLabel(int season, int episode);
+
+  /// Headline of the empty server overview on first run
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Ister'**
+  String get welcomeTitle;
+
+  /// Explanation under the welcome headline
+  ///
+  /// In en, this message translates to:
+  /// **'Add your self-hosted Ister media server to start watching, listening and reading.'**
+  String get welcomeBody;
+
+  /// Title of the add-server page and of the add-server buttons
+  ///
+  /// In en, this message translates to:
+  /// **'Add a server'**
+  String get addServerTitle;
+
+  /// Label of the address field on the add-server page
+  ///
+  /// In en, this message translates to:
+  /// **'Server address'**
+  String get serverAddressLabel;
+
+  /// Helper text under the address field
+  ///
+  /// In en, this message translates to:
+  /// **'For example media.example.com or 192.168.1.10:8080/api'**
+  String get serverAddressExamples;
+
+  /// Validation error for an empty or malformed address
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a server address without spaces'**
+  String get serverAddressInvalid;
+
+  /// Button that probes the typed server address
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get connect;
+
+  /// Progress text while the add-server page probes an address
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting to {server}…'**
+  String connecting(Object server);
+
+  /// Heading above the discovered server card on the add-server page
+  ///
+  /// In en, this message translates to:
+  /// **'Server found'**
+  String get serverFound;
+
+  /// Button that saves the discovered server and opens it
+  ///
+  /// In en, this message translates to:
+  /// **'Add and sign in'**
+  String get addAndSignIn;
+
+  /// Error when the address answers but has no valid /.well-known/ister
+  ///
+  /// In en, this message translates to:
+  /// **'No Ister server was found at this address. Check the address — it is usually the one you use in the browser.'**
+  String get notAnIsterServer;
+
+  /// Error when the add-server probe gets no answer at all
+  ///
+  /// In en, this message translates to:
+  /// **'{server} could not be reached. Check the address and your network connection.'**
+  String serverUnreachableHint(Object server);
+
+  /// Notice when the typed address is already configured
+  ///
+  /// In en, this message translates to:
+  /// **'This server is already in your list.'**
+  String get serverAlreadyAdded;
+
+  /// Generic open action (server card menu, duplicate notice)
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get open;
+
+  /// Generic retry action
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get retry;
+
+  /// Server card menu entry that removes the server
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeServer;
+
+  /// Title of the remove-server confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {server}?'**
+  String removeServerTitle(Object server);
+
+  /// Body of the remove-server confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'The server is removed from this device together with your sign-in. Your data on the server is untouched.'**
+  String get removeServerBody;
+
+  /// Status chip on a reachable server card
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get statusConnected;
+
+  /// Status chip on an unreachable server card
+  ///
+  /// In en, this message translates to:
+  /// **'Unreachable'**
+  String get statusUnreachable;
+
+  /// Status chip on an unreachable server card that has downloads on this device
+  ///
+  /// In en, this message translates to:
+  /// **'Available offline'**
+  String get statusOfflineAvailable;
+
+  /// Link on the login screen back to the server overview
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another server'**
+  String get chooseAnotherServer;
+
+  /// Explanation on the login screen
+  ///
+  /// In en, this message translates to:
+  /// **'You will be taken to this server\'s sign-in page and returned to the app automatically.'**
+  String get loginExplanation;
+
+  /// Disabled login button label while the TV device flow is pending
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for sign-in…'**
+  String get waitingForLogin;
+
+  /// Entry in the server switcher menu that opens the add-server page
+  ///
+  /// In en, this message translates to:
+  /// **'Add a server…'**
+  String get addServerMenu;
+
+  /// Explanation on the server-unreachable screen
+  ///
+  /// In en, this message translates to:
+  /// **'The app could not reach this server. Check your network connection, or open what you downloaded earlier.'**
+  String get serverUnreachableBody;
+
+  /// Progress text while the stream token is being fetched
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting to {server}…'**
+  String connectingTo(Object server);
 }
 
 class _AppLocalizationsDelegate

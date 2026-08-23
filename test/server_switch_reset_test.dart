@@ -95,9 +95,10 @@ void main() {
     await _pump(tester);
     await _pump(tester);
 
-    // Not logged in: the login page for A, titled with A's friendly name.
-    expect(find.text('Plain Server'), findsOneWidget);
-    expect(find.text('Sign in to access $_serverA'), findsOneWidget);
+    // Not logged in: the login page for A, titled with A's friendly name
+    // (app bar + login heading).
+    expect(find.text('Plain Server'), findsNWidgets(2));
+    expect(find.text('https://$_serverA'), findsOneWidget);
 
     unawaited(router.replace(ServerHomeRoute(serverName: _serverB)));
     await _pump(tester);
@@ -105,8 +106,8 @@ void main() {
     // The reused State must now be about B everywhere: B's friendly name in
     // the app bar (a fresh well-known lookup) and B in the login prompt.
     // Before the didUpdateWidget reset this kept showing 'Plain Server'.
-    expect(find.text('Sub Server'), findsOneWidget);
+    expect(find.text('Sub Server'), findsNWidgets(2));
     expect(find.text('Plain Server'), findsNothing);
-    expect(find.text('Sign in to access $_serverB'), findsOneWidget);
+    expect(find.text('https://$_serverB'), findsOneWidget);
   });
 }

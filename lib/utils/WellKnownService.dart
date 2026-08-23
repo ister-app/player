@@ -16,6 +16,23 @@ class WellKnownInfo {
   });
 }
 
+/// Outcome of [WellKnownService.probe]: what the add-server page needs to
+/// explain *why* an address did not work.
+enum WellKnownProbeStatus { found, notIster, unreachable }
+
+class WellKnownProbe {
+  final WellKnownProbeStatus status;
+  final WellKnownInfo? info;
+
+  const WellKnownProbe._(this.status, this.info);
+
+  const WellKnownProbe.found(WellKnownInfo info)
+      : this._(WellKnownProbeStatus.found, info);
+  static const notIster = WellKnownProbe._(WellKnownProbeStatus.notIster, null);
+  static const unreachable =
+      WellKnownProbe._(WellKnownProbeStatus.unreachable, null);
+}
+
 class WellKnownService {
   static const String _prefix = 'wellknown_';
   static final Map<String, WellKnownInfo> _cache = {};
@@ -59,8 +76,22 @@ class WellKnownService {
   /// Updates in-memory cache and SharedPreferences on success.
   /// Falls back to SharedPreferences if network fails.
   static Future<WellKnownInfo?> fetch(String serverIdentifier) async {
+    final probe = await WellKnownService.probe(serverIdentifier);
+    return probe.info ?? await _loadFromPrefs(serverIdentifier);
+  }
+
+  /// Like [fetch] but without the preferences fallback, and telling apart
+  /// "nothing answered" from "something answered that is not an Ister
+  /// server". Caches and persists the info when found.
+  static Future<WellKnownProbe> probe(String serverIdentifier) async {
     final scheme = ClientManager.getHttpOrHttps(serverIdentifier);
-    final uri = Uri.parse('$scheme://$serverIdentifier/.well-known/ister');
+    final Uri uri;
+    try {
+      uri = Uri.parse('$scheme://$serverIdentifier/.well-known/ister');
+    } on FormatException catch (e) {
+      LoggerService().logger.w('Invalid server address $serverIdentifier: $e');
+      return WellKnownProbe.unreachable;
+    }
 
     try {
       final response = await http.get(uri).timeout(const Duration(seconds: 10));
@@ -74,7 +105,7 @@ class WellKnownService {
         if (lines.length != 3) {
           LoggerService().logger.w(
               '/.well-known/ister: unexpected format for $serverIdentifier (got ${lines.length} lines)');
-          return _loadFromPrefs(serverIdentifier);
+          return WellKnownProbe.notIster;
         }
 
         final info = WellKnownInfo(
@@ -84,16 +115,16 @@ class WellKnownService {
         );
         _cache[serverIdentifier] = info;
         await _saveToPrefs(serverIdentifier, info);
-        return info;
+        return WellKnownProbe.found(info);
       } else {
         LoggerService().logger.w(
             '/.well-known/ister: server $serverIdentifier returned ${response.statusCode}');
-        return _loadFromPrefs(serverIdentifier);
+        return WellKnownProbe.notIster;
       }
     } catch (e) {
       LoggerService().logger
           .w('Failed to fetch /.well-known/ister for $serverIdentifier: $e');
-      return _loadFromPrefs(serverIdentifier);
+      return WellKnownProbe.unreachable;
     }
   }
 

@@ -2004,5 +2004,125 @@
         "type": "int"
       }
     }
+  },
+  "welcomeTitle": "Welcome to Ister",
+  "@welcomeTitle": {
+      "description": "Headline of the empty server overview on first run"
+  },
+  "welcomeBody": "Add your self-hosted Ister media server to start watching, listening and reading.",
+  "@welcomeBody": {
+      "description": "Explanation under the welcome headline"
+  },
+  "addServerTitle": "Add a server",
+  "@addServerTitle": {
+      "description": "Title of the add-server page and of the add-server buttons"
+  },
+  "serverAddressLabel": "Server address",
+  "@serverAddressLabel": {
+      "description": "Label of the address field on the add-server page"
+  },
+  "serverAddressExamples": "For example media.example.com or 192.168.1.10:8080/api",
+  "@serverAddressExamples": {
+      "description": "Helper text under the address field"
+  },
+  "serverAddressInvalid": "Enter a server address without spaces",
+  "@serverAddressInvalid": {
+      "description": "Validation error for an empty or malformed address"
+  },
+  "connect": "Connect",
+  "@connect": {
+      "description": "Button that probes the typed server address"
+  },
+  "connecting": "Connecting to {server}…",
+  "@connecting": {
+      "description": "Progress text while the add-server page probes an address",
+      "placeholders": {
+          "server": {}
+      }
+  },
+  "serverFound": "Server found",
+  "@serverFound": {
+      "description": "Heading above the discovered server card on the add-server page"
+  },
+  "addAndSignIn": "Add and sign in",
+  "@addAndSignIn": {
+      "description": "Button that saves the discovered server and opens it"
+  },
+  "notAnIsterServer": "No Ister server was found at this address. Check the address — it is usually the one you use in the browser.",
+  "@notAnIsterServer": {
+      "description": "Error when the address answers but has no valid /.well-known/ister"
+  },
+  "serverUnreachableHint": "{server} could not be reached. Check the address and your network connection.",
+  "@serverUnreachableHint": {
+      "description": "Error when the add-server probe gets no answer at all",
+      "placeholders": {
+          "server": {}
+      }
+  },
+  "serverAlreadyAdded": "This server is already in your list.",
+  "@serverAlreadyAdded": {
+      "description": "Notice when the typed address is already configured"
+  },
+  "open": "Open",
+  "@open": {
+      "description": "Generic open action (server card menu, duplicate notice)"
+  },
+  "retry": "Try again",
+  "@retry": {
+      "description": "Generic retry action"
+  },
+  "removeServer": "Remove",
+  "@removeServer": {
+      "description": "Server card menu entry that removes the server"
+  },
+  "removeServerTitle": "Remove {server}?",
+  "@removeServerTitle": {
+      "description": "Title of the remove-server confirmation dialog",
+      "placeholders": {
+          "server": {}
+      }
+  },
+  "removeServerBody": "The server is removed from this device together with your sign-in. Your data on the server is untouched.",
+  "@removeServerBody": {
+      "description": "Body of the remove-server confirmation dialog"
+  },
+  "statusConnected": "Connected",
+  "@statusConnected": {
+      "description": "Status chip on a reachable server card"
+  },
+  "statusUnreachable": "Unreachable",
+  "@statusUnreachable": {
+      "description": "Status chip on an unreachable server card"
+  },
+  "statusOfflineAvailable": "Available offline",
+  "@statusOfflineAvailable": {
+      "description": "Status chip on an unreachable server card that has downloads on this device"
+  },
+  "chooseAnotherServer": "Choose another server",
+  "@chooseAnotherServer": {
+      "description": "Link on the login screen back to the server overview"
+  },
+  "loginExplanation": "You will be taken to this server's sign-in page and returned to the app automatically.",
+  "@loginExplanation": {
+      "description": "Explanation on the login screen"
+  },
+  "waitingForLogin": "Waiting for sign-in…",
+  "@waitingForLogin": {
+      "description": "Disabled login button label while the TV device flow is pending"
+  },
+  "addServerMenu": "Add a server…",
+  "@addServerMenu": {
+      "description": "Entry in the server switcher menu that opens the add-server page"
+  },
+  "serverUnreachableBody": "The app could not reach this server. Check your network connection, or open what you downloaded earlier.",
+  "@serverUnreachableBody": {
+      "description": "Explanation on the server-unreachable screen"
+  },
+  "connectingTo": "Connecting to {server}…",
+  "@connectingTo": {
+      "description": "Progress text while the stream token is being fetched",
+      "placeholders": {
+          "server": {}
+      }
   }
 }

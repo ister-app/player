@@ -20,7 +20,7 @@ Op telefoons staan deze in een balk onderaan het scherm. Op desktop, web en tv v
 
 ## Wisselen tussen servers
 
-De app is gebouwd voor meer dan één server. Om te wisselen ga je vanaf het startscherm van de server terug naar het **serveroverzicht** — de lijst die je zag toen je de app voor het eerst opende. Kies een andere server en je bent binnen, ingelogd met het account van díe server.
+De app is gebouwd voor meer dan één server. Tik op de naam van de server bovenaan het tabblad **Home**: een menu toont al je servers — kies er een en je bent binnen, ingelogd met het account van díe server. In hetzelfde menu vind je **Server toevoegen…** en **Terug naar serveroverzicht**, de lijst van al je servers waar je er ook een kunt verwijderen.
 
 Het afspelen loopt gewoon door terwijl je wisselt: je kunt op de ene server bladeren terwijl muziek van een andere blijft spelen, en de minispeler blijft overal zichtbaar.
 

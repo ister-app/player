@@ -5,8 +5,8 @@ import 'package:oidc/oidc.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/WellKnownService.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
+import '../components/LoginView.dart';
 import '../components/MiniPlayer.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/DeviceCommandService.dart';
@@ -94,6 +94,29 @@ class _ServerHomePageState extends State<ServerHomePage> {
 
   static Future<void> startLogin(String serverUrl) async {
     await LoginManager.startLogin(serverUrl);
+  }
+
+  /// Android TV has no usable in-app browser or keyboard, so it signs in
+  /// with the device-code flow (QR + code on another device) instead of the
+  /// authorization-code flow everything else uses.
+  Future<void> _login() async {
+    final isTV = await PlatformService.isAndroidTv();
+    if (!isTV) {
+      startLogin(widget.serverName);
+      return;
+    }
+    try {
+      await LoginManager.startDeviceLogin(
+        widget.serverName,
+        onVerification: (response) {
+          if (mounted) setState(() => _deviceAuthResponse = response);
+        },
+      );
+    } catch (e) {
+      LoggerService().logger.e('Device login failed: $e');
+    } finally {
+      if (mounted) setState(() => _deviceAuthResponse = null);
+    }
   }
 
   /// Escape hatch for the pre-shell states (loading, login): without it the
@@ -310,29 +333,56 @@ class _ServerHomePageState extends State<ServerHomePage> {
         if (info == null) {
           final loc = AppLocalizations.of(context)!;
           return Scaffold(
-            appBar: AppBar(title: Text(widget.serverName)),
+            appBar: AppBar(
+              leading: _backToServers(context),
+              title: Text(widget.serverName),
+            ),
             body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.cloud_off, size: 64),
-                  const SizedBox(height: 16),
-                  Text(
-                    loc.serverUnreachable,
-                    style: const TextStyle(fontSize: 18),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.cloud_off,
+                          size: 64, color: Theme.of(context).colorScheme.outline),
+                      const SizedBox(height: 16),
+                      Text(
+                        loc.serverUnreachable,
+                        style: Theme.of(context).textTheme.headlineSmall,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(widget.serverName,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                          textAlign: TextAlign.center),
+                      const SizedBox(height: 12),
+                      Text(loc.serverUnreachableBody,
+                          textAlign: TextAlign.center),
+                      const SizedBox(height: 24),
+                      FilledButton.icon(
+                        onPressed: () => setState(() {
+                          _wellKnownFuture =
+                              WellKnownService.fetch(widget.serverName);
+                        }),
+                        icon: const Icon(Icons.refresh),
+                        label: Text(loc.retry),
+                      ),
+                      const SizedBox(height: 12),
+                      OfflineDownloadsButton(serverName: widget.serverName),
+                      const SizedBox(height: 12),
+                      TextButton.icon(
+                        onPressed: () {
+                          ClientManager.instance.lastClientUsed = null;
+                          AutoRouter.of(context).replace(HomeRoute());
+                        },
+                        icon: const Icon(Icons.arrow_back),
+                        label: Text(loc.backToServerOverview),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      ClientManager.instance.lastClientUsed = null;
-                      AutoRouter.of(context).replace(HomeRoute());
-                    },
-                    icon: const Icon(Icons.arrow_back),
-                    label: Text(loc.backToServerOverview),
-                  ),
-                  const SizedBox(height: 12),
-                  OfflineDownloadsButton(serverName: widget.serverName),
-                ],
+                ),
               ),
             ),
           );
@@ -383,6 +433,9 @@ class _ServerHomePageState extends State<ServerHomePage> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   const CircularProgressIndicator(),
+                                  const SizedBox(height: 16),
+                                  Text(AppLocalizations.of(context)!
+                                      .connectingTo(info.name)),
                                   const SizedBox(height: 24),
                                   OfflineDownloadsButton(
                                       serverName: widget.serverName),
@@ -412,91 +465,19 @@ class _ServerHomePageState extends State<ServerHomePage> {
                       },
                     );
                   } else {
-                    final loc = AppLocalizations.of(context)!;
                     return Scaffold(
                       appBar: AppBar(
                         leading: _backToServers(context),
                         title: Text(info.name),
                       ),
-                      body: Center(
-                        child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                loc.loginTitle,
-                                style: Theme.of(context).textTheme.headlineSmall,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                loc.loginDescription(widget.serverName),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 32),
-                              if (_deviceAuthResponse == null)
-                                ElevatedButton.icon(
-                                  onPressed: () async {
-                                    final isTV =
-                                        await PlatformService.isAndroidTv();
-                                    if (isTV) {
-                                      try {
-                                        await LoginManager.startDeviceLogin(
-                                          widget.serverName,
-                                          onVerification: (response) {
-                                            setState(() {
-                                              _deviceAuthResponse = response;
-                                            });
-                                          },
-                                        );
-                                      } catch (e) {
-                                        LoggerService().logger.e('Device login failed: $e');
-                                      } finally {
-                                        if (mounted) {
-                                          setState(() {
-                                            _deviceAuthResponse = null;
-                                          });
-                                        }
-                                      }
-                                    } else {
-                                      startLogin(widget.serverName);
-                                    }
-                                  },
-                                  icon: const Icon(Icons.login),
-                                  label: Text(loc.loginButton(widget.serverName)),
-                                ),
-                              if (_deviceAuthResponse != null) ...[
-                                Text(loc.deviceFlowInstructions),
-                                const SizedBox(height: 16),
-                                QrImageView(
-                                  data: (_deviceAuthResponse!.verificationUriComplete ??
-                                          _deviceAuthResponse!.verificationUri)
-                                      .toString(),
-                                  version: QrVersions.auto,
-                                  size: 200,
-                                  backgroundColor: Colors.white,
-                                ),
-                                const SizedBox(height: 16),
-                                SelectableText(
-                                  _deviceAuthResponse!.verificationUri.toString(),
-                                  style: Theme.of(context).textTheme.bodyLarge,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  _deviceAuthResponse!.userCode,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .displaySmall
-                                      ?.copyWith(
-                                        letterSpacing: 6,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                ),
-                                const SizedBox(height: 16),
-                                const CircularProgressIndicator(),
-                              ],
-                            ],
-                          ),
-                        ),
+                      body: LoginView(
+                        info: info,
+                        deviceAuthResponse: _deviceAuthResponse,
+                        onLogin: _login,
+                        onSwitchServer: () {
+                          ClientManager.instance.lastClientUsed = null;
+                          AutoRouter.of(context).replace(HomeRoute());
+                        },
                       ),
                     );
                   }

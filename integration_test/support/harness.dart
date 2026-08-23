@@ -107,6 +107,11 @@ Future<void> enterServerShell(WidgetTester tester) async {
   final tile = tester.widget<ListTile>(find.byType(ListTile).first);
   if (tile.onTap == null) fail('server card is not tappable');
   tile.onTap!();
+  await waitForServerShell(tester);
+}
+
+/// Waits for a server's home shell (bottom bar or rail) to be on screen.
+Future<void> waitForServerShell(WidgetTester tester) async {
   await pumpUntil(
     tester,
     () =>

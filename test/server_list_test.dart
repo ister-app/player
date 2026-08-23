@@ -69,6 +69,9 @@ void main() {
     expect(find.byType(Card), findsNothing);
     expect(find.byType(Placeholder), findsNothing);
     expect(await SharedPreferencesAsync().getStringList('servers'), isNull);
+    // The empty overview is the welcome screen with its own add button.
+    expect(find.text('Welcome to Ister'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Add a server'), findsOneWidget);
   });
 
   testWidgets('web build auto-adds its hosting origin when well-known resolves',
@@ -89,5 +92,76 @@ void main() {
     expect(await SharedPreferencesAsync().getStringList('servers'),
         ['served.example.app']);
     expect(find.byType(Placeholder), findsOneWidget);
+  });
+
+  testWidgets('a reachable server shows name, address and a connected chip',
+      (tester) async {
+    ServerListState.debugIsWeb = false;
+    await SharedPreferencesAsync().setStringList('servers', ['media.example.com']);
+    final mock = MockClient((request) async => http.Response(
+        'My Server\nhttps://oidc.example.com\nhttps://media.example.com/api',
+        200));
+
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app(_TestRouter()));
+      await tester.pumpAndSettle();
+    }, () => mock);
+
+    expect(find.text('My Server'), findsOneWidget);
+    expect(find.text('https://media.example.com/api'), findsOneWidget);
+    expect(find.text('Connected'), findsOneWidget);
+  });
+
+  testWidgets('an unreachable server is marked but still opens',
+      (tester) async {
+    ServerListState.debugIsWeb = false;
+    await SharedPreferencesAsync().setStringList('servers', ['down.example.com']);
+    final mock = MockClient((request) async => throw Exception('refused'));
+
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app(_TestRouter()));
+      await tester.pumpAndSettle();
+      expect(find.text('Unreachable'), findsOneWidget);
+      await tester.tap(find.byType(ListTile));
+      await tester.pumpAndSettle();
+    }, () => mock);
+
+    expect(find.byType(Placeholder), findsOneWidget);
+    expect(ClientManager.instance.lastClientUsed, 'down.example.com');
+  });
+
+  testWidgets('removing a server asks for confirmation first', (tester) async {
+    ServerListState.debugIsWeb = false;
+    await SharedPreferencesAsync().setStringList('servers', ['media.example.com']);
+    final mock = MockClient((request) async => http.Response(
+        'My Server\nhttps://oidc.example.com\nhttps://media.example.com/api',
+        200));
+
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app(_TestRouter()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.more_vert));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Remove'));
+      await tester.pumpAndSettle();
+      expect(find.text('Remove My Server?'), findsOneWidget);
+
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(await SharedPreferencesAsync().getStringList('servers'),
+          ['media.example.com']);
+      expect(find.text('My Server'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.more_vert));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Remove'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Remove'));
+      await tester.pumpAndSettle();
+    }, () => mock);
+
+    expect(await SharedPreferencesAsync().getStringList('servers'), isEmpty);
+    expect(find.text('Welcome to Ister'), findsOneWidget);
   });
 }

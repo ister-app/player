@@ -82,6 +82,20 @@ void main() {
         timeout: const Duration(seconds: 30));
     await shot(tester, 'server-overview');
 
+    // The add-server page with a discovered server (probed, not yet saved):
+    // the FAB opens it; the seeded server is refused as a duplicate, so
+    // type a second address for the test server instead.
+    await tester.tap(find.byType(FloatingActionButton));
+    await pumpUntilFound(tester, find.byType(TextField));
+    await tester.enterText(find.byType(TextField), '127.0.0.1:8080/api');
+    await tester.tap(find.byType(FilledButton).first);
+    await pumpUntilFound(tester, find.byType(Card),
+        timeout: const Duration(seconds: 30));
+    await tester.pump(const Duration(milliseconds: 500));
+    await shot(tester, 'add-server');
+    await pop(tester);
+    await tester.pump(const Duration(milliseconds: 500));
+
     await enterServerShell(tester);
     // The dashboard: give the carousels a moment to load their artwork.
     await tester.pump(const Duration(seconds: 3));
