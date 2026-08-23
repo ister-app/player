@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -55,12 +56,18 @@ void main() {
     await dir.delete(recursive: true);
   });
 
-  HlsDownloader downloader(MockClient client, {int tokenCounter = 0}) =>
+  /// The serial downloader the assertions below are written against: with a
+  /// window of one, "in playlist order" is exact and a cancel stops before the
+  /// next segment is ever started. The parallel behaviour has its own group.
+  HlsDownloader downloader(MockClient client,
+          {int tokenCounter = 0, int window = 1}) =>
       HlsDownloader(
         httpClient: client,
         tokenProvider: (_) async => 'tok${tokenCounter++}',
         backoff: (_) => const Duration(milliseconds: 1),
         maxAttempts: 4,
+        segmentConcurrency: window,
+        transcodeSegmentConcurrency: window,
       );
 
   test('mirrors master, playlist and segments in order; retries a lazy segment',
@@ -274,5 +281,169 @@ stream_video_480p.m3u8?token=a
     expect(master, isNot(contains('720p')));
     expect(master, isNot(contains('SUBTITLES')));
     expect(master, isNot(contains('TYPE=SUBTITLES')));
+  });
+
+  // ── parallel segments ───────────────────────────────────────────────────
+
+  /// A playlist of [count] segments, and a client that gates every segment on
+  /// [release] so a test can see how many requests are in flight at once.
+  ({MockClient client, List<String> fetched, int Function() peak}) gatedClient(
+      int count,
+      {Completer<void>? release, int Function(String name)? status}) {
+    final playlist = StringBuffer('#EXTM3U\n#EXT-X-TARGETDURATION:6\n');
+    for (var i = 0; i < count; i++) {
+      playlist.write('#EXTINF:5,\n'
+          'seg_audio_0_copy_${i.toString().padLeft(5, '0')}.ts?token=t\n');
+    }
+    playlist.write('#EXT-X-ENDLIST\n');
+    final fetched = <String>[];
+    var inFlight = 0;
+    var peak = 0;
+    final client = MockClient((req) async {
+      final name = req.url.pathSegments.last;
+      fetched.add(name);
+      if (name == 'master.m3u8') return http.Response(_master, 200);
+      if (name.endsWith('.m3u8')) return http.Response(playlist.toString(), 200);
+      inFlight++;
+      if (inFlight > peak) peak = inFlight;
+      try {
+        if (release != null) await release.future;
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+        final code = status?.call(name) ?? 200;
+        return http.Response(code == 200 ? 'xxxxxxxxxx' : '', code);
+      } finally {
+        inFlight--;
+      }
+    });
+    return (client: client, fetched: fetched, peak: () => peak);
+  }
+
+  Future<HlsDownloadResult> run(HlsDownloader d,
+          {DownloadCancelToken? cancel,
+          void Function(DownloadProgress)? onProgress,
+          DownloadSelection selection = const DownloadSelection()}) =>
+      d.download(
+        serverName: 'srv',
+        dir: dir,
+        nodeUrl: 'https://node.example',
+        mediaFileId: 'mf1',
+        streams: [_audioStream],
+        selection: selection,
+        onProgress: onProgress ?? (_) {},
+        cancel: cancel ?? DownloadCancelToken(),
+      );
+
+  test('a copy stream fetches four segments at a time', () async {
+    final release = Completer<void>();
+    final g = gatedClient(12, release: release);
+    final future = run(downloader(g.client, window: 4));
+    // Let the workers reach the gate, then let everything through.
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(g.peak(), 4, reason: 'exactly the window, no more and no fewer');
+    release.complete();
+    final result = await future;
+
+    expect(result.segmentsDone, 12);
+    expect(result.segmentsTotal, 12);
+    expect(g.fetched.where((n) => n.endsWith('.ts')), hasLength(12));
+    for (var i = 0; i < 12; i++) {
+      final name = 'seg_audio_0_copy_${i.toString().padLeft(5, '0')}.ts';
+      expect(File('${dir.path}/$name').existsSync(), isTrue, reason: name);
+    }
+    expect(dir.listSync().where((e) => e.path.endsWith('.part')), isEmpty);
+  });
+
+  test('a re-encoded stream keeps the window small', () async {
+    final release = Completer<void>();
+    final g = gatedClient(12, release: release);
+    final future = run(
+      HlsDownloader(
+        httpClient: g.client,
+        tokenProvider: (_) async => 'tok',
+        backoff: (_) => const Duration(milliseconds: 1),
+        segmentConcurrency: 4,
+        transcodeSegmentConcurrency: 2,
+      ),
+      selection:
+          const DownloadSelection(audioQuality: DownloadAudioQuality.compact),
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(g.peak(), 2,
+        reason: 'the FFmpeg pass is the bottleneck there, not the request');
+    release.complete();
+    await future;
+  });
+
+  test('a failing segment stops the other workers and propagates once',
+      () async {
+    final g = gatedClient(12,
+        status: (name) => name.endsWith('00005.ts') ? 404 : 200);
+    await expectLater(
+      run(downloader(g.client, window: 4)),
+      throwsA(isA<DownloadFailure>()),
+    );
+    // The workers stop instead of draining the rest of the playlist. A bare
+    // Future.wait would also leave the sibling failures unobserved, which
+    // fails this test through the error zone.
+    expect(g.fetched.where((n) => n.endsWith('.ts')).length, lessThan(12));
+    expect(dir.listSync().where((e) => e.path.endsWith('.part')), isEmpty);
+  });
+
+  test('cancelling mid-window reports cancellation, not failure', () async {
+    final cancel = DownloadCancelToken();
+    final g = gatedClient(12);
+    var seen = 0;
+    final client = MockClient((req) async {
+      if (req.url.pathSegments.last.endsWith('.ts') && ++seen == 3) {
+        cancel.cancel();
+      }
+      final r = await g.client.send(http.Request('GET', req.url));
+      return http.Response.fromStream(r);
+    });
+    await expectLater(
+      run(downloader(client, window: 4), cancel: cancel),
+      throwsA(isA<DownloadCancelled>()),
+    );
+    // Which of the in-flight segments landed is not deterministic; that none
+    // of them left a partial file behind is.
+    expect(dir.listSync().where((e) => e.path.endsWith('.part')), isEmpty);
+  });
+
+  test('a repeated init segment is fetched once and counted once', () async {
+    const playlist = '#EXTM3U\n'
+        '#EXT-X-TARGETDURATION:6\n'
+        '#EXT-X-MAP:URI="init.mp4?token=t"\n'
+        '#EXTINF:5,\n'
+        'seg_audio_0_copy_00000.ts?token=t\n'
+        '#EXT-X-MAP:URI="init.mp4?token=t"\n'
+        '#EXTINF:5,\n'
+        'seg_audio_0_copy_00001.ts?token=t\n'
+        '#EXT-X-ENDLIST\n';
+    final fetched = <String>[];
+    final client = MockClient((req) async {
+      final name = req.url.pathSegments.last;
+      fetched.add(name);
+      if (name == 'master.m3u8') return http.Response(_master, 200);
+      if (name.endsWith('.m3u8')) return http.Response(playlist, 200);
+      return http.Response('xxxxxxxxxx', 200);
+    });
+    final result = await run(downloader(client, window: 4));
+
+    expect(fetched.where((n) => n == 'init.mp4'), hasLength(1),
+        reason: 'two workers on one .part file would corrupt it');
+    expect(result.segmentsTotal, 3);
+    expect(result.segmentsDone, 3);
+  });
+
+  test('progress never goes backwards and ends at the total', () async {
+    final g = gatedClient(12);
+    final seen = <DownloadProgress>[];
+    final result =
+        await run(downloader(g.client, window: 4), onProgress: seen.add);
+    for (var i = 1; i < seen.length; i++) {
+      expect(seen[i].segmentsDone,
+          greaterThanOrEqualTo(seen[i - 1].segmentsDone));
+    }
+    expect(seen.last.segmentsDone, result.segmentsTotal);
   });
 }

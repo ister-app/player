@@ -51,9 +51,15 @@ class HlsDownloadResult {
 /// cover. Segment files are the unit of resumability — a complete one on disk
 /// is never fetched again, a `.part` is discarded.
 ///
-/// The server generates segments lazily and sequentially, blocking a request
-/// up to a minute until the FFmpeg pass reaches it, so segments are fetched in
-/// playlist order and transient failures back off rather than fail.
+/// The server runs one FFmpeg pass per playlist and that pass writes its
+/// segments in order, blocking a request until it gets there. Segments are
+/// therefore fetched in playlist order and transient failures back off rather
+/// than fail — but within one playlist a bounded window of them is fetched at
+/// a time. A single request costs ~80 ms of server time and only ~25 ms of
+/// transfer, so fetching them strictly one by one left the server (and the
+/// line) idle ~90% of the time; a window of four made a measured 1.8 MB/s
+/// into 36 MB/s. The window stays small on a re-encode, where the pass itself
+/// is the bottleneck and reading ahead only parks requests in the backend.
 class HlsDownloader {
   HlsDownloader({
     http.Client? httpClient,
@@ -63,6 +69,8 @@ class HlsDownloader {
     int maxAttempts = 8,
     this.segmentTimeout = const Duration(seconds: 90),
     this.masterTimeout = const Duration(seconds: 150),
+    this.segmentConcurrency = 4,
+    this.transcodeSegmentConcurrency = 2,
     Duration bodyTimeout = const Duration(minutes: 5),
     DownloadHttp? http,
   }) : _http = http ??
@@ -78,6 +86,16 @@ class HlsDownloader {
   final DownloadHttp _http;
   final Duration segmentTimeout;
   final Duration masterTimeout;
+
+  /// Segments fetched at a time within one playlist when the server only
+  /// copies the stream (the whole pass is done in under a second, so this is
+  /// pure request pipelining).
+  final int segmentConcurrency;
+
+  /// The same for a re-encoded rendition, where FFmpeg produces segments as
+  /// playback speed allows: a wide window would just leave requests parked in
+  /// the backend until [segmentTimeout].
+  final int transcodeSegmentConcurrency;
 
   Future<HlsDownloadResult> download({
     required String serverName,
@@ -138,8 +156,12 @@ class HlsDownloader {
           keepMediaUris: keptAudio.map((m) => m.uri).toSet()),
     );
 
-    // 3. Media playlists → segment work list, in playlist order.
-    final work = <String>[];
+    // 3. Media playlists → segment work, per playlist and in playlist order.
+    // A name is only ever fetched once: an #EXT-X-MAP init segment can repeat
+    // within a playlist and be shared between renditions, and two workers on
+    // one `.part` file would corrupt it.
+    final work = <List<String>>[];
+    final seen = <String>{};
     for (final name in uniquePlaylists) {
       DownloadHttp.checkCancel(cancel);
       final text = await _http.getText(
@@ -147,9 +169,10 @@ class HlsDownloader {
           timeout: segmentTimeout);
       await DownloadHttp.writeAtomic(
           File('${dir.path}/$name'), M3u8.rewriteMediaPlaylist(text));
-      work.addAll(M3u8.parseSegmentUris(text));
+      work.add(
+          [for (final uri in M3u8.parseSegmentUris(text)) if (seen.add(uri)) uri]);
     }
-    final total = work.length;
+    final total = work.fold<int>(0, (sum, list) => sum + list.length);
     var done = 0;
     var lastReport = DateTime.now();
     void report({bool force = false}) {
@@ -161,21 +184,24 @@ class HlsDownloader {
       }
     }
 
-    // 4. Segments.
-    for (final name in work) {
-      DownloadHttp.checkCancel(cancel);
-      final target = File('${dir.path}/$name');
-      if (await target.exists()) {
-        done++;
-        report();
-        continue;
-      }
-      final length = await _http.getToFile(
-          serverName, _fileUrl(nodeUrl, mediaFileId, name), target, cancel,
-          timeout: segmentTimeout);
-      bytes += length;
-      done++;
-      report();
+    // 4. Segments: playlist after playlist (each is its own FFmpeg pass),
+    // a bounded window within each.
+    final window = direct ? segmentConcurrency : transcodeSegmentConcurrency;
+    for (final playlist in work) {
+      await _fetchSegments(
+        playlist,
+        window,
+        serverName: serverName,
+        dir: dir,
+        nodeUrl: nodeUrl,
+        mediaFileId: mediaFileId,
+        cancel: cancel,
+        onSegmentDone: (length) {
+          bytes += length;
+          done++;
+          report();
+        },
+      );
     }
     report(force: true);
 
@@ -215,6 +241,69 @@ class HlsDownloader {
       subtitleStreamIds: subtitleIds,
       artworkFile: artworkFile,
     );
+  }
+
+  /// Fetches [names] with at most [window] requests in flight, handing the
+  /// next name to whichever worker comes free — a worker stuck on a segment
+  /// the encoder has not reached yet then holds up only itself.
+  ///
+  /// Each worker keeps its own failure instead of letting it escape: a bare
+  /// `Future.wait` would surface the first one and leave the others
+  /// unobserved, which is an unhandled async error. The first failure is
+  /// rethrown with its original stack once every worker has stopped, so the
+  /// service still sees `DownloadFailure.transient` / `noSpace`. A cancel
+  /// outranks a failure — a download the user stopped must go back to
+  /// `queued`, not to `failed` with a retry count.
+  Future<void> _fetchSegments(
+    List<String> names,
+    int window, {
+    required String serverName,
+    required Directory dir,
+    required String nodeUrl,
+    required String mediaFileId,
+    required DownloadCancelToken cancel,
+    required void Function(int length) onSegmentDone,
+  }) async {
+    var next = 0;
+    Object? firstError;
+    StackTrace? firstStack;
+
+    Future<void> worker() async {
+      while (true) {
+        if (firstError != null) return;
+        if (cancel.isCancelled) {
+          firstError ??= DownloadCancelled();
+          return;
+        }
+        // Single-threaded: nothing can interleave between read and increment.
+        final at = next++;
+        if (at >= names.length) return;
+        final name = names[at];
+        try {
+          final target = File('${dir.path}/$name');
+          if (await target.exists()) {
+            onSegmentDone(0);
+            continue;
+          }
+          final length = await _http.getToFile(
+              serverName, _fileUrl(nodeUrl, mediaFileId, name), target, cancel,
+              timeout: segmentTimeout);
+          onSegmentDone(length);
+        } catch (e, stack) {
+          firstError ??= e;
+          firstStack ??= stack;
+          return;
+        }
+      }
+    }
+
+    final workers = window.clamp(1, names.isEmpty ? 1 : names.length);
+    await Future.wait([for (var i = 0; i < workers; i++) worker()]);
+
+    DownloadHttp.checkCancel(cancel);
+    if (firstError != null) {
+      Error.throwWithStackTrace(firstError!, firstStack ?? StackTrace.current);
+    }
   }
 
   /// `artwork.jpg` from [artworkUrl] (token-free; the token is appended per
