@@ -48,6 +48,7 @@ class DownloadEntry {
     this.segmentsDone = 0,
     this.segmentsTotal = 0,
     this.pinned = true,
+    this.autoNext = false,
     this.lastPlayedAt,
     this.downloadedAt,
     this.videoQuality,
@@ -117,6 +118,12 @@ class DownloadEntry {
 
   /// Manual download (never evicted) versus a music-cache entry.
   final bool pinned;
+
+  /// Enqueued by [AutoNextService] to keep a followed show's next unwatched
+  /// episodes on the device. Such an entry is removed again once its episode
+  /// was watched, and — like the music cache — waits for an unmetered network
+  /// when the server is set to Wi-Fi-only downloads.
+  final bool autoNext;
   final DateTime? lastPlayedAt;
   final DateTime? downloadedAt;
   final DateTime createdAt;
@@ -156,6 +163,7 @@ class DownloadEntry {
     int? segmentsDone,
     int? segmentsTotal,
     bool? pinned,
+    bool? autoNext,
     DateTime? lastPlayedAt,
     DateTime? downloadedAt,
     DownloadVideoQuality? videoQuality,
@@ -187,6 +195,7 @@ class DownloadEntry {
         segmentsDone: segmentsDone ?? this.segmentsDone,
         segmentsTotal: segmentsTotal ?? this.segmentsTotal,
         pinned: pinned ?? this.pinned,
+        autoNext: autoNext ?? this.autoNext,
         lastPlayedAt: lastPlayedAt ?? this.lastPlayedAt,
         downloadedAt: downloadedAt ?? this.downloadedAt,
         createdAt: createdAt,
@@ -222,6 +231,7 @@ class DownloadEntry {
         'segmentsDone': segmentsDone,
         'segmentsTotal': segmentsTotal,
         'pinned': pinned,
+        'autoNext': autoNext,
         'lastPlayedAt': lastPlayedAt?.toIso8601String(),
         'downloadedAt': downloadedAt?.toIso8601String(),
         'createdAt': createdAt.toIso8601String(),
@@ -259,6 +269,7 @@ class DownloadEntry {
         segmentsDone: (json['segmentsDone'] as num?)?.toInt() ?? 0,
         segmentsTotal: (json['segmentsTotal'] as num?)?.toInt() ?? 0,
         pinned: json['pinned'] as bool? ?? true,
+        autoNext: json['autoNext'] as bool? ?? false,
         lastPlayedAt: _date(json['lastPlayedAt']),
         downloadedAt: _date(json['downloadedAt']),
         createdAt: _date(json['createdAt']) ?? DateTime.now(),

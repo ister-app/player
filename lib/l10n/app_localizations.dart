@@ -3092,6 +3092,48 @@ abstract class AppLocalizations {
   /// **'Default for \"download next episodes\"'**
   String get defaultNextCount;
 
+  /// No description provided for @autoNextTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the next episodes downloaded'**
+  String get autoNextTitle;
+
+  /// No description provided for @autoNextDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Once you have watched an episode its download is removed and the next unwatched one is fetched, so you always have a few ready to go.'**
+  String get autoNextDescription;
+
+  /// No description provided for @autoNextOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get autoNextOff;
+
+  /// No description provided for @autoNextDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic downloading turned off'**
+  String get autoNextDisabled;
+
+  /// Snackbar after following a show
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{The next episode is downloaded automatically} other{The next {count} episodes are downloaded automatically}}'**
+  String autoNextEnabled(int count);
+
+  /// No description provided for @autoNextFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the server; this show is topped up later'**
+  String get autoNextFailed;
+
+  /// Downloads page label on a show that is followed
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic · {count} ahead'**
+  String autoNextFollowing(int count);
+
   /// No description provided for @openDownloads.
   ///
   /// In en, this message translates to:

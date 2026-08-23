@@ -1802,6 +1802,39 @@ class AppLocalizationsNl extends AppLocalizations {
       'Standaard voor \"volgende afleveringen downloaden\"';
 
   @override
+  String get autoNextTitle => 'Volgende afleveringen gedownload houden';
+
+  @override
+  String get autoNextDescription =>
+      'Zodra je een aflevering hebt bekeken wordt die download verwijderd en wordt de volgende onbekeken aflevering opgehaald, zodat je er altijd een paar klaar hebt staan.';
+
+  @override
+  String get autoNextOff => 'Uit';
+
+  @override
+  String get autoNextDisabled => 'Automatisch downloaden uitgezet';
+
+  @override
+  String autoNextEnabled(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'De volgende $count afleveringen worden automatisch gedownload',
+      one: 'De volgende aflevering wordt automatisch gedownload',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get autoNextFailed =>
+      'Server niet bereikbaar; deze serie wordt later bijgewerkt';
+
+  @override
+  String autoNextFollowing(int count) {
+    return 'Automatisch · $count vooruit';
+  }
+
+  @override
   String get openDownloads => 'Downloads openen';
 
   @override

@@ -4,12 +4,15 @@ import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:player/components/TvFocusable.dart';
+import 'package:player/components/download/AutoNextDialog.dart';
 import 'package:player/components/download/DownloadMenuItem.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/DurationUtil.dart';
 import 'package:player/utils/EpisodeParts.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
+import 'package:player/utils/download/AutoNextPreferences.dart';
+import 'package:player/utils/download/AutoNextService.dart';
 import 'package:player/utils/download/DownloadModels.dart';
 import 'package:player/utils/download/DownloadService.dart';
 import 'package:player/utils/download/LocalPlayQueue.dart';
@@ -66,6 +69,9 @@ class _Group {
 class _DownloadsPageState extends State<DownloadsPage> {
   bool _ready = false;
 
+  /// Shows whose next episodes are kept downloaded, by show id.
+  Map<String, AutoNextFollow> _follows = const {};
+
   @override
   void initState() {
     super.initState();
@@ -77,7 +83,22 @@ class _DownloadsPageState extends State<DownloadsPage> {
     await service.ensureStarted();
     await service.store.load(widget.serverName);
     await OfflineProgressStore.instance.load(widget.serverName);
+    await _loadFollows();
     if (mounted) setState(() => _ready = true);
+    // Opening this page is a good moment to catch up on episodes watched
+    // elsewhere: drop the watched ones and fetch what comes next.
+    unawaited(AutoNextService.instance.runAll(widget.serverName));
+  }
+
+  Future<void> _loadFollows() async {
+    final follows = await AutoNextPreferences.all(widget.serverName);
+    if (mounted) setState(() => _follows = follows);
+  }
+
+  Future<void> _configureAutoNext(BuildContext context, _Group g) async {
+    await configureAutoNext(context,
+        serverName: widget.serverName, showId: g.id, title: g.title);
+    await _loadFollows();
   }
 
   List<_Group> _groups(List<DownloadEntry> entries) {
@@ -227,6 +248,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
     final service = DownloadService.instance;
     final first = g.entries.firstWhere((e) => e.artworkFile != null,
         orElse: () => g.entries.first);
+    final follow = g.kind == DownloadKind.episode ? _follows[g.id] : null;
     final art = service.localArtworkFor(widget.serverName, first.mediaFileId);
     final tile = ExpansionTile(
         leading: SizedBox(
@@ -243,19 +265,36 @@ class _DownloadsPageState extends State<DownloadsPage> {
           ),
         ),
         title: Text(g.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-        subtitle: Text(
-            '${loc.downloadItemsCount(g.entries.length)} · ${formatBytes(g.bytes)}'),
-        trailing: g.playable
-            ? TvFocusable(
-                onTap: () => _play(context, g, g.entries.firstWhere((e) => e.isComplete)),
-                child: IconButton(
-                  icon: const Icon(Icons.play_circle_outline),
-                  tooltip: loc.playOffline,
-                  onPressed: () => _play(
-                      context, g, g.entries.firstWhere((e) => e.isComplete)),
-                ),
-              )
-            : null,
+        subtitle: Text([
+          loc.downloadItemsCount(g.entries.length),
+          formatBytes(g.bytes),
+          if (follow != null) loc.autoNextFollowing(follow.count),
+        ].join(' · ')),
+        trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+          if (g.kind == DownloadKind.episode)
+            TvFocusable(
+              onTap: () => _configureAutoNext(context, g),
+              child: IconButton(
+                icon: Icon(Icons.autorenew,
+                    color: follow == null
+                        ? null
+                        : Theme.of(context).colorScheme.primary),
+                tooltip: loc.autoNextTitle,
+                onPressed: () => _configureAutoNext(context, g),
+              ),
+            ),
+          if (g.playable)
+            TvFocusable(
+              onTap: () =>
+                  _play(context, g, g.entries.firstWhere((e) => e.isComplete)),
+              child: IconButton(
+                icon: const Icon(Icons.play_circle_outline),
+                tooltip: loc.playOffline,
+                onPressed: () => _play(
+                    context, g, g.entries.firstWhere((e) => e.isComplete)),
+              ),
+            ),
+        ]),
         children: [for (final e in g.entries) _entryTile(context, g, e)],
     );
     if (nested) return tile;

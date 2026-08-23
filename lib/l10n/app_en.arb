@@ -1918,6 +1918,29 @@
   "unmeteredOnlySubtitle": "Applies to automatic downloads (music cache); manual downloads always run",
   "concurrentDownloads": "Simultaneous downloads",
   "defaultNextCount": "Default for \"download next episodes\"",
+  "autoNextTitle": "Keep the next episodes downloaded",
+  "autoNextDescription": "Once you have watched an episode its download is removed and the next unwatched one is fetched, so you always have a few ready to go.",
+  "autoNextOff": "Off",
+  "autoNextDisabled": "Automatic downloading turned off",
+  "autoNextEnabled": "{count, plural, =1{The next episode is downloaded automatically} other{The next {count} episodes are downloaded automatically}}",
+  "@autoNextEnabled": {
+    "description": "Snackbar after following a show",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "autoNextFailed": "Could not reach the server; this show is topped up later",
+  "autoNextFollowing": "Automatic · {count} ahead",
+  "@autoNextFollowing": {
+    "description": "Downloads page label on a show that is followed",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "openDownloads": "Open downloads",
   "offlineMode": "Offline",
   "playOffline": "Play",

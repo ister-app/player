@@ -5,6 +5,7 @@ import 'package:player/graphql/bookForDownload.graphql.dart';
 import 'package:player/graphql/episodeById.graphql.dart';
 import 'package:player/graphql/fragmentPodcast.graphql.dart';
 import 'package:player/graphql/fragmentPodcastEpisode.graphql.dart';
+import 'package:player/graphql/seasonById.graphql.dart';
 import 'package:player/graphql/showById.graphql.dart';
 import 'package:player/graphql/trackForDownload.graphql.dart';
 import 'package:player/utils/download/DownloadModels.dart';
@@ -16,6 +17,19 @@ class ShowInfo {
   final String name;
 
   /// Season id → season number.
+  final Map<String, int> seasonNumbers;
+}
+
+/// A show's episodes in season/episode order, with what the episode fragment
+/// itself does not carry: the show's name and each episode's season number.
+class ShowEpisodes {
+  const ShowEpisodes(
+      {required this.title, required this.episodes, required this.seasonNumbers});
+
+  final String? title;
+  final List<Query$seasonById$seasonById$episodes> episodes;
+
+  /// Episode id → season number.
   final Map<String, int> seasonNumbers;
 }
 
@@ -97,9 +111,44 @@ class DownloadLoaders {
   static Future<String?> showTitle(GraphQLClient client, String showId) async =>
       (await showInfo(client, showId))?.name;
 
+  /// Every episode of [showId] in season/episode order. showById only
+  /// carries season ids, so the episodes are fetched per season —
+  /// sequentially, seasons in order.
+  static Future<ShowEpisodes> showEpisodes(GraphQLClient client, String showId,
+      {FetchPolicy? fetchPolicy}) async {
+    final showResult = await client.query(QueryOptions(
+        document: documentNodeQueryshowById,
+        variables: {'id': showId},
+        fetchPolicy: fetchPolicy));
+    if (showResult.hasException) throw showResult.exception!;
+    final show = Query$showById.fromJson(showResult.data!).showById;
+    final seasons = List.of(show?.seasons ?? [])
+      ..sort((a, b) => a.number.compareTo(b.number));
+
+    final episodes = <Query$seasonById$seasonById$episodes>[];
+    final seasonNumbers = <String, int>{};
+    for (final season in seasons) {
+      final seasonResult = await client.query(QueryOptions(
+          document: documentNodeQueryseasonById,
+          variables: {'id': season.id},
+          fetchPolicy: fetchPolicy));
+      if (seasonResult.hasException) throw seasonResult.exception!;
+      final inSeason = List<Query$seasonById$seasonById$episodes>.of(
+          Query$seasonById.fromJson(seasonResult.data!).seasonById?.episodes ??
+              [])
+        ..sort((a, b) => a.number.compareTo(b.number));
+      for (final e in inSeason) {
+        seasonNumbers[e.id] = season.number;
+      }
+      episodes.addAll(inSeason);
+    }
+    return ShowEpisodes(
+        title: show?.name, episodes: episodes, seasonNumbers: seasonNumbers);
+  }
+
   static Future<List<DownloadRequest>> episode(
       GraphQLClient client, String episodeId,
-      {String? groupTitle, int? seasonNumber}) async {
+      {String? groupTitle, int? seasonNumber, bool autoNext = false}) async {
     final r = await client.query(QueryOptions(
         document: documentNodeQueryepisodeById,
         variables: {'id': episodeId},
@@ -117,7 +166,7 @@ class DownloadLoaders {
     }
     return [
       episodeRequest(ep.toJson(), ep.id, ep.number,
-          groupTitle: title, seasonNumber: season)
+          groupTitle: title, seasonNumber: season, autoNext: autoNext)
     ];
   }
 
@@ -126,7 +175,7 @@ class DownloadLoaders {
   /// season; without it just "Episode 3".
   static DownloadRequest episodeRequest(
       Map<String, dynamic> episodeJson, String episodeId, int number,
-      {String? groupTitle, int? seasonNumber}) {
+      {String? groupTitle, int? seasonNumber, bool autoNext = false}) {
     final item = QueueItemFactory.fromJsonParts(
         kind: DownloadKind.episode, mediaId: episodeId, json: episodeJson);
     final loc = IsterMediaService.loc;
@@ -139,6 +188,7 @@ class DownloadLoaders {
           ? loc.episode(number)
           : loc.seasonEpisodeLabel(seasonNumber, number),
       sortKey: (seasonNumber ?? 0) * 1000 + number,
+      autoNext: autoNext,
     );
   }
 

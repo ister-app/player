@@ -22,6 +22,7 @@ class DownloadRequest {
   const DownloadRequest({
     required Fragment$fragmentPlayQueue$playQueueItems this.item,
     this.pinned = true,
+    this.autoNext = false,
     this.groupId,
     this.groupTitle,
     this.subtitle,
@@ -50,6 +51,7 @@ class DownloadRequest {
     this.pageCount,
     this.pinned = true,
   })  : item = null,
+        autoNext = false,
         groupId = bookId,
         groupTitle = title,
         subtitle = author,
@@ -67,6 +69,10 @@ class DownloadRequest {
   final int? pageCount;
   final String? artworkUrl;
   final bool pinned;
+
+  /// Enqueued by [AutoNextService] for a followed show (see
+  /// [DownloadEntry.autoNext]).
+  final bool autoNext;
   final String? groupId;
   final String? groupTitle;
   final String? subtitle;
@@ -330,8 +336,13 @@ class DownloadService {
                 status: DownloadStatus.queued,
                 clearError: true,
                 pinned: existing.pinned || req.pinned));
-      } else if (req.pinned && !existing.pinned) {
-        await store.put(server, existing.copyWith(pinned: true));
+      } else if ((req.pinned && !existing.pinned) ||
+          (req.autoNext && !existing.autoNext)) {
+        await store.put(
+            server,
+            existing.copyWith(
+                pinned: existing.pinned || req.pinned,
+                autoNext: existing.autoNext || req.autoNext));
       }
     }
     revision.value++;
@@ -454,6 +465,7 @@ class DownloadService {
       queueItemJson: item.toJson(),
       createdAt: DateTime.now(),
       pinned: req.pinned,
+      autoNext: req.autoNext,
       videoQuality: req.videoQuality,
       audioQuality: req.audioQuality ?? DownloadAudioQuality.original,
     );
@@ -498,7 +510,7 @@ class DownloadService {
           if (paused.value) return;
           if (_running.length >= limit) return;
           if (_runningFiles.values.contains(entry.mediaFileId)) continue;
-          if (!entry.pinned && unmeteredOnly) {
+          if ((!entry.pinned || entry.autoNext) && unmeteredOnly) {
             unmetered ??= await _isUnmetered();
             if (!unmetered) continue;
           }

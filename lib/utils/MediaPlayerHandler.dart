@@ -26,6 +26,7 @@ import 'package:player/utils/PlaybackPreferences.dart';
 import 'package:player/utils/ResilientSubscription.dart';
 import 'package:player/utils/QueueItemDisplay.dart';
 import 'package:player/utils/StreamTokenService.dart';
+import 'package:player/utils/download/AutoNextService.dart';
 import 'package:player/utils/download/DownloadService.dart';
 import 'package:player/utils/EpisodeParts.dart';
 import 'package:player/utils/download/LocalPlayQueue.dart';
@@ -4140,6 +4141,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// item instead.
   @visibleForTesting
   void advanceAfterItemEnd() {
+    _scheduleAutoNextForFinishedEpisode();
     if (SleepTimerService.instance.notifyItemFinished()) {
       unawaited(_parkOnNextItemAfterSleepTimer());
       return;
@@ -4163,6 +4165,18 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (episode != null || movie != null) {
       unawaited(endPlaybackLocally());
     }
+  }
+
+  /// An episode played out: let its show's "keep the next episodes
+  /// downloaded" follow (if any) drop this one and fetch the next. The run
+  /// itself waits a little — the progress update that marks the episode
+  /// watched is still in flight while playback advances.
+  void _scheduleAutoNextForFinishedEpisode() {
+    if (kIsWeb) return;
+    final srv = serverName;
+    final showId = episode?.$show?.id;
+    if (srv == null || showId == null) return;
+    AutoNextService.instance.schedule(srv, showId);
   }
 
   /// The item-counting sleep timer ran out at the end of an item: suspend

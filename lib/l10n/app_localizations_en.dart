@@ -1798,6 +1798,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get defaultNextCount => 'Default for \"download next episodes\"';
 
   @override
+  String get autoNextTitle => 'Keep the next episodes downloaded';
+
+  @override
+  String get autoNextDescription =>
+      'Once you have watched an episode its download is removed and the next unwatched one is fetched, so you always have a few ready to go.';
+
+  @override
+  String get autoNextOff => 'Off';
+
+  @override
+  String get autoNextDisabled => 'Automatic downloading turned off';
+
+  @override
+  String autoNextEnabled(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'The next $count episodes are downloaded automatically',
+      one: 'The next episode is downloaded automatically',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get autoNextFailed =>
+      'Could not reach the server; this show is topped up later';
+
+  @override
+  String autoNextFollowing(int count) {
+    return 'Automatic · $count ahead';
+  }
+
+  @override
   String get openDownloads => 'Open downloads';
 
   @override

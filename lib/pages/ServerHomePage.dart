@@ -18,6 +18,7 @@ import '../utils/PlatformService.dart';
 import '../utils/ReaderFullscreen.dart';
 import '../utils/StreamTokenService.dart';
 import '../components/download/OfflineDownloadsButton.dart';
+import '../utils/download/AutoNextService.dart';
 import '../utils/download/OfflineSyncService.dart';
 import '../utils/TabNavigationNotifier.dart';
 
@@ -449,9 +450,16 @@ class _ServerHomePageState extends State<ServerHomePage> {
                         // Fire-and-forget — the shell must not wait for it.
                         _restoreFuture ??= MediaPlayerHandler.instance
                             .restoreLastMusicQueue(widget.serverName);
-                        // Replay progress made while offline (once per run).
-                        _offlineSyncFuture ??=
-                            OfflineSyncService.trySync(widget.serverName);
+                        // Replay progress made while offline (once per run),
+                        // then top up the shows whose next episodes are kept
+                        // downloaded — the replayed progress decides which
+                        // episode is next.
+                        _offlineSyncFuture ??= OfflineSyncService
+                            .trySync(widget.serverName)
+                            .then((synced) {
+                          AutoNextService.instance.runAll(widget.serverName);
+                          return synced;
+                        });
                         // Register this device and open its command channel
                         // (play-on/handoff/listen-along targets). Both are
                         // idempotent and degrade silently on older servers.

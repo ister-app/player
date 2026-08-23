@@ -15,6 +15,7 @@ import 'package:player/graphql/seasonById.graphql.dart';
 import 'package:player/graphql/fragmentCredit.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:flutter/foundation.dart';
+import 'package:player/components/download/AutoNextDialog.dart';
 import 'package:player/components/download/DownloadMenuItem.dart';
 import 'package:player/utils/download/DownloadLoaders.dart';
 import 'package:player/utils/download/DownloadPreferences.dart';
@@ -200,6 +201,17 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
                             title: Text(AppLocalizations.of(context)!.downloadNextUnwatched),
                           ),
                         ),
+                      if (!kIsWeb)
+                        MenuItemButton(
+                          onPressed: () => configureAutoNext(context,
+                              serverName: serverName,
+                              showId: showId,
+                              title: title),
+                          child: ListTile(
+                            leading: const Icon(Icons.autorenew),
+                            title: Text(AppLocalizations.of(context)!.autoNextTitle),
+                          ),
+                        ),
                       if (_showAdminActions)
                         MenuItemButton(
                           onPressed: () async {
@@ -284,32 +296,8 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
   /// episode's season number.
   Future<(String?, List<Query$seasonById$seasonById$episodes>, Map<String, int>)>
       _loadShowEpisodeList(GraphQLClient client) async {
-    final showResult = await client.query(QueryOptions(
-        document: documentNodeQueryshowById, variables: {'id': showId}));
-    if (showResult.hasException) throw showResult.exception!;
-    final show = Query$showById.fromJson(showResult.data!).showById;
-    final seasons = List.of(show?.seasons ?? [])
-      ..sort((a, b) => a.number.compareTo(b.number));
-
-    final episodes = <Query$seasonById$seasonById$episodes>[];
-    final seasonNumbers = <String, int>{};
-    for (final season in seasons) {
-      final seasonResult = await client.query(QueryOptions(
-          document: documentNodeQueryseasonById,
-          variables: {'id': season.id}));
-      if (seasonResult.hasException) throw seasonResult.exception!;
-      final inSeason = List<Query$seasonById$seasonById$episodes>.of(Query$seasonById
-              .fromJson(seasonResult.data!)
-              .seasonById
-              ?.episodes ??
-          [])
-        ..sort((a, b) => a.number.compareTo(b.number));
-      for (final e in inSeason) {
-        seasonNumbers[e.id] = season.number;
-      }
-      episodes.addAll(inSeason);
-    }
-    return (show?.name, episodes, seasonNumbers);
+    final show = await DownloadLoaders.showEpisodes(client, showId);
+    return (show.title, show.episodes, show.seasonNumbers);
   }
 
   /// "Download the next N unwatched": continues from the last episode that
