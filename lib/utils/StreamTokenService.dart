@@ -11,6 +11,14 @@ class StreamTokenService {
   static final Map<String, DateTime> _expiry = {};
   static final Map<String, Timer> _refreshTimers = {};
 
+  /// Fetches in flight, per server. Several callers wanting a token at the
+  /// same moment (a download fetching segments in parallel, images rendering
+  /// after a rotation) must mint one token together, not one each: the server
+  /// hands out a *new* token per mutation, so N racing fetches also mean N-1
+  /// tokens nobody keeps, and a late writer could overwrite the one already
+  /// in use.
+  static final Map<String, Future<String?>> _inFlight = {};
+
   static const Duration _refreshBefore = Duration(hours: 10);
   // Lower bound on the refresh timer so a token that lives shorter than
   // [_refreshBefore] cannot cause a tight fetch loop.
@@ -42,7 +50,21 @@ class StreamTokenService {
     return _fetchToken(serverName);
   }
 
-  static Future<String?> _fetchToken(String serverName) async {
+  /// [_doFetchToken], deduplicated: a fetch already in flight for [serverName]
+  /// is joined instead of started again.
+  static Future<String?> _fetchToken(String serverName) {
+    final pending = _inFlight[serverName];
+    if (pending != null) return pending;
+    // Block body on purpose: `=> _inFlight.remove(...)` returns the very
+    // future being awaited, and whenComplete would wait for it — a deadlock.
+    final fetch = _doFetchToken(serverName).whenComplete(() {
+      _inFlight.remove(serverName);
+    });
+    _inFlight[serverName] = fetch;
+    return fetch;
+  }
+
+  static Future<String?> _doFetchToken(String serverName) async {
     final hadToken = getToken(serverName) != null;
     final client = ClientManager.getClientForUrl(serverName).value;
     final result = await client.mutate(
@@ -112,5 +134,16 @@ class StreamTokenService {
     _refreshTimers.remove(serverName);
     _tokens.remove(serverName);
     _expiry.remove(serverName);
+  }
+
+  @visibleForTesting
+  static void resetForTest() {
+    for (final t in _refreshTimers.values) {
+      t.cancel();
+    }
+    _refreshTimers.clear();
+    _tokens.clear();
+    _expiry.clear();
+    _inFlight.clear();
   }
 }

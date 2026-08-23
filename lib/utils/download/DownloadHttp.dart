@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:http/http.dart' as http;
 import 'package:player/utils/StreamTokenService.dart';
@@ -47,10 +48,25 @@ class DownloadHttp {
   final int maxAttempts;
   final Duration bodyTimeout;
 
+  /// Bumped whenever a request reacted to an auth rejection by dropping the
+  /// token. Requests running in parallel share one token, so they all get the
+  /// same 401 at once; only the first of them should invalidate it. The rest
+  /// see a changed generation and simply retry with what the refresh produced
+  /// — otherwise every worker would mint its own token and the last writer
+  /// would clobber the one already in use.
+  int _authGeneration = 0;
+
+  /// Spacing between retries: 2s, 4, 8 … capped at a minute, with ±20%
+  /// jitter. Without the jitter parallel workers that all hit the same server
+  /// hiccup back off in lockstep and hammer it again together.
   static Duration defaultBackoff(int attempt) {
     const steps = [2, 4, 8, 16, 32, 60, 60, 60];
-    return Duration(seconds: steps[attempt.clamp(0, steps.length - 1)]);
+    final base = steps[attempt.clamp(0, steps.length - 1)] * 1000;
+    final jitter = (base * 0.2 * (_random.nextDouble() * 2 - 1)).round();
+    return Duration(milliseconds: base + jitter);
   }
+
+  static final Random _random = Random();
 
   Future<Uri> tokenized(String serverName, String url) async {
     String? token;
@@ -107,6 +123,8 @@ class DownloadHttp {
       checkCancel(cancel);
       http.StreamedResponse? response;
       Object? transient;
+      // The generation the token below belongs to (see [_authGeneration]).
+      final generation = _authGeneration;
       try {
         final uri = await tokenized(serverName, url);
         response = await _http.send(http.Request('GET', uri)).timeout(timeout);
@@ -123,8 +141,14 @@ class DownloadHttp {
         final code = response.statusCode;
         if (code == 200) return response;
         await _drain(response);
+        if ((code == 401 || code == 403) && generation != _authGeneration) {
+          // Another request already dropped this token; retry with whatever
+          // the refresh produced instead of invalidating it again.
+          continue;
+        }
         if ((code == 401 || code == 403) && !authRetried) {
           authRetried = true;
+          _authGeneration++;
           _onAuthFailure(serverName);
           continue;
         }
