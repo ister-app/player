@@ -6,6 +6,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:player/graphql/fragmentMediafiles.graphql.dart';
+import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/download/AutoNextPreferences.dart';
 import 'package:player/utils/download/AutoNextService.dart';
 import 'package:player/utils/download/DownloadLoaders.dart';
@@ -173,15 +174,22 @@ void main() {
           backoff: (_) => const Duration(milliseconds: 1)),
     );
     DownloadService.instance = downloads;
-    service = AutoNextService(downloads: downloads)
-      ..clientBuilder = (_) => GraphQLClient(
-            link: HttpLink('https://api.example/graphql',
-                httpClient: _graphQL(() => episodes)),
-            cache: GraphQLCache(),
-          );
+    GraphQLClient client(String _) => GraphQLClient(
+          link: HttpLink('https://api.example/graphql',
+              httpClient: _graphQL(() => episodes)),
+          cache: GraphQLCache(),
+        );
+    // The service resolves its client through ClientManager in production;
+    // installing the seam here also tells the download service that there is
+    // no OIDC session to wait for.
+    ClientManager.clients.clear();
+    ClientManager.testClientBuilder = client;
+    service = AutoNextService(downloads: downloads)..clientBuilder = client;
   });
 
   tearDown(() async {
+    ClientManager.testClientBuilder = null;
+    ClientManager.clients.clear();
     service.resetForTest();
     // A download still running when the fixture directory disappears writes
     // its failure into a manifest that is no longer there.

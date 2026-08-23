@@ -3,13 +3,17 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
+import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/LanguagePreferences.dart';
+import 'package:player/utils/LoginManager.dart';
+import 'package:player/utils/StreamTokenService.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/QueueItemDisplay.dart';
 import 'package:player/utils/download/DownloadModels.dart';
 import 'package:player/utils/download/DownloadPreferences.dart';
 import 'package:player/utils/download/DownloadStore.dart';
 import 'package:player/utils/download/HlsDownloader.dart';
+import 'package:player/utils/download/IsolateHlsDownloader.dart';
 import 'package:player/utils/download/ComicDownloader.dart';
 import 'package:player/utils/download/EpubDownloader.dart';
 import 'package:player/utils/download/NetworkPolicy.dart';
@@ -87,14 +91,14 @@ class DownloadRequest {
 class DownloadService {
   DownloadService({
     DownloadStore? store,
-    HlsDownloader? downloader,
+    HlsDownloaderApi? downloader,
     EpubDownloader? epubDownloader,
     ComicDownloader? comicDownloader,
     Future<bool> Function()? isUnmetered,
     Stream<void>? connectivityChanges,
     DateTime Function()? now,
   })  : store = store ?? DownloadStore(),
-        downloader = downloader ?? HlsDownloader(),
+        downloader = downloader ?? IsolateHlsDownloader(),
         epubDownloader = epubDownloader ?? EpubDownloader(),
         comicDownloader = comicDownloader ?? ComicDownloader(),
         _isUnmetered = isUnmetered ?? NetworkPolicy.isUnmetered,
@@ -108,7 +112,7 @@ class DownloadService {
   static set instance(DownloadService s) => _instance = s;
 
   final DownloadStore store;
-  final HlsDownloader downloader;
+  final HlsDownloaderApi downloader;
   final EpubDownloader epubDownloader;
   final ComicDownloader comicDownloader;
   final Future<bool> Function() _isUnmetered;
@@ -538,6 +542,19 @@ class DownloadService {
       if (done != null) {
         await store.put(server, _adoptResult(entry, done));
         return;
+      }
+      // At app start the queue is resumed before the OIDC session is restored,
+      // and a download that goes out without a stream token gets a 401 it then
+      // has to sit out a retry round for. Wait for the session first — a no-op
+      // once the app is running. Best effort on purpose: if it cannot be had,
+      // the request still refreshes on the rejection it gets.
+      if (!ClientManager.usesTestClients) {
+        try {
+          await LoginManager.waitForToken(server);
+          await StreamTokenService.ensureToken(server);
+        } catch (e) {
+          LoggerService().logger.w('no stream token before download: $e');
+        }
       }
       await store.put(server, entry.copyWith(status: DownloadStatus.downloading, clearError: true));
       revision.value++;

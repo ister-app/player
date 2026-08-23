@@ -45,6 +45,23 @@ class HlsDownloadResult {
   final String? artworkFile;
 }
 
+/// Mirrors one media file's HLS tree into a directory. Implemented in-process
+/// by [HlsDownloader] and on a background isolate by `IsolateHlsDownloader` —
+/// the service uses the latter, the tests the former.
+abstract interface class HlsDownloaderApi {
+  Future<HlsDownloadResult> download({
+    required String serverName,
+    required Directory dir,
+    required String nodeUrl,
+    required String mediaFileId,
+    required List<Fragment$fragmentMediaFiles$mediaFileStreams?>? streams,
+    required DownloadSelection selection,
+    String? artworkUrl,
+    required void Function(DownloadProgress progress) onProgress,
+    required DownloadCancelToken cancel,
+  });
+}
+
 /// Mirrors one media file's HLS tree into a directory: the master playlist
 /// (rewritten to the kept renditions, tokens stripped), the kept media
 /// playlists and every segment they list, the SRT subtitle sidecars and the
@@ -60,7 +77,7 @@ class HlsDownloadResult {
 /// line) idle ~90% of the time; a window of four made a measured 1.8 MB/s
 /// into 36 MB/s. The window stays small on a re-encode, where the pass itself
 /// is the bottleneck and reading ahead only parks requests in the backend.
-class HlsDownloader {
+class HlsDownloader implements HlsDownloaderApi {
   HlsDownloader({
     http.Client? httpClient,
     Future<String?> Function(String serverName)? tokenProvider,
@@ -97,6 +114,7 @@ class HlsDownloader {
   /// the backend until [segmentTimeout].
   final int transcodeSegmentConcurrency;
 
+  @override
   Future<HlsDownloadResult> download({
     required String serverName,
     required Directory dir,
