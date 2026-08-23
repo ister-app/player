@@ -1929,4 +1929,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String downloadResumeAt(String position) {
     return 'resume at $position';
   }
+
+  @override
+  String seasonEpisodeLabel(int season, int episode) {
+    return 'Season $season · Episode $episode';
+  }
 }

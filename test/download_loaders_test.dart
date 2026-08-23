@@ -13,6 +13,12 @@ void main() {
     expect(req.item!.episode?.id, 'e7');
     expect(req.groupTitle, 'The Show');
     expect(req.sortKey, 7);
+
+    final withSeason = DownloadLoaders.episodeRequest(e7.toJson(), e7.id, 7,
+        groupTitle: 'The Show', seasonNumber: 6);
+    expect(withSeason.sortKey, 6007);
+    expect(withSeason.subtitle, contains('6'));
+    expect(withSeason.subtitle, contains('7'));
     expect(req.item!.episode?.mediaFile?.first.id, 'mf');
     expect(DownloadEntry.keyFor(DownloadKind.episode, 'e7'), 'episode:e7');
   });

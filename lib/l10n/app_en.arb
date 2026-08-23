@@ -1992,5 +1992,17 @@
         "type": "String"
       }
     }
+  },
+  "seasonEpisodeLabel": "Season {season} · Episode {episode}",
+  "@seasonEpisodeLabel": {
+    "description": "Download row subtitle",
+    "placeholders": {
+      "season": {
+        "type": "int"
+      },
+      "episode": {
+        "type": "int"
+      }
+    }
   }
 }

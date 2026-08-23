@@ -618,5 +618,6 @@
   "musicCacheUpToDate": "De muziekcache is bijgewerkt",
   "musicCacheFillBusy": "De cache wordt al bijgewerkt",
   "downloadRetryLater": "Netwerkprobleem — wordt automatisch opnieuw geprobeerd",
-  "downloadResumeAt": "hervatten bij {position}"
+  "downloadResumeAt": "hervatten bij {position}",
+  "seasonEpisodeLabel": "Seizoen {season} · Aflevering {episode}"
 }

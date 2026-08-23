@@ -3277,6 +3277,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'resume at {position}'**
   String downloadResumeAt(String position);
+
+  /// Download row subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Season {season} · Episode {episode}'**
+  String seasonEpisodeLabel(int season, int episode);
 }
 
 class _AppLocalizationsDelegate

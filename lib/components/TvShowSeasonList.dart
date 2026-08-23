@@ -239,10 +239,8 @@ class TvShowSeasonList extends StatelessWidget {
                       serverName: serverName,
                       kind: DownloadKind.episode,
                       mediaId: episodeId,
-                      load: (client) async => DownloadLoaders.episode(
-                          client, episodeId,
-                          groupTitle:
-                              await DownloadLoaders.showTitle(client, showId)),
+                      // Resolves the show title and season number itself.
+                      load: (client) => DownloadLoaders.episode(client, episodeId),
                     ),
                   ),
                 ],

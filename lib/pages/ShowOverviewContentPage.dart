@@ -272,7 +272,7 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
   /// session". showById only carries season ids, so the episodes are fetched
   /// per season — sequentially, seasons in order — once a session was chosen.
   Future<List<AddToSessionItem>> _loadShowEpisodes(GraphQLClient client) async {
-    final (_, episodes) = await _loadShowEpisodeList(client);
+    final (_, episodes, _) = await _loadShowEpisodeList(client);
     return [
       for (final episode in episodes)
         if (episode.mediaFile != null && episode.mediaFile!.isNotEmpty)
@@ -280,8 +280,9 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
     ];
   }
 
-  /// The show's name and every episode in season/episode order.
-  Future<(String?, List<Query$seasonById$seasonById$episodes>)>
+  /// The show's name, every episode in season/episode order, and each
+  /// episode's season number.
+  Future<(String?, List<Query$seasonById$seasonById$episodes>, Map<String, int>)>
       _loadShowEpisodeList(GraphQLClient client) async {
     final showResult = await client.query(QueryOptions(
         document: documentNodeQueryshowById, variables: {'id': showId}));
@@ -291,19 +292,24 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
       ..sort((a, b) => a.number.compareTo(b.number));
 
     final episodes = <Query$seasonById$seasonById$episodes>[];
+    final seasonNumbers = <String, int>{};
     for (final season in seasons) {
       final seasonResult = await client.query(QueryOptions(
           document: documentNodeQueryseasonById,
           variables: {'id': season.id}));
       if (seasonResult.hasException) throw seasonResult.exception!;
-      episodes.addAll(List.of(Query$seasonById
+      final inSeason = List<Query$seasonById$seasonById$episodes>.of(Query$seasonById
               .fromJson(seasonResult.data!)
               .seasonById
               ?.episodes ??
           [])
-        ..sort((a, b) => a.number.compareTo(b.number)));
+        ..sort((a, b) => a.number.compareTo(b.number));
+      for (final e in inSeason) {
+        seasonNumbers[e.id] = season.number;
+      }
+      episodes.addAll(inSeason);
     }
-    return (show?.name, episodes);
+    return (show?.name, episodes, seasonNumbers);
   }
 
   /// "Download the next N unwatched": continues from the last episode that
@@ -314,12 +320,12 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
             await DownloadPreferences.getDefaultNextCount(widget.serverName));
     if (n == null || n <= 0 || !context.mounted) return;
     await enqueueDownloads(context, widget.serverName, (client) async {
-      final (title, episodes) = await _loadShowEpisodeList(client);
+      final (title, episodes, seasonNumbers) = await _loadShowEpisodeList(client);
       final picked = NextUnwatched.select(episodes, n);
       final requests = <DownloadRequest>[];
       for (final e in picked) {
-        requests.addAll(
-            await DownloadLoaders.episode(client, e.id, groupTitle: title));
+        requests.addAll(await DownloadLoaders.episode(client, e.id,
+            groupTitle: title, seasonNumber: seasonNumbers[e.id]));
       }
       return requests;
     });

@@ -1935,4 +1935,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String downloadResumeAt(String position) {
     return 'hervatten bij $position';
   }
+
+  @override
+  String seasonEpisodeLabel(int season, int episode) {
+    return 'Seizoen $season · Aflevering $episode';
+  }
 }

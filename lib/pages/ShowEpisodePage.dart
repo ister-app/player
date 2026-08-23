@@ -278,12 +278,17 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                           serverName: widget.serverName,
                           kind: DownloadKind.episode,
                           mediaId: episode.id,
-                          load: (client) async => [
-                            DownloadLoaders.episodeRequest(
-                                episode.toJson(), episode.id, episode.number,
-                                groupTitle: await DownloadLoaders.showTitle(
-                                    client, widget.showId)),
-                          ],
+                          load: (client) async {
+                            final info = await DownloadLoaders.showInfo(
+                                client, widget.showId);
+                            return [
+                              DownloadLoaders.episodeRequest(
+                                  episode.toJson(), episode.id, episode.number,
+                                  groupTitle: info?.name,
+                                  seasonNumber:
+                                      info?.seasonNumbers[episode.season?.id]),
+                            ];
+                          },
                         ),
                       ),
                     if (episode != null && _showAdminActions)
