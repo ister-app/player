@@ -3223,6 +3223,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 download · {percent}%} other{{count} downloads · {percent}%}}'**
   String downloadNotificationText(int count, int percent);
+
+  /// No description provided for @downloadEpub.
+  ///
+  /// In en, this message translates to:
+  /// **'Download book (EPUB)'**
+  String get downloadEpub;
+
+  /// No description provided for @downloadComic.
+  ///
+  /// In en, this message translates to:
+  /// **'Download comic'**
+  String get downloadComic;
+
+  /// No description provided for @readAloudEdition.
+  ///
+  /// In en, this message translates to:
+  /// **'read-aloud edition'**
+  String get readAloudEdition;
 }
 
 class _AppLocalizationsDelegate

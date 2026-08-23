@@ -23,7 +23,7 @@ class LocalPlayQueue {
     required String startKey,
     OfflineProgressStore? progress,
   }) {
-    final sorted = entries.where((e) => e.isComplete).toList()
+    final sorted = entries.where((e) => e.isComplete && !e.isReading).toList()
       ..sort((a, b) => a.sortKey.compareTo(b.sortKey));
     final items = <Fragment$fragmentPlayQueue$playQueueItems>[];
     for (var i = 0; i < sorted.length; i++) {

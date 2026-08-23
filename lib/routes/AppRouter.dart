@@ -70,6 +70,8 @@ class AppRouter extends RootStackRouter {
     AutoRoute(path: '/downloads/:serverName', page: DownloadsRoute.page),
     AutoRoute(path: '/downloads/:serverName/settings', page: DownloadSettingsRoute.page),
     AutoRoute(path: '/downloads/:serverName/play', page: LocalVideoRoute.page),
+    AutoRoute(path: '/downloads/:serverName/read/:bookId/:mediaFileId', page: OfflineReaderRoute.page),
+    AutoRoute(path: '/downloads/:serverName/comic/:bookId/:mediaFileId', page: OfflineComicReaderRoute.page),
     AutoRoute(path: "/server/:serverName", page: ServerHomeRoute.page,
         children: [
           AutoRoute(path: '', page: ServerHomeOverviewRoute.page, initial: true,

@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
@@ -21,6 +22,7 @@ class EpubResourceClient {
     required this.serverName,
     http.Client? httpClient,
     Future<String?> Function(String serverName)? tokenProvider,
+    this.localDir,
   })  : _base = nodeUrl.endsWith('/')
             ? nodeUrl.substring(0, nodeUrl.length - 1)
             : nodeUrl,
@@ -29,6 +31,10 @@ class EpubResourceClient {
 
   final String mediaFileId;
   final String serverName;
+
+  /// A downloaded mirror of the epub (see EpubDownloader): entries found
+  /// there are served from disk, the rest from the node.
+  final Directory? localDir;
   final String _base;
   final http.Client _http;
   final Future<String?> Function(String serverName) _tokenProvider;
@@ -40,10 +46,26 @@ class EpubResourceClient {
   /// The absolute, tokenized URL of an entry — for images and audio, which are
   /// loaded by widgets/players rather than through [bytes].
   String url(String entryPath) {
+    final local = _localFile(entryPath);
+    if (local != null) return local.path;
     final token = StreamTokenService.getToken(serverName);
-    final encoded = _encodeEntryPath(entryPath);
+    final encoded = encodeEntryPath(entryPath);
     return '$_base/epub/$mediaFileId/resource/$encoded'
         '${token != null ? '?token=${Uri.encodeQueryComponent(token)}' : ''}';
+  }
+
+  /// The token-free resource URL of an entry on [nodeBase].
+  static String resourceUrl(String nodeBase, String mediaFileId, String entryPath) =>
+      '$nodeBase/epub/$mediaFileId/resource/${encodeEntryPath(entryPath)}';
+
+  /// Whether [entryPath] is served from the local mirror.
+  bool isLocal(String entryPath) => _localFile(entryPath) != null;
+
+  File? _localFile(String entryPath) {
+    final dir = localDir;
+    if (dir == null) return null;
+    final f = File('${dir.path}/${_tryDecode(entryPath)}');
+    return f.existsSync() ? f : null;
   }
 
   Future<Uint8List> bytes(String entryPath) async {
@@ -51,6 +73,12 @@ class EpubResourceClient {
     if (cached != null) {
       _cache[entryPath] = cached; // re-insert as most recently used
       return cached;
+    }
+    final local = _localFile(entryPath);
+    if (local != null) {
+      final body = await local.readAsBytes();
+      _store(entryPath, body);
+      return body;
     }
     // A failed token fetch shouldn't kill the read: the request goes out
     // without one and the server decides (bearer auth may still apply).
@@ -61,7 +89,7 @@ class EpubResourceClient {
       token = null;
     }
     final uri = Uri.parse(
-        '$_base/epub/$mediaFileId/resource/${_encodeEntryPath(entryPath)}'
+        '$_base/epub/$mediaFileId/resource/${encodeEntryPath(entryPath)}'
         '${token != null ? '?token=${Uri.encodeQueryComponent(token)}' : ''}');
     final response = await _getWithRetry(uri);
     if (response.statusCode != 200) {
@@ -105,7 +133,7 @@ class EpubResourceClient {
 
   /// Entry paths come from OPF/SMIL hrefs and may contain spaces or already be
   /// percent-encoded; normalize to decoded segments, then encode each one.
-  static String _encodeEntryPath(String entryPath) => entryPath
+  static String encodeEntryPath(String entryPath) => entryPath
       .split('/')
       .map((segment) => Uri.encodeComponent(_tryDecode(segment)))
       .join('/');

@@ -12,7 +12,10 @@ import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/download/DownloadModels.dart';
 import 'package:player/utils/download/DownloadService.dart';
 import 'package:player/utils/download/DownloadStore.dart';
+import 'package:player/utils/download/DownloadHttp.dart';
+import 'package:player/utils/download/EpubDownloader.dart';
 import 'package:player/utils/download/HlsDownloader.dart';
+import 'package:player/utils/download/LocalPlayQueue.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
@@ -223,6 +226,58 @@ void main() {
     expect(dir.existsSync(), isFalse);
   });
 
+  test('an epub entry is mirrored by the epub downloader and readable locally',
+      () async {
+    final epubRequests = <String>[];
+    final epubClient = MockClient((req) async {
+      final path = Uri.decodeComponent(req.url.path);
+      epubRequests.add(path);
+      if (path.endsWith('container.xml')) {
+        return http.Response('<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="content.opf"/></rootfiles></container>', 200);
+      }
+      if (path.endsWith('content.opf')) {
+        return http.Response('<package xmlns="http://www.idpf.org/2007/opf"><metadata/><manifest><item id="c" href="c.xhtml" media-type="application/xhtml+xml"/></manifest><spine><itemref idref="c"/></spine></package>', 200);
+      }
+      return http.Response('<html/>', 200);
+    });
+    final reading = DownloadService(
+      store: service.store,
+      downloader: service.downloader,
+      epubDownloader: EpubDownloader(
+          httpClient: epubClient,
+          http: DownloadHttp(httpClient: epubClient, tokenProvider: (_) async => 't')),
+    );
+    DownloadService.instance = reading;
+    await reading.enqueue(
+        _server,
+        const DownloadRequest.book(
+          bookId: 'book-1',
+          mediaFileId: 'mf-epub',
+          nodeUrl: 'https://node.example',
+          title: 'The Book',
+          format: BookFormat.epub,
+          author: 'Author',
+        ));
+    final key = DownloadEntry.keyFor(DownloadKind.book, 'mf-epub');
+    await _waitFor(() => reading.entryFor(_server, key)?.isComplete ?? false);
+    final entry = reading.entryFor(_server, key)!;
+    expect(entry.isReading, isTrue);
+    expect(entry.groupId, 'book-1');
+    expect(entry.subtitle, 'Author');
+    expect(entry.queueItemJson, isNull);
+    expect(entry.segmentsTotal, 3);
+    final dir = await reading.localReadingDir(_server, 'mf-epub');
+    expect(dir, isNotNull);
+    expect(File('$dir/c.xhtml').existsSync(), isTrue);
+    expect(reading.localMasterFor(_server, 'mf-epub'), isNull,
+        reason: 'not playable');
+    expect(LocalPlayQueue.build(_server, [entry], startKey: key).playQueueItems,
+        isEmpty);
+
+    await reading.remove(_server, key);
+    expect(Directory(dir!).existsSync(), isFalse);
+  });
+
   test('pause stops the run and resume finishes it', () async {
     await service.pauseAll();
     await service.enqueue(_server, DownloadRequest(item: trackItem('t3')));
@@ -255,3 +310,5 @@ Fragment$fragmentPlayQueue$playQueueItems episodePartItem(
   return Fragment$fragmentPlayQueue$playQueueItems(
       accessible: true, id: 'local:episode:e$number', position: number.toDouble(), episode: ep);
 }
+
+// ---- reading entries -----------------------------------------------------

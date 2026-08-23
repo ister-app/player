@@ -12,6 +12,7 @@ class EpubPackage {
     required this.title,
     required this.fixedLayout,
     required this.opfDir,
+    this.opfPath = '',
     required this.manifest,
     required this.spine,
     required this.toc,
@@ -25,6 +26,9 @@ class EpubPackage {
 
   /// Directory prefix of the OPF; manifest hrefs are relative to it.
   final String opfDir;
+
+  /// Zip-entry path of the OPF (for mirroring the package).
+  final String opfPath;
 
   final Map<String, EpubManifestItem> manifest;
   final List<EpubSpineItem> spine;
@@ -94,6 +98,7 @@ class EpubPackage {
     final toc = await _loadToc(client, manifest, spineElement);
 
     return EpubPackage(
+      opfPath: opfPath,
       title: title,
       fixedLayout: fixedLayout,
       opfDir: opfDir,

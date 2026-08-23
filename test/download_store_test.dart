@@ -48,7 +48,7 @@ void main() {
     expect(entries.map((e) => e.mediaId), ['1', '2']);
     expect(entries[1].pinned, isFalse);
     expect(entries[1].status, DownloadStatus.complete);
-    expect(entries[1].queueItemJson['id'], 'local:track:2');
+    expect(entries[1].queueItemJson!['id'], 'local:track:2');
   });
 
   test('writes are atomic: no temp file is left behind', () async {

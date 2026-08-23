@@ -101,10 +101,14 @@ Future<void> enqueueDownloads(BuildContext context, String serverName,
 /// A `MenuItemButton` for the overflow menus of the detail pages; hidden on
 /// web, where nothing can be stored.
 class DownloadMenuItem extends StatelessWidget {
-  const DownloadMenuItem({super.key, required this.action, this.enabled = true});
+  const DownloadMenuItem(
+      {super.key, required this.action, this.enabled = true, this.label});
 
   final DownloadAction action;
   final bool enabled;
+
+  /// Replaces the generic "Download" label while nothing is on disk.
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
@@ -115,10 +119,12 @@ class DownloadMenuItem extends StatelessWidget {
       builder: (context, _, __) {
         final entry =
             DownloadService.instance.entryFor(action.serverName, action.key);
-        final (icon, label) = downloadActionPresentation(loc, entry);
+        final (icon, text) = downloadActionPresentation(loc, entry);
         return MenuItemButton(
           onPressed: enabled ? () => runDownloadAction(context, action) : null,
-          child: ListTile(leading: Icon(icon), title: Text(label)),
+          child: ListTile(
+              leading: Icon(icon),
+              title: Text(entry == null ? (label ?? text) : text)),
         );
       },
     );

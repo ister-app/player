@@ -10,6 +10,8 @@ import 'package:player/utils/download/DownloadModels.dart';
 import 'package:player/utils/download/DownloadPreferences.dart';
 import 'package:player/utils/download/DownloadStore.dart';
 import 'package:player/utils/download/HlsDownloader.dart';
+import 'package:player/utils/download/ComicDownloader.dart';
+import 'package:player/utils/download/EpubDownloader.dart';
 import 'package:player/utils/download/NetworkPolicy.dart';
 import 'package:player/utils/download/QueueItemFactory.dart';
 
@@ -18,7 +20,7 @@ import 'package:player/utils/download/QueueItemFactory.dart';
 /// episode's "S2 E5" line).
 class DownloadRequest {
   const DownloadRequest({
-    required this.item,
+    required Fragment$fragmentPlayQueue$playQueueItems this.item,
     this.pinned = true,
     this.groupId,
     this.groupTitle,
@@ -26,9 +28,44 @@ class DownloadRequest {
     this.sortKey,
     this.videoQuality,
     this.audioQuality,
-  });
+  })  : bookId = null,
+        mediaFileId = null,
+        nodeUrl = null,
+        title = null,
+        format = null,
+        mediaOverlays = false,
+        pageCount = null,
+        artworkUrl = null;
 
-  final Fragment$fragmentPlayQueue$playQueueItems item;
+  /// An epub/comic file of a book, read rather than played.
+  const DownloadRequest.book({
+    required String this.bookId,
+    required String this.mediaFileId,
+    required String this.nodeUrl,
+    required String this.title,
+    required BookFormat this.format,
+    String? author,
+    this.artworkUrl,
+    this.mediaOverlays = false,
+    this.pageCount,
+    this.pinned = true,
+  })  : item = null,
+        groupId = bookId,
+        groupTitle = title,
+        subtitle = author,
+        sortKey = null,
+        videoQuality = null,
+        audioQuality = null;
+
+  final Fragment$fragmentPlayQueue$playQueueItems? item;
+  final String? bookId;
+  final String? mediaFileId;
+  final String? nodeUrl;
+  final String? title;
+  final BookFormat? format;
+  final bool mediaOverlays;
+  final int? pageCount;
+  final String? artworkUrl;
   final bool pinned;
   final String? groupId;
   final String? groupTitle;
@@ -45,9 +82,13 @@ class DownloadService {
   DownloadService({
     DownloadStore? store,
     HlsDownloader? downloader,
+    EpubDownloader? epubDownloader,
+    ComicDownloader? comicDownloader,
     Future<bool> Function()? isUnmetered,
   })  : store = store ?? DownloadStore(),
         downloader = downloader ?? HlsDownloader(),
+        epubDownloader = epubDownloader ?? EpubDownloader(),
+        comicDownloader = comicDownloader ?? ComicDownloader(),
         _isUnmetered = isUnmetered ?? NetworkPolicy.isUnmetered;
 
   static DownloadService _instance = DownloadService();
@@ -58,6 +99,8 @@ class DownloadService {
 
   final DownloadStore store;
   final HlsDownloader downloader;
+  final EpubDownloader epubDownloader;
+  final ComicDownloader comicDownloader;
   final Future<bool> Function() _isUnmetered;
 
   /// Bumped on every manifest change; list UIs rebuild on it.
@@ -142,9 +185,36 @@ class DownloadService {
   String? localMasterFor(String server, String mediaFileId) {
     if (kIsWeb) return null;
     final entry = entryForMediaFile(server, mediaFileId);
-    if (entry == null || !entry.isComplete) return null;
+    if (entry == null || !entry.isComplete || entry.isReading) return null;
     final dir = store.itemDirPathSync(server, mediaFileId);
     return dir == null ? null : '$dir/master.m3u8';
+  }
+
+  /// [localReadingDirFor] with the server's manifest loaded. Never waits for
+  /// the store to come up: main() starts it at launch, and a reader opened
+  /// before that (or under flutter test, where the platform directory lookup
+  /// never completes) simply streams from the node.
+  Future<String?> localReadingDir(String server, String mediaFileId) async {
+    if (kIsWeb) return null;
+    if (store.rootPathSync == null) {
+      unawaited(ensureStarted());
+      return null;
+    }
+    try {
+      await store.load(server);
+      return localReadingDirFor(server, mediaFileId);
+    } catch (e) {
+      LoggerService().logger.w('download store unavailable: $e');
+      return null;
+    }
+  }
+
+  /// Directory of a complete epub/comic mirror, for the readers.
+  String? localReadingDirFor(String server, String mediaFileId) {
+    if (kIsWeb) return null;
+    final entry = entryForMediaFile(server, mediaFileId);
+    if (entry == null || !entry.isReading || !entry.isComplete) return null;
+    return store.itemDirPathSync(server, mediaFileId);
   }
 
   String? localArtworkFor(String server, String mediaFileId) {
@@ -268,6 +338,7 @@ class DownloadService {
 
   DownloadEntry? _entryFrom(DownloadRequest req) {
     final item = req.item;
+    if (item == null) return _bookEntryFrom(req);
     final mf = QueueItemFactory.mediaFileOf(item);
     if (mf == null) return null;
     final kind = QueueItemFactory.kindOf(item);
@@ -297,6 +368,8 @@ class DownloadService {
         groupId = item.movie!.id;
         groupTitle = item.movie!.name;
         subtitle = req.subtitle;
+      case DownloadKind.book:
+        return _bookEntryFrom(req);
       case DownloadKind.episode:
         final ep = item.episode!;
         groupId = ep.$show?.id ?? ep.id;
@@ -321,6 +394,25 @@ class DownloadService {
       audioQuality: req.audioQuality ?? DownloadAudioQuality.original,
     );
   }
+
+  DownloadEntry _bookEntryFrom(DownloadRequest req) => DownloadEntry(
+        kind: DownloadKind.book,
+        mediaId: req.mediaFileId!,
+        mediaFileId: req.mediaFileId!,
+        nodeUrl: req.nodeUrl!,
+        groupId: req.bookId!,
+        groupTitle: req.title!,
+        title: req.title!,
+        subtitle: req.subtitle,
+        // Files sort after a book's chapters.
+        sortKey: 1000000 + req.format!.index,
+        createdAt: DateTime.now(),
+        pinned: req.pinned,
+        format: req.format,
+        mediaOverlays: req.mediaOverlays,
+        pageCount: req.pageCount,
+        artworkUrl: req.artworkUrl,
+      );
 
   Future<void> _pump() async {
     if (_pumping || paused.value) return;
@@ -373,6 +465,10 @@ class DownloadService {
       }
       await store.put(server, entry.copyWith(status: DownloadStatus.downloading, clearError: true));
       revision.value++;
+      if (entry.isReading) {
+        await _runReading(server, entry, cancel, progress);
+        return;
+      }
       final item = entry.queueItem;
       final mf = QueueItemFactory.mediaFileOf(item);
       final videoQuality = entry.videoQuality ??
@@ -453,6 +549,51 @@ class DownloadService {
       revision.value++;
       unawaited(_pump());
     }
+  }
+
+  Future<void> _runReading(String server, DownloadEntry entry,
+      DownloadCancelToken cancel, ValueNotifier<DownloadProgress?> progress) async {
+    final dir = await store.itemDir(server, entry.mediaFileId);
+    final ReadingDownloadResult result;
+    switch (entry.format) {
+      case BookFormat.epub:
+        result = await epubDownloader.download(
+          serverName: server,
+          dir: dir,
+          nodeUrl: entry.nodeUrl,
+          mediaFileId: entry.mediaFileId,
+          artworkUrl: entry.artworkUrl,
+          cancel: cancel,
+          onProgress: (p) => progress.value = p,
+        );
+      case BookFormat.cbz:
+      case BookFormat.pdf:
+        result = await comicDownloader.download(
+          serverName: server,
+          dir: dir,
+          nodeUrl: entry.nodeUrl,
+          mediaFileId: entry.mediaFileId,
+          artworkUrl: entry.artworkUrl,
+          cancel: cancel,
+          onProgress: (p) => progress.value = p,
+        );
+      case null:
+        throw DownloadFailure('reading entry without a format');
+    }
+    final current = store.get(server, entry.key);
+    if (current == null) return;
+    await store.put(
+        server,
+        current.copyWith(
+          status: DownloadStatus.complete,
+          bytes: result.bytes,
+          segmentsDone: result.itemsDone,
+          segmentsTotal: result.itemsTotal,
+          artworkFile: result.artworkFile,
+          pageCount: current.pageCount ?? (current.format == BookFormat.epub ? null : result.itemsTotal),
+          downloadedAt: DateTime.now(),
+          clearError: true,
+        ));
   }
 
   /// [entry] marked complete with the on-disk result of [done], which

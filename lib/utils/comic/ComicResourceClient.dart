@@ -51,6 +51,9 @@ class ComicResourceClient {
 
   /// Cache key for [pageUrl] images: the same URL without the expiring token,
   /// so a token rotation doesn't refetch already-cached pages.
+  /// The whole volume file, token-free (downloads append their own token).
+  String get fileUrl => '$_base/comic/$mediaFileId/file';
+
   String pageCacheKey(int index, {int? width}) =>
       '$_base/comic/$mediaFileId/page/$index'
       '${_query({if (width != null) 'width': '$width'})}';

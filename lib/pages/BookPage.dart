@@ -7,6 +7,8 @@ import 'package:player/graphql/schema.graphql.dart';
 import 'package:flutter/foundation.dart';
 import 'package:player/components/download/DownloadMenuItem.dart';
 import 'package:player/utils/download/DownloadLoaders.dart';
+import 'package:player/utils/download/DownloadModels.dart';
+import 'package:player/utils/download/DownloadService.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/BookProgressUtil.dart';
 import 'package:player/utils/DurationUtil.dart';
@@ -330,23 +332,14 @@ class _BookPageState extends State<BookPage> {
               ),
             ),
           ),
-        if (_hasListenableChapter && book != null && !kIsWeb)
+        if (book != null && !kIsWeb && _downloadItems(context, book).isNotEmpty)
           SliverToBoxAdapter(
             child: _constrained(
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: OutlinedButton.icon(
-                    onPressed: () => enqueueDownloads(
-                        context,
-                        widget.serverName,
-                        (client) => DownloadLoaders.book(client, book.id)),
-                    icon: const Icon(Icons.download_for_offline_outlined),
-                    label: Text(loc.downloadAudiobook),
-                    style: OutlinedButton.styleFrom(
-                        shape: const StadiumBorder()),
-                  ),
+                  child: _downloadButton(context, book),
                 ),
               ),
             ),
@@ -509,6 +502,63 @@ class _BookPageState extends State<BookPage> {
               )
             : null,
         onTap: canStart ? () => _startReading(context, chapter: chapter) : null,
+      ),
+    );
+  }
+
+  /// One menu entry per downloadable form of the book: the audiobook
+  /// (all chapters) and each epub/comic file.
+  List<Widget> _downloadItems(BuildContext context, Query$bookById$bookById book) {
+    final loc = AppLocalizations.of(context)!;
+    final cover = ImageUtil.getImageByType(book.images, ImageTypes.cover);
+    return [
+      if (_hasListenableChapter)
+        MenuItemButton(
+          onPressed: () => enqueueDownloads(context, widget.serverName,
+              (client) => DownloadLoaders.book(client, book.id)),
+          child: ListTile(
+              leading: const Icon(Icons.headphones_outlined),
+              title: Text(loc.downloadAudiobook)),
+        ),
+      for (final f in book.epubFiles ?? const <Query$bookById$bookById$epubFiles>[])
+        if (bookFormatFrom(f.format) case final format?)
+          DownloadMenuItem(
+            label: format == BookFormat.epub
+                ? (f.mediaOverlays == true
+                    ? '${loc.downloadEpub} (${loc.readAloudEdition})'
+                    : loc.downloadEpub)
+                : '${loc.downloadComic} (${f.format})',
+            action: DownloadAction(
+              serverName: widget.serverName,
+              kind: DownloadKind.book,
+              mediaId: f.id,
+              load: (_) async => [
+                DownloadRequest.book(
+                  bookId: book.id,
+                  mediaFileId: f.id,
+                  nodeUrl: f.directory.node.url,
+                  title: book.title,
+                  format: format,
+                  author: book.author?.name,
+                  artworkUrl: ImageUtil.buildUrl(cover),
+                  mediaOverlays: f.mediaOverlays == true,
+                  pageCount: f.pageCount,
+                ),
+              ],
+            ),
+          ),
+    ];
+  }
+
+  Widget _downloadButton(BuildContext context, Query$bookById$bookById book) {
+    final loc = AppLocalizations.of(context)!;
+    return MenuAnchor(
+      menuChildren: _downloadItems(context, book),
+      builder: (context, controller, _) => OutlinedButton.icon(
+        onPressed: () => controller.isOpen ? controller.close() : controller.open(),
+        icon: const Icon(Icons.download_for_offline_outlined),
+        label: Text(loc.download),
+        style: OutlinedButton.styleFrom(shape: const StadiumBorder()),
       ),
     );
   }

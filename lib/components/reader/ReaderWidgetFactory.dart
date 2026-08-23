@@ -1,4 +1,5 @@
 import 'package:cached_network_image_ce/cached_network_image.dart';
+import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:player/utils/epub/ChapterContent.dart';
@@ -18,6 +19,9 @@ class ReaderWidgetFactory extends WidgetFactory {
   ImageProvider? imageProviderFromNetwork(String url) {
     final entryPath = ChapterContent.entryPathFromUrl(url);
     final resolved = entryPath != null ? resourceUrl(entryPath) : url;
-    return resolved.isNotEmpty ? CachedNetworkImageProvider(resolved) : null;
+    if (resolved.isEmpty) return null;
+    // A downloaded epub resolves entries to absolute paths.
+    if (resolved.startsWith('/')) return FileImage(File(resolved));
+    return CachedNetworkImageProvider(resolved);
   }
 }

@@ -39,6 +39,12 @@ class PdfPageSource implements ComicPageSource {
     return PdfPageSource._(document);
   }
 
+  /// A downloaded volume (ComicDownloader's `file.pdf`).
+  static Future<PdfPageSource> openFile(String path) async {
+    await pdfrxFlutterInitialize();
+    return PdfPageSource._(await PdfDocument.openFile(path));
+  }
+
   @override
   int get pageCount => _document.pages.length;
 

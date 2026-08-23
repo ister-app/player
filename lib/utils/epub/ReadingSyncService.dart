@@ -7,8 +7,7 @@ import 'package:player/utils/epub/EpubLocator.dart';
 import 'package:player/utils/epub/ReaderBookController.dart';
 import 'package:player/utils/epub/SmilDocument.dart';
 import 'package:player/utils/LoggerService.dart';
-import 'package:player/utils/StreamTokenService.dart';
-import 'package:player/utils/WellKnownService.dart';
+import 'package:player/utils/download/ReadingProgressOutbox.dart';
 
 /// The `/book-progress` response: the epub reading position and the audiobook
 /// chapter positions, together.
@@ -126,13 +125,17 @@ class ReadingSyncService {
     required this.mediaFileId,
     required this.book,
     http.Client? httpClient,
-  }) : _http = httpClient ?? http.Client();
+    ReadingProgressOutbox? outbox,
+  })  : _http = httpClient ?? http.Client(),
+        _outbox = outbox;
 
   final String serverName;
   final String bookId;
   final String mediaFileId;
   final ReaderBookController book;
   final http.Client _http;
+  final ReadingProgressOutbox? _outbox;
+  ReadingProgressOutbox get outbox => _outbox ?? ReadingProgressOutbox.instance;
 
   static const Duration _debounce = Duration(milliseconds: 1500);
 
@@ -152,30 +155,15 @@ class ReadingSyncService {
   int get _totalDurationMs => _chapters.fold(
       0, (total, chapter) => total + chapter.durationInMilliseconds);
 
-  String get _apiBase {
-    final url = WellKnownService.getCached(serverName)?.serverUrl ?? '';
-    return url.endsWith('/') ? url.substring(0, url.length - 1) : url;
-  }
-
-  Future<Uri> _endpoint(String path, [Map<String, String>? query]) async {
-    // A failed token fetch shouldn't kill the sync: the request goes out
-    // without one and the server decides (bearer auth may still apply).
-    String? token;
-    try {
-      token = await StreamTokenService.ensureToken(serverName);
-    } catch (_) {
-      token = null;
-    }
-    return Uri.parse('$_apiBase$path').replace(queryParameters: {
-      ...?query,
-      if (token != null) 'token': token,
-    });
-  }
+  Future<Uri> _endpoint(String path, [Map<String, String>? query]) =>
+      BookProgressApi.endpoint(serverName, path, query);
 
   /// Fetches `/book-progress` and aligns the audiobook chapters with the
-  /// spine. Failure leaves [progress] null: the book opens at its start and
-  /// saving still works.
+  /// spine. Failure falls back to the position still waiting in the outbox
+  /// (offline reading) or leaves [progress] null: the book opens at its
+  /// start and saving still works.
   Future<void> init() async {
+    await outbox.load(serverName);
     try {
       final response =
           await _http.get(await _endpoint('/book-progress', {'bookId': bookId}));
@@ -187,6 +175,21 @@ class ReadingSyncService {
     } catch (error) {
       LoggerService().logger.w('Could not fetch book progress: $error');
       progress = null;
+    }
+    final pending = outbox.lastFor(serverName, bookId);
+    if (pending != null &&
+        (progress?.reading == null ||
+            (progress!.reading!.updatedAt?.isBefore(pending.updatedAt) ?? true))) {
+      // What was read offline is newer than anything the server knows.
+      progress = BookProgress(
+        reading: BookProgressReading(
+          location: pending.location,
+          mediaFileId: pending.mediaFileId,
+          progress: pending.progress,
+          updatedAt: pending.updatedAt,
+        ),
+        chapters: progress?.chapters ?? const [],
+      );
     }
     _align();
   }
@@ -459,24 +462,28 @@ class ReadingSyncService {
             'Could not map the reading position onto the audiobook: $error');
       }
     }
+    final payload = {
+      'bookId': bookId,
+      'location': locator.serialize(),
+      'progress': locator.bookFraction,
+      'readingLocationMediaFileId': mediaFileId,
+      'chapterId': audio?.chapterId,
+      'positionInMilliseconds': audio?.positionInMilliseconds,
+    };
     try {
       final response = await _http.post(
         await _endpoint('/reading-progress'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'bookId': bookId,
-          'location': locator.serialize(),
-          'progress': locator.bookFraction,
-          'readingLocationMediaFileId': mediaFileId,
-          'chapterId': audio?.chapterId,
-          'positionInMilliseconds': audio?.positionInMilliseconds,
-        }),
+        body: json.encode(payload),
       );
       if (response.statusCode >= 400) {
         throw Exception('status ${response.statusCode}');
       }
+      await outbox.clear(serverName, bookId);
     } catch (error) {
-      LoggerService().logger.w('Progress sync failed: $error');
+      // Kept for replay once the server is reachable again.
+      LoggerService().logger.w('Progress sync failed, queued: $error');
+      await outbox.put(serverName, bookId, payload);
     }
   }
 

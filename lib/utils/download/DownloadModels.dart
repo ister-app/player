@@ -2,7 +2,17 @@ import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 
 /// The five playable kinds a download can hold — the same discriminator as a
 /// play-queue item's non-null field.
-enum DownloadKind { track, chapter, podcastEpisode, movie, episode }
+enum DownloadKind { track, chapter, podcastEpisode, movie, episode, book }
+
+/// The file formats a `DownloadKind.book` entry can hold.
+enum BookFormat { epub, cbz, pdf }
+
+BookFormat? bookFormatFrom(String? serverFormat) => switch (serverFormat?.toUpperCase()) {
+      'EPUB' => BookFormat.epub,
+      'CBZ' => BookFormat.cbz,
+      'PDF' => BookFormat.pdf,
+      _ => null,
+    };
 
 enum DownloadStatus { queued, downloading, paused, complete, failed }
 
@@ -26,7 +36,7 @@ class DownloadEntry {
     required this.groupId,
     required this.groupTitle,
     required this.title,
-    required this.queueItemJson,
+    this.queueItemJson,
     required this.createdAt,
     this.subtitle,
     this.sortKey = 0,
@@ -44,6 +54,10 @@ class DownloadEntry {
     this.audioQuality = DownloadAudioQuality.original,
     this.audioStreamIndexes = const [],
     this.subtitleStreamIds = const [],
+    this.format,
+    this.mediaOverlays = false,
+    this.pageCount,
+    this.artworkUrl,
   });
 
   static String keyFor(DownloadKind kind, String mediaId) =>
@@ -72,7 +86,15 @@ class DownloadEntry {
 
   /// `Fragment$fragmentPlayQueue$playQueueItems.toJson()` — rebuilt with
   /// `fromJson` for offline playback so every queue consumer keeps working.
-  final Map<String, dynamic> queueItemJson;
+  /// Null for a reading entry (an epub/comic has no queue item).
+  final Map<String, dynamic>? queueItemJson;
+
+  /// Reading entries only: the file format, whether it is a read-aloud
+  /// edition, its page count, and the cover URL to (re)fetch.
+  final BookFormat? format;
+  final bool mediaOverlays;
+  final int? pageCount;
+  final String? artworkUrl;
 
   /// File name inside the item directory, when the cover was fetched.
   final String? artworkFile;
@@ -95,11 +117,17 @@ class DownloadEntry {
   final List<String> subtitleStreamIds;
 
   bool get isComplete => status == DownloadStatus.complete;
+
+  /// An epub/comic file: read, not played.
+  bool get isReading => kind == DownloadKind.book;
   bool get isActive =>
       status == DownloadStatus.queued || status == DownloadStatus.downloading;
 
-  Fragment$fragmentPlayQueue$playQueueItems get queueItem =>
-      Fragment$fragmentPlayQueue$playQueueItems.fromJson(queueItemJson);
+  Fragment$fragmentPlayQueue$playQueueItems get queueItem {
+    final json = queueItemJson;
+    if (json == null) throw StateError('reading entry $key has no queue item');
+    return Fragment$fragmentPlayQueue$playQueueItems.fromJson(json);
+  }
 
   double? get progress =>
       segmentsTotal == 0 ? null : segmentsDone / segmentsTotal;
@@ -125,6 +153,7 @@ class DownloadEntry {
     DownloadAudioQuality? audioQuality,
     List<int>? audioStreamIndexes,
     List<String>? subtitleStreamIds,
+    int? pageCount,
   }) =>
       DownloadEntry(
         kind: kind,
@@ -152,6 +181,10 @@ class DownloadEntry {
         audioQuality: audioQuality ?? this.audioQuality,
         audioStreamIndexes: audioStreamIndexes ?? this.audioStreamIndexes,
         subtitleStreamIds: subtitleStreamIds ?? this.subtitleStreamIds,
+        format: format,
+        mediaOverlays: mediaOverlays,
+        pageCount: pageCount ?? this.pageCount,
+        artworkUrl: artworkUrl,
       );
 
   Map<String, dynamic> toJson() => {
@@ -180,6 +213,10 @@ class DownloadEntry {
         'audioQuality': audioQuality.name,
         'audioStreamIndexes': audioStreamIndexes,
         'subtitleStreamIds': subtitleStreamIds,
+        'format': format?.name,
+        'mediaOverlays': mediaOverlays,
+        'pageCount': pageCount,
+        'artworkUrl': artworkUrl,
       };
 
   static DownloadEntry fromJson(Map<String, dynamic> json) => DownloadEntry(
@@ -193,8 +230,9 @@ class DownloadEntry {
         subtitle: json['subtitle'] as String?,
         sortKey: (json['sortKey'] as num?)?.toInt() ?? 0,
         durationMs: (json['durationMs'] as num?)?.toInt() ?? 0,
-        queueItemJson:
-            Map<String, dynamic>.from(json['queueItem'] as Map),
+        queueItemJson: json['queueItem'] == null
+            ? null
+            : Map<String, dynamic>.from(json['queueItem'] as Map),
         artworkFile: json['artworkFile'] as String?,
         status: DownloadStatus.values.byName(json['status'] as String),
         error: json['error'] as String?,
@@ -219,6 +257,12 @@ class DownloadEntry {
         subtitleStreamIds: (json['subtitleStreamIds'] as List? ?? const [])
             .map((e) => e as String)
             .toList(),
+        format: json['format'] == null
+            ? null
+            : BookFormat.values.byName(json['format'] as String),
+        mediaOverlays: json['mediaOverlays'] as bool? ?? false,
+        pageCount: (json['pageCount'] as num?)?.toInt(),
+        artworkUrl: json['artworkUrl'] as String?,
       );
 
   static DateTime? _date(Object? v) =>

@@ -1965,5 +1965,8 @@
         "type": "int"
       }
     }
-  }
+  },
+  "downloadEpub": "Download book (EPUB)",
+  "downloadComic": "Download comic",
+  "readAloudEdition": "read-aloud edition"
 }

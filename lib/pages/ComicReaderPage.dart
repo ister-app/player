@@ -18,6 +18,10 @@ import 'package:player/utils/comic/ComicPreferences.dart';
 import 'package:player/utils/comic/ComicResourceClient.dart';
 import 'package:player/utils/comic/ComicSyncService.dart';
 import 'package:player/utils/comic/PdfPageSource.dart';
+import 'dart:io';
+
+import 'package:player/utils/download/ComicDownloader.dart';
+import 'package:player/utils/download/DownloadService.dart';
 import 'package:player/utils/comic/SeriesDirectionService.dart';
 import 'package:player/utils/ReaderFullscreen.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -120,7 +124,10 @@ class _ComicReaderPageState extends State<ComicReaderPage>
     super.didChangeDependencies();
     if (!_loadStarted) {
       _loadStarted = true;
-      unawaited(_load(GraphQLProvider.of(context).value));
+      // No provider on the root router (offline downloads): series data is
+      // then skipped and the local direction preference used.
+      unawaited(_load(
+          context.findAncestorWidgetOfExactType<GraphQLProvider>()?.client?.value));
     }
   }
 
@@ -156,13 +163,13 @@ class _ComicReaderPageState extends State<ComicReaderPage>
     });
   }
 
-  Future<void> _load(GraphQLClient graphQLClient) async {
+  Future<void> _load(GraphQLClient? graphQLClient) async {
     // Server-resolved direction for a series volume (user override > detected
     // manga default > LTR), with the local key as offline fallback; a
     // series-less volume only has the local key.
     final seriesId = widget.seriesId;
     final bool rtl;
-    if (seriesId != null) {
+    if (seriesId != null && graphQLClient != null) {
       final direction =
           await SeriesDirectionService.fetch(graphQLClient, seriesId);
       rtl = direction.rightToLeft;
@@ -183,24 +190,35 @@ class _ComicReaderPageState extends State<ComicReaderPage>
       if (fullscreen) unawaited(ReaderFullscreen.enter());
     }
 
+    final localDir = await _localDir();
     final nodeUrl = widget.nodeUrl;
-    if (nodeUrl == null || nodeUrl.isEmpty) {
+    if ((nodeUrl == null || nodeUrl.isEmpty) && localDir == null) {
       _failLoad('Comic reader opened without a node url');
       return;
     }
     try {
       final client = ComicResourceClient(
-        nodeUrl: nodeUrl,
+        nodeUrl: nodeUrl ?? '',
         mediaFileId: widget.mediaFileId,
         serverName: widget.serverName,
       );
-      final manifest = await client.manifest();
-      final source = switch (manifest.format) {
-        'CBZ' => CbzPageSource(client: client, manifest: manifest),
-        // pdfrx has no custom-read source on web; cbz works everywhere.
-        'PDF' when !kIsWeb => await PdfPageSource.open(client),
-        _ => null,
-      };
+      final localManifest = localDir == null
+          ? null
+          : await ComicDownloader.readLocalManifest(localDir);
+      final manifest = localManifest ?? await client.manifest();
+      final source = localDir != null && localManifest != null
+          ? switch (manifest.format) {
+              'CBZ' => LocalCbzPageSource(dir: localDir, manifest: manifest),
+              'PDF' when !kIsWeb => await PdfPageSource.openFile(
+                  '${localDir.path}/${ComicDownloader.pdfFile}'),
+              _ => null,
+            }
+          : switch (manifest.format) {
+              'CBZ' => CbzPageSource(client: client, manifest: manifest),
+              // pdfrx has no custom-read source on web; cbz works everywhere.
+              'PDF' when !kIsWeb => await PdfPageSource.open(client),
+              _ => null,
+            };
       if (source == null || source.pageCount <= 0) {
         client.dispose();
         _failLoad('No reader for comic format ${manifest.format}');
@@ -229,6 +247,13 @@ class _ComicReaderPageState extends State<ComicReaderPage>
     } catch (error) {
       _failLoad('Could not load the comic: $error');
     }
+  }
+
+  Future<Directory?> _localDir() async {
+    if (kIsWeb) return null;
+    final path = await DownloadService.instance
+        .localReadingDir(widget.serverName, widget.mediaFileId);
+    return path == null ? null : Directory(path);
   }
 
   void _failLoad(String message) {

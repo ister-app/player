@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'dart:io';
+
+import 'package:player/utils/download/DownloadService.dart';
 import 'package:flutter/services.dart';
 import 'package:player/components/reader/ChapterView.dart';
 import 'package:player/components/reader/ReaderChrome.dart';
@@ -157,16 +160,20 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
       if (fullscreen) unawaited(ReaderFullscreen.enter());
     }
 
+    // A downloaded epub is read from disk; the node is only needed for the
+    // rest (and not at all when the whole package was mirrored).
+    final localDir = await _localDir();
     final nodeUrl = widget.nodeUrl;
-    if (nodeUrl == null || nodeUrl.isEmpty) {
+    if ((nodeUrl == null || nodeUrl.isEmpty) && localDir == null) {
       _failLoad('Reader opened without a node url');
       return;
     }
     try {
       final client = EpubResourceClient(
-        nodeUrl: nodeUrl,
+        nodeUrl: nodeUrl ?? '',
         mediaFileId: widget.mediaFileId,
         serverName: widget.serverName,
+        localDir: localDir,
       );
       final package = await EpubPackage.load(client);
       final book = ReaderBookController(client: client, package: package);
@@ -208,6 +215,13 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
     } catch (error) {
       _failLoad('Could not load the book: $error');
     }
+  }
+
+  Future<Directory?> _localDir() async {
+    if (kIsWeb) return null;
+    final path = await DownloadService.instance
+        .localReadingDir(widget.serverName, widget.mediaFileId);
+    return path == null ? null : Directory(path);
   }
 
   void _failLoad(String message) {

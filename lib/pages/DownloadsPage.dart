@@ -51,7 +51,7 @@ class _Group {
   final List<DownloadEntry> entries = [];
 
   int get bytes => sumUniqueBytes(entries);
-  bool get playable => entries.any((e) => e.isComplete);
+  bool get playable => entries.any((e) => e.isComplete && !e.isReading);
   DateTime get newest => entries
       .map((e) => e.createdAt)
       .reduce((a, b) => a.isAfter(b) ? a : b);
@@ -77,7 +77,10 @@ class _DownloadsPageState extends State<DownloadsPage> {
   List<_Group> _groups(List<DownloadEntry> entries) {
     final map = <String, _Group>{};
     for (final e in entries) {
-      final key = '${e.kind.name}:${e.groupId}';
+      // A book's chapters and its epub/comic files form one group.
+      final key = e.kind == DownloadKind.chapter || e.kind == DownloadKind.book
+          ? 'book:${e.groupId}'
+          : '${e.kind.name}:${e.groupId}';
       map.putIfAbsent(key, () => _Group(e.kind, e.groupId, e.groupTitle))
           .entries
           .add(e);
@@ -232,6 +235,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
           : loc.downloadFailedLocal(e.error ?? ''),
     };
     final progress = OfflineProgressStore.instance.get(widget.serverName, e.key);
+    if (e.isReading) return _readingTile(context, e);
     final shared = e.kind == DownloadKind.episode
         ? EpisodeParts.sharedNumbers(e.queueItem.episode?.mediaFile?.firstOrNull
             ?.episodes
@@ -299,12 +303,92 @@ class _DownloadsPageState extends State<DownloadsPage> {
     );
   }
 
+  Widget _readingTile(BuildContext context, DownloadEntry e) {
+    final loc = AppLocalizations.of(context)!;
+    final service = DownloadService.instance;
+    final status = switch (e.status) {
+      DownloadStatus.queued || DownloadStatus.paused => loc.downloadStatusQueued,
+      DownloadStatus.downloading => loc.downloadStatusDownloading,
+      DownloadStatus.complete => null,
+      DownloadStatus.failed => e.error == 'no-space'
+          ? loc.downloadNoSpace
+          : loc.downloadFailedLocal(e.error ?? ''),
+    };
+    final parts = [
+      e.format?.name.toUpperCase() ?? '',
+      if (e.mediaOverlays) loc.readAloudEdition,
+      if (e.pageCount != null && e.format != BookFormat.epub) '${e.pageCount} p.',
+      if (e.bytes > 0) formatBytes(e.bytes),
+      if (status != null) status,
+    ];
+    return TvFocusable(
+      onTap: e.isComplete ? () => _read(context, e) : null,
+      child: ListTile(
+        dense: true,
+        leading: SizedBox(
+          width: 24,
+          child: Center(
+            child: DownloadStatusIcon(
+                serverName: widget.serverName,
+                kind: e.kind,
+                mediaId: e.mediaId,
+                size: 20),
+          ),
+        ),
+        title: Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        subtitle: Text(parts.where((p) => p.isNotEmpty).join(' · '),
+            maxLines: 2, overflow: TextOverflow.ellipsis),
+        trailing: MenuAnchor(
+          menuChildren: [
+            if (e.status == DownloadStatus.failed)
+              MenuItemButton(
+                onPressed: () => service.retry(widget.serverName, e.key),
+                child: ListTile(
+                    leading: const Icon(Icons.refresh),
+                    title: Text(loc.retryDownload)),
+              ),
+            MenuItemButton(
+              onPressed: () => service.remove(widget.serverName, e.key),
+              child: ListTile(
+                  leading: const Icon(Icons.delete_outline),
+                  title: Text(e.isActive ? loc.cancelDownload : loc.removeDownload)),
+            ),
+          ],
+          builder: (context, controller, _) => IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: () =>
+                controller.isOpen ? controller.close() : controller.open(),
+          ),
+        ),
+        onTap: e.isComplete ? () => _read(context, e) : null,
+      ),
+    );
+  }
+
+  void _read(BuildContext context, DownloadEntry e) {
+    final PageRouteInfo route = e.format == BookFormat.epub
+        ? OfflineReaderRoute(
+            serverName: widget.serverName,
+            bookId: e.groupId,
+            mediaFileId: e.mediaFileId,
+            nodeUrl: e.nodeUrl,
+            title: e.title)
+        : OfflineComicReaderRoute(
+            serverName: widget.serverName,
+            bookId: e.groupId,
+            mediaFileId: e.mediaFileId,
+            nodeUrl: e.nodeUrl,
+            title: e.title);
+    context.router.root.push(route);
+  }
+
   static IconData _kindIcon(DownloadKind kind) => switch (kind) {
         DownloadKind.track => Icons.album_outlined,
         DownloadKind.chapter => Icons.menu_book_outlined,
         DownloadKind.podcastEpisode => Icons.podcasts,
         DownloadKind.movie => Icons.movie_outlined,
         DownloadKind.episode => Icons.tv_outlined,
+        DownloadKind.book => Icons.auto_stories_outlined,
       };
 
   Future<void> _play(BuildContext context, _Group g, DownloadEntry start) async {

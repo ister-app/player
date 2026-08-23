@@ -21,6 +21,14 @@ class ComicManifest {
   /// The cbz pages in reading order; empty for pdf/epub.
   final List<ComicPageInfo> pages;
 
+  Map<String, dynamic> toJson() => {
+        'mediaFileId': mediaFileId,
+        'bookId': bookId,
+        'format': format,
+        'pageCount': pageCount,
+        'pages': [for (final p in pages) p.toJson()],
+      };
+
   static ComicManifest fromJson(Map<String, dynamic> json) => ComicManifest(
         mediaFileId: '${json['mediaFileId']}',
         bookId: '${json['bookId']}',
@@ -39,6 +47,8 @@ class ComicPageInfo {
   final int index;
   final String name;
   final int size;
+
+  Map<String, dynamic> toJson() => {'index': index, 'name': name, 'size': size};
 
   static ComicPageInfo fromJson(Map<String, dynamic> json) => ComicPageInfo(
         index: (json['index'] as num?)?.toInt() ?? 0,

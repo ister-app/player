@@ -1888,4 +1888,13 @@ class AppLocalizationsNl extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get downloadEpub => 'Boek downloaden (EPUB)';
+
+  @override
+  String get downloadComic => 'Strip downloaden';
+
+  @override
+  String get readAloudEdition => 'voorleeseditie';
 }

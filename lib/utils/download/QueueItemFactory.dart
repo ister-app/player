@@ -24,6 +24,7 @@ class QueueItemFactory {
       DownloadKind.podcastEpisode => 'podcastEpisode',
       DownloadKind.movie => 'movie',
       DownloadKind.episode => 'episode',
+      DownloadKind.book => throw ArgumentError('a book file is not a queue item'),
     };
     return Fragment$fragmentPlayQueue$playQueueItems.fromJson({
       '__typename': 'PlayQueueItem',

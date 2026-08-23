@@ -1,4 +1,7 @@
 import 'package:cached_network_image_ce/cached_network_image.dart';
+import 'dart:io';
+
+import 'package:player/utils/download/ComicDownloader.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:player/utils/comic/ComicManifest.dart';
@@ -19,6 +22,43 @@ abstract class ComicPageSource {
   ImageProvider thumbnail(int index);
 
   void dispose();
+}
+
+/// Cbz pages mirrored on disk by ComicDownloader (`page_00000.jpg`…).
+class LocalCbzPageSource implements ComicPageSource {
+  LocalCbzPageSource({required this.dir, required ComicManifest manifest})
+      : _manifest = manifest,
+        pageCount = manifest.pageCount ?? manifest.pages.length;
+
+  final Directory dir;
+  final ComicManifest _manifest;
+
+  @override
+  final int pageCount;
+
+  String pagePath(int index) {
+    final name = index < _manifest.pages.length
+        ? _manifest.pages[index].name
+        : 'page.jpg';
+    return '${dir.path}/${ComicDownloader.pageFileName(index, name)}';
+  }
+
+  @override
+  ImageProvider pageImage(int index, {int? targetWidth}) {
+    final provider = FileImage(File(pagePath(index)));
+    return targetWidth == null
+        ? provider
+        : ResizeImage(provider, width: targetWidth, allowUpscaling: false);
+  }
+
+  @override
+  ImageProvider thumbnail(int index) => ResizeImage(
+      FileImage(File(pagePath(index))),
+      width: CbzPageSource.thumbnailWidth,
+      allowUpscaling: false);
+
+  @override
+  void dispose() {}
 }
 
 /// Cbz pages through `/comic/{id}/page/{index}`. The server serves them

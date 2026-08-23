@@ -5,6 +5,7 @@ import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/PlayQueueService.dart';
 import 'package:player/utils/download/OfflineProgressStore.dart';
+import 'package:player/utils/download/ReadingProgressOutbox.dart';
 
 /// Replays progress made offline to the server: one play queue per item
 /// (created at the item, like a normal start) plus one progress update. One
@@ -25,11 +26,11 @@ class OfflineSyncService {
     _syncedThisRun.add(server);
     final store = OfflineProgressStore.instance;
     await store.load(server);
+    var synced = await ReadingProgressOutbox.instance.replay(server);
     final pending = store.unsynced(server);
-    if (pending.isEmpty) return 0;
+    if (pending.isEmpty) return synced;
     final gql = client ?? ClientManager.getClientForUrl(server).value;
     final service = PlayQueueService();
-    var synced = 0;
     for (final e in pending) {
       try {
         final pq = await service.createPlayQueue(gql,

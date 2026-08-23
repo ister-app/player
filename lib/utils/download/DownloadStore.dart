@@ -29,6 +29,8 @@ class DownloadStore {
   Future<Directory> root() async {
     final cached = _root;
     if (cached != null) return cached;
+    // Callers must not block on this (under flutter test the platform lookup
+    // never completes): see DownloadService.localReadingDir.
     final dir = _rootOverride ??
         Directory('${(await getApplicationSupportDirectory()).path}/downloads');
     await dir.create(recursive: true);
@@ -37,7 +39,7 @@ class DownloadStore {
 
   /// The root path once [root] has resolved — the playback hot path needs
   /// a synchronous lookup.
-  String? get rootPathSync => _root?.path;
+  String? get rootPathSync => _root?.path ?? _rootOverride?.path;
 
   Future<Directory> serverDir(String serverName) async =>
       Directory('${(await root()).path}/${slug(serverName)}');

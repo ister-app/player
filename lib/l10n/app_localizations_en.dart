@@ -1883,4 +1883,13 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get downloadEpub => 'Download book (EPUB)';
+
+  @override
+  String get downloadComic => 'Download comic';
+
+  @override
+  String get readAloudEdition => 'read-aloud edition';
 }

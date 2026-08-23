@@ -1,13 +1,15 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:player/graphql/fragmentMediafiles.graphql.dart';
 import 'package:player/utils/ImageUtil.dart';
-import 'package:player/utils/StreamTokenService.dart';
+import 'package:player/utils/download/DownloadHttp.dart';
 import 'package:player/utils/download/DownloadModels.dart';
 import 'package:player/utils/download/M3u8.dart';
 import 'package:player/utils/download/SubtitleStreams.dart';
+
+export 'package:player/utils/download/DownloadHttp.dart'
+    show DownloadCancelToken, DownloadCancelled, DownloadFailure;
 
 class DownloadSelection {
   const DownloadSelection({
@@ -23,23 +25,6 @@ class DownloadSelection {
   /// ISO 639-3 codes; the audio renditions kept besides the default one.
   final List<String> spokenLanguages;
   final bool downloadSubtitles;
-}
-
-class DownloadCancelToken {
-  bool _cancelled = false;
-  bool get isCancelled => _cancelled;
-  void cancel() => _cancelled = true;
-}
-
-class DownloadCancelled implements Exception {}
-
-/// A download that cannot succeed by retrying (file gone, no disk space).
-class DownloadFailure implements Exception {
-  DownloadFailure(this.message, {this.noSpace = false});
-  final String message;
-  final bool noSpace;
-  @override
-  String toString() => message;
 }
 
 class HlsDownloadResult {
@@ -75,28 +60,24 @@ class HlsDownloader {
     Future<String?> Function(String serverName)? tokenProvider,
     void Function(String serverName)? onAuthFailure,
     Duration Function(int attempt)? backoff,
-    this.maxAttempts = 8,
+    int maxAttempts = 8,
     this.segmentTimeout = const Duration(seconds: 90),
     this.masterTimeout = const Duration(seconds: 150),
-    this.bodyTimeout = const Duration(minutes: 5),
-  })  : _http = httpClient ?? http.Client(),
-        _tokenProvider = tokenProvider ?? StreamTokenService.ensureToken,
-        _onAuthFailure = onAuthFailure ?? StreamTokenService.invalidateToken,
-        _backoff = backoff ?? _defaultBackoff;
+    Duration bodyTimeout = const Duration(minutes: 5),
+    DownloadHttp? http,
+  }) : _http = http ??
+            DownloadHttp(
+              httpClient: httpClient,
+              tokenProvider: tokenProvider,
+              onAuthFailure: onAuthFailure,
+              backoff: backoff,
+              maxAttempts: maxAttempts,
+              bodyTimeout: bodyTimeout,
+            );
 
-  final http.Client _http;
-  final Future<String?> Function(String serverName) _tokenProvider;
-  final void Function(String serverName) _onAuthFailure;
-  final Duration Function(int attempt) _backoff;
-  final int maxAttempts;
+  final DownloadHttp _http;
   final Duration segmentTimeout;
   final Duration masterTimeout;
-  final Duration bodyTimeout;
-
-  static Duration _defaultBackoff(int attempt) {
-    const steps = [2, 4, 8, 16, 32, 60, 60, 60];
-    return Duration(seconds: steps[attempt.clamp(0, steps.length - 1)]);
-  }
 
   Future<HlsDownloadResult> download({
     required String serverName,
@@ -110,8 +91,8 @@ class HlsDownloader {
     required DownloadCancelToken cancel,
   }) async {
     await dir.create(recursive: true);
-    await _discardPartials(dir);
-    var bytes = await _existingBytes(dir);
+    await DownloadHttp.discardPartials(dir);
+    var bytes = await DownloadHttp.existingBytes(dir);
 
     final isVideo = SubtitleStreams.hasVideo(streams);
     final bool direct;
@@ -127,7 +108,7 @@ class HlsDownloader {
     // 1. Master.
     final masterUrl = ImageUtil.buildMasterUrl(nodeUrl, mediaFileId,
         direct: direct, transcode: transcode);
-    final masterText = await _getText(serverName, masterUrl, cancel,
+    final masterText = await _http.getText(serverName, masterUrl, cancel,
         timeout: masterTimeout);
     final master = M3u8.parseMaster(masterText);
     if (master.variants.isEmpty) {
@@ -136,21 +117,21 @@ class HlsDownloader {
 
     // 2. Pick variants and renditions.
     final variants = _pickVariants(master, isVideo, selection.videoQuality);
-    final audioGroups = variants.map((v) => v.audioGroup).whereType<String>().toSet();
+    final audioGroups =
+        variants.map((v) => v.audioGroup).whereType<String>().toSet();
     final audio = master.media
         .where((m) => m.type == 'AUDIO' && audioGroups.contains(m.groupId))
         .toList();
     final keptAudio = _pickAudio(audio, selection.spokenLanguages);
 
-    final playlists = <String>[
-      ...variants.map((v) => v.uri),
-      ...keptAudio.map((m) => m.uri),
-    ];
     // An audio-only variant points straight at the audio playlist that the
     // rendition also names; mirror it once.
-    final uniquePlaylists = playlists.toSet().toList();
+    final uniquePlaylists = <String>{
+      ...variants.map((v) => v.uri),
+      ...keptAudio.map((m) => m.uri),
+    }.toList();
 
-    await _writeAtomic(
+    await DownloadHttp.writeAtomic(
       File('${dir.path}/master.m3u8'),
       M3u8.rewriteMaster(master,
           keepVariantUris: variants.map((v) => v.uri).toSet(),
@@ -160,11 +141,12 @@ class HlsDownloader {
     // 3. Media playlists → segment work list, in playlist order.
     final work = <String>[];
     for (final name in uniquePlaylists) {
-      _checkCancel(cancel);
-      final text = await _getText(
+      DownloadHttp.checkCancel(cancel);
+      final text = await _http.getText(
           serverName, _fileUrl(nodeUrl, mediaFileId, name), cancel,
           timeout: segmentTimeout);
-      await _writeAtomic(File('${dir.path}/$name'), M3u8.rewriteMediaPlaylist(text));
+      await DownloadHttp.writeAtomic(
+          File('${dir.path}/$name'), M3u8.rewriteMediaPlaylist(text));
       work.addAll(M3u8.parseSegmentUris(text));
     }
     final total = work.length;
@@ -181,14 +163,14 @@ class HlsDownloader {
 
     // 4. Segments.
     for (final name in work) {
-      _checkCancel(cancel);
+      DownloadHttp.checkCancel(cancel);
       final target = File('${dir.path}/$name');
       if (await target.exists()) {
         done++;
         report();
         continue;
       }
-      final length = await _getToFile(
+      final length = await _http.getToFile(
           serverName, _fileUrl(nodeUrl, mediaFileId, name), target, cancel,
           timeout: segmentTimeout);
       bytes += length;
@@ -201,12 +183,12 @@ class HlsDownloader {
     final subtitleIds = <String>[];
     if (isVideo && selection.downloadSubtitles) {
       for (final s in SubtitleStreams.sideloadable(streams)) {
-        _checkCancel(cancel);
+        DownloadHttp.checkCancel(cancel);
         final name = 'sub_${s.id}.srt';
         final target = File('${dir.path}/$name');
         if (!await target.exists()) {
           try {
-            bytes += await _getToFile(serverName,
+            bytes += await _http.getToFile(serverName,
                 _fileUrl(nodeUrl, mediaFileId, name), target, cancel,
                 timeout: segmentTimeout);
           } on DownloadFailure {
@@ -219,24 +201,11 @@ class HlsDownloader {
     }
 
     // 6. Cover (best effort).
-    String? artworkFile;
-    if (artworkUrl != null) {
-      final target = File('${dir.path}/artwork.jpg');
-      try {
-        if (!await target.exists()) {
-          bytes += await _getToFile(serverName, artworkUrl, target, cancel,
-              timeout: segmentTimeout, maxAttemptsOverride: 2);
-        }
-        artworkFile = 'artwork.jpg';
-      } on DownloadCancelled {
-        rethrow;
-      } catch (_) {
-        artworkFile = null;
-      }
-    }
+    final artworkFile = await fetchArtwork(_http, serverName, dir, artworkUrl,
+        cancel, timeout: segmentTimeout);
 
     return HlsDownloadResult(
-      bytes: await _existingBytes(dir),
+      bytes: await DownloadHttp.existingBytes(dir),
       segmentsDone: done,
       segmentsTotal: total,
       audioStreamIndexes: keptAudio
@@ -246,6 +215,26 @@ class HlsDownloader {
       subtitleStreamIds: subtitleIds,
       artworkFile: artworkFile,
     );
+  }
+
+  /// `artwork.jpg` from [artworkUrl] (token-free; the token is appended per
+  /// request). Null when there is no cover or it could not be fetched.
+  static Future<String?> fetchArtwork(DownloadHttp http, String serverName,
+      Directory dir, String? artworkUrl, DownloadCancelToken cancel,
+      {required Duration timeout}) async {
+    if (artworkUrl == null) return null;
+    final target = File('${dir.path}/artwork.jpg');
+    try {
+      if (!await target.exists()) {
+        await http.getToFile(serverName, artworkUrl, target, cancel,
+            timeout: timeout, maxAttemptsOverride: 2);
+      }
+      return 'artwork.jpg';
+    } on DownloadCancelled {
+      rethrow;
+    } catch (_) {
+      return null;
+    }
   }
 
   // ---- selection -------------------------------------------------------
@@ -265,12 +254,11 @@ class HlsDownloader {
 
   static List<HlsMedia> _pickAudio(List<HlsMedia> audio, List<String> langs) {
     if (audio.isEmpty) return const [];
+    final wanted = langs.map((l) => l.toLowerCase()).toSet();
     final kept = <HlsMedia>[];
     for (final m in audio) {
       final lang = m.language?.toLowerCase();
-      if (m.isDefault || (lang != null && langs.map((l) => l.toLowerCase()).contains(lang))) {
-        kept.add(m);
-      }
+      if (m.isDefault || (lang != null && wanted.contains(lang))) kept.add(m);
     }
     if (kept.isEmpty) kept.add(audio.first);
     return kept;
@@ -282,147 +270,10 @@ class HlsDownloader {
     return m == null ? null : int.tryParse(m.group(1)!);
   }
 
-  // ---- HTTP ------------------------------------------------------------
-
   static String _fileUrl(String nodeUrl, String mediaFileId, String name) {
     final base = nodeUrl.endsWith('/')
         ? nodeUrl.substring(0, nodeUrl.length - 1)
         : nodeUrl;
     return '$base/hls/$mediaFileId/$name';
-  }
-
-  Future<Uri> _tokenized(String serverName, String url) async {
-    String? token;
-    try {
-      token = await _tokenProvider(serverName);
-    } catch (_) {
-      token = null;
-    }
-    if (token == null) return Uri.parse(url);
-    return Uri.parse('$url${url.contains('?') ? '&' : '?'}token=$token');
-  }
-
-  Future<String> _getText(String serverName, String url, DownloadCancelToken cancel,
-      {required Duration timeout}) async {
-    final response = await _send(serverName, url, cancel, timeout: timeout);
-    return await response.stream.bytesToString().timeout(bodyTimeout);
-  }
-
-  /// Streams a response into [target] via a `.part` file; returns its size.
-  Future<int> _getToFile(String serverName, String url, File target,
-      DownloadCancelToken cancel,
-      {required Duration timeout, int? maxAttemptsOverride}) async {
-    final response = await _send(serverName, url, cancel,
-        timeout: timeout, maxAttemptsOverride: maxAttemptsOverride);
-    final part = File('${target.path}.part');
-    final sink = part.openWrite();
-    try {
-      await response.stream.pipe(sink).timeout(bodyTimeout);
-    } on FileSystemException catch (e) {
-      await _tryDelete(part);
-      throw DownloadFailure('write failed: ${e.message}',
-          noSpace: e.osError?.errorCode == 28);
-    } catch (e) {
-      await _tryDelete(part);
-      rethrow;
-    }
-    await part.rename(target.path);
-    return await target.length();
-  }
-
-  /// GET with retry/backoff for transient failures and one token refresh on
-  /// an auth rejection. Throws [DownloadFailure] for permanent errors.
-  Future<http.StreamedResponse> _send(
-      String serverName, String url, DownloadCancelToken cancel,
-      {required Duration timeout, int? maxAttemptsOverride}) async {
-    final attempts = maxAttemptsOverride ?? maxAttempts;
-    var authRetried = false;
-    for (var attempt = 0;; attempt++) {
-      _checkCancel(cancel);
-      http.StreamedResponse? response;
-      Object? transient;
-      try {
-        final uri = await _tokenized(serverName, url);
-        response = await _http.send(http.Request('GET', uri)).timeout(timeout);
-      } on TimeoutException catch (e) {
-        transient = e;
-      } on http.ClientException catch (e) {
-        transient = e;
-      } on SocketException catch (e) {
-        transient = e;
-      }
-      if (response != null) {
-        final code = response.statusCode;
-        if (code == 200) return response;
-        await _drain(response);
-        if ((code == 401 || code == 403) && !authRetried) {
-          authRetried = true;
-          _onAuthFailure(serverName);
-          continue;
-        }
-        if (code == 404) throw DownloadFailure('not found: $url');
-        if (code < 500 && code != 408 && code != 429) {
-          throw DownloadFailure('HTTP $code for $url');
-        }
-        transient = 'HTTP $code';
-      }
-      if (attempt + 1 >= attempts) {
-        throw DownloadFailure('giving up on $url: $transient');
-      }
-      await _sleepCancellable(_backoff(attempt), cancel);
-    }
-  }
-
-  Future<void> _drain(http.StreamedResponse r) async {
-    try {
-      await r.stream.drain<void>().timeout(const Duration(seconds: 5));
-    } catch (_) {}
-  }
-
-  Future<void> _sleepCancellable(Duration d, DownloadCancelToken cancel) async {
-    final end = DateTime.now().add(d);
-    while (DateTime.now().isBefore(end)) {
-      _checkCancel(cancel);
-      final left = end.difference(DateTime.now());
-      await Future.delayed(
-          left < const Duration(milliseconds: 250) ? left : const Duration(milliseconds: 250));
-    }
-  }
-
-  static void _checkCancel(DownloadCancelToken cancel) {
-    if (cancel.isCancelled) throw DownloadCancelled();
-  }
-
-  // ---- files -----------------------------------------------------------
-
-  static Future<void> _writeAtomic(File file, String text) async {
-    final tmp = File('${file.path}.part');
-    try {
-      await tmp.writeAsString(text, flush: true);
-    } on FileSystemException catch (e) {
-      throw DownloadFailure('write failed: ${e.message}',
-          noSpace: e.osError?.errorCode == 28);
-    }
-    await tmp.rename(file.path);
-  }
-
-  static Future<void> _discardPartials(Directory dir) async {
-    await for (final e in dir.list()) {
-      if (e is File && e.path.endsWith('.part')) await _tryDelete(e);
-    }
-  }
-
-  static Future<int> _existingBytes(Directory dir) async {
-    var total = 0;
-    await for (final e in dir.list()) {
-      if (e is File) total += await e.length();
-    }
-    return total;
-  }
-
-  static Future<void> _tryDelete(File f) async {
-    try {
-      if (await f.exists()) await f.delete();
-    } catch (_) {}
   }
 }

@@ -3,10 +3,10 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:player/utils/LoggerService.dart';
-import 'package:player/utils/StreamTokenService.dart';
-import 'package:player/utils/WellKnownService.dart';
 import 'package:player/utils/comic/ComicLocator.dart';
-import 'package:player/utils/epub/ReadingSyncService.dart' show BookProgress;
+import 'package:player/utils/download/ReadingProgressOutbox.dart';
+import 'package:player/utils/epub/ReadingSyncService.dart'
+    show BookProgress, BookProgressReading;
 
 /// Loads and saves comic reading progress through the same REST pair the epub
 /// reader uses (`/book-progress` + `/reading-progress`), with the audiobook
@@ -19,12 +19,16 @@ class ComicSyncService {
     required this.bookId,
     required this.mediaFileId,
     http.Client? httpClient,
-  }) : _http = httpClient ?? http.Client();
+    ReadingProgressOutbox? outbox,
+  })  : _http = httpClient ?? http.Client(),
+        _outbox = outbox;
 
   final String serverName;
   final String bookId;
   final String mediaFileId;
   final http.Client _http;
+  final ReadingProgressOutbox? _outbox;
+  ReadingProgressOutbox get outbox => _outbox ?? ReadingProgressOutbox.instance;
 
   static const Duration _debounce = Duration(milliseconds: 1500);
 
@@ -34,29 +38,14 @@ class ComicSyncService {
   ComicLocator? _pendingSave;
   bool _disposed = false;
 
-  String get _apiBase {
-    final url = WellKnownService.getCached(serverName)?.serverUrl ?? '';
-    return url.endsWith('/') ? url.substring(0, url.length - 1) : url;
-  }
+  Future<Uri> _endpoint(String path, [Map<String, String>? query]) =>
+      BookProgressApi.endpoint(serverName, path, query);
 
-  Future<Uri> _endpoint(String path, [Map<String, String>? query]) async {
-    // A failed token fetch shouldn't kill the sync: the request goes out
-    // without one and the server decides (bearer auth may still apply).
-    String? token;
-    try {
-      token = await StreamTokenService.ensureToken(serverName);
-    } catch (_) {
-      token = null;
-    }
-    return Uri.parse('$_apiBase$path').replace(queryParameters: {
-      ...?query,
-      if (token != null) 'token': token,
-    });
-  }
-
-  /// Fetches `/book-progress`. Failure leaves [progress] null: the volume
+  /// Fetches `/book-progress`. Failure falls back to the position waiting in
+  /// the outbox (offline reading) or leaves [progress] null: the volume
   /// opens at its first page and saving still works.
   Future<void> init() async {
+    await outbox.load(serverName);
     try {
       final response = await _http
           .get(await _endpoint('/book-progress', {'bookId': bookId}));
@@ -68,6 +57,20 @@ class ComicSyncService {
     } catch (error) {
       LoggerService().logger.w('Could not fetch comic progress: $error');
       progress = null;
+    }
+    final pending = outbox.lastFor(serverName, bookId);
+    if (pending != null &&
+        (progress?.reading == null ||
+            (progress!.reading!.updatedAt?.isBefore(pending.updatedAt) ?? true))) {
+      progress = BookProgress(
+        reading: BookProgressReading(
+          location: pending.location,
+          mediaFileId: pending.mediaFileId,
+          progress: pending.progress,
+          updatedAt: pending.updatedAt,
+        ),
+        chapters: const [],
+      );
     }
   }
 
@@ -100,22 +103,25 @@ class ComicSyncService {
     final locator = _pendingSave;
     _pendingSave = null;
     if (locator == null) return;
+    final payload = {
+      'bookId': bookId,
+      'location': locator.serialize(),
+      'progress': locator.fraction,
+      'readingLocationMediaFileId': mediaFileId,
+    };
     try {
       final response = await _http.post(
         await _endpoint('/reading-progress'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'bookId': bookId,
-          'location': locator.serialize(),
-          'progress': locator.fraction,
-          'readingLocationMediaFileId': mediaFileId,
-        }),
+        body: json.encode(payload),
       );
       if (response.statusCode >= 400) {
         throw Exception('status ${response.statusCode}');
       }
+      await outbox.clear(serverName, bookId);
     } catch (error) {
-      LoggerService().logger.w('Progress sync failed: $error');
+      LoggerService().logger.w('Progress sync failed, queued: $error');
+      await outbox.put(serverName, bookId, payload);
     }
   }
 
