@@ -1,5 +1,37 @@
 # Changelog
 
+## player v1.18.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.18.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(person): play the recently added tab as an artist queue and show the added date ([`0044063`](https://github.com/ister-app/player/commit/0044063))
+- feat(person): show appears-on albums and recently added tracks ([`9593b05`](https://github.com/ister-app/player/commit/9593b05))
+
+### Fixes
+
+- fix(e2e): generate the Dragonfly s01e08 subtitle fixture in CI ([`4d5abc8`](https://github.com/ister-app/player/commit/4d5abc8))
+
+### Other
+
+- ci(e2e): pin the server to 2.17.1-snapshot, v2.17.0 released before the recently-added API ([`69dd7ec`](https://github.com/ister-app/player/commit/69dd7ec))
+- docs: warn that the darwin libmpv pins live in Package.swift, not the Makefiles ([`f5d1033`](https://github.com/ister-app/player/commit/f5d1033))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.18.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.17.3...v1.18.0
+
 ## player v1.17.3
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
