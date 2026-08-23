@@ -20,28 +20,7 @@ class LocalVideoPage extends StatefulWidget {
 }
 
 class _LocalVideoPageState extends State<LocalVideoPage> {
-  bool _videoPageOpenCounted = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // Same mini-player coordination as MoviePage (post-frame: see there).
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      MediaPlayerHandler.instance.videoPageOpen.value++;
-      _videoPageOpenCounted = true;
-    });
-  }
-
-  @override
-  void dispose() {
-    if (_videoPageOpenCounted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        MediaPlayerHandler.instance.videoPageOpen.value--;
-      });
-    }
-    super.dispose();
-  }
-
+  // The mini player's video bar is hidden by IsterPlayer itself while mounted.
   @override
   Widget build(BuildContext context) {
     final handler = MediaPlayerHandler.instance;

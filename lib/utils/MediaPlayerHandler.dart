@@ -97,6 +97,9 @@ class MediaPlayerHandler extends BaseAudioHandler
     // Set up listeners once – they survive for the lifetime of the singleton
     if (!_listenersAdded) {
       _player.stream.playing.listen(_onPlayingChanged);
+      // Raw stream, not _onPlayingChanged: that one is also called with a
+      // literal `true` right after an open, inside the not-loaded window.
+      _player.stream.playing.listen((_) => _observeStreamReady());
       // Drop the loading skeleton exactly when new metadata is delivered to the
       // UI stream — same event the music player's StreamBuilder rebuilds on — so
       // the previous track's cover/title can't flash in between.
@@ -247,6 +250,75 @@ class MediaPlayerHandler extends BaseAudioHandler
   void _beginMediaLoading() {
     _loadingFromItem = mediaItem.valueOrNull;
     mediaLoading.value = true;
+  }
+
+  /// False from the moment a new item starts loading until its stream really
+  /// plays (first frame decoded at the open position). The video surface keeps
+  /// the item's artwork + a spinner over the texture while this is false, so
+  /// neither a black box nor the previous item's last frame shows during a
+  /// cold HLS transcode or a queue advance.
+  ///
+  /// Reset *synchronously* at the start of every queue switch (before the
+  /// GraphQL/preferences round-trips), not only in [_openMedia]: the page's
+  /// video surface is mounted by then and would otherwise show the stale
+  /// texture until the open actually happens.
+  final ValueNotifier<bool> videoStreamReady = ValueNotifier(false);
+
+  /// media_kit reports `playing == true` synchronously inside `open()`, before
+  /// mpv loaded anything, and the first `buffering == true` (`core-idle`) only
+  /// arrives with mpv's START_FILE event. Stale position events of the previous
+  /// stream can also trail in. So "ready" is only accepted once a buffering
+  /// event for the new stream was seen.
+  bool _videoLoadStarted = false;
+
+  void _resetVideoStreamReady() {
+    _videoLoadStarted = false;
+    videoStreamReady.value = false;
+  }
+
+  /// Whether the stream that was opened at [openPositionMs] plays for real.
+  /// Pure so the gating can be unit-tested without a player.
+  static bool computeStreamReady({
+    required bool loadStarted,
+    required bool playing,
+    required bool buffering,
+    required Duration duration,
+    required Duration position,
+    required int openPositionMs,
+  }) {
+    if (!loadStarted) return false;
+    // core-idle went false after the playback restart: the first frame at the
+    // open position is out and the stream has a known length.
+    if (playing && !buffering && duration > Duration.zero) return true;
+    // Fallback (web, or a platform whose core-idle timing differs): the
+    // position only advances while frames are being decoded.
+    return position - Duration(milliseconds: openPositionMs) >
+        const Duration(milliseconds: 250);
+  }
+
+  void _observeStreamReady() {
+    if (videoStreamReady.value) return;
+    if (computeStreamReady(
+      loadStarted: _videoLoadStarted,
+      playing: _player.state.playing,
+      buffering: _player.state.buffering,
+      duration: _player.state.duration,
+      position: _player.state.position,
+      openPositionMs: _streamOpenPositionMs,
+    )) {
+      videoStreamReady.value = true;
+    }
+  }
+
+  /// Whether this video item is the one the handler has loaded (playing or
+  /// paused). The episode/movie pages then show the surface right away instead
+  /// of the cover with a play button.
+  bool isCurrentVideo(
+      {String? episodeId, String? movieId, required String serverName}) {
+    if (_currentMediaUrl == null || this.serverName != serverName) return false;
+    if (episodeId != null) return episode?.id == episodeId;
+    if (movieId != null) return movie?.id == movieId;
+    return false;
   }
   // Number of video pages (episode/movie) currently mounted. The mini player
   // hides its video bar while the item's own page is on screen — the full
@@ -416,6 +488,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// before [_openMedia] installs the new stream.
   Future<void> _silenceForQueueSwitch() async {
     _syncGeneration++;
+    _resetVideoStreamReady();
     _currentMediaUrl = null;
     _mediaOpenedAt = null;
     // Under flutter test there is no real mpv event loop and player calls
@@ -880,24 +953,30 @@ class MediaPlayerHandler extends BaseAudioHandler
     _loadRetries = 0;
     _startHeartbeat();
     _syncGeneration++;
+    _resetVideoStreamReady();
     serverName = srv;
     graphQLClient = client;
 
-    // Shuffle always starts a fresh track — open the player and skeletonise
-    // until the first shuffled item's metadata is published.
-    _beginMediaLoading();
-    openMusicPlayerRequest.value++;
-
     final items = PlayQueueService.sortedItems(pq);
-    if (items.isEmpty) {
-      mediaLoading.value = false;
-      return;
-    }
+    if (items.isEmpty) return;
     final current = (startMediaId == null
             ? null
             : PlayQueueService.itemForMedia(items, startMediaId)) ??
         PlayQueueService.getCurrentPlayQueueItem(pq) ??
         items.first;
+    if (current.movie != null || current.episode != null) {
+      // Video needs its page on screen (the page is the player). The page
+      // resolves the route from episode/movie, so publish those before the
+      // request — _openQueueItem sets them again below.
+      episode = current.episode;
+      movie = current.movie;
+      openVideoPageRequest.value++;
+    } else {
+      // Audio always starts a fresh track — open the player and skeletonise
+      // until the first item's metadata is published.
+      _beginMediaLoading();
+      openMusicPlayerRequest.value++;
+    }
     playQueue = pq.currentItemId == current.id
         ? pq
         : pq.copyWith(currentItemId: current.id);
@@ -931,6 +1010,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     _intendsToPlay = true;
     _loadRetries = 0;
     _syncGeneration++;
+    _resetVideoStreamReady();
     serverName = srv;
     graphQLClient = null;
     _commandSubscription?.dispose();
@@ -1223,6 +1303,13 @@ class MediaPlayerHandler extends BaseAudioHandler
     // loaded and published but playback waits for an explicit play().
     bool autoPlay = true,
   }) async {
+    // Backstop for callers that didn't reset at the queue switch. Only for a
+    // *different* stream: the stall watchdog and the seek-before-open-position
+    // path re-open the same URL, and the cover must not pop over the video
+    // mid-scrub there (the controls' buffering spinner covers those).
+    if (mediaUrl != _currentMediaUrl) _resetVideoStreamReady();
+    // No mpv under flutter test: nothing would ever report the stream ready.
+    if (ClientManager.usesTestClients) videoStreamReady.value = true;
     _currentMediaUrl = mediaUrl;
     lastStartTimeMs = startTimeInMilliseconds;
     _streamOpenPositionMs = startTimeInMilliseconds ?? 0;
@@ -2104,6 +2191,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     _loadRetries = 0;
     _startHeartbeat();
     _syncGeneration++;
+    _resetVideoStreamReady();
     final generation = _syncGeneration;
     // Publish the target index immediately so a second next/previous tap
     // during the awaits below doesn't act on the stale index.
@@ -2739,6 +2827,8 @@ class MediaPlayerHandler extends BaseAudioHandler
   void _listenToBuffering() {
     _player.stream.buffering.listen(
       (event) {
+        if (event) _videoLoadStarted = true;
+        _observeStreamReady();
         updatePlaybackState();
       },
     );
@@ -2898,6 +2988,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         _lastObservedPosition = pos;
         _lastPositionAdvance = DateTime.now();
       }
+      _observeStreamReady();
       _recordPlayHistoryIfDue(pos);
 
       _maybeAdvancePastEpisodeBoundary(pos);
@@ -3532,7 +3623,11 @@ class MediaPlayerHandler extends BaseAudioHandler
         (current.movie != null || current.episode != null) &&
         _itemIsPlayable(current)) {
       // Watching along needs the video's page on screen, or the follower
-      // would only hear the movie's audio.
+      // would only hear the movie's audio. The page's route is resolved from
+      // episode/movie (openCurrentVideoPage), so those must hold the new item
+      // before the request fires — _openQueueItem sets them again below.
+      episode = current.episode;
+      movie = current.movie;
       openVideoPageRequest.value++;
     }
     if (current != null) {

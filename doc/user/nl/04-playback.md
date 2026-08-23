@@ -8,6 +8,10 @@ Druk op afspelen en Ister streamt vanaf je eigen server — video, muziek, podca
 
 ## Video kijken
 
+Als je een film of aflevering opent zie je eerst de cover met een afspeelknop — er wordt pas gestreamd als je daarop drukt, ook wanneer je iets oppakt vanuit *Verder kijken*. Terwijl de server de stream voorbereidt blijft de cover in beeld met een laadindicator; zodra de video echt speelt neemt die het over. Gaat de wachtrij door naar de volgende aflevering, dan start die vanzelf.
+
+![Een filmpagina, klaar om af te spelen](../images/nl/movie-ready.png)
+
 Films en afleveringen streamen via HLS, dat zich soepel aanpast aan je verbinding. Met de knoppen in beeld spoel je, pauzeer je en ga je naar volledig scherm.
 
 ![Een film die speelt, met de bedieningsknoppen in beeld](../images/nl/movie-playing.png)

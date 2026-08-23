@@ -13,6 +13,7 @@ import '../components/DevicePickerSheet.dart';
 import '../components/SourceAttribution.dart';
 import '../components/CastRow.dart';
 import '../components/IsterPlayer.dart';
+import '../components/VideoCoverView.dart';
 import '../components/RatingStars.dart';
 import '../graphql/schema.graphql.dart';
 import '../components/download/DownloadMenuItem.dart';
@@ -23,9 +24,9 @@ import '../graphql/fragmentMovie.graphql.dart';
 import '../utils/ImageTypes.dart';
 import '../utils/ImageUtil.dart';
 import '../utils/MediaPlayerHandler.dart';
-import '../utils/StreamTokenService.dart';
 import '../utils/MetadataUtil.dart';
 import '../utils/PermissionsService.dart';
+import '../utils/VideoAutoStart.dart';
 
 @RoutePage()
 class MoviePage extends StatefulWidget {
@@ -47,8 +48,12 @@ class MoviePage extends StatefulWidget {
 class _MoviePageState extends State<MoviePage> {
   bool loadComplete = false;
   Fragment$fragmentMovie? movie;
+  /// Playback of this movie was kicked off (play button or auto-start); the
+  /// video surface shows from then on.
   bool _playQueueStarted = false;
-  bool _videoPageOpenCounted = false;
+
+  /// The user tapped the cover's play button.
+  bool _playRequested = false;
   bool _showAdminActions = true;
 
   @override
@@ -59,27 +64,22 @@ class _MoviePageState extends State<MoviePage> {
         setState(() => _showAdminActions = false);
       }
     });
-    // Hide the mini player's video bar while this page (the full player) shows.
-    // Post-frame: the mini player is an ancestor listening to this notifier, and
-    // notifying it while this page is being mounted mid-build throws
-    // "markNeedsBuild called during build".
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      MediaPlayerHandler.instance.videoPageOpen.value++;
-      _videoPageOpenCounted = true;
-    });
   }
 
   @override
-  void dispose() {
-    if (_videoPageOpenCounted) {
-      // Post-frame for the same reason as initState: the listening mini player
-      // may be rebuilding (or unmounting) in the same locked-tree phase.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        MediaPlayerHandler.instance.videoPageOpen.value--;
+  void didUpdateWidget(MoviePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.movieId != widget.movieId) {
+      setState(() {
+        movie = null;
+        _playQueueStarted = false;
+        _playRequested = false;
+        loadComplete = false;
       });
     }
-    super.dispose();
   }
+
+  void _onPlay() => setState(() => _playRequested = true);
 
   @override
   Widget build(BuildContext context) {
@@ -113,12 +113,22 @@ class _MoviePageState extends State<MoviePage> {
           );
         } else {
           final MediaPlayerHandler handler = MediaPlayerHandler.instance;
-          // A movie without an analyzed media file has nothing to play — the
-          // page renders the artwork fallback, so skip the auto-start instead
-          // of crashing on mediaFile!.first.
+          // Opening a movie shows its cover with a play button; playback
+          // starts on its own only for the queue that is already playing
+          // (mini player, watch-along, handoff). A movie without an analyzed
+          // media file has nothing to play — the page renders the cover
+          // without a button, so skip the start instead of crashing on
+          // mediaFile!.first.
+          final autoStart = shouldAutoStartVideo(
+            routeQueueId: widget.playQueueId,
+            handlerQueueId: handler.playQueue?.id,
+            isCurrentVideo: handler.isCurrentVideo(
+                movieId: widget.movieId, serverName: widget.serverName),
+          );
           if (movie != null &&
               movie!.mediaFile?.isNotEmpty == true &&
-              !_playQueueStarted) {
+              !_playQueueStarted &&
+              (autoStart || _playRequested)) {
             _playQueueStarted = true;
             handler.startPlayQueueForMovie(
               GraphQLProvider.of(context).value,
@@ -158,7 +168,7 @@ class _MoviePageState extends State<MoviePage> {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       LayoutBuilder(
         builder: (context, constraints) {
-          final hasVideo = movie != null &&
+          final playable = movie != null &&
               loadComplete &&
               movie.mediaFile != null &&
               movie.mediaFile!.isNotEmpty;
@@ -166,30 +176,20 @@ class _MoviePageState extends State<MoviePage> {
             // Black behind the player, so the video's letterbox bars don't glow
             // in the (light) surface colour.
             decoration: BoxDecoration(
-                color: hasVideo
+                color: _playQueueStarted
                     ? Colors.black
                     : Theme.of(context).colorScheme.surfaceContainerHighest),
             height: constraints.maxWidth < 800 ? 300 : 500,
-            child: movie != null && loadComplete
-                ? movie.mediaFile == null ||
-                        movie.mediaFile!.isEmpty
-                    ? LayoutBuilder(builder: (context, constraints) {
-                        var imageByType = ImageUtil.getImageByType(
-                            movie.images, ImageTypes.background);
-                        return Container(
-                          height: constraints.maxWidth < 800 ? 300 : 500,
-                          width: constraints.maxWidth,
-                          decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
-                          child: imageByType != null
-                              ? Image.network(
-                                  ImageUtil.buildUrl(imageByType, token: StreamTokenService.getToken(widget.serverName))!,
-                                  fit: BoxFit.cover,
-                                )
-                              : Container(),
-                        );
-                      })
-                    : IsterPlayer()
-                : Container(),
+            // Once started the surface stays mounted; before that the cover
+            // with the play button (no button without a playable file).
+            child: _playQueueStarted
+                ? const Skeleton.keep(child: IsterPlayer())
+                : VideoCoverView(
+                    image: ImageUtil.getImageByType(
+                        movie?.images, ImageTypes.background),
+                    serverName: widget.serverName,
+                    onPlay: playable ? _onPlay : null,
+                  ),
           );
         },
       ),

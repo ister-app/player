@@ -489,11 +489,38 @@ void main() {
     useClient(_fakeGraphQL(queue: queue, operations: []));
     final videoBumps = handler.openVideoPageRequest.value;
     final musicBumps = handler.openMusicPlayerRequest.value;
+    // The mini player resolves the page route from handler.movie/episode the
+    // moment the request fires — the new item must already be published.
+    String? movieAtRequest;
+    void onRequest() => movieAtRequest = handler.movie?.id;
+    handler.openVideoPageRequest.addListener(onRequest);
+    addTearDown(() => handler.openVideoPageRequest.removeListener(onRequest));
 
     await handler.startFollowingQueue(_server, 'pq-follow');
 
     expect(handler.openVideoPageRequest.value, videoBumps + 1);
     expect(handler.openMusicPlayerRequest.value, musicBumps);
+    expect(movieAtRequest, 'movie-item-1');
+  });
+
+  test('a video handoff ("play on this device") requests the video page',
+      () async {
+    final queue = _queue(id: 'pq-handoff', items: [_movieItem('item-1', 1)]);
+    useClient(_fakeGraphQL(queue: queue, operations: []));
+    final videoBumps = handler.openVideoPageRequest.value;
+    final musicBumps = handler.openMusicPlayerRequest.value;
+    String? movieAtRequest;
+    void onRequest() => movieAtRequest = handler.movie?.id;
+    handler.openVideoPageRequest.addListener(onRequest);
+    addTearDown(() => handler.openVideoPageRequest.removeListener(onRequest));
+
+    await handler.startFromServerQueue(
+        ClientManager.getClientForUrl(_server).value, queue, _server);
+
+    expect(handler.openVideoPageRequest.value, videoBumps + 1);
+    expect(handler.openMusicPlayerRequest.value, musicBumps);
+    expect(movieAtRequest, 'movie-item-1');
+    expect(handler.playQueue?.id, 'pq-handoff');
   });
 
   test('leader switches steer the follower between video page and music player',

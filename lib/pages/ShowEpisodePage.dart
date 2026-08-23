@@ -1,9 +1,7 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/analyzeDataForEpisode.graphql.dart';
 import 'package:player/graphql/episodeById.graphql.dart';
@@ -15,6 +13,7 @@ import '../components/DevicePickerSheet.dart';
 import '../components/SourceAttribution.dart';
 import '../components/CastRow.dart';
 import '../components/IsterPlayer.dart';
+import '../components/VideoCoverView.dart';
 import '../components/RatingStars.dart';
 import '../graphql/fragmentEpisode.graphql.dart';
 import '../graphql/schema.graphql.dart';
@@ -26,11 +25,11 @@ import '../l10n/app_localizations.dart';
 import '../routes/AppRouter.gr.dart';
 import '../utils/ImageTypes.dart';
 import '../utils/ImageUtil.dart';
-import '../utils/StreamTokenService.dart';
 import '../utils/MediaPlayerHandler.dart';
 import '../utils/MetadataUtil.dart';
 import '../utils/PermissionsService.dart';
 import '../utils/PlayQueueService.dart';
+import '../utils/VideoAutoStart.dart';
 
 @RoutePage()
 class ShowEpisodePage extends StatefulWidget {
@@ -54,8 +53,13 @@ class ShowEpisodePage extends StatefulWidget {
 class _ShowEpisodePageState extends State<ShowEpisodePage> {
   bool loadComplete = false;
   Fragment$fragmentEpisode? episode;
+  /// Playback of this page's episode was kicked off (by the play button or an
+  /// auto-start); the video surface shows from then on. Survives the
+  /// auto-advance navigation to the next episode of the same queue.
   bool _playQueueStarted = false;
-  bool _videoPageOpenCounted = false;
+
+  /// The user tapped the cover's play button.
+  bool _playRequested = false;
   bool _showAdminActions = true;
 
   late final PlayQueueService playQueueService;
@@ -69,15 +73,6 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
       if (mounted && status == AdminStatus.notAdmin) {
         setState(() => _showAdminActions = false);
       }
-    });
-
-    // Hide the mini player's video bar while this page (the full player) shows.
-    // Post-frame: the mini player is an ancestor listening to this notifier, and
-    // notifying it while this page is being mounted mid-build throws
-    // "markNeedsBuild called during build".
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      MediaPlayerHandler.instance.videoPageOpen.value++;
-      _videoPageOpenCounted = true;
     });
 
     // Subscribe to the playqueue changed stream
@@ -96,6 +91,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
         setState(() {
           episode = null;
           _playQueueStarted = false;
+          _playRequested = false;
           loadComplete = false;
         });
       }
@@ -104,12 +100,11 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
 
   @override
   void dispose() {
-    if (_videoPageOpenCounted) {
-      MediaPlayerHandler.instance.videoPageOpen.value--;
-    }
     _playQueueSubscription.cancel();
     super.dispose();
   }
+
+  void _onPlay() => setState(() => _playRequested = true);
 
   void _onPlayQueueChanged(Fragment$fragmentPlayQueue playQueue) {
     final episode =
@@ -154,12 +149,22 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
           );
         } else {
           final MediaPlayerHandler handler = MediaPlayerHandler.instance;
-          // An episode whose media file has not been scanned/analyzed yet has
-          // nothing to play — getContent already renders the artwork fallback,
-          // so skip the auto-start instead of crashing on mediaFile!.first.
+          // Opening an episode shows its cover with a play button; playback
+          // starts on its own only for the queue that is already playing
+          // (auto-advance, mini player, watch-along). An episode whose media
+          // file has not been analyzed yet has nothing to play — getContent
+          // renders the cover without a button, so skip the start instead of
+          // crashing on mediaFile!.first.
+          final autoStart = shouldAutoStartVideo(
+            routeQueueId: widget.playQueueId,
+            handlerQueueId: handler.playQueue?.id,
+            isCurrentVideo: handler.isCurrentVideo(
+                episodeId: widget.episodeId, serverName: widget.serverName),
+          );
           if (episode != null &&
               episode!.mediaFile?.isNotEmpty == true &&
-              !_playQueueStarted) {
+              !_playQueueStarted &&
+              (autoStart || _playRequested)) {
             _playQueueStarted = true;
             handler.startPlayQueue(GraphQLProvider.of(context).value,
                 widget.playQueueId, episode!, widget.serverName);
@@ -201,7 +206,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       LayoutBuilder(
         builder: (context, constraints) {
-          final hasVideo = episode != null &&
+          final playable = episode != null &&
               loadComplete &&
               episode.mediaFile != null &&
               episode.mediaFile!.isNotEmpty;
@@ -209,41 +214,21 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
             // Black behind the player, so the video's letterbox bars don't glow
             // in the (light) surface colour.
             decoration: BoxDecoration(
-                color: hasVideo
+                color: _playQueueStarted
                     ? Colors.black
                     : Theme.of(context).colorScheme.surfaceContainerHighest),
             height: constraints.maxWidth < 800 ? 300 : 500,
-            child: episode != null && loadComplete
-                ? episode.mediaFile == null ||
-                        episode.mediaFile!.isEmpty
-                    ? LayoutBuilder(builder: (context, constraints) {
-                        var imageByType = ImageUtil.getImageByType(
-                            episode.images, ImageTypes.background);
-                        return Container(
-                          height: constraints.maxWidth < 800 ? 300 : 500,
-                          width: constraints.maxWidth,
-                          decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
-                          child: (imageByType?.id != null)
-                              ? CachedNetworkImage(
-                                  placeholder: (context, url) =>
-                                      imageByType?.blurHash != null
-                                          ? BlurHash(
-                                              hash: imageByType!.blurHash!,
-                                              optimizationMode:
-                                                  BlurHashOptimizationMode
-                                                      .standard,
-                                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                                              duration: Duration.zero,
-                                            )
-                                          : Container(),
-                                  fit: BoxFit.cover,
-                                  imageUrl: ImageUtil.buildUrl(imageByType, token: StreamTokenService.getToken(widget.serverName))!,
-                                )
-                              : Container(),
-                        );
-                      })
-                    : IsterPlayer()
-                : Container(),
+            // Once started, the surface stays mounted — also through the
+            // skeletonised refetch of an auto-advance, so the next episode's
+            // cover + spinner shows on it instead of an empty box.
+            child: _playQueueStarted
+                ? const Skeleton.keep(child: IsterPlayer())
+                : VideoCoverView(
+                    image: ImageUtil.getImageByType(
+                        episode?.images, ImageTypes.background),
+                    serverName: widget.serverName,
+                    onPlay: playable ? _onPlay : null,
+                  ),
           );
         },
       ),

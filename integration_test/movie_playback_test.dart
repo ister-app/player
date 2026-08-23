@@ -20,6 +20,7 @@ void main() {
     final movieId = movie['id'] as String;
 
     await pushRoute(tester, MovieRoute(movieId: movieId));
+    await tapVideoPlay(tester);
 
     final player = MediaPlayerHandler.instance.player;
     await pumpUntil(

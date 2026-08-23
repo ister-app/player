@@ -6,6 +6,7 @@ import 'package:media_kit_video/media_kit_video.dart';
 import '../utils/MediaPlayerHandler.dart';
 import '../utils/PlatformService.dart';
 import 'TvFocusable.dart';
+import 'VideoCoverView.dart';
 import 'WatchTogetherButton.dart';
 import 'video_controls/IsterVideoControls.dart';
 
@@ -38,6 +39,35 @@ class IsterPlayer extends StatefulWidget {
 
 class _IsterPlayerState extends State<IsterPlayer> {
   final MediaPlayerHandler _handler = MediaPlayerHandler.instance;
+  bool _videoPageOpenCounted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Hide the mini player's video bar while a video surface is mounted (the
+    // full player is right here). Counted on the surface, not the page: a
+    // page that only shows the cover + play button for another episode must
+    // keep the bar of the one that is playing. Post-frame: the mini player is
+    // an ancestor listening to this notifier, and notifying it while this
+    // widget is being mounted mid-build throws "markNeedsBuild during build".
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _handler.videoPageOpen.value++;
+      _videoPageOpenCounted = true;
+    });
+  }
+
+  @override
+  void dispose() {
+    if (_videoPageOpenCounted) {
+      // Post-frame for the same reason: the listening mini player may be
+      // rebuilding (or unmounting) in the same locked-tree phase.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _handler.videoPageOpen.value--;
+      });
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +206,10 @@ class _IsterVideoControlsState extends State<_IsterVideoControls> {
         behavior: HitTestBehavior.opaque,
         onTap: _onTapEmbedded,
         child: Stack(
+          fit: StackFit.expand,
           children: [
+            // Cover + spinner until the stream plays (same as the controls).
+            const VideoLoadingOverlay(),
             const Positioned(top: 8, left: 8, child: WatchingAlongChip()),
             Center(
               child: Container(

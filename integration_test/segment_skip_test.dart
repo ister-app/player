@@ -75,6 +75,7 @@ void main() {
         ShowOverviewRoute(showId: showId, children: [
           ShowEpisodeRoute(showId: showId, episodeId: episodeId),
         ]));
+    await tapVideoPlay(tester);
 
     final handler = MediaPlayerHandler.instance;
     final player = handler.player;

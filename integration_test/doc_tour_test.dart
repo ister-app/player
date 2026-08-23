@@ -304,6 +304,11 @@ void main() {
         'playQueueItemId: "$pqItemId") { id } }');
 
     await pushRoute(tester, MovieRoute(movieId: movieId));
+    // The page opens on the cover with a play button; nothing streams yet.
+    await pumpUntilFound(tester, videoPlayButton);
+    await tester.pump(const Duration(milliseconds: 400));
+    await shot(tester, 'movie-ready');
+    await tapVideoPlay(tester);
     await pumpUntil(
       tester,
       () =>

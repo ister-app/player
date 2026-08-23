@@ -16,6 +16,7 @@ A singleton extending `BaseAudioHandler` from `audio_service`, wrapping one `med
 
 Key behaviours:
 
+- **Video never autoplays from browsing** — `ShowEpisodePage`/`MoviePage` show the cover with a play button (`VideoCoverView`) and only call `startPlayQueue*` after the tap, unless the route's `playQueueId` is the queue already playing (auto-advance, mini player, watch-along) or the handler already holds the item (`shouldAutoStartVideo`). `videoStreamReady` is false from the start of every queue switch until mpv really plays the new stream (a buffering event seen, then playing with a known duration — or the position advanced past the open position); the controls layer keeps the item's artwork plus a spinner over the texture while it is false, also in fullscreen and for downloads.
 - **Resume for long-form audio** — podcasts and audiobooks resume at their recorded progress unless they already played to the end.
 - **Track selection** — audio/subtitle tracks are chosen from the user's language preferences (`UserSettingsService`).
 - **Stall watchdog** — hung HLS loads are re-opened at the stream-open position. This also compensates for the in-video controls, which bypass the handler; all app UI must call `handler.play()/pause()`.

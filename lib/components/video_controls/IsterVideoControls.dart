@@ -9,6 +9,7 @@ import 'package:media_kit_video/media_kit_video.dart';
 import '../../l10n/app_localizations.dart';
 import '../../utils/MediaPlayerHandler.dart';
 import '../../utils/PlatformService.dart';
+import '../VideoCoverView.dart';
 import '../WatchTogetherButton.dart';
 import 'SegmentOverlayButtons.dart';
 import 'TrackMenuButton.dart';
@@ -267,19 +268,24 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
   }
 
   Widget _bufferingIndicator() {
-    return StreamBuilder<bool>(
-      stream: _player.stream.buffering,
-      initialData: _player.state.buffering,
-      builder: (context, snapshot) {
-        if (snapshot.data != true) return const SizedBox.shrink();
-        return IgnorePointer(
-          child: Center(
-            child: CircularProgressIndicator(
-              color: videoAccentOf(context),
+    return ValueListenableBuilder<bool>(
+      valueListenable: _handler.videoStreamReady,
+      builder: (context, ready, _) => StreamBuilder<bool>(
+        stream: _player.stream.buffering,
+        initialData: _player.state.buffering,
+        builder: (context, snapshot) {
+          if (snapshot.data != true) return const SizedBox.shrink();
+          // The loading overlay carries its own spinner until the stream plays.
+          if (!ready) return const SizedBox.shrink();
+          return IgnorePointer(
+            child: Center(
+              child: CircularProgressIndicator(
+                color: videoAccentOf(context),
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -392,6 +398,10 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
             behavior: HitTestBehavior.translucent,
             onTap: _toggle,
           ),
+        // Cover + spinner until the freshly opened stream really plays. Above
+        // the gesture layer (so it hides the black/stale texture) and below
+        // the controls, which stay reachable — stop, watch-together, seek.
+        const VideoLoadingOverlay(),
         overlay,
         // Outside the auto-hiding overlay on purpose: the skip-intro /
         // next-episode prompt must stay visible while the chrome is hidden.

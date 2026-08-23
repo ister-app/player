@@ -8,6 +8,10 @@ Press play and Ister streams from your own server — video, music, podcasts and
 
 ## Watching video
 
+Opening a movie or episode shows its artwork with a play button — nothing streams until you press it, also when you pick something up again from *Continue watching*. While the server prepares the stream the artwork stays on screen with a loading indicator; the video takes over as soon as it actually plays. When the queue moves on to the next episode, the next one starts on its own.
+
+![A movie page, ready to play](../images/en/movie-ready.png)
+
 Movies and episodes stream over HLS, which adapts smoothly to your connection. The on-screen controls give you seek, pause and fullscreen.
 
 ![A movie playing with the on-screen controls](../images/en/movie-playing.png)

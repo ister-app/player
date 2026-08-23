@@ -30,8 +30,8 @@ void main() {
 
     // The episode entity exists from metadata alone; playback needs its media
     // file. Fail loud when the fixture file was not generated/scanned — the
-    // episode page silently skips auto-start then, and the playback wait below
-    // would burn its full timeout on a misleading message.
+    // episode page shows the cover without a play button then, and the wait
+    // for the button below would burn its timeout on a misleading message.
     final withFile = await gqlRaw(
         '{ episodeById(id: "${episode['id']}") { mediaFile { id } } }');
     expect((withFile['episodeById']?['mediaFile'] as List?) ?? const [],
@@ -46,6 +46,7 @@ void main() {
         ShowOverviewRoute(showId: showId, children: [
           ShowEpisodeRoute(showId: showId, episodeId: episode['id'] as String),
         ]));
+    await tapVideoPlay(tester);
 
     final handler = MediaPlayerHandler.instance;
     final player = handler.player;

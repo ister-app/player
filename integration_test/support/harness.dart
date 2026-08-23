@@ -6,6 +6,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/components/VideoCoverView.dart';
 import 'package:player/main.dart' as app;
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/LoginManager.dart';
@@ -128,6 +129,21 @@ Future<void> pumpUntilFound(
     if (finder.evaluate().isNotEmpty) return;
   }
   fail('Timed out after $timeout waiting for $finder');
+}
+
+/// The play button on an episode/movie page's cover. Video never autoplays
+/// from browsing: the page shows the artwork with this button first.
+final Finder videoPlayButton = find.byKey(VideoCoverView.playButtonKey);
+
+/// Starts playback on an episode/movie page that was just pushed: waits for
+/// the cover's play button and taps it.
+Future<void> tapVideoPlay(
+  WidgetTester tester, {
+  Duration timeout = const Duration(seconds: 30),
+}) async {
+  await pumpUntilFound(tester, videoPlayButton, timeout: timeout);
+  await tester.tap(videoPlayButton);
+  await tester.pump(const Duration(milliseconds: 200));
 }
 
 /// Pumps frames until [condition] returns true, or fails after [timeout].
