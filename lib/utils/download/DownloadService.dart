@@ -471,6 +471,20 @@ class DownloadService {
         clearError: true,
       );
 
+  /// Pretends a download is (not) running — for tests of the notifiers.
+  @visibleForTesting
+  void debugSetRunning(String server, String key, bool running) {
+    final runKey = _runKey(server, key);
+    if (running) {
+      _running[runKey] = DownloadCancelToken();
+      _runningFiles[runKey] = store.get(server, key)?.mediaFileId ?? '';
+    } else {
+      _running.remove(runKey);
+      _runningFiles.remove(runKey);
+    }
+    runningCount.value = _running.length;
+  }
+
   Future<int> _bytesOnDisk(String server, String mediaFileId) async {
     final path = store.itemDirPathSync(server, mediaFileId);
     if (path == null) return 0;

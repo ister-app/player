@@ -1869,4 +1869,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cachedDownloads => 'Music cache';
+
+  @override
+  String get downloadNotificationTitle => 'Downloading';
+
+  @override
+  String downloadNotificationText(int count, int percent) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count downloads · $percent%',
+      one: '1 download · $percent%',
+    );
+    return '$_temp0';
+  }
 }

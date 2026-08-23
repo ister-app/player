@@ -1952,5 +1952,18 @@
   "musicCacheDisableRemove": "Remove files",
   "musicCacheDisableTitle": "Keep the cached music?",
   "musicCacheDisableBody": "The cache will no longer be filled. The tracks already on this device can stay or be removed now.",
-  "cachedDownloads": "Music cache"
+  "cachedDownloads": "Music cache",
+  "downloadNotificationTitle": "Downloading",
+  "downloadNotificationText": "{count, plural, =1{1 download · {percent}%} other{{count} downloads · {percent}%}}",
+  "@downloadNotificationText": {
+    "description": "Android foreground-service notification while downloads run",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  }
 }

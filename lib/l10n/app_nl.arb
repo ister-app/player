@@ -607,5 +607,7 @@
   "musicCacheDisableRemove": "Bestanden verwijderen",
   "musicCacheDisableTitle": "Gecachte muziek bewaren?",
   "musicCacheDisableBody": "De cache wordt niet meer gevuld. De nummers die al op dit apparaat staan kunnen blijven of nu verwijderd worden.",
-  "cachedDownloads": "Muziekcache"
+  "cachedDownloads": "Muziekcache",
+  "downloadNotificationTitle": "Bezig met downloaden",
+  "downloadNotificationText": "{count, plural, =1{1 download · {percent}%} other{{count} downloads · {percent}%}}"
 }

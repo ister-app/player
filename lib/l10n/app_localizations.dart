@@ -3211,6 +3211,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Music cache'**
   String get cachedDownloads;
+
+  /// No description provided for @downloadNotificationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading'**
+  String get downloadNotificationTitle;
+
+  /// Android foreground-service notification while downloads run
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 download · {percent}%} other{{count} downloads · {percent}%}}'**
+  String downloadNotificationText(int count, int percent);
 }
 
 class _AppLocalizationsDelegate

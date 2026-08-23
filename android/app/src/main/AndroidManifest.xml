@@ -2,6 +2,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
     <!-- Runtime permission since targetSdk 33 — without it Android silently hides
          the media playback notification of the foreground service. -->
@@ -69,6 +70,12 @@
         </service>
 
         <!-- ADD THIS "RECEIVER" element -->
+        <!-- Pins the process while downloads run (DownloadForegroundService);
+             the plugin does not declare its own service. -->
+        <service
+            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
         <receiver android:name="com.ryanheise.audioservice.MediaButtonReceiver"
                   android:exported="true" tools:ignore="Instantiatable">
             <intent-filter>
