@@ -36,9 +36,14 @@ class DownloadsPage extends StatefulWidget {
   const DownloadsPage({
     super.key,
     @PathParam('serverName') required this.serverName,
+    this.inShell = false,
   });
 
   final String serverName;
+
+  /// Rendered inside the server shell (via ServerDownloadsPage): navigate
+  /// within it, so the mini player and navigation bar stay.
+  final bool inShell;
 
   @override
   State<DownloadsPage> createState() => _DownloadsPageState();
@@ -119,8 +124,10 @@ class _DownloadsPageState extends State<DownloadsPage> {
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             tooltip: loc.downloadSettings,
-            onPressed: () => AutoRouter.of(context)
-                .push(DownloadSettingsRoute(serverName: widget.serverName)),
+            onPressed: () => widget.inShell
+                ? AutoRouter.of(context).push(ServerDownloadSettingsRoute())
+                : AutoRouter.of(context)
+                    .push(DownloadSettingsRoute(serverName: widget.serverName)),
           ),
         ],
       ),
@@ -371,6 +378,22 @@ class _DownloadsPageState extends State<DownloadsPage> {
   }
 
   void _read(BuildContext context, DownloadEntry e) {
+    if (widget.inShell) {
+      // The shell's own reader routes (they find the local mirror too).
+      final PageRouteInfo route = e.format == BookFormat.epub
+          ? ReaderRoute(
+              bookId: e.groupId,
+              mediaFileId: e.mediaFileId,
+              nodeUrl: e.nodeUrl,
+              title: e.title)
+          : ComicReaderRoute(
+              bookId: e.groupId,
+              mediaFileId: e.mediaFileId,
+              nodeUrl: e.nodeUrl,
+              title: e.title);
+      AutoRouter.of(context).push(route);
+      return;
+    }
     final PageRouteInfo route = e.format == BookFormat.epub
         ? OfflineReaderRoute(
             serverName: widget.serverName,
@@ -431,7 +454,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
     if (isVideo) {
       // Not awaited: push() completes when the page is popped again, and
       // playback must start while it is showing.
-      unawaited(AutoRouter.of(context).push(LocalVideoRoute(serverName: server)));
+      unawaited(AutoRouter.of(context).push(widget.inShell
+          ? ServerLocalVideoRoute()
+          : LocalVideoRoute(serverName: server)));
     }
     await MediaPlayerHandler.instance.startLocalPlayQueue(server, pq,
         startItemId: pq.currentItemId, startTimeMs: startMs, openPlayer: !isVideo);

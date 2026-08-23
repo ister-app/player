@@ -85,8 +85,8 @@ class ServerSettingsPage extends StatelessWidget {
                     title: Text(loc.downloads),
                     subtitle: Text(loc.downloadsSubtitle),
                     trailing: const Icon(Icons.chevron_right),
-                    onTap: () => context.router.root
-                        .push(DownloadsRoute(serverName: serverName)),
+                    onTap: () =>
+                        AutoRouter.of(context).push(ServerDownloadsRoute()),
                   ),
                 ],
                 const Divider(height: 1, indent: 56),

@@ -14,9 +14,13 @@ class DownloadSettingsPage extends StatefulWidget {
   const DownloadSettingsPage({
     super.key,
     @PathParam('serverName') required this.serverName,
+    this.inShell = false,
   });
 
   final String serverName;
+
+  /// Rendered inside the server shell (see ServerDownloadSettingsPage).
+  final bool inShell;
 
   @override
   State<DownloadSettingsPage> createState() => _DownloadSettingsPageState();
@@ -290,7 +294,7 @@ class _DownloadSettingsPageState extends State<DownloadSettingsPage> {
   Future<void> _fillNow(BuildContext context) async {
     final loc = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
-    final router = context.router.root;
+    final router = widget.inShell ? AutoRouter.of(context) : context.router.root;
     final server = widget.serverName;
     final result = await MusicCacheService.instance.run(server);
     final String text;
@@ -310,7 +314,9 @@ class _DownloadSettingsPageState extends State<DownloadSettingsPage> {
         action: result.queued > 0
             ? SnackBarAction(
                 label: loc.openDownloads,
-                onPressed: () => router.push(DownloadsRoute(serverName: server)),
+                onPressed: () => widget.inShell
+                    ? router.maybePop()
+                    : router.push(DownloadsRoute(serverName: server)),
               )
             : null,
       ));
