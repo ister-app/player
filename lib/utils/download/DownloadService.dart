@@ -169,6 +169,14 @@ class DownloadService {
           .entries(server)
           .where((e) => e.mediaFileId == mediaFileId && e.key != except);
 
+  /// Whether any loaded server still has work queued or running. The
+  /// Android foreground service stays up for as long as this holds: once it
+  /// stops, a backgrounded app may not start it again for the next item.
+  bool get hasPendingWork => store.loadedServers.any((server) =>
+      store.entries(server).any((e) =>
+          e.status == DownloadStatus.queued ||
+          e.status == DownloadStatus.downloading));
+
   /// Entries currently being downloaded, with their server.
   List<(String, DownloadEntry)> runningEntries() => [
         for (final runKey in _running.keys)

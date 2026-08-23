@@ -42,14 +42,27 @@ class DownloadForegroundService {
     );
     _controller = DownloadForegroundController(
       service: service ?? DownloadService.instance,
-      start: (title, text) => _guard('start', () async {
-        if (await FlutterForegroundTask.isRunningService) return;
-        await FlutterForegroundTask.startService(
-          serviceTypes: [ForegroundServiceTypes.dataSync],
-          notificationTitle: title,
-          notificationText: text,
-        );
-      }),
+      start: (title, text) async {
+        try {
+          if (await FlutterForegroundTask.isRunningService) return true;
+          final result = await FlutterForegroundTask.startService(
+            serviceTypes: [ForegroundServiceTypes.dataSync],
+            notificationTitle: title,
+            notificationText: text,
+          );
+          if (result is ServiceRequestFailure) {
+            LoggerService().logger.w(
+                'download foreground service start refused: ${result.error}');
+            return false;
+          }
+          return true;
+        } catch (e) {
+          // Refused starts (background, dataSync quota) are not fatal: the
+          // download loop itself is unaffected and the start is retried.
+          LoggerService().logger.w('download foreground service start failed: $e');
+          return false;
+        }
+      },
       update: (title, text) => _guard('update', () async {
         if (!await FlutterForegroundTask.isRunningService) return;
         await FlutterForegroundTask.updateService(
