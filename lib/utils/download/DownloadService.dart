@@ -180,7 +180,12 @@ class DownloadService {
     final now = _now();
     for (final server in store.loadedServers.toList()) {
       for (final e in store.entries(server)) {
-        if (e.status != DownloadStatus.failed || !e.retryable) continue;
+        // Entries that failed on an auth rejection before 401/403 counted as
+        // transient are picked up as well.
+        final authFailure = e.error?.contains(RegExp(r'HTTP 40[13]')) ?? false;
+        if (e.status != DownloadStatus.failed || !(e.retryable || authFailure)) {
+          continue;
+        }
         final due = e.nextRetryAt == null || !e.nextRetryAt!.isAfter(now);
         if (!immediately && !due) continue;
         await store.put(server,

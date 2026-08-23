@@ -3271,6 +3271,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Network problem — retrying automatically'**
   String get downloadRetryLater;
+
+  /// No description provided for @downloadResumeAt.
+  ///
+  /// In en, this message translates to:
+  /// **'resume at {position}'**
+  String downloadResumeAt(String position);
 }
 
 class _AppLocalizationsDelegate

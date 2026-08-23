@@ -283,11 +283,15 @@ class _DownloadsPageState extends State<DownloadsPage> {
             ?.episodes
             ?.map((x) => x.number))
         : null;
+    final resumable = progress != null && !progress.finished && e.isComplete;
     final parts = [
       if (e.subtitle != null && e.subtitle!.isNotEmpty) e.subtitle!,
       if (shared != null) EpisodeParts.label(loc, shared),
       if (e.durationMs > 0) DurationUtil.format(Duration(milliseconds: e.durationMs)),
       if (e.bytes > 0) formatBytes(e.bytes),
+      if (resumable)
+        loc.downloadResumeAt(
+            DurationUtil.format(Duration(milliseconds: progress.positionMs))),
       if (status != null) status,
     ];
     return TvFocusable(
@@ -301,14 +305,11 @@ class _DownloadsPageState extends State<DownloadsPage> {
         leading: SizedBox(
           width: 24,
           child: Center(
-            child: e.isComplete && progress != null && !progress.finished
-                ? Icon(Icons.play_circle_outline,
-                    size: 20, color: Theme.of(context).colorScheme.primary)
-                : DownloadStatusIcon(
-                    serverName: widget.serverName,
-                    kind: e.kind,
-                    mediaId: e.mediaId,
-                    size: 20),
+            child: DownloadStatusIcon(
+                serverName: widget.serverName,
+                kind: e.kind,
+                mediaId: e.mediaId,
+                size: 20),
           ),
         ),
         title: Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis),

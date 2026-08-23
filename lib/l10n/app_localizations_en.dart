@@ -1924,4 +1924,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get downloadRetryLater => 'Network problem — retrying automatically';
+
+  @override
+  String downloadResumeAt(String position) {
+    return 'resume at $position';
+  }
 }

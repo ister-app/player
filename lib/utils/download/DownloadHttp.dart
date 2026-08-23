@@ -128,6 +128,11 @@ class DownloadHttp {
           _onAuthFailure(serverName);
           continue;
         }
+        if (code == 401 || code == 403) {
+          // Still refused after a token refresh: the token service could not
+          // mint a new one (server unreachable) — recovers later.
+          throw DownloadFailure('HTTP $code for $url', transient: true);
+        }
         if (code == 404) throw DownloadFailure('not found: $url');
         if (code < 500 && code != 408 && code != 429) {
           throw DownloadFailure('HTTP $code for $url');

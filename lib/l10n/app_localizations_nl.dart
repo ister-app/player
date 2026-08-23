@@ -1930,4 +1930,9 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get downloadRetryLater =>
       'Netwerkprobleem — wordt automatisch opnieuw geprobeerd';
+
+  @override
+  String downloadResumeAt(String position) {
+    return 'hervatten bij $position';
+  }
 }
