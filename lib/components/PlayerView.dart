@@ -691,7 +691,6 @@ class _PlayerViewState extends State<PlayerView>
   }
 
   Widget _buildPortrait(BuildContext context, String? artUri, BoxConstraints constraints, bool loading) {
-    final maxImageSize = min(constraints.maxWidth - 80, constraints.maxHeight - 340).clamp(80.0, 400.0);
     final previous = widget.controller.previous;
     final upNext = widget.controller.upNext;
     final banner = _buildBanner();
@@ -709,9 +708,23 @@ class _PlayerViewState extends State<PlayerView>
               children: [
                 _buildHeader(),
                 if (banner != null) banner,
-                const Spacer(),
-                _artworkOrPlaceholder(artUri, maxImageSize, loading: loading),
-                const Spacer(),
+                // The cover takes whatever is left once the text, seek bar,
+                // transport and bottom bar have claimed their height — sizing
+                // it from a fixed reserve instead pushed the bottom bar off
+                // screen on mid-height desktop windows where the reserve was
+                // smaller than the real controls stack.
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, art) {
+                      final size = min(art.maxWidth - 80, art.maxHeight - 32)
+                          .clamp(80.0, 400.0);
+                      return Center(
+                        child: _artworkOrPlaceholder(artUri, size,
+                            loading: loading),
+                      );
+                    },
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 4),
                   child: _Controls(controller: widget.controller, accent: _accent, loading: loading, onNavigate: _openMetaRoute),
