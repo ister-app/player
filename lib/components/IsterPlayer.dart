@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
 import '../utils/MediaPlayerHandler.dart';
+import '../utils/OrientationService.dart';
 import '../utils/PlatformService.dart';
 import 'TvFocusable.dart';
 import 'VideoCoverView.dart';
@@ -83,10 +84,12 @@ class _IsterPlayerState extends State<IsterPlayer> {
       onEnterFullscreen: () async {
         _handler.videoFullscreen = true;
         await defaultEnterNativeFullscreen();
+        await OrientationService.lockSensorLandscape();
       },
       onExitFullscreen: () async {
         _handler.videoFullscreen = false;
         await defaultExitNativeFullscreen();
+        await OrientationService.unlock();
         // On TV, fullscreen is the only playback surface, so leaving it (e.g.
         // the back button) pauses right away. Elsewhere the embedded view keeps
         // playing. While watching along, pause would halt the *whole* session
