@@ -66,6 +66,11 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
   bool _playRequested = false;
   bool _showAdminActions = true;
 
+  /// Anchor on the video surface, so starting playback can scroll it into
+  /// view — on narrow layouts the season list sits below the player and the
+  /// tap that started the episode happened far down the page.
+  final GlobalKey _playerKey = GlobalKey();
+
   late final PlayQueueService playQueueService;
   late StreamSubscription _playQueueSubscription;
 
@@ -85,6 +90,10 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
         .listen(_onPlayQueueChanged);
     MediaPlayerHandler.instance.closePlaybackRequest
         .addListener(_onPlaybackClosed);
+    // First episode pick from the season list mounts this page fresh; scroll
+    // the show overview up to it (a no-op when the overview is already at the
+    // top, e.g. on a deep link).
+    _scrollPlayerIntoView();
   }
 
   /// Playback was torn down (the stop button, notification stop, mini-player
@@ -114,6 +123,10 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
           _playRequested = false;
           loadComplete = false;
         });
+        // The tap that picked this episode happened far down in the season
+        // list; bring the freshly loaded episode (and its player) into view.
+        // Auto-advance stays put: the viewer may be reading below the video.
+        _scrollPlayerIntoView();
       }
     }
   }
@@ -127,6 +140,21 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
   }
 
   void _onPlay() => setState(() => _playRequested = true);
+
+  /// Scrolls the outer show-overview scroll view (ensureVisible walks every
+  /// ancestor scrollable, so it crosses the nested router) until the video
+  /// surface is at the top. Post-frame: playback kicks off during build.
+  void _scrollPlayerIntoView() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final playerContext = _playerKey.currentContext;
+      if (!mounted || playerContext == null) return;
+      Scrollable.ensureVisible(
+        playerContext,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
 
   void _onPlayQueueChanged(Fragment$fragmentPlayQueue playQueue) {
     final episode =
@@ -195,6 +223,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
             _playQueueStarted = true;
             handler.startPlayQueue(GraphQLProvider.of(context).value,
                 widget.playQueueId, episode!, widget.serverName);
+            _scrollPlayerIntoView();
           }
           return getContent(
             loadComplete,
@@ -238,6 +267,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
               episode.mediaFile != null &&
               episode.mediaFile!.isNotEmpty;
           return Container(
+            key: _playerKey,
             // Black behind the player, so the video's letterbox bars don't glow
             // in the (light) surface colour.
             decoration: BoxDecoration(
