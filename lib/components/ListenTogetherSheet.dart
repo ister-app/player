@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:player/components/AppModalSheet.dart';
 import 'package:player/components/DevicePickerSheet.dart';
 import 'package:player/components/SessionListenersSheet.dart';
 import 'package:player/components/SessionSharingSheet.dart';
@@ -36,10 +37,8 @@ Future<void> showListenTogetherSheet(
   String? sessionUserId,
   String? sessionDeviceId,
 }) {
-  return showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
-    isScrollControlled: true,
+  return showAppSheet<void>(
+    context,
     builder: (context) => _ListenTogetherSheet(
       serverName: serverName,
       playQueueId: playQueueId,
@@ -257,10 +256,8 @@ class _ListenTogetherSheetState extends State<_ListenTogetherSheet> {
       );
 
   Future<void> _openSessionSharing() {
-    return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
+    return showAppSheet<void>(
+      context,
       builder: (_) => SessionSharingSheet(
         serverName: widget.serverName,
         playQueueId: widget.playQueueId,
