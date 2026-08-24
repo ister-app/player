@@ -74,7 +74,8 @@ Map<String, dynamic> _adminLibraries() => {
       ],
     };
 
-/// Routes on query text: me, users, adminLibraries and the two mutations.
+/// Routes on query text: me, users, adminLibraries, server info/activity and
+/// the two mutations.
 MockClient _fakeGraphQL({
   bool isAdmin = false,
   bool meUnsupported = false,
@@ -110,6 +111,28 @@ MockClient _fakeGraphQL({
         payload = {'data': _users()};
       } else if (query.contains('visibleToAll')) {
         payload = {'data': _adminLibraries()};
+      } else if (query.contains('subscription serverActivity')) {
+        // No websocket link in tests: the page treats this as a broken live
+        // feed and keeps rendering from the snapshot.
+        payload = {
+          'errors': [
+            {'message': 'subscriptions are not supported over http'}
+          ]
+        };
+      } else if (query.contains('serverActivitySnapshot')) {
+        payload = {
+          'data': {
+            '__typename': 'Query',
+            'serverActivitySnapshot': {
+              '__typename': 'ServerActivitySnapshot',
+              'nodes': [],
+              'queueStats': [],
+              'recentFailures': [],
+              'nowPlaying': [],
+              'transcodes': [],
+            },
+          }
+        };
       } else if (query.contains('getServerInfo')) {
         payload = {
           'data': {

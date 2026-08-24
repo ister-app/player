@@ -16,7 +16,6 @@ flowchart TD
     setCluster["settings/cluster"]
     setPlayback["settings/playback"]
     setNow["settings/nowplaying"]
-    setAct["settings/activity"]
 
     show["shows/:showId ShowOverviewRoute"]
     showOv["overview (initial)"]
@@ -43,7 +42,6 @@ flowchart TD
     server --> setCluster
     server --> setPlayback
     server --> setNow
-    server --> setAct
     server --> show
     show --> showOv
     show --> episode

@@ -205,6 +205,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get server => 'Server';
 
   @override
+  String get serverSettingsSubtitle => 'Nodes, activiteit en onderhoud';
+
+  @override
   String get languageSettings => 'Taalinstellingen';
 
   @override
@@ -661,9 +664,6 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get nowPlaying => 'Speelt nu';
-
-  @override
-  String get serverActivity => 'Serveractiviteit';
 
   @override
   String get noActiveSessions => 'Geen actieve afspeelsessies';

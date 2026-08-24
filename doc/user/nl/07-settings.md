@@ -37,17 +37,13 @@ Zet je het op *alleen ik*, dan blijven je sessies privé en kan niemand ze zien 
 
 ![De pagina met instellingen voor delen en privacy](../images/nl/settings-sharing.png)
 
-## Clusterinformatie
+## Server
 
-De clusterpagina toont de gezondheid van je Ister-server: op welke nodes hij draait en hoe die ervoor staan. Handig voor een snelle check of alles draait.
+De serverpagina geeft het complete beeld van je Ister-server op één plek: om welke server het gaat, op welke nodes hij draait — met hun versie, adres en of ze zich nog melden — waar die nodes op dit moment mee bezig zijn, wat er nog in de wachtrij staat en welke fouten er recent optraden. Handig voor een snelle check of alles draait, en om een scan of transcodering te volgen.
 
-![De pagina met clusterinformatie](../images/nl/settings-cluster.png)
+Beheerders vinden onderaan deze pagina ook de onderhoudsacties — zie [Beheer](09-admin.md).
 
-## Activiteit
-
-De activiteitenpagina toont wat er recent op de server gebeurde — wat er is afgespeeld en wanneer.
-
-![De activiteitenpagina van de server](../images/nl/activity.png)
+![De serverpagina](../images/nl/settings-cluster.png)
 
 ## Over & bronvermelding
 

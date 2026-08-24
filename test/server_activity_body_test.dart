@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:player/components/ServerActivityBody.dart';
 import 'package:player/graphql/fragmentServerActivity.graphql.dart';
+import 'package:player/graphql/getServerInfo.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
 
@@ -31,6 +32,14 @@ Fragment$fragmentServerActivityEvent _node(
       processing: processing ?? [],
       processedCount: 12,
       failedCount: 1,
+    );
+
+Query$getServerInfoQuery$getServerInfo$nodes _nodeInfo(String name) =>
+    Query$getServerInfoQuery$getServerInfo$nodes(
+      id: name,
+      name: name,
+      url: 'https://$name.example',
+      version: '1.2.3',
     );
 
 Fragment$fragmentQueueStat _queue(String queue, int depth) =>
@@ -176,5 +185,56 @@ void main() {
     expect(find.text('Fetching metadata'), findsOneWidget);
     expect(find.textContaining('2 hr ago'), findsOneWidget);
     expect(find.textContaining('boom'), findsOneWidget);
+  });
+
+  testWidgets('a node tile carries the version and url from getServerInfo',
+      (tester) async {
+    await tester.pumpWidget(_app(ServerActivityBody(
+      nodes: [_node('node-a')],
+      queueStats: const [],
+      failures: const [],
+      transcodes: const [],
+      liveFeedBroken: false,
+      now: _now,
+      nodeInfo: {'node-a': _nodeInfo('node-a')},
+    )));
+
+    expect(find.text('node-a'), findsOneWidget);
+    expect(find.text('v1.2.3 · https://node-a.example'), findsOneWidget);
+    expect(find.text('12 processed'), findsOneWidget);
+  });
+
+  testWidgets('a node the activity feed has not reported yet still shows up',
+      (tester) async {
+    await tester.pumpWidget(_app(ServerActivityBody(
+      nodes: const [],
+      queueStats: const [],
+      failures: const [],
+      transcodes: const [],
+      liveFeedBroken: false,
+      now: _now,
+      nodeInfo: {'node-b': _nodeInfo('node-b')},
+    )));
+
+    expect(find.text('node-b'), findsOneWidget);
+    expect(find.text('v1.2.3 · https://node-b.example'), findsOneWidget);
+    // No counts without an activity event.
+    expect(find.byType(Chip), findsNothing);
+  });
+
+  testWidgets('renders an injected header and footer', (tester) async {
+    await tester.pumpWidget(_app(ServerActivityBody(
+      nodes: [_node('node-a')],
+      queueStats: const [],
+      failures: const [],
+      transcodes: const [],
+      liveFeedBroken: false,
+      now: _now,
+      header: const Text('server card'),
+      footer: const Text('management'),
+    )));
+
+    expect(find.text('server card'), findsOneWidget);
+    expect(find.text('management'), findsOneWidget);
   });
 }

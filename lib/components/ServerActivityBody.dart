@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:player/graphql/fragmentServerActivity.graphql.dart';
+import 'package:player/graphql/getServerInfo.graphql.dart';
 
 import '../l10n/app_localizations.dart';
 import '../utils/ServerActivityPresentation.dart';
 import 'LiveFeedBanner.dart';
 
-/// The rendered content of the server-activity screen. Stateless and fed plain
+/// The rendered content of the server settings screen. Stateless and fed plain
 /// fragment lists (plus an injectable [now]) so widget tests can drive it
-/// without a GraphQL client; ServerActivityPage owns the subscription/merge
-/// state and rebuilds this on every update and on a periodic ticker.
+/// without a GraphQL client; ServerSettingsClusterPage owns the
+/// subscription/merge state and rebuilds this on every update and on a
+/// periodic ticker.
+///
+/// [header] (the server card) and [footer] (the management actions) are
+/// injected by the page, and [nodeInfo] adds the url/version the activity feed
+/// doesn't carry, so the nodes section tells the whole story in one place.
 class ServerActivityBody extends StatelessWidget {
   final List<Fragment$fragmentServerActivityEvent> nodes;
   final List<Fragment$fragmentQueueStat> queueStats;
@@ -16,6 +22,9 @@ class ServerActivityBody extends StatelessWidget {
   final List<Fragment$fragmentTranscodePass> transcodes;
   final bool liveFeedBroken;
   final DateTime now;
+  final Widget? header;
+  final Widget? footer;
+  final Map<String, Query$getServerInfoQuery$getServerInfo$nodes> nodeInfo;
 
   const ServerActivityBody({
     super.key,
@@ -25,6 +34,9 @@ class ServerActivityBody extends StatelessWidget {
     required this.transcodes,
     required this.liveFeedBroken,
     required this.now,
+    this.header,
+    this.footer,
+    this.nodeInfo = const {},
   });
 
   @override
@@ -35,10 +47,13 @@ class ServerActivityBody extends StatelessWidget {
         queueStats.fold<int>(0, (sum, stat) => sum + stat.depth);
     final idle = busyTiles.isEmpty && totalQueued == 0;
 
+    final nodeNames = _sortedNodeNames();
+
     return ListView(
       padding: const EdgeInsets.all(16.0),
       children: [
         if (liveFeedBroken) const LiveFeedBanner(),
+        if (header != null) header!,
         if (idle)
           _idleHero(context, loc)
         else ...[
@@ -49,9 +64,11 @@ class ServerActivityBody extends StatelessWidget {
           _sectionLabel(context, loc.queuedWork),
           _queueSection(context, loc),
         ],
-        if (nodes.isNotEmpty) ...[
+        if (nodeNames.isNotEmpty) ...[
           _sectionLabel(context, loc.nodes),
-          _sectionCard([for (final node in _sortedNodes()) _nodeTile(context, loc, node)]),
+          _sectionCard([
+            for (final name in nodeNames) _nodeTile(context, loc, name),
+          ]),
         ],
         _sectionLabel(context, loc.recentFailures),
         if (failures.isEmpty)
@@ -68,12 +85,28 @@ class ServerActivityBody extends StatelessWidget {
             for (final failure in failures)
               _FailureTile(failure: failure, now: now)
           ]),
+        if (footer != null) footer!,
       ],
     );
   }
 
   List<Fragment$fragmentServerActivityEvent> _sortedNodes() =>
       nodes.toList()..sort((a, b) => a.nodeName.compareTo(b.nodeName));
+
+  Fragment$fragmentServerActivityEvent? _nodeEventFor(String name) {
+    for (final node in nodes) {
+      if (node.nodeName == name) return node;
+    }
+    return null;
+  }
+
+  /// Every node either source knows about: the activity feed only reports a
+  /// node once it emits an event, while getServerInfo lists them all.
+  List<String> _sortedNodeNames() => <String>{
+        for (final node in nodes) node.nodeName,
+        ...nodeInfo.keys,
+      }.toList()
+        ..sort();
 
   bool get _multiNode => nodes.length > 1;
 
@@ -210,44 +243,65 @@ class ServerActivityBody extends StatelessWidget {
 
   // ===== Nodes =====
 
-  Widget _nodeTile(BuildContext context, AppLocalizations loc,
-      Fragment$fragmentServerActivityEvent node) {
-    final timestamp = ServerActivityPresentation.parseInstant(node.timestamp);
+  Widget _nodeTile(BuildContext context, AppLocalizations loc, String name) {
+    final node = _nodeEventFor(name);
+    final info = nodeInfo[name];
+    final timestamp = node == null
+        ? null
+        : ServerActivityPresentation.parseInstant(node.timestamp);
     final stale = timestamp != null &&
         ServerActivityPresentation.isStale(timestamp, now);
-    final hasInFlight = (node.processing ?? const []).isNotEmpty;
+    final hasInFlight = (node?.processing ?? const []).isNotEmpty;
     final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
     final staleColor = stale && hasInFlight
         ? Theme.of(context).colorScheme.error
         : mutedColor;
+    final smallStyle = Theme.of(context).textTheme.bodySmall;
+
+    // The address line comes from getServerInfo, the last-seen line from the
+    // activity feed; a node can have either, both or neither.
+    final subtitleLines = <Widget>[
+      if (info != null)
+        Text(
+          'v${info.version} · ${info.url}',
+          style: smallStyle?.copyWith(color: mutedColor),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      if (stale)
+        Text(
+          loc.lastSeenAgo(
+              ServerActivityPresentation.formatRelative(loc, timestamp, now)),
+          style: smallStyle?.copyWith(color: staleColor),
+        ),
+    ];
 
     return ListTile(
       leading: Icon(stale ? Icons.cloud_off : Icons.storage,
           size: 20, color: stale ? staleColor : mutedColor),
       title: Text(
-        node.nodeName,
+        name,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: stale ? mutedColor : null,
             ),
       ),
-      subtitle: stale
-          ? Text(
-              loc.lastSeenAgo(
-                  ServerActivityPresentation.formatRelative(loc, timestamp, now)),
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: staleColor),
-            )
-          : null,
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _chip(context, loc.processedCount(node.processedCount ?? 0)),
-          const SizedBox(width: 4),
-          _chip(context, loc.failedCount(node.failedCount ?? 0)),
-        ],
-      ),
+      subtitle: subtitleLines.isEmpty
+          ? null
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: subtitleLines,
+            ),
+      trailing: node == null
+          ? null
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _chip(context, loc.processedCount(node.processedCount ?? 0)),
+                const SizedBox(width: 4),
+                _chip(context, loc.failedCount(node.failedCount ?? 0)),
+              ],
+            ),
     );
   }
 

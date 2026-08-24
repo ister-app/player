@@ -1,29 +1,159 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:gql/ast.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/analyzeDataForLibrary.graphql.dart';
 import 'package:player/graphql/analyzeLibrary.graphql.dart';
+import 'package:player/graphql/fragmentServerActivity.graphql.dart';
 import 'package:player/graphql/getServerInfo.graphql.dart';
 import 'package:player/graphql/libraries.graphql.dart';
 import 'package:player/graphql/reindexSearch.graphql.dart';
 import 'package:player/graphql/scanLibrary.graphql.dart';
+import 'package:player/graphql/schema.graphql.dart';
+import 'package:player/graphql/serverActivitySnapshot.graphql.dart';
+import 'package:player/graphql/serverActivitySubscription.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../l10n/app_localizations.dart';
 import '../components/AdminGate.dart';
+import '../components/ServerActivityBody.dart';
 import '../utils/ClientManager.dart';
 import '../utils/LibraryIcons.dart';
 import '../utils/LoggerService.dart';
+import '../utils/ResilientSubscription.dart';
 
+/// Everything about the server in one screen: which server this is and the
+/// nodes it runs on (name, url, version from getServerInfo), what those nodes
+/// are doing right now, the queued work, recent failures, and — for admins —
+/// the maintenance actions.
+///
+/// The live half is seeded from serverActivitySnapshot and then kept current by
+/// merging serverActivity events (NODE_ACTIVITY replaces that node's entry,
+/// TRANSCODE_ACTIVITY replaces that node's transcode passes, QUEUE_STATS
+/// replaces the whole list, FAILURE is prepended). A 30s ticker keeps the
+/// elapsed/relative times moving between events.
 @RoutePage()
-class ServerSettingsClusterPage extends StatelessWidget {
+class ServerSettingsClusterPage extends StatefulWidget {
   final String serverName;
 
   const ServerSettingsClusterPage({
     super.key,
     @PathParam.inherit('serverName') required this.serverName,
   });
+
+  @override
+  State<ServerSettingsClusterPage> createState() =>
+      _ServerSettingsClusterPageState();
+}
+
+class _ServerSettingsClusterPageState extends State<ServerSettingsClusterPage> {
+  static const int _maxFailures = 100;
+
+  bool _loaded = false;
+  String? _error;
+  bool _liveFeedBroken = false;
+  final Map<String, Fragment$fragmentServerActivityEvent> _nodes = {};
+  final Map<String, List<Fragment$fragmentTranscodePass>> _transcodesByNode =
+      {};
+  List<Fragment$fragmentQueueStat> _queueStats = [];
+  List<Fragment$fragmentEventFailure> _failures = [];
+  ResilientSubscription? _subscription;
+  Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    final client = ClientManager.getClientForUrl(widget.serverName).value;
+
+    _ticker = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted && _loaded) setState(() {});
+    });
+
+    _subscription = ResilientSubscription(
+      client: client,
+      document: documentNodeSubscriptionserverActivity,
+      onData: (result) {
+        if (!mounted) return;
+        setState(() {
+          _loaded = true;
+          _error = null;
+          _liveFeedBroken = false;
+          _applyEvent(
+              Subscription$serverActivity.fromJson(result.data!).serverActivity);
+        });
+      },
+      onFailure: (_) {
+        if (!mounted) return;
+        setState(() => _liveFeedBroken = true);
+      },
+    );
+
+    client
+        .query(QueryOptions(
+            document: documentNodeQueryserverActivitySnapshot,
+            fetchPolicy: FetchPolicy.networkOnly))
+        .then((result) {
+      if (!mounted) return;
+      if (result.hasException) {
+        LoggerService().logger.e(result.exception);
+        setState(() => _error ??= result.exception.toString());
+        return;
+      }
+      final data = result.data;
+      if (data == null) return;
+      final snapshot =
+          Query$serverActivitySnapshot.fromJson(data).serverActivitySnapshot;
+      setState(() {
+        _loaded = true;
+        // Events that already arrived via the subscription are fresher than
+        // the snapshot — only fill in what is still missing.
+        for (final node in snapshot.nodes) {
+          _nodes.putIfAbsent(node.nodeName, () => node);
+        }
+        final snapshotTranscodes =
+            <String, List<Fragment$fragmentTranscodePass>>{};
+        for (final pass in snapshot.transcodes) {
+          snapshotTranscodes.putIfAbsent(pass.nodeName, () => []).add(pass);
+        }
+        for (final entry in snapshotTranscodes.entries) {
+          _transcodesByNode.putIfAbsent(entry.key, () => entry.value);
+        }
+        if (_queueStats.isEmpty) _queueStats = snapshot.queueStats;
+        if (_failures.isEmpty) _failures = snapshot.recentFailures;
+      });
+    });
+  }
+
+  void _applyEvent(Fragment$fragmentServerActivityEvent event) {
+    switch (event.type) {
+      case Enum$ServerActivityEventType.NODE_ACTIVITY:
+        _nodes[event.nodeName] = event;
+        break;
+      case Enum$ServerActivityEventType.TRANSCODE_ACTIVITY:
+        _transcodesByNode[event.nodeName] = event.transcodes ?? [];
+        break;
+      case Enum$ServerActivityEventType.QUEUE_STATS:
+        _queueStats = event.queueStats ?? _queueStats;
+        break;
+      case Enum$ServerActivityEventType.FAILURE:
+        final failure = event.failure;
+        if (failure != null) {
+          _failures = [failure, ..._failures.take(_maxFailures - 1)];
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    _subscription?.dispose();
+    super.dispose();
+  }
 
   Widget _sectionLabel(BuildContext context, String title) {
     return Padding(
@@ -129,7 +259,7 @@ class ServerSettingsClusterPage extends StatelessWidget {
   /// (status unknown) they stay visible, matching what that server enforces.
   Widget _gatedManagementSection(BuildContext context) {
     return AdminGate(
-      serverName: serverName,
+      serverName: widget.serverName,
       showWhenUnknown: true,
       child: _managementSection(context),
     );
@@ -179,6 +309,71 @@ class ServerSettingsClusterPage extends StatelessWidget {
     );
   }
 
+  Widget _serverCard(
+      BuildContext context, Query$getServerInfoQuery$getServerInfo info) {
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.dns, size: 32),
+        title: Text(
+          info.name,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        subtitle: Text(
+          info.url,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ),
+    );
+  }
+
+  /// Shown until the activity snapshot lands; the management section below it
+  /// is real from the first frame, as it needs no server data.
+  Widget _skeleton(BuildContext context, AppLocalizations loc) {
+    final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    Widget card(int count, IconData icon, {Widget? trailing}) => Card(
+          child: Column(
+            children: [
+              for (int i = 0; i < count; i++) ...[
+                if (i > 0) const Divider(height: 1, indent: 56),
+                ListTile(
+                  leading: Icon(icon, size: 20, color: mutedColor),
+                  title: Text(BoneMock.name),
+                  subtitle: Text(BoneMock.words(2)),
+                  trailing: trailing,
+                ),
+              ],
+            ],
+          ),
+        );
+    return ListView(
+      padding: const EdgeInsets.all(16.0),
+      children: [
+        Skeletonizer(
+          enabled: true,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.dns, size: 32),
+                  title: Text(BoneMock.name),
+                  subtitle: Text(BoneMock.words(3)),
+                ),
+              ),
+              _sectionLabel(context, loc.busyNow),
+              card(2, Icons.troubleshoot),
+              _sectionLabel(context, loc.queuedWork),
+              card(3, Icons.list_alt),
+              _sectionLabel(context, loc.nodes),
+              card(2, Icons.storage, trailing: const Chip(label: Text('1.0.0'))),
+            ],
+          ),
+        ),
+        _gatedManagementSection(context),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
@@ -188,121 +383,49 @@ class ServerSettingsClusterPage extends StatelessWidget {
         title: Text(loc.server),
       ),
       body: GraphQLProvider(
-        client: ClientManager.getClientForUrl(serverName),
+        client: ClientManager.getClientForUrl(widget.serverName),
         child: Query(
-          options: QueryOptions(
-              document: documentNodeQuerygetServerInfoQuery),
+          options:
+              QueryOptions(document: documentNodeQuerygetServerInfoQuery),
           builder: (QueryResult result,
               {VoidCallback? refetch, FetchMore? fetchMore}) {
-            if (result.hasException) {
+            // getServerInfo only adorns the page (server card, node url and
+            // version); while it loads or fails, the live sections carry on.
+            final info = result.data == null || result.hasException
+                ? null
+                : Query$getServerInfoQuery.fromJson(result.data!).getServerInfo;
+
+            if (!_loaded) {
+              if (_error == null) return _skeleton(context, loc);
               return ListView(
                 padding: const EdgeInsets.all(16.0),
                 children: [
-                  Center(child: Text(result.exception.toString())),
+                  if (info != null) _serverCard(context, info),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Center(child: Text(_error!)),
+                  ),
                   _gatedManagementSection(context),
                 ],
               );
             }
 
-            if (result.data == null || result.isLoading) {
-              final mutedColor =
-                  Theme.of(context).colorScheme.onSurfaceVariant;
-              return Skeletonizer(
-                enabled: true,
-                child: ListView(
-                  padding: const EdgeInsets.all(16.0),
-                  children: [
-                    Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.dns, size: 32),
-                        title: Text(BoneMock.name),
-                        subtitle: Text(BoneMock.words(3)),
-                      ),
-                    ),
-                    _sectionLabel(context, loc.nodes),
-                    Card(
-                      child: Column(
-                        children: List.generate(
-                          2,
-                          (i) => Column(
-                            children: [
-                              if (i > 0) const Divider(height: 1, indent: 56),
-                              ListTile(
-                                leading: Icon(Icons.storage,
-                                    size: 20, color: mutedColor),
-                                title: Text(BoneMock.name),
-                                subtitle: Text(BoneMock.words(3)),
-                                trailing: const Chip(label: Text('1.0.0')),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    _gatedManagementSection(context),
-                  ],
-                ),
-              );
-            }
-
-            final info =
-                Query$getServerInfoQuery.fromJson(result.data!).getServerInfo;
-            final nodes = info?.nodes ?? [];
-            final mutedColor =
-                Theme.of(context).colorScheme.onSurfaceVariant;
-
-            return ListView(
-              padding: const EdgeInsets.all(16.0),
-              children: [
-                if (info != null) ...[
-                  Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.dns, size: 32),
-                      title: Text(
-                        info.name,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      subtitle: Text(
-                        info.url,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ),
-                  ),
-                ],
-                if (nodes.isNotEmpty) ...[
-                  _sectionLabel(context, loc.nodes),
-                  Card(
-                    child: Column(
-                      children: [
-                        for (int i = 0; i < nodes.length; i++) ...[
-                          if (i > 0) const Divider(height: 1, indent: 56),
-                          ListTile(
-                            leading: Icon(Icons.storage,
-                                size: 20, color: mutedColor),
-                            title: Text(
-                              nodes[i].name,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                            subtitle: Text(
-                              nodes[i].url,
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            trailing: Chip(
-                              label: Text(
-                                nodes[i].version,
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                              padding: EdgeInsets.zero,
-                              visualDensity: VisualDensity.compact,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-                _gatedManagementSection(context),
+            return ServerActivityBody(
+              header: info == null ? null : _serverCard(context, info),
+              nodeInfo: {
+                for (final node in info?.nodes ??
+                    const <Query$getServerInfoQuery$getServerInfo$nodes>[])
+                  node.name: node,
+              },
+              nodes: _nodes.values.toList(),
+              queueStats: _queueStats,
+              failures: _failures,
+              transcodes: [
+                for (final passes in _transcodesByNode.values) ...passes,
               ],
+              liveFeedBroken: _liveFeedBroken,
+              now: DateTime.now().toUtc(),
+              footer: _gatedManagementSection(context),
             );
           },
         ),

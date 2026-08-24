@@ -240,6 +240,10 @@
   "rawData": "Raw data",
   "nodes": "Nodes",
   "server": "Server",
+  "serverSettingsSubtitle": "Nodes, activity and maintenance",
+  "@serverSettingsSubtitle": {
+    "description": "Subtitle of the Server entry in the settings list"
+  },
   "languageSettings": "Language settings",
   "loginTitle": "Sign in",
   "@loginTitle": {
@@ -840,7 +844,6 @@
     }
   },
   "nowPlaying": "Now playing",
-  "serverActivity": "Server activity",
   "noActiveSessions": "No active playback sessions",
   "queues": "Queues",
   "queueDepth": "Depth {depth}",

@@ -257,7 +257,6 @@ void main() {
       (ServerSettingsLanguageRoute(), 'settings-languages'),
       (ServerSettingsPlaybackRoute(), 'settings-playback'),
       (ServerSettingsClusterRoute(), 'settings-cluster'),
-      (ServerActivityRoute(), 'activity'),
       (ServerNowPlayingRoute(), 'now-playing'),
       (ServerSettingsSharingRoute(), 'settings-sharing'),
       (ServerSettingsAboutRoute(), 'settings-about'),

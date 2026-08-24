@@ -24,7 +24,6 @@ Also available as a [mermaid diagram](../diagrams/route-tree.md).
 ├── settings/cluster                     ServerSettingsClusterRoute    [guard]
 ├── settings/playback                    ServerSettingsPlaybackRoute   [guard]
 ├── settings/nowplaying                  ServerNowPlayingRoute         [guard]
-├── settings/activity                    ServerActivityRoute           [guard]
 ├── shows/:showId                        ShowOverviewRoute             [guard]
 │   ├── overview                         ShowOverviewContentRoute (initial)
 │   └── episodes/:episodeId              ShowEpisodeRoute

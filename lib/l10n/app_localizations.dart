@@ -446,6 +446,12 @@ abstract class AppLocalizations {
   /// **'Server'**
   String get server;
 
+  /// Subtitle of the Server entry in the settings list
+  ///
+  /// In en, this message translates to:
+  /// **'Nodes, activity and maintenance'**
+  String get serverSettingsSubtitle;
+
   /// No description provided for @languageSettings.
   ///
   /// In en, this message translates to:
@@ -1183,12 +1189,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Now playing'**
   String get nowPlaying;
-
-  /// No description provided for @serverActivity.
-  ///
-  /// In en, this message translates to:
-  /// **'Server activity'**
-  String get serverActivity;
 
   /// No description provided for @noActiveSessions.
   ///

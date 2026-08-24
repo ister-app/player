@@ -42,6 +42,7 @@ class ServerSettingsPage extends StatelessWidget {
                 ListTile(
                   leading: const Icon(Icons.dns),
                   title: Text(loc.server),
+                  subtitle: Text(loc.serverSettingsSubtitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => AutoRouter.of(context)
                       .push(ServerSettingsClusterRoute()),
@@ -53,14 +54,6 @@ class ServerSettingsPage extends StatelessWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () =>
                       AutoRouter.of(context).push(ServerNowPlayingRoute()),
-                ),
-                const Divider(height: 1, indent: 56),
-                ListTile(
-                  leading: const Icon(Icons.monitor_heart_outlined),
-                  title: Text(loc.serverActivity),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () =>
-                      AutoRouter.of(context).push(ServerActivityRoute()),
                 ),
                 if (!kIsWeb) ...[
                   const Divider(height: 1, indent: 56),

@@ -37,17 +37,13 @@ Set to *only you*, your sessions stay private and no one can see or drive them. 
 
 ![The sharing and privacy settings page](../images/en/settings-sharing.png)
 
-## Cluster info
+## Server
 
-The cluster page shows the health of your Ister server: the nodes it runs on and their status. Useful for a quick "is everything up?" check.
+The server page is the whole picture of your Ister server in one place: which server this is, the nodes it runs on — with their version, address and whether they are still reporting in — what those nodes are working on right now, the work still queued up, and any recent failures. Useful for a quick "is everything up?" check, and for watching a scan or a transcode make progress.
 
-![The cluster information page](../images/en/settings-cluster.png)
+Administrators also find the maintenance actions at the bottom of this page — see [Administration](09-admin.md).
 
-## Activity
-
-The activity page shows recent happenings on the server — what has been played and when.
-
-![The server activity page](../images/en/activity.png)
+![The server page](../images/en/settings-cluster.png)
 
 ## About & data sources
 
