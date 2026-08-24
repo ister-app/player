@@ -24,6 +24,12 @@ enum DownloadVideoQuality { original, p720, p480 }
 /// carry it (else AAC 192k); `compact` always takes the 192k transcode.
 enum DownloadAudioQuality { original, compact }
 
+/// Over which connections downloads may run. "Unmetered" means without a data
+/// cap (Wi-Fi, ethernet, VPN); mobile data and a Bluetooth tether count as
+/// metered. Deliberately not phrased as "Wi-Fi only": a phone hotspot is Wi-Fi
+/// yet metered. Device-wide, not per server — the connection is the device's.
+enum DownloadNetworkPolicy { any, automaticUnmeteredOnly, allUnmeteredOnly }
+
 /// One downloaded (or downloading) media file plus everything the app needs
 /// to show and play it without the server: the play-queue item snapshot, the
 /// artwork file and the chosen renditions.
@@ -121,8 +127,9 @@ class DownloadEntry {
 
   /// Enqueued by [AutoNextService] to keep a followed show's next unwatched
   /// episodes on the device. Such an entry is removed again once its episode
-  /// was watched, and — like the music cache — waits for an unmetered network
-  /// when the server is set to Wi-Fi-only downloads.
+  /// was watched, and — like the music cache — counts as an automatic download
+  /// for [DownloadNetworkPolicy], so it waits for an unmetered connection
+  /// unless the policy allows any.
   final bool autoNext;
   final DateTime? lastPlayedAt;
   final DateTime? downloadedAt;

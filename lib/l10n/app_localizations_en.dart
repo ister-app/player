@@ -1785,11 +1785,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get downloadSubtitles => 'Download subtitles';
 
   @override
-  String get unmeteredOnly => 'Only on Wi‑Fi';
+  String get downloadNetworkPolicy => 'Download over';
 
   @override
-  String get unmeteredOnlySubtitle =>
-      'Applies to automatic downloads (music cache); manual downloads always run';
+  String get downloadNetworkPolicySubtitle =>
+      'Applies to this device, for every server';
+
+  @override
+  String get downloadNetworkPolicyAny => 'Any connection';
+
+  @override
+  String get downloadNetworkPolicyAutomatic =>
+      'Automatic downloads only without a data cap';
+
+  @override
+  String get downloadNetworkPolicyAll => 'Only connections without a data cap';
+
+  @override
+  String get downloadsWaitingForNetwork =>
+      'Waiting for a connection without a data cap';
 
   @override
   String get concurrentDownloads => 'Simultaneous downloads';

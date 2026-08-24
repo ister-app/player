@@ -132,6 +132,11 @@ class DownloadService {
   final ValueNotifier<int> revision = ValueNotifier(0);
   final ValueNotifier<bool> paused = ValueNotifier(false);
 
+  /// Queued work that the current [DownloadNetworkPolicy] holds back until the
+  /// connection is unmetered again. Without this a blocked queue just sits
+  /// there looking idle.
+  final ValueNotifier<bool> waitingForNetwork = ValueNotifier(false);
+
   /// Servers with at least one running download (for global indicators).
   final ValueNotifier<int> runningCount = ValueNotifier(0);
 
@@ -152,6 +157,7 @@ class DownloadService {
     if (kIsWeb) return Future.value();
     return _starting ??= () async {
       try {
+        await DownloadPreferences.migrateNetworkPolicy();
         final servers = await store.loadAll();
         for (final server in servers) {
           for (final e in store.entries(server)) {
@@ -208,6 +214,10 @@ class DownloadService {
       unawaited(_pump());
     }
   }
+
+  /// Re-evaluates the queue right now — e.g. after the network policy
+  /// changed, when nothing failed and [retryFailed] would not pump.
+  Future<void> pump() => _pump();
 
   // ---- queries -----------------------------------------------------------
 
@@ -497,11 +507,12 @@ class DownloadService {
   Future<void> _pump() async {
     if (_pumping || paused.value) return;
     _pumping = true;
+    var blocked = false;
     try {
+      final policy = await DownloadPreferences.getNetworkPolicy();
+      bool? unmetered;
       for (final server in store.loadedServers.toList()) {
         final limit = await DownloadPreferences.getConcurrent(server);
-        final unmeteredOnly = await DownloadPreferences.getUnmeteredOnly(server);
-        bool? unmetered;
         final queued = store
             .entries(server)
             .where((e) => e.status == DownloadStatus.queued)
@@ -514,15 +525,25 @@ class DownloadService {
           if (paused.value) return;
           if (_running.length >= limit) return;
           if (_runningFiles.values.contains(entry.mediaFileId)) continue;
-          if ((!entry.pinned || entry.autoNext) && unmeteredOnly) {
+          final gated = switch (policy) {
+            DownloadNetworkPolicy.any => false,
+            DownloadNetworkPolicy.allUnmeteredOnly => true,
+            DownloadNetworkPolicy.automaticUnmeteredOnly =>
+              !entry.pinned || entry.autoNext,
+          };
+          if (gated) {
             unmetered ??= await _isUnmetered();
-            if (!unmetered) continue;
+            if (!unmetered) {
+              blocked = true;
+              continue;
+            }
           }
           unawaited(_run(server, entry));
         }
       }
     } finally {
       _pumping = false;
+      waitingForNetwork.value = blocked;
     }
   }
 

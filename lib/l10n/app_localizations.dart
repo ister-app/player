@@ -3068,17 +3068,41 @@ abstract class AppLocalizations {
   /// **'Download subtitles'**
   String get downloadSubtitles;
 
-  /// No description provided for @unmeteredOnly.
+  /// Which connections downloads may use; device-wide setting
   ///
   /// In en, this message translates to:
-  /// **'Only on Wi‑Fi'**
-  String get unmeteredOnly;
+  /// **'Download over'**
+  String get downloadNetworkPolicy;
 
-  /// No description provided for @unmeteredOnlySubtitle.
+  /// No description provided for @downloadNetworkPolicySubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Applies to automatic downloads (music cache); manual downloads always run'**
-  String get unmeteredOnlySubtitle;
+  /// **'Applies to this device, for every server'**
+  String get downloadNetworkPolicySubtitle;
+
+  /// No description provided for @downloadNetworkPolicyAny.
+  ///
+  /// In en, this message translates to:
+  /// **'Any connection'**
+  String get downloadNetworkPolicyAny;
+
+  /// No description provided for @downloadNetworkPolicyAutomatic.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic downloads only without a data cap'**
+  String get downloadNetworkPolicyAutomatic;
+
+  /// No description provided for @downloadNetworkPolicyAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Only connections without a data cap'**
+  String get downloadNetworkPolicyAll;
+
+  /// Shown on the downloads page when the network policy holds the queue back
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for a connection without a data cap'**
+  String get downloadsWaitingForNetwork;
 
   /// No description provided for @concurrentDownloads.
   ///

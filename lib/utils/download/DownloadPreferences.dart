@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:player/utils/ServerStore.dart';
 import 'package:player/utils/download/DownloadModels.dart';
 import 'package:player/utils/download/DownloadStore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -38,12 +39,38 @@ class DownloadPreferences {
   static Future<void> setDownloadSubtitles(String serverName, bool v) =>
       _prefs.setBool(_k('subtitles', serverName), v);
 
-  /// Only automatic (music cache) downloads honour this.
-  static Future<bool> getUnmeteredOnly(String serverName) async =>
-      await _prefs.getBool(_k('unmetered_only', serverName)) ?? true;
+  /// Which connections downloads may run over. Device-wide: the connection is
+  /// the device's, not the server's.
+  static const _kNetworkPolicy = 'downloads_network_policy';
 
-  static Future<void> setUnmeteredOnly(String serverName, bool v) =>
-      _prefs.setBool(_k('unmetered_only', serverName), v);
+  static Future<DownloadNetworkPolicy> getNetworkPolicy() async {
+    final v = await _prefs.getString(_kNetworkPolicy);
+    if (v == null) return DownloadNetworkPolicy.automaticUnmeteredOnly;
+    try {
+      return DownloadNetworkPolicy.values.byName(v);
+    } catch (_) {
+      return DownloadNetworkPolicy.automaticUnmeteredOnly;
+    }
+  }
+
+  static Future<void> setNetworkPolicy(DownloadNetworkPolicy p) =>
+      _prefs.setString(_kNetworkPolicy, p.name);
+
+  /// One-shot upgrade from the per-server `unmetered_only` switch this setting
+  /// replaced. Only "off" carried information (download over anything); both
+  /// the old and the new default mean "automatic downloads wait".
+  static Future<void> migrateNetworkPolicy() async {
+    if (await _prefs.getString(_kNetworkPolicy) != null) return;
+    var policy = DownloadNetworkPolicy.automaticUnmeteredOnly;
+    for (final server in await ServerStore.list()) {
+      final legacy = _k('unmetered_only', server);
+      if (await _prefs.getBool(legacy) == false) {
+        policy = DownloadNetworkPolicy.any;
+      }
+      await _prefs.remove(legacy);
+    }
+    await setNetworkPolicy(policy);
+  }
 
   static Future<int> getConcurrent(String serverName) async =>
       await _prefs.getInt(_k('concurrent', serverName)) ?? 1;
@@ -64,11 +91,11 @@ class DownloadPreferences {
       'video_quality',
       'audio_quality',
       'subtitles',
-      'unmetered_only',
       'concurrent',
       'next_count'
     ]) {
       await _prefs.remove(_k(k, serverName));
     }
+    await _prefs.remove(_kNetworkPolicy);
   }
 }

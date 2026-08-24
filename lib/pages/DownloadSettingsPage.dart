@@ -30,7 +30,8 @@ class _DownloadSettingsPageState extends State<DownloadSettingsPage> {
   DownloadVideoQuality _videoQuality = DownloadVideoQuality.original;
   DownloadAudioQuality _audioQuality = DownloadAudioQuality.original;
   bool _subtitles = true;
-  bool _unmeteredOnly = true;
+  DownloadNetworkPolicy _networkPolicy =
+      DownloadNetworkPolicy.automaticUnmeteredOnly;
   int _concurrent = 1;
   int _nextCount = 5;
   MusicCacheSettings _cache = MusicCacheSettings(maxBytes: MusicCachePreferences.defaultMaxBytes);
@@ -48,7 +49,7 @@ class _DownloadSettingsPageState extends State<DownloadSettingsPage> {
       DownloadPreferences.getVideoQuality(s),
       DownloadPreferences.getAudioQuality(s),
       DownloadPreferences.getDownloadSubtitles(s),
-      DownloadPreferences.getUnmeteredOnly(s),
+      DownloadPreferences.getNetworkPolicy(),
       DownloadPreferences.getConcurrent(s),
       DownloadPreferences.getDefaultNextCount(s),
       MusicCachePreferences.get(s),
@@ -58,7 +59,7 @@ class _DownloadSettingsPageState extends State<DownloadSettingsPage> {
       _videoQuality = values[0] as DownloadVideoQuality;
       _audioQuality = values[1] as DownloadAudioQuality;
       _subtitles = values[2] as bool;
-      _unmeteredOnly = values[3] as bool;
+      _networkPolicy = values[3] as DownloadNetworkPolicy;
       _concurrent = values[4] as int;
       _nextCount = values[5] as int;
       _cache = values[6] as MusicCacheSettings;
@@ -136,16 +137,33 @@ class _DownloadSettingsPageState extends State<DownloadSettingsPage> {
                         },
                       ),
                       const Divider(height: 1, indent: 56),
-                      SwitchListTile(
-                        secondary: const Icon(Icons.wifi),
-                        title: Text(loc.unmeteredOnly),
-                        subtitle: Text(loc.unmeteredOnlySubtitle),
-                        value: _unmeteredOnly,
-                        onChanged: (v) {
-                          DownloadPreferences.setUnmeteredOnly(server, v);
-                          setState(() => _unmeteredOnly = v);
-                        },
+                      ListTile(
+                        leading: const Icon(Icons.data_usage_outlined),
+                        title: Text(loc.downloadNetworkPolicy),
+                        subtitle: Text(loc.downloadNetworkPolicySubtitle),
                       ),
+                      // The choices are sentences, so they get their own rows
+                      // instead of a trailing dropdown.
+                      for (final entry in <DownloadNetworkPolicy, String>{
+                        DownloadNetworkPolicy.any: loc.downloadNetworkPolicyAny,
+                        DownloadNetworkPolicy.automaticUnmeteredOnly:
+                            loc.downloadNetworkPolicyAutomatic,
+                        DownloadNetworkPolicy.allUnmeteredOnly:
+                            loc.downloadNetworkPolicyAll,
+                      }.entries)
+                        RadioListTile<DownloadNetworkPolicy>(
+                          value: entry.key,
+                          groupValue: _networkPolicy,
+                          contentPadding:
+                              const EdgeInsets.only(left: 56, right: 16),
+                          title: Text(entry.value),
+                          onChanged: (v) {
+                            if (v == null) return;
+                            DownloadPreferences.setNetworkPolicy(v);
+                            setState(() => _networkPolicy = v);
+                            DownloadService.instance.pump();
+                          },
+                        ),
                       const Divider(height: 1, indent: 56),
                       ListTile(
                         leading: const Icon(Icons.swap_vert),

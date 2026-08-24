@@ -169,6 +169,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
                 return ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
+                    _networkBanner(context),
                     _summary(context, entries),
                     const SizedBox(height: 8),
                     if (cached.isNotEmpty) _cacheTile(context, cached),
@@ -198,6 +199,30 @@ class _DownloadsPageState extends State<DownloadsPage> {
           ],
         ),
       ),
+    );
+  }
+
+  /// Shown while the download network policy holds the queue back, so a
+  /// blocked queue does not read as an idle one.
+  Widget _networkBanner(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    return ValueListenableBuilder<bool>(
+      valueListenable: DownloadService.instance.waitingForNetwork,
+      builder: (context, waiting, _) {
+        if (!waiting) return const SizedBox.shrink();
+        return Card(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          child: ListTile(
+            leading: const Icon(Icons.cloud_off_outlined),
+            title: Text(loc.downloadsWaitingForNetwork),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => widget.inShell
+                ? AutoRouter.of(context).push(ServerDownloadSettingsRoute())
+                : AutoRouter.of(context)
+                    .push(DownloadSettingsRoute(serverName: widget.serverName)),
+          ),
+        );
+      },
     );
   }
 

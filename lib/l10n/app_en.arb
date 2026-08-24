@@ -1914,8 +1914,18 @@
   "qualityOriginal": "Original",
   "qualityCompact": "Compact (192 kbit/s)",
   "downloadSubtitles": "Download subtitles",
-  "unmeteredOnly": "Only on Wi‑Fi",
-  "unmeteredOnlySubtitle": "Applies to automatic downloads (music cache); manual downloads always run",
+  "downloadNetworkPolicy": "Download over",
+  "@downloadNetworkPolicy": {
+    "description": "Which connections downloads may use; device-wide setting"
+  },
+  "downloadNetworkPolicySubtitle": "Applies to this device, for every server",
+  "downloadNetworkPolicyAny": "Any connection",
+  "downloadNetworkPolicyAutomatic": "Automatic downloads only without a data cap",
+  "downloadNetworkPolicyAll": "Only connections without a data cap",
+  "downloadsWaitingForNetwork": "Waiting for a connection without a data cap",
+  "@downloadsWaitingForNetwork": {
+    "description": "Shown on the downloads page when the network policy holds the queue back"
+  },
   "concurrentDownloads": "Simultaneous downloads",
   "defaultNextCount": "Default for \"download next episodes\"",
   "autoNextTitle": "Keep the next episodes downloaded",

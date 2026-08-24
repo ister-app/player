@@ -1788,11 +1788,26 @@ class AppLocalizationsNl extends AppLocalizations {
   String get downloadSubtitles => 'Ondertitels downloaden';
 
   @override
-  String get unmeteredOnly => 'Alleen via wifi';
+  String get downloadNetworkPolicy => 'Downloaden via';
 
   @override
-  String get unmeteredOnlySubtitle =>
-      'Geldt voor automatische downloads (muziekcache); handmatige downloads lopen altijd';
+  String get downloadNetworkPolicySubtitle =>
+      'Geldt voor dit apparaat, voor alle servers';
+
+  @override
+  String get downloadNetworkPolicyAny => 'Elke verbinding';
+
+  @override
+  String get downloadNetworkPolicyAutomatic =>
+      'Automatische downloads alleen zonder datalimiet';
+
+  @override
+  String get downloadNetworkPolicyAll =>
+      'Alleen verbindingen zonder datalimiet';
+
+  @override
+  String get downloadsWaitingForNetwork =>
+      'Wacht op een verbinding zonder datalimiet';
 
   @override
   String get concurrentDownloads => 'Gelijktijdige downloads';

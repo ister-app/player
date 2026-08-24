@@ -11,6 +11,7 @@ import 'package:player/graphql/fragmentMediafiles.graphql.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/download/DownloadModels.dart';
+import 'package:player/utils/download/DownloadPreferences.dart';
 import 'package:player/utils/download/DownloadService.dart';
 import 'package:player/utils/download/DownloadStore.dart';
 import 'package:player/utils/download/DownloadHttp.dart';
@@ -280,6 +281,78 @@ void main() {
 
     await reading.remove(_server, key);
     expect(Directory(dir!).existsSync(), isFalse);
+  });
+
+  group('the network policy gates the queue', () {
+    /// A service that believes it is on a metered connection.
+    DownloadService meteredService() {
+      final svc = DownloadService(
+        store: DownloadStore(rootOverride: root),
+        downloader: HlsDownloader(
+            httpClient: _hlsClient(requests),
+            tokenProvider: (_) async => 'tok',
+            backoff: (_) => const Duration(milliseconds: 1)),
+        isUnmetered: () async => false,
+      );
+      DownloadService.instance = svc;
+      return svc;
+    }
+
+    tearDown(() => DownloadPreferences.setNetworkPolicy(
+        DownloadNetworkPolicy.automaticUnmeteredOnly));
+
+    test('"any connection" downloads even an automatic entry on mobile',
+        () async {
+      await DownloadPreferences.setNetworkPolicy(DownloadNetworkPolicy.any);
+      final svc = meteredService();
+      await svc.enqueue(
+          _server, DownloadRequest(item: trackItem('p1'), pinned: false));
+      final key = DownloadEntry.keyFor(DownloadKind.track, 'p1');
+      await _waitFor(() => svc.entryFor(_server, key)?.isComplete ?? false);
+      expect(svc.waitingForNetwork.value, isFalse);
+    });
+
+    test('the default holds back automatic entries but not manual ones',
+        () async {
+      final svc = meteredService();
+      await svc.enqueue(
+          _server, DownloadRequest(item: trackItem('p2'), pinned: false));
+      await svc.enqueue(
+          _server, DownloadRequest(item: trackItem('p3'), autoNext: true));
+      await svc.enqueue(_server, DownloadRequest(item: trackItem('p4')));
+      final auto = DownloadEntry.keyFor(DownloadKind.track, 'p2');
+      final next = DownloadEntry.keyFor(DownloadKind.track, 'p3');
+      final manual = DownloadEntry.keyFor(DownloadKind.track, 'p4');
+      await _waitFor(() => svc.entryFor(_server, manual)?.isComplete ?? false);
+      expect(svc.entryFor(_server, auto)!.status, DownloadStatus.queued);
+      expect(svc.entryFor(_server, next)!.status, DownloadStatus.queued);
+      expect(svc.waitingForNetwork.value, isTrue);
+    });
+
+    test('"unmetered only" holds back a manual entry too, and lets it go '
+        'once the connection is unmetered', () async {
+      await DownloadPreferences.setNetworkPolicy(
+          DownloadNetworkPolicy.allUnmeteredOnly);
+      var unmetered = false;
+      final svc = DownloadService(
+        store: DownloadStore(rootOverride: root),
+        downloader: HlsDownloader(
+            httpClient: _hlsClient(requests),
+            tokenProvider: (_) async => 'tok',
+            backoff: (_) => const Duration(milliseconds: 1)),
+        isUnmetered: () async => unmetered,
+      );
+      DownloadService.instance = svc;
+      await svc.enqueue(_server, DownloadRequest(item: trackItem('p5')));
+      final key = DownloadEntry.keyFor(DownloadKind.track, 'p5');
+      await _waitFor(() => svc.waitingForNetwork.value);
+      expect(svc.entryFor(_server, key)!.status, DownloadStatus.queued);
+
+      unmetered = true;
+      await svc.pump();
+      await _waitFor(() => svc.entryFor(_server, key)?.isComplete ?? false);
+      expect(svc.waitingForNetwork.value, isFalse);
+    });
   });
 
   test('a network failure is retried on its own: on connectivity change and on schedule',
