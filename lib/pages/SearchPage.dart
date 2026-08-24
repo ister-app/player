@@ -297,6 +297,8 @@ class _SearchPageState extends State<SearchPage> {
     );
 
     return InkWell(
+      // Locale-independent handle for tests: 'search-<kind>-<id>'.
+      key: v.rowKey,
       onTap: v.onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -494,6 +496,7 @@ class _SearchPageState extends State<SearchPage> {
         images: item.images,
         imageType: ImageTypes.cover,
         onTap: () => AutoRouter.of(context).push(MovieRoute(movieId: item.id)),
+        rowKey: ValueKey('search-movie-${item.id}'),
       );
     }
     if (item is Query$search$search$$Show) {
@@ -507,6 +510,7 @@ class _SearchPageState extends State<SearchPage> {
         imageType: ImageTypes.background,
         onTap: () =>
             AutoRouter.of(context).push(ShowOverviewRoute(showId: item.id)),
+        rowKey: ValueKey('search-show-${item.id}'),
       );
     }
     if (item is Query$search$search$$Episode) {
@@ -522,8 +526,15 @@ class _SearchPageState extends State<SearchPage> {
         imageType: ImageTypes.background,
         onTap: showId == null
             ? null
-            : () => AutoRouter.of(context)
-                .push(ShowEpisodeRoute(showId: showId, episodeId: item.id)),
+            // ShowEpisodeRoute is a child of ShowOverviewRoute, so from outside
+            // the show shell it must be pushed through its parent.
+            : () => AutoRouter.of(context).push(ShowOverviewRoute(
+                  showId: showId,
+                  children: [
+                    ShowEpisodeRoute(showId: showId, episodeId: item.id),
+                  ],
+                )),
+        rowKey: ValueKey('search-episode-${item.id}'),
       );
     }
     if (item is Query$search$search$$Person) {
@@ -536,6 +547,7 @@ class _SearchPageState extends State<SearchPage> {
         images: item.images,
         imageType: ImageTypes.cover,
         onTap: () => AutoRouter.of(context).push(PersonRoute(personId: item.id)),
+        rowKey: ValueKey('search-person-${item.id}'),
       );
     }
     if (item is Query$search$search$$Album) {
@@ -548,6 +560,7 @@ class _SearchPageState extends State<SearchPage> {
         images: item.images,
         imageType: ImageTypes.cover,
         onTap: () => AutoRouter.of(context).push(AlbumRoute(albumId: item.id)),
+        rowKey: ValueKey('search-album-${item.id}'),
       );
     }
     if (item is Query$search$search$$Track) {
@@ -561,6 +574,7 @@ class _SearchPageState extends State<SearchPage> {
         imageType: ImageTypes.cover,
         onTap: () => AutoRouter.of(context)
             .push(AlbumRoute(albumId: item.album.id, trackId: item.id)),
+        rowKey: ValueKey('search-track-${item.id}'),
       );
     }
     return const _ResultView(
@@ -587,6 +601,7 @@ class _ResultView {
     required this.images,
     required this.imageType,
     required this.onTap,
+    this.rowKey,
   });
 
   final String title;
@@ -597,4 +612,5 @@ class _ResultView {
   final List<Fragment$fragmentImages>? images;
   final ImageTypes imageType;
   final VoidCallback? onTap;
+  final Key? rowKey;
 }
