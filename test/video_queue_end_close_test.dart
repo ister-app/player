@@ -41,6 +41,9 @@ void main() {
 
     expect(handler.closePlaybackRequest.value, closeRequestsBefore + 1,
         reason: 'the dead video surface must be closed at queue end');
+    expect(handler.lastPlaybackCloseKeepsPage, isFalse,
+        reason: 'only the user\'s own stop keeps the page (with its cover); '
+            'a played-out queue closes it');
     expect(handler.movie, isNull);
   });
 

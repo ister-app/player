@@ -130,7 +130,7 @@ void main() {
     }
   }
 
-  setUp(() {
+  setUp(() async {
     // The cast row's visibility callbacks would otherwise outlive the tree as
     // pending timers.
     VisibilityDetectorController.instance.updateInterval = Duration.zero;
@@ -139,7 +139,10 @@ void main() {
     ClientManager.clients.clear();
     ClientManager.testClientBuilder = (_) => client();
     operations.clear();
-    handler.playQueue = null;
+    // A previous test may have left an item loaded; the page would then treat
+    // it as the queue that is already playing and skip the cover. Torn down
+    // after the test client builder above, so it takes the no-mpv path.
+    await handler.endPlaybackLocally(flushProgress: false);
   });
 
   testWidgets('shows the cover with a play button and does not start',
@@ -170,6 +173,42 @@ void main() {
 
     // Ends the heartbeat and command subscription the start armed — they
     // would otherwise outlive the test as pending timers.
+    await handler.suspendPlayback();
+    await settle(tester);
+  });
+
+  testWidgets('stopping brings the cover back and play resumes where it left',
+      (tester) async {
+    await tester.pumpWidget(page());
+    await settle(tester);
+
+    await tester.tap(find.byKey(VideoCoverView.playButtonKey));
+    await settle(tester);
+    expect(find.byType(IsterPlayer), findsOneWidget);
+
+    // Watched a while, then hit stop (the video controls' stop button, the
+    // notification and the mini-player swipe all land here).
+    handler.playbackState.add(handler.playbackState.value.copyWith(
+        updatePosition: const Duration(minutes: 12), playing: false));
+    await handler.stopPlayback();
+    await settle(tester);
+
+    expect(find.byType(IsterPlayer), findsNothing,
+        reason: 'the stopped stream leaves no video surface behind');
+    expect(find.byKey(VideoCoverView.playButtonKey), findsOneWidget,
+        reason: 'the page stays open, showing its cover again');
+    expect(handler.playQueue, isNull);
+
+    // Playing again resumes at the stop position — the page's own movie object
+    // still carries the watch status from before this viewing.
+    await tester.tap(find.byKey(VideoCoverView.playButtonKey));
+    await settle(tester);
+
+    expect(find.byType(IsterPlayer), findsOneWidget);
+    expect(handler.playQueue?.id, 'pq-1');
+    expect(handler.lastStartTimeMs,
+        const Duration(minutes: 12).inMilliseconds);
+
     await handler.suspendPlayback();
     await settle(tester);
   });

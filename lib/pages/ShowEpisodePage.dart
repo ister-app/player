@@ -79,6 +79,21 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
     _playQueueSubscription = playQueueService
         .getPlayQueueChangedStream()
         .listen(_onPlayQueueChanged);
+    MediaPlayerHandler.instance.closePlaybackRequest
+        .addListener(_onPlaybackClosed);
+  }
+
+  /// Playback was torn down (the stop button, notification stop, mini-player
+  /// swipe-down): drop the dead video surface and show the cover with its play
+  /// button again, so watching can be resumed from this page. Pages that are
+  /// closed by the teardown instead (handoff, watch-along) unmount right after
+  /// this and never render the cover.
+  void _onPlaybackClosed() {
+    if (!mounted || !_playQueueStarted) return;
+    setState(() {
+      _playQueueStarted = false;
+      _playRequested = false;
+    });
   }
 
   @override
@@ -101,6 +116,8 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
   @override
   void dispose() {
     _playQueueSubscription.cancel();
+    MediaPlayerHandler.instance.closePlaybackRequest
+        .removeListener(_onPlaybackClosed);
     super.dispose();
   }
 

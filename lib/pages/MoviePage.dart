@@ -64,6 +64,28 @@ class _MoviePageState extends State<MoviePage> {
         setState(() => _showAdminActions = false);
       }
     });
+    MediaPlayerHandler.instance.closePlaybackRequest
+        .addListener(_onPlaybackClosed);
+  }
+
+  @override
+  void dispose() {
+    MediaPlayerHandler.instance.closePlaybackRequest
+        .removeListener(_onPlaybackClosed);
+    super.dispose();
+  }
+
+  /// Playback was torn down (the stop button, notification stop, mini-player
+  /// swipe-down): drop the dead video surface and show the cover with its play
+  /// button again, so watching can be resumed from this page. Pages that are
+  /// closed by the teardown instead (handoff, watch-along) unmount right after
+  /// this and never render the cover.
+  void _onPlaybackClosed() {
+    if (!mounted || !_playQueueStarted) return;
+    setState(() {
+      _playQueueStarted = false;
+      _playRequested = false;
+    });
   }
 
   @override

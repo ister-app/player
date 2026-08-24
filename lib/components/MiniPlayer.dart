@@ -81,20 +81,25 @@ class _MiniPlayerState extends State<MiniPlayer> {
   }
 
   /// Fired when playback was torn down on this device (the watch-along leader
-  /// stopped, or the queue was handed off). The bar itself disappears on the
-  /// null mediaItem; what remains is closing the surfaces that were opened for
-  /// the media — the music overlay and the video page.
+  /// stopped, the queue was handed off, or the user hit stop). The bar itself
+  /// disappears on the null mediaItem; what remains is closing the surfaces
+  /// that were opened for the media — the music overlay and the video page.
   void _onPlaybackClosed() => unawaited(_closePlaybackSurfaces());
 
   Future<void> _closePlaybackSurfaces() async {
     if (!mounted) return;
-    if (MediaPlayerHandler.instance.musicPlayerOpen.value) {
+    final handler = MediaPlayerHandler.instance;
+    if (handler.musicPlayerOpen.value) {
       PlayerView.activeBackHandler?.call();
     }
-    // Fullscreen first: its route sits on the root navigator, above the video
-    // page we are about to close.
+    // Fullscreen always goes: it is a bare video surface with nothing left to
+    // show. Its route sits on the root navigator, above the video page.
     await IsterPlayer.activeFullscreenExitHandler?.call();
     if (!mounted) return;
+    // The user's own stop leaves the episode/movie page open — it falls back
+    // to its cover + play button, so watching can resume from there. Only a
+    // teardown that took the media away closes the page.
+    if (handler.lastPlaybackCloseKeepsPage) return;
     closeCurrentVideoPage(context);
   }
 

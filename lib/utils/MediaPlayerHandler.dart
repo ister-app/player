@@ -233,6 +233,34 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// because [mediaItem] goes null.
   final ValueNotifier<int> closePlaybackRequest = ValueNotifier(0);
 
+  /// Whether the teardown that last bumped [closePlaybackRequest] was the
+  /// user's own stop (stop button, mini-player swipe-down, notification stop)
+  /// rather than the media disappearing from this device. On an own stop the
+  /// episode/movie page stays open and falls back to its cover + play button,
+  /// so the user can start watching again where they left off; on the other
+  /// teardowns the page is closed as before.
+  bool lastPlaybackCloseKeepsPage = false;
+
+  /// Where the user stopped, so the play button on the page they stayed on
+  /// resumes there. The page's own episode/movie object still carries the
+  /// watch status from *before* this viewing (it is never refetched), so
+  /// [_startTimeMs] alone would send them back to where they started.
+  ({String serverName, String? episodeId, String? movieId, int positionMs})?
+      _stoppedResume;
+
+  /// Consumes [_stoppedResume]: the resume position for the item identified by
+  /// [srv] + [episodeId]/[movieId], or null when the last stop was for
+  /// something else. Cleared either way — a remembered position only survives
+  /// until the next thing starts playing.
+  int? _takeStoppedResumeMs(String srv, {String? episodeId, String? movieId}) {
+    final stopped = _stoppedResume;
+    _stoppedResume = null;
+    if (stopped == null || stopped.serverName != srv) return null;
+    if (episodeId != null && stopped.episodeId != episodeId) return null;
+    if (movieId != null && stopped.movieId != movieId) return null;
+    return stopped.positionMs;
+  }
+
   /// True from the moment a user-initiated new track begins loading until its
   /// [mediaItem] metadata is published. The music player shows a skeleton while
   /// this is set so it never displays the *previous* track's cover/title.
@@ -422,13 +450,18 @@ class MediaPlayerHandler extends BaseAudioHandler
     graphQLClient = client;
 
     if (shouldRefresh) {
+      // Where the user stopped this very episode wins over the watch status on
+      // the page's (stale) episode object; see [_takeStoppedResumeMs].
+      final startMs =
+          _takeStoppedResumeMs(newServerName, episodeId: newEpisode.id) ??
+              _startTimeMs;
       await _silenceForQueueSwitch();
       final playQueueObject = await _playQueueService.getOrCreatePlayQueue(
         client,
         playQueueId,
         newEpisode.id,
         newEpisode.$show!.id,
-        _startTimeMs,
+        startMs,
       );
 
       queueTitle.add("Now Playing");
@@ -471,7 +504,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       await _openMedia(
         serverName: newServerName,
         mediaUrl: await _resolveMediaUrl(newServerName, newEpisode.mediaFile!.first),
-        startTimeInMilliseconds: _startTimeMs,
+        startTimeInMilliseconds: startMs,
       );
     } else {
       await _resumeCurrentItem();
@@ -608,12 +641,16 @@ class MediaPlayerHandler extends BaseAudioHandler
     graphQLClient = client;
 
     if (shouldRefresh) {
+      // Same rule as startPlayQueue: an own stop of this movie resumes there.
+      final startMs =
+          _takeStoppedResumeMs(newServerName, movieId: newMovie.id) ??
+              _movieStartTimeMs;
       await _silenceForQueueSwitch();
       final playQueueObject = await _playQueueService.getOrCreatePlayQueueForMovie(
         client,
         playQueueId,
         newMovie.id,
-        _movieStartTimeMs,
+        startMs,
       );
 
       queueTitle.add("Now Playing");
@@ -649,7 +686,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       await _openMedia(
         serverName: newServerName,
         mediaUrl: await _resolveMediaUrl(newServerName, newMovie.mediaFile!.first),
-        startTimeInMilliseconds: _movieStartTimeMs,
+        startTimeInMilliseconds: startMs,
         mediaType: IsterMediaTypes.movie,
       );
     } else {
@@ -1556,7 +1593,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         LoggerService().logger.w('Publishing STOP failed: $e');
       }
     }
-    await endPlaybackLocally();
+    await endPlaybackLocally(keepVideoPage: true);
   }
 
   /// Hands the live queue off to [targetDeviceId]: pause (flushes progress),
@@ -1600,7 +1637,19 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// [flushProgress] writes one last position to the server. Pass false after a
   /// handoff: the target device owns the progress from that moment, and a late
   /// flush from here would drag it back.
-  Future<void> endPlaybackLocally({bool flushProgress = true}) async {
+  ///
+  /// [keepVideoPage] marks this as the user's own stop: the episode/movie page
+  /// stays open (showing its cover + play button again) instead of being
+  /// closed, and the stop position is remembered so that play button resumes
+  /// there. See [lastPlaybackCloseKeepsPage].
+  Future<void> endPlaybackLocally(
+      {bool flushProgress = true, bool keepVideoPage = false}) async {
+    // Same test seam as play()/pause(): under flutter test there is no mpv, so
+    // the player's own position stays at zero and the published state is the
+    // only position there is.
+    final stopPosition = ClientManager.usesTestClients
+        ? playbackState.value.position
+        : _player.state.position;
     await stopFollowing();
     _intendsToPlay = false;
     _stopHeartbeat();
@@ -1610,6 +1659,27 @@ class MediaPlayerHandler extends BaseAudioHandler
           force: true, playState: Enum$PlayState.PAUSED));
     }
     SleepTimerService.instance.notifyPlaybackStopped();
+    // Remember where an own stop landed, for the play button on the page that
+    // stays behind. Only for a position worth resuming: a stop at 0 has
+    // nothing to resume, and a stop in the closing seconds is a finished item —
+    // the server's watched/finished rules should decide where that restarts.
+    final srv = serverName;
+    final endMs = episodePartBounds(episode)?.endMs ??
+        _player.state.duration.inMilliseconds;
+    final nearEnd =
+        endMs > 0 && stopPosition.inMilliseconds >= endMs - 5000;
+    _stoppedResume = keepVideoPage &&
+            srv != null &&
+            stopPosition.inMilliseconds > 0 &&
+            !nearEnd &&
+            (episode != null || movie != null)
+        ? (
+            serverName: srv,
+            episodeId: episode?.id,
+            movieId: movie?.id,
+            positionMs: stopPosition.inMilliseconds,
+          )
+        : null;
     // In-flight progress responses must not resurrect the queue we clear below.
     _syncGeneration++;
     // stop(), not pause(): pausing leaves the HLS load (and the video texture)
@@ -1648,6 +1718,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         LoggerService().logger.w('Releasing audio focus on teardown failed: $e');
       }
     }
+    lastPlaybackCloseKeepsPage = keepVideoPage;
     closePlaybackRequest.value++;
   }
 
