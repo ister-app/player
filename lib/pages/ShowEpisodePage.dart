@@ -8,6 +8,7 @@ import 'package:player/graphql/episodeById.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/AddToPlaylistSheet.dart';
+import '../components/PlaybackHistorySheet.dart';
 import '../components/AddToSessionSheet.dart';
 import '../components/DevicePickerSheet.dart';
 import '../components/SourceAttribution.dart';
@@ -57,6 +58,9 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
   /// Timestamp of the query result [episode] was parsed from, so a rebuild
   /// doesn't re-parse the same result.
   DateTime? _parsedResultAt;
+  // The page query's refetch, kept for the playback-history sheet: a mutation
+  // there changes the watched badge this page shows.
+  VoidCallback? _refetch;
   /// Playback of this page's episode was kicked off (by the play button or an
   /// auto-start); the video surface shows from then on. Survives the
   /// auto-advance navigation to the next episode of the same queue.
@@ -183,6 +187,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
       ),
       builder: (QueryResult result,
           {VoidCallback? refetch, FetchMore? fetchMore}) {
+        _refetch = refetch;
         if (result.hasException) {
           return Center(child: Text(result.exception.toString()));
         } else if (result.data == null || result.isLoading) {
@@ -385,6 +390,20 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                         child: ListTile(
                           leading: const Icon(Icons.playlist_add_check),
                           title: Text(AppLocalizations.of(context)!.addToPlaylist),
+                        ),
+                      ),
+                    if (episode != null)
+                      MenuItemButton(
+                        onPressed: () => showPlaybackHistorySheet(
+                          context,
+                          serverName: widget.serverName,
+                          mediaType: Enum$MediaType.EPISODE,
+                          mediaId: episode.id,
+                          onChanged: _refetch,
+                        ),
+                        child: ListTile(
+                          leading: const Icon(Icons.history),
+                          title: Text(AppLocalizations.of(context)!.playbackHistory),
                         ),
                       ),
                   ],

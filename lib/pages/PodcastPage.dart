@@ -25,6 +25,7 @@ import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/MusicDetailHero.dart';
+import '../components/PlaybackHistorySheet.dart';
 import '../components/SourceAttribution.dart';
 import '../components/RatingStars.dart';
 import '../l10n/app_localizations.dart';
@@ -447,10 +448,10 @@ class _PodcastPageState extends State<PodcastPage> {
               icon: const Icon(Icons.download),
               tooltip: loc.fetchToServer,
               onPressed: () => _download(context, episode.id),
-            )
-          else if (_podcast != null && !kIsWeb)
-            MenuAnchor(
-              menuChildren: [
+            ),
+          MenuAnchor(
+            menuChildren: [
+              if (episode.downloaded && _podcast != null && !kIsWeb)
                 DownloadMenuItem(
                   action: DownloadAction(
                     serverName: widget.serverName,
@@ -460,13 +461,26 @@ class _PodcastPageState extends State<PodcastPage> {
                         [DownloadLoaders.podcastEpisode(episode, _podcast!)],
                   ),
                 ),
-              ],
-              builder: (context, controller, _) => IconButton(
-                icon: const Icon(Icons.more_vert),
-                onPressed: () =>
-                    controller.isOpen ? controller.close() : controller.open(),
+              MenuItemButton(
+                onPressed: () => showPlaybackHistorySheet(
+                  context,
+                  serverName: widget.serverName,
+                  mediaType: Enum$MediaType.PODCAST_EPISODE,
+                  mediaId: episode.id,
+                  onChanged: _refreshEpisodes,
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.history),
+                  title: Text(loc.playbackHistory),
+                ),
               ),
+            ],
+            builder: (context, controller, _) => IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () =>
+                  controller.isOpen ? controller.close() : controller.open(),
             ),
+          ),
         ],
       ),
       onTap: () {

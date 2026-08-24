@@ -481,6 +481,22 @@ class AppLocalizationsNl extends AppLocalizations {
   String get playedJustNow => 'Zojuist';
 
   @override
+  String get playbackHistory => 'Afspeelgeschiedenis';
+
+  @override
+  String get markPlayedNow => 'Markeren als zojuist afgespeeld';
+
+  @override
+  String get playbackHistoryEmpty => 'Nog niet afgespeeld';
+
+  @override
+  String get playbackHistoryDeleteBookHint =>
+      'Verwijderen wist je leesvoortgang.';
+
+  @override
+  String get deleteHistoryEntry => 'Regel verwijderen';
+
+  @override
   String hoursAgoShort(int count) {
     return '$count uur geleden';
   }

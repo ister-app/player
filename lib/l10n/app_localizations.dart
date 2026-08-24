@@ -956,6 +956,36 @@ abstract class AppLocalizations {
   /// **'Just now'**
   String get playedJustNow;
 
+  /// Menu entry and sheet title: the dates and times the user played one media item
+  ///
+  /// In en, this message translates to:
+  /// **'Playback history'**
+  String get playbackHistory;
+
+  /// Action in the playback-history sheet that records a play at the current moment
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as played just now'**
+  String get markPlayedNow;
+
+  /// Empty state of the playback-history sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Not played yet'**
+  String get playbackHistoryEmpty;
+
+  /// Hint under a book's single history entry: deleting it clears the reading position
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting removes your reading progress.'**
+  String get playbackHistoryDeleteBookHint;
+
+  /// Tooltip of the delete button on one playback-history entry
+  ///
+  /// In en, this message translates to:
+  /// **'Delete entry'**
+  String get deleteHistoryEntry;
+
   /// Compact relative time: hours
   ///
   /// In en, this message translates to:

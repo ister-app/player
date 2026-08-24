@@ -1,0 +1,20 @@
+query playbackHistory($mediaType: MediaType!, $mediaId: ID!) {
+    playbackHistory(mediaType: $mediaType, mediaId: $mediaId) {
+        id
+        watched
+        progressInMilliseconds
+        createdAt
+        updatedAt
+        chapter { id number }
+    }
+}
+
+mutation markPlayed($mediaType: MediaType!, $mediaId: ID!) {
+    markPlayed(mediaType: $mediaType, mediaId: $mediaId) {
+        id
+    }
+}
+
+mutation deleteWatchStatus($id: ID!) {
+    deleteWatchStatus(id: $id)
+}

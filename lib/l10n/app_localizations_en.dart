@@ -480,6 +480,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playedJustNow => 'Just now';
 
   @override
+  String get playbackHistory => 'Playback history';
+
+  @override
+  String get markPlayedNow => 'Mark as played just now';
+
+  @override
+  String get playbackHistoryEmpty => 'Not played yet';
+
+  @override
+  String get playbackHistoryDeleteBookHint =>
+      'Deleting removes your reading progress.';
+
+  @override
+  String get deleteHistoryEntry => 'Delete entry';
+
+  @override
   String hoursAgoShort(int count) {
     return '$count hr ago';
   }

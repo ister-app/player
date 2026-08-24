@@ -8,6 +8,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/WatchTogetherButton.dart';
 import '../components/AddToPlaylistSheet.dart';
+import '../components/PlaybackHistorySheet.dart';
 import '../components/AddToSessionSheet.dart';
 import '../components/DevicePickerSheet.dart';
 import '../components/SourceAttribution.dart';
@@ -52,6 +53,9 @@ class _MoviePageState extends State<MoviePage> {
   /// Timestamp of the query result [movie] was parsed from, so a rebuild
   /// doesn't re-parse the same result.
   DateTime? _parsedResultAt;
+  // The page query's refetch, kept for the playback-history sheet: a mutation
+  // there changes the watched badge this page shows.
+  VoidCallback? _refetch;
   /// Playback of this movie was kicked off (play button or auto-start); the
   /// video surface shows from then on.
   bool _playQueueStarted = false;
@@ -117,6 +121,7 @@ class _MoviePageState extends State<MoviePage> {
       ),
       builder: (QueryResult result,
           {VoidCallback? refetch, FetchMore? fetchMore}) {
+        _refetch = refetch;
         if (result.hasException) {
           return Scaffold(
             appBar: AppBar(),
@@ -327,6 +332,20 @@ class _MoviePageState extends State<MoviePage> {
                         child: ListTile(
                           leading: const Icon(Icons.playlist_add_check),
                           title: Text(AppLocalizations.of(context)!.addToPlaylist),
+                        ),
+                      ),
+                    if (movie != null)
+                      MenuItemButton(
+                        onPressed: () => showPlaybackHistorySheet(
+                          context,
+                          serverName: widget.serverName,
+                          mediaType: Enum$MediaType.MOVIE,
+                          mediaId: movie.id,
+                          onChanged: _refetch,
+                        ),
+                        child: ListTile(
+                          leading: const Icon(Icons.history),
+                          title: Text(AppLocalizations.of(context)!.playbackHistory),
                         ),
                       ),
                   ],

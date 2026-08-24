@@ -22,6 +22,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../components/BookCarouselTile.dart';
 import '../components/SourceAttribution.dart';
 import '../components/MusicDetailHero.dart';
+import '../components/PlaybackHistorySheet.dart';
 import '../components/RatingStars.dart';
 import '../l10n/app_localizations.dart';
 
@@ -303,6 +304,34 @@ class _BookPageState extends State<BookPage> {
             collapseMode: CollapseMode.pin,
             background: _buildHeader(context, book),
           ),
+          actions: [
+            if (book != null)
+              MenuAnchor(
+                menuChildren: [
+                  MenuItemButton(
+                    onPressed: () => showPlaybackHistorySheet(
+                      context,
+                      serverName: widget.serverName,
+                      mediaType: Enum$MediaType.BOOK,
+                      mediaId: book.id,
+                      onChanged: _refetch,
+                    ),
+                    child: ListTile(
+                      leading: const Icon(Icons.history),
+                      title: Text(loc.playbackHistory),
+                    ),
+                  ),
+                ],
+                builder: (_, MenuController controller, Widget? child) {
+                  return IconButton(
+                    onPressed: () => controller.isOpen
+                        ? controller.close()
+                        : controller.open(),
+                    icon: const Icon(Icons.more_vert),
+                  );
+                },
+              ),
+          ],
         ),
         if (_hasListenableChapter ||
             epubFile != null ||

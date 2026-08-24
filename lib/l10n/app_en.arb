@@ -599,6 +599,26 @@
   "@playedJustNow": {
     "description": "Relative time in the last-played track list for plays within the past hour"
   },
+  "playbackHistory": "Playback history",
+  "@playbackHistory": {
+    "description": "Menu entry and sheet title: the dates and times the user played one media item"
+  },
+  "markPlayedNow": "Mark as played just now",
+  "@markPlayedNow": {
+    "description": "Action in the playback-history sheet that records a play at the current moment"
+  },
+  "playbackHistoryEmpty": "Not played yet",
+  "@playbackHistoryEmpty": {
+    "description": "Empty state of the playback-history sheet"
+  },
+  "playbackHistoryDeleteBookHint": "Deleting removes your reading progress.",
+  "@playbackHistoryDeleteBookHint": {
+    "description": "Hint under a book's single history entry: deleting it clears the reading position"
+  },
+  "deleteHistoryEntry": "Delete entry",
+  "@deleteHistoryEntry": {
+    "description": "Tooltip of the delete button on one playback-history entry"
+  },
   "hoursAgoShort": "{count} hr ago",
   "@hoursAgoShort": {
     "description": "Compact relative time: hours",

@@ -18,6 +18,7 @@ import '../dto/IsterMediaItem.dart';
 import '../dto/MediaItemId.dart';
 import '../l10n/app_localizations.dart';
 import 'AddToPlaylistSheet.dart';
+import 'PlaybackHistorySheet.dart';
 import 'RatingStars.dart';
 import 'TvFocusable.dart';
 
@@ -314,6 +315,18 @@ class _ArtistTrackListState extends State<ArtistTrackList> {
                     child: ListTile(
                       leading: const Icon(Icons.star_outline_rounded),
                       title: Text(loc.rate),
+                    ),
+                  ),
+                  MenuItemButton(
+                    onPressed: () => showPlaybackHistorySheet(
+                      context,
+                      serverName: widget.serverName,
+                      mediaType: Enum$MediaType.TRACK,
+                      mediaId: track.id,
+                    ),
+                    child: ListTile(
+                      leading: const Icon(Icons.history),
+                      title: Text(loc.playbackHistory),
                     ),
                   ),
                 ],

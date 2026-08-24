@@ -12,6 +12,7 @@ import 'package:player/utils/StreamTokenService.dart';
 
 import '../l10n/app_localizations.dart';
 import 'AddToPlaylistSheet.dart';
+import 'PlaybackHistorySheet.dart';
 import 'BrowseListRow.dart';
 import 'CarouselItemView.dart';
 import 'PagedContentView.dart';
@@ -113,6 +114,18 @@ class TrackScroll extends StatelessWidget {
         child: ListTile(
           leading: const Icon(Icons.person),
           title: Text(loc.goToArtist),
+        ),
+      ),
+      MenuItemButton(
+        onPressed: () => showPlaybackHistorySheet(
+          context,
+          serverName: serverName,
+          mediaType: Enum$MediaType.TRACK,
+          mediaId: track.id,
+        ),
+        child: ListTile(
+          leading: const Icon(Icons.history),
+          title: Text(loc.playbackHistory),
         ),
       ),
     ];
