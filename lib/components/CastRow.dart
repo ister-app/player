@@ -16,10 +16,22 @@ import 'RowHeader.dart';
 
 /// Fixed height reserved for the horizontal cast strip; a bounded height is
 /// required so the lazy [ListView] in [PagedCastRow] can scroll horizontally.
-const double _kCastRowHeight = 190;
+/// Just enough for the tile's tallest form (a two-line name over a one-line
+/// character) — any surplus shows up as a band of empty page under the strip.
+const double _kCastRowHeight = 138;
 
 /// Width of a single cast avatar tile (used as the list item extent).
-const double _kCastTileWidth = 104;
+const double _kCastTileWidth = 108;
+
+/// Diameter of the portrait in the horizontal strip.
+const double _kCastTileAvatar = 64;
+
+/// Cell size of the compact rows on the full-cast page: an avatar beside the
+/// name and character, several columns wide on a desktop window. The column
+/// count divides down (never up), so a phone gets a single full-width column
+/// instead of two that ellipsise every longer name.
+const double _kCastRowMinTileWidth = 240;
+const double _kCastRowTileHeight = 72;
 
 /// Sorts credits by [Credit.castOrder] (unordered entries last) and merges
 /// people who hold several credits into one entry listing every character
@@ -87,7 +99,7 @@ class CastRow extends StatelessWidget {
             _castHeader(context),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -231,12 +243,19 @@ class _PagedCastRowState extends State<PagedCastRow> {
 
         // Placeholders map back to credit indices (not merged tile indices)
         // so the page they trigger stays aligned with the server's paging.
+        final bool asRows = widget.scrollDirection == Axis.vertical;
+
         Widget itemBuilder(BuildContext context, int index) {
           if (index < entries.length) {
-            return _CastMemberTile(
-              serverName: widget.serverName,
-              entry: entries[index],
-            );
+            return asRows
+                ? _CastMemberRow(
+                    serverName: widget.serverName,
+                    entry: entries[index],
+                  )
+                : _CastMemberTile(
+                    serverName: widget.serverName,
+                    entry: entries[index],
+                  );
           }
           final creditIndex = loadedCredits + (index - entries.length);
           final page = creditIndex ~/ _pageSize;
@@ -247,20 +266,29 @@ class _PagedCastRowState extends State<PagedCastRow> {
                 _requestPage(page, fetchMore);
               }
             },
-            child: const _CastSkeletonTile(),
+            child: asRows ? const _CastSkeletonRow() : const _CastSkeletonTile(),
           );
         }
 
-        if (widget.scrollDirection == Axis.vertical) {
-          return GridView.builder(
-            padding: const EdgeInsets.all(12),
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 140,
-              childAspectRatio: _kCastTileWidth / _kCastRowHeight,
-            ),
-            itemCount: entries.length + placeholderCount,
-            itemBuilder: itemBuilder,
-          );
+        if (asRows) {
+          return LayoutBuilder(builder: (context, constraints) {
+            final columns =
+                (constraints.maxWidth / _kCastRowMinTileWidth).floor().clamp(1, 6);
+            return GridView.builder(
+              padding: const EdgeInsets.all(12),
+              // A fixed main-axis extent, not an aspect ratio derived from the
+              // horizontal strip's constants: the cell then follows the row's
+              // real height instead of reserving a tile's worth of dead space.
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: columns,
+                mainAxisExtent: _kCastRowTileHeight,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 4,
+              ),
+              itemCount: entries.length + placeholderCount,
+              itemBuilder: itemBuilder,
+            );
+          });
         }
 
         return Center(
@@ -304,6 +332,145 @@ class _CastEntry {
   final List<String> characters = [];
 }
 
+/// The circular portrait shared by every cast tile, with the person icon as
+/// the fallback for people without artwork (or a failing image).
+class _CastAvatar extends StatelessWidget {
+  const _CastAvatar({
+    required this.serverName,
+    required this.person,
+    required this.size,
+  });
+
+  final String serverName;
+  final Fragment$fragmentCastMember$person person;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final img = ImageUtil.getImageByType(person.images, ImageTypes.cover);
+    final imageUrl =
+        ImageUtil.buildUrl(img, token: StreamTokenService.getToken(serverName));
+    final placeholder = Icon(
+      Icons.person,
+      size: size * 0.53,
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+
+    return ClipOval(
+      child: Container(
+        width: size,
+        height: size,
+        color: theme.colorScheme.surfaceContainerHighest,
+        child: (imageUrl != null && imageUrl != '')
+            ? CachedNetworkImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.cover,
+                fadeInDuration: Duration.zero,
+                fadeOutDuration: Duration.zero,
+                errorBuilder: (_, __, ___) => Center(child: placeholder),
+              )
+            : Center(child: placeholder),
+      ),
+    );
+  }
+}
+
+/// Compact list row — avatar beside the name and character — used by the
+/// full-cast grid on [CastListPage]. The tall centred [_CastMemberTile] is
+/// for the horizontal strip only.
+class _CastMemberRow extends StatelessWidget {
+  const _CastMemberRow({required this.serverName, required this.entry});
+
+  final String serverName;
+  final _CastEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final person = entry.person;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () => AutoRouter.of(context).push(PersonRoute(personId: person.id)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        child: Row(
+          children: [
+            _CastAvatar(serverName: serverName, person: person, size: 48),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    person.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      height: 1.2,
+                    ),
+                  ),
+                  if (entry.characters.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      entry.characters.join(' · '),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontStyle: FontStyle.italic,
+                        height: 1.2,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Skeleton stand-in matching [_CastMemberRow]'s footprint.
+class _CastSkeletonRow extends StatelessWidget {
+  const _CastSkeletonRow();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Skeletonizer(
+      enabled: true,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        child: Row(
+          children: [
+            ClipOval(
+              child: Container(
+                width: 48,
+                height: 48,
+                color: theme.colorScheme.surfaceContainerHighest,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                BoneMock.name,
+                maxLines: 1,
+                style: theme.textTheme.labelLarge?.copyWith(height: 1.2),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _CastMemberTile extends StatelessWidget {
   const _CastMemberTile({required this.serverName, required this.entry});
 
@@ -314,14 +481,6 @@ class _CastMemberTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final person = entry.person;
-    final img = ImageUtil.getImageByType(person.images, ImageTypes.cover);
-    final imageUrl =
-        ImageUtil.buildUrl(img, token: StreamTokenService.getToken(serverName));
-    final placeholder = Icon(
-      Icons.person,
-      size: 40,
-      color: theme.colorScheme.onSurfaceVariant,
-    );
 
     return SizedBox(
       width: _kCastTileWidth,
@@ -330,27 +489,16 @@ class _CastMemberTile extends StatelessWidget {
         onTap: () =>
             AutoRouter.of(context).push(PersonRoute(personId: person.id)),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ClipOval(
-                child: Container(
-                  width: 76,
-                  height: 76,
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  child: (imageUrl != null && imageUrl != '')
-                      ? CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          fit: BoxFit.cover,
-                          fadeInDuration: Duration.zero,
-                          fadeOutDuration: Duration.zero,
-                          errorBuilder: (_, __, ___) => Center(child: placeholder),
-                        )
-                      : Center(child: placeholder),
-                ),
+              _CastAvatar(
+                serverName: serverName,
+                person: person,
+                size: _kCastTileAvatar,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
                 person.name,
                 maxLines: 2,
@@ -365,7 +513,7 @@ class _CastMemberTile extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   entry.characters.join(' · '),
-                  maxLines: 2,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodySmall?.copyWith(
@@ -396,18 +544,18 @@ class _CastSkeletonTile extends StatelessWidget {
       child: SizedBox(
         width: _kCastTileWidth,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ClipOval(
                 child: Container(
-                  width: 76,
-                  height: 76,
+                  width: _kCastTileAvatar,
+                  height: _kCastTileAvatar,
                   color: theme.colorScheme.surfaceContainerHighest,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
                 BoneMock.name,
                 maxLines: 2,
