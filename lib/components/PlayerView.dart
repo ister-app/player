@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:player/components/ListenTogetherSheet.dart';
 import 'package:player/components/video_controls/SegmentOverlayButtons.dart';
+import 'package:player/components/AppModalSheet.dart';
 import 'package:player/components/SleepTimerSheet.dart';
 import 'package:player/components/TvFocusable.dart';
 import 'package:player/l10n/app_localizations.dart';
@@ -1312,7 +1313,7 @@ class _SleepTimerButton extends StatelessWidget {
             // Either a countdown or an item count is armed, never both.
             final active = remaining != null || items != null;
             final label = remaining != null
-                ? _shortCountdown(remaining)
+                ? shortSleepCountdown(remaining)
                 : items != null
                     ? loc.sleepTimerItemsShort(items)
                     : null;
@@ -1328,10 +1329,8 @@ class _SleepTimerButton extends StatelessWidget {
                     ),
                     iconSize: 24,
                     tooltip: loc.sleepTimer,
-                    onPressed: () => showModalBottomSheet<void>(
-                      context: context,
-                      isScrollControlled: true,
-                      showDragHandle: true,
+                    onPressed: () => showAppSheet<void>(
+                      context,
                       builder: (_) => const SleepTimerSheet(),
                     ),
                   ),
@@ -1347,13 +1346,6 @@ class _SleepTimerButton extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  /// Whole minutes while more than a minute is left, seconds below that, so
-  /// the label stays narrow and only ticks per second at the very end.
-  String _shortCountdown(Duration remaining) {
-    if (remaining.inMinutes >= 1) return '${(remaining.inSeconds / 60).ceil()}m';
-    return '${remaining.inSeconds}s';
   }
 }
 

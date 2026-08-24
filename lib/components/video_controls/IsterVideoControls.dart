@@ -317,6 +317,7 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
         const SizedBox(width: 8),
         const PositionText(),
         const Spacer(),
+        SleepTimerButton(onMenuOpenChanged: _setMenuOpen),
         ZoomToggleButton(state: widget.state),
         TrackMenuButton(controller: _tracks, onMenuOpenChanged: _setMenuOpen),
         if (!_isTv) const FullscreenToggleButton(),
@@ -415,6 +416,18 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
         _bufferingIndicator(),
       ],
     );
+
+    if (fullscreen) {
+      // media_kit's fullscreen route is a bare [Material] on the root
+      // navigator, and a [ScaffoldMessenger] only feeds the scaffolds of the
+      // *current* route — so snackbars (the sleep timer going off, playback
+      // errors) were built nowhere at all while fullscreen. A transparent
+      // scaffold gives the root messenger a host on top of the video.
+      result = Scaffold(
+        backgroundColor: Colors.transparent,
+        body: result,
+      );
+    }
 
     if (pointer) {
       // Keyboard shortcuts. Autofocus only in fullscreen — embedded, the page

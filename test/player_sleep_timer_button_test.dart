@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:player/components/PlayerView.dart';
+import 'package:player/components/video_controls/VideoControlButtons.dart';
 import 'package:player/components/SleepTimerSheet.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/SleepTimerService.dart';
@@ -148,6 +149,59 @@ void main() {
 
     expect(SleepTimerService.instance.isActive, isFalse);
     expect(find.byIcon(Icons.bedtime_outlined), findsOneWidget);
+  });
+
+  group('the video overlay button', () {
+    Widget videoApp(ValueChanged<bool>? onMenuOpenChanged) => MaterialApp(
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('en')],
+          home: Scaffold(
+            body: Center(
+              child: SleepTimerButton(onMenuOpenChanged: onMenuOpenChanged),
+            ),
+          ),
+        );
+
+    testWidgets('opens the sheet, arms the timer and shows the countdown',
+        (tester) async {
+      await tester.pumpWidget(videoApp(null));
+      await tester.pumpAndSettle();
+      expect(find.byIcon(Icons.bedtime_outlined), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.bedtime_outlined));
+      await tester.pumpAndSettle();
+      expect(find.byType(SleepTimerSheet), findsOneWidget);
+
+      await tester.tap(find.text('30 min'));
+      await tester.pumpAndSettle();
+
+      expect(SleepTimerService.instance.isActive, isTrue);
+      expect(find.byIcon(Icons.bedtime), findsOneWidget);
+      expect(find.text('30m'), findsOneWidget);
+
+      SleepTimerService.instance.notifyPlaybackStopped();
+      await tester.pump();
+    });
+
+    testWidgets('reports the sheet as open so the controls stop auto-hiding',
+        (tester) async {
+      final open = <bool>[];
+      await tester.pumpWidget(videoApp(open.add));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.bedtime_outlined));
+      await tester.pumpAndSettle();
+      expect(open, [true]);
+
+      Navigator.of(tester.element(find.byType(SleepTimerSheet))).pop();
+      await tester.pumpAndSettle();
+      expect(open, [true, false]);
+    });
   });
 
   test('expiry invokes the stop callback wired by the handler', () {

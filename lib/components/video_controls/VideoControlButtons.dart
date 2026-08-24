@@ -8,6 +8,9 @@ import 'package:rxdart/rxdart.dart';
 import '../../l10n/app_localizations.dart';
 import '../../utils/MediaPlayerHandler.dart';
 import '../../utils/PlatformService.dart';
+import '../../utils/SleepTimerService.dart';
+import '../AppModalSheet.dart';
+import '../SleepTimerSheet.dart';
 
 /// The accent colour for the video chrome (seek bar, spinner, sliders). The
 /// overlay always sits on dark video/scrim, but in the light theme
@@ -317,6 +320,66 @@ class ZoomToggleButton extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+/// Sleep timer for the video overlay — the same [SleepTimerSheet] the music
+/// player opens, so a film or episode can be stopped after a duration or a
+/// number of items just as well. Outlined and white while inactive, tinted
+/// with the video accent and followed by a compact countdown while armed.
+class SleepTimerButton extends StatelessWidget {
+  const SleepTimerButton({super.key, this.onMenuOpenChanged});
+
+  /// Lets the controls shell suspend auto-hide while the sheet is open — the
+  /// overlay must not fade out from under the sheet.
+  final ValueChanged<bool>? onMenuOpenChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final accent = videoAccentOf(context);
+    return ValueListenableBuilder<Duration?>(
+      valueListenable: SleepTimerService.instance.remaining,
+      builder: (context, remaining, _) => ValueListenableBuilder<int?>(
+        valueListenable: SleepTimerService.instance.remainingItems,
+        builder: (context, items, _) {
+          // Either a countdown or an item count is armed, never both.
+          final active = remaining != null || items != null;
+          final label = remaining != null
+              ? shortSleepCountdown(remaining)
+              : items != null
+                  ? loc.sleepTimerItemsShort(items)
+                  : null;
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                color: active ? accent : Colors.white,
+                style: videoControlButtonStyle(context),
+                tooltip: loc.sleepTimer,
+                icon: Icon(active ? Icons.bedtime : Icons.bedtime_outlined),
+                onPressed: () async {
+                  onMenuOpenChanged?.call(true);
+                  await showAppSheet<void>(
+                    context,
+                    builder: (_) => const SleepTimerSheet(),
+                  );
+                  onMenuOpenChanged?.call(false);
+                },
+              ),
+              if (label != null)
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: Text(
+                    label,
+                    style: TextStyle(color: accent, fontSize: 12),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
     );
   }
 }

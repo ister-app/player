@@ -6,6 +6,14 @@ import 'package:player/utils/SleepTimerService.dart';
 const sleepTimerPresetsMinutes = [15, 30, 45, 60, 90];
 const sleepTimerPresetsItems = [1, 2, 3, 5];
 
+/// The remaining time in the compact form the player chrome shows next to the
+/// bedtime icon: whole minutes while more than a minute is left, seconds below
+/// that, so the label stays narrow and only ticks per second at the very end.
+String shortSleepCountdown(Duration remaining) {
+  if (remaining.inMinutes >= 1) return '${(remaining.inSeconds / 60).ceil()}m';
+  return '${remaining.inSeconds}s';
+}
+
 /// Bottom sheet controlling the sleep timer: preset/custom durations or a
 /// number of media items when inactive, a live countdown with extend/cancel
 /// when running. Talks straight to [SleepTimerService] — the timer is local
