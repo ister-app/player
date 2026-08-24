@@ -10,6 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:player/routes/AppRouter.dart';
 import 'package:player/routes/AppRouter.gr.dart';
+import 'package:player/utils/AppLogStore.dart';
 import 'package:player/utils/AppMessenger.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/WellKnownService.dart';
@@ -30,6 +31,20 @@ Future<void> main() async {
     LoggerService().logger.d('Is running in wasm: $isRunningWithWasm');
   }
   WidgetsFlutterBinding.ensureInitialized();
+  // Mirror every log line into the rolling on-disk log (exported from the
+  // settings page) and route uncaught errors through it, before the awaited
+  // init below so boot failures are captured too.
+  unawaited(AppLogStore.instance.install());
+  FlutterError.onError = (details) {
+    LoggerService().logger.e('Uncaught Flutter error',
+        error: details.exception, stackTrace: details.stack);
+    FlutterError.presentError(details);
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    LoggerService().logger
+        .e('Uncaught error', error: error, stackTrace: stack);
+    return false;
+  };
   LoggerService().logger.i("Starting Ister Player");
   // Init the client manager and wait until lastClientUsed is loaded
   ClientManager.instance;

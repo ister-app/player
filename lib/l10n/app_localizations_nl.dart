@@ -2099,4 +2099,22 @@ class AppLocalizationsNl extends AppLocalizations {
   String connectingTo(Object server) {
     return 'Verbinden met $server…';
   }
+
+  @override
+  String get saveErrorLog => 'Foutenlog opslaan';
+
+  @override
+  String get saveErrorLogSubtitle =>
+      'Sla het app-log op als bestand voor probleemonderzoek';
+
+  @override
+  String get errorLogSaved => 'Log opgeslagen';
+
+  @override
+  String errorLogSaveFailed(Object error) {
+    return 'Log opslaan mislukt: $error';
+  }
+
+  @override
+  String get errorLogEmpty => 'Er is nog geen log om op te slaan';
 }

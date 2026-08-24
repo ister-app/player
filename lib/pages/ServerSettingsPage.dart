@@ -1,10 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 
 import '../components/AdminGate.dart';
+import '../components/SaveLogTile.dart';
+import '../utils/AppVersion.dart';
 import '../l10n/app_localizations.dart';
 
 @RoutePage()
@@ -130,6 +131,10 @@ class ServerSettingsPage extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (!kIsWeb) ...[
+                  const Divider(height: 1, indent: 56),
+                  const SaveLogTile(),
+                ],
                 const Divider(height: 1, indent: 56),
                 ListTile(
                   leading: const Icon(Icons.info_outline),
@@ -143,18 +148,12 @@ class ServerSettingsPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Center(
-            child: FutureBuilder<PackageInfo>(
-              future: PackageInfo.fromPlatform(),
+            child: FutureBuilder<String>(
+              future: appVersionString(),
               builder: (context, snapshot) {
-                final info = snapshot.data;
-                if (info == null) {
+                final version = snapshot.data;
+                if (version == null) {
                   return const SizedBox.shrink();
-                }
-                const commit =
-                    String.fromEnvironment('GIT_COMMIT', defaultValue: '');
-                var version = '${info.version}+${info.buildNumber}';
-                if (commit.isNotEmpty) {
-                  version = '$version ($commit)';
                 }
                 return Text(
                   loc.appVersion(version),

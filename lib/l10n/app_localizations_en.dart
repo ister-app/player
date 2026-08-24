@@ -2092,4 +2092,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String connectingTo(Object server) {
     return 'Connecting to $server…';
   }
+
+  @override
+  String get saveErrorLog => 'Save error log';
+
+  @override
+  String get saveErrorLogSubtitle =>
+      'Save the app log to a file for troubleshooting';
+
+  @override
+  String get errorLogSaved => 'Log saved';
+
+  @override
+  String errorLogSaveFailed(Object error) {
+    return 'Could not save the log: $error';
+  }
+
+  @override
+  String get errorLogEmpty => 'There is no log to save yet';
 }

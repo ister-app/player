@@ -3541,6 +3541,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Connecting to {server}…'**
   String connectingTo(Object server);
+
+  /// Settings action that saves the rolling app log to a file
+  ///
+  /// In en, this message translates to:
+  /// **'Save error log'**
+  String get saveErrorLog;
+
+  /// Subtitle under the save-error-log settings action
+  ///
+  /// In en, this message translates to:
+  /// **'Save the app log to a file for troubleshooting'**
+  String get saveErrorLogSubtitle;
+
+  /// Snackbar after the app log was saved successfully
+  ///
+  /// In en, this message translates to:
+  /// **'Log saved'**
+  String get errorLogSaved;
+
+  /// Snackbar when saving the app log failed
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the log: {error}'**
+  String errorLogSaveFailed(Object error);
+
+  /// Snackbar when the save-error-log action found nothing to save
+  ///
+  /// In en, this message translates to:
+  /// **'There is no log to save yet'**
+  String get errorLogEmpty;
 }
 
 class _AppLocalizationsDelegate

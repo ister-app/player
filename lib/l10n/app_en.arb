@@ -2177,5 +2177,28 @@
       "placeholders": {
           "server": {}
       }
+  },
+  "saveErrorLog": "Save error log",
+  "@saveErrorLog": {
+      "description": "Settings action that saves the rolling app log to a file"
+  },
+  "saveErrorLogSubtitle": "Save the app log to a file for troubleshooting",
+  "@saveErrorLogSubtitle": {
+      "description": "Subtitle under the save-error-log settings action"
+  },
+  "errorLogSaved": "Log saved",
+  "@errorLogSaved": {
+      "description": "Snackbar after the app log was saved successfully"
+  },
+  "errorLogSaveFailed": "Could not save the log: {error}",
+  "@errorLogSaveFailed": {
+      "description": "Snackbar when saving the app log failed",
+      "placeholders": {
+          "error": {}
+      }
+  },
+  "errorLogEmpty": "There is no log to save yet",
+  "@errorLogEmpty": {
+      "description": "Snackbar when the save-error-log action found nothing to save"
   }
 }

@@ -662,5 +662,10 @@
   "waitingForLogin": "Wachten op aanmelding…",
   "addServerMenu": "Server toevoegen…",
   "serverUnreachableBody": "De app kan deze server niet bereiken. Controleer je netwerkverbinding, of open wat je eerder hebt gedownload.",
-  "connectingTo": "Verbinden met {server}…"
+  "connectingTo": "Verbinden met {server}…",
+  "saveErrorLog": "Foutenlog opslaan",
+  "saveErrorLogSubtitle": "Sla het app-log op als bestand voor probleemonderzoek",
+  "errorLogSaved": "Log opgeslagen",
+  "errorLogSaveFailed": "Log opslaan mislukt: {error}",
+  "errorLogEmpty": "Er is nog geen log om op te slaan"
 }
