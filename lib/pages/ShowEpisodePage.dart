@@ -53,6 +53,10 @@ class ShowEpisodePage extends StatefulWidget {
 class _ShowEpisodePageState extends State<ShowEpisodePage> {
   bool loadComplete = false;
   Fragment$fragmentEpisode? episode;
+
+  /// Timestamp of the query result [episode] was parsed from, so a rebuild
+  /// doesn't re-parse the same result.
+  DateTime? _parsedResultAt;
   /// Playback of this page's episode was kicked off (by the play button or an
   /// auto-start); the video surface shows from then on. Survives the
   /// auto-advance navigation to the next episode of the same queue.
@@ -105,6 +109,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
       if (!isAutoAdvance) {
         setState(() {
           episode = null;
+          _parsedResultAt = null;
           _playQueueStarted = false;
           _playRequested = false;
           loadComplete = false;
@@ -146,12 +151,6 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
     return Query(
       options: QueryOptions(
         document: documentNodeQueryepisodeById,
-        onComplete: (data) {
-          setState(() {
-            loadComplete = true;
-            episode = Query$episodeById.fromJson(data!).episodeById;
-          });
-        },
         variables: Map.of({"id": widget.episodeId}),
       ),
       builder: (QueryResult result,
@@ -165,6 +164,17 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                 false, null, BoneMock.name, BoneMock.words(15), context),
           );
         } else {
+          // Parse the result here rather than in an `onComplete` callback: a
+          // cached result (returning to this page from the mini player) is
+          // handed to the very first build with `isLoading` false, while the
+          // callback only fires on the *next* result from the network. Waiting
+          // for it showed the "Episode 0" title fallback — and a cover without
+          // its play button — for the whole round trip.
+          if (result.timestamp != _parsedResultAt) {
+            _parsedResultAt = result.timestamp;
+            episode = Query$episodeById.fromJson(result.data!).episodeById;
+            loadComplete = true;
+          }
           final MediaPlayerHandler handler = MediaPlayerHandler.instance;
           // Opening an episode shows its cover with a play button; playback
           // starts on its own only for the queue that is already playing

@@ -48,6 +48,10 @@ class MoviePage extends StatefulWidget {
 class _MoviePageState extends State<MoviePage> {
   bool loadComplete = false;
   Fragment$fragmentMovie? movie;
+
+  /// Timestamp of the query result [movie] was parsed from, so a rebuild
+  /// doesn't re-parse the same result.
+  DateTime? _parsedResultAt;
   /// Playback of this movie was kicked off (play button or auto-start); the
   /// video surface shows from then on.
   bool _playQueueStarted = false;
@@ -94,6 +98,7 @@ class _MoviePageState extends State<MoviePage> {
     if (oldWidget.movieId != widget.movieId) {
       setState(() {
         movie = null;
+        _parsedResultAt = null;
         _playQueueStarted = false;
         _playRequested = false;
         loadComplete = false;
@@ -108,12 +113,6 @@ class _MoviePageState extends State<MoviePage> {
     return Query(
       options: QueryOptions(
         document: documentNodeQuerymovieById,
-        onComplete: (data) {
-          setState(() {
-            loadComplete = true;
-            movie = Query$movieById.fromJson(data!).movieById;
-          });
-        },
         variables: Map.of({"id": widget.movieId}),
       ),
       builder: (QueryResult result,
@@ -134,6 +133,16 @@ class _MoviePageState extends State<MoviePage> {
             ),
           );
         } else {
+          // Parse here rather than in an `onComplete` callback: a cached
+          // result (returning from the mini player) reaches the first build
+          // with `isLoading` false, while the callback only fires on the next
+          // result from the network — until then the page rendered an empty
+          // title and a cover without its play button.
+          if (result.timestamp != _parsedResultAt) {
+            _parsedResultAt = result.timestamp;
+            movie = Query$movieById.fromJson(result.data!).movieById;
+            loadComplete = true;
+          }
           final MediaPlayerHandler handler = MediaPlayerHandler.instance;
           // Opening a movie shows its cover with a play button; playback
           // starts on its own only for the queue that is already playing
