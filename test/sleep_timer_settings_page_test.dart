@@ -66,18 +66,69 @@ void main() {
     expect(find.byType(TimePickerDialog), findsNothing);
   });
 
-  testWidgets('changing the default duration persists', (tester) async {
+  testWidgets('choosing a duration preset persists the duration mode',
+      (tester) async {
     await SleepTimerPreferences.setAutoEnabled(true);
+    await SleepTimerPreferences.setCountItems(true);
     await tester.pumpWidget(_app());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byType(DropdownButton<int>));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('45 min').last);
+    await tester.tap(find.byKey(const Key('sleep-preset-min-45')));
     await tester.pumpAndSettle();
 
     final schedule = await SleepTimerPreferences.getSchedule();
     expect(schedule.durationMinutes, 45);
+    expect(schedule.countItems, isFalse);
+  });
+
+  testWidgets('choosing an item preset persists the item-counting mode',
+      (tester) async {
+    await SleepTimerPreferences.setAutoEnabled(true);
+    await tester.pumpWidget(_app());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('sleep-preset-items-3')));
+    await tester.pumpAndSettle();
+
+    final schedule = await SleepTimerPreferences.getSchedule();
+    expect(schedule.countItems, isTrue);
+    expect(schedule.itemCount, 3);
+  });
+
+  testWidgets('the custom item chip persists a non-preset count',
+      (tester) async {
+    await SleepTimerPreferences.setAutoEnabled(true);
+    await tester.pumpWidget(_app());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('sleep-preset-items-custom')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '7');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    final schedule = await SleepTimerPreferences.getSchedule();
+    expect(schedule.countItems, isTrue);
+    expect(schedule.itemCount, 7);
+    // The non-preset count lives on the custom chip, selected.
+    final chip = tester.widget<ChoiceChip>(
+        find.byKey(const Key('sleep-preset-items-custom')));
+    expect(chip.selected, isTrue);
+  });
+
+  testWidgets('preset chips are disabled while the switch is off',
+      (tester) async {
+    await tester.pumpWidget(_app());
+    await tester.pumpAndSettle();
+
+    final chip = tester
+        .widget<ChoiceChip>(find.byKey(const Key('sleep-preset-min-30')));
+    expect(chip.onSelected, isNull);
+
+    await tester.tap(find.byKey(const Key('sleep-preset-items-2')));
+    await tester.pumpAndSettle();
+    final schedule = await SleepTimerPreferences.getSchedule();
+    expect(schedule.countItems, isFalse);
   });
 
   testWidgets('picking a start time persists it', (tester) async {

@@ -1150,7 +1150,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sleepTimerUntil => 'Until';
 
   @override
-  String get sleepTimerDefaultDuration => 'Default duration';
+  String get sleepTimerDefault => 'Default timer';
+
+  @override
+  String sleepTimerItemsPreset(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get sleepTimerDeviceOnly => 'Applies to this device only';

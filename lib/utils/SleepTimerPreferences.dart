@@ -11,18 +11,23 @@ bool isWithinSleepWindow(int nowMinutes, int startMinutes, int endMinutes) {
 }
 
 /// The automatic sleep-timer schedule: when playback starts inside the
-/// window, a sleep timer of [durationMinutes] arms itself.
+/// window, a sleep timer arms itself — counting down [durationMinutes], or
+/// counting [itemCount] media items when [countItems] is set.
 class SleepSchedule {
   final bool enabled;
   final int startMinutes;
   final int endMinutes;
   final int durationMinutes;
+  final bool countItems;
+  final int itemCount;
 
   const SleepSchedule({
     required this.enabled,
     required this.startMinutes,
     required this.endMinutes,
     required this.durationMinutes,
+    this.countItems = false,
+    this.itemCount = SleepTimerPreferences.defaultItemCount,
   });
 }
 
@@ -34,11 +39,14 @@ class SleepTimerPreferences {
   static const _kAutoStartMinutes = 'sleep_timer_auto_start_minutes';
   static const _kAutoEndMinutes = 'sleep_timer_auto_end_minutes';
   static const _kAutoDurationMinutes = 'sleep_timer_auto_duration_minutes';
+  static const _kAutoCountItems = 'sleep_timer_auto_count_items';
+  static const _kAutoItemCount = 'sleep_timer_auto_item_count';
   static final SharedPreferencesAsync _prefs = SharedPreferencesAsync();
 
   static const defaultStartMinutes = 22 * 60;
   static const defaultEndMinutes = 6 * 60;
   static const defaultDurationMinutes = 30;
+  static const defaultItemCount = 2;
 
   static Future<SleepSchedule> getSchedule() async {
     return SleepSchedule(
@@ -48,6 +56,8 @@ class SleepTimerPreferences {
       endMinutes: await _prefs.getInt(_kAutoEndMinutes) ?? defaultEndMinutes,
       durationMinutes:
           await _prefs.getInt(_kAutoDurationMinutes) ?? defaultDurationMinutes,
+      countItems: await _prefs.getBool(_kAutoCountItems) ?? false,
+      itemCount: await _prefs.getInt(_kAutoItemCount) ?? defaultItemCount,
     );
   }
 
@@ -62,4 +72,10 @@ class SleepTimerPreferences {
 
   static Future<void> setDurationMinutes(int minutes) =>
       _prefs.setInt(_kAutoDurationMinutes, minutes);
+
+  static Future<void> setCountItems(bool countItems) =>
+      _prefs.setBool(_kAutoCountItems, countItems);
+
+  static Future<void> setItemCount(int count) =>
+      _prefs.setInt(_kAutoItemCount, count);
 }

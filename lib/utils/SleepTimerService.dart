@@ -95,7 +95,11 @@ class SleepTimerService {
     }
     // Re-check: playback may have started/armed while the prefs read awaited.
     if (isActive || _autoStartSuppressed) return;
-    start(Duration(minutes: schedule.durationMinutes));
+    if (schedule.countItems) {
+      startItems(schedule.itemCount);
+    } else {
+      start(Duration(minutes: schedule.durationMinutes));
+    }
   }
 
   /// Called from MediaPlayerHandler.suspendPlayback(): a stopped session makes the

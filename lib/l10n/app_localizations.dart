@@ -2048,11 +2048,17 @@ abstract class AppLocalizations {
   /// **'Until'**
   String get sleepTimerUntil;
 
-  /// Settings tile for the duration an automatically started sleep timer runs
+  /// Settings card for what an automatically started sleep timer counts: a duration or a number of items
   ///
   /// In en, this message translates to:
-  /// **'Default duration'**
-  String get sleepTimerDefaultDuration;
+  /// **'Default timer'**
+  String get sleepTimerDefault;
+
+  /// Item-count preset chip on the sleep timer settings page, where no item is playing yet
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item} other{{count} items}}'**
+  String sleepTimerItemsPreset(int count);
 
   /// Note that sleep timer settings are not synced to the server
   ///

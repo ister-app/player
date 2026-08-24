@@ -20,6 +20,8 @@ class _SleepTimerSettingsPageState extends State<SleepTimerSettingsPage> {
   int _startMinutes = SleepTimerPreferences.defaultStartMinutes;
   int _endMinutes = SleepTimerPreferences.defaultEndMinutes;
   int _durationMinutes = SleepTimerPreferences.defaultDurationMinutes;
+  bool _countItems = false;
+  int _itemCount = SleepTimerPreferences.defaultItemCount;
   late Future<void> _preferencesFuture;
 
   @override
@@ -36,6 +38,8 @@ class _SleepTimerSettingsPageState extends State<SleepTimerSettingsPage> {
       _startMinutes = schedule.startMinutes;
       _endMinutes = schedule.endMinutes;
       _durationMinutes = schedule.durationMinutes;
+      _countItems = schedule.countItems;
+      _itemCount = schedule.itemCount;
     });
   }
 
@@ -101,22 +105,71 @@ class _SleepTimerSettingsPageState extends State<SleepTimerSettingsPage> {
                 ),
               ),
               Card(
-                child: ListTile(
-                  enabled: _autoEnabled,
-                  leading: const Icon(Icons.hourglass_bottom_outlined),
-                  title: Text(loc.sleepTimerDefaultDuration),
-                  trailing: DropdownButton<int>(
-                    value: sleepTimerPresetsMinutes.contains(_durationMinutes)
-                        ? _durationMinutes
-                        : null,
-                    hint: Text(loc.sleepTimerMinutes(_durationMinutes)),
-                    onChanged: _autoEnabled ? _setDuration : null,
-                    items: [
-                      for (final minutes in sleepTimerPresetsMinutes)
-                        DropdownMenuItem(
-                          value: minutes,
-                          child: Text(loc.sleepTimerMinutes(minutes)),
-                        ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        enabled: _autoEnabled,
+                        leading: const Icon(Icons.hourglass_bottom_outlined),
+                        title: Text(loc.sleepTimerDefault),
+                      ),
+                      _sectionLabel(context, loc.sleepTimerAfterDuration),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: [
+                          for (final minutes in sleepTimerPresetsMinutes)
+                            ChoiceChip(
+                              key: Key('sleep-preset-min-$minutes'),
+                              label: Text(loc.sleepTimerMinutes(minutes)),
+                              selected:
+                                  !_countItems && _durationMinutes == minutes,
+                              onSelected: _autoEnabled
+                                  ? (_) => _setDuration(minutes)
+                                  : null,
+                            ),
+                          ChoiceChip(
+                            key: const Key('sleep-preset-min-custom'),
+                            // A stored value outside the presets lives on this
+                            // chip, like the dropdown's hint used to.
+                            label: Text(_customDurationActive
+                                ? loc.sleepTimerMinutes(_durationMinutes)
+                                : loc.sleepTimerCustom),
+                            selected: _customDurationActive,
+                            onSelected:
+                                _autoEnabled ? (_) => _pickDuration() : null,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      _sectionLabel(context, loc.sleepTimerAfterItems),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: [
+                          for (final count in sleepTimerPresetsItems)
+                            ChoiceChip(
+                              key: Key('sleep-preset-items-$count'),
+                              label: Text(loc.sleepTimerItemsPreset(count)),
+                              selected: _countItems && _itemCount == count,
+                              onSelected: _autoEnabled
+                                  ? (_) => _setItems(count)
+                                  : null,
+                            ),
+                          ChoiceChip(
+                            key: const Key('sleep-preset-items-custom'),
+                            label: Text(_customItemsActive
+                                ? loc.sleepTimerItemsPreset(_itemCount)
+                                : loc.sleepTimerCustom),
+                            selected: _customItemsActive,
+                            onSelected:
+                                _autoEnabled ? (_) => _pickItems() : null,
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -128,9 +181,42 @@ class _SleepTimerSettingsPageState extends State<SleepTimerSettingsPage> {
     );
   }
 
-  void _setDuration(int? minutes) {
-    if (minutes == null) return;
+  bool get _customDurationActive =>
+      !_countItems && !sleepTimerPresetsMinutes.contains(_durationMinutes);
+
+  bool get _customItemsActive =>
+      _countItems && !sleepTimerPresetsItems.contains(_itemCount);
+
+  Widget _sectionLabel(BuildContext context, String text) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Text(text, style: Theme.of(context).textTheme.labelMedium),
+      );
+
+  void _setDuration(int minutes) {
+    SleepTimerPreferences.setCountItems(false);
     SleepTimerPreferences.setDurationMinutes(minutes);
-    setState(() => _durationMinutes = minutes);
+    setState(() {
+      _countItems = false;
+      _durationMinutes = minutes;
+    });
+  }
+
+  Future<void> _pickDuration() async {
+    final minutes = await showSleepTimerMinutesDialog(context);
+    if (minutes != null && minutes > 0) _setDuration(minutes);
+  }
+
+  void _setItems(int count) {
+    SleepTimerPreferences.setCountItems(true);
+    SleepTimerPreferences.setItemCount(count);
+    setState(() {
+      _countItems = true;
+      _itemCount = count;
+    });
+  }
+
+  Future<void> _pickItems() async {
+    final count = await showSleepTimerItemsDialog(context);
+    if (count != null && count > 0) _setItems(count);
   }
 }

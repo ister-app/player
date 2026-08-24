@@ -256,6 +256,15 @@ void main() {
           const Duration(minutes: SleepTimerPreferences.defaultDurationMinutes));
     });
 
+    test('item-counting mode arms the item count, not a countdown', () async {
+      await SleepTimerPreferences.setAutoEnabled(true);
+      await SleepTimerPreferences.setCountItems(true);
+      await SleepTimerPreferences.setItemCount(3);
+      await service.notifyPlaybackStarted();
+      expect(service.remainingItems.value, 3);
+      expect(service.remaining.value, isNull);
+    });
+
     test('enabled but outside the window arms nothing', () async {
       await SleepTimerPreferences.setAutoEnabled(true);
       service.now = () => DateTime(2026, 7, 28, 14, 0);

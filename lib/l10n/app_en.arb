@@ -1254,9 +1254,18 @@
   "@sleepTimerUntil": {
     "description": "Settings tile for the end of the automatic sleep timer window"
   },
-  "sleepTimerDefaultDuration": "Default duration",
-  "@sleepTimerDefaultDuration": {
-    "description": "Settings tile for the duration an automatically started sleep timer runs"
+  "sleepTimerDefault": "Default timer",
+  "@sleepTimerDefault": {
+    "description": "Settings card for what an automatically started sleep timer counts: a duration or a number of items"
+  },
+  "sleepTimerItemsPreset": "{count, plural, =1{1 item} other{{count} items}}",
+  "@sleepTimerItemsPreset": {
+    "description": "Item-count preset chip on the sleep timer settings page, where no item is playing yet",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "sleepTimerDeviceOnly": "Applies to this device only",
   "@sleepTimerDeviceOnly": {
