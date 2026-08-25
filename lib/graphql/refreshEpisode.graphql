@@ -1,0 +1,3 @@
+mutation refreshEpisode($episodeId: ID!) {
+    refreshEpisode(episodeId: $episodeId)
+}

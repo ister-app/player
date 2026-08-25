@@ -1,3 +1,0 @@
-mutation analyzeDataForEpisodeMutation($episodeId: ID!) {
-    analyzeDataForEpisode(episodeId: $episodeId)
-}

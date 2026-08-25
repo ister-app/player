@@ -1,0 +1,3 @@
+mutation refreshShow($showId: ID!) {
+    refreshShow(showId: $showId)
+}

@@ -30,10 +30,6 @@
   "hideSubtitlesMatchingAudioDescription": "Is de ondertiteltaal die gekozen zou worden dezelfde als wat je al hoort, dan blijft ondertiteling uit. Een taal die er hoger in staat wordt wel gebruikt.",
   "languageSaveFailed": "Kan je taalvoorkeuren niet opslaan",
   "refreshPage": "Vernieuw pagina",
-  "scanLibrary": "Scan bibliotheek",
-  "analyzeLibrary": "Analyseer bibliotheek",
-  "reindexSearch": "Zoekindex herbouwen",
-  "analyzeAllLibraries": "Alle bibliotheken",
   "management": "Beheer",
   "usersAndAccess": "Gebruikers & toegang",
   "libraryVisibility": "Bibliotheek-zichtbaarheid",
@@ -88,7 +84,6 @@
   "skipIntro": "Intro overslaan",
   "skipIntroCountdown": "Intro overslaan ({seconds})",
   "nextEpisode": "Volgende aflevering",
-  "analyzeMedia": "Analyseer media",
   "switchServer": "Wissel van server",
   "servers": "Servers",
   "noRecentItems": "Geen recente items",
@@ -226,7 +221,7 @@
   "transcodesTag": "Transcoderen",
   "activityKindAnalyzeFile": "Mediabestand analyseren",
   "activityKindScan": "Zoeken naar nieuwe bestanden",
-  "activityKindAnalyzeLibrary": "Bibliotheek analyseren",
+  "activityKindAnalyzeLibrary": "Metadata vernieuwen",
   "activityKindMetadata": "Metadata ophalen",
   "activityKindImportFiles": "Bestanden importeren",
   "activityKindArtwork": "Afbeeldingen verwerken",
@@ -747,5 +742,17 @@
         "type": "int"
       }
     }
-  }
+  },
+  "managementHint": "Onderhoudsacties voor deze server. Ze draaien op de achtergrond; de voortgang staat hierboven.",
+  "scanLibraries": "Zoeken naar nieuwe bestanden",
+  "scanLibrariesSubtitle": "Zoekt naar nieuw toegevoegde bestanden in alle bibliotheken. Snel en veilig.",
+  "fetchMissingMetadata": "Ontbrekende metadata ophalen",
+  "fetchMissingMetadataSubtitle": "Downloadt alleen metadata en afbeeldingen waar ze ontbreken. Altijd veilig uit te voeren.",
+  "rebuildLibraryMetadata": "Bibliotheekmetadata opnieuw opbouwen",
+  "rebuildLibraryMetadataSubtitle": "Verwijdert en downloadt alle metadata en afbeeldingen van één bibliotheek opnieuw. Zwaar; kan lang duren.",
+  "rebuildLibraryConfirmTitle": "Metadata opnieuw opbouwen?",
+  "rebuildLibraryConfirmBody": "Dit verwijdert alle opgeslagen metadata en afbeeldingen van \"{library}\" en downloadt alles opnieuw van de metadatadiensten. Dit kan lang duren.",
+  "rebuildSearchIndex": "Zoekindex opnieuw opbouwen",
+  "rebuildSearchIndexSubtitle": "Bouwt de zoekindex opnieuw op vanuit de database. Zoeken blijft beschikbaar tijdens het opbouwen.",
+  "refreshMetadataItem": "Metadata vernieuwen"
 }

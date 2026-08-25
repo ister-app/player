@@ -2,20 +2,19 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:gql/ast.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:player/graphql/analyzeDataForLibrary.graphql.dart';
-import 'package:player/graphql/analyzeLibrary.graphql.dart';
 import 'package:player/graphql/fragmentServerActivity.graphql.dart';
 import 'package:player/graphql/getServerInfo.graphql.dart';
 import 'package:player/graphql/libraries.graphql.dart';
-import 'package:player/graphql/reindexSearch.graphql.dart';
-import 'package:player/graphql/scanLibrary.graphql.dart';
+import 'package:player/graphql/rebuildSearchIndex.graphql.dart';
+import 'package:player/graphql/refreshMetadata.graphql.dart';
+import 'package:player/graphql/scanLibraries.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/graphql/serverActivitySnapshot.graphql.dart';
 import 'package:player/graphql/serverActivitySubscription.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../components/ConfirmDialog.dart';
 import '../components/SettingsSection.dart';
 import '../l10n/app_localizations.dart';
 import '../components/AdminGate.dart';
@@ -24,6 +23,7 @@ import '../utils/ClientManager.dart';
 import '../utils/LibraryIcons.dart';
 import '../utils/LoggerService.dart';
 import '../utils/ResilientSubscription.dart';
+import '../utils/ServerTaskRunner.dart';
 
 /// Everything about the server in one screen: which server this is and the
 /// nodes it runs on (name, url, version from getServerInfo), what those nodes
@@ -157,36 +157,9 @@ class _ServerSettingsClusterPageState extends State<ServerSettingsClusterPage> {
   }
 
 
-  Future<void> _runManagementTask(
-    BuildContext context,
-    DocumentNode document,
-    String label, {
-    Map<String, dynamic>? variables,
-  }) async {
-    final loc = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
-    final client = GraphQLProvider.of(context).value;
-
-    final result = await client.mutate(MutationOptions(
-      document: document,
-      variables: variables ?? const {},
-    ));
-
-    if (!context.mounted) return;
-    if (result.hasException) {
-      LoggerService().logger.e(result.exception);
-      messenger.showSnackBar(
-        SnackBar(content: Text(loc.taskFailed(label))),
-      );
-      return;
-    }
-    messenger.showSnackBar(
-      SnackBar(content: Text(loc.taskStarted(label))),
-    );
-  }
-
-  Future<void> _showAnalyzeOptions(BuildContext context) async {
-    final loc = AppLocalizations.of(context)!;
+  /// Picks the library to rebuild, then confirms — the FORCE refresh deletes
+  /// that library's stored metadata and artwork before re-fetching everything.
+  Future<void> _showRebuildOptions(BuildContext context) async {
     final client = GraphQLProvider.of(context).value;
 
     final result = await client.query(QueryOptions(
@@ -209,19 +182,6 @@ class _ServerSettingsClusterPageState extends State<ServerSettingsClusterPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                ListTile(
-                  leading: Icon(Icons.analytics_outlined, color: mutedColor),
-                  title: Text(loc.analyzeAllLibraries),
-                  onTap: () {
-                    Navigator.pop(sheetContext);
-                    _runManagementTask(
-                      context,
-                      documentNodeMutationanalyzeLibrary,
-                      loc.analyzeAllLibraries,
-                    );
-                  },
-                ),
-                if (libraries.isNotEmpty) const Divider(height: 1),
                 for (final library in libraries)
                   ListTile(
                     leading:
@@ -229,18 +189,34 @@ class _ServerSettingsClusterPageState extends State<ServerSettingsClusterPage> {
                     title: Text(library.name),
                     onTap: () {
                       Navigator.pop(sheetContext);
-                      _runManagementTask(
-                        context,
-                        documentNodeMutationanalyzeDataForLibraryMutation,
-                        library.name,
-                        variables: {'libraryId': library.id},
-                      );
+                      _confirmAndRebuild(context, library);
                     },
                   ),
               ],
             ),
           ),
         );
+      },
+    );
+  }
+
+  Future<void> _confirmAndRebuild(
+      BuildContext context, Query$libraries$libraries library) async {
+    final loc = AppLocalizations.of(context)!;
+    final confirmed = await showConfirmDialog(
+      context,
+      title: loc.rebuildLibraryConfirmTitle,
+      body: loc.rebuildLibraryConfirmBody(library.name),
+      confirmLabel: loc.rebuildLibraryMetadata,
+    );
+    if (!confirmed || !context.mounted) return;
+    await runServerTask(
+      context,
+      documentNodeMutationrefreshMetadata,
+      library.name,
+      variables: {
+        'mode': Enum$MetadataRefreshMode.FORCE.name,
+        'libraryId': library.id,
       },
     );
   }
@@ -259,40 +235,46 @@ class _ServerSettingsClusterPageState extends State<ServerSettingsClusterPage> {
     final loc = AppLocalizations.of(context)!;
     final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return SettingsSection(
+      title: loc.management,
+      hint: loc.managementHint,
       children: [
-        SettingsSectionLabel(loc.management),
-        Card(
-          child: Column(
-            children: [
-              ListTile(
-                leading: Icon(Icons.loop, color: mutedColor),
-                title: Text(loc.scanLibrary),
-                onTap: () => _runManagementTask(
-                  context,
-                  documentNodeMutationscanLibrary,
-                  loc.scanLibrary,
-                ),
-              ),
-              const Divider(height: 1, indent: 56),
-              ListTile(
-                leading: Icon(Icons.analytics_outlined, color: mutedColor),
-                title: Text(loc.analyzeLibrary),
-                trailing: Icon(Icons.chevron_right, color: mutedColor),
-                onTap: () => _showAnalyzeOptions(context),
-              ),
-              const Divider(height: 1, indent: 56),
-              ListTile(
-                leading: Icon(Icons.manage_search, color: mutedColor),
-                title: Text(loc.reindexSearch),
-                onTap: () => _runManagementTask(
-                  context,
-                  documentNodeMutationreindexSearch,
-                  loc.reindexSearch,
-                ),
-              ),
-            ],
+        ListTile(
+          leading: Icon(Icons.loop, color: mutedColor),
+          title: Text(loc.scanLibraries),
+          subtitle: Text(loc.scanLibrariesSubtitle),
+          onTap: () => runServerTask(
+            context,
+            documentNodeMutationscanLibraries,
+            loc.scanLibraries,
+          ),
+        ),
+        ListTile(
+          leading: Icon(Icons.cloud_download_outlined, color: mutedColor),
+          title: Text(loc.fetchMissingMetadata),
+          subtitle: Text(loc.fetchMissingMetadataSubtitle),
+          onTap: () => runServerTask(
+            context,
+            documentNodeMutationrefreshMetadata,
+            loc.fetchMissingMetadata,
+            variables: {'mode': Enum$MetadataRefreshMode.MISSING.name},
+          ),
+        ),
+        ListTile(
+          leading: Icon(Icons.build_circle_outlined, color: mutedColor),
+          title: Text(loc.rebuildLibraryMetadata),
+          subtitle: Text(loc.rebuildLibraryMetadataSubtitle),
+          trailing: Icon(Icons.chevron_right, color: mutedColor),
+          onTap: () => _showRebuildOptions(context),
+        ),
+        ListTile(
+          leading: Icon(Icons.manage_search, color: mutedColor),
+          title: Text(loc.rebuildSearchIndex),
+          subtitle: Text(loc.rebuildSearchIndexSubtitle),
+          onTap: () => runServerTask(
+            context,
+            documentNodeMutationrebuildSearchIndex,
+            loc.rebuildSearchIndex,
           ),
         ),
       ],

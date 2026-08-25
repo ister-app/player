@@ -1,0 +1,3 @@
+mutation refreshMovie($movieId: ID!) {
+    refreshMovie(movieId: $movieId)
+}

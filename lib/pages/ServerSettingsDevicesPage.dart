@@ -9,6 +9,7 @@ import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/DevicePreferences.dart';
 import 'package:player/utils/DeviceService.dart';
 
+import '../components/ConfirmDialog.dart';
 import '../components/SettingsSection.dart';
 import '../l10n/app_localizations.dart';
 
@@ -136,26 +137,15 @@ class _ServerSettingsDevicesPageState extends State<ServerSettingsDevicesPage> {
 
   Future<void> _remove(DeviceInfo device) async {
     final loc = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(loc.deviceRemove),
-        content: Text(device.isThisDevice
-            ? loc.deviceRemoveThisDeviceConfirm(device.name)
-            : loc.deviceRemoveConfirm(device.name)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(loc.deviceRemove),
-          ),
-        ],
-      ),
+    final confirmed = await showConfirmDialog(
+      context,
+      title: loc.deviceRemove,
+      body: device.isThisDevice
+          ? loc.deviceRemoveThisDeviceConfirm(device.name)
+          : loc.deviceRemoveConfirm(device.name),
+      confirmLabel: loc.deviceRemove,
     );
-    if (confirmed != true) return;
+    if (!confirmed) return;
 
     setState(() => _busy = true);
     try {

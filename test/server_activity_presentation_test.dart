@@ -9,7 +9,7 @@ void main() {
       'app.ister.server.MediaFileFound': ActivityKind.analyzeFile,
       'app.ister.server.FileScanRequested': ActivityKind.scan,
       'app.ister.server.NewDirectoriesScanRequested': ActivityKind.scan,
-      'app.ister.server.AnalyzeLibraryRequested': ActivityKind.analyzeLibrary,
+      'app.ister.server.MetadataBackfillRequested': ActivityKind.analyzeLibrary,
       'app.ister.server.AnalyzeData': ActivityKind.analyzeLibrary,
       'app.ister.server.ShowFound': ActivityKind.metadata,
       'app.ister.server.MovieFound': ActivityKind.metadata,

@@ -1,0 +1,3 @@
+mutation refreshTrack($trackId: ID!) {
+    refreshTrack(trackId: $trackId)
+}

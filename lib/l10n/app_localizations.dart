@@ -284,30 +284,6 @@ abstract class AppLocalizations {
   /// **'Refresh page'**
   String get refreshPage;
 
-  /// Text in list tile when clicked it will trigger a library scan.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan library'**
-  String get scanLibrary;
-
-  /// Text in list tile when clicked it will trigger a analyze scan.
-  ///
-  /// In en, this message translates to:
-  /// **'Analyze library'**
-  String get analyzeLibrary;
-
-  /// Management action that rebuilds the search index on the server.
-  ///
-  /// In en, this message translates to:
-  /// **'Reindex search'**
-  String get reindexSearch;
-
-  /// Option in the analyze picker that analyzes every library at once (the overarching analyzeLibrary action).
-  ///
-  /// In en, this message translates to:
-  /// **'All libraries'**
-  String get analyzeAllLibraries;
-
   /// Section header for administrative server actions (scan, analyze, reindex).
   ///
   /// In en, this message translates to:
@@ -631,12 +607,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next episode'**
   String get nextEpisode;
-
-  /// Menu item to trigger media analysis for an episode, movie or show
-  ///
-  /// In en, this message translates to:
-  /// **'Analyze media'**
-  String get analyzeMedia;
 
   /// Menu item to navigate back to the server list
   ///
@@ -1421,7 +1391,7 @@ abstract class AppLocalizations {
   /// No description provided for @activityKindAnalyzeLibrary.
   ///
   /// In en, this message translates to:
-  /// **'Analyzing library'**
+  /// **'Refreshing metadata'**
   String get activityKindAnalyzeLibrary;
 
   /// No description provided for @activityKindMetadata.
@@ -3907,6 +3877,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{minutes}m'**
   String runtimeMinutes(int minutes);
+
+  /// Hint under the Management section header on the server status page
+  ///
+  /// In en, this message translates to:
+  /// **'Maintenance actions for this server. They run in the background; progress shows above.'**
+  String get managementHint;
+
+  /// Management action: scan the library folders
+  ///
+  /// In en, this message translates to:
+  /// **'Scan for new files'**
+  String get scanLibraries;
+
+  /// Subtitle of the scan action
+  ///
+  /// In en, this message translates to:
+  /// **'Looks for newly added files in all libraries. Quick and safe.'**
+  String get scanLibrariesSubtitle;
+
+  /// Management action: backfill missing metadata
+  ///
+  /// In en, this message translates to:
+  /// **'Fetch missing metadata'**
+  String get fetchMissingMetadata;
+
+  /// Subtitle of the backfill action
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads metadata and artwork only where they are missing. Safe to run anytime.'**
+  String get fetchMissingMetadataSubtitle;
+
+  /// Management action: force refresh one library
+  ///
+  /// In en, this message translates to:
+  /// **'Rebuild library metadata'**
+  String get rebuildLibraryMetadata;
+
+  /// Subtitle of the rebuild action
+  ///
+  /// In en, this message translates to:
+  /// **'Deletes and re-downloads all metadata and artwork for one library. Heavy; can take a long time.'**
+  String get rebuildLibraryMetadataSubtitle;
+
+  /// Title of the rebuild confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Rebuild metadata?'**
+  String get rebuildLibraryConfirmTitle;
+
+  /// Body of the rebuild confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'This deletes all stored metadata and artwork for \"{library}\" and downloads everything again from the metadata services. This can take a long time.'**
+  String rebuildLibraryConfirmBody(String library);
+
+  /// Management action: rebuild the Typesense index
+  ///
+  /// In en, this message translates to:
+  /// **'Rebuild search index'**
+  String get rebuildSearchIndex;
+
+  /// Subtitle of the rebuild search index action
+  ///
+  /// In en, this message translates to:
+  /// **'Recreates the search index from the database. Search stays available while it runs.'**
+  String get rebuildSearchIndexSubtitle;
+
+  /// Menu item: delete and re-fetch the metadata of one item
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh metadata'**
+  String get refreshMetadataItem;
 }
 
 class _AppLocalizationsDelegate

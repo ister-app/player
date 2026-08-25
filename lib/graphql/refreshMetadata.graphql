@@ -1,0 +1,3 @@
+mutation refreshMetadata($mode: MetadataRefreshMode!, $libraryId: ID) {
+    refreshMetadata(mode: $mode, libraryId: $libraryId)
+}

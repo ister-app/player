@@ -1,3 +1,0 @@
-mutation analyzeDataForMovieMutation($movieId: ID!) {
-    analyzeDataForMovie(movieId: $movieId)
-}

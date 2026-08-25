@@ -120,18 +120,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get refreshPage => 'Vernieuw pagina';
 
   @override
-  String get scanLibrary => 'Scan bibliotheek';
-
-  @override
-  String get analyzeLibrary => 'Analyseer bibliotheek';
-
-  @override
-  String get reindexSearch => 'Zoekindex herbouwen';
-
-  @override
-  String get analyzeAllLibraries => 'Alle bibliotheken';
-
-  @override
   String get management => 'Beheer';
 
   @override
@@ -315,9 +303,6 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get nextEpisode => 'Volgende aflevering';
-
-  @override
-  String get analyzeMedia => 'Analyseer media';
 
   @override
   String get switchServer => 'Wissel van server';
@@ -802,7 +787,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get activityKindScan => 'Zoeken naar nieuwe bestanden';
 
   @override
-  String get activityKindAnalyzeLibrary => 'Bibliotheek analyseren';
+  String get activityKindAnalyzeLibrary => 'Metadata vernieuwen';
 
   @override
   String get activityKindMetadata => 'Metadata ophalen';
@@ -2323,4 +2308,47 @@ class AppLocalizationsNl extends AppLocalizations {
   String runtimeMinutes(int minutes) {
     return '${minutes}m';
   }
+
+  @override
+  String get managementHint =>
+      'Onderhoudsacties voor deze server. Ze draaien op de achtergrond; de voortgang staat hierboven.';
+
+  @override
+  String get scanLibraries => 'Zoeken naar nieuwe bestanden';
+
+  @override
+  String get scanLibrariesSubtitle =>
+      'Zoekt naar nieuw toegevoegde bestanden in alle bibliotheken. Snel en veilig.';
+
+  @override
+  String get fetchMissingMetadata => 'Ontbrekende metadata ophalen';
+
+  @override
+  String get fetchMissingMetadataSubtitle =>
+      'Downloadt alleen metadata en afbeeldingen waar ze ontbreken. Altijd veilig uit te voeren.';
+
+  @override
+  String get rebuildLibraryMetadata => 'Bibliotheekmetadata opnieuw opbouwen';
+
+  @override
+  String get rebuildLibraryMetadataSubtitle =>
+      'Verwijdert en downloadt alle metadata en afbeeldingen van één bibliotheek opnieuw. Zwaar; kan lang duren.';
+
+  @override
+  String get rebuildLibraryConfirmTitle => 'Metadata opnieuw opbouwen?';
+
+  @override
+  String rebuildLibraryConfirmBody(String library) {
+    return 'Dit verwijdert alle opgeslagen metadata en afbeeldingen van \"$library\" en downloadt alles opnieuw van de metadatadiensten. Dit kan lang duren.';
+  }
+
+  @override
+  String get rebuildSearchIndex => 'Zoekindex opnieuw opbouwen';
+
+  @override
+  String get rebuildSearchIndexSubtitle =>
+      'Bouwt de zoekindex opnieuw op vanuit de database. Zoeken blijft beschikbaar tijdens het opbouwen.';
+
+  @override
+  String get refreshMetadataItem => 'Metadata vernieuwen';
 }

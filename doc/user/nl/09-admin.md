@@ -41,9 +41,18 @@ Beheren welke podcasts de server bevat is een beheertaak. In een podcastbiblioth
 
 De serverpagina bevat voor beheerders ook een sectie **Beheer** met de onderhoudsacties:
 
-- **Bibliotheek scannen** — nieuw toegevoegde bestanden oppikken.
-- **Bibliotheek analyseren** — technische mediagegevens uitlezen (alle bibliotheken of één tegelijk).
-- **Zoekindex herbouwen** — de zoekindex opnieuw opbouwen.
+- **Zoeken naar nieuwe bestanden** — nieuw toegevoegde bestanden oppikken. Snel en veilig.
+- **Ontbrekende metadata ophalen** — metadata en afbeeldingen alleen downloaden waar ze ontbreken.
+  Altijd veilig, bijvoorbeeld na het toevoegen van een TMDB-key.
+- **Bibliotheekmetadata opnieuw opbouwen** — kies één bibliotheek en verwijder en download **al**
+  zijn metadata en afbeeldingen opnieuw. Zwaar en destructief, dus er wordt eerst om bevestiging
+  gevraagd; gebruik dit na een verkeerde match of om nieuwe metadatavelden op oude items te vullen.
+- **Zoekindex opnieuw opbouwen** — de zoekindex opnieuw opbouwen vanuit de database. Zoeken blijft
+  beschikbaar tijdens het opbouwen.
+
+Elke actie draait op de achtergrond; een snackbar bevestigt de start en de voortgang staat in de
+activiteitenlijst op dezelfde pagina. Het ⋮-menu op een film, show, aflevering, artiest, album of
+track biedt hetzelfde **Metadata vernieuwen** voor dat ene item.
 
 ![De onderhoudsacties van de server](../images/nl/settings-cluster.png)
 

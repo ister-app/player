@@ -1,0 +1,3 @@
+mutation scanLibraries($libraryId: ID) {
+    scanLibraries(libraryId: $libraryId)
+}

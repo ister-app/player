@@ -3,8 +3,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/albumById.graphql.dart';
-import 'package:player/graphql/analyzeDataForAlbum.graphql.dart';
-import 'package:player/graphql/analyzeDataForTrack.graphql.dart';
+import 'package:player/graphql/refreshAlbum.graphql.dart';
+import 'package:player/graphql/refreshTrack.graphql.dart';
 import 'package:player/graphql/fragmentAlbum.graphql.dart';
 import 'package:player/graphql/fragmentTrack.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
@@ -34,6 +34,7 @@ import '../components/TvFocusable.dart';
 import '../dto/IsterMediaItem.dart';
 import '../dto/MediaItemId.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/ServerTaskRunner.dart';
 
 @RoutePage()
 class AlbumPage extends StatefulWidget {
@@ -451,16 +452,15 @@ class _AlbumPageState extends State<AlbumPage> {
           ),
         if (_showAdminActions)
           MenuItemButton(
-            onPressed: () async {
-              final client = GraphQLProvider.of(context).value;
-              await client.mutate(MutationOptions(
-                document: documentNodeMutationanalyzeDataForAlbumMutation,
-                variables: {'albumId': album.id},
-              ));
-            },
+            onPressed: () => runServerTask(
+              context,
+              documentNodeMutationrefreshAlbum,
+              loc.refreshMetadataItem,
+              variables: {'albumId': album.id},
+            ),
             child: ListTile(
               leading: const Icon(Icons.analytics),
-              title: Text(loc.analyzeMedia),
+              title: Text(loc.refreshMetadataItem),
             ),
           ),
       ],
@@ -709,17 +709,15 @@ class _AlbumPageState extends State<AlbumPage> {
                         ),
                         if (_showAdminActions)
                           MenuItemButton(
-                            onPressed: () async {
-                              final client = GraphQLProvider.of(context).value;
-                              await client.mutate(MutationOptions(
-                                document:
-                                    documentNodeMutationanalyzeDataForTrackMutation,
-                                variables: {'trackId': track.id},
-                              ));
-                            },
+                            onPressed: () => runServerTask(
+                              context,
+                              documentNodeMutationrefreshTrack,
+                              loc.refreshMetadataItem,
+                              variables: {'trackId': track.id},
+                            ),
                             child: ListTile(
                               leading: const Icon(Icons.analytics),
-                              title: Text(loc.analyzeMedia),
+                              title: Text(loc.refreshMetadataItem),
                             ),
                           ),
                 ],

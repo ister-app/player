@@ -38,7 +38,7 @@ class ServerActivityPresentation {
     'MediaFileFound': ActivityKind.analyzeFile,
     'FileScanRequested': ActivityKind.scan,
     'NewDirectoriesScanRequested': ActivityKind.scan,
-    'AnalyzeLibraryRequested': ActivityKind.analyzeLibrary,
+    'MetadataBackfillRequested': ActivityKind.analyzeLibrary,
     'AnalyzeData': ActivityKind.analyzeLibrary,
     'ShowFound': ActivityKind.metadata,
     'MovieFound': ActivityKind.metadata,

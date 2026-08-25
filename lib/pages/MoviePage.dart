@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:player/graphql/analyzeDataForMovie.graphql.dart';
+import 'package:player/graphql/refreshMovie.graphql.dart';
 import 'package:player/graphql/movieById.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -27,6 +27,7 @@ import '../utils/ImageTypes.dart';
 import '../utils/ImageUtil.dart';
 import '../utils/MediaPlayerHandler.dart';
 import '../utils/MetadataUtil.dart';
+import '../utils/ServerTaskRunner.dart';
 import '../utils/PermissionsService.dart';
 import '../utils/VideoAutoStart.dart';
 
@@ -284,16 +285,16 @@ class _MoviePageState extends State<MoviePage> {
                       ),
                     if (movie != null && _showAdminActions)
                       MenuItemButton(
-                        onPressed: () async {
-                          final client = GraphQLProvider.of(context).value;
-                          await client.mutate(MutationOptions(
-                            document: documentNodeMutationanalyzeDataForMovieMutation,
-                            variables: {'movieId': movie.id},
-                          ));
-                        },
+                        onPressed: () => runServerTask(
+                          context,
+                          documentNodeMutationrefreshMovie,
+                          AppLocalizations.of(context)!.refreshMetadataItem,
+                          variables: {'movieId': movie.id},
+                        ),
                         child: ListTile(
                           leading: const Icon(Icons.analytics),
-                          title: Text(AppLocalizations.of(context)!.analyzeMedia),
+                          title: Text(
+                              AppLocalizations.of(context)!.refreshMetadataItem),
                         ),
                       ),
                     if (movie != null)

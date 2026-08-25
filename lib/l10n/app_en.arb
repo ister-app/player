@@ -122,22 +122,6 @@
   "@refreshPage": {
     "description": "Refresh data of this page."
   },
-  "scanLibrary": "Scan library",
-  "@scanLibrary": {
-    "description": "Text in list tile when clicked it will trigger a library scan."
-  },
-  "analyzeLibrary": "Analyze library",
-  "@analyzeLibrary": {
-    "description": "Text in list tile when clicked it will trigger a analyze scan."
-  },
-  "reindexSearch": "Reindex search",
-  "@reindexSearch": {
-    "description": "Management action that rebuilds the search index on the server."
-  },
-  "analyzeAllLibraries": "All libraries",
-  "@analyzeAllLibraries": {
-    "description": "Option in the analyze picker that analyzes every library at once (the overarching analyzeLibrary action)."
-  },
   "management": "Management",
   "@management": {
     "description": "Section header for administrative server actions (scan, analyze, reindex)."
@@ -383,10 +367,6 @@
   "nextEpisode": "Next episode",
   "@nextEpisode": {
     "description": "Overlay button shown during the closing credits"
-  },
-  "analyzeMedia": "Analyze media",
-  "@analyzeMedia": {
-    "description": "Menu item to trigger media analysis for an episode, movie or show"
   },
   "switchServer": "Switch server",
   "@switchServer": {
@@ -983,7 +963,7 @@
   "transcodesTag": "Transcoding",
   "activityKindAnalyzeFile": "Analyzing media file",
   "activityKindScan": "Scanning for new files",
-  "activityKindAnalyzeLibrary": "Analyzing library",
+  "activityKindAnalyzeLibrary": "Refreshing metadata",
   "activityKindMetadata": "Fetching metadata",
   "activityKindImportFiles": "Importing files",
   "activityKindArtwork": "Processing artwork",
@@ -2462,5 +2442,58 @@
         "type": "int"
       }
     }
+  },
+  "managementHint": "Maintenance actions for this server. They run in the background; progress shows above.",
+  "@managementHint": {
+    "description": "Hint under the Management section header on the server status page"
+  },
+  "scanLibraries": "Scan for new files",
+  "@scanLibraries": {
+    "description": "Management action: scan the library folders"
+  },
+  "scanLibrariesSubtitle": "Looks for newly added files in all libraries. Quick and safe.",
+  "@scanLibrariesSubtitle": {
+    "description": "Subtitle of the scan action"
+  },
+  "fetchMissingMetadata": "Fetch missing metadata",
+  "@fetchMissingMetadata": {
+    "description": "Management action: backfill missing metadata"
+  },
+  "fetchMissingMetadataSubtitle": "Downloads metadata and artwork only where they are missing. Safe to run anytime.",
+  "@fetchMissingMetadataSubtitle": {
+    "description": "Subtitle of the backfill action"
+  },
+  "rebuildLibraryMetadata": "Rebuild library metadata",
+  "@rebuildLibraryMetadata": {
+    "description": "Management action: force refresh one library"
+  },
+  "rebuildLibraryMetadataSubtitle": "Deletes and re-downloads all metadata and artwork for one library. Heavy; can take a long time.",
+  "@rebuildLibraryMetadataSubtitle": {
+    "description": "Subtitle of the rebuild action"
+  },
+  "rebuildLibraryConfirmTitle": "Rebuild metadata?",
+  "@rebuildLibraryConfirmTitle": {
+    "description": "Title of the rebuild confirmation dialog"
+  },
+  "rebuildLibraryConfirmBody": "This deletes all stored metadata and artwork for \"{library}\" and downloads everything again from the metadata services. This can take a long time.",
+  "@rebuildLibraryConfirmBody": {
+    "description": "Body of the rebuild confirmation dialog",
+    "placeholders": {
+      "library": {
+        "type": "String"
+      }
+    }
+  },
+  "rebuildSearchIndex": "Rebuild search index",
+  "@rebuildSearchIndex": {
+    "description": "Management action: rebuild the Typesense index"
+  },
+  "rebuildSearchIndexSubtitle": "Recreates the search index from the database. Search stays available while it runs.",
+  "@rebuildSearchIndexSubtitle": {
+    "description": "Subtitle of the rebuild search index action"
+  },
+  "refreshMetadataItem": "Refresh metadata",
+  "@refreshMetadataItem": {
+    "description": "Menu item: delete and re-fetch the metadata of one item"
   }
 }

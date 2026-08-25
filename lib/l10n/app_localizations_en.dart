@@ -119,18 +119,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get refreshPage => 'Refresh page';
 
   @override
-  String get scanLibrary => 'Scan library';
-
-  @override
-  String get analyzeLibrary => 'Analyze library';
-
-  @override
-  String get reindexSearch => 'Reindex search';
-
-  @override
-  String get analyzeAllLibraries => 'All libraries';
-
-  @override
   String get management => 'Management';
 
   @override
@@ -313,9 +301,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nextEpisode => 'Next episode';
-
-  @override
-  String get analyzeMedia => 'Analyze media';
 
   @override
   String get switchServer => 'Switch server';
@@ -800,7 +785,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityKindScan => 'Scanning for new files';
 
   @override
-  String get activityKindAnalyzeLibrary => 'Analyzing library';
+  String get activityKindAnalyzeLibrary => 'Refreshing metadata';
 
   @override
   String get activityKindMetadata => 'Fetching metadata';
@@ -2315,4 +2300,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String runtimeMinutes(int minutes) {
     return '${minutes}m';
   }
+
+  @override
+  String get managementHint =>
+      'Maintenance actions for this server. They run in the background; progress shows above.';
+
+  @override
+  String get scanLibraries => 'Scan for new files';
+
+  @override
+  String get scanLibrariesSubtitle =>
+      'Looks for newly added files in all libraries. Quick and safe.';
+
+  @override
+  String get fetchMissingMetadata => 'Fetch missing metadata';
+
+  @override
+  String get fetchMissingMetadataSubtitle =>
+      'Downloads metadata and artwork only where they are missing. Safe to run anytime.';
+
+  @override
+  String get rebuildLibraryMetadata => 'Rebuild library metadata';
+
+  @override
+  String get rebuildLibraryMetadataSubtitle =>
+      'Deletes and re-downloads all metadata and artwork for one library. Heavy; can take a long time.';
+
+  @override
+  String get rebuildLibraryConfirmTitle => 'Rebuild metadata?';
+
+  @override
+  String rebuildLibraryConfirmBody(String library) {
+    return 'This deletes all stored metadata and artwork for \"$library\" and downloads everything again from the metadata services. This can take a long time.';
+  }
+
+  @override
+  String get rebuildSearchIndex => 'Rebuild search index';
+
+  @override
+  String get rebuildSearchIndexSubtitle =>
+      'Recreates the search index from the database. Search stays available while it runs.';
+
+  @override
+  String get refreshMetadataItem => 'Refresh metadata';
 }

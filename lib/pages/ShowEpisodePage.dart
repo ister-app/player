@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:player/graphql/analyzeDataForEpisode.graphql.dart';
+import 'package:player/graphql/refreshEpisode.graphql.dart';
 import 'package:player/graphql/episodeById.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -29,6 +29,7 @@ import '../utils/ImageTypes.dart';
 import '../utils/ImageUtil.dart';
 import '../utils/MediaPlayerHandler.dart';
 import '../utils/MetadataUtil.dart';
+import '../utils/ServerTaskRunner.dart';
 import '../utils/PermissionsService.dart';
 import '../utils/PlayQueueService.dart';
 import '../utils/VideoAutoStart.dart';
@@ -341,16 +342,16 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                       ),
                     if (episode != null && _showAdminActions)
                       MenuItemButton(
-                        onPressed: () async {
-                          final client = GraphQLProvider.of(context).value;
-                          await client.mutate(MutationOptions(
-                            document: documentNodeMutationanalyzeDataForEpisodeMutation,
-                            variables: {'episodeId': episode.id},
-                          ));
-                        },
+                        onPressed: () => runServerTask(
+                          context,
+                          documentNodeMutationrefreshEpisode,
+                          AppLocalizations.of(context)!.refreshMetadataItem,
+                          variables: {'episodeId': episode.id},
+                        ),
                         child: ListTile(
                           leading: const Icon(Icons.analytics),
-                          title: Text(AppLocalizations.of(context)!.analyzeMedia),
+                          title: Text(
+                              AppLocalizations.of(context)!.refreshMetadataItem),
                         ),
                       ),
                     if (episode != null)

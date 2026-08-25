@@ -1,3 +1,0 @@
-mutation analyzeDataForShowMutation($showId: ID!) {
-    analyzeDataForShow(showId: $showId)
-}

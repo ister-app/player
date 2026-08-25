@@ -1,0 +1,3 @@
+mutation refreshAlbum($albumId: ID!) {
+    refreshAlbum(albumId: $albumId)
+}

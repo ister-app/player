@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:gql/ast.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/albumsQuery.graphql.dart';
-import 'package:player/graphql/analyzeDataForPerson.graphql.dart';
+import 'package:player/graphql/refreshPerson.graphql.dart';
 import 'package:player/graphql/appearsOnAlbums.graphql.dart';
 import 'package:player/graphql/artistById.graphql.dart';
 import 'package:player/graphql/booksQuery.graphql.dart';
@@ -37,6 +37,7 @@ import '../components/MusicDetailHero.dart';
 import '../components/SourceAttribution.dart';
 import '../components/TvFocusable.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/ServerTaskRunner.dart';
 
 final _random = Random();
 
@@ -243,14 +244,13 @@ class _PersonPageState extends State<PersonPage> {
             if (artist != null && _showAdminActions)
               IconButton(
                 icon: const Icon(Icons.analytics),
-                tooltip: loc.analyzeMedia,
-                onPressed: () async {
-                  final client = GraphQLProvider.of(context).value;
-                  await client.mutate(MutationOptions(
-                    document: documentNodeMutationanalyzeDataForPersonMutation,
-                    variables: {'personId': artist.id},
-                  ));
-                },
+                tooltip: loc.refreshMetadataItem,
+                onPressed: () => runServerTask(
+                  context,
+                  documentNodeMutationrefreshPerson,
+                  loc.refreshMetadataItem,
+                  variables: {'personId': artist.id},
+                ),
               ),
           ],
           flexibleSpace: FlexibleSpaceBar(

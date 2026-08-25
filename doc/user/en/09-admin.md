@@ -41,9 +41,18 @@ Managing which podcasts the server carries is an admin task. In a podcast librar
 
 The server page also carries a **Management** section for admins, with the housekeeping actions:
 
-- **Scan library** — pick up newly added files.
-- **Analyse library** — extract technical media details (all libraries, or one at a time).
-- **Rebuild search index** — regenerate the search index.
+- **Scan for new files** — pick up newly added files. Quick and safe.
+- **Fetch missing metadata** — download metadata and artwork only where they are missing. Safe to
+  run anytime, for example after adding a TMDB key.
+- **Rebuild library metadata** — pick one library, then delete and re-download **all** its metadata
+  and artwork. Heavy and destructive, so it asks for confirmation first; use it after a wrong match
+  or to fill newly added metadata fields on old items.
+- **Rebuild search index** — regenerate the search index from the database. Search stays available
+  while it runs.
+
+Each action runs in the background; a snackbar confirms the start, and progress shows in the
+activity list on the same page. The ⋮ menu on a movie, show, episode, artist, album or track offers
+the same **Refresh metadata** for that single item.
 
 ![The server maintenance actions](../images/en/settings-cluster.png)
 

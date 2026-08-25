@@ -2029,6 +2029,39 @@ Enum$MetadataSource fromJson$Enum$MetadataSource(String value) {
   }
 }
 
+enum Enum$MetadataRefreshMode {
+  MISSING,
+  FORCE,
+  $unknown;
+
+  factory Enum$MetadataRefreshMode.fromJson(String value) =>
+      fromJson$Enum$MetadataRefreshMode(value);
+
+  String toJson() => toJson$Enum$MetadataRefreshMode(this);
+}
+
+String toJson$Enum$MetadataRefreshMode(Enum$MetadataRefreshMode e) {
+  switch (e) {
+    case Enum$MetadataRefreshMode.MISSING:
+      return r'MISSING';
+    case Enum$MetadataRefreshMode.FORCE:
+      return r'FORCE';
+    case Enum$MetadataRefreshMode.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$MetadataRefreshMode fromJson$Enum$MetadataRefreshMode(String value) {
+  switch (value) {
+    case r'MISSING':
+      return Enum$MetadataRefreshMode.MISSING;
+    case r'FORCE':
+      return Enum$MetadataRefreshMode.FORCE;
+    default:
+      return Enum$MetadataRefreshMode.$unknown;
+  }
+}
+
 enum Enum$DevicePlatform {
   ANDROID,
   ANDROID_TV,

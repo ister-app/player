@@ -9,7 +9,7 @@ import 'package:player/components/CastRow.dart';
 import 'package:player/components/MediaMetaLine.dart';
 import 'package:player/components/RatingStars.dart';
 import 'package:player/components/SourceAttribution.dart';
-import 'package:player/graphql/analyzeDataForShow.graphql.dart';
+import 'package:player/graphql/refreshShow.graphql.dart';
 import 'package:player/graphql/fragmentImages.graphql.dart';
 import 'package:player/graphql/fragmentMetadata.graphql.dart';
 import 'package:player/graphql/seasonById.graphql.dart';
@@ -28,6 +28,7 @@ import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MetadataUtil.dart';
 import 'package:player/utils/PermissionsService.dart';
+import 'package:player/utils/ServerTaskRunner.dart';
 import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -217,16 +218,16 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
                         ),
                       if (_showAdminActions)
                         MenuItemButton(
-                          onPressed: () async {
-                            final client = GraphQLProvider.of(context).value;
-                            await client.mutate(MutationOptions(
-                              document: documentNodeMutationanalyzeDataForShowMutation,
-                              variables: {'showId': showId},
-                            ));
-                          },
+                          onPressed: () => runServerTask(
+                            context,
+                            documentNodeMutationrefreshShow,
+                            AppLocalizations.of(context)!.refreshMetadataItem,
+                            variables: {'showId': showId},
+                          ),
                           child: ListTile(
                             leading: const Icon(Icons.analytics),
-                            title: Text(AppLocalizations.of(context)!.analyzeMedia),
+                            title: Text(AppLocalizations.of(context)!
+                                .refreshMetadataItem),
                           ),
                         ),
                       MenuItemButton(

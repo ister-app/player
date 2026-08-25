@@ -231,7 +231,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Management'), findsNothing);
-      expect(find.text('Scan library'), findsNothing);
+      expect(find.text('Scan for new files'), findsNothing);
     });
 
     testWidgets('shows the management section for an admin', (tester) async {
@@ -241,7 +241,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Management'), findsOneWidget);
-      expect(find.text('Scan library'), findsOneWidget);
+      expect(find.text('Scan for new files'), findsOneWidget);
     });
 
     testWidgets('keeps the management section on an old server (unknown)',
