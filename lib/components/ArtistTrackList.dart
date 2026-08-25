@@ -13,6 +13,7 @@ import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:player/utils/MetadataUtil.dart';
 import 'package:player/utils/StreamTokenService.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import '../dto/IsterMediaItem.dart';
 import '../dto/MediaItemId.dart';
@@ -419,4 +420,64 @@ class _ArtistTrackListState extends State<ArtistTrackList> {
           color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       );
+}
+
+/// Skeleton stand-in matching one [ArtistTrackList] row's footprint, so the
+/// section can reserve its height while the (slow) ranked-track queries are
+/// still in flight instead of shoving the albums grid down when they land.
+class ArtistTrackListSkeleton extends StatelessWidget {
+  const ArtistTrackListSkeleton({super.key, this.rows = 5});
+
+  final int rows;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Skeletonizer(
+      enabled: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var rank = 0; rank < rows; rank++)
+            ListTile(
+              dense: true,
+              visualDensity: VisualDensity.compact,
+              leading: SizedBox(
+                width: 68,
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 20,
+                      child: Text(
+                        '${rank + 1}',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontFeatures: [const FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        color: theme.colorScheme.surfaceContainerHighest,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              title: Text(BoneMock.name, maxLines: 1),
+              subtitle: Text(
+                BoneMock.words(3),
+                maxLines: 1,
+                style: theme.textTheme.bodySmall,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }

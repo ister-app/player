@@ -141,6 +141,11 @@ class _PersonPageState extends State<PersonPage> {
                   ? const <Fragment$fragmentAlbum>[]
                   : (Query$albums.fromJson(albumsResult.data!).albums?.content ??
                       const <Fragment$fragmentAlbum>[]);
+              // The albums grid is part of the skeleton too: without this it
+              // pops in on its own once this query lands, after the person's
+              // own data already rendered.
+              final albumsLoading =
+                  albumsResult.data == null && albumsResult.isLoading;
 
               // Compilations and guest appearances: albums the person is
               // credited on without owning them (disjoint from the query above).
@@ -189,11 +194,12 @@ class _PersonPageState extends State<PersonPage> {
                         );
                       }
 
-                      final content = _buildContent(
-                          context, artist, albums, appearsOn, books);
+                      final skeleton = loading || albumsLoading;
+                      final content = _buildContent(context, artist, albums,
+                          appearsOn, books, skeleton);
 
                       return Scaffold(
-                        body: loading
+                        body: skeleton
                             ? Skeletonizer(enabled: true, child: content)
                             : content,
                       );
@@ -213,11 +219,16 @@ class _PersonPageState extends State<PersonPage> {
       Query$artistById$artistById? artist,
       List<Fragment$fragmentAlbum> albums,
       List<Fragment$fragmentAlbum> appearsOn,
-      List<Fragment$fragmentBook> books) {
+      List<Fragment$fragmentBook> books,
+      bool skeleton) {
     final loc = AppLocalizations.of(context)!;
     final credits = artist?.credits ?? [];
     final description = artist != null ? MetadataUtil.getDescription(artist.metadata) : null;
-    final hasAlbums = albums.isNotEmpty;
+    // While the albums query is still out we don't know whether this person has
+    // any, so the grid is drawn with placeholder tiles: reserving the space is
+    // what keeps everything below it from jumping when the albums arrive.
+    final albumPlaceholders = skeleton && albums.isEmpty ? 6 : 0;
+    final hasAlbums = albums.isNotEmpty || albumPlaceholders > 0;
     final hasAppearsOn = appearsOn.isNotEmpty;
     final hasBooks = books.isNotEmpty;
 
@@ -336,11 +347,12 @@ class _PersonPageState extends State<PersonPage> {
           child: _ArtistTrackTabs(
             serverName: serverName,
             personId: personId,
+            reserveSpace: albums.isNotEmpty || hasAppearsOn,
           ),
         ),
         if (hasAlbums) ...[
           _sectionHeader(context, loc.albums),
-          _albumGrid(context, albums),
+          _albumGrid(context, albums, placeholderCount: albumPlaceholders),
         ],
         // Compilations and guest appearances, newest added first; the tile
         // subtitle (the album artist) is what tells these apart.
@@ -380,7 +392,10 @@ class _PersonPageState extends State<PersonPage> {
     );
   }
 
-  Widget _albumGrid(BuildContext context, List<Fragment$fragmentAlbum> albums) {
+  /// The album grid; with [placeholderCount] set it renders that many empty
+  /// tiles instead — the page-level [Skeletonizer] turns those into bones.
+  Widget _albumGrid(BuildContext context, List<Fragment$fragmentAlbum> albums,
+      {int placeholderCount = 0}) {
     return SliverToBoxAdapter(
       child: Center(
         child: Container(
@@ -396,8 +411,16 @@ class _PersonPageState extends State<PersonPage> {
               mainAxisSpacing: 0,
               crossAxisSpacing: 0,
             ),
-            itemCount: albums.length,
+            itemCount: placeholderCount > 0 ? placeholderCount : albums.length,
             itemBuilder: (context, index) {
+              if (placeholderCount > 0) {
+                return CarouselItemView(
+                  serverName: serverName,
+                  title: BoneMock.name,
+                  subTitle: BoneMock.words(3),
+                  placeholderIcon: Icons.music_note,
+                );
+              }
               final album = albums[index];
               final img =
                   ImageUtil.getImageByType(album.images, ImageTypes.cover);
@@ -999,14 +1022,25 @@ class _ArtistTrackTabConfig {
 /// Each list runs its own GraphQL query; empty (or failed) lists get no tab,
 /// and the section renders nothing at all while every list is empty — it is
 /// additive and must never block the page.
+///
+/// These per-user rankings aggregate over the whole play history server-side
+/// and land well after the albums, so with [reserveSpace] the section holds a
+/// skeleton of its own footprint while they are in flight instead of shoving
+/// the albums grid down when the first one arrives.
 class _ArtistTrackTabs extends StatefulWidget {
   const _ArtistTrackTabs({
     required this.serverName,
     required this.personId,
+    required this.reserveSpace,
   });
 
   final String serverName;
   final String personId;
+
+  /// Whether this person is known to have music at all — only then is a track
+  /// list likely enough to be worth reserving space for. An actor would
+  /// otherwise get a phantom list that vanishes again.
+  final bool reserveSpace;
 
   @override
   State<_ArtistTrackTabs> createState() => _ArtistTrackTabsState();
@@ -1093,10 +1127,10 @@ class _ArtistTrackTabsState extends State<_ArtistTrackTabs> {
             personId: widget.personId,
             config: configs[3],
             builder: (added) => _buildTabs(context, [
-              (config: configs[0], items: plays),
-              (config: configs[1], items: recency),
-              (config: configs[2], items: rating),
-              (config: configs[3], items: added),
+              (config: configs[0], section: plays),
+              (config: configs[1], section: recency),
+              (config: configs[2], section: rating),
+              (config: configs[3], section: added),
             ]),
           ),
         ),
@@ -1106,16 +1140,68 @@ class _ArtistTrackTabsState extends State<_ArtistTrackTabs> {
 
   Widget _buildTabs(
       BuildContext context,
-      List<({_ArtistTrackTabConfig config, List<ArtistTrackListItem> items})>
-          sections) {
-    final visible = sections.where((s) => s.items.isNotEmpty).toList();
-    if (visible.isEmpty) return const SizedBox.shrink();
+      List<({_ArtistTrackTabConfig config, _TrackSection section})> sections) {
+    final visible =
+        sections.where((s) => s.section.items.isNotEmpty).toList();
+    if (visible.isEmpty) {
+      // Nothing yet: hold the footprint while a query is still coming, so the
+      // sections below don't shift once it lands.
+      final stillLoading = sections.any((s) => s.section.loading);
+      if (!widget.reserveSpace || !stillLoading) {
+        return const SizedBox.shrink();
+      }
+      // The labels are known up-front, so the placeholder tab bar is the real
+      // one — greyed out with the rows by the skeletonizer.
+      return _sectionFrame(
+        tabs: Skeletonizer(
+          enabled: true,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final s in sections)
+                _buildTab(s.config.title, s.config.variant,
+                    selected: s.config.variant == sections.first.config.variant,
+                    enabled: false),
+            ],
+          ),
+        ),
+        list: const ArtistTrackListSkeleton(),
+      );
+    }
 
     final selected = visible
             .where((s) => s.config.variant == _selectedVariant)
             .firstOrNull ??
         visible.first;
 
+    return _sectionFrame(
+      tabs: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final section in visible)
+            _buildTab(
+              section.config.title,
+              section.config.variant,
+              selected: section.config.variant == selected.config.variant,
+            ),
+        ],
+      ),
+      list: ArtistTrackList(
+        // A fresh list per variant, so ArtistTrackList's expand state
+        // and rating overrides don't leak between tabs.
+        key: ValueKey(selected.config.variant),
+        items: selected.section.items,
+        serverName: widget.serverName,
+        personId: widget.personId,
+        variant: selected.config.variant,
+      ),
+    );
+  }
+
+  /// The section's shell — the same tab bar + divider + list layout for the
+  /// real lists and for the loading placeholder, so swapping one for the other
+  /// changes nothing about the page's geometry.
+  Widget _sectionFrame({required Widget tabs, required Widget list}) {
     return Center(
       child: Container(
         width: double.infinity,
@@ -1131,31 +1217,13 @@ class _ArtistTrackTabsState extends State<_ArtistTrackTabs> {
                 children: [
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        for (final section in visible)
-                          _buildTab(
-                            section.config.title,
-                            section.config.variant,
-                            selected: section.config.variant ==
-                                selected.config.variant,
-                          ),
-                      ],
-                    ),
+                    child: tabs,
                   ),
                   const Divider(height: 1, thickness: 1),
                 ],
               ),
             ),
-            ArtistTrackList(
-              // A fresh list per variant, so ArtistTrackList's expand state
-              // and rating overrides don't leak between tabs.
-              key: ValueKey(selected.config.variant),
-              items: selected.items,
-              serverName: widget.serverName,
-              personId: widget.personId,
-              variant: selected.config.variant,
-            ),
+            list,
           ],
         ),
       ),
@@ -1163,9 +1231,12 @@ class _ArtistTrackTabsState extends State<_ArtistTrackTabs> {
   }
 
   Widget _buildTab(String label, ArtistTrackListVariant variant,
-      {required bool selected}) {
+      {required bool selected, bool enabled = true}) {
     final colors = Theme.of(context).colorScheme;
-    void select() => setState(() => _selectedVariant = variant);
+    void select() {
+      if (enabled) setState(() => _selectedVariant = variant);
+    }
+
     return TvFocusable(
       onTap: select,
       borderRadius: BorderRadius.circular(4),
@@ -1196,6 +1267,10 @@ class _ArtistTrackTabsState extends State<_ArtistTrackTabs> {
   }
 }
 
+/// One top-track query's outcome: the rows it produced, and whether it is
+/// still on its first (cold) trip to the server.
+typedef _TrackSection = ({List<ArtistTrackListItem> items, bool loading});
+
 /// Runs one top-track query and hands the parsed rows to [builder] — an empty
 /// list on error or while loading, so the tabs simply appear as data arrives.
 class _TrackListQuery extends StatelessWidget {
@@ -1207,7 +1282,7 @@ class _TrackListQuery extends StatelessWidget {
 
   final String personId;
   final _ArtistTrackTabConfig config;
-  final Widget Function(List<ArtistTrackListItem> items) builder;
+  final Widget Function(_TrackSection section) builder;
 
   @override
   Widget build(BuildContext context) {
@@ -1222,7 +1297,12 @@ class _TrackListQuery extends StatelessWidget {
         final items = (result.hasException || result.data == null)
             ? const <ArtistTrackListItem>[]
             : config.parse(result.data!);
-        return builder(items);
+        // Cold load only: with cacheAndNetwork `isLoading` stays true while
+        // revalidating on top of cached data, and re-skeletonizing then would
+        // make the page jump — the very thing this reserves space against.
+        final loading =
+            result.data == null && result.isLoading && !result.hasException;
+        return builder((items: items, loading: loading));
       },
     );
   }

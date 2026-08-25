@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -171,6 +172,13 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   // PersonPage touches MediaPlayerHandler.instance, whose singleton constructs
   // a media_kit Player; force it into existence outside any test zone.
+  // No video output plugin in a widget test: answer the texture-create call
+  // with null so the handler's VideoController setup idles instead of failing
+  // the suite with an unhandled MissingPluginException.
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(
+          const MethodChannel('com.alexmercerind/media_kit_video'),
+          (call) async => null);
   MediaKit.ensureInitialized();
   MediaPlayerHandler.instance;
 

@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -8,6 +10,8 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:player/l10n/app_localizations.dart';
+import 'package:player/components/ArtistTrackList.dart';
+import 'package:player/components/CarouselItemView.dart';
 import 'package:player/pages/PersonPage.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
@@ -17,6 +21,10 @@ import 'package:shared_preferences_platform_interface/shared_preferences_async_p
 import 'package:skeletonizer/skeletonizer.dart';
 
 const _server = 'test-server';
+
+/// `Skeletonizer` is abstract with a factory constructor, so `find.byType`
+/// never matches it — match on the type instead.
+final _skeleton = find.byWidgetPredicate((w) => w is Skeletonizer);
 
 Map<String, dynamic> _show() => {
       '__typename': 'Show',
@@ -119,15 +127,104 @@ Map<String, dynamic> _emptyPage(String field) => {
       },
     };
 
+Map<String, dynamic> _ownAlbum() => {
+      '__typename': 'Album',
+      'id': 'album-own',
+      'name': 'Rocky Sings',
+      'releaseYear': 1990,
+      'artist': {
+        '__typename': 'Person',
+        'id': 'person-1',
+        'name': 'Sylvester Stallone',
+      },
+      'images': [],
+      'metadata': [],
+      'rating': null,
+    };
+
+Map<String, dynamic> _albumPage(List<Map<String, dynamic>> content) => {
+      '__typename': 'Query',
+      'albums': {
+        '__typename': 'AlbumPage',
+        'content': content,
+        'totalPages': 1,
+        'totalElements': content.length,
+        'number': 0,
+        'size': 200,
+      },
+    };
+
+/// A ranked-track list answer for the four `*TracksByArtist` queries.
+Map<String, dynamic> _trackList(String field,
+        [List<Map<String, dynamic>> tracks = const []]) =>
+    {
+      '__typename': 'Query',
+      'personById': {
+        '__typename': 'Person',
+        'id': 'person-1',
+        field: tracks,
+      },
+    };
+
+Map<String, dynamic> _playedTrack(int n) => {
+      '__typename': 'Track',
+      'id': 'track-$n',
+      'number': n,
+      'discNumber': 1,
+      'artist': {
+        '__typename': 'Person',
+        'id': 'person-1',
+        'name': 'Sylvester Stallone',
+      },
+      'rating': null,
+      'metadata': [
+        {
+          '__typename': 'Metadata',
+          'id': 'meta-t$n',
+          'description': null,
+          'language': 'eng',
+          'sourceUri': null,
+          'source': null,
+          'title': 'Eye of the Tiger $n',
+          'released': null,
+          'genre': null,
+        }
+      ],
+      'mediaFile': [
+        {'__typename': 'MediaFile', 'durationInMilliseconds': 210000}
+      ],
+      'playCount': 12,
+      'album': _ownAlbum(),
+    };
+
 MockClient _fakeGraphQL({
   Map<String, dynamic>? person,
   List<Map<String, dynamic>> appearsOn = const [],
+  List<Map<String, dynamic>> albums = const [],
+  List<Map<String, dynamic>> topPlayed = const [],
+  // Held open, these keep the (server-side slow) ranked-track queries pending
+  // so the reserved skeleton can be observed.
+  Future<void>? trackGate,
+  Future<void>? albumGate,
 }) =>
     MockClient((request) async {
       final query =
           (json.decode(request.body) as Map<String, dynamic>)['query'] as String;
       if (query.contains('artistById')) {
         return _json({'__typename': 'Query', 'artistById': person});
+      }
+      if (query.contains('TracksByArtist')) {
+        if (trackGate != null) await trackGate;
+        if (query.contains('topPlayedTracks')) {
+          return _json(_trackList('topPlayedTracks', topPlayed));
+        }
+        if (query.contains('recentlyPlayedTracks')) {
+          return _json(_trackList('recentlyPlayedTracks'));
+        }
+        if (query.contains('topRatedTracks')) {
+          return _json(_trackList('topRatedTracks'));
+        }
+        return _json(_trackList('recentlyAddedTracks'));
       }
       if (query.contains('query appearsOnAlbums')) {
         return _json({
@@ -142,18 +239,9 @@ MockClient _fakeGraphQL({
           },
         });
       }
-      if (query.contains('recentlyAddedTracks')) {
-        return _json({
-          '__typename': 'Query',
-          'personById': {
-            '__typename': 'Person',
-            'id': 'person-1',
-            'recentlyAddedTracks': [],
-          },
-        });
-      }
       if (query.contains('query albums')) {
-        return _json(_emptyPage('albums'));
+        if (albumGate != null) await albumGate;
+        return albums.isEmpty ? _json(_emptyPage('albums')) : _json(_albumPage(albums));
       }
       if (query.contains('query books')) {
         return _json(_emptyPage('books'));
@@ -196,6 +284,13 @@ void main() {
   // singleton constructs a media_kit Player. Force the singleton into existence
   // here, outside any test's FakeAsync zone — its periodic stall-watchdog timer
   // would otherwise count as a pending timer of the first test.
+  // No video output plugin in a widget test: answer the texture-create call
+  // with null so the handler's VideoController setup idles instead of failing
+  // the suite with an unhandled MissingPluginException.
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(
+          const MethodChannel('com.alexmercerind/media_kit_video'),
+          (call) async => null);
   MediaKit.ensureInitialized();
   MediaPlayerHandler.instance;
 
@@ -281,7 +376,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Person not found'), findsOneWidget);
-    expect(find.byType(Skeletonizer), findsNothing);
+    expect(_skeleton, findsNothing);
   });
 
   testWidgets('a long biography collapses behind a read-more toggle',
@@ -303,5 +398,92 @@ void main() {
 
     expect(find.text('Show less'), findsOneWidget);
     expect(find.text('Read more'), findsNothing);
+  });
+
+  testWidgets('reserves the played-track section while its queries load',
+      (tester) async {
+    final gate = Completer<void>();
+    final client = _fakeGraphQL(
+      person: _person(),
+      albums: [_ownAlbum()],
+      topPlayed: [for (var n = 1; n <= 5; n++) _playedTrack(n)],
+      trackGate: gate.future,
+    );
+    useClient(client);
+    await tester.pumpWidget(_app(client));
+    // Fixed pumps, not pumpAndSettle: the skeleton's shimmer never settles.
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    expect(find.byType(ArtistTrackListSkeleton), findsOneWidget);
+    final reserved = tester.getRect(find.byType(ArtistTrackListSkeleton));
+
+    gate.complete();
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ArtistTrackListSkeleton), findsNothing);
+    expect(find.text('Eye of the Tiger 1'), findsOneWidget);
+    // The point of the whole exercise: the real list takes the same room the
+    // skeleton held, so nothing below it moves when the query lands.
+    final real = tester.getRect(find.byType(ArtistTrackList));
+    expect(real.top, closeTo(reserved.top, 1));
+    expect(real.height, closeTo(reserved.height, 8));
+  });
+
+  testWidgets('reserves no track space for a person without music',
+      (tester) async {
+    final gate = Completer<void>();
+    final client =
+        _fakeGraphQL(person: _person(), trackGate: gate.future);
+    useClient(client);
+    await tester.pumpWidget(_app(client));
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    expect(find.byType(ArtistTrackListSkeleton), findsNothing);
+
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(_skeleton, findsNothing);
+  });
+
+  testWidgets('drops the track section when every ranked list is empty',
+      (tester) async {
+    final client = _fakeGraphQL(person: _person(), albums: [_ownAlbum()]);
+    useClient(client);
+    await tester.pumpWidget(_app(client));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ArtistTrackListSkeleton), findsNothing);
+    expect(find.text('Most played'), findsNothing);
+    expect(_skeleton, findsNothing);
+  });
+
+  testWidgets('holds the albums grid open while the albums query is out',
+      (tester) async {
+    final gate = Completer<void>();
+    final client = _fakeGraphQL(
+      person: _person(),
+      albums: [_ownAlbum()],
+      albumGate: gate.future,
+    );
+    useClient(client);
+    await tester.pumpWidget(_app(client));
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    // Placeholder tiles stand in for the albums that are still coming.
+    expect(_skeleton, findsWidgets);
+    expect(find.text('Albums'), findsOneWidget);
+    expect(find.byType(CarouselItemView), findsWidgets);
+
+    gate.complete();
+    await tester.pumpAndSettle();
+
+    expect(_skeleton, findsNothing);
+    expect(find.text('Rocky Sings'), findsOneWidget);
   });
 }
