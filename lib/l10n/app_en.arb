@@ -20,8 +20,14 @@
       }
     }
   },
-  "preferredSpoken": "Preferred spoken languages:",
-  "preferredSubtitle": "Preferred subtitle languages:",
+  "preferredSpoken": "Preferred spoken languages",
+  "@preferredSpoken": {
+    "description": "Section heading above the ordered list of preferred audio languages"
+  },
+  "preferredSubtitle": "Preferred subtitle languages",
+  "@preferredSubtitle": {
+    "description": "Section heading above the ordered list of preferred subtitle languages"
+  },
   "loadError": "Failed to load preferences: {error}",
   "@loadError": {
     "description": "Error message shown when the preferences cannot be loaded",
@@ -34,6 +40,76 @@
   "noLanguagesFound": "No languages found.",
   "searchHint": "Search for a language...",
   "noLanguageFound": "No Language Found!",
+  "addLanguage": "Add language",
+  "@addLanguage": {
+    "description": "Button that opens the language picker to append a language to a preference list"
+  },
+  "languagePriorityHintSpoken": "The first language in this list that has a matching track is used. When nothing matches, the file's default audio track plays.",
+  "@languagePriorityHintSpoken": {
+    "description": "Explains that the order of the spoken-language list is the priority"
+  },
+  "languagePriorityHintSubtitle": "The first language in this list that has a matching track is used. When nothing matches, subtitles stay off.",
+  "@languagePriorityHintSubtitle": {
+    "description": "Explains that the order of the subtitle-language list is the priority"
+  },
+  "noSpokenPreference": "No preference yet — the default audio track plays.",
+  "@noSpokenPreference": {
+    "description": "Empty state of the preferred spoken languages list"
+  },
+  "noSubtitlePreference": "No preference yet — subtitles stay off.",
+  "@noSubtitlePreference": {
+    "description": "Empty state of the preferred subtitle languages list"
+  },
+  "languageAppliesToServer": "Saved on {server} for your account, so the same preferences apply on every device.",
+  "@languageAppliesToServer": {
+    "description": "Tells the user language preferences are per server and per user",
+    "placeholders": {
+      "server": {}
+    }
+  },
+  "languageRemoved": "{language} removed",
+  "@languageRemoved": {
+    "description": "Snackbar shown after removing a language from a preference list",
+    "placeholders": {
+      "language": {}
+    }
+  },
+  "undo": "Undo",
+  "@undo": {
+    "description": "Snackbar action that reverts the last change"
+  },
+  "moveUp": "Move up",
+  "@moveUp": {
+    "description": "Menu action that moves a language one position up the list"
+  },
+  "moveDown": "Move down",
+  "@moveDown": {
+    "description": "Menu action that moves a language one position down the list"
+  },
+  "removeLanguage": "Remove",
+  "@removeLanguage": {
+    "description": "Menu action that removes a language from a preference list"
+  },
+  "showAllLanguages": "Show all ISO 639-3 languages",
+  "@showAllLanguages": {
+    "description": "Toggle in the language picker that lifts the filter on languages media files can actually carry"
+  },
+  "suggestedLanguages": "Suggested",
+  "@suggestedLanguages": {
+    "description": "Heading above the device and common languages at the top of the language picker"
+  },
+  "allLanguages": "All languages",
+  "@allLanguages": {
+    "description": "Heading above the full language list in the language picker"
+  },
+  "languageSettingsSubtitle": "Preferred languages for audio and subtitles",
+  "@languageSettingsSubtitle": {
+    "description": "Subtitle of the language settings row on the settings hub"
+  },
+  "languageSaveFailed": "Could not save your language preferences",
+  "@languageSaveFailed": {
+    "description": "Snackbar shown when the server rejects a language preference change"
+  },
   "refreshPage": "Refresh page",
   "@refreshPage": {
     "description": "Refresh data of this page."

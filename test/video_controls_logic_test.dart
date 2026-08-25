@@ -8,6 +8,7 @@ import 'package:player/components/video_controls/TrackSelectionController.dart';
 import 'package:player/components/video_controls/VideoControlButtons.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/l10n/app_localizations_en.dart';
+import 'package:player/utils/LanguageService.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 
 Widget _app(Widget home) => MaterialApp(
@@ -167,6 +168,10 @@ void main() {
   group('TrackSelectionController derivations', () {
     final loc = AppLocalizationsEn();
 
+    // The labels name the track's language, which needs both language tables in
+    // memory (main.dart loads them before the first frame).
+    setUpAll(() => LanguageService().ensureLoaded());
+
     test('effectiveAudio falls back to the first known track', () {
       final tracks = [AudioTrack.auto(), const AudioTrack('1', 'Main', 'eng')];
       expect(TrackSelectionController.effectiveAudio(null, tracks),
@@ -219,19 +224,39 @@ void main() {
           isFalse);
     });
 
-    test('labels join title and language, and localize the sentinels', () {
+    test('labels name the language, and localize the sentinels', () {
       expect(
           TrackSelectionController.audioLabel(
               const AudioTrack('1', 'Main', 'eng'), loc),
-          'Main – eng');
+          'Main – English');
       expect(TrackSelectionController.audioLabel(AudioTrack.auto(), loc),
           loc.trackAuto);
       expect(
           TrackSelectionController.subtitleLabel(
               const SubtitleTrack('2', null, 'nld'), loc),
-          'nld');
+          'Dutch');
       expect(TrackSelectionController.subtitleLabel(SubtitleTrack.no(), loc),
           loc.trackNone);
+    });
+
+    test('a title that is only the language code is not repeated', () {
+      // Side-loaded subtitles get the language as their title when the file has
+      // no real one; "nld – Dutch" would be silly.
+      expect(
+          TrackSelectionController.subtitleLabel(
+              const SubtitleTrack('3', 'nld', 'nld'), loc),
+          'Dutch');
+    });
+
+    test('a track without a language falls back to its title, then its id', () {
+      expect(
+          TrackSelectionController.audioLabel(
+              const AudioTrack('4', 'Commentary', null), loc),
+          'Commentary');
+      expect(
+          TrackSelectionController.audioLabel(
+              const AudioTrack('5', null, null), loc),
+          '5');
     });
   });
 }

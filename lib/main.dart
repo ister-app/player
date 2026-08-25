@@ -14,6 +14,7 @@ import 'package:player/utils/AppLogStore.dart';
 import 'package:player/utils/AppMessenger.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/WellKnownService.dart';
+import 'package:player/utils/LanguageService.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:player/utils/PlatformService.dart';
@@ -57,6 +58,10 @@ Future<void> main() async {
   // screen.
   await WellKnownService.hydrateCacheFromPrefs();
   final initialServer = ClientManager.instance.lastClientUsed;
+  // The track menu labels languages from a synchronous function, so both
+  // language tables have to be in memory before anything renders.
+  await LanguageService().ensureLoaded();
+  registerLanguageDataLicenses();
   // Detect Android TV up front so the UI can branch synchronously in build().
   await PlatformService.ensureInitialized();
   if (PlatformService.isAndroidTvSync) {

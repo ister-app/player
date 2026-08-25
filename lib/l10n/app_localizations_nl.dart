@@ -24,10 +24,10 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get preferredSpoken => 'Voorkeurstaal voor gesproken audio:';
+  String get preferredSpoken => 'Voorkeurstalen voor gesproken audio';
 
   @override
-  String get preferredSubtitle => 'Voorkeurstaal voor ondertiteling:';
+  String get preferredSubtitle => 'Voorkeurstalen voor ondertiteling';
 
   @override
   String loadError(Object error) {
@@ -50,6 +50,71 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get noLanguageFound => 'Geen taal gevonden!';
+
+  @override
+  String get addLanguage => 'Taal toevoegen';
+
+  @override
+  String get languagePriorityHintSpoken =>
+      'De eerste taal in deze lijst met een beschikbaar spoor wordt gekozen. Is er geen match, dan speelt het standaardspoor van het bestand.';
+
+  @override
+  String get languagePriorityHintSubtitle =>
+      'De eerste taal in deze lijst met een beschikbaar spoor wordt gekozen. Is er geen match, dan blijven ondertitels uit.';
+
+  @override
+  String get noSpokenPreference =>
+      'Nog geen voorkeur — het standaard audiospoor speelt.';
+
+  @override
+  String get noSubtitlePreference =>
+      'Nog geen voorkeur — ondertitels blijven uit.';
+
+  @override
+  String languageAppliesToServer(Object server) {
+    return 'Opgeslagen op $server bij je account, dus dezelfde voorkeuren gelden op elk apparaat.';
+  }
+
+  @override
+  String languageRemoved(Object language) {
+    return '$language verwijderd';
+  }
+
+  @override
+  String get undo => 'Ongedaan maken';
+
+  @override
+  String get moveUp => 'Omhoog';
+
+  @override
+  String get moveDown => 'Omlaag';
+
+  @override
+  String get removeLanguage => 'Verwijderen';
+
+  @override
+  String get showAllLanguages => 'Alle ISO 639-3-talen tonen';
+
+  @override
+  String get suggestedLanguages => 'Voorgesteld';
+
+  @override
+  String get allLanguages => 'Alle talen';
+
+  @override
+  String get languageSettingsSubtitle =>
+      'Voorkeurstalen voor audio en ondertiteling';
+
+  @override
+  String get hideSubtitlesMatchingAudio =>
+      'Geen ondertiteling in de gesproken taal';
+
+  @override
+  String get hideSubtitlesMatchingAudioDescription =>
+      'Is de ondertiteltaal die gekozen zou worden dezelfde als wat je al hoort, dan blijft ondertiteling uit. Een taal die er hoger in staat wordt wel gebruikt.';
+
+  @override
+  String get languageSaveFailed => 'Kan je taalvoorkeuren niet opslaan';
 
   @override
   String get refreshPage => 'Vernieuw pagina';

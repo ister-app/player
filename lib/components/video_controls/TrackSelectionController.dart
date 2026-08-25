@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../utils/LanguageService.dart';
 import '../../utils/MediaPlayerHandler.dart';
 
 /// Observes the player's audio/subtitle tracks and performs track switches.
@@ -114,18 +115,33 @@ class TrackSelectionController extends ChangeNotifier {
     return options.contains(c) ? c : SubtitleTrack.no();
   }
 
+  /// `"Stereo – English"`, or just `"Dutch"` for a track without a title.
+  ///
+  /// mpv reports the language as the bare code the container carries (`eng`,
+  /// `nld`), which is what this menu used to show. The title is dropped when it
+  /// *is* that code: side-loaded subtitles get the language as their title when
+  /// the file has no real one (see `MediaPlayerHandler._addExternalSubtitles`),
+  /// which would otherwise read as "nld – Dutch".
+  static String _trackLabel(
+      String? title, String? language, String fallback, AppLocalizations loc) {
+    final name = (language == null || language.isEmpty)
+        ? null
+        : LanguageService().displayName(language, loc.localeName);
+    final parts = [
+      if (title != null && title.isNotEmpty && title != language) title,
+      ?name,
+    ];
+    return parts.isNotEmpty ? parts.join(' – ') : fallback;
+  }
+
   static String audioLabel(AudioTrack t, AppLocalizations loc) {
     if (t == AudioTrack.auto()) return loc.trackAuto;
-    final parts =
-        [t.title, t.language].where((s) => s != null && s.isNotEmpty).toList();
-    return parts.isNotEmpty ? parts.join(' – ') : t.id;
+    return _trackLabel(t.title, t.language, t.id, loc);
   }
 
   static String subtitleLabel(SubtitleTrack t, AppLocalizations loc) {
     if (t == SubtitleTrack.no()) return loc.trackNone;
-    final parts =
-        [t.title, t.language].where((s) => s != null && s.isNotEmpty).toList();
-    return parts.isNotEmpty ? parts.join(' – ') : t.id;
+    return _trackLabel(t.title, t.language, t.id, loc);
   }
 
   Future<void> selectAudio(AudioTrack t) async {

@@ -34,6 +34,7 @@ class ServerSettingsPage extends StatelessWidget {
                 ListTile(
                   leading: const Icon(Icons.language),
                   title: Text(loc.languageSettings),
+                  subtitle: Text(loc.languageSettingsSubtitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => AutoRouter.of(context)
                       .push(ServerSettingsLanguageRoute()),

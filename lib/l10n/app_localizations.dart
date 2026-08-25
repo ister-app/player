@@ -122,16 +122,16 @@ abstract class AppLocalizations {
   /// **'Version {version}'**
   String appVersion(String version);
 
-  /// No description provided for @preferredSpoken.
+  /// Section heading above the ordered list of preferred audio languages
   ///
   /// In en, this message translates to:
-  /// **'Preferred spoken languages:'**
+  /// **'Preferred spoken languages'**
   String get preferredSpoken;
 
-  /// No description provided for @preferredSubtitle.
+  /// Section heading above the ordered list of preferred subtitle languages
   ///
   /// In en, this message translates to:
-  /// **'Preferred subtitle languages:'**
+  /// **'Preferred subtitle languages'**
   String get preferredSubtitle;
 
   /// Error message shown when the preferences cannot be loaded
@@ -169,6 +169,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No Language Found!'**
   String get noLanguageFound;
+
+  /// Button that opens the language picker to append a language to a preference list
+  ///
+  /// In en, this message translates to:
+  /// **'Add language'**
+  String get addLanguage;
+
+  /// Explains that the order of the spoken-language list is the priority
+  ///
+  /// In en, this message translates to:
+  /// **'The first language in this list that has a matching track is used. When nothing matches, the file\'s default audio track plays.'**
+  String get languagePriorityHintSpoken;
+
+  /// Explains that the order of the subtitle-language list is the priority
+  ///
+  /// In en, this message translates to:
+  /// **'The first language in this list that has a matching track is used. When nothing matches, subtitles stay off.'**
+  String get languagePriorityHintSubtitle;
+
+  /// Empty state of the preferred spoken languages list
+  ///
+  /// In en, this message translates to:
+  /// **'No preference yet — the default audio track plays.'**
+  String get noSpokenPreference;
+
+  /// Empty state of the preferred subtitle languages list
+  ///
+  /// In en, this message translates to:
+  /// **'No preference yet — subtitles stay off.'**
+  String get noSubtitlePreference;
+
+  /// Tells the user language preferences are per server and per user
+  ///
+  /// In en, this message translates to:
+  /// **'Saved on {server} for your account, so the same preferences apply on every device.'**
+  String languageAppliesToServer(Object server);
+
+  /// Snackbar shown after removing a language from a preference list
+  ///
+  /// In en, this message translates to:
+  /// **'{language} removed'**
+  String languageRemoved(Object language);
+
+  /// Snackbar action that reverts the last change
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// Menu action that moves a language one position up the list
+  ///
+  /// In en, this message translates to:
+  /// **'Move up'**
+  String get moveUp;
+
+  /// Menu action that moves a language one position down the list
+  ///
+  /// In en, this message translates to:
+  /// **'Move down'**
+  String get moveDown;
+
+  /// Menu action that removes a language from a preference list
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeLanguage;
+
+  /// Toggle in the language picker that lifts the filter on languages media files can actually carry
+  ///
+  /// In en, this message translates to:
+  /// **'Show all ISO 639-3 languages'**
+  String get showAllLanguages;
+
+  /// Heading above the device and common languages at the top of the language picker
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested'**
+  String get suggestedLanguages;
+
+  /// Heading above the full language list in the language picker
+  ///
+  /// In en, this message translates to:
+  /// **'All languages'**
+  String get allLanguages;
+
+  /// Subtitle of the language settings row on the settings hub
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred languages for audio and subtitles'**
+  String get languageSettingsSubtitle;
+
+  /// Toggle that drops the subtitle track when it is the language already being spoken
+  ///
+  /// In en, this message translates to:
+  /// **'No subtitles in the spoken language'**
+  String get hideSubtitlesMatchingAudio;
+
+  /// Explains the no-subtitles-in-the-spoken-language toggle
+  ///
+  /// In en, this message translates to:
+  /// **'When the subtitle language that would be chosen is the one you are already hearing, subtitles stay off. A language ranked above it is still used.'**
+  String get hideSubtitlesMatchingAudioDescription;
+
+  /// Snackbar shown when the server rejects a language preference change
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save your language preferences'**
+  String get languageSaveFailed;
 
   /// Refresh data of this page.
   ///

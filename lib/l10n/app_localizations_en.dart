@@ -24,10 +24,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get preferredSpoken => 'Preferred spoken languages:';
+  String get preferredSpoken => 'Preferred spoken languages';
 
   @override
-  String get preferredSubtitle => 'Preferred subtitle languages:';
+  String get preferredSubtitle => 'Preferred subtitle languages';
 
   @override
   String loadError(Object error) {
@@ -50,6 +50,70 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noLanguageFound => 'No Language Found!';
+
+  @override
+  String get addLanguage => 'Add language';
+
+  @override
+  String get languagePriorityHintSpoken =>
+      'The first language in this list that has a matching track is used. When nothing matches, the file\'s default audio track plays.';
+
+  @override
+  String get languagePriorityHintSubtitle =>
+      'The first language in this list that has a matching track is used. When nothing matches, subtitles stay off.';
+
+  @override
+  String get noSpokenPreference =>
+      'No preference yet — the default audio track plays.';
+
+  @override
+  String get noSubtitlePreference => 'No preference yet — subtitles stay off.';
+
+  @override
+  String languageAppliesToServer(Object server) {
+    return 'Saved on $server for your account, so the same preferences apply on every device.';
+  }
+
+  @override
+  String languageRemoved(Object language) {
+    return '$language removed';
+  }
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get moveUp => 'Move up';
+
+  @override
+  String get moveDown => 'Move down';
+
+  @override
+  String get removeLanguage => 'Remove';
+
+  @override
+  String get showAllLanguages => 'Show all ISO 639-3 languages';
+
+  @override
+  String get suggestedLanguages => 'Suggested';
+
+  @override
+  String get allLanguages => 'All languages';
+
+  @override
+  String get languageSettingsSubtitle =>
+      'Preferred languages for audio and subtitles';
+
+  @override
+  String get hideSubtitlesMatchingAudio =>
+      'No subtitles in the spoken language';
+
+  @override
+  String get hideSubtitlesMatchingAudioDescription =>
+      'When the subtitle language that would be chosen is the one you are already hearing, subtitles stay off. A language ranked above it is still used.';
+
+  @override
+  String get languageSaveFailed => 'Could not save your language preferences';
 
   @override
   String get refreshPage => 'Refresh page';
