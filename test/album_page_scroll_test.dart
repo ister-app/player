@@ -20,7 +20,9 @@ import 'package:shared_preferences_platform_interface/shared_preferences_async_p
 const _server = 'test-server';
 const _trackCount = 40;
 
-Map<String, dynamic> _metadata(String id, String title) => {
+Map<String, dynamic> _metadata(String id, String title,
+        {String? genre, String? released}) =>
+    {
       '__typename': 'Metadata',
       'id': id,
       'description': null,
@@ -28,21 +30,25 @@ Map<String, dynamic> _metadata(String id, String title) => {
       'sourceUri': null,
       'source': null,
       'title': title,
-      'released': null,
-      'genre': null,
+      'released': released,
+      'genre': genre,
     };
 
 /// With [discs] = 2 the 40 tracks split 1–20 → disc 1 and 21–40 → disc 2,
 /// with the track number restarting per disc; titles stay globally unique.
 /// [guestTrack] gives that track a different artist than the album.
-Map<String, dynamic> _album({int discs = 1, int? guestTrack}) => {
+Map<String, dynamic> _album({int discs = 1, int? guestTrack, String? genre}) => {
       '__typename': 'Album',
       'id': 'album-1',
       'name': 'Long Album',
       'releaseYear': 2001,
       'artist': {'__typename': 'Person', 'id': 'artist-1', 'name': 'The Band'},
       'images': [],
-      'metadata': [],
+      'metadata': [
+        if (genre != null)
+          _metadata('album-meta', 'Long Album',
+              genre: genre, released: '2001-01-01'),
+      ],
       'rating': null,
       'tracks': [
         for (var n = 1; n <= _trackCount; n++)
@@ -71,7 +77,7 @@ Map<String, dynamic> _album({int discs = 1, int? guestTrack}) => {
       ],
     };
 
-MockClient _fakeGraphQL({int discs = 1, int? guestTrack}) =>
+MockClient _fakeGraphQL({int discs = 1, int? guestTrack, String? genre}) =>
     MockClient((request) async {
       final body = json.decode(request.body) as Map<String, dynamic>;
       final query = body['query'] as String;
@@ -80,7 +86,8 @@ MockClient _fakeGraphQL({int discs = 1, int? guestTrack}) =>
         payload = {
           'data': {
             '__typename': 'Query',
-            'albumById': _album(discs: discs, guestTrack: guestTrack)
+            'albumById':
+                _album(discs: discs, guestTrack: guestTrack, genre: genre)
           }
         };
       } else if (query.contains('me {') || query.contains('me{')) {
@@ -174,13 +181,81 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('the app bar offers add-album-to-queue next to add-to-session',
+  testWidgets('the hero carries one meta line instead of separate strips',
+      (tester) async {
+    await tester.pumpWidget(_app(_fakeGraphQL(genre: 'Rock')));
+    await tester.pumpAndSettle();
+
+    // Genre and the album stats share a single muted line under the artist.
+    // The release date is deliberately absent — the title already has the year.
+    expect(find.text('Rock • 40 songs • 2:00:00'), findsOneWidget);
+    expect(find.textContaining('2001-01-01'), findsNothing);
+    expect(find.text('Long Album (2001)'), findsOneWidget);
+    expect(find.text('The Band'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('an album without genre metadata still gets its stats line',
       (tester) async {
     await tester.pumpWidget(_app(_fakeGraphQL()));
     await tester.pumpAndSettle();
 
-    expect(find.byIcon(Icons.playlist_add), findsOneWidget);
-    expect(find.byIcon(Icons.queue_music), findsOneWidget);
+    expect(find.text('40 songs • 2:00:00'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('play, shuffle and the rating share one row under the hero',
+      (tester) async {
+    await tester.pumpWidget(_app(_fakeGraphQL()));
+    await tester.pumpAndSettle();
+
+    final play = find.widgetWithText(FilledButton, 'Play');
+    final shuffle = find.widgetWithText(FilledButton, 'Shuffle');
+    final stars = find.byIcon(Icons.star_outline_rounded);
+    expect(play, findsOneWidget);
+    expect(shuffle, findsOneWidget);
+    expect(stars, findsNWidgets(5));
+
+    // One row: the rating sits beside the buttons, not in a strip of its own.
+    expect(tester.getCenter(stars.first).dy,
+        moreOrLessEquals(tester.getCenter(play).dy, epsilon: 4));
+    expect(tester.getCenter(play).dy,
+        lessThan(tester.getTopLeft(find.text('Track 1')).dy));
+
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('the album actions live behind one app-bar overflow menu',
+      (tester) async {
+    await tester.pumpWidget(_app(_fakeGraphQL()));
+    await tester.pumpAndSettle();
+
+    // Play and shuffle are the only album-level buttons on the page itself;
+    // everything else hides until the overflow opens.
+    expect(find.byIcon(Icons.playlist_add), findsNothing);
+    expect(find.byIcon(Icons.queue_music), findsNothing);
+
+    // The app-bar overflow is the first more_vert; the rest belong to the
+    // track rows further down.
+    await tester.tap(find.byIcon(Icons.more_vert).first);
+    await tester.pumpAndSettle();
+
+    for (final icon in [
+      Icons.playlist_add, // add to queue
+      Icons.queue_music, // add to session
+      Icons.devices, // play on device
+      Icons.download_for_offline_outlined, // download album
+      Icons.playlist_add_check, // add to playlist
+    ]) {
+      expect(find.byIcon(icon), findsOneWidget, reason: '$icon in the menu');
+    }
+    // "Analyze media" is admin-only and this fixture's user is not one.
+    expect(find.byIcon(Icons.analytics), findsNothing);
 
     await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();

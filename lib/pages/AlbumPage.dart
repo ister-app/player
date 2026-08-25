@@ -26,6 +26,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import '../components/AddToPlaylistSheet.dart';
 import '../components/AddToSessionSheet.dart';
 import '../components/DevicePickerSheet.dart';
+import '../components/ExpandableText.dart';
 import '../components/SourceAttribution.dart';
 import '../components/MusicDetailHero.dart';
 import '../components/RatingStars.dart';
@@ -240,258 +241,236 @@ class _AlbumPageState extends State<AlbumPage> {
       Fragment$fragmentAlbum? album, List<Fragment$fragmentTrack> tracks) {
     final loc = AppLocalizations.of(context)!;
     final description = album != null ? MetadataUtil.getDescription(album.metadata) : null;
-    final metaLine = album != null ? MetadataUtil.getMetaLine(album.metadata) : null;
 
     return CustomScrollView(
       slivers: [
         SliverAppBar(
-          expandedHeight: 220,
+          expandedHeight: 280,
           pinned: true,
           stretch: true,
           foregroundColor: Colors.white,
           actions: [
-            if (album != null && tracks.any(_trackHasFile))
-              IconButton(
-                icon: const Icon(Icons.playlist_add),
-                tooltip: loc.addToQueue,
-                onPressed: () => _addAlbumToQueue(context),
-              ),
-            if (album != null && tracks.any(_trackHasFile))
-              IconButton(
-                icon: const Icon(Icons.queue_music),
-                tooltip: loc.addToSession,
-                onPressed: () => showAddToSessionSheet(
-                  context,
-                  serverName: widget.serverName,
-                  // Whole album, in the page's disc/track order.
-                  loadItems: (_) async => [
-                    for (final track in tracks.where(_trackHasFile))
-                      (Enum$MediaType.TRACK, track.id),
-                  ],
-                ),
-              ),
-            if (album != null && tracks.any(_trackHasFile))
-              IconButton(
-                icon: const Icon(Icons.devices),
-                tooltip: loc.devicePlayOn,
-                onPressed: () => playOnDevice(
-                  context,
-                  serverName: widget.serverName,
-                  mediaType: Enum$MediaType.TRACK,
-                  mediaId: album.id,
-                ),
-              ),
-            if (album != null && tracks.any(_trackHasFile) && !kIsWeb)
-              IconButton(
-                icon: const Icon(Icons.download_for_offline_outlined),
-                tooltip: loc.downloadAlbum,
-                onPressed: () => enqueueDownloads(context, widget.serverName,
-                    (client) => DownloadLoaders.album(client, album.id)),
-              ),
-            if (album != null && tracks.any(_trackHasFile))
-              IconButton(
-                icon: const Icon(Icons.playlist_add_check),
-                tooltip: loc.addToPlaylist,
-                onPressed: () => showAddToPlaylistSheet(
-                  context,
-                  serverName: widget.serverName,
-                  mediaType: Enum$MediaType.TRACK,
-                  // Whole album, in the page's disc/track order.
-                  loadItemIds: (_) async => [
-                    for (final track in tracks.where(_trackHasFile)) track.id,
-                  ],
-                ),
-              ),
-            if (album != null && _showAdminActions)
-              IconButton(
-                icon: const Icon(Icons.analytics),
-                tooltip: loc.analyzeMedia,
-                onPressed: () async {
-                  final client = GraphQLProvider.of(context).value;
-                  await client.mutate(MutationOptions(
-                    document: documentNodeMutationanalyzeDataForAlbumMutation,
-                    variables: {'albumId': album.id},
-                  ));
-                },
-              ),
+            if (album != null) _albumMenu(context, album, tracks),
           ],
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
-            background: _buildHeader(context, album),
+            background: _buildHeader(context, album, tracks),
           ),
         ),
         SliverToBoxAdapter(
-          child: Center(
-            child: Container(
-              width: double.infinity,
-              constraints: const BoxConstraints(maxWidth: 1600),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                // A Wrap instead of a Row: on narrow (mobile) screens the
-                // stats text moves to its own line below the buttons instead
-                // of being ellipsized away.
-                child: Wrap(
-                  spacing: 12,
-                  runSpacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
+          child: _constrained(
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              // A Wrap instead of a Row: on narrow (mobile) screens the rating
+              // moves to its own line below the buttons instead of being
+              // squeezed off the edge.
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  FilledButton.icon(
+                    onPressed: album != null && tracks.any(_trackHasFile)
+                        ? () => _playTrack(
+                            context, album, tracks.firstWhere(_trackHasFile).id)
+                        : null,
+                    icon: const Icon(Icons.play_arrow),
+                    label: Text(loc.play),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _accent,
+                      foregroundColor: _accent != null ? Colors.black : null,
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 28, vertical: 14),
+                    ),
+                  ),
+                  FilledButton.icon(
+                    onPressed: album != null && tracks.isNotEmpty
+                        ? () {
+                            final client = GraphQLProvider.of(context).value;
+                            MediaPlayerHandler.instance.startAlbumShuffle(
+                              client,
+                              widget.serverName,
+                              widget.albumId,
+                            );
+                          }
+                        : null,
+                    icon: const Icon(Icons.shuffle),
+                    label: Text(loc.shuffle),
+                    style: FilledButton.styleFrom(
+                      backgroundColor:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                      foregroundColor: Theme.of(context).colorScheme.onSurface,
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 28, vertical: 14),
+                    ),
+                  ),
+                  // Interactive, so it sits just below the hero rather than
+                  // inside the collapsing app bar.
+                  if (album != null)
+                    RatingStars(
+                      mediaType: Enum$RatingMediaType.ALBUM,
+                      mediaId: album.id,
+                      rating: album.rating,
+                      // Tint with the cover accent, like the play button.
+                      color: _accent,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        if (description != null)
+          SliverToBoxAdapter(
+            child: _constrained(
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    FilledButton.icon(
-                      onPressed: album != null &&
-                              tracks.any(_trackHasFile)
-                          ? () => _playTrack(
-                              context,
-                              album,
-                              tracks.firstWhere(_trackHasFile).id)
-                          : null,
-                      icon: const Icon(Icons.play_arrow),
-                      label: Text(loc.play),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: _accent,
-                        foregroundColor: _accent != null ? Colors.black : null,
-                        shape: const StadiumBorder(),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 28, vertical: 14),
-                      ),
+                    Text(
+                      loc.description,
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
-                    FilledButton.icon(
-                      onPressed: album != null && tracks.isNotEmpty
-                          ? () {
-                              final client =
-                                  GraphQLProvider.of(context).value;
-                              MediaPlayerHandler.instance.startAlbumShuffle(
-                                client,
-                                widget.serverName,
-                                widget.albumId,
-                              );
-                            }
-                          : null,
-                      icon: const Icon(Icons.shuffle),
-                      label: Text(loc.shuffle),
-                      style: FilledButton.styleFrom(
-                        backgroundColor:
-                            Theme.of(context).colorScheme.surfaceContainerHighest,
-                        foregroundColor:
-                            Theme.of(context).colorScheme.onSurface,
-                        shape: const StadiumBorder(),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 28, vertical: 14),
-                      ),
-                    ),
-                    if (tracks.isNotEmpty)
-                      Text(
-                        _albumStats(loc, tracks),
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
-                      ),
+                    const SizedBox(height: 8),
+                    ExpandableText(text: description),
+                    const SizedBox(height: 6),
+                    SourceAttribution(
+                        metadata: album?.metadata, images: album?.images),
                   ],
                 ),
               ),
             ),
           ),
-        ),
-        if (album != null || metaLine != null)
-          SliverToBoxAdapter(
-            child: Center(
-              child: Container(
-                width: double.infinity,
-                constraints: const BoxConstraints(maxWidth: 1600),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                  child: Wrap(
-                    spacing: 16,
-                    runSpacing: 4,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      if (album != null)
-                        RatingStars(
-                          mediaType: Enum$RatingMediaType.ALBUM,
-                          mediaId: album.id,
-                          rating: album.rating,
-                          // Tint with the cover accent, like the play button.
-                          color: _accent,
-                        ),
-                      if (metaLine != null)
-                        Text(
-                          metaLine,
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                  ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        if (description != null)
-          SliverToBoxAdapter(
-            child: Center(
-              child: Container(
-                width: double.infinity,
-                constraints: const BoxConstraints(maxWidth: 1600),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        loc.description,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(description),
-                      const SizedBox(height: 6),
-                      SourceAttribution(
-                          metadata: album?.metadata, images: album?.images),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
         SliverToBoxAdapter(
-          child: Center(
-            child: Container(
-              width: double.infinity,
-              constraints: const BoxConstraints(maxWidth: 1600),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                child: Text(
-                  loc.songs,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
+          child: _constrained(
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+              child: Text(
+                loc.songs,
+                style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
           ),
         ),
         SliverToBoxAdapter(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1600),
-              child: StreamBuilder<MediaItem?>(
-                stream: MediaPlayerHandler.instance.mediaItem,
-                initialData: MediaPlayerHandler.instance.mediaItem.valueOrNull,
-                builder: (context, snapshot) {
-                  final playingTrackId = _playingTrackId(snapshot.data);
-                  return Column(
-                    children:
-                        _buildTrackSections(album, tracks, playingTrackId),
-                  );
-                },
-              ),
+          child: _constrained(
+            StreamBuilder<MediaItem?>(
+              stream: MediaPlayerHandler.instance.mediaItem,
+              initialData: MediaPlayerHandler.instance.mediaItem.valueOrNull,
+              builder: (context, snapshot) {
+                final playingTrackId = _playingTrackId(snapshot.data);
+                return Column(
+                  children: _buildTrackSections(album, tracks, playingTrackId),
+                );
+              },
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _constrained(Widget child) {
+    return Center(
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(maxWidth: 1600),
+        child: child,
+      ),
+    );
+  }
+
+  /// Every album-level action except play/shuffle, behind one overflow button
+  /// — the same shape the podcast, book and show pages use.
+  Widget _albumMenu(BuildContext context, Fragment$fragmentAlbum album,
+      List<Fragment$fragmentTrack> tracks) {
+    final loc = AppLocalizations.of(context)!;
+    final playable = tracks.where(_trackHasFile).toList();
+    return MenuAnchor(
+      menuChildren: [
+        if (playable.isNotEmpty)
+          MenuItemButton(
+            onPressed: () => _addAlbumToQueue(context),
+            child: ListTile(
+              leading: const Icon(Icons.playlist_add),
+              title: Text(loc.addToQueue),
+            ),
+          ),
+        if (playable.isNotEmpty)
+          MenuItemButton(
+            onPressed: () => showAddToSessionSheet(
+              context,
+              serverName: widget.serverName,
+              // Whole album, in the page's disc/track order.
+              loadItems: (_) async => [
+                for (final track in playable) (Enum$MediaType.TRACK, track.id),
+              ],
+            ),
+            child: ListTile(
+              leading: const Icon(Icons.queue_music),
+              title: Text(loc.addToSession),
+            ),
+          ),
+        if (playable.isNotEmpty)
+          MenuItemButton(
+            onPressed: () => playOnDevice(
+              context,
+              serverName: widget.serverName,
+              mediaType: Enum$MediaType.TRACK,
+              mediaId: album.id,
+            ),
+            child: ListTile(
+              leading: const Icon(Icons.devices),
+              title: Text(loc.devicePlayOn),
+            ),
+          ),
+        if (playable.isNotEmpty && !kIsWeb)
+          MenuItemButton(
+            onPressed: () => enqueueDownloads(context, widget.serverName,
+                (client) => DownloadLoaders.album(client, album.id)),
+            child: ListTile(
+              leading: const Icon(Icons.download_for_offline_outlined),
+              title: Text(loc.downloadAlbum),
+            ),
+          ),
+        if (playable.isNotEmpty)
+          MenuItemButton(
+            onPressed: () => showAddToPlaylistSheet(
+              context,
+              serverName: widget.serverName,
+              mediaType: Enum$MediaType.TRACK,
+              // Whole album, in the page's disc/track order.
+              loadItemIds: (_) async => [for (final t in playable) t.id],
+            ),
+            child: ListTile(
+              leading: const Icon(Icons.playlist_add_check),
+              title: Text(loc.addToPlaylist),
+            ),
+          ),
+        if (_showAdminActions)
+          MenuItemButton(
+            onPressed: () async {
+              final client = GraphQLProvider.of(context).value;
+              await client.mutate(MutationOptions(
+                document: documentNodeMutationanalyzeDataForAlbumMutation,
+                variables: {'albumId': album.id},
+              ));
+            },
+            child: ListTile(
+              leading: const Icon(Icons.analytics),
+              title: Text(loc.analyzeMedia),
+            ),
+          ),
+      ],
+      builder: (_, MenuController controller, Widget? child) {
+        return IconButton(
+          icon: const Icon(Icons.more_vert),
+          onPressed: () =>
+              controller.isOpen ? controller.close() : controller.open(),
+        );
+      },
     );
   }
 
@@ -761,7 +740,9 @@ class _AlbumPageState extends State<AlbumPage> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, Fragment$fragmentAlbum? album) {
+  Widget _buildHeader(BuildContext context, Fragment$fragmentAlbum? album,
+      List<Fragment$fragmentTrack> tracks) {
+    final loc = AppLocalizations.of(context)!;
     final img = album != null
         ? ImageUtil.getImageByType(album.images, ImageTypes.cover)
         : null;
@@ -771,15 +752,26 @@ class _AlbumPageState extends State<AlbumPage> {
         : null;
     _updateAccent(imageUrl);
 
+    // Genre and "20 songs • 1:12:30" used to sit in two thin strips of their
+    // own below the buttons; one muted line in the hero says the same. The
+    // release date that `MetadataUtil.getMetaLine` would add is left out — the
+    // title already carries the year.
+    final metaParts = [
+      if (album != null) MetadataUtil.getGenre(album.metadata),
+      if (tracks.isNotEmpty) _albumStats(loc, tracks),
+    ].whereType<String>().where((part) => part.isNotEmpty);
+
     return MusicDetailHero(
       imageUrl: imageUrl,
       blurHash: img?.blurHash,
+      coverHeight: 150,
       title: album != null
           ? MetadataUtil.titleWithYear(
               MetadataUtil.getTitle(album.metadata) ?? album.name,
               album.releaseYear)
           : null,
       subtitle: album?.artist.name,
+      metaLine: metaParts.isEmpty ? null : metaParts.join(' • '),
       onSubtitleTap: album != null
           ? () => AutoRouter.of(context)
               .push(PersonRoute(personId: album.artist.id))

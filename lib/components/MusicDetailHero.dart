@@ -6,7 +6,7 @@ import 'package:flutter_blurhash/flutter_blurhash.dart';
 
 /// SliverAppBar background shared by the album and artist detail pages: a
 /// blurred cover/background image with a dark overlay, a fade into the page
-/// surface, and a 110×110 cover card next to a title/subtitle.
+/// surface, and a cover card next to a title/subtitle/meta line.
 class MusicDetailHero extends StatelessWidget {
   const MusicDetailHero({
     super.key,
@@ -14,10 +14,12 @@ class MusicDetailHero extends StatelessWidget {
     required this.blurHash,
     required this.title,
     this.subtitle,
+    this.metaLine,
     this.onSubtitleTap,
     this.backgroundAlignment = Alignment.center,
     this.placeholderIcon = Icons.music_note,
     this.coverAspectRatio = 1.0,
+    this.coverHeight = 110,
   });
 
   final String? imageUrl;
@@ -31,6 +33,11 @@ class MusicDetailHero extends StatelessWidget {
   final String? title;
   final String? subtitle;
 
+  /// Optional third line under the subtitle: a muted summary such as
+  /// "Jazz · 20 songs · 1:12:30". Callers that pass nothing keep the two-line
+  /// layout unchanged.
+  final String? metaLine;
+
   /// When set, the subtitle becomes tappable (e.g. an album's artist name links
   /// to that person's page).
   final VoidCallback? onSubtitleTap;
@@ -39,8 +46,12 @@ class MusicDetailHero extends StatelessWidget {
   final Alignment backgroundAlignment;
 
   /// Width/height of the cover card. Square for albums and podcasts, 2:3 for
-  /// book covers. The card keeps its 110 height either way.
+  /// book covers.
   final double coverAspectRatio;
+
+  /// Height of the cover card. Raise it together with the page's
+  /// `SliverAppBar.expandedHeight`, or the card runs out of room.
+  final double coverHeight;
 
   Widget _coverPlaceholder() => Container(
         color: Colors.grey[900],
@@ -107,8 +118,8 @@ class MusicDetailHero extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: SizedBox(
-                    width: 110 * coverAspectRatio,
-                    height: 110,
+                    width: coverHeight * coverAspectRatio,
+                    height: coverHeight,
                     child: imageUrl != null
                         ? CachedNetworkImage(
                             imageUrl: imageUrl!,
@@ -164,6 +175,16 @@ class MusicDetailHero extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
+                      ],
+                      if (metaLine != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          metaLine!,
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 13),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ],
                     ],
                   ),
