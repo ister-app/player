@@ -4,6 +4,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/adminLibraries.graphql.dart';
 import 'package:player/graphql/setLibraryVisibleToAll.graphql.dart';
 
+import '../components/SettingsSection.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/ClientManager.dart';
 import '../utils/LoggerService.dart';
@@ -68,25 +69,30 @@ class _AdminLibrariesPageState extends State<AdminLibrariesPage> {
           builder: (QueryResult result,
               {VoidCallback? refetch, FetchMore? fetchMore}) {
             if (result.hasException) {
-              return Center(
-                  child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(result.exception.toString()),
-              ));
+              return SettingsErrorState(
+                message: loc.couldNotLoad,
+                detailsLabel: loc.errorDetails,
+                details: result.exception.toString(),
+              );
             }
             if (result.data == null) {
               return const Center(child: CircularProgressIndicator());
             }
             final libraries =
                 Query$adminLibraries.fromJson(result.data!).libraries ?? [];
+            if (libraries.isEmpty) {
+              return SettingsEmptyState(
+                icon: Icons.video_library_outlined,
+                title: loc.noLibrariesYet,
+                message: loc.adminRoleNote,
+              );
+            }
             return ListView(
               padding: const EdgeInsets.all(16.0),
               children: [
-                Card(
-                  child: Column(
-                    children: [
-                      for (int i = 0; i < libraries.length; i++) ...[
-                        if (i > 0) const Divider(height: 1, indent: 56),
+                SettingsIntro(loc.adminRoleNote),
+                SettingsCard(children: [
+                      for (int i = 0; i < libraries.length; i++)
                         SwitchListTile(
                           secondary: const Icon(Icons.video_library_outlined),
                           title: Text(libraries[i].name),
@@ -101,19 +107,7 @@ class _AdminLibrariesPageState extends State<AdminLibrariesPage> {
                           onChanged: (value) => _setVisibleToAll(
                               context, libraries[i].id, value),
                         ),
-                      ],
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 12.0, left: 4.0),
-                  child: Text(
-                    loc.adminRoleNote,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                ),
+                ]),
               ],
             );
           },

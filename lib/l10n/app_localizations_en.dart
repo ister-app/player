@@ -2229,4 +2229,69 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get downloadSettingsSection => 'Downloads';
+
+  @override
+  String get playbackIntro =>
+      'These preferences are stored on the server for your account, so they apply on every device you sign in on.';
+
+  @override
+  String get playbackHintStreaming => 'How the server delivers media to you.';
+
+  @override
+  String get playbackHintDuringPlayback =>
+      'What the player does on its own while something is playing.';
+
+  @override
+  String get sleepTimerIntro =>
+      'The sleep timer stops playback after a while or after a number of items. It is stored on this device only.';
+
+  @override
+  String get downloadSettingsIntro =>
+      'Downloads and the music cache live on this device. They are not shared with the other devices you sign in on.';
+
+  @override
+  String get downloadsIntro =>
+      'Everything here plays without a connection to the server.';
+
+  @override
+  String get sharingIntro =>
+      'Decide who may see what you are playing and who may take the controls. Applies to your account on this server.';
+
+  @override
+  String get devicesIntro =>
+      'Every device you sign in on registers itself here. From this list you can start playback on another device or hand the current session over to it.';
+
+  @override
+  String get nowPlayingIntro =>
+      'Everything playing on this server right now — yours, and other people\'s where they allow it.';
+
+  @override
+  String get serverStatusIntro =>
+      'How your server is doing: the nodes it runs on, what they are working on and what is still queued.';
+
+  @override
+  String get userAccessIntro =>
+      'Choose which libraries this user can reach. A library that is visible to everyone is always on; restrict it first to grant it per user.';
+
+  @override
+  String get aboutSectionSources => 'Data sources';
+
+  @override
+  String get aboutSectionProject => 'The app';
+
+  @override
+  String get noLibrariesYet =>
+      'No libraries yet — add one on the server first.';
+
+  @override
+  String get couldNotLoad => 'Could not load this page';
+
+  @override
+  String get errorDetails => 'Technical details';
+
+  @override
+  String get sharingVisibleTo => 'Visible to';
+
+  @override
+  String get sharingControlledBy => 'Can be controlled by';
 }

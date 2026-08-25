@@ -4,6 +4,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/adminUsers.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 
+import '../components/SettingsSection.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/ClientManager.dart';
 
@@ -35,31 +36,29 @@ class AdminUsersPage extends StatelessWidget {
           builder: (QueryResult result,
               {VoidCallback? refetch, FetchMore? fetchMore}) {
             if (result.hasException) {
-              return Center(
-                  child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(result.exception.toString()),
-              ));
+              return SettingsErrorState(
+                message: loc.couldNotLoad,
+                detailsLabel: loc.errorDetails,
+                details: result.exception.toString(),
+              );
             }
             if (result.data == null) {
               return const Center(child: CircularProgressIndicator());
             }
             final users = Query$adminUsers.fromJson(result.data!).users;
             if (users.isEmpty) {
-              return Center(
-                  child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(loc.noUsersYet),
-              ));
+              return SettingsEmptyState(
+                icon: Icons.person_outline,
+                title: loc.noUsersYet,
+                message: loc.adminRoleNote,
+              );
             }
             return ListView(
               padding: const EdgeInsets.all(16.0),
               children: [
-                Card(
-                  child: Column(
-                    children: [
-                      for (int i = 0; i < users.length; i++) ...[
-                        if (i > 0) const Divider(height: 1, indent: 56),
+                SettingsIntro(loc.adminRoleNote),
+                SettingsCard(children: [
+                      for (int i = 0; i < users.length; i++)
                         ListTile(
                           leading: const Icon(Icons.person_outline),
                           title: Text(users[i].name ?? users[i].id),
@@ -86,19 +85,7 @@ class AdminUsersPage extends StatelessWidget {
                             ),
                           ),
                         ),
-                      ],
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 12.0, left: 4.0),
-                  child: Text(
-                    loc.adminRoleNote,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                ),
+                ]),
               ],
             );
           },

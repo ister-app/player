@@ -4,7 +4,7 @@ description: Stel je taal-, afspeel-, download- en privacyvoorkeuren voor Ister 
 
 # Instellingen
 
-Elke server heeft een eigen tabblad **Instellingen**, gegroepeerd naar hoe ver een instelling reikt: wat met je meereist tussen apparaten, wat alleen hier geldt, wie je afspelen mag zien of sturen, de server zelf, en de app.
+Elke server heeft een eigen tabblad **Instellingen**, gegroepeerd naar hoe ver een instelling reikt: wat met je meereist tussen apparaten, wat alleen hier geldt, wie je afspelen mag zien of sturen, de server zelf, en de app. Elke pagina opent met een regel die zegt waar hij over gaat en waar de instelling geldt.
 
 ![Het instellingenoverzicht](../images/nl/settings.png)
 

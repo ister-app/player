@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:player/components/SettingsSection.dart';
 import 'package:player/components/SleepTimerSheet.dart';
 import 'package:player/utils/SleepTimerPreferences.dart';
 
@@ -67,21 +68,21 @@ class _SleepTimerSettingsPageState extends State<SleepTimerSettingsPage> {
           return ListView(
             padding: const EdgeInsets.all(16.0),
             children: [
-              Card(
-                child: SwitchListTile(
+              // The "this device only" caveat used to hang off the switch's
+              // subtitle; the intro says it once for the whole page now.
+              SettingsIntro(loc.sleepTimerIntro),
+              SettingsCard(children: [
+                SwitchListTile(
                   secondary: const Icon(Icons.bedtime_outlined),
                   title: Text(loc.sleepTimerAuto),
-                  subtitle: Text(
-                      '${loc.sleepTimerAutoDescription}\n${loc.sleepTimerDeviceOnly}'),
+                  subtitle: Text(loc.sleepTimerAutoDescription),
                   value: _autoEnabled,
                   onChanged: (value) {
                     SleepTimerPreferences.setAutoEnabled(value);
                     setState(() => _autoEnabled = value);
                   },
                 ),
-              ),
-              Card(
-                child: ListTile(
+                ListTile(
                   enabled: _autoEnabled,
                   leading: const Icon(Icons.nightlight_outlined),
                   title: Text(loc.sleepTimerFrom),
@@ -91,9 +92,7 @@ class _SleepTimerSettingsPageState extends State<SleepTimerSettingsPage> {
                     setState(() => _startMinutes = minutes);
                   }),
                 ),
-              ),
-              Card(
-                child: ListTile(
+                ListTile(
                   enabled: _autoEnabled,
                   leading: const Icon(Icons.wb_sunny_outlined),
                   title: Text(loc.sleepTimerUntil),
@@ -103,8 +102,10 @@ class _SleepTimerSettingsPageState extends State<SleepTimerSettingsPage> {
                     setState(() => _endMinutes = minutes);
                   }),
                 ),
-              ),
+              ]),
+              const SizedBox(height: 16),
               Card(
+                margin: EdgeInsets.zero,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                   child: Column(

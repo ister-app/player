@@ -73,9 +73,11 @@ class _ServerSettingsPlaybackPageState
           return ListView(
             padding: const EdgeInsets.all(16.0),
             children: [
+              SettingsIntro(loc.playbackIntro),
               SettingsSection(
                 key: const ValueKey('playback-section-streaming'),
                 title: loc.playbackSectionStreaming,
+                hint: loc.playbackHintStreaming,
                 children: [
                   SwitchListTile(
                     key: const ValueKey('playback-direct-play'),
@@ -136,6 +138,7 @@ class _ServerSettingsPlaybackPageState
               SettingsSection(
                 key: const ValueKey('playback-section-during'),
                 title: loc.playbackSectionDuringPlayback,
+                hint: loc.playbackHintDuringPlayback,
                 children: [
                   SwitchListTile(
                     key: const ValueKey('playback-auto-skip-intro'),

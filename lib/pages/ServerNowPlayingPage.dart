@@ -13,6 +13,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/ListenTogetherSheet.dart';
 import '../components/LiveFeedBanner.dart';
+import '../components/SettingsSection.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/ClientManager.dart';
 import '../utils/ImageUtil.dart';
@@ -180,11 +181,10 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
 
     Widget body;
     if (_error != null && sessions == null) {
-      body = Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(_error!),
-        ),
+      body = SettingsErrorState(
+        message: loc.couldNotLoad,
+        detailsLabel: loc.errorDetails,
+        details: _error,
       );
     } else if (sessions == null) {
       body = Skeletonizer(
@@ -195,12 +195,17 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
         ),
       );
     } else if (sessions.isEmpty && !_liveFeedBroken) {
-      body = Center(child: Text(loc.noActiveSessions));
+      body = SettingsEmptyState(
+        icon: Icons.pause_circle_outline,
+        title: loc.noActiveSessions,
+        message: loc.nowPlayingIntro,
+      );
     } else {
       body = ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
           if (_liveFeedBroken) const LiveFeedBanner(),
+          SettingsIntro(loc.nowPlayingIntro),
           if (sessions.isEmpty) Center(child: Text(loc.noActiveSessions)),
           for (final session in sessions)
             _SessionCard(

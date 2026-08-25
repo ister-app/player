@@ -96,18 +96,6 @@ class _ServerSettingsLanguagePageState
     );
   }
 
-  Widget _hint(BuildContext context, String text) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4.0, right: 4.0, bottom: 8.0),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
@@ -124,42 +112,40 @@ class _ServerSettingsLanguagePageState
           }
 
           if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                loc.loadError(snapshot.error!),
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-                textAlign: TextAlign.center,
-              ),
+            return SettingsErrorState(
+              message: loc.couldNotLoad,
+              detailsLabel: loc.errorDetails,
+              details: loc.loadError(snapshot.error!),
             );
           }
 
           return ListView(
             padding: const EdgeInsets.all(16.0),
             children: [
-              _hint(context, loc.languageAppliesToServer(widget.serverName)),
+              SettingsIntro(loc.languageAppliesToServer(widget.serverName)),
               SettingsSectionLabel(loc.preferredSpoken),
-              _hint(context, loc.languagePriorityHintSpoken),
-              Card(
-                child: LanguagePreferenceList(
+              SettingsHint(loc.languagePriorityHintSpoken),
+              SettingsCard(children: [
+                LanguagePreferenceList(
                   keyPrefix: 'spoken',
                   values: _spokenLanguages,
                   emptyHint: loc.noSpokenPreference,
                   onChanged: _handleSpokenChanged,
                 ),
-              ),
+              ]),
               SettingsSectionLabel(loc.preferredSubtitle),
-              _hint(context, loc.languagePriorityHintSubtitle),
-              Card(
-                child: LanguagePreferenceList(
+              SettingsHint(loc.languagePriorityHintSubtitle),
+              SettingsCard(children: [
+                LanguagePreferenceList(
                   keyPrefix: 'subtitle',
                   values: _subtitleLanguages,
                   emptyHint: loc.noSubtitlePreference,
                   onChanged: _handleSubtitleChanged,
                 ),
-              ),
-              const SizedBox(height: 8),
-              Card(
-                child: SwitchListTile(
+              ]),
+              const SizedBox(height: 16),
+              SettingsCard(children: [
+                SwitchListTile(
                   key: const ValueKey('hide-subtitles-matching-audio'),
                   secondary: const Icon(Icons.subtitles_off_outlined),
                   title: Text(loc.hideSubtitlesMatchingAudio),
@@ -167,7 +153,7 @@ class _ServerSettingsLanguagePageState
                   value: _hideSubtitlesMatchingAudio,
                   onChanged: _handleHideMatchingChanged,
                 ),
-              ),
+              ]),
             ],
           );
         },

@@ -16,6 +16,7 @@ import 'package:player/graphql/serverActivitySnapshot.graphql.dart';
 import 'package:player/graphql/serverActivitySubscription.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../components/SettingsSection.dart';
 import '../l10n/app_localizations.dart';
 import '../components/AdminGate.dart';
 import '../components/ServerActivityBody.dart';
@@ -155,17 +156,6 @@ class _ServerSettingsClusterPageState extends State<ServerSettingsClusterPage> {
     super.dispose();
   }
 
-  Widget _sectionLabel(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4.0, top: 16.0, bottom: 4.0),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-      ),
-    );
-  }
 
   Future<void> _runManagementTask(
     BuildContext context,
@@ -272,7 +262,7 @@ class _ServerSettingsClusterPageState extends State<ServerSettingsClusterPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _sectionLabel(context, loc.management),
+        SettingsSectionLabel(loc.management),
         Card(
           child: Column(
             children: [
@@ -348,6 +338,7 @@ class _ServerSettingsClusterPageState extends State<ServerSettingsClusterPage> {
     return ListView(
       padding: const EdgeInsets.all(16.0),
       children: [
+        SettingsIntro(loc.serverStatusIntro),
         Skeletonizer(
           enabled: true,
           child: Column(
@@ -360,11 +351,11 @@ class _ServerSettingsClusterPageState extends State<ServerSettingsClusterPage> {
                   subtitle: Text(BoneMock.words(3)),
                 ),
               ),
-              _sectionLabel(context, loc.busyNow),
+              SettingsSectionLabel(loc.busyNow),
               card(2, Icons.troubleshoot),
-              _sectionLabel(context, loc.queuedWork),
+              SettingsSectionLabel(loc.queuedWork),
               card(3, Icons.list_alt),
-              _sectionLabel(context, loc.nodes),
+              SettingsSectionLabel(loc.nodes),
               card(2, Icons.storage, trailing: const Chip(label: Text('1.0.0'))),
             ],
           ),
@@ -400,10 +391,12 @@ class _ServerSettingsClusterPageState extends State<ServerSettingsClusterPage> {
               return ListView(
                 padding: const EdgeInsets.all(16.0),
                 children: [
+                  SettingsIntro(loc.serverStatusIntro),
                   if (info != null) _serverCard(context, info),
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Center(child: Text(_error!)),
+                  SettingsErrorState(
+                    message: loc.couldNotLoad,
+                    detailsLabel: loc.errorDetails,
+                    details: _error,
                   ),
                   _gatedManagementSection(context),
                 ],
@@ -411,6 +404,7 @@ class _ServerSettingsClusterPageState extends State<ServerSettingsClusterPage> {
             }
 
             return ServerActivityBody(
+              intro: loc.serverStatusIntro,
               header: info == null ? null : _serverCard(context, info),
               nodeInfo: {
                 for (final node in info?.nodes ??

@@ -2237,4 +2237,69 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get downloadSettingsSection => 'Downloads';
+
+  @override
+  String get playbackIntro =>
+      'Deze voorkeuren staan op de server bij je account, dus ze gelden op elk apparaat waarop je inlogt.';
+
+  @override
+  String get playbackHintStreaming => 'Hoe de server media naar je toe stuurt.';
+
+  @override
+  String get playbackHintDuringPlayback =>
+      'Wat de speler uit zichzelf doet terwijl er iets speelt.';
+
+  @override
+  String get sleepTimerIntro =>
+      'De slaaptimer stopt het afspelen na een tijd of na een aantal items. Hij wordt alleen op dit apparaat bewaard.';
+
+  @override
+  String get downloadSettingsIntro =>
+      'Downloads en de muziekcache staan op dit apparaat. Ze worden niet gedeeld met de andere apparaten waarop je inlogt.';
+
+  @override
+  String get downloadsIntro =>
+      'Alles hier speelt ook zonder verbinding met de server.';
+
+  @override
+  String get sharingIntro =>
+      'Bepaal wie mag zien wat je afspeelt en wie de bediening mag overnemen. Geldt voor je account op deze server.';
+
+  @override
+  String get devicesIntro =>
+      'Elk apparaat waarop je inlogt meldt zich hier aan. Vanaf deze lijst start je het afspelen op een ander apparaat of draag je de huidige sessie over.';
+
+  @override
+  String get nowPlayingIntro =>
+      'Alles wat er nu op deze server speelt — dat van jou, en van anderen waar zij dat toestaan.';
+
+  @override
+  String get serverStatusIntro =>
+      'Hoe je server ervoor staat: de nodes waarop hij draait, waar die mee bezig zijn en wat er nog in de wachtrij staat.';
+
+  @override
+  String get userAccessIntro =>
+      'Kies bij welke bibliotheken deze gebruiker kan. Een bibliotheek die voor iedereen zichtbaar is staat altijd aan; beperk hem eerst om hem per gebruiker toe te kennen.';
+
+  @override
+  String get aboutSectionSources => 'Bronnen';
+
+  @override
+  String get aboutSectionProject => 'De app';
+
+  @override
+  String get noLibrariesYet =>
+      'Nog geen bibliotheken — voeg er eerst een toe op de server.';
+
+  @override
+  String get couldNotLoad => 'Kan deze pagina niet laden';
+
+  @override
+  String get errorDetails => 'Technische details';
+
+  @override
+  String get sharingVisibleTo => 'Zichtbaar voor';
+
+  @override
+  String get sharingControlledBy => 'Bediend kan worden door';
 }

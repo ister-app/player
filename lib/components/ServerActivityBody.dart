@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:player/components/SettingsSection.dart';
 import 'package:player/graphql/fragmentServerActivity.graphql.dart';
 import 'package:player/graphql/getServerInfo.graphql.dart';
 
@@ -22,6 +23,7 @@ class ServerActivityBody extends StatelessWidget {
   final List<Fragment$fragmentTranscodePass> transcodes;
   final bool liveFeedBroken;
   final DateTime now;
+  final String? intro;
   final Widget? header;
   final Widget? footer;
   final Map<String, Query$getServerInfoQuery$getServerInfo$nodes> nodeInfo;
@@ -34,6 +36,7 @@ class ServerActivityBody extends StatelessWidget {
     required this.transcodes,
     required this.liveFeedBroken,
     required this.now,
+    this.intro,
     this.header,
     this.footer,
     this.nodeInfo = const {},
@@ -53,24 +56,25 @@ class ServerActivityBody extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       children: [
         if (liveFeedBroken) const LiveFeedBanner(),
+        if (intro != null) SettingsIntro(intro!),
         if (header != null) header!,
         if (idle)
           _idleHero(context, loc)
         else ...[
           if (busyTiles.isNotEmpty) ...[
-            _sectionLabel(context, loc.busyNow),
+            SettingsSectionLabel(loc.busyNow),
             _sectionCard(busyTiles),
           ],
-          _sectionLabel(context, loc.queuedWork),
+          SettingsSectionLabel(loc.queuedWork),
           _queueSection(context, loc),
         ],
         if (nodeNames.isNotEmpty) ...[
-          _sectionLabel(context, loc.nodes),
+          SettingsSectionLabel(loc.nodes),
           _sectionCard([
             for (final name in nodeNames) _nodeTile(context, loc, name),
           ]),
         ],
-        _sectionLabel(context, loc.recentFailures),
+        SettingsSectionLabel(loc.recentFailures),
         if (failures.isEmpty)
           Card(
             child: ListTile(
@@ -330,17 +334,6 @@ class ServerActivityBody extends StatelessWidget {
     );
   }
 
-  Widget _sectionLabel(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4.0, top: 16.0, bottom: 4.0),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-      ),
-    );
-  }
 
   Widget _sectionCard(List<Widget> tiles) {
     return Card(

@@ -3769,6 +3769,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Downloads'**
   String get downloadSettingsSection;
+
+  /// Intro paragraph at the top of the playback settings page
+  ///
+  /// In en, this message translates to:
+  /// **'These preferences are stored on the server for your account, so they apply on every device you sign in on.'**
+  String get playbackIntro;
+
+  /// Hint under the Streaming section header
+  ///
+  /// In en, this message translates to:
+  /// **'How the server delivers media to you.'**
+  String get playbackHintStreaming;
+
+  /// Hint under the During playback section header
+  ///
+  /// In en, this message translates to:
+  /// **'What the player does on its own while something is playing.'**
+  String get playbackHintDuringPlayback;
+
+  /// Intro paragraph at the top of the sleep timer page
+  ///
+  /// In en, this message translates to:
+  /// **'The sleep timer stops playback after a while or after a number of items. It is stored on this device only.'**
+  String get sleepTimerIntro;
+
+  /// Intro paragraph at the top of the download settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads and the music cache live on this device. They are not shared with the other devices you sign in on.'**
+  String get downloadSettingsIntro;
+
+  /// Intro paragraph at the top of the downloads list
+  ///
+  /// In en, this message translates to:
+  /// **'Everything here plays without a connection to the server.'**
+  String get downloadsIntro;
+
+  /// Intro paragraph at the top of the sharing & privacy page
+  ///
+  /// In en, this message translates to:
+  /// **'Decide who may see what you are playing and who may take the controls. Applies to your account on this server.'**
+  String get sharingIntro;
+
+  /// Intro paragraph at the top of the devices page
+  ///
+  /// In en, this message translates to:
+  /// **'Every device you sign in on registers itself here. From this list you can start playback on another device or hand the current session over to it.'**
+  String get devicesIntro;
+
+  /// Intro paragraph at the top of the now playing page
+  ///
+  /// In en, this message translates to:
+  /// **'Everything playing on this server right now — yours, and other people\'s where they allow it.'**
+  String get nowPlayingIntro;
+
+  /// Intro paragraph at the top of the server status page
+  ///
+  /// In en, this message translates to:
+  /// **'How your server is doing: the nodes it runs on, what they are working on and what is still queued.'**
+  String get serverStatusIntro;
+
+  /// Intro paragraph at the top of the per-user library access page
+  ///
+  /// In en, this message translates to:
+  /// **'Choose which libraries this user can reach. A library that is visible to everyone is always on; restrict it first to grant it per user.'**
+  String get userAccessIntro;
+
+  /// Section header above the attributed data sources
+  ///
+  /// In en, this message translates to:
+  /// **'Data sources'**
+  String get aboutSectionSources;
+
+  /// Section header above the website, source code and licenses links
+  ///
+  /// In en, this message translates to:
+  /// **'The app'**
+  String get aboutSectionProject;
+
+  /// Empty state on the library visibility and user access pages
+  ///
+  /// In en, this message translates to:
+  /// **'No libraries yet — add one on the server first.'**
+  String get noLibrariesYet;
+
+  /// Headline of the generic settings error state
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load this page'**
+  String get couldNotLoad;
+
+  /// Label of the collapsed technical details in the error state
+  ///
+  /// In en, this message translates to:
+  /// **'Technical details'**
+  String get errorDetails;
+
+  /// Label of the now-playing audience dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Visible to'**
+  String get sharingVisibleTo;
+
+  /// Label of the remote-control audience dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Can be controlled by'**
+  String get sharingControlledBy;
 }
 
 class _AppLocalizationsDelegate

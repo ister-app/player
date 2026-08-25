@@ -79,7 +79,9 @@ class _DownloadSettingsPageState extends State<DownloadSettingsPage> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                SettingsIntro(loc.downloadSettingsIntro),
                 SettingsSectionLabel(loc.downloadSettingsSection),
+                SettingsHint(loc.downloadNetworkPolicySubtitle),
                 Card(
                   margin: EdgeInsets.zero,
                   child: Column(
@@ -87,7 +89,6 @@ class _DownloadSettingsPageState extends State<DownloadSettingsPage> {
                       ListTile(
                         leading: const Icon(Icons.data_usage_outlined),
                         title: Text(loc.downloadNetworkPolicy),
-                        subtitle: Text(loc.downloadNetworkPolicySubtitle),
                       ),
                       // The choices are sentences, so they get their own rows
                       // instead of a trailing dropdown.
@@ -207,6 +208,7 @@ class _DownloadSettingsPageState extends State<DownloadSettingsPage> {
                   ),
                 ),
                 SettingsSectionLabel(loc.musicCache),
+                SettingsHint(loc.musicCacheDescription),
                 Card(
                   margin: EdgeInsets.zero,
                   child: Column(
@@ -214,7 +216,6 @@ class _DownloadSettingsPageState extends State<DownloadSettingsPage> {
                       SwitchListTile(
                         secondary: const Icon(Icons.library_music_outlined),
                         title: Text(loc.musicCacheEnabled),
-                        subtitle: Text(loc.musicCacheDescription),
                         value: _cache.enabled,
                         onChanged: (v) => _setCacheEnabled(context, v),
                       ),

@@ -4,7 +4,7 @@ description: Set your language, playback, download and sharing preferences in Is
 
 # Settings
 
-Each server has its own **Settings** tab, grouped by how far a setting reaches: what follows you across devices, what only holds on this device, who else may see or steer your playback, the server itself, and the app.
+Each server has its own **Settings** tab, grouped by how far a setting reaches: what follows you across devices, what only holds on this device, who else may see or steer your playback, the server itself, and the app. Every page opens with a line saying what it covers and where the setting applies.
 
 ![The settings overview](../images/en/settings.png)
 
@@ -52,7 +52,7 @@ Stop playback after a while or after a number of items. With the **automatic sle
 Control who can see and steer your playback — the other side of [Party mode](06-party-mode.md):
 
 - **Now playing** — who can see what you're currently playing: everyone, only you, or specific people.
-- **Remote control** — who can control your playback from their device: everyone, only you, specific people, or the same audience as *Now playing*.
+- **Remote control** — who may take the controls from their own device: everyone, only you, specific people, or the same audience as *Now playing*.
 
 Set to *only you*, your sessions stay private and no one can see or drive them. You can still make an exception for a single session from the player (**Share this session**).
 

@@ -6,6 +6,7 @@ import 'package:player/graphql/attributions.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../components/SettingsSection.dart';
 import '../l10n/app_localizations.dart';
 
 /// Credits the external metadata/artwork providers the server reports via the
@@ -55,18 +56,14 @@ class ServerSettingsAboutPage extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.all(16.0),
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Text(
-                    result.hasException && attributions.isEmpty
-                        ? loc.attributionsUnavailable
-                        : loc.attributionsIntro,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ),
+                SettingsIntro(result.hasException && attributions.isEmpty
+                    ? loc.attributionsUnavailable
+                    : loc.attributionsIntro),
+                if (attributions.isNotEmpty)
+                  SettingsSectionLabel(loc.aboutSectionSources),
                 for (final attribution in attributions)
-                  Card(
-                    child: ListTile(
+                  SettingsCard(children: [
+                    ListTile(
                       title: Text(attribution.name),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,11 +83,9 @@ class ServerSettingsAboutPage extends StatelessWidget {
                         ],
                       ),
                     ),
-                  ),
-                const SizedBox(height: 8),
-                Card(
-                  child: Column(
-                    children: [
+                  ]),
+                SettingsSectionLabel(loc.aboutSectionProject),
+                SettingsCard(children: [
                       ListTile(
                         leading: const Icon(Icons.language_outlined),
                         title: Text(loc.projectWebsite),
@@ -99,7 +94,6 @@ class ServerSettingsAboutPage extends StatelessWidget {
                         onTap: () => launchUrl(_websiteUrl,
                             mode: LaunchMode.externalApplication),
                       ),
-                      const Divider(height: 1, indent: 56),
                       ListTile(
                         leading: const Icon(Icons.code),
                         title: Text(loc.projectSourceCode),
@@ -109,16 +103,13 @@ class ServerSettingsAboutPage extends StatelessWidget {
                         onTap: () => launchUrl(_sourceUrl,
                             mode: LaunchMode.externalApplication),
                       ),
-                      const Divider(height: 1, indent: 56),
                       ListTile(
                         leading: const Icon(Icons.description_outlined),
                         title: Text(loc.openSourceLicenses),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => _showLicenses(context),
                       ),
-                    ],
-                  ),
-                ),
+                ]),
               ],
             ),
           );

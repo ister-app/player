@@ -5,6 +5,7 @@ import 'package:player/graphql/adminLibraries.graphql.dart';
 import 'package:player/graphql/adminUsers.graphql.dart';
 import 'package:player/graphql/setUserLibraryAccess.graphql.dart';
 
+import '../components/SettingsSection.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/ClientManager.dart';
 import '../utils/LoggerService.dart';
@@ -91,11 +92,11 @@ class _AdminUserAccessPageState extends State<AdminUserAccessPage> {
                 final exception =
                     librariesResult.exception ?? usersResult.exception;
                 if (exception != null) {
-                  return Center(
-                      child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(exception.toString()),
-                  ));
+                  return SettingsErrorState(
+                    message: loc.couldNotLoad,
+                    detailsLabel: loc.errorDetails,
+                    details: exception.toString(),
+                  );
                 }
                 if (librariesResult.data == null || usersResult.data == null) {
                   return const Center(child: CircularProgressIndicator());
@@ -122,14 +123,18 @@ class _AdminUserAccessPageState extends State<AdminUserAccessPage> {
                   });
                 }
 
+                if (libraries.isEmpty) {
+                  return SettingsEmptyState(
+                    icon: Icons.video_library_outlined,
+                    title: loc.noLibrariesYet,
+                  );
+                }
                 return ListView(
                   padding: const EdgeInsets.all(16.0),
                   children: [
-                    Card(
-                      child: Column(
-                        children: [
-                          for (int i = 0; i < libraries.length; i++) ...[
-                            if (i > 0) const Divider(height: 1, indent: 56),
+                    SettingsIntro(loc.userAccessIntro),
+                    SettingsCard(children: [
+                          for (int i = 0; i < libraries.length; i++)
                             SwitchListTile(
                               secondary:
                                   const Icon(Icons.video_library_outlined),
@@ -145,10 +150,7 @@ class _AdminUserAccessPageState extends State<AdminUserAccessPage> {
                                   : (value) => _setAccess(
                                       context, libraries[i].id, value),
                             ),
-                          ],
-                        ],
-                      ),
-                    ),
+                    ]),
                   ],
                 );
               },

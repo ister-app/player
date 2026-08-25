@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:player/components/SettingsSection.dart';
 import 'package:player/components/TvFocusable.dart';
 import 'package:player/components/download/AutoNextDialog.dart';
 import 'package:player/components/download/DownloadMenuItem.dart';
@@ -167,8 +168,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
                 final groups = _groups(
                     entries.where((e) => !cached.contains(e)).toList());
                 return ListView(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16.0),
                   children: [
+                    SettingsIntro(loc.downloadsIntro),
                     _networkBanner(context),
                     _summary(context, entries),
                     const SizedBox(height: 8),
@@ -183,22 +185,10 @@ class _DownloadsPageState extends State<DownloadsPage> {
 
   Widget _empty(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.download_for_offline_outlined,
-                size: 64, color: Theme.of(context).disabledColor),
-            const SizedBox(height: 16),
-            Text(loc.noDownloadsYet,
-                style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Text(loc.noDownloadsHint, textAlign: TextAlign.center),
-          ],
-        ),
-      ),
+    return SettingsEmptyState(
+      icon: Icons.download_for_offline_outlined,
+      title: loc.noDownloadsYet,
+      message: loc.noDownloadsHint,
     );
   }
 

@@ -9,6 +9,7 @@ import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/DevicePreferences.dart';
 import 'package:player/utils/DeviceService.dart';
 
+import '../components/SettingsSection.dart';
 import '../l10n/app_localizations.dart';
 
 /// The user's registered devices on this server: name, platform, a live online dot and the
@@ -177,35 +178,27 @@ class _ServerSettingsDevicesPageState extends State<ServerSettingsDevicesPage> {
     return Scaffold(
       appBar: AppBar(title: Text(loc.devicesTitle)),
       body: devices == null
-          ? Center(
-              child: _loadFailed
-                  ? Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(loc.deviceCouldNotLoad),
-                    )
-                  : const CircularProgressIndicator(),
-            )
-          : ListView(
-              padding: const EdgeInsets.all(16.0),
-              children: [
-                if (devices.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(loc.deviceNoDevices),
-                  )
-                else
-                  Card(
-                    child: Column(
-                      children: [
-                        for (var i = 0; i < devices.length; i++) ...[
-                          if (i > 0) const Divider(height: 1, indent: 56),
-                          _deviceTile(loc, devices[i]),
-                        ],
-                      ],
-                    ),
-                  ),
-              ],
-            ),
+          ? (_loadFailed
+              ? SettingsErrorState(
+                  message: loc.deviceCouldNotLoad,
+                  detailsLabel: loc.errorDetails,
+                )
+              : const Center(child: CircularProgressIndicator()))
+          : devices.isEmpty
+              ? SettingsEmptyState(
+                  icon: Icons.devices_other_outlined,
+                  title: loc.deviceNoDevices,
+                  message: loc.devicesIntro,
+                )
+              : ListView(
+                  padding: const EdgeInsets.all(16.0),
+                  children: [
+                    SettingsIntro(loc.devicesIntro),
+                    SettingsCard(children: [
+                      for (final device in devices) _deviceTile(loc, device),
+                    ]),
+                  ],
+                ),
     );
   }
 

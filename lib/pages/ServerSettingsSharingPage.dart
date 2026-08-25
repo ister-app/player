@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/utils/SharingSettingsService.dart';
 
+import '../components/SettingsSection.dart';
 import '../l10n/app_localizations.dart';
 
 /// Lets a user decide who may see their now-playing sessions and who may remote-control them.
@@ -80,18 +81,17 @@ class _ServerSettingsSharingPageState extends State<ServerSettingsSharingPage> {
           }
           final settings = _settings;
           if (snapshot.hasError || settings == null) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(loc.sharingCouldNotLoad),
-              ),
+            return SettingsErrorState(
+              message: loc.sharingCouldNotLoad,
+              detailsLabel: loc.errorDetails,
+              details: snapshot.error?.toString(),
             );
           }
           return ListView(
             padding: const EdgeInsets.all(16.0),
             children: [
+              SettingsIntro(loc.sharingIntro),
               _nowPlayingCard(loc, settings),
-              const SizedBox(height: 8),
               _remoteControlCard(loc, settings),
             ],
           );
@@ -101,14 +101,14 @@ class _ServerSettingsSharingPageState extends State<ServerSettingsSharingPage> {
   }
 
   Widget _nowPlayingCard(AppLocalizations loc, PlaybackSharingSettings s) {
-    return Card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return SettingsSection(
+      key: const ValueKey('sharing-section-now-playing'),
+      title: loc.nowPlayingVisibility,
+      hint: loc.nowPlayingVisibilityDescription,
+      children: [
           ListTile(
             leading: const Icon(Icons.visibility_outlined),
-            title: Text(loc.nowPlayingVisibility),
-            subtitle: Text(loc.nowPlayingVisibilityDescription),
+            title: Text(loc.sharingVisibleTo),
             trailing: DropdownButton<Enum$SharingScope>(
               value: s.nowPlayingScope,
               onChanged: _saving
@@ -138,20 +138,19 @@ class _ServerSettingsSharingPageState extends State<ServerSettingsSharingPage> {
               onChanged: (ids) =>
                   _save(s.copyWith(nowPlayingAllowedUserIds: ids)),
             ),
-        ],
-      ),
+      ],
     );
   }
 
   Widget _remoteControlCard(AppLocalizations loc, PlaybackSharingSettings s) {
-    return Card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return SettingsSection(
+      key: const ValueKey('sharing-section-remote-control'),
+      title: loc.remoteControlSharing,
+      hint: loc.remoteControlSharingDescription,
+      children: [
           ListTile(
             leading: const Icon(Icons.settings_remote_outlined),
-            title: Text(loc.remoteControlSharing),
-            subtitle: Text(loc.remoteControlSharingDescription),
+            title: Text(loc.sharingControlledBy),
             trailing: DropdownButton<Enum$RemoteControlScope>(
               value: s.controlScope,
               onChanged: _saving
@@ -183,8 +182,7 @@ class _ServerSettingsSharingPageState extends State<ServerSettingsSharingPage> {
               selected: s.controlAllowedUserIds,
               onChanged: (ids) => _save(s.copyWith(controlAllowedUserIds: ids)),
             ),
-        ],
-      ),
+      ],
     );
   }
 
