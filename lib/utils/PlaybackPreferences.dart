@@ -38,6 +38,21 @@ class PlaybackPreferences {
     await service.save(serverName, current.copyWith(autoSkipIntro: value));
   }
 
+  /// Leave subtitles off when the subtitle language that would be picked is the one already being
+  /// spoken — the two preference lists are otherwise applied independently.
+  static Future<bool> getHideSubtitlesMatchingAudio({String? serverName}) async {
+    final settings = await UserSettingsService().settingsFor(serverName);
+    return settings.hideSubtitlesMatchingAudio;
+  }
+
+  static Future<void> setHideSubtitlesMatchingAudio(bool value,
+      {String? serverName}) async {
+    final service = UserSettingsService();
+    final current = await service.settingsFor(serverName);
+    await service.save(
+        serverName, current.copyWith(hideSubtitlesMatchingAudio: value));
+  }
+
   /// Highest video variant to play and pre-transcode (720 / 480); null means no cap.
   static Future<int?> getMaxVideoHeight({String? serverName}) async {
     final settings = await UserSettingsService().settingsFor(serverName);

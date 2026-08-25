@@ -18,6 +18,7 @@ class UserSettings {
     this.transcode = true,
     this.maxVideoHeight,
     this.autoSkipIntro = false,
+    this.hideSubtitlesMatchingAudio = false,
   });
 
   /// Ordered, most preferred first — the first language with a matching track wins.
@@ -32,6 +33,9 @@ class UserSettings {
   /// Auto-seek past detected intros during playback.
   final bool autoSkipIntro;
 
+  /// Leave subtitles off when the subtitle language picked is the one already being spoken.
+  final bool hideSubtitlesMatchingAudio;
+
   UserSettings copyWith({
     List<String>? spokenLanguages,
     List<String>? subtitleLanguages,
@@ -40,6 +44,7 @@ class UserSettings {
     int? maxVideoHeight,
     bool clearMaxVideoHeight = false,
     bool? autoSkipIntro,
+    bool? hideSubtitlesMatchingAudio,
   }) {
     return UserSettings(
       spokenLanguages: spokenLanguages ?? this.spokenLanguages,
@@ -49,6 +54,8 @@ class UserSettings {
       maxVideoHeight:
           clearMaxVideoHeight ? null : (maxVideoHeight ?? this.maxVideoHeight),
       autoSkipIntro: autoSkipIntro ?? this.autoSkipIntro,
+      hideSubtitlesMatchingAudio:
+          hideSubtitlesMatchingAudio ?? this.hideSubtitlesMatchingAudio,
     );
   }
 }
@@ -152,6 +159,7 @@ class UserSettingsService {
       transcode: settings.transcode,
       maxVideoHeight: settings.maxVideoHeight,
       autoSkipIntro: settings.autoSkipIntro,
+      hideSubtitlesMatchingAudio: settings.hideSubtitlesMatchingAudio,
     );
   }
 
@@ -163,6 +171,7 @@ class UserSettingsService {
       transcode: fragment.transcode,
       maxVideoHeight: fragment.maxVideoHeight,
       autoSkipIntro: fragment.autoSkipIntro,
+      hideSubtitlesMatchingAudio: fragment.hideSubtitlesMatchingAudio,
     );
   }
 
@@ -183,6 +192,7 @@ class UserSettingsService {
       transcode: await _prefs.getBool(_kLegacyTranscode) ?? fromServer.transcode,
       maxVideoHeight: fromServer.maxVideoHeight,
       autoSkipIntro: fromServer.autoSkipIntro,
+      hideSubtitlesMatchingAudio: fromServer.hideSubtitlesMatchingAudio,
     );
     LoggerService().logger.i('Migrating this device\'s playback settings to $server');
     final saved = await save(server, legacy);
@@ -206,6 +216,8 @@ class UserSettingsService {
       transcode: await _prefs.getBool('pref_transcode_$server') ?? true,
       maxVideoHeight: await _prefs.getInt('pref_max_video_height_$server'),
       autoSkipIntro: await _prefs.getBool('pref_auto_skip_intro_$server') ?? false,
+      hideSubtitlesMatchingAudio:
+          await _prefs.getBool('pref_hide_subtitles_matching_audio_$server') ?? false,
     );
   }
 
@@ -217,6 +229,8 @@ class UserSettingsService {
     await _prefs.setBool('pref_direct_play_$server', settings.directPlay);
     await _prefs.setBool('pref_transcode_$server', settings.transcode);
     await _prefs.setBool('pref_auto_skip_intro_$server', settings.autoSkipIntro);
+    await _prefs.setBool('pref_hide_subtitles_matching_audio_$server',
+        settings.hideSubtitlesMatchingAudio);
     final maxVideoHeight = settings.maxVideoHeight;
     if (maxVideoHeight == null) {
       await _prefs.remove('pref_max_video_height_$server');

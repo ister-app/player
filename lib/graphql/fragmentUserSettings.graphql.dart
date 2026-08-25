@@ -8,6 +8,7 @@ class Fragment$fragmentUserSettings {
     required this.transcode,
     this.maxVideoHeight,
     required this.autoSkipIntro,
+    required this.hideSubtitlesMatchingAudio,
     this.$__typename = 'UserSettings',
   });
 
@@ -18,6 +19,7 @@ class Fragment$fragmentUserSettings {
     final l$transcode = json['transcode'];
     final l$maxVideoHeight = json['maxVideoHeight'];
     final l$autoSkipIntro = json['autoSkipIntro'];
+    final l$hideSubtitlesMatchingAudio = json['hideSubtitlesMatchingAudio'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentUserSettings(
       preferredAudioLanguages: (l$preferredAudioLanguages as List<dynamic>)
@@ -31,6 +33,7 @@ class Fragment$fragmentUserSettings {
       transcode: (l$transcode as bool),
       maxVideoHeight: (l$maxVideoHeight as int?),
       autoSkipIntro: (l$autoSkipIntro as bool),
+      hideSubtitlesMatchingAudio: (l$hideSubtitlesMatchingAudio as bool),
       $__typename: (l$$__typename as String),
     );
   }
@@ -46,6 +49,8 @@ class Fragment$fragmentUserSettings {
   final int? maxVideoHeight;
 
   final bool autoSkipIntro;
+
+  final bool hideSubtitlesMatchingAudio;
 
   final String $__typename;
 
@@ -67,6 +72,8 @@ class Fragment$fragmentUserSettings {
     _resultData['maxVideoHeight'] = l$maxVideoHeight;
     final l$autoSkipIntro = autoSkipIntro;
     _resultData['autoSkipIntro'] = l$autoSkipIntro;
+    final l$hideSubtitlesMatchingAudio = hideSubtitlesMatchingAudio;
+    _resultData['hideSubtitlesMatchingAudio'] = l$hideSubtitlesMatchingAudio;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -80,6 +87,7 @@ class Fragment$fragmentUserSettings {
     final l$transcode = transcode;
     final l$maxVideoHeight = maxVideoHeight;
     final l$autoSkipIntro = autoSkipIntro;
+    final l$hideSubtitlesMatchingAudio = hideSubtitlesMatchingAudio;
     final l$$__typename = $__typename;
     return Object.hashAll([
       Object.hashAll(l$preferredAudioLanguages.map((v) => v)),
@@ -88,6 +96,7 @@ class Fragment$fragmentUserSettings {
       l$transcode,
       l$maxVideoHeight,
       l$autoSkipIntro,
+      l$hideSubtitlesMatchingAudio,
       l$$__typename,
     ]);
   }
@@ -152,6 +161,11 @@ class Fragment$fragmentUserSettings {
     if (l$autoSkipIntro != lOther$autoSkipIntro) {
       return false;
     }
+    final l$hideSubtitlesMatchingAudio = hideSubtitlesMatchingAudio;
+    final lOther$hideSubtitlesMatchingAudio = other.hideSubtitlesMatchingAudio;
+    if (l$hideSubtitlesMatchingAudio != lOther$hideSubtitlesMatchingAudio) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -183,6 +197,7 @@ abstract class CopyWith$Fragment$fragmentUserSettings<TRes> {
     bool? transcode,
     int? maxVideoHeight,
     bool? autoSkipIntro,
+    bool? hideSubtitlesMatchingAudio,
     String? $__typename,
   });
 }
@@ -204,6 +219,7 @@ class _CopyWithImpl$Fragment$fragmentUserSettings<TRes>
     Object? transcode = _undefined,
     Object? maxVideoHeight = _undefined,
     Object? autoSkipIntro = _undefined,
+    Object? hideSubtitlesMatchingAudio = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentUserSettings(
@@ -229,6 +245,11 @@ class _CopyWithImpl$Fragment$fragmentUserSettings<TRes>
       autoSkipIntro: autoSkipIntro == _undefined || autoSkipIntro == null
           ? _instance.autoSkipIntro
           : (autoSkipIntro as bool),
+      hideSubtitlesMatchingAudio:
+          hideSubtitlesMatchingAudio == _undefined ||
+              hideSubtitlesMatchingAudio == null
+          ? _instance.hideSubtitlesMatchingAudio
+          : (hideSubtitlesMatchingAudio as bool),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -249,6 +270,7 @@ class _CopyWithStubImpl$Fragment$fragmentUserSettings<TRes>
     bool? transcode,
     int? maxVideoHeight,
     bool? autoSkipIntro,
+    bool? hideSubtitlesMatchingAudio,
     String? $__typename,
   }) => _res;
 }
@@ -298,6 +320,13 @@ const fragmentDefinitionfragmentUserSettings = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'autoSkipIntro'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'hideSubtitlesMatchingAudio'),
         alias: null,
         arguments: [],
         directives: [],

@@ -110,6 +110,22 @@ class LanguageService {
   /// Synchronous code lookup. Returns null until [loadLanguageData] has run.
   LanguageData? lookup(String code) => _byCode[_normalize(code)];
 
+  /// Whether two codes name the same language, across the standards they may be
+  /// written in: `en` == `eng`, `nl` == `nld` == `dut`.
+  ///
+  /// Null, empty and unknown codes are never "the same". Neither are the ISO
+  /// "special" codes (`und` undetermined, `mul` multiple, `mis` uncoded, `zxx`
+  /// no linguistic content): two tracks mpv could not label are not thereby
+  /// known to be in one language.
+  bool sameLanguage(String? a, String? b) {
+    if (a == null || b == null || a.isEmpty || b.isEmpty) return false;
+    final first = lookup(a);
+    final second = lookup(b);
+    if (first == null || second == null) return false;
+    if (first.languageType == 'S' || second.languageType == 'S') return false;
+    return first.id == second.id;
+  }
+
   Future<List<LanguageData>> getAllLanguages() async {
     // Ensure data is loaded
     await loadLanguageData();

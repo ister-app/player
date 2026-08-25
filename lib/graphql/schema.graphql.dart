@@ -1097,6 +1097,7 @@ class Input$UserSettingsInput {
     required bool transcode,
     int? maxVideoHeight,
     bool? autoSkipIntro,
+    bool? hideSubtitlesMatchingAudio,
   }) => Input$UserSettingsInput._({
     r'preferredAudioLanguages': preferredAudioLanguages,
     r'preferredSubtitleLanguages': preferredSubtitleLanguages,
@@ -1104,6 +1105,8 @@ class Input$UserSettingsInput {
     r'transcode': transcode,
     if (maxVideoHeight != null) r'maxVideoHeight': maxVideoHeight,
     if (autoSkipIntro != null) r'autoSkipIntro': autoSkipIntro,
+    if (hideSubtitlesMatchingAudio != null)
+      r'hideSubtitlesMatchingAudio': hideSubtitlesMatchingAudio,
   });
 
   Input$UserSettingsInput._(this._$data);
@@ -1132,6 +1135,11 @@ class Input$UserSettingsInput {
       final l$autoSkipIntro = data['autoSkipIntro'];
       result$data['autoSkipIntro'] = (l$autoSkipIntro as bool);
     }
+    if (data.containsKey('hideSubtitlesMatchingAudio')) {
+      final l$hideSubtitlesMatchingAudio = data['hideSubtitlesMatchingAudio'];
+      result$data['hideSubtitlesMatchingAudio'] =
+          (l$hideSubtitlesMatchingAudio as bool);
+    }
     return Input$UserSettingsInput._(result$data);
   }
 
@@ -1150,6 +1158,9 @@ class Input$UserSettingsInput {
   int? get maxVideoHeight => (_$data['maxVideoHeight'] as int?);
 
   bool? get autoSkipIntro => (_$data['autoSkipIntro'] as bool?);
+
+  bool? get hideSubtitlesMatchingAudio =>
+      (_$data['hideSubtitlesMatchingAudio'] as bool?);
 
   Map<String, dynamic> toJson() {
     final result$data = <String, dynamic>{};
@@ -1172,6 +1183,11 @@ class Input$UserSettingsInput {
     if (_$data.containsKey('autoSkipIntro')) {
       final l$autoSkipIntro = autoSkipIntro;
       result$data['autoSkipIntro'] = (l$autoSkipIntro as bool);
+    }
+    if (_$data.containsKey('hideSubtitlesMatchingAudio')) {
+      final l$hideSubtitlesMatchingAudio = hideSubtitlesMatchingAudio;
+      result$data['hideSubtitlesMatchingAudio'] =
+          (l$hideSubtitlesMatchingAudio as bool);
     }
     return result$data;
   }
@@ -1246,6 +1262,15 @@ class Input$UserSettingsInput {
     if (l$autoSkipIntro != lOther$autoSkipIntro) {
       return false;
     }
+    final l$hideSubtitlesMatchingAudio = hideSubtitlesMatchingAudio;
+    final lOther$hideSubtitlesMatchingAudio = other.hideSubtitlesMatchingAudio;
+    if (_$data.containsKey('hideSubtitlesMatchingAudio') !=
+        other._$data.containsKey('hideSubtitlesMatchingAudio')) {
+      return false;
+    }
+    if (l$hideSubtitlesMatchingAudio != lOther$hideSubtitlesMatchingAudio) {
+      return false;
+    }
     return true;
   }
 
@@ -1257,6 +1282,7 @@ class Input$UserSettingsInput {
     final l$transcode = transcode;
     final l$maxVideoHeight = maxVideoHeight;
     final l$autoSkipIntro = autoSkipIntro;
+    final l$hideSubtitlesMatchingAudio = hideSubtitlesMatchingAudio;
     return Object.hashAll([
       Object.hashAll(l$preferredAudioLanguages.map((v) => v)),
       Object.hashAll(l$preferredSubtitleLanguages.map((v) => v)),
@@ -1264,6 +1290,9 @@ class Input$UserSettingsInput {
       l$transcode,
       _$data.containsKey('maxVideoHeight') ? l$maxVideoHeight : const {},
       _$data.containsKey('autoSkipIntro') ? l$autoSkipIntro : const {},
+      _$data.containsKey('hideSubtitlesMatchingAudio')
+          ? l$hideSubtitlesMatchingAudio
+          : const {},
     ]);
   }
 }
@@ -1284,6 +1313,7 @@ abstract class CopyWith$Input$UserSettingsInput<TRes> {
     bool? transcode,
     int? maxVideoHeight,
     bool? autoSkipIntro,
+    bool? hideSubtitlesMatchingAudio,
   });
 }
 
@@ -1304,6 +1334,7 @@ class _CopyWithImpl$Input$UserSettingsInput<TRes>
     Object? transcode = _undefined,
     Object? maxVideoHeight = _undefined,
     Object? autoSkipIntro = _undefined,
+    Object? hideSubtitlesMatchingAudio = _undefined,
   }) => _then(
     Input$UserSettingsInput._({
       ..._instance._$data,
@@ -1322,6 +1353,9 @@ class _CopyWithImpl$Input$UserSettingsInput<TRes>
         'maxVideoHeight': (maxVideoHeight as int?),
       if (autoSkipIntro != _undefined && autoSkipIntro != null)
         'autoSkipIntro': (autoSkipIntro as bool),
+      if (hideSubtitlesMatchingAudio != _undefined &&
+          hideSubtitlesMatchingAudio != null)
+        'hideSubtitlesMatchingAudio': (hideSubtitlesMatchingAudio as bool),
     }),
   );
 }
@@ -1339,6 +1373,7 @@ class _CopyWithStubImpl$Input$UserSettingsInput<TRes>
     bool? transcode,
     int? maxVideoHeight,
     bool? autoSkipIntro,
+    bool? hideSubtitlesMatchingAudio,
   }) => _res;
 }
 

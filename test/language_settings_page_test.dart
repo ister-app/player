@@ -24,6 +24,7 @@ const _server = 'test-server';
 Map<String, dynamic> _settings({
   List<String> audio = const [],
   List<String> subtitle = const [],
+  bool hideSubtitlesMatchingAudio = false,
 }) =>
     {
       '__typename': 'UserSettings',
@@ -33,6 +34,7 @@ Map<String, dynamic> _settings({
       'transcode': true,
       'maxVideoHeight': null,
       'autoSkipIntro': false,
+      'hideSubtitlesMatchingAudio': hideSubtitlesMatchingAudio,
     };
 
 /// Serves `userSettings` and echoes `updateUserSettings` back as stored,
@@ -64,6 +66,8 @@ MockClient _fakeGraphQL(
         stored['preferredAudioLanguages'] = input['preferredAudioLanguages'];
         stored['preferredSubtitleLanguages'] =
             input['preferredSubtitleLanguages'];
+        stored['hideSubtitlesMatchingAudio'] =
+            input['hideSubtitlesMatchingAudio'];
         return http.Response(
             json.encode({
               'data': {'__typename': 'Mutation', 'updateUserSettings': stored}
@@ -267,6 +271,51 @@ void main() {
 
     expect(find.byKey(const ValueKey('spoken-row-nld')), findsOneWidget);
     expect(mutations.last['preferredAudioLanguages'], ['nld', 'eng']);
+  });
+
+  group('no-subtitles-in-the-spoken-language toggle', () {
+    const key = ValueKey('hide-subtitles-matching-audio');
+
+    testWidgets('is off unless the server says otherwise', (tester) async {
+      useClient(_fakeGraphQL(_settings()));
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+
+      expect(tester.widget<SwitchListTile>(find.byKey(key)).value, isFalse);
+    });
+
+    testWidgets('reflects a server that has it on', (tester) async {
+      useClient(_fakeGraphQL(_settings(hideSubtitlesMatchingAudio: true)));
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+
+      expect(tester.widget<SwitchListTile>(find.byKey(key)).value, isTrue);
+    });
+
+    testWidgets('turning it on sends it in the mutation', (tester) async {
+      final mutations = <Map<String, dynamic>>[];
+      useClient(_fakeGraphQL(_settings(), mutations: mutations));
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(key));
+      await tester.pumpAndSettle();
+
+      expect(mutations.last['hideSubtitlesMatchingAudio'], isTrue);
+      expect(tester.widget<SwitchListTile>(find.byKey(key)).value, isTrue);
+    });
+
+    testWidgets('a rejected save flips it back', (tester) async {
+      useClient(_fakeGraphQL(_settings(), rejectMutations: true));
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(key));
+      await tester.pumpAndSettle();
+
+      expect(tester.widget<SwitchListTile>(find.byKey(key)).value, isFalse);
+      expect(find.byType(SnackBar), findsOneWidget);
+    });
   });
 
   testWidgets('a rejected save puts the previous list back', (tester) async {

@@ -1366,6 +1366,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     try {
       _audioPreferenceApplied = false;
       _subtitlePreferenceApplied = false;
+      _selectedAudioLanguage = null;
       // Under flutter test (mock GraphQL clients) there is no real mpv event
       // loop, so the player calls below would never complete; skip them and
       // still publish the mediaItem/queue state the tests assert on.
@@ -1699,6 +1700,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     _forcedSubtitle = null;
     _audioPreferenceApplied = false;
     _subtitlePreferenceApplied = false;
+    _selectedAudioLanguage = null;
     _streamOpenPositionMs = 0;
     _mediaOpenedAt = null;
     _loadErrorSeen = false;
@@ -1756,6 +1758,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       _forcedAudio = _player.state.track.audio;
       _audioPreferenceApplied = false;
       _subtitlePreferenceApplied = false;
+      _selectedAudioLanguage = null;
       // A re-open right after scrubbing must not count toward the watchdog's
       // failed-load retries for this item.
       _loadRetries = 0;
@@ -2941,14 +2944,19 @@ class MediaPlayerHandler extends BaseAudioHandler
             orElse: () => AudioTrack.auto(),
           );
           debugPrint('[TRACKS_HANDLER] restoring forced audio: ${match.id}');
+          _selectedAudioLanguage = match.language;
           await _player.setAudioTrack(match);
         } else {
           debugPrint('[TRACKS_HANDLER] applying audio preference');
-          await _selectPreferredTrack<AudioTrack>(
+          await LanguageService().ensureLoaded();
+          final chosen = preferredTrack<AudioTrack>(
             tracks.audio,
-            () => LanguagePreferences.getSpokenLanguages(serverName: serverName),
-            (t) => _player.setAudioTrack(t),
+            await LanguagePreferences.getSpokenLanguages(serverName: serverName),
           );
+          // Null when nothing matched: mpv then picks the file's default and we
+          // do not know its language yet, which the subtitle rule allows for.
+          _selectedAudioLanguage = chosen?.language;
+          await _player.setAudioTrack(chosen ?? AudioTrack.auto());
         }
         debugPrint('[TRACKS_HANDLER] audio applied: ${_player.state.track.audio.id}');
       }
@@ -2973,11 +2981,30 @@ class MediaPlayerHandler extends BaseAudioHandler
           }
         } else {
           debugPrint('[TRACKS_HANDLER] applying subtitle preference');
-          await _selectPreferredTrack<SubtitleTrack>(
+          await LanguageService().ensureLoaded();
+          final chosen = preferredTrack<SubtitleTrack>(
             tracks.subtitle,
-            () => LanguagePreferences.getSubtitleLanguages(serverName: serverName),
-            (t) => _player.setSubtitleTrack(t),
+            await LanguagePreferences.getSubtitleLanguages(serverName: serverName),
           );
+          // The audio block ran first (it is guarded on its own flag and the
+          // audio list always arrives no later than the subtitle one), so its
+          // language is known here. Fall back to what mpv resolved for an
+          // 'auto' audio selection.
+          final audioLanguage =
+              _selectedAudioLanguage ?? _player.state.track.audio.language;
+          final suppressed = suppressesSubtitle(
+            hideSubtitlesMatchingAudio:
+                await PlaybackPreferences.getHideSubtitlesMatchingAudio(
+                    serverName: serverName),
+            subtitleLanguage: chosen?.language,
+            audioLanguage: audioLanguage,
+          );
+          if (suppressed) {
+            debugPrint('[TRACKS_HANDLER] subtitle ${chosen?.language} matches '
+                'audio $audioLanguage: leaving subtitles off');
+          }
+          await _player.setSubtitleTrack(
+              chosen == null || suppressed ? SubtitleTrack.no() : chosen);
         }
         debugPrint('[TRACKS_HANDLER] subtitle applied: ${_player.state.track.subtitle.id}');
     }
@@ -3009,6 +3036,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       _forcedAudio = _player.state.track.audio;
       _audioPreferenceApplied = false;
       _subtitlePreferenceApplied = false;
+      _selectedAudioLanguage = null;
       await _openMedia(
         serverName: serverName!,
         mediaUrl: _restampToken(url),
@@ -4096,6 +4124,16 @@ class MediaPlayerHandler extends BaseAudioHandler
     _loadRetries++;
     LoggerService().logger.w(
         '[LOADSTALL] Stream not playing 12s+ after open — re-opening (retry $_loadRetries)');
+    // _openMedia clears the applied-preference flags, so without this the
+    // re-open re-runs the language preferences and throws away whatever the
+    // user picked from the track menu — including, now, turning their manually
+    // enabled subtitles back off. Only carry over a selection that was actually
+    // made: a load that hung before any track arrived has nothing to preserve,
+    // and recording SubtitleTrack.no() there would force subtitles off for good.
+    if (_audioPreferenceApplied) _forcedAudio = _player.state.track.audio;
+    if (_subtitlePreferenceApplied) {
+      _forcedSubtitle = _player.state.track.subtitle;
+    }
     _openMedia(
       serverName: serverName!,
       mediaUrl: _restampToken(url),
@@ -4325,6 +4363,15 @@ class MediaPlayerHandler extends BaseAudioHandler
   bool _interrupted = false;
   bool _audioPreferenceApplied = false;
   bool _subtitlePreferenceApplied = false;
+
+  /// Language of the audio track that was actually selected for the open media,
+  /// so the subtitle rule can compare against it.
+  ///
+  /// A field rather than a local: HLS delivers the audio list before the
+  /// side-loaded subtitles, so the two blocks of [_applyTrackPreferences]
+  /// usually run in different invocations. Null means "not known" — either
+  /// nothing has been applied yet, or the audio fell back to mpv's default.
+  String? _selectedAudioLanguage;
   DateTime? _mediaOpenedAt;
 
   // Playback-heartbeat state: keeps the server-side session alive (also while
@@ -4350,40 +4397,49 @@ class MediaPlayerHandler extends BaseAudioHandler
   // switches the load watchdog to its fast-fail regime (3s, 1 retry).
   bool _loadErrorSeen = false;
 
-  Future<void> _selectPreferredTrack<T>(
-    List<T> available,
-    Future<List<String>> Function() getPrefs,
-    Future<void> Function(T) setter,
-  ) async {
-    final prefs = await getPrefs();
-
-    for (final lang in prefs) {
-      final data = await LanguageService().getLanguageData(lang);
+  /// The first track whose language matches a preference, or null when none of
+  /// the preferences is available.
+  ///
+  /// Pure and synchronous so the selection rules can be unit-tested without a
+  /// player: [LanguageService.lookup] answers from the table `main.dart` loads
+  /// before the first frame. Matching goes through [LanguageData.toCodeList] —
+  /// mpv reports the bare container code (`eng`, `nld`) while a preference is
+  /// stored as an ISO 639-3 id, so raw string equality would miss.
+  @visibleForTesting
+  static T? preferredTrack<T>(List<T> available, List<String> preferences) {
+    for (final lang in preferences) {
+      final data = LanguageService().lookup(lang);
       if (data == null) continue;
 
-      final matches = available
-          .where((t) => data.toCodeList().contains(_trackLanguage(t)))
-          .toList();
-
-      if (matches.isNotEmpty) {
-        await setter(matches.first);
-        return;
+      final codes = data.toCodeList();
+      for (final track in available) {
+        if (codes.contains(_trackLanguage(track))) return track;
       }
     }
-
-    await setter(_fallbackTrack<T>());
-  }
-
-  String? _trackLanguage<T>(T track) {
-    if (track is SubtitleTrack) return track.language;
-    if (track is AudioTrack) return track.language;
     return null;
   }
 
-  T _fallbackTrack<T>() {
-    if (T == SubtitleTrack) return SubtitleTrack.no() as T;
-    if (T == AudioTrack) return AudioTrack.auto() as T;
-    throw UnimplementedError('No fallback for type $T');
+  /// Whether the subtitle track that would be selected should be dropped
+  /// because it is the language already coming out of the speakers.
+  ///
+  /// Deliberately does *not* fall through to the next preference: the point is
+  /// "I understand what I hear, show me nothing", not "show me my second
+  /// choice". A subtitle language explicitly ranked above the spoken one still
+  /// wins, because [preferredTrack] picked that one first.
+  @visibleForTesting
+  static bool suppressesSubtitle({
+    required bool hideSubtitlesMatchingAudio,
+    required String? subtitleLanguage,
+    required String? audioLanguage,
+  }) {
+    if (!hideSubtitlesMatchingAudio) return false;
+    return LanguageService().sameLanguage(subtitleLanguage, audioLanguage);
+  }
+
+  static String? _trackLanguage<T>(T track) {
+    if (track is SubtitleTrack) return track.language;
+    if (track is AudioTrack) return track.language;
+    return null;
   }
 
 // @override

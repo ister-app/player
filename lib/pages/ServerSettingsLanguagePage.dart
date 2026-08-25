@@ -4,6 +4,7 @@ import 'package:player/components/LanguagePreferenceList.dart';
 
 import '../l10n/app_localizations.dart';
 import '../utils/LanguagePreferences.dart';
+import '../utils/PlaybackPreferences.dart';
 
 @RoutePage()
 class ServerSettingsLanguagePage extends StatefulWidget {
@@ -23,6 +24,7 @@ class _ServerSettingsLanguagePageState
     extends State<ServerSettingsLanguagePage> {
   List<String> _spokenLanguages = const [];
   List<String> _subtitleLanguages = const [];
+  bool _hideSubtitlesMatchingAudio = false;
   late Future<void> _preferencesFuture;
 
   @override
@@ -36,16 +38,19 @@ class _ServerSettingsLanguagePageState
         serverName: widget.serverName);
     _subtitleLanguages = await LanguagePreferences.getSubtitleLanguages(
         serverName: widget.serverName);
+    _hideSubtitlesMatchingAudio =
+        await PlaybackPreferences.getHideSubtitlesMatchingAudio(
+            serverName: widget.serverName);
   }
 
-  /// Shows the new list right away, then writes it through. The server is the
-  /// source of truth, so a rejected save has to put the old list back — silently
+  /// Shows the new value right away, then writes it through. The server is the
+  /// source of truth, so a rejected save has to put the old one back — silently
   /// leaving the UI on a value the server never accepted is the worse lie.
-  Future<void> _save(
-    List<String> next,
-    List<String> previous,
-    void Function(List<String>) apply,
-    Future<void> Function(List<String>) write,
+  Future<void> _save<T>(
+    T next,
+    T previous,
+    void Function(T) apply,
+    Future<void> Function(T) write,
   ) async {
     setState(() => apply(next));
     try {
@@ -76,6 +81,16 @@ class _ServerSettingsLanguagePageState
       _subtitleLanguages,
       (value) => _subtitleLanguages = value,
       (value) => LanguagePreferences.setSubtitleLanguages(value,
+          serverName: widget.serverName),
+    );
+  }
+
+  void _handleHideMatchingChanged(bool value) {
+    _save(
+      value,
+      _hideSubtitlesMatchingAudio,
+      (v) => _hideSubtitlesMatchingAudio = v,
+      (v) => PlaybackPreferences.setHideSubtitlesMatchingAudio(v,
           serverName: widget.serverName),
     );
   }
@@ -151,6 +166,17 @@ class _ServerSettingsLanguagePageState
                   values: _subtitleLanguages,
                   emptyHint: loc.noSubtitlePreference,
                   onChanged: _handleSubtitleChanged,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Card(
+                child: SwitchListTile(
+                  key: const ValueKey('hide-subtitles-matching-audio'),
+                  secondary: const Icon(Icons.subtitles_off_outlined),
+                  title: Text(loc.hideSubtitlesMatchingAudio),
+                  subtitle: Text(loc.hideSubtitlesMatchingAudioDescription),
+                  value: _hideSubtitlesMatchingAudio,
+                  onChanged: _handleHideMatchingChanged,
                 ),
               ),
             ],

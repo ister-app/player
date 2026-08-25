@@ -26,6 +26,8 @@
   "suggestedLanguages": "Voorgesteld",
   "allLanguages": "Alle talen",
   "languageSettingsSubtitle": "Voorkeurstalen voor audio en ondertiteling",
+  "hideSubtitlesMatchingAudio": "Geen ondertiteling in de gesproken taal",
+  "hideSubtitlesMatchingAudioDescription": "Is de ondertiteltaal die gekozen zou worden dezelfde als wat je al hoort, dan blijft ondertiteling uit. Een taal die er hoger in staat wordt wel gebruikt.",
   "languageSaveFailed": "Kan je taalvoorkeuren niet opslaan",
   "refreshPage": "Vernieuw pagina",
   "scanLibrary": "Scan bibliotheek",

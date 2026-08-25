@@ -106,6 +106,14 @@
   "@languageSettingsSubtitle": {
     "description": "Subtitle of the language settings row on the settings hub"
   },
+  "hideSubtitlesMatchingAudio": "No subtitles in the spoken language",
+  "@hideSubtitlesMatchingAudio": {
+    "description": "Toggle that drops the subtitle track when it is the language already being spoken"
+  },
+  "hideSubtitlesMatchingAudioDescription": "When the subtitle language that would be chosen is the one you are already hearing, subtitles stay off. A language ranked above it is still used.",
+  "@hideSubtitlesMatchingAudioDescription": {
+    "description": "Explains the no-subtitles-in-the-spoken-language toggle"
+  },
   "languageSaveFailed": "Could not save your language preferences",
   "@languageSaveFailed": {
     "description": "Snackbar shown when the server rejects a language preference change"
