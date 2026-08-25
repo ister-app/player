@@ -368,6 +368,97 @@ const documentNodeQueryshowById = DocumentNode(
                   selectionSet: null,
                 ),
                 FieldNode(
+                  name: NameNode(value: 'tmdbId'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'imdbId'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'voteAverage'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'voteCount'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'contentRating'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'status'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'homepage'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'networks'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'studios'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'originCountry'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'keywords'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'trailerKey'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'trailerSite'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
                   name: NameNode(value: '__typename'),
                   alias: null,
                   arguments: [],
@@ -403,6 +494,19 @@ class Query$showById$showById {
     this.seasons,
     this.cast,
     this.rating,
+    this.tmdbId,
+    this.imdbId,
+    this.voteAverage,
+    this.voteCount,
+    this.contentRating,
+    this.status,
+    this.homepage,
+    this.networks,
+    this.studios,
+    this.originCountry,
+    this.keywords,
+    this.trailerKey,
+    this.trailerSite,
     this.$__typename = 'Show',
   });
 
@@ -415,6 +519,19 @@ class Query$showById$showById {
     final l$seasons = json['seasons'];
     final l$cast = json['cast'];
     final l$rating = json['rating'];
+    final l$tmdbId = json['tmdbId'];
+    final l$imdbId = json['imdbId'];
+    final l$voteAverage = json['voteAverage'];
+    final l$voteCount = json['voteCount'];
+    final l$contentRating = json['contentRating'];
+    final l$status = json['status'];
+    final l$homepage = json['homepage'];
+    final l$networks = json['networks'];
+    final l$studios = json['studios'];
+    final l$originCountry = json['originCountry'];
+    final l$keywords = json['keywords'];
+    final l$trailerKey = json['trailerKey'];
+    final l$trailerSite = json['trailerSite'];
     final l$$__typename = json['__typename'];
     return Query$showById$showById(
       id: (l$id as String),
@@ -447,6 +564,19 @@ class Query$showById$showById {
           )
           .toList(),
       rating: (l$rating as int?),
+      tmdbId: (l$tmdbId as int?),
+      imdbId: (l$imdbId as String?),
+      voteAverage: (l$voteAverage as num?)?.toDouble(),
+      voteCount: (l$voteCount as int?),
+      contentRating: (l$contentRating as String?),
+      status: (l$status as String?),
+      homepage: (l$homepage as String?),
+      networks: (l$networks as String?),
+      studios: (l$studios as String?),
+      originCountry: (l$originCountry as String?),
+      keywords: (l$keywords as String?),
+      trailerKey: (l$trailerKey as String?),
+      trailerSite: (l$trailerSite as String?),
       $__typename: (l$$__typename as String),
     );
   }
@@ -466,6 +596,32 @@ class Query$showById$showById {
   final List<Fragment$fragmentCastMember>? cast;
 
   final int? rating;
+
+  final int? tmdbId;
+
+  final String? imdbId;
+
+  final double? voteAverage;
+
+  final int? voteCount;
+
+  final String? contentRating;
+
+  final String? status;
+
+  final String? homepage;
+
+  final String? networks;
+
+  final String? studios;
+
+  final String? originCountry;
+
+  final String? keywords;
+
+  final String? trailerKey;
+
+  final String? trailerSite;
 
   final String $__typename;
 
@@ -487,6 +643,32 @@ class Query$showById$showById {
     _resultData['cast'] = l$cast?.map((e) => e.toJson()).toList();
     final l$rating = rating;
     _resultData['rating'] = l$rating;
+    final l$tmdbId = tmdbId;
+    _resultData['tmdbId'] = l$tmdbId;
+    final l$imdbId = imdbId;
+    _resultData['imdbId'] = l$imdbId;
+    final l$voteAverage = voteAverage;
+    _resultData['voteAverage'] = l$voteAverage;
+    final l$voteCount = voteCount;
+    _resultData['voteCount'] = l$voteCount;
+    final l$contentRating = contentRating;
+    _resultData['contentRating'] = l$contentRating;
+    final l$status = status;
+    _resultData['status'] = l$status;
+    final l$homepage = homepage;
+    _resultData['homepage'] = l$homepage;
+    final l$networks = networks;
+    _resultData['networks'] = l$networks;
+    final l$studios = studios;
+    _resultData['studios'] = l$studios;
+    final l$originCountry = originCountry;
+    _resultData['originCountry'] = l$originCountry;
+    final l$keywords = keywords;
+    _resultData['keywords'] = l$keywords;
+    final l$trailerKey = trailerKey;
+    _resultData['trailerKey'] = l$trailerKey;
+    final l$trailerSite = trailerSite;
+    _resultData['trailerSite'] = l$trailerSite;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -502,6 +684,19 @@ class Query$showById$showById {
     final l$seasons = seasons;
     final l$cast = cast;
     final l$rating = rating;
+    final l$tmdbId = tmdbId;
+    final l$imdbId = imdbId;
+    final l$voteAverage = voteAverage;
+    final l$voteCount = voteCount;
+    final l$contentRating = contentRating;
+    final l$status = status;
+    final l$homepage = homepage;
+    final l$networks = networks;
+    final l$studios = studios;
+    final l$originCountry = originCountry;
+    final l$keywords = keywords;
+    final l$trailerKey = trailerKey;
+    final l$trailerSite = trailerSite;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
@@ -512,6 +707,19 @@ class Query$showById$showById {
       l$seasons == null ? null : Object.hashAll(l$seasons.map((v) => v)),
       l$cast == null ? null : Object.hashAll(l$cast.map((v) => v)),
       l$rating,
+      l$tmdbId,
+      l$imdbId,
+      l$voteAverage,
+      l$voteCount,
+      l$contentRating,
+      l$status,
+      l$homepage,
+      l$networks,
+      l$studios,
+      l$originCountry,
+      l$keywords,
+      l$trailerKey,
+      l$trailerSite,
       l$$__typename,
     ]);
   }
@@ -608,6 +816,71 @@ class Query$showById$showById {
     if (l$rating != lOther$rating) {
       return false;
     }
+    final l$tmdbId = tmdbId;
+    final lOther$tmdbId = other.tmdbId;
+    if (l$tmdbId != lOther$tmdbId) {
+      return false;
+    }
+    final l$imdbId = imdbId;
+    final lOther$imdbId = other.imdbId;
+    if (l$imdbId != lOther$imdbId) {
+      return false;
+    }
+    final l$voteAverage = voteAverage;
+    final lOther$voteAverage = other.voteAverage;
+    if (l$voteAverage != lOther$voteAverage) {
+      return false;
+    }
+    final l$voteCount = voteCount;
+    final lOther$voteCount = other.voteCount;
+    if (l$voteCount != lOther$voteCount) {
+      return false;
+    }
+    final l$contentRating = contentRating;
+    final lOther$contentRating = other.contentRating;
+    if (l$contentRating != lOther$contentRating) {
+      return false;
+    }
+    final l$status = status;
+    final lOther$status = other.status;
+    if (l$status != lOther$status) {
+      return false;
+    }
+    final l$homepage = homepage;
+    final lOther$homepage = other.homepage;
+    if (l$homepage != lOther$homepage) {
+      return false;
+    }
+    final l$networks = networks;
+    final lOther$networks = other.networks;
+    if (l$networks != lOther$networks) {
+      return false;
+    }
+    final l$studios = studios;
+    final lOther$studios = other.studios;
+    if (l$studios != lOther$studios) {
+      return false;
+    }
+    final l$originCountry = originCountry;
+    final lOther$originCountry = other.originCountry;
+    if (l$originCountry != lOther$originCountry) {
+      return false;
+    }
+    final l$keywords = keywords;
+    final lOther$keywords = other.keywords;
+    if (l$keywords != lOther$keywords) {
+      return false;
+    }
+    final l$trailerKey = trailerKey;
+    final lOther$trailerKey = other.trailerKey;
+    if (l$trailerKey != lOther$trailerKey) {
+      return false;
+    }
+    final l$trailerSite = trailerSite;
+    final lOther$trailerSite = other.trailerSite;
+    if (l$trailerSite != lOther$trailerSite) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -640,6 +913,19 @@ abstract class CopyWith$Query$showById$showById<TRes> {
     List<Query$showById$showById$seasons>? seasons,
     List<Fragment$fragmentCastMember>? cast,
     int? rating,
+    int? tmdbId,
+    String? imdbId,
+    double? voteAverage,
+    int? voteCount,
+    String? contentRating,
+    String? status,
+    String? homepage,
+    String? networks,
+    String? studios,
+    String? originCountry,
+    String? keywords,
+    String? trailerKey,
+    String? trailerSite,
     String? $__typename,
   });
   TRes images(
@@ -693,6 +979,19 @@ class _CopyWithImpl$Query$showById$showById<TRes>
     Object? seasons = _undefined,
     Object? cast = _undefined,
     Object? rating = _undefined,
+    Object? tmdbId = _undefined,
+    Object? imdbId = _undefined,
+    Object? voteAverage = _undefined,
+    Object? voteCount = _undefined,
+    Object? contentRating = _undefined,
+    Object? status = _undefined,
+    Object? homepage = _undefined,
+    Object? networks = _undefined,
+    Object? studios = _undefined,
+    Object? originCountry = _undefined,
+    Object? keywords = _undefined,
+    Object? trailerKey = _undefined,
+    Object? trailerSite = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Query$showById$showById(
@@ -716,6 +1015,37 @@ class _CopyWithImpl$Query$showById$showById<TRes>
           ? _instance.cast
           : (cast as List<Fragment$fragmentCastMember>?),
       rating: rating == _undefined ? _instance.rating : (rating as int?),
+      tmdbId: tmdbId == _undefined ? _instance.tmdbId : (tmdbId as int?),
+      imdbId: imdbId == _undefined ? _instance.imdbId : (imdbId as String?),
+      voteAverage: voteAverage == _undefined
+          ? _instance.voteAverage
+          : (voteAverage as double?),
+      voteCount: voteCount == _undefined
+          ? _instance.voteCount
+          : (voteCount as int?),
+      contentRating: contentRating == _undefined
+          ? _instance.contentRating
+          : (contentRating as String?),
+      status: status == _undefined ? _instance.status : (status as String?),
+      homepage: homepage == _undefined
+          ? _instance.homepage
+          : (homepage as String?),
+      networks: networks == _undefined
+          ? _instance.networks
+          : (networks as String?),
+      studios: studios == _undefined ? _instance.studios : (studios as String?),
+      originCountry: originCountry == _undefined
+          ? _instance.originCountry
+          : (originCountry as String?),
+      keywords: keywords == _undefined
+          ? _instance.keywords
+          : (keywords as String?),
+      trailerKey: trailerKey == _undefined
+          ? _instance.trailerKey
+          : (trailerKey as String?),
+      trailerSite: trailerSite == _undefined
+          ? _instance.trailerSite
+          : (trailerSite as String?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -796,6 +1126,19 @@ class _CopyWithStubImpl$Query$showById$showById<TRes>
     List<Query$showById$showById$seasons>? seasons,
     List<Fragment$fragmentCastMember>? cast,
     int? rating,
+    int? tmdbId,
+    String? imdbId,
+    double? voteAverage,
+    int? voteCount,
+    String? contentRating,
+    String? status,
+    String? homepage,
+    String? networks,
+    String? studios,
+    String? originCountry,
+    String? keywords,
+    String? trailerKey,
+    String? trailerSite,
     String? $__typename,
   }) => _res;
 

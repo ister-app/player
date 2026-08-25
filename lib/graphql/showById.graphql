@@ -17,5 +17,18 @@ query showById($id: ID!) {
             ...fragmentCastMember
         }
         rating
+        tmdbId
+        imdbId
+        voteAverage
+        voteCount
+        contentRating
+        status
+        homepage
+        networks
+        studios
+        originCountry
+        keywords
+        trailerKey
+        trailerSite
     }
 }

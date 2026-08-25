@@ -7,4 +7,5 @@ fragment fragmentMetadata on Metadata {
     title
     released
     genre
+    tagline
 }

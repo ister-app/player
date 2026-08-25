@@ -70,6 +70,7 @@ MockClient _fakeGraphQL() => MockClient((request) async {
                 'title': 'Test Show',
                 'released': null,
                 'genre': null,
+      'tagline': null,
               }
             ],
             'seasons': [
@@ -78,6 +79,19 @@ MockClient _fakeGraphQL() => MockClient((request) async {
             ],
             'cast': List.generate(3, _credit),
             'rating': null,
+            'tmdbId': null,
+            'imdbId': null,
+            'voteAverage': null,
+            'voteCount': null,
+            'contentRating': null,
+            'status': null,
+            'homepage': null,
+            'networks': null,
+            'studios': null,
+            'originCountry': null,
+            'keywords': null,
+            'trailerKey': null,
+            'trailerSite': null,
           },
         });
       }

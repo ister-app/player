@@ -3,6 +3,9 @@ query seasonById($id: ID!) {
         episodes {
             id
             number
+            runtime
+            voteAverage
+            voteCount
             metadata {
                 ...fragmentMetadata
             }

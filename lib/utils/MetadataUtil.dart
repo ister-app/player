@@ -43,6 +43,17 @@ class MetadataUtil {
   static String titleWithYear(String title, int? year) =>
       (year != null && year > 0) ? '$title ($year)' : title;
 
+  /// Get the tagline from the metadata.
+  static String? getTagline(List<Fragment$fragmentMetadata>? metadataList) {
+    try {
+      return getMetadata(metadataList)
+          ?.firstWhere((element) => (element.tagline ?? "") != "")
+          .tagline;
+    } on StateError catch (_) {
+      return null;
+    }
+  }
+
   /// Get the genre from the metadata.
   static String? getGenre(List<Fragment$fragmentMetadata>? metadataList) {
     try {

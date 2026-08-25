@@ -39,6 +39,7 @@ Map<String, dynamic> _metadata(String id, String title) => {
       'title': title,
       'released': null,
       'genre': null,
+      'tagline': null,
     };
 
 Map<String, dynamic> _track(String id, String title) => {

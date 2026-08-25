@@ -33,4 +33,7 @@ fragment fragmentEpisode on Episode {
         ...fragmentCastMember
     }
     rating
+    runtime
+    voteAverage
+    voteCount
 }

@@ -18,6 +18,9 @@ class Fragment$fragmentEpisode {
     this.mediaFileParts,
     this.cast,
     this.rating,
+    this.runtime,
+    this.voteAverage,
+    this.voteCount,
     this.$__typename = 'Episode',
   });
 
@@ -33,6 +36,9 @@ class Fragment$fragmentEpisode {
     final l$mediaFileParts = json['mediaFileParts'];
     final l$cast = json['cast'];
     final l$rating = json['rating'];
+    final l$runtime = json['runtime'];
+    final l$voteAverage = json['voteAverage'];
+    final l$voteCount = json['voteCount'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentEpisode(
       id: (l$id as String),
@@ -88,6 +94,9 @@ class Fragment$fragmentEpisode {
           )
           .toList(),
       rating: (l$rating as int?),
+      runtime: (l$runtime as int?),
+      voteAverage: (l$voteAverage as num?)?.toDouble(),
+      voteCount: (l$voteCount as int?),
       $__typename: (l$$__typename as String),
     );
   }
@@ -113,6 +122,12 @@ class Fragment$fragmentEpisode {
   final List<Fragment$fragmentCastMember>? cast;
 
   final int? rating;
+
+  final int? runtime;
+
+  final double? voteAverage;
+
+  final int? voteCount;
 
   final String $__typename;
 
@@ -142,6 +157,12 @@ class Fragment$fragmentEpisode {
     _resultData['cast'] = l$cast?.map((e) => e.toJson()).toList();
     final l$rating = rating;
     _resultData['rating'] = l$rating;
+    final l$runtime = runtime;
+    _resultData['runtime'] = l$runtime;
+    final l$voteAverage = voteAverage;
+    _resultData['voteAverage'] = l$voteAverage;
+    final l$voteCount = voteCount;
+    _resultData['voteCount'] = l$voteCount;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -160,6 +181,9 @@ class Fragment$fragmentEpisode {
     final l$mediaFileParts = mediaFileParts;
     final l$cast = cast;
     final l$rating = rating;
+    final l$runtime = runtime;
+    final l$voteAverage = voteAverage;
+    final l$voteCount = voteCount;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$id,
@@ -177,6 +201,9 @@ class Fragment$fragmentEpisode {
           : Object.hashAll(l$mediaFileParts.map((v) => v)),
       l$cast == null ? null : Object.hashAll(l$cast.map((v) => v)),
       l$rating,
+      l$runtime,
+      l$voteAverage,
+      l$voteCount,
       l$$__typename,
     ]);
   }
@@ -311,6 +338,21 @@ class Fragment$fragmentEpisode {
     if (l$rating != lOther$rating) {
       return false;
     }
+    final l$runtime = runtime;
+    final lOther$runtime = other.runtime;
+    if (l$runtime != lOther$runtime) {
+      return false;
+    }
+    final l$voteAverage = voteAverage;
+    final lOther$voteAverage = other.voteAverage;
+    if (l$voteAverage != lOther$voteAverage) {
+      return false;
+    }
+    final l$voteCount = voteCount;
+    final lOther$voteCount = other.voteCount;
+    if (l$voteCount != lOther$voteCount) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -347,6 +389,9 @@ abstract class CopyWith$Fragment$fragmentEpisode<TRes> {
     List<Fragment$fragmentEpisode$mediaFileParts>? mediaFileParts,
     List<Fragment$fragmentCastMember>? cast,
     int? rating,
+    int? runtime,
+    double? voteAverage,
+    int? voteCount,
     String? $__typename,
   });
   CopyWith$Fragment$fragmentEpisode$show<TRes> get $show;
@@ -423,6 +468,9 @@ class _CopyWithImpl$Fragment$fragmentEpisode<TRes>
     Object? mediaFileParts = _undefined,
     Object? cast = _undefined,
     Object? rating = _undefined,
+    Object? runtime = _undefined,
+    Object? voteAverage = _undefined,
+    Object? voteCount = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentEpisode(
@@ -455,6 +503,13 @@ class _CopyWithImpl$Fragment$fragmentEpisode<TRes>
           ? _instance.cast
           : (cast as List<Fragment$fragmentCastMember>?),
       rating: rating == _undefined ? _instance.rating : (rating as int?),
+      runtime: runtime == _undefined ? _instance.runtime : (runtime as int?),
+      voteAverage: voteAverage == _undefined
+          ? _instance.voteAverage
+          : (voteAverage as double?),
+      voteCount: voteCount == _undefined
+          ? _instance.voteCount
+          : (voteCount as int?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -590,6 +645,9 @@ class _CopyWithStubImpl$Fragment$fragmentEpisode<TRes>
     List<Fragment$fragmentEpisode$mediaFileParts>? mediaFileParts,
     List<Fragment$fragmentCastMember>? cast,
     int? rating,
+    int? runtime,
+    double? voteAverage,
+    int? voteCount,
     String? $__typename,
   }) => _res;
 
@@ -865,6 +923,27 @@ const fragmentDefinitionfragmentEpisode = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'rating'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'runtime'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'voteAverage'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'voteCount'),
         alias: null,
         arguments: [],
         directives: [],

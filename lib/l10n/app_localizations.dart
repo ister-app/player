@@ -3877,6 +3877,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Can be controlled by'**
   String get sharingControlledBy;
+
+  /// Label of the button that opens the trailer on YouTube
+  ///
+  /// In en, this message translates to:
+  /// **'Trailer'**
+  String get trailer;
+
+  /// Caption under a movie that belongs to a TMDB collection
+  ///
+  /// In en, this message translates to:
+  /// **'Part of {collection}'**
+  String partOfCollection(String collection);
+
+  /// Snackbar when launching the YouTube trailer url fails
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the trailer'**
+  String get trailerOpenFailed;
+
+  /// Compact runtime with hours and minutes
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h {minutes}m'**
+  String runtimeHoursMinutes(int hours, int minutes);
+
+  /// Compact runtime under an hour
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes}m'**
+  String runtimeMinutes(int minutes);
 }
 
 class _AppLocalizationsDelegate

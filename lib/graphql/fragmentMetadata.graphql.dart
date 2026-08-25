@@ -12,6 +12,7 @@ class Fragment$fragmentMetadata {
     this.title,
     this.released,
     this.genre,
+    this.tagline,
     this.$__typename = 'Metadata',
   });
 
@@ -24,6 +25,7 @@ class Fragment$fragmentMetadata {
     final l$title = json['title'];
     final l$released = json['released'];
     final l$genre = json['genre'];
+    final l$tagline = json['tagline'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentMetadata(
       description: (l$description as String?),
@@ -36,6 +38,7 @@ class Fragment$fragmentMetadata {
       title: (l$title as String?),
       released: (l$released as String?),
       genre: (l$genre as String?),
+      tagline: (l$tagline as String?),
       $__typename: (l$$__typename as String),
     );
   }
@@ -55,6 +58,8 @@ class Fragment$fragmentMetadata {
   final String? released;
 
   final String? genre;
+
+  final String? tagline;
 
   final String $__typename;
 
@@ -78,6 +83,8 @@ class Fragment$fragmentMetadata {
     _resultData['released'] = l$released;
     final l$genre = genre;
     _resultData['genre'] = l$genre;
+    final l$tagline = tagline;
+    _resultData['tagline'] = l$tagline;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -93,6 +100,7 @@ class Fragment$fragmentMetadata {
     final l$title = title;
     final l$released = released;
     final l$genre = genre;
+    final l$tagline = tagline;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$description,
@@ -103,6 +111,7 @@ class Fragment$fragmentMetadata {
       l$title,
       l$released,
       l$genre,
+      l$tagline,
       l$$__typename,
     ]);
   }
@@ -156,6 +165,11 @@ class Fragment$fragmentMetadata {
     if (l$genre != lOther$genre) {
       return false;
     }
+    final l$tagline = tagline;
+    final lOther$tagline = other.tagline;
+    if (l$tagline != lOther$tagline) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -189,6 +203,7 @@ abstract class CopyWith$Fragment$fragmentMetadata<TRes> {
     String? title,
     String? released,
     String? genre,
+    String? tagline,
     String? $__typename,
   });
 }
@@ -212,6 +227,7 @@ class _CopyWithImpl$Fragment$fragmentMetadata<TRes>
     Object? title = _undefined,
     Object? released = _undefined,
     Object? genre = _undefined,
+    Object? tagline = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentMetadata(
@@ -233,6 +249,7 @@ class _CopyWithImpl$Fragment$fragmentMetadata<TRes>
           ? _instance.released
           : (released as String?),
       genre: genre == _undefined ? _instance.genre : (genre as String?),
+      tagline: tagline == _undefined ? _instance.tagline : (tagline as String?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -255,6 +272,7 @@ class _CopyWithStubImpl$Fragment$fragmentMetadata<TRes>
     String? title,
     String? released,
     String? genre,
+    String? tagline,
     String? $__typename,
   }) => _res;
 }
@@ -318,6 +336,13 @@ const fragmentDefinitionfragmentMetadata = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'genre'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'tagline'),
         alias: null,
         arguments: [],
         directives: [],

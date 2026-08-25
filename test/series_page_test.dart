@@ -36,6 +36,7 @@ Map<String, dynamic> _series({
           'title': null,
           'released': null,
           'genre': null,
+      'tagline': null,
         }
       ],
       'books': [

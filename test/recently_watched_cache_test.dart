@@ -59,6 +59,9 @@ void main() {
           'mediaFileParts': [],
           'cast': [],
           'rating': null,
+          'runtime': null,
+          'voteAverage': null,
+          'voteCount': null,
         }
       },
     );

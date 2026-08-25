@@ -718,5 +718,34 @@
   "couldNotLoad": "Kan deze pagina niet laden",
   "errorDetails": "Technische details",
   "sharingVisibleTo": "Zichtbaar voor",
-  "sharingControlledBy": "Bediend kan worden door"
+  "sharingControlledBy": "Bediend kan worden door",
+  "trailer": "Trailer",
+  "partOfCollection": "Onderdeel van {collection}",
+  "@partOfCollection": {
+    "placeholders": {
+      "collection": {
+        "type": "String"
+      }
+    }
+  },
+  "trailerOpenFailed": "Kon de trailer niet openen",
+  "runtimeHoursMinutes": "{hours}u {minutes}m",
+  "@runtimeHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "runtimeMinutes": "{minutes}m",
+  "@runtimeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  }
 }

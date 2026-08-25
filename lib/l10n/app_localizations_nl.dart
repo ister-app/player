@@ -2302,4 +2302,25 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get sharingControlledBy => 'Bediend kan worden door';
+
+  @override
+  String get trailer => 'Trailer';
+
+  @override
+  String partOfCollection(String collection) {
+    return 'Onderdeel van $collection';
+  }
+
+  @override
+  String get trailerOpenFailed => 'Kon de trailer niet openen';
+
+  @override
+  String runtimeHoursMinutes(int hours, int minutes) {
+    return '${hours}u ${minutes}m';
+  }
+
+  @override
+  String runtimeMinutes(int minutes) {
+    return '${minutes}m';
+  }
 }

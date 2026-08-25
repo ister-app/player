@@ -13,6 +13,7 @@ import '../components/AddToSessionSheet.dart';
 import '../components/DevicePickerSheet.dart';
 import '../components/SourceAttribution.dart';
 import '../components/CastRow.dart';
+import '../components/MediaMetaLine.dart';
 import '../components/IsterPlayer.dart';
 import '../components/VideoCoverView.dart';
 import '../components/RatingStars.dart';
@@ -425,22 +426,31 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
             if (episode != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4, bottom: 8),
-                child: RatingStars(
-                  mediaType: Enum$RatingMediaType.EPISODE,
-                  mediaId: episode.id,
-                  rating: episode.rating,
+                child: Wrap(
+                  spacing: 16,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    RatingStars(
+                      mediaType: Enum$RatingMediaType.EPISODE,
+                      mediaId: episode.id,
+                      rating: episode.rating,
+                    ),
+                    CommunityRating(
+                      voteAverage: episode.voteAverage,
+                      voteCount: episode.voteCount,
+                    ),
+                  ],
                 ),
               ),
-            if (MetadataUtil.getMetaLine(episode?.metadata) != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Text(
-                  MetadataUtil.getMetaLine(episode?.metadata)!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: MediaMetaLine(
+                released: MetadataUtil.getReleased(episode?.metadata),
+                runtime: episode?.runtime,
+                genres: MetadataUtil.getGenre(episode?.metadata),
               ),
+            ),
             if (_combinedFileLine(context, episode) != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 6),

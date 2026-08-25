@@ -6,6 +6,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/components/AddToSessionSheet.dart';
 import 'package:player/components/DevicePickerSheet.dart';
 import 'package:player/components/CastRow.dart';
+import 'package:player/components/MediaMetaLine.dart';
 import 'package:player/components/RatingStars.dart';
 import 'package:player/components/SourceAttribution.dart';
 import 'package:player/graphql/analyzeDataForShow.graphql.dart';
@@ -127,7 +128,8 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
                   mediaType: Enum$RatingMediaType.SHOW,
                   mediaId: show.id,
                   rating: show.rating,
-                ));
+                ),
+                show: show);
           }
         }
 
@@ -146,7 +148,8 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
       BuildContext context,
       String? rawJson,
       Widget castRow,
-      Widget? ratingRow) {
+      Widget? ratingRow,
+      {Query$showById$showById? show}) {
     return SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       LayoutBuilder(builder: (context, constraints) {
@@ -268,9 +271,66 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
             if (ratingRow != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4, bottom: 8),
-                child: ratingRow,
+                child: Wrap(
+                  spacing: 16,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    ratingRow,
+                    CommunityRating(
+                      voteAverage: show?.voteAverage,
+                      voteCount: show?.voteCount,
+                    ),
+                  ],
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: MediaMetaLine(
+                released: MetadataUtil.getReleased(metadata),
+                contentRating: show?.contentRating,
+                genres: MetadataUtil.getGenre(metadata),
+                networks: show?.networks,
+                status: show?.status,
+              ),
+            ),
+            if (MetadataUtil.getTagline(metadata) != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text(
+                  MetadataUtil.getTagline(metadata)!,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(fontStyle: FontStyle.italic),
+                ),
               ),
             Text(description),
+            if (show?.trailerKey != null && show?.trailerSite == 'YouTube')
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: TrailerButton(trailerKey: show!.trailerKey!),
+              ),
+            if ((show?.studios ?? '').isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  show!.studios!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ),
+            if ((show?.keywords ?? '').isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  show!.keywords!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: SourceAttribution(metadata: metadata, images: images),

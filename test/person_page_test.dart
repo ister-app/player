@@ -70,6 +70,7 @@ Map<String, dynamic> _person({String? description}) => {
           'title': null,
           'released': null,
           'genre': null,
+      'tagline': null,
         }
       ],
       'credits': [
@@ -188,6 +189,7 @@ Map<String, dynamic> _playedTrack(int n) => {
           'title': 'Eye of the Tiger $n',
           'released': null,
           'genre': null,
+      'tagline': null,
         }
       ],
       'mediaFile': [

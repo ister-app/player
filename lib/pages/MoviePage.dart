@@ -13,6 +13,7 @@ import '../components/AddToSessionSheet.dart';
 import '../components/DevicePickerSheet.dart';
 import '../components/SourceAttribution.dart';
 import '../components/CastRow.dart';
+import '../components/MediaMetaLine.dart';
 import '../components/IsterPlayer.dart';
 import '../components/VideoCoverView.dart';
 import '../components/RatingStars.dart';
@@ -367,23 +368,80 @@ class _MoviePageState extends State<MoviePage> {
             if (movie != null && loadComplete)
               Padding(
                 padding: const EdgeInsets.only(top: 4, bottom: 8),
-                child: RatingStars(
-                  mediaType: Enum$RatingMediaType.MOVIE,
-                  mediaId: movie.id,
-                  rating: movie.rating,
+                child: Wrap(
+                  spacing: 16,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    RatingStars(
+                      mediaType: Enum$RatingMediaType.MOVIE,
+                      mediaId: movie.id,
+                      rating: movie.rating,
+                    ),
+                    CommunityRating(
+                      voteAverage: movie.voteAverage,
+                      voteCount: movie.voteCount,
+                    ),
+                  ],
                 ),
               ),
-            if (MetadataUtil.getMetaLine(movie?.metadata) != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: MediaMetaLine(
+                released: MetadataUtil.getReleased(movie?.metadata),
+                runtime: movie?.runtime,
+                contentRating: movie?.contentRating,
+                genres: MetadataUtil.getGenre(movie?.metadata),
+              ),
+            ),
+            if (MetadataUtil.getTagline(movie?.metadata) != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Text(
-                  MetadataUtil.getMetaLine(movie?.metadata)!,
+                  MetadataUtil.getTagline(movie?.metadata)!,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(fontStyle: FontStyle.italic),
+                ),
+              ),
+            Text(description),
+            if (movie?.trailerKey != null && movie?.trailerSite == 'YouTube')
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: TrailerButton(trailerKey: movie!.trailerKey!),
+              ),
+            if ((movie?.collectionName ?? '').isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  AppLocalizations.of(context)!
+                      .partOfCollection(movie!.collectionName!),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                 ),
               ),
-            Text(description),
+            if ((movie?.studios ?? '').isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  movie!.studios!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ),
+            if ((movie?.keywords ?? '').isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  movie!.keywords!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: SourceAttribution(

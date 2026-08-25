@@ -26,6 +26,7 @@ Map<String, dynamic> _metadata({String? source}) => {
       'title': 'Tulsa King',
       'released': null,
       'genre': null,
+      'tagline': null,
     };
 
 Map<String, dynamic> _show({String? source}) => {
@@ -38,6 +39,19 @@ Map<String, dynamic> _show({String? source}) => {
       'seasons': [],
       'cast': [],
       'rating': null,
+      'tmdbId': null,
+      'imdbId': null,
+      'voteAverage': null,
+      'voteCount': null,
+      'contentRating': null,
+      'status': null,
+      'homepage': null,
+      'networks': null,
+      'studios': null,
+      'originCountry': null,
+      'keywords': null,
+      'trailerKey': null,
+      'trailerSite': null,
     };
 
 http.Response _json(Map<String, dynamic> data) => http.Response(

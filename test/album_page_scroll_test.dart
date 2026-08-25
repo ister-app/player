@@ -32,6 +32,7 @@ Map<String, dynamic> _metadata(String id, String title,
       'title': title,
       'released': released,
       'genre': genre,
+      'tagline': null,
     };
 
 /// With [discs] = 2 the 40 tracks split 1–20 → disc 1 and 21–40 → disc 2,

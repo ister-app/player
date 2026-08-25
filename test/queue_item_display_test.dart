@@ -42,6 +42,7 @@ Map<String, dynamic> _metadata(String title) => {
       'source': null,
       'released': null,
       'genre': null,
+      'tagline': null,
     };
 
 Fragment$fragmentPlayQueue$playQueueItems _item(Map<String, dynamic> fields) =>

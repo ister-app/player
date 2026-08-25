@@ -58,6 +58,7 @@ Map<String, dynamic> _track(int number, String title,
           'source': null,
           'released': null,
           'genre': null,
+      'tagline': null,
         }
       ],
       'mediaFile': [

@@ -83,6 +83,7 @@ Map<String, dynamic> _trackItem(String id, String title) => {
             'description': null,
             'released': null,
             'genre': null,
+      'tagline': null,
           }
         ],
         'mediaFile': <dynamic>[],
@@ -119,6 +120,7 @@ Map<String, dynamic> _browseTrack(String id, String title) => {
           'description': null,
           'released': null,
           'genre': null,
+      'tagline': null,
         }
       ],
       'mediaFile': <dynamic>[],

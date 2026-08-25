@@ -3,6 +3,7 @@ import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/components/MediaMetaLine.dart';
 import 'package:player/graphql/seasonById.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/MetadataUtil.dart';
@@ -82,7 +83,8 @@ class TvShowSeasonList extends StatelessWidget {
                             imageByType?.blurHash,
                             _progressFraction(episode),
                             combinedFileLabel:
-                                _combinedFileLabel(context, episode));
+                                _combinedFileLabel(context, episode),
+                            metaLine: _metaLine(context, episode));
                       }).toList())
                   .toList());
               return Column(children: list);
@@ -116,6 +118,18 @@ class TvShowSeasonList extends StatelessWidget {
     return progress / duration;
   }
 
+  /// "45m • 2024-04-01" — runtime and air date, whichever is available.
+  static String? _metaLine(
+      BuildContext context, Query$seasonById$seasonById$episodes episode) {
+    final parts = [
+      if (episode.runtime != null)
+        MediaMetaLine.formatRuntime(context, episode.runtime!),
+      if ((MetadataUtil.getReleased(episode.metadata) ?? '').isNotEmpty)
+        MetadataUtil.getReleased(episode.metadata)!,
+    ];
+    return parts.isEmpty ? null : parts.join(' • ');
+  }
+
   /// "⧉ E6+E7" when this episode shares one media file with others.
   static String? _combinedFileLabel(
       BuildContext context, Query$seasonById$seasonById$episodes episode) {
@@ -136,7 +150,8 @@ class TvShowSeasonList extends StatelessWidget {
       String? imageUrl,
       String? blurHash,
       double? progress,
-      {String? combinedFileLabel}) {
+      {String? combinedFileLabel,
+      String? metaLine}) {
     return ListTile(
         contentPadding: EdgeInsets.all(0),
         subtitle: Row(children: [
@@ -152,6 +167,16 @@ class TvShowSeasonList extends StatelessWidget {
                                 .textTheme
                                 .bodyMedium
                                 ?.copyWith(fontWeight: FontWeight.bold)),
+                        if (metaLine != null)
+                          Text(metaLine,
+                              maxLines: 1,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant)),
                         Text(description,
                             maxLines: 3,
                             style: Theme.of(context).textTheme.bodyMedium)

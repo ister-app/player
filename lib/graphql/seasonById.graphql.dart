@@ -266,6 +266,27 @@ const documentNodeQueryseasonById = DocumentNode(
                         selectionSet: null,
                       ),
                       FieldNode(
+                        name: NameNode(value: 'runtime'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                      FieldNode(
+                        name: NameNode(value: 'voteAverage'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                      FieldNode(
+                        name: NameNode(value: 'voteCount'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                      FieldNode(
                         name: NameNode(value: 'metadata'),
                         alias: null,
                         arguments: [],
@@ -684,6 +705,9 @@ class Query$seasonById$seasonById$episodes {
   Query$seasonById$seasonById$episodes({
     required this.id,
     required this.number,
+    this.runtime,
+    this.voteAverage,
+    this.voteCount,
     this.metadata,
     this.$show,
     this.images,
@@ -698,6 +722,9 @@ class Query$seasonById$seasonById$episodes {
   ) {
     final l$id = json['id'];
     final l$number = json['number'];
+    final l$runtime = json['runtime'];
+    final l$voteAverage = json['voteAverage'];
+    final l$voteCount = json['voteCount'];
     final l$metadata = json['metadata'];
     final l$$show = json['show'];
     final l$images = json['images'];
@@ -708,6 +735,9 @@ class Query$seasonById$seasonById$episodes {
     return Query$seasonById$seasonById$episodes(
       id: (l$id as String),
       number: (l$number as int),
+      runtime: (l$runtime as int?),
+      voteAverage: (l$voteAverage as num?)?.toDouble(),
+      voteCount: (l$voteCount as int?),
       metadata: (l$metadata as List<dynamic>?)
           ?.map(
             (e) =>
@@ -754,6 +784,12 @@ class Query$seasonById$seasonById$episodes {
 
   final int number;
 
+  final int? runtime;
+
+  final double? voteAverage;
+
+  final int? voteCount;
+
   final List<Fragment$fragmentMetadata>? metadata;
 
   final Query$seasonById$seasonById$episodes$show? $show;
@@ -775,6 +811,12 @@ class Query$seasonById$seasonById$episodes {
     _resultData['id'] = l$id;
     final l$number = number;
     _resultData['number'] = l$number;
+    final l$runtime = runtime;
+    _resultData['runtime'] = l$runtime;
+    final l$voteAverage = voteAverage;
+    _resultData['voteAverage'] = l$voteAverage;
+    final l$voteCount = voteCount;
+    _resultData['voteCount'] = l$voteCount;
     final l$metadata = metadata;
     _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
     final l$$show = $show;
@@ -798,6 +840,9 @@ class Query$seasonById$seasonById$episodes {
   int get hashCode {
     final l$id = id;
     final l$number = number;
+    final l$runtime = runtime;
+    final l$voteAverage = voteAverage;
+    final l$voteCount = voteCount;
     final l$metadata = metadata;
     final l$$show = $show;
     final l$images = images;
@@ -808,6 +853,9 @@ class Query$seasonById$seasonById$episodes {
     return Object.hashAll([
       l$id,
       l$number,
+      l$runtime,
+      l$voteAverage,
+      l$voteCount,
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$$show,
       l$images == null ? null : Object.hashAll(l$images.map((v) => v)),
@@ -839,6 +887,21 @@ class Query$seasonById$seasonById$episodes {
     final l$number = number;
     final lOther$number = other.number;
     if (l$number != lOther$number) {
+      return false;
+    }
+    final l$runtime = runtime;
+    final lOther$runtime = other.runtime;
+    if (l$runtime != lOther$runtime) {
+      return false;
+    }
+    final l$voteAverage = voteAverage;
+    final lOther$voteAverage = other.voteAverage;
+    if (l$voteAverage != lOther$voteAverage) {
+      return false;
+    }
+    final l$voteCount = voteCount;
+    final lOther$voteCount = other.voteCount;
+    if (l$voteCount != lOther$voteCount) {
       return false;
     }
     final l$metadata = metadata;
@@ -955,6 +1018,9 @@ abstract class CopyWith$Query$seasonById$seasonById$episodes<TRes> {
   TRes call({
     String? id,
     int? number,
+    int? runtime,
+    double? voteAverage,
+    int? voteCount,
     List<Fragment$fragmentMetadata>? metadata,
     Query$seasonById$seasonById$episodes$show? $show,
     List<Fragment$fragmentImages>? images,
@@ -1024,6 +1090,9 @@ class _CopyWithImpl$Query$seasonById$seasonById$episodes<TRes>
   TRes call({
     Object? id = _undefined,
     Object? number = _undefined,
+    Object? runtime = _undefined,
+    Object? voteAverage = _undefined,
+    Object? voteCount = _undefined,
     Object? metadata = _undefined,
     Object? $show = _undefined,
     Object? images = _undefined,
@@ -1037,6 +1106,13 @@ class _CopyWithImpl$Query$seasonById$seasonById$episodes<TRes>
       number: number == _undefined || number == null
           ? _instance.number
           : (number as int),
+      runtime: runtime == _undefined ? _instance.runtime : (runtime as int?),
+      voteAverage: voteAverage == _undefined
+          ? _instance.voteAverage
+          : (voteAverage as double?),
+      voteCount: voteCount == _undefined
+          ? _instance.voteCount
+          : (voteCount as int?),
       metadata: metadata == _undefined
           ? _instance.metadata
           : (metadata as List<Fragment$fragmentMetadata>?),
@@ -1172,6 +1248,9 @@ class _CopyWithStubImpl$Query$seasonById$seasonById$episodes<TRes>
   call({
     String? id,
     int? number,
+    int? runtime,
+    double? voteAverage,
+    int? voteCount,
     List<Fragment$fragmentMetadata>? metadata,
     Query$seasonById$seasonById$episodes$show? $show,
     List<Fragment$fragmentImages>? images,

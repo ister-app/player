@@ -8,4 +8,18 @@ fragment fragmentMovie on Movie {
     mediaFile { ...fragmentMediaFiles }
     cast { ...fragmentCastMember }
     rating
+    tmdbId
+    imdbId
+    voteAverage
+    voteCount
+    runtime
+    contentRating
+    status
+    homepage
+    collectionName
+    studios
+    originCountry
+    keywords
+    trailerKey
+    trailerSite
 }
