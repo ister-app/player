@@ -36,7 +36,7 @@ class WellKnownProbe {
 class WellKnownService {
   static const String _prefix = 'wellknown_';
   static final Map<String, WellKnownInfo> _cache = {};
-  static final SharedPreferencesAsync _prefs = SharedPreferencesAsync();
+  static SharedPreferencesAsync _prefs = SharedPreferencesAsync();
 
   static String _nameKey(String id) => '${_prefix}${id}_name';
   static String _oidcKey(String id) => '${_prefix}${id}_oidcUrl';
@@ -45,6 +45,16 @@ class WellKnownService {
   /// Returns cached in-memory info synchronously. Used by [ClientManager].
   static WellKnownInfo? getCached(String serverIdentifier) {
     return _cache[serverIdentifier];
+  }
+
+  /// Test seam: drops the in-memory cache and rebinds the preferences
+  /// handle. Tests swap the SharedPreferences platform per test, and the
+  /// handle captures it at construction — a static one would keep reading
+  /// the first test's store.
+  @visibleForTesting
+  static void resetForTest() {
+    _cache.clear();
+    _prefs = SharedPreferencesAsync();
   }
 
   /// Test seam: seeds the in-memory cache without network or preferences.
@@ -77,7 +87,14 @@ class WellKnownService {
   /// Falls back to SharedPreferences if network fails.
   static Future<WellKnownInfo?> fetch(String serverIdentifier) async {
     final probe = await WellKnownService.probe(serverIdentifier);
-    return probe.info ?? await _loadFromPrefs(serverIdentifier);
+    return probe.info ?? await lastKnown(serverIdentifier);
+  }
+
+  /// The last info we ever saw for a server, from memory or preferences,
+  /// without touching the network. Says nothing about reachability — use it
+  /// to *label* a server, never to decide whether it answers.
+  static Future<WellKnownInfo?> lastKnown(String serverIdentifier) async {
+    return _cache[serverIdentifier] ?? await _loadFromPrefs(serverIdentifier);
   }
 
   /// Like [fetch] but without the preferences fallback, and telling apart

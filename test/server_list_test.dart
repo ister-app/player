@@ -8,6 +8,7 @@ import 'package:player/components/ServerList.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
+import 'package:player/utils/WellKnownService.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
@@ -46,6 +47,7 @@ void main() {
   setUp(() {
     SharedPreferencesAsyncPlatform.instance =
         InMemorySharedPreferencesAsync.empty();
+    WellKnownService.resetForTest();
     ClientManager.instance.lastClientUsed = null;
     ServerListState.debugIsWeb = true;
   });
@@ -128,6 +130,32 @@ void main() {
 
     expect(find.byType(Placeholder), findsOneWidget);
     expect(ClientManager.instance.lastClientUsed, 'down.example.com');
+  });
+
+  testWidgets(
+      'a server we reached before but that is down now is not "connected"',
+      (tester) async {
+    ServerListState.debugIsWeb = false;
+    final prefs = SharedPreferencesAsync();
+    await prefs.setStringList('servers', ['cached.example.com']);
+    // What an earlier successful visit left behind.
+    await prefs.setString('wellknown_cached.example.com_name', 'My Server');
+    await prefs.setString(
+        'wellknown_cached.example.com_oidcUrl', 'https://oidc.example.com');
+    await prefs.setString('wellknown_cached.example.com_serverUrl',
+        'https://cached.example.com/api');
+    final mock = MockClient((request) async => throw Exception('refused'));
+
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app(_TestRouter()));
+      await tester.pumpAndSettle();
+    }, () => mock);
+
+    expect(find.text('Connected'), findsNothing);
+    expect(find.text('Unreachable'), findsOneWidget);
+    // The remembered name still labels the card; only the status is honest.
+    expect(find.text('My Server'), findsOneWidget);
+    expect(find.text('https://cached.example.com/api'), findsOneWidget);
   });
 
   testWidgets('removing a server asks for confirmation first', (tester) async {

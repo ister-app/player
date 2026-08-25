@@ -216,10 +216,20 @@ class ServerListState extends State<ServerList> {
 
 enum _ServerAction { open, retry, downloads, remove }
 
+/// What a card knows about its server: whether the well-known answered
+/// *now*, plus the info to label it with — which may be the last known one,
+/// persisted from an earlier run, for a server that is currently down.
+class _ServerProbe {
+  const _ServerProbe({required this.reachable, required this.info});
+
+  final bool reachable;
+  final WellKnownInfo? info;
+}
+
 /// One server on the overview: probes its well-known on build (skeleton
 /// while pending) and shows name, address and a status chip. Unreachable
 /// servers stay tappable — the server page offers the offline downloads.
-class _ServerCard extends StatelessWidget {
+class _ServerCard extends StatefulWidget {
   const _ServerCard({
     super.key,
     required this.server,
@@ -233,6 +243,32 @@ class _ServerCard extends StatelessWidget {
   final VoidCallback onRetry;
   final void Function(String displayName) onRemove;
 
+  @override
+  State<_ServerCard> createState() => _ServerCardState();
+}
+
+class _ServerCardState extends State<_ServerCard> {
+  /// Probed once per card instance — the list re-keys its cards to refresh,
+  /// so a plain rebuild must not fire another request.
+  late final Future<_ServerProbe> _probed = _probe();
+
+  String get server => widget.server;
+  VoidCallback get onOpen => widget.onOpen;
+  VoidCallback get onRetry => widget.onRetry;
+  void Function(String displayName) get onRemove => widget.onRemove;
+
+  /// Deliberately not [WellKnownService.fetch]: that one falls back to the
+  /// persisted info, which would make every server we ever reached look
+  /// connected forever. Only a live answer counts as reachable.
+  Future<_ServerProbe> _probe() async {
+    final probe = await WellKnownService.probe(server);
+    if (probe.info != null) {
+      return _ServerProbe(reachable: true, info: probe.info);
+    }
+    return _ServerProbe(
+        reachable: false, info: await WellKnownService.lastKnown(server));
+  }
+
   bool _hasDownloads() {
     if (kIsWeb) return false;
     return DownloadService.instance
@@ -243,8 +279,8 @@ class _ServerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    return FutureBuilder<WellKnownInfo?>(
-      future: WellKnownService.fetch(server),
+    return FutureBuilder<_ServerProbe>(
+      future: _probed,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Skeletonizer(
@@ -259,8 +295,8 @@ class _ServerCard extends StatelessWidget {
           );
         }
 
-        final info = snapshot.data;
-        final reachable = info != null;
+        final info = snapshot.data?.info;
+        final reachable = snapshot.data?.reachable ?? false;
         final name = info?.name ?? server;
         final colors = Theme.of(context).colorScheme;
         final muted = TextStyle(color: Theme.of(context).disabledColor);
@@ -274,7 +310,9 @@ class _ServerCard extends StatelessWidget {
               leading: ServerAvatar(name: name, muted: !reachable),
               title: Text(name, style: reachable ? null : muted),
               // Without well-known info the title already is the address.
-              subtitle: info == null ? null : Text(info.serverUrl),
+              subtitle: info == null
+                  ? null
+                  : Text(info.serverUrl, style: reachable ? null : muted),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
