@@ -270,7 +270,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get server => 'Server';
 
   @override
-  String get serverSettingsSubtitle => 'Nodes, activiteit en onderhoud';
+  String get serverSettingsSubtitle => 'Nodes, activiteit en wachtrij';
 
   @override
   String get languageSettings => 'Taalinstellingen';
@@ -289,7 +289,7 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get playbackSettings => 'Afspeelinstelling';
+  String get playbackSettings => 'Afspeelinstellingen';
 
   @override
   String get directPlay => 'Direct afspelen';
@@ -2193,4 +2193,48 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get errorLogEmpty => 'Er is nog geen log om op te slaan';
+
+  @override
+  String get settingsSectionPlayback => 'Afspelen';
+
+  @override
+  String get settingsSectionThisDevice => 'Dit apparaat';
+
+  @override
+  String get settingsSectionSharing => 'Delen & apparaten';
+
+  @override
+  String get settingsSectionServer => 'Server';
+
+  @override
+  String get settingsSectionApp => 'App';
+
+  @override
+  String get serverStatusAndMaintenance => 'Status & onderhoud';
+
+  @override
+  String get playbackSettingsSubtitle =>
+      'Direct afspelen, transcoderen en kwaliteit';
+
+  @override
+  String get nowPlayingSubtitle => 'Wat er nu op deze server speelt';
+
+  @override
+  String get usersAndAccessSubtitle => 'Wie mag inloggen en waar ze bij kunnen';
+
+  @override
+  String get libraryVisibilitySubtitle =>
+      'Welke bibliotheken voor iedereen zichtbaar zijn';
+
+  @override
+  String get aboutAttributionsSubtitle => 'Bronnen, licenties en app-versie';
+
+  @override
+  String get playbackSectionStreaming => 'Streamen';
+
+  @override
+  String get playbackSectionDuringPlayback => 'Tijdens afspelen';
+
+  @override
+  String get downloadSettingsSection => 'Downloads';
 }

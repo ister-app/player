@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:player/components/LanguagePreferenceList.dart';
+import 'package:player/components/SettingsSection.dart';
 
 import '../l10n/app_localizations.dart';
 import '../utils/LanguagePreferences.dart';
@@ -95,18 +96,6 @@ class _ServerSettingsLanguagePageState
     );
   }
 
-  Widget _sectionLabel(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4.0, top: 16.0, bottom: 4.0),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-      ),
-    );
-  }
-
   Widget _hint(BuildContext context, String text) {
     return Padding(
       padding: const EdgeInsets.only(left: 4.0, right: 4.0, bottom: 8.0),
@@ -148,7 +137,7 @@ class _ServerSettingsLanguagePageState
             padding: const EdgeInsets.all(16.0),
             children: [
               _hint(context, loc.languageAppliesToServer(widget.serverName)),
-              _sectionLabel(context, loc.preferredSpoken),
+              SettingsSectionLabel(loc.preferredSpoken),
               _hint(context, loc.languagePriorityHintSpoken),
               Card(
                 child: LanguagePreferenceList(
@@ -158,7 +147,7 @@ class _ServerSettingsLanguagePageState
                   onChanged: _handleSpokenChanged,
                 ),
               ),
-              _sectionLabel(context, loc.preferredSubtitle),
+              SettingsSectionLabel(loc.preferredSubtitle),
               _hint(context, loc.languagePriorityHintSubtitle),
               Card(
                 child: LanguagePreferenceList(

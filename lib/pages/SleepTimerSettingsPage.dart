@@ -187,9 +187,18 @@ class _SleepTimerSettingsPageState extends State<SleepTimerSettingsPage> {
   bool get _customItemsActive =>
       _countItems && !sleepTimerPresetsItems.contains(_itemCount);
 
+  /// A sub-label inside the default-timer card. Deliberately not
+  /// [SettingsSectionLabel]: that one is a page-level section header with its
+  /// own top padding and indent, which would break the card's spacing. Only
+  /// the typography is kept in step.
   Widget _sectionLabel(BuildContext context, String text) => Padding(
         padding: const EdgeInsets.only(bottom: 8),
-        child: Text(text, style: Theme.of(context).textTheme.labelMedium),
+        child: Text(
+          text,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+        ),
       );
 
   void _setDuration(int minutes) {

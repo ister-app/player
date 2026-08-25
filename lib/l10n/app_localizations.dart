@@ -557,7 +557,7 @@ abstract class AppLocalizations {
   /// Subtitle of the Server entry in the settings list
   ///
   /// In en, this message translates to:
-  /// **'Nodes, activity and maintenance'**
+  /// **'Nodes, activity and queued work'**
   String get serverSettingsSubtitle;
 
   /// No description provided for @languageSettings.
@@ -3685,6 +3685,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'There is no log to save yet'**
   String get errorLogEmpty;
+
+  /// Section header in the settings list, above the preferences that follow you across devices
+  ///
+  /// In en, this message translates to:
+  /// **'Playback'**
+  String get settingsSectionPlayback;
+
+  /// Section header in the settings list, above the settings that apply to this device only
+  ///
+  /// In en, this message translates to:
+  /// **'This device'**
+  String get settingsSectionThisDevice;
+
+  /// Section header in the settings list, above sharing, devices and now playing
+  ///
+  /// In en, this message translates to:
+  /// **'Sharing & devices'**
+  String get settingsSectionSharing;
+
+  /// Section header in the settings list, above the server and administration entries
+  ///
+  /// In en, this message translates to:
+  /// **'Server'**
+  String get settingsSectionServer;
+
+  /// Section header in the settings list, above the log and about entries
+  ///
+  /// In en, this message translates to:
+  /// **'App'**
+  String get settingsSectionApp;
+
+  /// Title of the Server entry in the settings list
+  ///
+  /// In en, this message translates to:
+  /// **'Status & maintenance'**
+  String get serverStatusAndMaintenance;
+
+  /// Subtitle of the Playback entry in the settings list
+  ///
+  /// In en, this message translates to:
+  /// **'Direct play, transcoding and quality'**
+  String get playbackSettingsSubtitle;
+
+  /// Subtitle of the Now playing entry in the settings list
+  ///
+  /// In en, this message translates to:
+  /// **'What is playing on this server right now'**
+  String get nowPlayingSubtitle;
+
+  /// Subtitle of the Users & access entry in the settings list
+  ///
+  /// In en, this message translates to:
+  /// **'Who may sign in and what they can reach'**
+  String get usersAndAccessSubtitle;
+
+  /// Subtitle of the Library visibility entry in the settings list
+  ///
+  /// In en, this message translates to:
+  /// **'Which libraries everyone can see'**
+  String get libraryVisibilitySubtitle;
+
+  /// Subtitle of the About & data sources entry in the settings list
+  ///
+  /// In en, this message translates to:
+  /// **'Data sources, licenses and app version'**
+  String get aboutAttributionsSubtitle;
+
+  /// Section header on the playback settings page, above direct play, transcoding and quality
+  ///
+  /// In en, this message translates to:
+  /// **'Streaming'**
+  String get playbackSectionStreaming;
+
+  /// Section header on the playback settings page, above the skip-intro switch
+  ///
+  /// In en, this message translates to:
+  /// **'During playback'**
+  String get playbackSectionDuringPlayback;
+
+  /// Section header on the download settings page, above the download preferences
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads'**
+  String get downloadSettingsSection;
 }
 
 class _AppLocalizationsDelegate

@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:player/components/SettingsSection.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/download/DownloadModels.dart';
 import 'package:player/utils/download/DownloadPreferences.dart';
@@ -78,9 +79,39 @@ class _DownloadSettingsPageState extends State<DownloadSettingsPage> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                SettingsSectionLabel(loc.downloadSettingsSection),
                 Card(
+                  margin: EdgeInsets.zero,
                   child: Column(
                     children: [
+                      ListTile(
+                        leading: const Icon(Icons.data_usage_outlined),
+                        title: Text(loc.downloadNetworkPolicy),
+                        subtitle: Text(loc.downloadNetworkPolicySubtitle),
+                      ),
+                      // The choices are sentences, so they get their own rows
+                      // instead of a trailing dropdown.
+                      for (final entry in <DownloadNetworkPolicy, String>{
+                        DownloadNetworkPolicy.any: loc.downloadNetworkPolicyAny,
+                        DownloadNetworkPolicy.automaticUnmeteredOnly:
+                            loc.downloadNetworkPolicyAutomatic,
+                        DownloadNetworkPolicy.allUnmeteredOnly:
+                            loc.downloadNetworkPolicyAll,
+                      }.entries)
+                        RadioListTile<DownloadNetworkPolicy>(
+                          value: entry.key,
+                          groupValue: _networkPolicy,
+                          contentPadding:
+                              const EdgeInsets.only(left: 56, right: 16),
+                          title: Text(entry.value),
+                          onChanged: (v) {
+                            if (v == null) return;
+                            DownloadPreferences.setNetworkPolicy(v);
+                            setState(() => _networkPolicy = v);
+                            DownloadService.instance.pump();
+                          },
+                        ),
+                      const Divider(height: 1, indent: 56),
                       ListTile(
                         leading: const Icon(Icons.high_quality_outlined),
                         title: Text(loc.videoDownloadQuality),
@@ -138,34 +169,6 @@ class _DownloadSettingsPageState extends State<DownloadSettingsPage> {
                       ),
                       const Divider(height: 1, indent: 56),
                       ListTile(
-                        leading: const Icon(Icons.data_usage_outlined),
-                        title: Text(loc.downloadNetworkPolicy),
-                        subtitle: Text(loc.downloadNetworkPolicySubtitle),
-                      ),
-                      // The choices are sentences, so they get their own rows
-                      // instead of a trailing dropdown.
-                      for (final entry in <DownloadNetworkPolicy, String>{
-                        DownloadNetworkPolicy.any: loc.downloadNetworkPolicyAny,
-                        DownloadNetworkPolicy.automaticUnmeteredOnly:
-                            loc.downloadNetworkPolicyAutomatic,
-                        DownloadNetworkPolicy.allUnmeteredOnly:
-                            loc.downloadNetworkPolicyAll,
-                      }.entries)
-                        RadioListTile<DownloadNetworkPolicy>(
-                          value: entry.key,
-                          groupValue: _networkPolicy,
-                          contentPadding:
-                              const EdgeInsets.only(left: 56, right: 16),
-                          title: Text(entry.value),
-                          onChanged: (v) {
-                            if (v == null) return;
-                            DownloadPreferences.setNetworkPolicy(v);
-                            setState(() => _networkPolicy = v);
-                            DownloadService.instance.pump();
-                          },
-                        ),
-                      const Divider(height: 1, indent: 56),
-                      ListTile(
                         leading: const Icon(Icons.swap_vert),
                         title: Text(loc.concurrentDownloads),
                         trailing: DropdownButton<int>(
@@ -203,13 +206,9 @@ class _DownloadSettingsPageState extends State<DownloadSettingsPage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
-                  child: Text(loc.musicCache,
-                      style: Theme.of(context).textTheme.titleMedium),
-                ),
+                SettingsSectionLabel(loc.musicCache),
                 Card(
+                  margin: EdgeInsets.zero,
                   child: Column(
                     children: [
                       SwitchListTile(

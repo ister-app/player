@@ -253,12 +253,17 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings).first, warnIfMissed: false);
     await tester.pump(const Duration(seconds: 2));
     await shot(tester, 'settings');
+    // In the order the settings hub lists them. The downloads stop shoots the
+    // settings page rather than the (empty in e2e) download list.
     final settingsStops = <(PageRouteInfo, String)>[
       (ServerSettingsLanguageRoute(), 'settings-languages'),
       (ServerSettingsPlaybackRoute(), 'settings-playback'),
-      (ServerSettingsClusterRoute(), 'settings-cluster'),
-      (ServerNowPlayingRoute(), 'now-playing'),
+      (ServerDownloadSettingsRoute(), 'settings-downloads'),
+      (const SleepTimerSettingsRoute(), 'settings-sleep-timer'),
       (ServerSettingsSharingRoute(), 'settings-sharing'),
+      (ServerSettingsDevicesRoute(), 'settings-devices'),
+      (ServerNowPlayingRoute(), 'now-playing'),
+      (ServerSettingsClusterRoute(), 'settings-cluster'),
       (ServerSettingsAboutRoute(), 'settings-about'),
     ];
     for (final (route, name) in settingsStops) {

@@ -4,7 +4,7 @@ description: Administer your Ister media server from the app — manage users, l
 
 # Administration
 
-Some screens are only for **administrators**. If you are signed in with an admin account you'll see extra entries in the **Settings** tab; ordinary users never see these, so they can't reach the management screens.
+Some screens are only for **administrators**. If you are signed in with an admin account you'll see two extra entries under **Server** in the **Settings** tab; ordinary users never see these, so they can't reach the management screens.
 
 The admin role itself is assigned in your identity provider (for example Keycloak), not in the app — the player only reflects it.
 

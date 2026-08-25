@@ -268,7 +268,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get server => 'Server';
 
   @override
-  String get serverSettingsSubtitle => 'Nodes, activity and maintenance';
+  String get serverSettingsSubtitle => 'Nodes, activity and queued work';
 
   @override
   String get languageSettings => 'Language settings';
@@ -2185,4 +2185,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorLogEmpty => 'There is no log to save yet';
+
+  @override
+  String get settingsSectionPlayback => 'Playback';
+
+  @override
+  String get settingsSectionThisDevice => 'This device';
+
+  @override
+  String get settingsSectionSharing => 'Sharing & devices';
+
+  @override
+  String get settingsSectionServer => 'Server';
+
+  @override
+  String get settingsSectionApp => 'App';
+
+  @override
+  String get serverStatusAndMaintenance => 'Status & maintenance';
+
+  @override
+  String get playbackSettingsSubtitle => 'Direct play, transcoding and quality';
+
+  @override
+  String get nowPlayingSubtitle => 'What is playing on this server right now';
+
+  @override
+  String get usersAndAccessSubtitle =>
+      'Who may sign in and what they can reach';
+
+  @override
+  String get libraryVisibilitySubtitle => 'Which libraries everyone can see';
+
+  @override
+  String get aboutAttributionsSubtitle =>
+      'Data sources, licenses and app version';
+
+  @override
+  String get playbackSectionStreaming => 'Streaming';
+
+  @override
+  String get playbackSectionDuringPlayback => 'During playback';
+
+  @override
+  String get downloadSettingsSection => 'Downloads';
 }

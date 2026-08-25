@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:player/utils/PlaybackPreferences.dart';
 
+import '../components/SettingsSection.dart';
 import '../l10n/app_localizations.dart';
 
 @RoutePage()
@@ -35,12 +36,18 @@ class _ServerSettingsPlaybackPageState
 
   Future<void> _loadPreferences() async {
     final server = widget.serverName;
-    final directPlay = await PlaybackPreferences.getDirectPlay(serverName: server);
-    final transcode = await PlaybackPreferences.getTranscode(serverName: server);
-    final maxVideoHeight =
-        await PlaybackPreferences.getMaxVideoHeight(serverName: server);
-    final autoSkipIntro =
-        await PlaybackPreferences.getAutoSkipIntro(serverName: server);
+    final directPlay = await PlaybackPreferences.getDirectPlay(
+      serverName: server,
+    );
+    final transcode = await PlaybackPreferences.getTranscode(
+      serverName: server,
+    );
+    final maxVideoHeight = await PlaybackPreferences.getMaxVideoHeight(
+      serverName: server,
+    );
+    final autoSkipIntro = await PlaybackPreferences.getAutoSkipIntro(
+      serverName: server,
+    );
     if (!mounted) return;
     setState(() {
       _directPlay = directPlay;
@@ -66,65 +73,85 @@ class _ServerSettingsPlaybackPageState
           return ListView(
             padding: const EdgeInsets.all(16.0),
             children: [
-              Card(
-                child: SwitchListTile(
-                  secondary: const Icon(Icons.play_circle_outline),
-                  title: Text(loc.directPlay),
-                  subtitle: Text(loc.directPlayDescription),
-                  value: _directPlay,
-                  onChanged: (value) {
-                    PlaybackPreferences.setDirectPlay(value, serverName: server);
-                    setState(() => _directPlay = value);
-                  },
-                ),
-              ),
-              Card(
-                child: SwitchListTile(
-                  secondary: const Icon(Icons.transform),
-                  title: Text(loc.transcode),
-                  subtitle: Text(loc.transcodeDescription),
-                  value: kIsWeb ? true : _transcode,
-                  onChanged: kIsWeb
-                      ? null
-                      : (value) {
-                          PlaybackPreferences.setTranscode(value,
-                              serverName: server);
-                          setState(() => _transcode = value);
-                        },
-                ),
-              ),
-              Card(
-                child: SwitchListTile(
-                  secondary: const Icon(Icons.skip_next_outlined),
-                  title: Text(loc.autoSkipIntro),
-                  subtitle: Text(loc.autoSkipIntroDescription),
-                  value: _autoSkipIntro,
-                  onChanged: (value) {
-                    PlaybackPreferences.setAutoSkipIntro(value,
-                        serverName: server);
-                    setState(() => _autoSkipIntro = value);
-                  },
-                ),
-              ),
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.high_quality_outlined),
-                  title: Text(loc.maxQuality),
-                  subtitle: Text(loc.maxQualityDescription),
-                  trailing: DropdownButton<int?>(
-                    value: _maxVideoHeight,
+              SettingsSection(
+                key: const ValueKey('playback-section-streaming'),
+                title: loc.playbackSectionStreaming,
+                children: [
+                  SwitchListTile(
+                    key: const ValueKey('playback-direct-play'),
+                    secondary: const Icon(Icons.play_circle_outline),
+                    title: Text(loc.directPlay),
+                    subtitle: Text(loc.directPlayDescription),
+                    value: _directPlay,
                     onChanged: (value) {
-                      PlaybackPreferences.setMaxVideoHeight(value,
-                          serverName: server);
-                      setState(() => _maxVideoHeight = value);
+                      PlaybackPreferences.setDirectPlay(
+                        value,
+                        serverName: server,
+                      );
+                      setState(() => _directPlay = value);
                     },
-                    items: [
-                      DropdownMenuItem(value: null, child: Text(loc.qualityAuto)),
-                      const DropdownMenuItem(value: 720, child: Text('720p')),
-                      const DropdownMenuItem(value: 480, child: Text('480p')),
-                    ],
                   ),
-                ),
+                  SwitchListTile(
+                    key: const ValueKey('playback-transcode'),
+                    secondary: const Icon(Icons.transform),
+                    title: Text(loc.transcode),
+                    subtitle: Text(loc.transcodeDescription),
+                    value: kIsWeb ? true : _transcode,
+                    onChanged: kIsWeb
+                        ? null
+                        : (value) {
+                            PlaybackPreferences.setTranscode(
+                              value,
+                              serverName: server,
+                            );
+                            setState(() => _transcode = value);
+                          },
+                  ),
+                  ListTile(
+                    key: const ValueKey('playback-max-quality'),
+                    leading: const Icon(Icons.high_quality_outlined),
+                    title: Text(loc.maxQuality),
+                    subtitle: Text(loc.maxQualityDescription),
+                    trailing: DropdownButton<int?>(
+                      value: _maxVideoHeight,
+                      onChanged: (value) {
+                        PlaybackPreferences.setMaxVideoHeight(
+                          value,
+                          serverName: server,
+                        );
+                        setState(() => _maxVideoHeight = value);
+                      },
+                      items: [
+                        DropdownMenuItem(
+                          value: null,
+                          child: Text(loc.qualityAuto),
+                        ),
+                        const DropdownMenuItem(value: 720, child: Text('720p')),
+                        const DropdownMenuItem(value: 480, child: Text('480p')),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SettingsSection(
+                key: const ValueKey('playback-section-during'),
+                title: loc.playbackSectionDuringPlayback,
+                children: [
+                  SwitchListTile(
+                    key: const ValueKey('playback-auto-skip-intro'),
+                    secondary: const Icon(Icons.skip_next_outlined),
+                    title: Text(loc.autoSkipIntro),
+                    subtitle: Text(loc.autoSkipIntroDescription),
+                    value: _autoSkipIntro,
+                    onChanged: (value) {
+                      PlaybackPreferences.setAutoSkipIntro(
+                        value,
+                        serverName: server,
+                      );
+                      setState(() => _autoSkipIntro = value);
+                    },
+                  ),
+                ],
               ),
             ],
           );

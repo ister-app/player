@@ -324,7 +324,7 @@
   "rawData": "Raw data",
   "nodes": "Nodes",
   "server": "Server",
-  "serverSettingsSubtitle": "Nodes, activity and maintenance",
+  "serverSettingsSubtitle": "Nodes, activity and queued work",
   "@serverSettingsSubtitle": {
     "description": "Subtitle of the Server entry in the settings list"
   },
@@ -2296,5 +2296,61 @@
   "errorLogEmpty": "There is no log to save yet",
   "@errorLogEmpty": {
       "description": "Snackbar when the save-error-log action found nothing to save"
+  },
+  "settingsSectionPlayback": "Playback",
+  "@settingsSectionPlayback": {
+    "description": "Section header in the settings list, above the preferences that follow you across devices"
+  },
+  "settingsSectionThisDevice": "This device",
+  "@settingsSectionThisDevice": {
+    "description": "Section header in the settings list, above the settings that apply to this device only"
+  },
+  "settingsSectionSharing": "Sharing & devices",
+  "@settingsSectionSharing": {
+    "description": "Section header in the settings list, above sharing, devices and now playing"
+  },
+  "settingsSectionServer": "Server",
+  "@settingsSectionServer": {
+    "description": "Section header in the settings list, above the server and administration entries"
+  },
+  "settingsSectionApp": "App",
+  "@settingsSectionApp": {
+    "description": "Section header in the settings list, above the log and about entries"
+  },
+  "serverStatusAndMaintenance": "Status & maintenance",
+  "@serverStatusAndMaintenance": {
+    "description": "Title of the Server entry in the settings list"
+  },
+  "playbackSettingsSubtitle": "Direct play, transcoding and quality",
+  "@playbackSettingsSubtitle": {
+    "description": "Subtitle of the Playback entry in the settings list"
+  },
+  "nowPlayingSubtitle": "What is playing on this server right now",
+  "@nowPlayingSubtitle": {
+    "description": "Subtitle of the Now playing entry in the settings list"
+  },
+  "usersAndAccessSubtitle": "Who may sign in and what they can reach",
+  "@usersAndAccessSubtitle": {
+    "description": "Subtitle of the Users & access entry in the settings list"
+  },
+  "libraryVisibilitySubtitle": "Which libraries everyone can see",
+  "@libraryVisibilitySubtitle": {
+    "description": "Subtitle of the Library visibility entry in the settings list"
+  },
+  "aboutAttributionsSubtitle": "Data sources, licenses and app version",
+  "@aboutAttributionsSubtitle": {
+    "description": "Subtitle of the About & data sources entry in the settings list"
+  },
+  "playbackSectionStreaming": "Streaming",
+  "@playbackSectionStreaming": {
+    "description": "Section header on the playback settings page, above direct play, transcoding and quality"
+  },
+  "playbackSectionDuringPlayback": "During playback",
+  "@playbackSectionDuringPlayback": {
+    "description": "Section header on the playback settings page, above the skip-intro switch"
+  },
+  "downloadSettingsSection": "Downloads",
+  "@downloadSettingsSection": {
+    "description": "Section header on the download settings page, above the download preferences"
   }
 }

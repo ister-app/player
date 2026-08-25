@@ -12,7 +12,7 @@ Every server has three main areas:
 
 - **Home** — recently played items and highlights from your libraries.
 - **Library** — everything on the server, browsable and sortable.
-- **Settings** — your language and playback preferences for this server, plus server info.
+- **Settings** — your playback and sharing preferences, downloads on this device, server info and, for admins, the management screens.
 
 On phones these sit in a bar at the bottom of the screen. On desktop, web and TV the same tabs appear as a navigation rail along the left edge — same destinations, just laid out for a bigger screen.
 

@@ -12,7 +12,7 @@ Elke server heeft drie hoofdonderdelen:
 
 - **Home** — recent afgespeelde items en uitgelicht materiaal uit je bibliotheken.
 - **Bibliotheek** — alles op de server, te doorbladeren en te sorteren.
-- **Instellingen** — je taal- en afspeelvoorkeuren voor deze server, plus serverinformatie.
+- **Instellingen** — je afspeel- en deelvoorkeuren, downloads op dit apparaat, serverinformatie en, voor beheerders, de beheerschermen.
 
 Op telefoons staan deze in een balk onderaan het scherm. Op desktop, web en tv verschijnen dezelfde tabbladen als een navigatiebalk langs de linkerrand — dezelfde bestemmingen, alleen ingericht voor een groter scherm.
 
