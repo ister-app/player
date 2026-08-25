@@ -15,6 +15,7 @@ import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/graphql/serverActivitySnapshot.graphql.dart';
 
 import '../components/LiveFeedBanner.dart';
+import '../routes/AppRouter.dart';
 import '../routes/AppRouter.gr.dart';
 import '../l10n/app_localizations.dart';
 import '../components/ListenTogetherSheet.dart';
@@ -130,7 +131,8 @@ class _RemoteControlPageState extends State<RemoteControlPage> {
 
         return PlayerView(
           controller: controller,
-          onDismissed: () => context.router.pop(),
+          onDismissed: () =>
+              popOverlayRoute(context, serverName: widget.serverName),
         );
       },
     );

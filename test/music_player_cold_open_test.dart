@@ -192,4 +192,54 @@ void main() {
     expect(find.text('album page'), findsOneWidget);
     expect(find.byType(PlayerView, skipOffstage: false), findsNothing);
   });
+
+  testWidgets(
+      'back from a player-only stack lands on the server shell, not a blank '
+      'navigator', (tester) async {
+    _installPlayingTrack(handler);
+    ClientManager.instance.lastClientUsed = 'test-server';
+    final router = _TestRouter();
+    await tester.pumpWidget(_app(router));
+    await tester.pumpAndSettle();
+
+    // Android disposed the activity while the audio service kept the process
+    // alive; on return the router rebuilds the root stack from the current URL
+    // (/player), so the overlay is the only route left.
+    await router.replaceAll([const MusicPlayerRoute()]);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.byType(PlayerView, skipOffstage: false), findsOneWidget);
+
+    PlayerView.activeBackHandler!();
+    await tester.pumpAndSettle();
+
+    expect(find.text('server home'), findsOneWidget);
+    expect(find.byType(PlayerView, skipOffstage: false), findsNothing);
+    expect(router.stack, isNotEmpty);
+  });
+
+  testWidgets('back with the shell underneath pops instead of replacing',
+      (tester) async {
+    _installPlayingTrack(handler);
+    // A stray replaceAll would fall back to the server list without this.
+    ClientManager.instance.lastClientUsed = null;
+    final router = _TestRouter();
+    await tester.pumpWidget(_app(router));
+    await tester.pumpAndSettle();
+
+    await router.replaceAll([ServerHomeRoute(serverName: 'test-server')]);
+    await tester.pumpAndSettle();
+    router.push(const MusicPlayerRoute());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump(const Duration(milliseconds: 600));
+
+    PlayerView.activeBackHandler!();
+    await tester.pumpAndSettle();
+
+    expect(find.text('server home'), findsOneWidget);
+    expect(find.text('server list'), findsNothing);
+    expect(find.byType(PlayerView, skipOffstage: false), findsNothing);
+  });
 }

@@ -3,6 +3,28 @@ import 'package:flutter/material.dart';
 import 'package:player/components/PlayerView.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/routes/ServerChildDeepLinkGuard.dart';
+import 'package:player/utils/ClientManager.dart';
+
+/// Closes a full-screen overlay route (`/player`, `/remote/…`): pops it, or
+/// lands on the server shell when it is the only route left.
+///
+/// Android can dispose the activity while the audio foreground service keeps
+/// the process alive; on return the router rebuilds the root stack from the
+/// current URL, and for an overlay route that leaves a stack of exactly one.
+/// Popping that empties the navigator, which renders blank with no way out —
+/// the user has to kill the app. [ServerChildDeepLinkGuard] does the same job
+/// for the server's child routes.
+void popOverlayRoute(BuildContext context, {String? serverName}) {
+  final router = context.router;
+  if (router.stack.length > 1) {
+    router.pop();
+    return;
+  }
+  final server = serverName ?? ClientManager.instance.lastClientUsed;
+  router.replaceAll([
+    if (server != null) ServerHomeRoute(serverName: server) else HomeRoute(),
+  ]);
+}
 
 class _MusicPlayerAwareDelegate extends AutoRouterDelegate {
   _MusicPlayerAwareDelegate(

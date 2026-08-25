@@ -11,6 +11,7 @@ import 'package:player/components/RatingStars.dart';
 import 'package:player/dto/IsterMediaItem.dart';
 import 'package:player/dto/MediaItemId.dart';
 import 'package:player/graphql/schema.graphql.dart';
+import 'package:player/routes/AppRouter.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
@@ -71,7 +72,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
     return PlayerView(
       controller: _controller,
       initialSlideValue: _initialSlideValue,
-      onDismissed: () => context.router.pop(),
+      onDismissed: () => popOverlayRoute(context),
     );
   }
 }
