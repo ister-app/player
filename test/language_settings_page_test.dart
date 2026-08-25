@@ -298,6 +298,10 @@ void main() {
       await tester.pumpWidget(_app());
       await tester.pumpAndSettle();
 
+      // The switch is the last thing on the page, below the fold on the
+      // default 800x600 test surface.
+      await tester.ensureVisible(find.byKey(key));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(key));
       await tester.pumpAndSettle();
 
@@ -310,6 +314,8 @@ void main() {
       await tester.pumpWidget(_app());
       await tester.pumpAndSettle();
 
+      await tester.ensureVisible(find.byKey(key));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(key));
       await tester.pumpAndSettle();
 

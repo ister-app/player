@@ -5,6 +5,10 @@ import 'package:flutter/material.dart';
 /// Lifted out of ServerSettingsLanguagePage, which grew it first; the settings
 /// hub, playback, downloads and sleep-timer pages all render it now so the
 /// headers line up wherever you land.
+///
+/// Deliberately louder than the rows it heads: accented, bold and a size up.
+/// The muted label style it started as read as just another line of helper
+/// text on pages that carry tile subtitles or hints under every row.
 class SettingsSectionLabel extends StatelessWidget {
   final String title;
 
@@ -12,12 +16,16 @@ class SettingsSectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.only(left: 4.0, top: 16.0, bottom: 4.0),
+      padding: const EdgeInsets.only(left: 4.0, top: 24.0, bottom: 8.0),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.labelMedium
-            ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+        style: theme.textTheme.titleSmall?.copyWith(
+          color: theme.colorScheme.primary,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.4,
+        ),
       ),
     );
   }
