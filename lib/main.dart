@@ -131,6 +131,16 @@ const _pageTransitionsTheme = PageTransitionsTheme(
   },
 );
 
+/// Keeps a snackbar's action on the same line as its text.
+///
+/// Material moves the action to a second row once its label is wider than a
+/// quarter of the bar — *and* then still reserves 40% of the width beside the
+/// text, so the text wraps too. A Dutch "Ongedaan maken" trips that at every
+/// phone width, turning a one-line snackbar into a 110px block. At 1.0 the
+/// action always stays inline and the text simply takes what is left, wrapping
+/// only when it genuinely does not fit.
+const appSnackBarTheme = SnackBarThemeData(actionOverflowThreshold: 1.0);
+
 /// The stack the app boots into when [lastServer] was already in use, for a
 /// launch that carries no deep link of its own.
 ///
@@ -231,12 +241,14 @@ class _MainState extends State<Main> {
         brightness: Brightness.light,
         fontFamily: 'Roboto',
         pageTransitionsTheme: _pageTransitionsTheme,
+        snackBarTheme: appSnackBarTheme,
       ),
       darkTheme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFF4D7C0F), brightness: Brightness.dark),
         brightness: Brightness.dark,
         fontFamily: 'Roboto',
         pageTransitionsTheme: _pageTransitionsTheme,
+        snackBarTheme: appSnackBarTheme,
       ),
       routerConfig: _routerConfig,
     );
