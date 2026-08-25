@@ -1,5 +1,67 @@
 # Changelog
 
+## player v1.19.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:1.19.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(player): choose an item count for the automatic sleep timer ([`50304bf`](https://github.com/ister-app/player/commit/50304bf))
+- feat(settings): merge the server-activity screen into the server page ([`7a82c80`](https://github.com/ister-app/player/commit/7a82c80))
+- feat: save the app error log from the settings page ([`3c6a515`](https://github.com/ister-app/player/commit/3c6a515))
+- feat(history): playback history per media item with delete and mark-played ([`e71d8d4`](https://github.com/ister-app/player/commit/e71d8d4))
+- feat(shows): scroll the overview to the video player when an episode starts ([`1d98b67`](https://github.com/ister-app/player/commit/1d98b67))
+- feat(player): sleep timer in the video controls ([`3e5a046`](https://github.com/ister-app/player/commit/3e5a046))
+- feat(player): stop returns the video page to its cover and play button ([`1dbf7fa`](https://github.com/ister-app/player/commit/1dbf7fa))
+- feat(downloads): choose which connections downloads may use ([`7ad11b8`](https://github.com/ister-app/player/commit/7ad11b8))
+- feat(downloads): keep the next unwatched episodes downloaded ([`439260e`](https://github.com/ister-app/player/commit/439260e))
+- feat(servers): guided add-server flow and a friendlier server overview ([`4585f5d`](https://github.com/ister-app/player/commit/4585f5d))
+- feat(video): show the cover with a play button before playing, and until the stream runs ([`fe6f7d2`](https://github.com/ister-app/player/commit/fe6f7d2))
+- feat(downloads): list cached music under one entry ([`5bcac5c`](https://github.com/ister-app/player/commit/5bcac5c))
+- feat(downloads): show the downloads pages inside the server shell ([`0db9d7a`](https://github.com/ister-app/player/commit/0db9d7a))
+- feat(downloads): read downloaded epubs, cbz and pdf files offline ([`f28548b`](https://github.com/ister-app/player/commit/f28548b))
+- feat(downloads): keep downloads running in the background on Android ([`3dd0670`](https://github.com/ister-app/player/commit/3dd0670))
+- feat(downloads): download episodes that share one media file ([`a88ca96`](https://github.com/ister-app/player/commit/a88ca96))
+- feat(downloads): offline downloads, local playback and a music cache ([`5b5d459`](https://github.com/ister-app/player/commit/5b5d459))
+
+### Fixes
+
+- fix(player): rotate fullscreen video to both landscape sides ([`0420dbd`](https://github.com/ister-app/player/commit/0420dbd))
+- fix(search): open the episode page when an episode result is tapped ([`981d517`](https://github.com/ister-app/player/commit/981d517))
+- fix(player): slide sheets up from the bottom of the window ([`de44720`](https://github.com/ister-app/player/commit/de44720))
+- fix(cast): show the cast without bands of empty space ([`3abae00`](https://github.com/ister-app/player/commit/3abae00))
+- fix(player): no "episode 0" flash when returning from the mini player ([`90ac35f`](https://github.com/ister-app/player/commit/90ac35f))
+- fix(downloads): one token refresh when requests run in parallel ([`fa239cd`](https://github.com/ister-app/player/commit/fa239cd))
+- fix(home): continue-watching row no longer breaks after an episode page visit ([`c97f3b9`](https://github.com/ister-app/player/commit/c97f3b9))
+- fix(downloads): label episode downloads with their season ([`ec89baf`](https://github.com/ister-app/player/commit/ec89baf))
+- fix(downloads): clearer row status and auto-retry after a token rejection ([`ed1c091`](https://github.com/ister-app/player/commit/ed1c091))
+- fix(downloads): start a downloaded video while its page is showing ([`ee2a80c`](https://github.com/ister-app/player/commit/ee2a80c))
+- fix(downloads): retry network failures on their own ([`4087d49`](https://github.com/ister-app/player/commit/4087d49))
+- fix(downloads): keep the Android foreground service up between downloads ([`df2e60c`](https://github.com/ister-app/player/commit/df2e60c))
+- fix(downloads): tell what 'fill cache now' did ([`fb1f41c`](https://github.com/ister-app/player/commit/fb1f41c))
+- fix(player): let the portrait cover shrink so the bottom bar stays on screen ([`6faf2d6`](https://github.com/ister-app/player/commit/6faf2d6))
+
+### Other
+
+- ci(e2e): pin the server to the 2.19.1-snapshot line for playback history ([`f5a0fbb`](https://github.com/ister-app/player/commit/f5a0fbb))
+- perf(downloads): run the download on a background isolate ([`8efc990`](https://github.com/ister-app/player/commit/8efc990))
+- perf(downloads): fetch segments in a bounded window per playlist ([`47c1eca`](https://github.com/ister-app/player/commit/47c1eca))
+- ci(e2e): capture why a container died in the kind diagnostics ([`3293d59`](https://github.com/ister-app/player/commit/3293d59))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:1.19.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.18.0...v1.19.0
+
 ## player v1.18.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
