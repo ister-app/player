@@ -12,6 +12,9 @@ class LoggerService {
 
   LoggerService._internal()
       : logger = Logger(
+          // The default DevelopmentFilter drops every event in release builds,
+          // which silently turns the exported error log into headers-only.
+          filter: ProductionFilter(),
           output: MultiOutput([ConsoleOutput(), AppLogStore.instance.output]),
         );
 }
