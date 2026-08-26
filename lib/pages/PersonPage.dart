@@ -34,6 +34,7 @@ import '../components/BookCarouselTile.dart';
 import '../components/CarouselItemView.dart';
 import '../components/ExpandableText.dart';
 import '../components/MusicDetailHero.dart';
+import '../components/PlaybackHistorySheet.dart';
 import '../components/SourceAttribution.dart';
 import '../components/TvFocusable.dart';
 import '../l10n/app_localizations.dart';
@@ -245,6 +246,19 @@ class _PersonPageState extends State<PersonPage> {
           foregroundColor: Colors.white,
           actions: [
             // Reserved while loading, so the app bar doesn't grow an icon.
+            if (skeleton)
+              const IconButton(onPressed: null, icon: Icon(Icons.history)),
+            if (artist != null)
+              IconButton(
+                icon: const Icon(Icons.history),
+                tooltip: loc.playbackHistory,
+                onPressed: () => showTrackScopePlaybackHistorySheet(
+                  context,
+                  serverName: serverName,
+                  scope: Enum$TrackHistoryScope.ARTIST,
+                  id: artist.id,
+                ),
+              ),
             if (skeleton && _showAdminActions)
               const IconButton(onPressed: null, icon: Icon(Icons.analytics)),
             if (artist != null && _showAdminActions)

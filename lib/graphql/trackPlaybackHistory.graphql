@@ -1,0 +1,22 @@
+# The plays of every track of one container (album or artist), newest first.
+# Every entity in the selection carries its id: mixing id-less selections of the
+# same entity elsewhere makes the normalised cache miss on re-read.
+query trackPlaybackHistory($scope: TrackHistoryScope!, $id: ID!, $limit: Int) {
+    trackPlaybackHistory(scope: $scope, id: $id, limit: $limit) {
+        id
+        watched
+        progressInMilliseconds
+        createdAt
+        updatedAt
+        track {
+            id
+            number
+            metadata { ...fragmentMetadata }
+            album {
+                id
+                name
+                metadata { ...fragmentMetadata }
+            }
+        }
+    }
+}

@@ -2788,6 +2788,39 @@ Enum$RankKind fromJson$Enum$RankKind(String value) {
   }
 }
 
+enum Enum$TrackHistoryScope {
+  ALBUM,
+  ARTIST,
+  $unknown;
+
+  factory Enum$TrackHistoryScope.fromJson(String value) =>
+      fromJson$Enum$TrackHistoryScope(value);
+
+  String toJson() => toJson$Enum$TrackHistoryScope(this);
+}
+
+String toJson$Enum$TrackHistoryScope(Enum$TrackHistoryScope e) {
+  switch (e) {
+    case Enum$TrackHistoryScope.ALBUM:
+      return r'ALBUM';
+    case Enum$TrackHistoryScope.ARTIST:
+      return r'ARTIST';
+    case Enum$TrackHistoryScope.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$TrackHistoryScope fromJson$Enum$TrackHistoryScope(String value) {
+  switch (value) {
+    case r'ALBUM':
+      return Enum$TrackHistoryScope.ALBUM;
+    case r'ARTIST':
+      return Enum$TrackHistoryScope.ARTIST;
+    default:
+      return Enum$TrackHistoryScope.$unknown;
+  }
+}
+
 enum Enum$ReadingDirection {
   LTR,
   RTL,

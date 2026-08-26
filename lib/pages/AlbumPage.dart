@@ -29,6 +29,7 @@ import '../components/DevicePickerSheet.dart';
 import '../components/ExpandableText.dart';
 import '../components/SourceAttribution.dart';
 import '../components/MusicDetailHero.dart';
+import '../components/PlaybackHistorySheet.dart';
 import '../components/RatingStars.dart';
 import '../components/TvFocusable.dart';
 import '../dto/IsterMediaItem.dart';
@@ -478,6 +479,18 @@ class _AlbumPageState extends State<AlbumPage> {
               title: Text(loc.addToPlaylist),
             ),
           ),
+        MenuItemButton(
+          onPressed: () => showTrackScopePlaybackHistorySheet(
+            context,
+            serverName: widget.serverName,
+            scope: Enum$TrackHistoryScope.ALBUM,
+            id: album.id,
+          ),
+          child: ListTile(
+            leading: const Icon(Icons.history),
+            title: Text(loc.playbackHistory),
+          ),
+        ),
         if (_showAdminActions)
           MenuItemButton(
             onPressed: () => runServerTask(
@@ -768,6 +781,18 @@ class _AlbumPageState extends State<AlbumPage> {
                           child: ListTile(
                             leading: const Icon(Icons.star_outline_rounded),
                             title: Text(loc.rate),
+                          ),
+                        ),
+                        MenuItemButton(
+                          onPressed: () => showPlaybackHistorySheet(
+                            context,
+                            serverName: widget.serverName,
+                            mediaType: Enum$MediaType.TRACK,
+                            mediaId: track.id,
+                          ),
+                          child: ListTile(
+                            leading: const Icon(Icons.history),
+                            title: Text(loc.playbackHistory),
                           ),
                         ),
                         if (_showAdminActions)

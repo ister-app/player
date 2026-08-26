@@ -26,6 +26,46 @@ Map<String, dynamic> _entry(String id, String updatedAt,
       'chapter': chapter,
     };
 
+Map<String, dynamic> _trackEntry(String id, String updatedAt,
+        {String? trackTitle, String? albumTitle, int number = 1}) =>
+    {
+      '__typename': 'WatchStatus',
+      'id': id,
+      'watched': true,
+      'progressInMilliseconds': 1000,
+      'createdAt': updatedAt,
+      'updatedAt': updatedAt,
+      'track': {
+        '__typename': 'Track',
+        'id': 'track-$id',
+        'number': number,
+        'metadata': [
+          if (trackTitle != null) _metadata('meta-$id', trackTitle),
+        ],
+        'album': {
+          '__typename': 'Album',
+          'id': 'album-$id',
+          'name': albumTitle ?? 'Album',
+          'metadata': [
+            if (albumTitle != null) _metadata('album-meta-$id', albumTitle),
+          ],
+        },
+      },
+    };
+
+Map<String, dynamic> _metadata(String id, String title) => {
+      '__typename': 'Metadata',
+      'id': id,
+      'title': title,
+      'description': null,
+      'language': null,
+      'sourceUri': null,
+      'source': null,
+      'released': null,
+      'genre': null,
+      'tagline': null,
+    };
+
 void main() {
   setUp(() {
     ClientManager.clients.clear();
@@ -87,8 +127,10 @@ void main() {
       home: Scaffold(
         body: PlaybackHistorySheetBody(
           serverName: _server,
-          mediaType: mediaType,
-          mediaId: 'media-1',
+          source: ItemPlaybackHistorySource(
+            mediaType: mediaType,
+            mediaId: 'media-1',
+          ),
           onChanged: onChanged,
         ),
       ),
@@ -153,6 +195,113 @@ void main() {
     expect(changed, 1);
     expect(find.text(formatted('2026-08-20T19:04:00Z')), findsNothing);
     expect(find.text(formatted('2026-07-01T08:30:00Z')), findsOneWidget);
+  });
+
+  /// Serves trackPlaybackHistory rows; deleting still removes the matching one.
+  void useFakeTrackScopeGraphQL(List<Map<String, dynamic>> entries) {
+    final client = MockClient((request) async {
+      final body = json.decode(request.body) as Map<String, dynamic>;
+      final query = body['query'] as String? ?? '';
+      final variables = body['variables'] as Map<String, dynamic>? ?? {};
+      Map<String, dynamic> payload;
+      if (query.contains('deleteWatchStatus')) {
+        entries.removeWhere((entry) => entry['id'] == variables['id']);
+        payload = {
+          'data': {'__typename': 'Mutation', 'deleteWatchStatus': true}
+        };
+      } else {
+        payload = {
+          'data': {
+            '__typename': 'Query',
+            'trackPlaybackHistory': List.of(entries),
+          }
+        };
+      }
+      return http.Response(json.encode(payload), 200,
+          headers: {'content-type': 'application/json'});
+    });
+    ClientManager.testClientBuilder = (_) => GraphQLClient(
+          link: HttpLink('https://api.example/graphql', httpClient: client),
+          cache: GraphQLCache(),
+        );
+  }
+
+  Future<void> pumpScopeSheet(WidgetTester tester,
+      {required Enum$TrackHistoryScope scope, VoidCallback? onChanged}) async {
+    await tester.pumpWidget(MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('en')],
+      home: Scaffold(
+        body: PlaybackHistorySheetBody(
+          serverName: _server,
+          source: TrackScopePlaybackHistorySource(scope: scope, id: 'c-1'),
+          onChanged: onChanged,
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('an album history names the played track but not its album',
+      (tester) async {
+    useFakeTrackScopeGraphQL([
+      _trackEntry('a', '2026-08-20T19:04:00Z',
+          trackTitle: 'Blue Monday', albumTitle: 'Power, Corruption & Lies'),
+    ]);
+
+    await pumpScopeSheet(tester, scope: Enum$TrackHistoryScope.ALBUM);
+
+    expect(find.text('Blue Monday'), findsOneWidget);
+    expect(find.textContaining('Power, Corruption & Lies'), findsNothing);
+    // No "mark as played" — a container is never played "just now".
+    expect(find.byKey(const ValueKey('playback-history-mark-played')),
+        findsNothing);
+  });
+
+  testWidgets('an artist history adds the album to each row', (tester) async {
+    useFakeTrackScopeGraphQL([
+      _trackEntry('a', '2026-08-20T19:04:00Z',
+          trackTitle: 'Blue Monday', albumTitle: 'Power, Corruption & Lies'),
+    ]);
+
+    await pumpScopeSheet(tester, scope: Enum$TrackHistoryScope.ARTIST);
+
+    expect(find.text('Blue Monday · Power, Corruption & Lies'), findsOneWidget);
+  });
+
+  testWidgets('a track without a title falls back to its number',
+      (tester) async {
+    useFakeTrackScopeGraphQL([
+      _trackEntry('a', '2026-08-20T19:04:00Z', trackTitle: null, number: 7),
+    ]);
+
+    await pumpScopeSheet(tester, scope: Enum$TrackHistoryScope.ALBUM);
+
+    expect(find.text('7'), findsOneWidget);
+  });
+
+  testWidgets('deleting a row of a container history removes it',
+      (tester) async {
+    var changed = 0;
+    useFakeTrackScopeGraphQL([
+      _trackEntry('a', '2026-08-20T19:04:00Z', trackTitle: 'One'),
+      _trackEntry('b', '2026-08-19T19:04:00Z', trackTitle: 'Two'),
+    ]);
+
+    await pumpScopeSheet(tester,
+        scope: Enum$TrackHistoryScope.ALBUM, onChanged: () => changed++);
+    await tester.tap(find.byKey(const ValueKey('playback-history-delete-a')));
+    await tester.pumpAndSettle();
+
+    expect(changed, 1);
+    expect(find.byKey(const ValueKey('playback-history-entry-a')), findsNothing);
+    expect(
+        find.byKey(const ValueKey('playback-history-entry-b')), findsOneWidget);
   });
 
   testWidgets('a book entry carries the reading-progress hint and a chapter '
