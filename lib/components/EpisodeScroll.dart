@@ -77,8 +77,14 @@ class EpisodeScroll extends StatelessWidget {
   void _open(BuildContext context, Query$episodes$episodes$content episode) {
     final showId = episode.$show?.id;
     if (showId == null) return;
-    AutoRouter.of(context)
-        .push(ShowEpisodeRoute(showId: showId, episodeId: episode.id));
+    // ShowEpisodeRoute is a child of ShowOverviewRoute, so from outside the
+    // show shell it must be pushed through its parent.
+    AutoRouter.of(context).push(ShowOverviewRoute(
+          showId: showId,
+          children: [
+            ShowEpisodeRoute(showId: showId, episodeId: episode.id),
+          ],
+        ));
   }
 
   @override

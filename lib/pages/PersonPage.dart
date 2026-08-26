@@ -994,8 +994,14 @@ class _PersonShowEpisodesSheetState extends State<_PersonShowEpisodesSheet> {
           ? null
           : () {
               Navigator.of(context).pop();
-              widget.resolveRouter()
-                  .push(ShowEpisodeRoute(showId: showId, episodeId: episode.id));
+              // ShowEpisodeRoute is a child of ShowOverviewRoute, so from
+              // outside the show shell it must be pushed through its parent.
+              widget.resolveRouter().push(ShowOverviewRoute(
+                    showId: showId,
+                    children: [
+                      ShowEpisodeRoute(showId: showId, episodeId: episode.id),
+                    ],
+                  ));
             },
     );
   }
