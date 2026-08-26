@@ -85,7 +85,8 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
               child: _buildContent(null, null, BoneMock.name,
                   BoneMock.paragraph, null, null, context, '',
                   const CastRowSkeleton(), null,
-                  skeleton: true));
+                  skeleton: true,
+                  relatedRow: const RelatedShowsRowSkeleton()));
         } else if (result.hasException) {
           body = Text(result.exception.toString());
         } else {
@@ -136,7 +137,8 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
       Widget castRow,
       Widget? ratingRow,
       {Query$showById$showById? show,
-      bool skeleton = false}) {
+      bool skeleton = false,
+      Widget? relatedRow}) {
     return SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       LayoutBuilder(builder: (context, constraints) {
@@ -329,8 +331,13 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
             ),
           ])),
       castRow,
-      // Only on the real page: the skeleton has no show to relate anything to.
-      if (show != null) RelatedShowsRow(serverName: serverName, showId: showId),
+      // The skeleton has no show to relate anything to and hands in bones
+      // instead, so the strip is reserved from the first frame rather than
+      // shoving the page down once the related query lands.
+      if (show != null)
+        RelatedShowsRow(serverName: serverName, showId: showId)
+      else
+        ?relatedRow,
     ]));
   }
 
