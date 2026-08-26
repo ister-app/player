@@ -113,6 +113,8 @@ class EpisodeScroll extends StatelessWidget {
               if (episode == null) {
                 return pagedSkeletonRow(
                   key: ValueKey('episode-list-skeleton-$index'),
+                  placeholderIcon: Icons.tv,
+                  progress: 0,
                   onVisible: () => requestPage(index ~/ _pageSize),
                 );
               }
@@ -161,6 +163,7 @@ class EpisodeScroll extends StatelessWidget {
 
             return pagedSkeletonSlot(
               key: ValueKey('episode-scroll-skeleton-$index'),
+              placeholderIcon: Icons.tv,
               onVisible: () => requestPage(index ~/ _pageSize),
             );
           },

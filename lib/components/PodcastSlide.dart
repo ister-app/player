@@ -51,6 +51,7 @@ class PodcastSlide extends StatelessWidget {
 
             return pagedSkeletonSlot(
               key: ValueKey('podcast-slide-placeholder-$index'),
+              placeholderIcon: Icons.podcasts,
               onVisible: () => requestPage(index ~/ _pageSize),
             );
           },

@@ -9,9 +9,9 @@ import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MetadataUtil.dart';
 import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 
 import 'CarouselItemView.dart';
+import 'PagedContentView.dart' show pagedSkeletonSlot;
 
 /// Horizontal carousel that lazily loads TV‑show items.
 class TvShowSlide extends StatefulWidget {
@@ -148,21 +148,15 @@ class _TvShowSlideState extends State<TvShowSlide> {
             }
 
             final page = index ~/ _pageSize;
-            return VisibilityDetector(
+            // The shared slot, not a copy: the real tile's subtitle is a
+            // release year, and the hand-rolled mock was a ten-word bone.
+            return pagedSkeletonSlot(
               key: ValueKey('tvshow-placeholder-$index'),
-              onVisibilityChanged: (info) {
-                if (info.visibleFraction > 0 && fetchMore != null) {
-                  _requestPage(page, fetchMore);
-                }
+              onVisible: () {
+                if (fetchMore != null) _requestPage(page, fetchMore);
               },
-              child: Skeletonizer(
-                enabled: true,
-                child: CarouselItemView(
-                  serverName: '',
-                  title: BoneMock.name,
-                  subTitle: BoneMock.words(10),
-                ),
-              ),
+              placeholderIcon: Icons.tv,
+              subtitleWords: 1,
             );
           },
         );

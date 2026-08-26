@@ -20,6 +20,9 @@ import '../utils/ImageUtil.dart';
 import '../utils/StreamTokenService.dart';
 
 class TvShowSeasonList extends StatelessWidget {
+  /// Episode rows the skeleton reserves — a typical season's worth.
+  static const int _skeletonEpisodeCount = 7;
+
   final String serverName;
   final String seasonId;
   final bool expanded;
@@ -45,13 +48,20 @@ class TvShowSeasonList extends StatelessWidget {
             return Text(result.exception.toString());
           }
 
-          if (result.data == null || result.isLoading) {
+          if (result.data == null) {
             var list = List<Widget>.of([Divider()]);
             list.addAll(ListTile.divideTiles(
                     context: context,
-                    tiles: List.filled(7, BoneMock.title).map((e) {
-                      return getListTile(context, e, BoneMock.paragraph, false,
-                          1, "1", "1", null, null, null);
+                    tiles: List.filled(_skeletonEpisodeCount, BoneMock.title)
+                        .map((e) {
+                      // A real row also carries a meta line, a progress bar and
+                      // (sometimes) a combined-file badge; without them the
+                      // stand-in was a line shorter than what landed. The empty
+                      // showId keeps the trailing menu — and its download
+                      // lookups for a non-existent episode — out of the bones.
+                      return getListTile(context, e, BoneMock.words(4), false,
+                          1, "", "", null, null, 0.0,
+                          metaLine: BoneMock.words(2));
                     }).toList())
                 .toList());
             return Skeletonizer(enabled: true, child: Column(children: list));

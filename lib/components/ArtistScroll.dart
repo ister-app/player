@@ -63,6 +63,9 @@ class ArtistScroll extends StatelessWidget {
               if (artist == null) {
                 return pagedSkeletonRow(
                   key: ValueKey('artist-list-skeleton-$index'),
+                  placeholderIcon: Icons.person,
+                  squareThumb: true,
+                  subtitleWords: 0,
                   onVisible: () => requestPage(index ~/ _pageSize),
                 );
               }
@@ -113,6 +116,8 @@ class ArtistScroll extends StatelessWidget {
 
             return pagedSkeletonSlot(
               key: ValueKey('artist-scroll-skeleton-$index'),
+              placeholderIcon: Icons.person,
+              subtitleWords: 0,
               onVisible: () => requestPage(index ~/ _pageSize),
             );
           },

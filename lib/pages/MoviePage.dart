@@ -129,13 +129,22 @@ class _MoviePageState extends State<MoviePage> {
             appBar: AppBar(),
             body: Center(child: Text(result.exception.toString())),
           );
-        } else if (result.data == null || result.isLoading) {
+        // Skeletonize only while there is nothing to show: with
+        // `cacheAndNetwork` every revalidation reports `isLoading` over a
+        // perfectly good cached result, which flashed the whole page away.
+        } else if (result.data == null) {
           return Scaffold(
-            appBar: AppBar(),
+            // The title is boned rather than left out: an empty AppBar made the
+            // real title materialise out of nothing.
+            appBar: AppBar(
+              title: Skeletonizer(enabled: true, child: Text(BoneMock.name)),
+            ),
             body: SingleChildScrollView(
               child: Skeletonizer(
                 enabled: true,
-                child: _buildContent(false, null, BoneMock.name, BoneMock.words(15), context),
+                child: _buildContent(
+                    false, null, BoneMock.name, BoneMock.words(15), context,
+                    skeleton: true),
               ),
             ),
           );
@@ -202,7 +211,8 @@ class _MoviePageState extends State<MoviePage> {
   }
 
   Widget _buildContent(bool loadComplete, Fragment$fragmentMovie? movie,
-      String title, String description, BuildContext context) {
+      String title, String description, BuildContext context,
+      {bool skeleton = false}) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       LayoutBuilder(
         builder: (context, constraints) {
@@ -366,6 +376,13 @@ class _MoviePageState extends State<MoviePage> {
                 ),
               ],
             ),
+            // The skeleton stands in with unrated stars, so the rows below it
+            // don't shift down once the movie lands.
+            if (skeleton)
+              const Padding(
+                padding: EdgeInsets.only(top: 4, bottom: 8),
+                child: RatingStarsDisplay(rating: null, size: 30),
+              ),
             if (movie != null && loadComplete)
               Padding(
                 padding: const EdgeInsets.only(top: 4, bottom: 8),
@@ -393,6 +410,7 @@ class _MoviePageState extends State<MoviePage> {
                 runtime: movie?.runtime,
                 contentRating: movie?.contentRating,
                 genres: MetadataUtil.getGenre(movie?.metadata),
+                skeleton: skeleton,
               ),
             ),
             if (MetadataUtil.getTagline(movie?.metadata) != null)
@@ -446,7 +464,9 @@ class _MoviePageState extends State<MoviePage> {
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: SourceAttribution(
-                  metadata: movie?.metadata, images: movie?.images),
+                  metadata: movie?.metadata,
+                  images: movie?.images,
+                  skeleton: skeleton),
             ),
           ])),
       PagedCastRow(serverName: widget.serverName, movieId: widget.movieId),

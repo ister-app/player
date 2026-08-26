@@ -283,13 +283,28 @@ class _ServerCardState extends State<_ServerCard> {
       future: _probed,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
+          // The real card's trailing chip and menu button are what set its
+          // height; a leading-and-two-lines stand-in made every card in the
+          // list grow the moment the probe came back.
           return Skeletonizer(
             enabled: true,
             child: Card(
               child: ListTile(
-                leading: const CircleAvatar(child: Text('·')),
+                leading: ServerAvatar(name: server),
                 title: Text(BoneMock.name),
                 subtitle: Text(BoneMock.words(3)),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _StatusChip(
+                      label: loc.statusConnected,
+                      icon: Icons.check_circle,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    const IconButton(
+                        onPressed: null, icon: Icon(Icons.more_vert)),
+                  ],
+                ),
               ),
             ),
           );

@@ -59,6 +59,8 @@ class PodcastScroll extends StatelessWidget {
               if (podcast == null) {
                 return pagedSkeletonRow(
                   key: ValueKey('podcast-list-skeleton-$index'),
+                  placeholderIcon: Icons.podcasts,
+                  squareThumb: true,
                   onVisible: () => requestPage(index ~/ _pageSize),
                 );
               }
@@ -99,6 +101,7 @@ class PodcastScroll extends StatelessWidget {
 
             return pagedSkeletonSlot(
               key: ValueKey('podcast-scroll-skeleton-$index'),
+              placeholderIcon: Icons.podcasts,
               onVisible: () => requestPage(index ~/ _pageSize),
             );
           },

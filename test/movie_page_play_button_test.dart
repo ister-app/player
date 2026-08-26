@@ -17,6 +17,7 @@ import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 const _server = 'test-server';
@@ -110,8 +111,8 @@ void main() {
         cache: GraphQLCache(),
       );
 
-  Widget page() => GraphQLProvider(
-        client: ValueNotifier(client()),
+  Widget page({GraphQLClient? shared}) => GraphQLProvider(
+        client: ValueNotifier(shared ?? client()),
         child: MaterialApp(
           localizationsDelegates: const [
             AppLocalizations.delegate,
@@ -155,6 +156,29 @@ void main() {
     expect(operations, isNot(contains('createPlayQueue')),
         reason: 'opening the page must not start playback');
     expect(handler.playQueue, isNull);
+  });
+
+  testWidgets('a cached revalidation does not flash the skeleton back',
+      (tester) async {
+    // One client, so the second mount reads the warm cache. `cacheAndNetwork`
+    // then reports `isLoading` on top of perfectly good data — the page used
+    // to skeletonize on that and flash the whole thing away.
+    final shared = client();
+    await tester.pumpWidget(page(shared: shared));
+    await settle(tester);
+    // App bar and body both carry the title.
+    expect(find.text('The Movie (2020)'), findsWidgets);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    await tester.pumpWidget(page(shared: shared));
+    // The very first frame of the remount, before the network answers again.
+    await tester.pump();
+
+    expect(find.byWidgetPredicate((w) => w is Skeletonizer), findsNothing);
+    expect(find.text('The Movie (2020)'), findsWidgets);
+
+    await settle(tester);
   });
 
   testWidgets('tapping play starts the queue and mounts the surface',

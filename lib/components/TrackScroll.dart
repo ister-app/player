@@ -157,6 +157,10 @@ class TrackScroll extends StatelessWidget {
               if (track == null) {
                 return pagedSkeletonRow(
                   key: ValueKey('track-list-skeleton-$index'),
+                  placeholderIcon: Icons.music_note,
+                  squareThumb: true,
+                  trailing: const IconButton(
+                      onPressed: null, icon: Icon(Icons.more_vert)),
                   onVisible: () => requestPage(index ~/ _pageSize),
                 );
               }
@@ -235,6 +239,7 @@ class TrackScroll extends StatelessWidget {
 
             return pagedSkeletonSlot(
               key: ValueKey('track-scroll-skeleton-$index'),
+              placeholderIcon: Icons.music_note,
               onVisible: () => requestPage(index ~/ _pageSize),
             );
           },

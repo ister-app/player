@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,9 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
+import 'package:player/components/CarouselItemView.dart';
+import 'package:player/components/SourceAttribution.dart';
+import 'package:player/components/MusicDetailHero.dart';
 import 'package:player/pages/SeriesPage.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
@@ -85,9 +89,11 @@ MockClient _fakeGraphQL({
   String readingDirection = 'LTR',
   String? userReadingDirection,
   List<Map<String, dynamic>>? mutations,
+  Future<void>? gate,
 }) =>
     MockClient((request) async {
       final body = json.decode(request.body) as Map<String, dynamic>;
+      if (gate != null) await gate;
       if ((body['query'] as String).contains('setSeriesReadingDirection')) {
         mutations?.add(body['variables'] as Map<String, dynamic>);
         return http.Response(
@@ -157,6 +163,32 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('the loading skeleton has the shape of the loaded page',
+      (tester) async {
+    final gate = Completer<void>();
+    await tester.pumpWidget(_app(_fakeGraphQL(gate: gate.future)));
+    // Fixed pumps, not pumpAndSettle: the skeleton's shimmer never settles.
+    for (var i = 0; i < 5; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    // The hero used to hide its cover and title whenever the series was null,
+    // leaving a flat grey rectangle that grew content out of nowhere.
+    expect(find.byType(MusicDetailHero), findsOneWidget);
+    expect(find.byIcon(Icons.auto_stories), findsWidgets);
+    // Description, reading direction and a grid of volumes, not an empty page.
+    expect(find.byType(SourceAttribution), findsOneWidget);
+    expect(
+        find.byWidgetPredicate((w) => w is SegmentedButton), findsOneWidget);
+    expect(find.byType(CarouselItemView), findsWidgets);
+
+    gate.complete();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Naruto (1999)'), findsOneWidget);
+    expect(find.text('Volume 1'), findsOneWidget);
   });
 
   testWidgets('the default segment names the detected direction of a manga',

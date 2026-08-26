@@ -57,6 +57,9 @@ class PersonPage extends StatefulWidget {
 }
 
 class _PersonPageState extends State<PersonPage> {
+  /// Filmography rows the skeleton reserves.
+  static const int _skeletonCreditCount = 4;
+
   String get serverName => widget.serverName;
   String get personId => widget.personId;
 
@@ -241,6 +244,9 @@ class _PersonPageState extends State<PersonPage> {
           stretch: true,
           foregroundColor: Colors.white,
           actions: [
+            // Reserved while loading, so the app bar doesn't grow an icon.
+            if (skeleton && _showAdminActions)
+              const IconButton(onPressed: null, icon: Icon(Icons.analytics)),
             if (artist != null && _showAdminActions)
               IconButton(
                 icon: const Icon(Icons.analytics),
@@ -256,7 +262,8 @@ class _PersonPageState extends State<PersonPage> {
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
             background:
-                _buildHero(context, loc, artist, albums, appearsOn, books),
+                _buildHero(context, loc, artist, albums, appearsOn, books,
+                    skeleton: skeleton),
           ),
         ),
         if (hasAlbums)
@@ -314,7 +321,7 @@ class _PersonPageState extends State<PersonPage> {
             ),
           ),
         ),
-        if (description != null)
+        if (description != null || skeleton)
           SliverToBoxAdapter(
             child: Center(
               child: Container(
@@ -330,10 +337,12 @@ class _PersonPageState extends State<PersonPage> {
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 8),
-                      ExpandableText(text: description),
+                      ExpandableText(text: description ?? BoneMock.paragraph),
                       const SizedBox(height: 6),
                       SourceAttribution(
-                          metadata: artist?.metadata, images: artist?.images),
+                          metadata: artist?.metadata,
+                          images: artist?.images,
+                          skeleton: skeleton),
                     ],
                   ),
                 ),
@@ -347,7 +356,7 @@ class _PersonPageState extends State<PersonPage> {
           child: _ArtistTrackTabs(
             serverName: serverName,
             personId: personId,
-            reserveSpace: albums.isNotEmpty || hasAppearsOn,
+            reserveSpace: skeleton || albums.isNotEmpty || hasAppearsOn,
           ),
         ),
         if (hasAlbums) ...[
@@ -387,7 +396,8 @@ class _PersonPageState extends State<PersonPage> {
             ),
           ),
         ],
-        if (credits.isNotEmpty) _buildFilmography(context, loc, credits),
+        if (credits.isNotEmpty || skeleton)
+          _buildFilmography(context, loc, credits, skeleton: skeleton),
       ],
     );
   }
@@ -461,7 +471,8 @@ class _PersonPageState extends State<PersonPage> {
   }
 
   Widget _buildFilmography(BuildContext context, AppLocalizations loc,
-      List<Fragment$fragmentPersonCredit> credits) {
+      List<Fragment$fragmentPersonCredit> credits,
+      {bool skeleton = false}) {
     // A person can hold several credits for the same title — a show-level credit
     // (with a role) plus one credit per episode. Merge everything per title so a
     // show shows up exactly once, with its episode count and role combined.
@@ -539,7 +550,21 @@ class _PersonPageState extends State<PersonPage> {
         ),
     ]..sort((a, b) => b.releaseYear.compareTo(a.releaseYear));
 
-    final rows = [for (final e in entries) e.row];
+    // Placeholder rows while the person is still loading: the filmography is
+    // usually the tallest section on an actor page, and leaving it out meant
+    // the whole thing dropped in at once.
+    final rows = skeleton && entries.isEmpty
+        ? [
+            for (int i = 0; i < _skeletonCreditCount; i++)
+              _entryRow(
+                context,
+                name: BoneMock.name,
+                subtitle: BoneMock.words(2),
+                images: null,
+                onTap: null,
+              ),
+          ]
+        : [for (final e in entries) e.row];
 
     if (rows.isEmpty) {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
@@ -696,7 +721,8 @@ class _PersonPageState extends State<PersonPage> {
       Query$artistById$artistById? artist,
       List<Fragment$fragmentAlbum> albums,
       List<Fragment$fragmentAlbum> appearsOn,
-      List<Fragment$fragmentBook> books) {
+      List<Fragment$fragmentBook> books,
+      {bool skeleton = false}) {
     final backgroundImg = artist != null
         ? ImageUtil.getImageByType(artist.images, ImageTypes.background)
         : null;
@@ -737,6 +763,7 @@ class _PersonPageState extends State<PersonPage> {
       placeholderIcon: Icons.person,
       // Person photos (TMDB profiles) are portraits, not square album art.
       coverAspectRatio: BookCarouselTile.coverAspectRatio,
+      skeleton: skeleton,
     );
   }
 

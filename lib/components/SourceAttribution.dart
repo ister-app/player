@@ -4,6 +4,7 @@ import 'package:player/graphql/fragmentMetadata.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/utils/MetadataUtil.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 /// A muted one-line "Source: TMDB · Wikipedia" note crediting the external
 /// providers the shown metadata (and optionally artwork) came from. Renders
@@ -12,7 +13,13 @@ class SourceAttribution extends StatelessWidget {
   final List<Fragment$fragmentMetadata>? metadata;
   final List<Fragment$fragmentImages?>? images;
 
-  const SourceAttribution({super.key, this.metadata, this.images});
+  /// Renders a placeholder line instead of nothing when there is no metadata
+  /// yet — pages that skeletonize pass nulls, and the collapsed line would
+  /// otherwise appear out of thin air once the data lands.
+  final bool skeleton;
+
+  const SourceAttribution(
+      {super.key, this.metadata, this.images, this.skeleton = false});
 
   /// Proper names, not translated.
   static String? displayName(Enum$MetadataSource source) {
@@ -48,11 +55,13 @@ class SourceAttribution extends StatelessWidget {
           .whereType<Enum$MetadataSource>(),
     };
     final names = sources.map(displayName).whereType<String>().toList();
-    if (names.isEmpty) {
+    if (names.isEmpty && !skeleton) {
       return const SizedBox.shrink();
     }
     return Text(
-      AppLocalizations.of(context)!.sourceAttribution(names.join(' · ')),
+      names.isEmpty
+          ? BoneMock.words(3)
+          : AppLocalizations.of(context)!.sourceAttribution(names.join(' · ')),
       style: Theme.of(context)
           .textTheme
           .bodySmall

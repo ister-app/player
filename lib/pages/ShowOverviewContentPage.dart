@@ -14,7 +14,6 @@ import 'package:player/graphql/refreshShow.graphql.dart';
 import 'package:player/graphql/fragmentImages.graphql.dart';
 import 'package:player/graphql/fragmentMetadata.graphql.dart';
 import 'package:player/graphql/seasonById.graphql.dart';
-import 'package:player/graphql/fragmentCredit.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:flutter/foundation.dart';
 import 'package:player/components/download/AutoNextDialog.dart';
@@ -32,22 +31,6 @@ import 'package:player/utils/PermissionsService.dart';
 import 'package:player/utils/ServerTaskRunner.dart';
 import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-
-/// Placeholder cast so the skeleton reserves the same height as the real
-/// [CastRow]; without it the page grows by a whole row once data lands.
-final _skeletonCast = List.generate(
-  6,
-  (i) => Fragment$fragmentCastMember(
-    id: 'skeleton-$i',
-    characterName: BoneMock.name,
-    creditType: Enum$CreditType.CAST,
-    castOrder: i,
-    person: Fragment$fragmentCastMember$person(
-      id: 'skeleton-person-$i',
-      name: BoneMock.name,
-    ),
-  ),
-);
 
 @RoutePage()
 class ShowOverviewContentPage extends StatefulWidget {
@@ -101,7 +84,8 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
               enabled: true,
               child: _buildContent(null, null, BoneMock.name,
                   BoneMock.paragraph, null, null, context, '',
-                  CastRow(serverName: serverName, cast: _skeletonCast), null));
+                  const CastRowSkeleton(), null,
+                  skeleton: true));
         } else if (result.hasException) {
           body = Text(result.exception.toString());
         } else {
@@ -151,7 +135,8 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
       String? rawJson,
       Widget castRow,
       Widget? ratingRow,
-      {Query$showById$showById? show}) {
+      {Query$showById$showById? show,
+      bool skeleton = false}) {
     return SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       LayoutBuilder(builder: (context, constraints) {
@@ -270,7 +255,9 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
                   ),
               ],
             ),
-            if (ratingRow != null)
+            // While loading the stars stand in unrated: the row is as tall as
+            // the real one, so nothing below it moves when the show lands.
+            if (ratingRow != null || skeleton)
               Padding(
                 padding: const EdgeInsets.only(top: 4, bottom: 8),
                 child: Wrap(
@@ -278,7 +265,7 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
                   runSpacing: 4,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    ratingRow,
+                    ratingRow ?? const RatingStarsDisplay(rating: null, size: 30),
                     CommunityRating(
                       voteAverage: show?.voteAverage,
                       voteCount: show?.voteCount,
@@ -294,6 +281,7 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
                 genres: MetadataUtil.getGenre(metadata),
                 networks: show?.networks,
                 status: show?.status,
+                skeleton: skeleton,
               ),
             ),
             if (MetadataUtil.getTagline(metadata) != null)
@@ -335,7 +323,8 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
               ),
             Padding(
               padding: const EdgeInsets.only(top: 6),
-              child: SourceAttribution(metadata: metadata, images: images),
+              child: SourceAttribution(
+                  metadata: metadata, images: images, skeleton: skeleton),
             ),
           ])),
       castRow,

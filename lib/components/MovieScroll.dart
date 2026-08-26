@@ -62,6 +62,7 @@ class MovieScroll extends StatelessWidget {
               if (movie == null) {
                 return pagedSkeletonRow(
                   key: ValueKey('movie-list-skeleton-$index'),
+                  placeholderIcon: Icons.movie,
                   onVisible: () => requestPage(index ~/ _pageSize),
                 );
               }
@@ -111,6 +112,7 @@ class MovieScroll extends StatelessWidget {
 
             return pagedSkeletonSlot(
               key: ValueKey('movie-scroll-skeleton-$index'),
+              subtitleWords: 4,
               onVisible: () => requestPage(index ~/ _pageSize),
             );
           },

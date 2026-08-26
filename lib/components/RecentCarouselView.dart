@@ -47,6 +47,9 @@ class RecentCarouselView extends StatefulWidget {
 }
 
 class _RecentCarouselViewState extends State<RecentCarouselView> {
+  /// Tiles the skeleton reserves — roughly a screenful of the row.
+  static const int _skeletonItemCount = 7;
+
   late final PlayQueueService playQueueService;
   late StreamSubscription _playQueueSubscription;
   Refetch? refetch;
@@ -98,7 +101,7 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
           return Text(result.exception.toString());
         }
 
-        if (result.data == null || result.isLoading) {
+        if (result.data == null) {
           if (widget.scrollDirection == Axis.vertical) {
             return Skeletonizer(
               enabled: true,
@@ -108,29 +111,39 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
                   maxCrossAxisExtent: 300,
                   childAspectRatio: 1.5,
                 ),
-                itemCount: 7,
+                itemCount: _skeletonItemCount,
                 itemBuilder: (context, index) => CarouselItemView(
                   serverName: widget.serverName,
                   title: BoneMock.name,
-                  subTitle: BoneMock.words(10),
+                  subTitle: BoneMock.words(3),
+                  // Recent items are half-watched by definition, so the real
+                  // tiles carry a progress bar the stand-in has to reserve.
+                  progress: 0,
                 ),
               ),
             );
           }
+          // The same ListView of fixed-width tiles the loaded row uses; a
+          // CarouselView of 300-wide items re-laid the whole strip out the
+          // moment the real (partly narrower) tiles arrived.
           return Skeletonizer(
-              enabled: true,
-              child: CarouselView(
-                controller: CarouselController(initialItem: 0),
-                itemExtent: 300.0,
-                shrinkExtent: 300.0,
-                children: List.filled(
-                    7,
-                    CarouselItemView(
+            enabled: true,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                for (var i = 0; i < _skeletonItemCount; i++)
+                  SizedBox(
+                    width: 300,
+                    child: CarouselItemView(
                       serverName: widget.serverName,
                       title: BoneMock.name,
-                      subTitle: BoneMock.words(10),
-                    )),
-              ));
+                      subTitle: BoneMock.words(3),
+                      progress: 0,
+                    ),
+                  ),
+              ],
+            ),
+          );
         }
 
         final parsedData = Query$recentlyWatched.fromJson(result.data!);

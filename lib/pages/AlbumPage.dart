@@ -59,6 +59,9 @@ class AlbumPage extends StatefulWidget {
 }
 
 class _AlbumPageState extends State<AlbumPage> {
+  /// Track rows the skeleton reserves — roughly an album's worth.
+  static const int _skeletonTrackCount = 10;
+
   // Live overrides for track ratings changed this session, so a rating set via
   // the per-track dialog shows immediately without waiting for a refetch.
   final Map<String, int?> _trackRatingOverrides = {};
@@ -215,7 +218,7 @@ class _AlbumPageState extends State<AlbumPage> {
           return Scaffold(
             body: Skeletonizer(
               enabled: true,
-              child: _buildContent(null, []),
+              child: _buildContent(null, [], skeleton: true),
             ),
           );
         }
@@ -239,7 +242,8 @@ class _AlbumPageState extends State<AlbumPage> {
   }
 
   Widget _buildContent(
-      Fragment$fragmentAlbum? album, List<Fragment$fragmentTrack> tracks) {
+      Fragment$fragmentAlbum? album, List<Fragment$fragmentTrack> tracks,
+      {bool skeleton = false}) {
     final loc = AppLocalizations.of(context)!;
     final description = album != null ? MetadataUtil.getDescription(album.metadata) : null;
 
@@ -251,11 +255,15 @@ class _AlbumPageState extends State<AlbumPage> {
           stretch: true,
           foregroundColor: Colors.white,
           actions: [
+            // Reserved while loading, so the app bar doesn't grow an icon.
+            if (skeleton)
+              const IconButton(onPressed: null, icon: Icon(Icons.more_vert)),
             if (album != null) _albumMenu(context, album, tracks),
           ],
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
-            background: _buildHeader(context, album, tracks),
+            background:
+                _buildHeader(context, album, tracks, skeleton: skeleton),
           ),
         ),
         SliverToBoxAdapter(
@@ -309,6 +317,8 @@ class _AlbumPageState extends State<AlbumPage> {
                   ),
                   // Interactive, so it sits just below the hero rather than
                   // inside the collapsing app bar.
+                  if (skeleton)
+                    const RatingStarsDisplay(rating: null, size: 30),
                   if (album != null)
                     RatingStars(
                       mediaType: Enum$RatingMediaType.ALBUM,
@@ -322,7 +332,7 @@ class _AlbumPageState extends State<AlbumPage> {
             ),
           ),
         ),
-        if (description != null)
+        if (description != null || skeleton)
           SliverToBoxAdapter(
             child: _constrained(
               Padding(
@@ -335,10 +345,12 @@ class _AlbumPageState extends State<AlbumPage> {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
-                    ExpandableText(text: description),
+                    ExpandableText(text: description ?? BoneMock.paragraph),
                     const SizedBox(height: 6),
                     SourceAttribution(
-                        metadata: album?.metadata, images: album?.images),
+                        metadata: album?.metadata,
+                        images: album?.images,
+                        skeleton: skeleton),
                   ],
                 ),
               ),
@@ -355,20 +367,36 @@ class _AlbumPageState extends State<AlbumPage> {
             ),
           ),
         ),
-        SliverToBoxAdapter(
-          child: _constrained(
-            StreamBuilder<MediaItem?>(
-              stream: MediaPlayerHandler.instance.mediaItem,
-              initialData: MediaPlayerHandler.instance.mediaItem.valueOrNull,
-              builder: (context, snapshot) {
-                final playingTrackId = _playingTrackId(snapshot.data);
-                return Column(
-                  children: _buildTrackSections(album, tracks, playingTrackId),
-                );
-              },
+        // While loading, placeholder rows: the real list is the bulk of the
+        // page, and an empty Column reserved nothing for it. No StreamBuilder
+        // either — there is no track for it to highlight yet.
+        if (skeleton)
+          SliverToBoxAdapter(
+            child: _constrained(
+              Column(
+                children: [
+                  for (int i = 0; i < _skeletonTrackCount; i++)
+                    _skeletonTrackRow(context),
+                ],
+              ),
+            ),
+          )
+        else
+          SliverToBoxAdapter(
+            child: _constrained(
+              StreamBuilder<MediaItem?>(
+                stream: MediaPlayerHandler.instance.mediaItem,
+                initialData: MediaPlayerHandler.instance.mediaItem.valueOrNull,
+                builder: (context, snapshot) {
+                  final playingTrackId = _playingTrackId(snapshot.data);
+                  return Column(
+                    children:
+                        _buildTrackSections(album, tracks, playingTrackId),
+                  );
+                },
+              ),
             ),
           ),
-        ),
       ],
     );
   }
@@ -510,6 +538,41 @@ class _AlbumPageState extends State<AlbumPage> {
           ),
           const SizedBox(width: 12),
           const Expanded(child: Divider()),
+        ],
+      ),
+    );
+  }
+
+  /// Mirrors [_buildTrackRow]'s footprint: the number slot, the title, and the
+  /// trailing duration + overflow button that set the row height.
+  Widget _skeletonTrackRow(BuildContext context) {
+    final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    return ListTile(
+      dense: true,
+      visualDensity: VisualDensity.compact,
+      leading: SizedBox(
+        width: 28,
+        child: Text(
+          BoneMock.chars(2),
+          textAlign: TextAlign.center,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: mutedColor),
+        ),
+      ),
+      title: Text(BoneMock.name),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            BoneMock.chars(5),
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: mutedColor),
+          ),
+          const IconButton(onPressed: null, icon: Icon(Icons.more_vert)),
         ],
       ),
     );
@@ -739,7 +802,8 @@ class _AlbumPageState extends State<AlbumPage> {
   }
 
   Widget _buildHeader(BuildContext context, Fragment$fragmentAlbum? album,
-      List<Fragment$fragmentTrack> tracks) {
+      List<Fragment$fragmentTrack> tracks,
+      {bool skeleton = false}) {
     final loc = AppLocalizations.of(context)!;
     final img = album != null
         ? ImageUtil.getImageByType(album.images, ImageTypes.cover)
@@ -774,6 +838,7 @@ class _AlbumPageState extends State<AlbumPage> {
           ? () => AutoRouter.of(context)
               .push(PersonRoute(personId: album.artist.id))
           : null,
+      skeleton: skeleton,
     );
   }
 }

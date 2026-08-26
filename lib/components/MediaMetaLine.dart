@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:player/l10n/app_localizations.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// One muted, wrapping metadata line under a movie/show/episode title:
@@ -16,6 +17,7 @@ class MediaMetaLine extends StatelessWidget {
     this.genres,
     this.networks,
     this.status,
+    this.skeleton = false,
   });
 
   /// Release/first-air date string, as stored in the metadata rows.
@@ -27,6 +29,11 @@ class MediaMetaLine extends StatelessWidget {
   final String? genres;
   final String? networks;
   final String? status;
+
+  /// Renders a placeholder line when every part is empty. Pages that skeletonize
+  /// their content pass every part as null, and this line would otherwise
+  /// collapse to nothing and push the rest of the page up on load.
+  final bool skeleton;
 
   static String formatRuntime(BuildContext context, int minutes) {
     final loc = AppLocalizations.of(context)!;
@@ -53,7 +60,11 @@ class MediaMetaLine extends StatelessWidget {
       for (final text in trailingTexts)
         if ((text ?? '').isNotEmpty) Text(text!, style: muted),
     ];
-    if (parts.isEmpty) return const SizedBox.shrink();
+    if (parts.isEmpty) {
+      return skeleton
+          ? Text(BoneMock.words(4), style: muted)
+          : const SizedBox.shrink();
+    }
 
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,

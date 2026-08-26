@@ -24,6 +24,10 @@ class ServerSettingsAboutPage extends StatelessWidget {
   static final Uri _websiteUrl = Uri.parse('https://ister.app');
   static final Uri _sourceUrl = Uri.parse('https://github.com/ister-app');
 
+  /// How many attribution cards the skeleton reserves. Servers list a handful
+  /// of metadata sources, so this is deliberately a small, fixed number.
+  static const int _skeletonAttributionCount = 3;
+
   Future<void> _showLicenses(BuildContext context) async {
     final info = await PackageInfo.fromPlatform();
     if (!context.mounted) return;
@@ -56,11 +60,29 @@ class ServerSettingsAboutPage extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.all(16.0),
               children: [
-                SettingsIntro(result.hasException && attributions.isEmpty
-                    ? loc.attributionsUnavailable
-                    : loc.attributionsIntro),
-                if (attributions.isNotEmpty)
+                // The attributions are the only thing that loads here. The
+                // intro and the project links keep their colour *and* their
+                // taps: Skeletonizer makes its whole subtree unhittable, which
+                // left three working links grey and dead during the query.
+                Skeleton.keep(
+                  child: SettingsIntro(
+                      result.hasException && attributions.isEmpty
+                          ? loc.attributionsUnavailable
+                          : loc.attributionsIntro),
+                ),
+                if (loading || attributions.isNotEmpty)
                   SettingsSectionLabel(loc.aboutSectionSources),
+                // Bones for the cards that are on their way. Without them the
+                // skeleton boned only the static content and reserved nothing
+                // for the list, so the project section was shoved down on load.
+                if (loading)
+                  for (var i = 0; i < _skeletonAttributionCount; i++)
+                    SettingsCard(children: [
+                      ListTile(
+                        title: Text(BoneMock.name),
+                        subtitle: Text(BoneMock.words(3)),
+                      ),
+                    ]),
                 for (final attribution in attributions)
                   SettingsCard(children: [
                     ListTile(
@@ -84,8 +106,10 @@ class ServerSettingsAboutPage extends StatelessWidget {
                       ),
                     ),
                   ]),
-                SettingsSectionLabel(loc.aboutSectionProject),
-                SettingsCard(children: [
+                Skeleton.keep(
+                    child: SettingsSectionLabel(loc.aboutSectionProject)),
+                Skeleton.keep(
+                    child: SettingsCard(children: [
                       ListTile(
                         leading: const Icon(Icons.language_outlined),
                         title: Text(loc.projectWebsite),
@@ -109,7 +133,7 @@ class ServerSettingsAboutPage extends StatelessWidget {
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => _showLicenses(context),
                       ),
-                ]),
+                ])),
               ],
             ),
           );

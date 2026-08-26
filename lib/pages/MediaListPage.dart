@@ -201,6 +201,7 @@ class MediaListPage extends StatelessWidget {
           tile: (dynamic show) => _landscapeTile(
               context, show, () => ShowOverviewRoute(showId: show.id),
               subTitle: show.releaseYear > 0 ? '${show.releaseYear}' : ''),
+          subtitleWords: 1,
         );
       case Enum$LibraryType.MUSIC:
         return _rankedContentView(
@@ -209,6 +210,7 @@ class MediaListPage extends StatelessWidget {
           fromJson: Fragment$fragmentAlbum.fromJson,
           childAspectRatio: 1.0,
           tile: (album) => AlbumCarouselTile(serverName: serverName, album: album),
+          placeholderIcon: Icons.music_note,
         );
       case Enum$LibraryType.BOOK:
         return _rankedContentView(
@@ -217,6 +219,7 @@ class MediaListPage extends StatelessWidget {
           fromJson: Fragment$fragmentBook.fromJson,
           childAspectRatio: BookCarouselTile.coverAspectRatio,
           tile: (book) => BookCarouselTile(serverName: serverName, book: book),
+          placeholderIcon: Icons.menu_book,
         );
       case Enum$LibraryType.COMIC:
         return _rankedContentView(
@@ -226,6 +229,8 @@ class MediaListPage extends StatelessWidget {
           childAspectRatio: SeriesCarouselTile.coverAspectRatio,
           tile: (series) =>
               SeriesCarouselTile(serverName: serverName, series: series),
+          placeholderIcon: Icons.auto_stories,
+          subtitleWords: 1,
         );
       case Enum$LibraryType.PODCAST:
         return _rankedContentView(
@@ -235,6 +240,7 @@ class MediaListPage extends StatelessWidget {
           childAspectRatio: 1.0,
           tile: (podcast) =>
               PodcastCarouselTile(serverName: serverName, podcast: podcast),
+          placeholderIcon: Icons.podcasts,
         );
       default:
         return _rankedContentView(
@@ -245,6 +251,7 @@ class MediaListPage extends StatelessWidget {
           childAspectRatio: 0.65,
           tile: (dynamic movie) => _landscapeTile(
               context, movie, () => MovieRoute(movieId: movie.id)),
+          subtitleWords: 4,
         );
     }
   }
@@ -255,6 +262,8 @@ class MediaListPage extends StatelessWidget {
     required ItemFromJson<T> fromJson,
     required double childAspectRatio,
     required Widget Function(T item) tile,
+    IconData? placeholderIcon,
+    int subtitleWords = 2,
   }) {
     return PagedContentView<T>(
       document: document,
@@ -280,6 +289,8 @@ class MediaListPage extends StatelessWidget {
             return pagedSkeletonSlot(
               key: ValueKey('ranked-$field-skeleton-$index'),
               onVisible: () => requestPage(index ~/ _pageSize),
+              placeholderIcon: placeholderIcon,
+              subtitleWords: subtitleWords,
             );
           },
         );

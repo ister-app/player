@@ -333,12 +333,25 @@ class _ServerSettingsClusterPageState extends State<ServerSettingsClusterPage> {
                   subtitle: Text(BoneMock.words(3)),
                 ),
               ),
-              SettingsSectionLabel(loc.busyNow),
-              card(2, Icons.troubleshoot),
+              // No "busy now" section: that one only exists while the server
+              // is working, and an idle server replaces the whole block with a
+              // single hero card. Queued work, nodes and recent failures are
+              // what the loaded body renders either way.
               SettingsSectionLabel(loc.queuedWork),
-              card(3, Icons.list_alt),
+              card(3, Icons.list_alt, trailing: Text(BoneMock.chars(2))),
               SettingsSectionLabel(loc.nodes),
-              card(2, Icons.storage, trailing: const Chip(label: Text('1.0.0'))),
+              card(2, Icons.storage,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Chip(label: Text(BoneMock.chars(5))),
+                      const SizedBox(width: 4),
+                      Chip(label: Text(BoneMock.chars(5))),
+                    ],
+                  )),
+              // Always rendered by the real body, empty or not.
+              SettingsSectionLabel(loc.recentFailures),
+              card(1, Icons.error_outline),
             ],
           ),
         ),

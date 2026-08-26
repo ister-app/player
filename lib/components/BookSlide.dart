@@ -52,6 +52,7 @@ class BookSlide extends StatelessWidget {
 
             return pagedSkeletonSlot(
               key: ValueKey('book-slide-placeholder-$index'),
+              placeholderIcon: Icons.menu_book,
               onVisible: () => requestPage(index ~/ _pageSize),
             );
           },

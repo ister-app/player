@@ -7,6 +7,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 
 import 'BrowseListRow.dart';
 import 'CarouselItemView.dart';
+import 'SkeletonPlaceholder.dart';
 
 typedef ItemFromJson<T> = T Function(Map<String, dynamic> json);
 
@@ -197,36 +198,59 @@ class _PagedContentViewState<T> extends State<PagedContentView<T>> {
 
 /// The skeleton placeholder shared by every paged carousel/grid slot. Requests
 /// [onVisible]'s page once it scrolls into view.
-Widget pagedSkeletonSlot({required Key key, required VoidCallback onVisible}) {
+///
+/// Pass the same [placeholderIcon] the real tile uses, and [subtitleWords] as
+/// the length of its subtitle (0 for tiles without one) — a caption bone that
+/// doesn't match what lands is what makes a grid twitch as pages arrive.
+Widget pagedSkeletonSlot({
+  required Key key,
+  required VoidCallback onVisible,
+  IconData? placeholderIcon,
+  int subtitleWords = 2,
+}) {
   return VisibilityDetector(
     key: key,
     onVisibilityChanged: (info) {
       if (info.visibleFraction > 0) onVisible();
     },
-    child: Skeletonizer(
-      enabled: true,
+    child: SkeletonPlaceholder(
       child: CarouselItemView(
         serverName: '',
         title: BoneMock.name,
-        subTitle: BoneMock.words(10),
+        subTitle: subtitleWords == 0 ? '' : BoneMock.words(subtitleWords),
+        placeholderIcon: placeholderIcon,
       ),
     ),
   );
 }
 
 /// [pagedSkeletonSlot]'s counterpart for the list layout.
-Widget pagedSkeletonRow({required Key key, required VoidCallback onVisible}) {
+///
+/// [squareThumb], [subtitleWords], [progress] and [trailing] mirror the real
+/// row: the thumb shape shifts the text column, and the trailing widget is
+/// what sets the row height.
+Widget pagedSkeletonRow({
+  required Key key,
+  required VoidCallback onVisible,
+  IconData placeholderIcon = Icons.image,
+  bool squareThumb = false,
+  int subtitleWords = 2,
+  double? progress,
+  Widget? trailing,
+}) {
   return VisibilityDetector(
     key: key,
     onVisibilityChanged: (info) {
       if (info.visibleFraction > 0) onVisible();
     },
-    child: Skeletonizer(
-      enabled: true,
+    child: SkeletonPlaceholder(
       child: BrowseListRow(
-        placeholderIcon: Icons.image,
+        placeholderIcon: placeholderIcon,
+        squareThumb: squareThumb,
         title: BoneMock.name,
-        subtitle: BoneMock.words(4),
+        subtitle: subtitleWords == 0 ? null : BoneMock.words(subtitleWords),
+        progress: progress,
+        trailing: trailing,
       ),
     ),
   );

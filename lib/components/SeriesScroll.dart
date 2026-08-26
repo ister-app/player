@@ -58,6 +58,9 @@ class SeriesScroll extends StatelessWidget {
               if (series == null) {
                 return pagedSkeletonRow(
                   key: ValueKey('series-list-skeleton-$index'),
+                  placeholderIcon: Icons.auto_stories,
+                  squareThumb: true,
+                  subtitleWords: 1,
                   onVisible: () => requestPage(index ~/ _pageSize),
                 );
               }
@@ -97,6 +100,8 @@ class SeriesScroll extends StatelessWidget {
 
             return pagedSkeletonSlot(
               key: ValueKey('series-scroll-skeleton-$index'),
+              placeholderIcon: Icons.auto_stories,
+              subtitleWords: 1,
               onVisible: () => requestPage(index ~/ _pageSize),
             );
           },

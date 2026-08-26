@@ -40,6 +40,9 @@ class ServerNowPlayingPage extends StatefulWidget {
 }
 
 class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
+  /// Session cards the skeleton reserves.
+  static const int _skeletonSessionCount = 3;
+
   List<Fragment$fragmentPlaybackSession>? _sessions;
   ResilientSubscription? _subscription;
   String? _error;
@@ -191,7 +194,13 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
         enabled: true,
         child: ListView(
           padding: const EdgeInsets.all(16.0),
-          children: List.generate(3, (i) => const _SessionCardSkeleton()),
+          children: [
+            // The loaded list opens with this paragraph; leaving it out of the
+            // skeleton shoved every card down once the sessions arrived.
+            Skeleton.keep(child: SettingsIntro(loc.nowPlayingIntro)),
+            for (var i = 0; i < _skeletonSessionCount; i++)
+              const _SessionCardSkeleton(),
+          ],
         ),
       );
     } else if (sessions.isEmpty && !_liveFeedBroken) {
@@ -454,33 +463,48 @@ class _SessionCardSkeleton extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
+            // The real artwork placeholder, not a copy of its decoration.
+            const _Artwork(url: null, fallbackIcon: Icons.music_note),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(BoneMock.name, style: theme.textTheme.titleSmall),
+                  // The state chip is what makes the real title row two lines
+                  // tall on a phone; without it the skeleton reserved less
+                  // than every card that landed.
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(BoneMock.name,
+                            style: theme.textTheme.titleSmall, maxLines: 2),
+                      ),
+                      const SizedBox(width: 8),
+                      const _StateChip(paused: false),
+                    ],
+                  ),
                   const SizedBox(height: 2),
                   Text(BoneMock.words(2), style: theme.textTheme.bodySmall),
                   const SizedBox(height: 10),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
-                    child: const LinearProgressIndicator(
-                      value: 0.4,
+                    child: LinearProgressIndicator(
+                      value: 0,
                       minHeight: 4,
+                      backgroundColor: theme.colorScheme.surfaceContainerHighest,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(BoneMock.words(1), style: theme.textTheme.bodySmall),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(BoneMock.chars(5),
+                          style: theme.textTheme.bodySmall),
+                      Text(BoneMock.chars(5),
+                          style: theme.textTheme.bodySmall),
+                    ],
+                  ),
                 ],
               ),
             ),

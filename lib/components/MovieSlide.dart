@@ -67,6 +67,7 @@ class MovieSlide extends StatelessWidget {
 
             return pagedSkeletonSlot(
               key: ValueKey('movie-slide-placeholder-$index'),
+              subtitleWords: 4,
               onVisible: () => requestPage(index ~/ _pageSize),
             );
           },

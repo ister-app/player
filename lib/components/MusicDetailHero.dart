@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 /// SliverAppBar background shared by the album and artist detail pages: a
 /// blurred cover/background image with a dark overlay, a fade into the page
@@ -20,6 +21,7 @@ class MusicDetailHero extends StatelessWidget {
     this.placeholderIcon = Icons.music_note,
     this.coverAspectRatio = 1.0,
     this.coverHeight = 110,
+    this.skeleton = false,
   });
 
   final String? imageUrl;
@@ -28,8 +30,10 @@ class MusicDetailHero extends StatelessWidget {
   /// Icon shown on the cover card when there is no (loadable) image.
   final IconData placeholderIcon;
 
-  /// When null the foreground content (cover card + text) is hidden — e.g.
-  /// while the page is still loading and only the backdrop should show.
+  /// When null the foreground content (cover card + text) is hidden. Pages that
+  /// skeletonize their content pass [skeleton] instead of relying on this: a
+  /// hidden foreground turned the hero into a flat grey rectangle that grew a
+  /// cover and two lines of text out of nowhere once the data landed.
   final String? title;
   final String? subtitle;
 
@@ -52,6 +56,10 @@ class MusicDetailHero extends StatelessWidget {
   /// Height of the cover card. Raise it together with the page's
   /// `SliverAppBar.expandedHeight`, or the card runs out of room.
   final double coverHeight;
+
+  /// Renders the cover card and mock text lines while the page loads. Set it
+  /// from inside a [Skeletonizer] — the mock text is meant to be boned.
+  final bool skeleton;
 
   Widget _coverPlaceholder() => Container(
         color: Colors.grey[900],
@@ -106,7 +114,7 @@ class MusicDetailHero extends StatelessWidget {
           ),
         ),
         // Content: cover card left, text right
-        if (title != null)
+        if (title != null || skeleton)
           Positioned(
             left: 16,
             right: 16,
@@ -140,7 +148,7 @@ class MusicDetailHero extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        title!,
+                        title ?? BoneMock.name,
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -149,13 +157,13 @@ class MusicDetailHero extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (subtitle != null) ...[
+                      if (subtitle != null || skeleton) ...[
                         const SizedBox(height: 8),
                         if (onSubtitleTap != null)
                           InkWell(
                             onTap: onSubtitleTap,
                             child: Text(
-                              subtitle!,
+                              subtitle ?? BoneMock.words(2),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 14,
@@ -169,17 +177,17 @@ class MusicDetailHero extends StatelessWidget {
                           )
                         else
                           Text(
-                            subtitle!,
+                            subtitle ?? BoneMock.words(2),
                             style: const TextStyle(
                                 color: Colors.white70, fontSize: 14),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                       ],
-                      if (metaLine != null) ...[
+                      if (metaLine != null || skeleton) ...[
                         const SizedBox(height: 6),
                         Text(
-                          metaLine!,
+                          metaLine ?? BoneMock.words(3),
                           style: const TextStyle(
                               color: Colors.white70, fontSize: 13),
                           maxLines: 2,

@@ -21,6 +21,7 @@ import '../l10n/app_localizations.dart';
 import 'AddToPlaylistSheet.dart';
 import 'PlaybackHistorySheet.dart';
 import 'RatingStars.dart';
+import 'SkeletonPlaceholder.dart';
 import 'TvFocusable.dart';
 
 /// Which detail a top-track list shows on the right of each row.
@@ -412,15 +413,21 @@ class _ArtistTrackListState extends State<ArtistTrackList> {
     );
   }
 
-  Widget _thumbPlaceholder(BuildContext context) => Container(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        child: Icon(
-          Icons.music_note,
-          size: 20,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-      );
+  Widget _thumbPlaceholder(BuildContext context) =>
+      artistTrackThumbPlaceholder(context);
 }
+
+/// The 40x40 tinted square a track row shows when its album has no (loadable)
+/// cover. Shared with [ArtistTrackListSkeleton] so the stand-in cannot drift
+/// away from the real thumb.
+Widget artistTrackThumbPlaceholder(BuildContext context) => Container(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: Icon(
+        Icons.music_note,
+        size: 20,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+    );
 
 /// Skeleton stand-in matching one [ArtistTrackList] row's footprint, so the
 /// section can reserve its height while the (slow) ranked-track queries are
@@ -433,8 +440,7 @@ class ArtistTrackListSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Skeletonizer(
-      enabled: true,
+    return SkeletonPlaceholder(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -460,10 +466,10 @@ class ArtistTrackListSkeleton extends StatelessWidget {
                     const SizedBox(width: 8),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(6),
-                      child: Container(
+                      child: SizedBox(
                         width: 40,
                         height: 40,
-                        color: theme.colorScheme.surfaceContainerHighest,
+                        child: artistTrackThumbPlaceholder(context),
                       ),
                     ),
                   ],
@@ -475,7 +481,27 @@ class ArtistTrackListSkeleton extends StatelessWidget {
                 maxLines: 1,
                 style: theme.textTheme.bodySmall,
               ),
+              // The real row's trailing detail plus its overflow button: the
+              // IconButton is what forces the row's minimum height, so leaving
+              // it out reserved short rows and the section grew on load.
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    BoneMock.chars(4),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontFeatures: [const FontFeature.tabularFigures()],
+                    ),
+                  ),
+                  const IconButton(
+                      onPressed: null, icon: Icon(Icons.more_vert)),
+                ],
+              ),
             ),
+          // No "show more" bone: [ArtistTrackList] only appends that button
+          // when it holds more items than it shows collapsed, and reserving it
+          // for a list that turns out to fit is a jump in the other direction.
         ],
       ),
     );

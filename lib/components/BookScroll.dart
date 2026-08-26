@@ -58,6 +58,8 @@ class BookScroll extends StatelessWidget {
               if (book == null) {
                 return pagedSkeletonRow(
                   key: ValueKey('book-list-skeleton-$index'),
+                  placeholderIcon: Icons.menu_book,
+                  squareThumb: true,
                   onVisible: () => requestPage(index ~/ _pageSize),
                 );
               }
@@ -97,6 +99,7 @@ class BookScroll extends StatelessWidget {
 
             return pagedSkeletonSlot(
               key: ValueKey('book-scroll-skeleton-$index'),
+              placeholderIcon: Icons.menu_book,
               onVisible: () => requestPage(index ~/ _pageSize),
             );
           },

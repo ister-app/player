@@ -38,6 +38,10 @@ class SeriesPage extends StatefulWidget {
 }
 
 class _SeriesPageState extends State<SeriesPage> {
+  /// Volume tiles the skeleton reserves. A series holds a handful of volumes,
+  /// and a grid of nothing was what the loading page used to show.
+  static const int _skeletonVolumeCount = 6;
+
   Query$seriesById$seriesById? _series;
   VoidCallback? _refetch;
 
@@ -70,7 +74,8 @@ class _SeriesPageState extends State<SeriesPage> {
 
         if (result.data == null) {
           return Scaffold(
-            body: Skeletonizer(enabled: true, child: _buildContent()),
+            body: Skeletonizer(
+                enabled: true, child: _buildContent(skeleton: true)),
           );
         }
 
@@ -85,7 +90,7 @@ class _SeriesPageState extends State<SeriesPage> {
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent({bool skeleton = false}) {
     final loc = AppLocalizations.of(context)!;
     final series = _series;
     final description =
@@ -101,10 +106,10 @@ class _SeriesPageState extends State<SeriesPage> {
           foregroundColor: Colors.white,
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
-            background: _buildHeader(series),
+            background: _buildHeader(series, skeleton: skeleton),
           ),
         ),
-        if (description != null)
+        if (description != null || skeleton)
           SliverToBoxAdapter(
             child: _constrained(
               Padding(
@@ -117,16 +122,18 @@ class _SeriesPageState extends State<SeriesPage> {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
-                    Text(description),
+                    Text(description ?? BoneMock.paragraph),
                     const SizedBox(height: 6),
                     SourceAttribution(
-                        metadata: series?.metadata, images: series?.images),
+                        metadata: series?.metadata,
+                        images: series?.images,
+                        skeleton: skeleton),
                   ],
                 ),
               ),
             ),
           ),
-        if (series != null)
+        if (series != null || skeleton)
           SliverToBoxAdapter(
             child: _constrained(
               Padding(
@@ -135,7 +142,7 @@ class _SeriesPageState extends State<SeriesPage> {
               ),
             ),
           ),
-        if (books.isNotEmpty)
+        if (books.isNotEmpty || skeleton)
           SliverToBoxAdapter(
             child: _constrained(
               Padding(
@@ -157,9 +164,15 @@ class _SeriesPageState extends State<SeriesPage> {
                 maxCrossAxisExtent: 300,
                 childAspectRatio: SeriesCarouselTile.coverAspectRatio,
               ),
-              itemCount: books.length,
-              itemBuilder: (context, index) =>
-                  _buildVolumeTile(books[index]),
+              itemCount: skeleton ? _skeletonVolumeCount : books.length,
+              itemBuilder: (context, index) => skeleton
+                  ? CarouselItemView(
+                      serverName: widget.serverName,
+                      title: BoneMock.name,
+                      subTitle: BoneMock.chars(3),
+                      placeholderIcon: Icons.auto_stories,
+                    )
+                  : _buildVolumeTile(books[index]),
             ),
           ),
         ),
@@ -171,9 +184,9 @@ class _SeriesPageState extends State<SeriesPage> {
   /// per user on the server; "default" clears the override so the detected
   /// series direction (RTL for manga) applies again.
   Widget _buildReadingDirectionRow(
-      AppLocalizations loc, Query$seriesById$seriesById series) {
+      AppLocalizations loc, Query$seriesById$seriesById? series) {
     final selected =
-        _choicePending ? _pendingChoice : series.userReadingDirection;
+        _choicePending ? _pendingChoice : series?.userReadingDirection;
     final defaultLabel = _detectedDefault == null
         ? loc.readingDirectionDefault('LTR')
         : loc.readingDirectionDefault(
@@ -274,7 +287,8 @@ class _SeriesPageState extends State<SeriesPage> {
     );
   }
 
-  Widget _buildHeader(Query$seriesById$seriesById? series) {
+  Widget _buildHeader(Query$seriesById$seriesById? series,
+      {bool skeleton = false}) {
     final img = series != null
         ? (series.cover ??
             ImageUtil.getImageByType(series.images, ImageTypes.cover))
@@ -290,6 +304,7 @@ class _SeriesPageState extends State<SeriesPage> {
       title: series != null
           ? MetadataUtil.titleWithYear(series.name, series.startYear)
           : null,
+      skeleton: skeleton,
     );
   }
 

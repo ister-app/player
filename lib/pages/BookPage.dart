@@ -61,6 +61,9 @@ class BookPage extends StatefulWidget {
 }
 
 class _BookPageState extends State<BookPage> {
+  /// Chapter rows the skeleton reserves — roughly a screenful.
+  static const int _skeletonChapterCount = 8;
+
   Query$bookById$bookById? _book;
   VoidCallback? _refetch;
 
@@ -263,7 +266,7 @@ class _BookPageState extends State<BookPage> {
           return Scaffold(
             body: Skeletonizer(
               enabled: true,
-              child: _buildContent(),
+              child: _buildContent(skeleton: true),
             ),
           );
         }
@@ -274,7 +277,7 @@ class _BookPageState extends State<BookPage> {
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent({bool skeleton = false}) {
     final loc = AppLocalizations.of(context)!;
     final book = _book;
     final description =
@@ -302,9 +305,12 @@ class _BookPageState extends State<BookPage> {
           foregroundColor: Colors.white,
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
-            background: _buildHeader(context, book),
+            background: _buildHeader(context, book, skeleton: skeleton),
           ),
           actions: [
+            // Reserved while loading, so the app bar doesn't grow an icon.
+            if (skeleton)
+              const IconButton(onPressed: null, icon: Icon(Icons.more_vert)),
             if (book != null)
               MenuAnchor(
                 menuChildren: [
@@ -333,7 +339,8 @@ class _BookPageState extends State<BookPage> {
               ),
           ],
         ),
-        if (_hasListenableChapter ||
+        if (skeleton ||
+            _hasListenableChapter ||
             epubFile != null ||
             comicFile != null ||
             readAloudFile != null)
@@ -373,7 +380,7 @@ class _BookPageState extends State<BookPage> {
               ),
             ),
           ),
-        if (progressValue != null)
+        if (progressValue != null || skeleton)
           SliverToBoxAdapter(
             child: _constrained(
               Padding(
@@ -392,12 +399,12 @@ class _BookPageState extends State<BookPage> {
                     Expanded(
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(value: progressValue),
+                        child: LinearProgressIndicator(value: progressValue ?? 0),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '${(progressValue * 100).round()}%',
+                      '${((progressValue ?? 0) * 100).round()}%',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -405,17 +412,26 @@ class _BookPageState extends State<BookPage> {
               ),
             ),
           ),
-        if (metaLine != null)
+        if (metaLine != null || skeleton)
           SliverToBoxAdapter(
             child: _constrained(
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
                 child: Text(
-                  metaLine,
+                  metaLine ?? BoneMock.words(3),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                 ),
+              ),
+            ),
+          ),
+        if (skeleton)
+          SliverToBoxAdapter(
+            child: _constrained(
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 4, 16, 8),
+                child: RatingStarsDisplay(rating: null, size: 30),
               ),
             ),
           ),
@@ -432,7 +448,7 @@ class _BookPageState extends State<BookPage> {
               ),
             ),
           ),
-        if (description != null)
+        if (description != null || skeleton)
           SliverToBoxAdapter(
             child: _constrained(
               Padding(
@@ -445,16 +461,18 @@ class _BookPageState extends State<BookPage> {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
-                    Text(description),
+                    Text(description ?? BoneMock.paragraph),
                     const SizedBox(height: 6),
                     SourceAttribution(
-                        metadata: book?.metadata, images: book?.images),
+                        metadata: book?.metadata,
+                        images: book?.images,
+                        skeleton: skeleton),
                   ],
                 ),
               ),
             ),
           ),
-        if (_chapters.isNotEmpty)
+        if (_chapters.isNotEmpty || skeleton)
           SliverToBoxAdapter(
             child: _constrained(
               Padding(
@@ -466,7 +484,7 @@ class _BookPageState extends State<BookPage> {
               ),
             ),
           ),
-        if (_chapters.isNotEmpty)
+        if (_chapters.isNotEmpty || skeleton)
           SliverToBoxAdapter(
             child: Center(
               child: ConstrainedBox(
@@ -475,14 +493,40 @@ class _BookPageState extends State<BookPage> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   padding: EdgeInsets.zero,
-                  itemCount: _chapters.length,
-                  itemBuilder: (context, index) =>
-                      _buildChapterTile(context, _chapters[index]),
+                  itemCount:
+                      skeleton ? _skeletonChapterCount : _chapters.length,
+                  itemBuilder: (context, index) => skeleton
+                      ? _skeletonChapterTile(context)
+                      : _buildChapterTile(context, _chapters[index]),
                 ),
               ),
             ),
           ),
       ],
+    );
+  }
+
+  /// Mirrors [_buildChapterTile]: a number slot, a title and a duration line.
+  Widget _skeletonChapterTile(BuildContext context) {
+    final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    return ListTile(
+      dense: true,
+      visualDensity: VisualDensity.compact,
+      leading: SizedBox(
+        width: 28,
+        child: Text(
+          BoneMock.chars(2),
+          textAlign: TextAlign.center,
+          style:
+              Theme.of(context).textTheme.bodyMedium?.copyWith(color: mutedColor),
+        ),
+      ),
+      title: Text(BoneMock.name),
+      subtitle: Text(
+        BoneMock.chars(5),
+        style:
+            Theme.of(context).textTheme.bodySmall?.copyWith(color: mutedColor),
+      ),
     );
   }
 
@@ -602,7 +646,8 @@ class _BookPageState extends State<BookPage> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, Query$bookById$bookById? book) {
+  Widget _buildHeader(BuildContext context, Query$bookById$bookById? book,
+      {bool skeleton = false}) {
     final img = book != null
         ? ImageUtil.getImageByType(book.images, ImageTypes.cover)
         : null;
@@ -627,6 +672,7 @@ class _BookPageState extends State<BookPage> {
               ? () => AutoRouter.of(context)
                   .push(SeriesRoute(seriesId: book!.series!.id))
               : null,
+      skeleton: skeleton,
     );
   }
 }

@@ -51,6 +51,7 @@ class AlbumSlide extends StatelessWidget {
 
             return pagedSkeletonSlot(
               key: ValueKey('album-slide-placeholder-$index'),
+              placeholderIcon: Icons.music_note,
               onVisible: () => requestPage(index ~/ _pageSize),
             );
           },

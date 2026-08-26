@@ -72,6 +72,9 @@ class _RankedRow {
 class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
   static const double _rowHeight = 200;
   static const double _landscapeTileWidth = 300;
+
+  /// Tiles a skeleton row reserves — roughly a wide screen's worth.
+  static const int _skeletonTileCount = 7;
   static const double _squareTileWidth = 200;
   static const double _portraitTileWidth =
       _rowHeight * BookCarouselTile.coverAspectRatio;
@@ -299,28 +302,77 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
     );
   }
 
+  /// The labels, tile width and placeholder icon each library type's rows use.
+  /// Kept beside [_parseRows] deliberately: the skeleton used to draw a single
+  /// landscape row where the loaded view has two or three rows of possibly
+  /// narrower tiles, so the page grew by hundreds of pixels on load.
+  ({List<String> labels, double tileWidth, IconData? icon}) _skeletonShape(
+      AppLocalizations loc) {
+    switch (widget.libraryType) {
+      case Enum$LibraryType.SHOW:
+        return (
+          labels: [loc.recentlyPlayed, loc.mostPlayed, loc.highestRated],
+          tileWidth: _landscapeTileWidth,
+          icon: null
+        );
+      case Enum$LibraryType.MUSIC:
+        return (
+          labels: [loc.recentlyPlayed, loc.mostPlayed, loc.highestRated],
+          tileWidth: _squareTileWidth,
+          icon: Icons.music_note
+        );
+      case Enum$LibraryType.BOOK:
+        return (
+          labels: [loc.recentlyRead, loc.highestRated],
+          tileWidth: _portraitTileWidth,
+          icon: Icons.menu_book
+        );
+      case Enum$LibraryType.COMIC:
+        return (
+          labels: [loc.recentlyRead],
+          tileWidth: _portraitTileWidth,
+          icon: Icons.auto_stories
+        );
+      case Enum$LibraryType.PODCAST:
+        return (
+          labels: [loc.recentlyPlayed, loc.mostPlayed, loc.highestRated],
+          tileWidth: _squareTileWidth,
+          icon: Icons.podcasts
+        );
+      default:
+        return (
+          labels: [loc.recentlyPlayed, loc.mostPlayed, loc.highestRated],
+          tileWidth: _landscapeTileWidth,
+          icon: null
+        );
+    }
+  }
+
   Widget _skeletonRow(BuildContext context) {
+    final shape = _skeletonShape(AppLocalizations.of(context)!);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        RowHeader(label: AppLocalizations.of(context)!.recentlyPlayed),
-        SizedBox(
-          height: _rowHeight,
-          child: Skeletonizer(
-            enabled: true,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              itemExtent: _landscapeTileWidth,
-              children: List.filled(
-                  7,
-                  CarouselItemView(
-                    serverName: widget.serverName,
-                    title: BoneMock.name,
-                    subTitle: BoneMock.words(10),
-                  )),
+        for (final label in shape.labels) ...[
+          RowHeader(label: label),
+          SizedBox(
+            height: _rowHeight,
+            child: Skeletonizer(
+              enabled: true,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemExtent: shape.tileWidth,
+                itemCount: _skeletonTileCount,
+                itemBuilder: (context, index) => CarouselItemView(
+                  serverName: widget.serverName,
+                  title: BoneMock.name,
+                  subTitle: BoneMock.words(2),
+                  placeholderIcon: shape.icon,
+                ),
+              ),
             ),
           ),
-        ),
+        ],
       ],
     );
   }

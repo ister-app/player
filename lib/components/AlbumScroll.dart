@@ -63,6 +63,8 @@ class AlbumScroll extends StatelessWidget {
               if (album == null) {
                 return pagedSkeletonRow(
                   key: ValueKey('album-list-skeleton-$index'),
+                  placeholderIcon: Icons.music_note,
+                  squareThumb: true,
                   onVisible: () => requestPage(index ~/ _pageSize),
                 );
               }
@@ -102,6 +104,7 @@ class AlbumScroll extends StatelessWidget {
 
             return pagedSkeletonSlot(
               key: ValueKey('album-scroll-skeleton-$index'),
+              placeholderIcon: Icons.music_note,
               onVisible: () => requestPage(index ~/ _pageSize),
             );
           },

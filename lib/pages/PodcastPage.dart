@@ -50,6 +50,9 @@ class PodcastPage extends StatefulWidget {
 class _PodcastPageState extends State<PodcastPage> {
   static const int _pageSize = 25;
 
+  /// Episode rows the skeleton reserves — roughly a screenful.
+  static const int _skeletonEpisodeCount = 8;
+
   bool _showAdminActions = true;
 
   @override
@@ -231,7 +234,8 @@ class _PodcastPageState extends State<PodcastPage> {
 
         if (result.data == null) {
           return Scaffold(
-            body: Skeletonizer(enabled: true, child: _buildContent()),
+            body: Skeletonizer(
+                enabled: true, child: _buildContent(skeleton: true)),
           );
         }
 
@@ -245,7 +249,7 @@ class _PodcastPageState extends State<PodcastPage> {
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent({bool skeleton = false}) {
     final loc = AppLocalizations.of(context)!;
     final podcast = _podcast;
     final description =
@@ -261,6 +265,11 @@ class _PodcastPageState extends State<PodcastPage> {
             stretch: true,
             foregroundColor: Colors.white,
             actions: [
+              // Reserved while loading: without it the app bar grew a trailing
+              // icon the moment the podcast landed.
+              if (skeleton)
+                const IconButton(
+                    onPressed: null, icon: Icon(Icons.more_vert)),
               if (podcast != null)
                 MenuAnchor(
                   menuChildren: [
@@ -297,7 +306,7 @@ class _PodcastPageState extends State<PodcastPage> {
             ],
             flexibleSpace: FlexibleSpaceBar(
               collapseMode: CollapseMode.pin,
-              background: _buildHeader(context, podcast),
+              background: _buildHeader(context, podcast, skeleton: skeleton),
             ),
           ),
           SliverToBoxAdapter(
@@ -320,6 +329,15 @@ class _PodcastPageState extends State<PodcastPage> {
               ),
             ),
           ),
+          if (skeleton)
+            SliverToBoxAdapter(
+              child: _constrained(
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(16, 4, 16, 8),
+                  child: RatingStarsDisplay(rating: null, size: 30),
+                ),
+              ),
+            ),
           if (podcast != null)
             SliverToBoxAdapter(
               child: _constrained(
@@ -333,7 +351,7 @@ class _PodcastPageState extends State<PodcastPage> {
                 ),
               ),
             ),
-          if (description != null)
+          if (description != null || skeleton)
             SliverToBoxAdapter(
               child: _constrained(
                 Padding(
@@ -344,11 +362,12 @@ class _PodcastPageState extends State<PodcastPage> {
                       Text(loc.description,
                           style: Theme.of(context).textTheme.titleMedium),
                       const SizedBox(height: 8),
-                      Text(description),
+                      Text(description ?? BoneMock.paragraph),
                       const SizedBox(height: 6),
                       SourceAttribution(
                           metadata: podcast?.metadata,
-                          images: podcast?.images),
+                          images: podcast?.images,
+                          skeleton: skeleton),
                     ],
                   ),
                 ),
@@ -364,8 +383,13 @@ class _PodcastPageState extends State<PodcastPage> {
             ),
           ),
           SliverList.builder(
-            itemCount: _episodes.length + (_hasMoreEpisodes ? 1 : 0),
+            itemCount: skeleton
+                ? _skeletonEpisodeCount
+                : _episodes.length + (_hasMoreEpisodes ? 1 : 0),
             itemBuilder: (context, index) {
+              // While the page skeletonizes, rows — a lone spinner shimmering
+              // under the bones stood in for the page's biggest section.
+              if (skeleton) return _skeletonEpisodeTile(context);
               if (index >= _episodes.length) {
                 _scheduleLoadMoreEpisodes();
                 return const Center(
@@ -395,6 +419,33 @@ class _PodcastPageState extends State<PodcastPage> {
       child: ListTile(
         leading: Icon(_order == order ? Icons.check : Icons.sort),
         title: Text(label),
+      ),
+    );
+  }
+
+  /// Mirrors [_buildEpisodeTile]'s footprint: the trailing icon buttons are
+  /// what set the row height, so a title-and-subtitle-only stand-in reserved
+  /// too little and the list grew on load.
+  Widget _skeletonEpisodeTile(BuildContext context) {
+    final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    return ListTile(
+      dense: true,
+      visualDensity: VisualDensity.compact,
+      leading: Icon(Icons.play_circle_outline, color: mutedColor),
+      title: Text(BoneMock.name, maxLines: 1),
+      subtitle: Text(
+        BoneMock.words(2),
+        style: Theme.of(context)
+            .textTheme
+            .bodySmall
+            ?.copyWith(color: mutedColor),
+      ),
+      trailing: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(onPressed: null, icon: Icon(Icons.download)),
+          IconButton(onPressed: null, icon: Icon(Icons.more_vert)),
+        ],
       ),
     );
   }
@@ -503,7 +554,8 @@ class _PodcastPageState extends State<PodcastPage> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, Fragment$fragmentPodcast? podcast) {
+  Widget _buildHeader(BuildContext context, Fragment$fragmentPodcast? podcast,
+      {bool skeleton = false}) {
     final img = podcast != null
         ? ImageUtil.getImageByType(podcast.images, ImageTypes.cover)
         : null;
@@ -519,6 +571,7 @@ class _PodcastPageState extends State<PodcastPage> {
           ? (MetadataUtil.getTitle(podcast.metadata) ?? podcast.title)
           : null,
       subtitle: podcast?.author,
+      skeleton: skeleton,
     );
   }
 }

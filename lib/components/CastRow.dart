@@ -13,6 +13,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 
 import '../l10n/app_localizations.dart';
 import 'RowHeader.dart';
+import 'SkeletonPlaceholder.dart';
 
 /// Fixed height reserved for the horizontal cast strip; a bounded height is
 /// required so the lazy [ListView] in [PagedCastRow] can scroll horizontally.
@@ -105,6 +106,49 @@ class CastRow extends StatelessWidget {
                 children: [
                   for (final entry in entries)
                     _CastMemberTile(serverName: serverName, entry: entry),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// How many cast placeholders a strip reserves before it knows the real count.
+/// Shared so a page that skeletonizes a [CastRow] itself reserves exactly what
+/// [PagedCastRow] will show while it loads.
+const int kCastPlaceholderCount = 8;
+
+/// The loading stand-in for a cast strip: the same header and the same tiles
+/// [PagedCastRow] shows for a page it hasn't fetched yet.
+///
+/// Pages used to hand [CastRow] a list of fake `Fragment$fragmentCastMember`s
+/// instead, which reserved a different number of tiles than the real strip and
+/// had to be kept in step with the schema by hand.
+class CastRowSkeleton extends StatelessWidget {
+  const CastRowSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(maxWidth: 1600),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _castHeader(context),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+              physics: const NeverScrollableScrollPhysics(),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (int i = 0; i < kCastPlaceholderCount; i++)
+                    const _CastSkeletonTile(),
                 ],
               ),
             ),
@@ -238,7 +282,7 @@ class _PagedCastRowState extends State<PagedCastRow> {
         final entries = _mergeCredits(_orderedItems);
 
         final int placeholderCount = _totalItems == null
-            ? 8
+            ? kCastPlaceholderCount
             : (_totalItems! - loadedCredits).clamp(0, _pageSize);
 
         // Placeholders map back to credit indices (not merged tile indices)
@@ -357,23 +401,33 @@ class _CastAvatar extends StatelessWidget {
       color: theme.colorScheme.onSurfaceVariant,
     );
 
-    return ClipOval(
-      child: Container(
-        width: size,
-        height: size,
-        color: theme.colorScheme.surfaceContainerHighest,
-        child: (imageUrl != null && imageUrl != '')
-            ? CachedNetworkImage(
-                imageUrl: imageUrl,
-                fit: BoxFit.cover,
-                fadeInDuration: Duration.zero,
-                fadeOutDuration: Duration.zero,
-                errorBuilder: (_, __, ___) => Center(child: placeholder),
-              )
-            : Center(child: placeholder),
-      ),
+    return _castAvatarShell(
+      context,
+      size,
+      child: (imageUrl != null && imageUrl != '')
+          ? CachedNetworkImage(
+              imageUrl: imageUrl,
+              fit: BoxFit.cover,
+              fadeInDuration: Duration.zero,
+              fadeOutDuration: Duration.zero,
+              errorBuilder: (_, __, ___) => Center(child: placeholder),
+            )
+          : Center(child: placeholder),
     );
   }
+}
+
+/// The round tinted frame every cast avatar sits in. Shared with the skeleton
+/// stand-ins so a change to the frame cannot drift away from its placeholder.
+Widget _castAvatarShell(BuildContext context, double size, {Widget? child}) {
+  return ClipOval(
+    child: Container(
+      width: size,
+      height: size,
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: child,
+    ),
+  );
 }
 
 /// Compact list row — avatar beside the name and character — used by the
@@ -443,25 +497,33 @@ class _CastSkeletonRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Skeletonizer(
-      enabled: true,
+    return SkeletonPlaceholder(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         child: Row(
           children: [
-            ClipOval(
-              child: Container(
-                width: 48,
-                height: 48,
-                color: theme.colorScheme.surfaceContainerHighest,
-              ),
-            ),
+            _castAvatarShell(context, 48),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                BoneMock.name,
-                maxLines: 1,
-                style: theme.textTheme.labelLarge?.copyWith(height: 1.2),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    BoneMock.name,
+                    maxLines: 1,
+                    style: theme.textTheme.labelLarge?.copyWith(height: 1.2),
+                  ),
+                  // Most cast entries carry a character, and the real row is
+                  // two lines high when they do; a one-line skeleton made the
+                  // list settle a line shorter than it had reserved.
+                  const SizedBox(height: 2),
+                  Text(
+                    BoneMock.words(2),
+                    maxLines: 1,
+                    style: theme.textTheme.bodySmall?.copyWith(height: 1.2),
+                  ),
+                ],
               ),
             ),
           ],
@@ -539,8 +601,7 @@ class _CastSkeletonTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Skeletonizer(
-      enabled: true,
+    return SkeletonPlaceholder(
       child: SizedBox(
         width: _kCastTileWidth,
         child: Padding(
@@ -548,19 +609,21 @@ class _CastSkeletonTile extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ClipOval(
-                child: Container(
-                  width: _kCastTileAvatar,
-                  height: _kCastTileAvatar,
-                  color: theme.colorScheme.surfaceContainerHighest,
-                ),
-              ),
+              _castAvatarShell(context, _kCastTileAvatar),
               const SizedBox(height: 6),
               Text(
                 BoneMock.name,
-                maxLines: 2,
+                maxLines: 1,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.labelLarge?.copyWith(height: 1.2),
+              ),
+              // See [_CastSkeletonRow]: the character line is the common case.
+              const SizedBox(height: 2),
+              Text(
+                BoneMock.words(2),
+                maxLines: 1,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodySmall?.copyWith(height: 1.2),
               ),
             ],
           ),

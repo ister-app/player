@@ -52,6 +52,8 @@ class SeriesSlide extends StatelessWidget {
 
             return pagedSkeletonSlot(
               key: ValueKey('series-slide-placeholder-$index'),
+              placeholderIcon: Icons.auto_stories,
+              subtitleWords: 1,
               onVisible: () => requestPage(index ~/ _pageSize),
             );
           },

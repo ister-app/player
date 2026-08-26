@@ -192,11 +192,15 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
         _refetch = refetch;
         if (result.hasException) {
           return Center(child: Text(result.exception.toString()));
-        } else if (result.data == null || result.isLoading) {
+        // Skeletonize only while there is nothing to show: with
+        // `cacheAndNetwork` every revalidation reports `isLoading` over a
+        // perfectly good cached result, which flashed the whole page away.
+        } else if (result.data == null) {
           return Skeletonizer(
             enabled: true,
             child: getContent(
-                false, null, BoneMock.name, BoneMock.words(15), context),
+                false, null, BoneMock.name, BoneMock.words(15), context,
+                skeleton: true),
           );
         } else {
           // Parse the result here rather than in an `onComplete` callback: a
@@ -265,7 +269,8 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
   }
 
   Column getContent(bool loadComplete, Fragment$fragmentEpisode? episode,
-      String title, String description, BuildContext context) {
+      String title, String description, BuildContext context,
+      {bool skeleton = false}) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       LayoutBuilder(
         builder: (context, constraints) {
@@ -424,6 +429,13 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                 ),
               ],
             ),
+            // Unrated stars while loading, so the meta line and description
+            // below don't shift down once the episode lands.
+            if (skeleton)
+              const Padding(
+                padding: EdgeInsets.only(top: 4, bottom: 8),
+                child: RatingStarsDisplay(rating: null, size: 30),
+              ),
             if (episode != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4, bottom: 8),
@@ -450,6 +462,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                 released: MetadataUtil.getReleased(episode?.metadata),
                 runtime: episode?.runtime,
                 genres: MetadataUtil.getGenre(episode?.metadata),
+                skeleton: skeleton,
               ),
             ),
             if (_combinedFileLine(context, episode) != null)
@@ -472,7 +485,9 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: SourceAttribution(
-                  metadata: episode?.metadata, images: episode?.images),
+                  metadata: episode?.metadata,
+                  images: episode?.images,
+                  skeleton: skeleton),
             ),
           ])),
       PagedCastRow(serverName: widget.serverName, episodeId: widget.episodeId),
