@@ -1,4 +1,4 @@
-FROM nginxinc/nginx-unprivileged:alpine
+FROM nginxinc/nginx-unprivileged:1.31.4-alpine
 
 LABEL org.opencontainers.image.source="https://github.com/ister-app/player"
 
