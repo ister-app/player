@@ -1,5 +1,52 @@
 # Changelog
 
+## player v2.0.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.0.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Breaking changes
+
+- feat(settings)!: clearer maintenance actions with hints, confirmation and feedback ([`6687de2`](https://github.com/ister-app/player/commit/6687de2))
+
+### Features
+
+- feat(metadata): show the extended TMDB metadata on detail pages ([`206512d`](https://github.com/ister-app/player/commit/206512d))
+- feat(player): option to leave out subtitles in the language being spoken ([`91a1ba1`](https://github.com/ister-app/player/commit/91a1ba1))
+- feat(settings): rework language preferences and name languages in the UI language ([`ac5d29e`](https://github.com/ister-app/player/commit/ac5d29e))
+
+### Fixes
+
+- fix(ui): stop accent extraction from disposing shared artwork images ([`05f4acd`](https://github.com/ister-app/player/commit/05f4acd))
+- fix(player): keep back out of the player from emptying the navigator ([`dea0b61`](https://github.com/ister-app/player/commit/dea0b61))
+- fix(settings): make the section headers stand out from the rows ([`9728137`](https://github.com/ister-app/player/commit/9728137))
+- fix(ui): reserve the person page's played-track and album space while loading ([`c9d75c5`](https://github.com/ister-app/player/commit/c9d75c5))
+- fix(servers): only call a server connected when it answers now ([`5f9a28e`](https://github.com/ister-app/player/commit/5f9a28e))
+- fix(ui): keep a snackbar's action beside its text ([`9d4a19c`](https://github.com/ister-app/player/commit/9d4a19c))
+- fix(log): keep the exported error log populated in release builds ([`635e7b6`](https://github.com/ister-app/player/commit/635e7b6))
+
+### Other
+
+- ci(e2e): pin the chart to bac9a05 for the scanLibraries rename ([`0352d77`](https://github.com/ister-app/player/commit/0352d77))
+- ci(e2e): pin the server to the v3.0.0 release ([`3f7328f`](https://github.com/ister-app/player/commit/3f7328f))
+- refactor(album): collapse the app-bar icons into one overflow menu ([`0b07477`](https://github.com/ister-app/player/commit/0b07477))
+- refactor(settings): give every settings sub-page the same shape ([`f4ceed2`](https://github.com/ister-app/player/commit/f4ceed2))
+- refactor(settings): group the settings screen by scope ([`20a75dd`](https://github.com/ister-app/player/commit/20a75dd))
+- ci(e2e): pin the server snapshot that carries hideSubtitlesMatchingAudio ([`afe012b`](https://github.com/ister-app/player/commit/afe012b))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.0.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v1.19.0...v2.0.0
+
 ## player v1.19.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
