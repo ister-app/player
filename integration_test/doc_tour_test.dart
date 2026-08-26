@@ -147,7 +147,10 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     // Back on the album page with the mini player docked at the bottom.
     await shot(tester, 'mini-player');
-    await MediaPlayerHandler.instance.pause();
+    // Stop, don't pause: a paused queue keeps the mini player docked at the
+    // bottom of every later stop in the tour.
+    await MediaPlayerHandler.instance.stop();
+    await tester.pump(const Duration(milliseconds: 500));
     await pop(tester);
 
     // A podcast; subscribe to the in-cluster test feed first if the chart e2e
