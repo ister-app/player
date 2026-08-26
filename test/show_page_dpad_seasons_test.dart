@@ -50,6 +50,18 @@ http.Response _json(Map<String, dynamic> data) => http.Response(
 MockClient _fakeGraphQL() => MockClient((request) async {
       final body = json.decode(request.body) as Map<String, dynamic>;
       final query = body['query'] as String? ?? '';
+      // Before the showById branch: the related query selects showById too, and
+      // answering it with the full show payload would leave `related` missing.
+      if (query.contains('query relatedShows')) {
+        return _json({
+          '__typename': 'Query',
+          'showById': {
+            '__typename': 'Show',
+            'id': 'show-1',
+            'related': <dynamic>[],
+          },
+        });
+      }
       if (query.contains('showById(')) {
         return _json({
           '__typename': 'Query',

@@ -416,6 +416,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get cast => 'Cast';
 
   @override
+  String get relatedShows => 'Gerelateerde series';
+
+  @override
   String get rate => 'Beoordelen';
 
   @override

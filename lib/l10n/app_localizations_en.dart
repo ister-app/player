@@ -414,6 +414,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cast => 'Cast';
 
   @override
+  String get relatedShows => 'Related shows';
+
+  @override
   String get rate => 'Rate';
 
   @override

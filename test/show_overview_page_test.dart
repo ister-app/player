@@ -60,9 +60,33 @@ http.Response _json(Map<String, dynamic> data) => http.Response(
       headers: {'content-type': 'application/json'},
     );
 
-MockClient _fakeGraphQL({String? source}) => MockClient((request) async {
+Map<String, dynamic> _relatedShow(String id, String name, int year) => {
+      '__typename': 'Show',
+      'id': id,
+      'name': name,
+      'releaseYear': year,
+      'images': [],
+      'metadata': [],
+    };
+
+MockClient _fakeGraphQL({
+  String? source,
+  List<Map<String, dynamic>> related = const [],
+}) =>
+    MockClient((request) async {
       final query =
           (json.decode(request.body) as Map<String, dynamic>)['query'] as String;
+      // Checked before showById: the related query selects showById too.
+      if (query.contains('query relatedShows')) {
+        return _json({
+          '__typename': 'Query',
+          'showById': {
+            '__typename': 'Show',
+            'id': 'show-1',
+            'related': related,
+          },
+        });
+      }
       if (query.contains('showById')) {
         return _json({'__typename': 'Query', 'showById': _show(source: source)});
       }
@@ -152,5 +176,29 @@ void main() {
 
     expect(find.text('A mob capo builds a crew in Tulsa.'), findsOneWidget);
     expect(find.textContaining('Source:'), findsNothing);
+  });
+
+  testWidgets('lists the related shows under the cast', (tester) async {
+    final client = _fakeGraphQL(
+        source: 'TMDB',
+        related: [_relatedShow('show-2', 'Mayor of Kingstown', 2021)]);
+    useClient(client);
+    await tester.pumpWidget(_app(client));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Related shows'), findsOneWidget);
+    // No metadata row on the related show: the tile falls back to its name.
+    expect(find.text('Mayor of Kingstown'), findsOneWidget);
+  });
+
+  testWidgets('hides the related row when the show has no related shows',
+      (tester) async {
+    final client = _fakeGraphQL(source: 'TMDB');
+    useClient(client);
+    await tester.pumpWidget(_app(client));
+    await tester.pumpAndSettle();
+
+    // A bare header with nothing under it would be worse than no row at all.
+    expect(find.text('Related shows'), findsNothing);
   });
 }

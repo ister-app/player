@@ -120,6 +120,7 @@
   "noPreviousTracks": "Geen vorige nummers",
   "noNextTracks": "Geen volgende nummers",
   "cast": "Cast",
+  "relatedShows": "Gerelateerde series",
   "rate": "Beoordelen",
   "yourRating": "Jouw beoordeling",
   "ratingValue": "{value}/10",

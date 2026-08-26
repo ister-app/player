@@ -1,0 +1,16 @@
+query relatedShows($id: ID!, $limit: Int) {
+    showById(id: $id) {
+        id
+        related(limit: $limit) {
+            id
+            name
+            releaseYear
+            images {
+                ...fragmentImages
+            }
+            metadata {
+                ...fragmentMetadata
+            }
+        }
+    }
+}

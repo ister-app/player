@@ -512,6 +512,10 @@
   "@cast": {
     "description": "Section header for the list of actors in a movie, show or episode"
   },
+  "relatedShows": "Related shows",
+  "@relatedShows": {
+    "description": "Section header above the strip of shows comparable to the one on screen"
+  },
   "rate": "Rate",
   "@rate": {
     "description": "Menu item / dialog title for setting a personal 1-10 rating on a media item"

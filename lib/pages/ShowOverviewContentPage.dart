@@ -8,6 +8,7 @@ import 'package:player/components/DevicePickerSheet.dart';
 import 'package:player/components/CastRow.dart';
 import 'package:player/components/MediaMetaLine.dart';
 import 'package:player/components/RatingStars.dart';
+import 'package:player/components/RelatedShowsRow.dart';
 import 'package:player/components/SourceAttribution.dart';
 import 'package:player/graphql/refreshShow.graphql.dart';
 import 'package:player/graphql/fragmentImages.graphql.dart';
@@ -338,6 +339,8 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
             ),
           ])),
       castRow,
+      // Only on the real page: the skeleton has no show to relate anything to.
+      if (show != null) RelatedShowsRow(serverName: serverName, showId: showId),
     ]));
   }
 

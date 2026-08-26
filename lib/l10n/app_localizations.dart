@@ -824,6 +824,12 @@ abstract class AppLocalizations {
   /// **'Cast'**
   String get cast;
 
+  /// Section header above the strip of shows comparable to the one on screen
+  ///
+  /// In en, this message translates to:
+  /// **'Related shows'**
+  String get relatedShows;
+
   /// Menu item / dialog title for setting a personal 1-10 rating on a media item
   ///
   /// In en, this message translates to:
