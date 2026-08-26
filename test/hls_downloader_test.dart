@@ -287,8 +287,13 @@ stream_video_480p.m3u8?token=a
 
   /// A playlist of [count] segments, and a client that gates every segment on
   /// [release] so a test can see how many requests are in flight at once.
-  ({MockClient client, List<String> fetched, int Function() peak}) gatedClient(
-      int count,
+  /// `reached(n)` completes once n of them hang on the gate together.
+  ({
+    MockClient client,
+    List<String> fetched,
+    int Function() peak,
+    Future<void> Function(int) reached,
+  }) gatedClient(int count,
       {Completer<void>? release, int Function(String name)? status}) {
     final playlist = StringBuffer('#EXTM3U\n#EXT-X-TARGETDURATION:6\n');
     for (var i = 0; i < count; i++) {
@@ -299,6 +304,13 @@ stream_video_480p.m3u8?token=a
     final fetched = <String>[];
     var inFlight = 0;
     var peak = 0;
+    // Awaiting the count itself, instead of a wall-clock delay: a loaded CI
+    // runner can spend more than a few milliseconds just getting through the
+    // master and the variant playlist, and the window would read as empty.
+    final waiters = <int, Completer<void>>{};
+    Future<void> reached(int n) => inFlight >= n
+        ? Future<void>.value()
+        : (waiters[n] ??= Completer<void>()).future;
     final client = MockClient((req) async {
       final name = req.url.pathSegments.last;
       fetched.add(name);
@@ -306,6 +318,9 @@ stream_video_480p.m3u8?token=a
       if (name.endsWith('.m3u8')) return http.Response(playlist.toString(), 200);
       inFlight++;
       if (inFlight > peak) peak = inFlight;
+      for (final n in waiters.keys.toList()) {
+        if (n <= inFlight) waiters.remove(n)!.complete();
+      }
       try {
         if (release != null) await release.future;
         await Future<void>.delayed(const Duration(milliseconds: 5));
@@ -315,8 +330,22 @@ stream_video_480p.m3u8?token=a
         inFlight--;
       }
     });
-    return (client: client, fetched: fetched, peak: () => peak);
+    return (
+      client: client,
+      fetched: fetched,
+      peak: () => peak,
+      reached: reached,
+    );
   }
+
+  /// Opens the gate and drains [future] once the test body is done, so a
+  /// failing expectation cannot leave a worker writing into the temp dir
+  /// `tearDown` is about to delete.
+  void releaseAndDrain(Completer<void> release, Future<void> future) =>
+      addTearDown(() async {
+        if (!release.isCompleted) release.complete();
+        await future.then((_) {}, onError: (_) {});
+      });
 
   Future<HlsDownloadResult> run(HlsDownloader d,
           {DownloadCancelToken? cancel,
@@ -337,7 +366,10 @@ stream_video_480p.m3u8?token=a
     final release = Completer<void>();
     final g = gatedClient(12, release: release);
     final future = run(downloader(g.client, window: 4));
-    // Let the workers reach the gate, then let everything through.
+    releaseAndDrain(release, future);
+    // Wait for the window to fill, then give a fifth worker the chance to show
+    // up before reading the peak, and let everything through.
+    await g.reached(4).timeout(const Duration(seconds: 10));
     await Future<void>.delayed(const Duration(milliseconds: 50));
     expect(g.peak(), 4, reason: 'exactly the window, no more and no fewer');
     release.complete();
@@ -367,6 +399,8 @@ stream_video_480p.m3u8?token=a
       selection:
           const DownloadSelection(audioQuality: DownloadAudioQuality.compact),
     );
+    releaseAndDrain(release, future);
+    await g.reached(2).timeout(const Duration(seconds: 10));
     await Future<void>.delayed(const Duration(milliseconds: 50));
     expect(g.peak(), 2,
         reason: 'the FFmpeg pass is the bottleneck there, not the request');
