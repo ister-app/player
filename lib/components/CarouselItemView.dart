@@ -2,6 +2,8 @@ import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:player/components/TvFocusable.dart';
+import 'package:player/utils/ImageUtil.dart';
+
 class CarouselItemView extends StatelessWidget {
   const CarouselItemView(
       {super.key,
@@ -68,6 +70,7 @@ class CarouselItemView extends StatelessWidget {
                   )
                 : Container(),
             imageUrl: imageUrl!,
+            cacheKey: ImageUtil.cacheKeyFor(imageUrl!),
             fit: BoxFit.cover,
             fadeOutDuration: Duration.zero,
             fadeInDuration: Duration.zero,

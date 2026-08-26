@@ -156,6 +156,7 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
                       : Container(),
                   fit: BoxFit.cover,
                   imageUrl: imageUrl,
+                  cacheKey: ImageUtil.cacheKeyFor(imageUrl),
                   fadeOutDuration: Duration.zero,
                   fadeInDuration: Duration.zero,
                 )

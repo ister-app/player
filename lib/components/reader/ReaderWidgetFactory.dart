@@ -2,6 +2,7 @@ import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
+import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/epub/ChapterContent.dart';
 
 /// fwfh widget factory for chapter documents: resolves the `epub:///` entry
@@ -22,6 +23,6 @@ class ReaderWidgetFactory extends WidgetFactory {
     if (resolved.isEmpty) return null;
     // A downloaded epub resolves entries to absolute paths.
     if (resolved.startsWith('/')) return FileImage(File(resolved));
-    return CachedNetworkImageProvider(resolved);
+    return CachedNetworkImageProvider(resolved, cacheKey: ImageUtil.cacheKeyFor(resolved));
   }
 }

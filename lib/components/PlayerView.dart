@@ -13,6 +13,7 @@ import 'package:player/components/TvFocusable.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/AccentColorUtil.dart';
+import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/SleepTimerService.dart';
 import 'package:player/utils/DurationUtil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -618,6 +619,7 @@ class _PlayerViewState extends State<PlayerView>
         child: artUri != null
             ? CachedNetworkImage(
                 imageUrl: artUri,
+                cacheKey: ImageUtil.cacheKeyFor(artUri),
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => _artPlaceholder(size),
               )
@@ -961,6 +963,7 @@ class _QueueItemState extends State<_QueueItem> {
                       borderRadius: BorderRadius.circular(4),
                       child: CachedNetworkImage(
                         imageUrl: artUrl,
+                        cacheKey: ImageUtil.cacheKeyFor(artUrl),
                         width: 48,
                         height: 48,
                         fit: BoxFit.cover,

@@ -405,6 +405,7 @@ class _ArtistTrackListState extends State<ArtistTrackList> {
         child: imageUrl != null
             ? CachedNetworkImage(
                 imageUrl: imageUrl,
+                cacheKey: ImageUtil.cacheKeyFor(imageUrl),
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => _thumbPlaceholder(context),
               )

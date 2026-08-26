@@ -1456,6 +1456,11 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// Android re-downloads notification artwork from it whenever it rebuilds
   /// the media notification — long after the embedded token has rotated or
   /// expired, which made the cover silently disappear.
+  ///
+  /// Restamping no longer costs a re-download: the in-app widgets key their
+  /// image cache on the token-free url (ImageUtil.cacheKeyFor), and the
+  /// notification artwork audio_service fetches from this uri goes through
+  /// NotificationArtCache, which does the same.
   void _refreshArtworkTokens() {
     MediaItem restamp(MediaItem item) {
       final String serverName;

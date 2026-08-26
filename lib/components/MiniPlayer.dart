@@ -11,6 +11,7 @@ import 'package:player/components/TvFocusable.dart';
 import 'package:player/dto/IsterMediaItem.dart';
 import 'package:player/dto/MediaItemId.dart';
 import 'package:player/routes/AppRouter.gr.dart';
+import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:player/utils/VideoSurfaceNavigator.dart';
 
@@ -295,6 +296,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                               child: item.artUri != null
                                   ? CachedNetworkImage(
                                       imageUrl: item.artUri.toString(),
+                                      cacheKey: ImageUtil.cacheKeyFor(item.artUri.toString()),
                                       fit: BoxFit.cover,
                                       errorBuilder: (_, __, ___) =>
                                           _artPlaceholder(

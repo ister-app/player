@@ -34,6 +34,28 @@ class ImageUtil {
     return null;
   }
 
+  /// Cache key for an artwork URL: the same URL without the expiring `token`
+  /// parameter. A token is minted per app start and rotates within one, so
+  /// keying the image cache on the full URL stored the same picture once per
+  /// token and lost the lot on every restart. Mirrors
+  /// [ComicResourceClient.pageCacheKey], which builds the same string by
+  /// construction. Null or empty in, null out — it feeds `cacheKey:` directly;
+  /// `file:` URIs, local paths and third-party URLs come back unchanged.
+  static String? cacheKeyFor(String? url) {
+    if (url == null || url.isEmpty) return null;
+    final int q = url.indexOf('?');
+    if (q < 0) return url;
+    // Split on the parameters rather than replacing a `token=…` pattern, so an
+    // `auth_token=` is left alone and the other parameters keep their order.
+    final kept = url
+        .substring(q + 1)
+        .split('&')
+        .where((p) => p != 'token' && !p.startsWith('token='))
+        .join('&');
+    final base = url.substring(0, q);
+    return kept.isEmpty ? base : '$base?$kept';
+  }
+
   static String? buildUrl(Fragment$fragmentImages? image, {String? token}) {
     if (image == null) return null;
     final base = '${image.directory.node.url}/images/${image.id}/download';

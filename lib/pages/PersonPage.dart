@@ -659,6 +659,7 @@ class _PersonPageState extends State<PersonPage> {
                   child: (imageUrl != null && imageUrl != '')
                       ? CachedNetworkImage(
                           imageUrl: imageUrl,
+                          cacheKey: ImageUtil.cacheKeyFor(imageUrl),
                           fit: BoxFit.cover,
                           fadeInDuration: Duration.zero,
                           fadeOutDuration: Duration.zero,
@@ -1020,6 +1021,7 @@ class _PersonShowEpisodesSheetState extends State<_PersonShowEpisodesSheet> {
           child: (imageUrl != null && imageUrl != '')
               ? CachedNetworkImage(
                   imageUrl: imageUrl,
+                  cacheKey: ImageUtil.cacheKeyFor(imageUrl),
                   fit: BoxFit.cover,
                   fadeInDuration: Duration.zero,
                   fadeOutDuration: Duration.zero,

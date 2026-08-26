@@ -210,6 +210,7 @@ class TvShowSeasonList extends StatelessWidget {
                               : Container(),
                           fit: BoxFit.fitHeight,
                           imageUrl: imageUrl,
+                          cacheKey: ImageUtil.cacheKeyFor(imageUrl),
                           fadeOutDuration: Duration.zero,
                           fadeInDuration: Duration.zero,
                         )

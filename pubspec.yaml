@@ -37,6 +37,9 @@ dependencies:
   audio_service_win: ^0.0.3 # SMTC on Windows, what audio_service_mpris is on Linux
   audio_session: ^0.2.2
   rxdart: ^0.28.0
+  # Not used directly for images (that is cached_network_image_ce's own
+  # manager) but audio_service loads notification artwork through it, and
+  # NotificationArtCache wraps it to strip the stream token from the key.
   flutter_cache_manager: ^3.4.1
   http: ^1.2.0
   device_info_plus: ^13.2.0

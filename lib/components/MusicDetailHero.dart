@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
+import 'package:player/utils/ImageUtil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 /// SliverAppBar background shared by the album and artist detail pages: a
@@ -90,6 +91,7 @@ class MusicDetailHero extends StatelessWidget {
             imageFilter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
             child: CachedNetworkImage(
               imageUrl: imageUrl!,
+              cacheKey: ImageUtil.cacheKeyFor(imageUrl!),
               fit: BoxFit.cover,
               alignment: backgroundAlignment,
               placeholder: (context, url) =>
@@ -131,6 +133,7 @@ class MusicDetailHero extends StatelessWidget {
                     child: imageUrl != null
                         ? CachedNetworkImage(
                             imageUrl: imageUrl!,
+                            cacheKey: ImageUtil.cacheKeyFor(imageUrl!),
                             fit: BoxFit.cover,
                             placeholder: (context, url) =>
                                 _blurHashOr(Container(color: Colors.grey[900])),

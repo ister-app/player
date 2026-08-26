@@ -91,6 +91,7 @@ class PlaylistCoverMosaic extends StatelessWidget {
             if (url == null || url.isEmpty) return placeholder;
             return CachedNetworkImage(
               imageUrl: url,
+              cacheKey: ImageUtil.cacheKeyFor(url),
               fit: BoxFit.cover,
               fadeInDuration: Duration.zero,
               fadeOutDuration: Duration.zero,

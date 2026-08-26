@@ -80,6 +80,7 @@ class VideoCoverView extends StatelessWidget {
       final blurHash = image.blurHash;
       return CachedNetworkImage(
         imageUrl: url,
+        cacheKey: ImageUtil.cacheKeyFor(url),
         fit: BoxFit.cover,
         placeholder: (context, url) => blurHash != null
             ? BlurHash(
@@ -102,6 +103,7 @@ class VideoCoverView extends StatelessWidget {
     }
     return CachedNetworkImage(
       imageUrl: uri.toString(),
+      cacheKey: ImageUtil.cacheKeyFor(uri.toString()),
       fit: BoxFit.cover,
       errorBuilder: (context, url, error) => const SizedBox.shrink(),
     );

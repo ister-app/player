@@ -315,6 +315,7 @@ class _SearchPageState extends State<SearchPage> {
                   child: (imageUrl != null && imageUrl != '')
                       ? CachedNetworkImage(
                           imageUrl: imageUrl,
+                          cacheKey: ImageUtil.cacheKeyFor(imageUrl),
                           fit: BoxFit.cover,
                           fadeInDuration: Duration.zero,
                           fadeOutDuration: Duration.zero,

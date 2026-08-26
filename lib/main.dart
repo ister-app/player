@@ -10,6 +10,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:player/routes/AppRouter.dart';
 import 'package:player/routes/AppRouter.gr.dart';
+import 'package:player/utils/ImageCacheConfig.dart';
+import 'package:player/utils/NotificationArtCache.dart';
 import 'package:player/utils/AppLogStore.dart';
 import 'package:player/utils/AppMessenger.dart';
 import 'package:player/utils/ClientManager.dart';
@@ -47,6 +49,9 @@ Future<void> main() async {
     return false;
   };
   LoggerService().logger.i("Starting Ister Player");
+  // Before anything can resolve an image — the audio handler publishes artwork
+  // as soon as a session is restored.
+  ImageCacheConfig.install();
   // Init the client manager and wait until lastClientUsed is loaded
   ClientManager.instance;
   await ClientManager.ensureInitialized();
@@ -78,6 +83,10 @@ Future<void> main() async {
   // store this in a singleton
   await AudioService.init(
     builder: () => MediaPlayerHandler.instance,
+    // The platform re-fetches artwork from the published artUri, which carries
+    // the stream token; without a token-free cache key every rotation stored
+    // the same cover again.
+    cacheManager: NotificationArtCache(),
     config: AudioServiceConfig(
       androidNotificationChannelId: 'app.ister.player.channel.audio',
       androidNotificationChannelName: 'Ister Player',

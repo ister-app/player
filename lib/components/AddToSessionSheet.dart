@@ -1,3 +1,4 @@
+import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/fragmentServerActivity.graphql.dart';
@@ -6,6 +7,7 @@ import 'package:player/graphql/serverActivitySnapshot.graphql.dart';
 
 import '../l10n/app_localizations.dart';
 import '../utils/ClientManager.dart';
+import '../utils/ImageUtil.dart';
 import '../utils/LoggerService.dart';
 import '../utils/PlayQueueService.dart';
 import '../utils/StreamTokenService.dart';
@@ -250,11 +252,14 @@ class _SessionAvatar extends StatelessWidget {
       borderRadius: BorderRadius.circular(6),
       child: url == null
           ? placeholder
-          : Image.network(
-              url!,
+          : CachedNetworkImage(
+              imageUrl: url!,
+              cacheKey: ImageUtil.cacheKeyFor(url),
               width: 44,
               height: 44,
               fit: BoxFit.cover,
+              fadeInDuration: Duration.zero,
+              fadeOutDuration: Duration.zero,
               errorBuilder: (_, __, ___) => placeholder,
             ),
     );

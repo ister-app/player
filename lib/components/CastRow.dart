@@ -407,6 +407,7 @@ class _CastAvatar extends StatelessWidget {
       child: (imageUrl != null && imageUrl != '')
           ? CachedNetworkImage(
               imageUrl: imageUrl,
+              cacheKey: ImageUtil.cacheKeyFor(imageUrl),
               fit: BoxFit.cover,
               fadeInDuration: Duration.zero,
               fadeOutDuration: Duration.zero,

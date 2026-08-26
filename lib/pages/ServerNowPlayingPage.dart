@@ -417,6 +417,7 @@ class _Artwork extends StatelessWidget {
           ? placeholder
           : CachedNetworkImage(
               imageUrl: url!,
+              cacheKey: ImageUtil.cacheKeyFor(url!),
               width: _size,
               height: _size,
               fit: BoxFit.cover,

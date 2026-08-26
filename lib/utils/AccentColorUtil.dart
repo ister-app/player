@@ -1,7 +1,9 @@
 import 'dart:typed_data';
 
+import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:player/utils/ImageCacheConfig.dart';
+import 'package:player/utils/ImageUtil.dart';
 
 /// Extracts a UI accent colour from artwork, shared by the music player and the
 /// album page so both derive the same tint from the same cover.
@@ -18,11 +20,17 @@ class AccentColorUtil {
       // cached_network_image (two concurrent `getNextFrame`s emit the same
       // frame twice, the second `setImage` disposes the first — the artwork
       // widgets are then left painting a disposed image and the screen goes
-      // blank). The bytes come from the same on-disk cache, so this costs no
-      // extra download; the private MemoryImage is evicted right after so it
-      // does not linger in the image cache at full size.
-      final file = await DefaultCacheManager().getSingleFile(url);
-      final Uint8List bytes = await file.readAsBytes();
+      // blank). Going through the app's own cache manager with the artwork's
+      // own cache key means the bytes are the ones the cover widget already
+      // downloaded, so this costs no extra request; the private MemoryImage is
+      // evicted right after so it does not linger in the image cache at full
+      // size.
+      final key = ImageUtil.cacheKeyFor(url)!;
+      final info = await ImageCacheConfig.manager.getFileFromCache(key) ??
+          await ImageCacheConfig.manager
+              .getFileStream(url, key: key)
+              .firstWhere((r) => r is FileInfo) as FileInfo;
+      final Uint8List bytes = await info.file.readAsBytes();
       final provider = MemoryImage(bytes);
       try {
         // `content` keeps the source artwork's hue and chroma instead of pulling
