@@ -60,7 +60,7 @@ jobs:
           # git-dependency mirrors without a newly pinned commit, and pub's mid-resolution
           # fetch then drops their transitive deps and corrupts package_graph.json.
           key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           java-version: 21
           distribution: 'zulu' # Alternative distribution options are available
