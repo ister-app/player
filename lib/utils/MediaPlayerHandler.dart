@@ -168,14 +168,25 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// lowmemorykiller SIGKILLs the app mid-playback — scale down there.
   static int _demuxerBufferSize() {
     const desktop = 320 * 1024 * 1024;
+    const mobile = 64 * 1024 * 1024;
     const lowRam = 32 * 1024 * 1024;
+    // iOS has no readable total-memory figure (see _totalPhysicalMemory), and
+    // its per-app jetsam limit is a fraction of installed RAM regardless — a
+    // 640MB demuxer budget gets the process killed without a log line or a
+    // crash report, the same way the lowmemorykiller does on 2GB Android TV
+    // boxes. Pick the mobile tier unconditionally rather than measure.
+    if (!kIsWeb && Platform.isIOS) return mobile;
     final totalRam = _totalPhysicalMemory();
     if (totalRam != null && totalRam < 3 * 1024 * 1024 * 1024) return lowRam;
     return desktop;
   }
 
-  /// Total physical memory in bytes, or null when it cannot be determined
-  /// (web, non-procfs platforms).
+  /// Total physical memory in bytes, or null when it cannot be determined.
+  ///
+  /// Only Android and Linux expose procfs. On iOS and macOS there is no
+  /// synchronous equivalent — `ProcessInfo` in dart:io reports this process's
+  /// RSS, not the machine's RAM, and `IosDeviceInfo` carries no memory figure
+  /// (and is async besides) — so callers handle null themselves.
   static int? _totalPhysicalMemory() {
     if (kIsWeb || !(Platform.isAndroid || Platform.isLinux)) return null;
     try {

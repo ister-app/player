@@ -55,6 +55,14 @@ class DevicePreferences {
         final info = await DeviceInfoPlugin().androidInfo;
         return info.model;
       }
+      if (Platform.isIOS) {
+        // The name the user gave the device in Settings ("Gerbens iPhone").
+        // Platform.localHostname would return that too, but mangled into a
+        // Bonjour name ("Gerbens-iPhone.local"), and this is the label that
+        // shows up in the device list and the "play on" picker.
+        final info = await DeviceInfoPlugin().iosInfo;
+        return info.name;
+      }
       return Platform.localHostname;
     } catch (_) {
       return 'Ister player';

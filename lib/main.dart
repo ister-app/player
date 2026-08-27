@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'utils/url_strategy_stub.dart'
@@ -137,6 +138,13 @@ const _pageTransitionsTheme = PageTransitionsTheme(
     // transition, and its external textures crash the same way.
     TargetPlatform.android:
         ZoomPageTransitionsBuilder(allowSnapshotting: false),
+    // The Cupertino slide does not rasterise the outgoing page, so the Apple
+    // platforms need no opt-out — but they must be listed. Supplying `builders`
+    // replaces the default map, and a platform missing from it falls back to
+    // *zoom* (with snapshotting on) for everything except iOS. Leaving macOS
+    // out therefore both loses its native transition and reintroduces the crash.
+    TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+    TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
   },
 );
 
@@ -205,6 +213,9 @@ class _MainState extends State<Main> {
       // it the audio_service foreground notification is silently suppressed.
       // Request after the first frame so an activity is attached — main() also
       // runs during headless audio-service restore, where there is none.
+      // Android only on purpose: iOS drives the lock screen through
+      // MPNowPlayingInfoCenter, which needs no runtime permission — only the
+      // `audio` UIBackgroundModes entry in ios/Runner/Info.plist.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Permission.notification.request();
       });
