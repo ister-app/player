@@ -1486,6 +1486,28 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
   }
 
+  /// Re-publishes the current item and queue so a freshly created Android
+  /// media session gets its metadata back.
+  ///
+  /// audio_service pushes `mediaItem`/`queue` to the platform only when they
+  /// *change*, while `playbackState` is re-emitted continuously (position
+  /// updates). When the system destroys and recreates `AudioService` under a
+  /// surviving Flutter engine, the new session therefore carries a full
+  /// playback state and no metadata at all — a live notification with working
+  /// buttons, no title (Android substitutes `"<app> is running"`), no cover and
+  /// no progress bar. The fork restores this natively, but a headless service
+  /// restart after a process kill loses the native statics too, so re-publish
+  /// from Dart on the paths that follow such a restart.
+  ///
+  /// The queue is re-added as a fresh list: the emission itself is what
+  /// reaches the platform, so it must not be skipped by an identity check.
+  void republishSession() {
+    final item = mediaItem.valueOrNull;
+    if (item == null) return;
+    queue.add(List<MediaItem>.of(queue.value));
+    mediaItem.add(item);
+  }
+
   /// While the app sits suspended in the background (Doze), the refresh
   /// timers in [StreamTokenService] don't fire, so the token can expire
   /// outright. Fetching one on resume bumps [StreamTokenService.tokenVersion],
@@ -1516,6 +1538,10 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (playQueue == null) await _restoreLastMusicQueueOnce();
     _intendsToPlay = true;
     unawaited(_ensureFreshArtToken());
+    // A play command is what restarts a system-destroyed AudioService (the
+    // notification button arrives as MEDIA_SESSION_CALLBACK), so this is the
+    // moment the new, metadata-less session needs the item pushed again.
+    republishSession();
     // Resuming after stop() (or a paused restore) must restart the heartbeat
     // and the remote-command subscription those paths left down.
     if (playQueue != null) {

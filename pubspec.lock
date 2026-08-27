@@ -78,7 +78,7 @@ packages:
     description:
       path: audio_service
       ref: "fix/restore-listener-on-service-recreate"
-      resolved-ref: "789b35329490671511dc93b999fc4a8a4e8450d4"
+      resolved-ref: aff871ddb0618d6b1562d0592da026456885dab8
       url: "https://github.com/ister-app/audio_service"
     source: git
     version: "0.18.19"

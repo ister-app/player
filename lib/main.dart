@@ -187,8 +187,12 @@ class _MainState extends State<Main> {
     // errors and every subscription silently freezes. Resume is exactly when
     // that state becomes user-visible, so force a reconnect cycle here — the
     // socket client re-registers all live subscriptions on the new connection.
-    _lifecycleListener =
-        AppLifecycleListener(onResume: ClientManager.resetWebSockets);
+    _lifecycleListener = AppLifecycleListener(onResume: () {
+      ClientManager.resetWebSockets();
+      // Opening the app also heals a media notification that lost its metadata
+      // when the system recreated the audio service underneath us.
+      MediaPlayerHandler.instance.republishSession();
+    });
     final appRouter = AppRouter();
     _routerConfig = appRouter.config(
       deepLinkBuilder: widget.initialServer != null
