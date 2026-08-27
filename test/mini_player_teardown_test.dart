@@ -1,5 +1,6 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:player/components/MiniPlayer.dart';
@@ -14,6 +15,15 @@ import 'package:player/utils/MediaPlayerHandler.dart';
 /// offering to resume media this device no longer has.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  // No video output plugin in a widget test: answer the texture-create call
+  // with null so the handler's VideoController setup idles. The
+  // MissingPluginException it throws otherwise arrives asynchronously, so it
+  // lands on whichever test happens to be running and reports that one as
+  // "did not complete" — a flake that moves around and never names its cause.
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(
+          const MethodChannel('com.alexmercerind/media_kit_video'),
+          (call) async => null);
   MediaKit.ensureInitialized();
   final handler = MediaPlayerHandler.instance;
 

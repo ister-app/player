@@ -148,6 +148,15 @@ class _ShowRouter extends RootStackRouter {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  // No video output plugin in a widget test: answer the texture-create call
+  // with null so the handler's VideoController setup idles. The
+  // MissingPluginException it throws otherwise arrives asynchronously, so it
+  // lands on whichever test happens to be running and reports that one as
+  // "did not complete" — a flake that moves around and never names its cause.
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(
+          const MethodChannel('com.alexmercerind/media_kit_video'),
+          (call) async => null);
   MediaKit.ensureInitialized();
   SharedPreferencesAsyncPlatform.instance =
       InMemorySharedPreferencesAsync.empty();

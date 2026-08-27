@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -94,6 +95,15 @@ Widget _app(Widget home) => MaterialApp(
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  // No video output plugin in a widget test: answer the texture-create call
+  // with null so the handler's VideoController setup idles. The
+  // MissingPluginException it throws otherwise arrives asynchronously, so it
+  // lands on whichever test happens to be running and reports that one as
+  // "did not complete" — a flake that moves around and never names its cause.
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(
+          const MethodChannel('com.alexmercerind/media_kit_video'),
+          (call) async => null);
   MediaKit.ensureInitialized();
   // The listen-along banner reads the handler's follow state; instantiate it
   // up front like the other player-page tests do.

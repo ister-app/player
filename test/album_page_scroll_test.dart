@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -143,6 +144,15 @@ void main() {
   // singleton constructs a media_kit Player. Force the singleton into existence
   // here, outside any test's FakeAsync zone — its periodic stall-watchdog timer
   // would otherwise count as a pending timer of the first test.
+  // No video output plugin in a widget test: answer the texture-create call
+  // with null so the handler's VideoController setup idles instead of failing
+  // the suite with an unhandled MissingPluginException. That error surfaces
+  // asynchronously, so without this it lands on whichever test happens to be
+  // running and reports it as "did not complete".
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(
+          const MethodChannel('com.alexmercerind/media_kit_video'),
+          (call) async => null);
   MediaKit.ensureInitialized();
   MediaPlayerHandler.instance;
 
