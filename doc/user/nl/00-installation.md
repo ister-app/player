@@ -1,10 +1,10 @@
 ---
-description: Zo installeer je de Ister-mediaspeler op Android, Linux (Flatpak), Windows, macOS en in de browser, klaar om te verbinden met je zelfgehoste mediaserver.
+description: Zo installeer je de Ister-mediaspeler op Android, Linux (Flatpak), Windows, macOS, iOS en in de browser, klaar om te verbinden met je zelfgehoste mediaserver.
 ---
 
 # Installatie
 
-Voordat je een server kunt toevoegen, heb je de app zelf nodig. Ister draait op Android, Linux, Windows, macOS en het web, en elke versie praat met dezelfde servers — kies wat past bij het apparaat dat je voor je hebt. Zodra de app geïnstalleerd is, ga je verder met [Aan de slag](01-getting-started.md).
+Voordat je een server kunt toevoegen, heb je de app zelf nodig. Ister draait op Android, Linux, Windows, macOS, iOS en het web, en elke versie praat met dezelfde servers — kies wat past bij het apparaat dat je voor je hebt. Zodra de app geïnstalleerd is, ga je verder met [Aan de slag](01-getting-started.md).
 
 ## In de browser
 
@@ -47,6 +47,19 @@ xattr -dr com.apple.quarantine "/Applications/Ister player.app"
 ```
 
 Daarna opent hij gewoon.
+
+## iOS
+
+Voor iOS is er geen kant-en-klare download. Apple staat alleen apps toe die zijn ondertekend voor je eigen Apple ID, dus de iPhone- en iPad-versie bouw je op een Mac en zet je van daaruit over. Je hebt een Mac nodig met [Xcode](https://apps.apple.com/app/xcode/id497799835) en de [Flutter SDK](https://docs.flutter.dev/get-started/install/macos), plus een Apple ID.
+
+1. Kloon de repository en draai `flutter pub get`.
+2. Open `ios/Runner.xcworkspace` in Xcode, kies het **Runner**-target en zet onder **Signing & Capabilities** *Automatically manage signing* aan en je Apple ID bij **Team**. Meldt Xcode dat de bundle-identifier al bezet is, maak er dan iets unieks van — en pas het URL-scheme in `ios/Runner/Info.plist` daarop aan, want het inloggen gebruikt dat.
+3. Sluit de iPhone aan, zet daarop **Instellingen → Privacy en beveiliging → Ontwikkelaarsmodus** aan en draai `flutter run --release -d <je iPhone>`.
+4. Bij de eerste start meldt iOS dat de ontwikkelaar niet vertrouwd is: **Instellingen → Algemeen → VPN en apparaatbeheer → jouw Apple ID → Vertrouwen**.
+
+Met een gratis Apple ID werkt de app na **zeven dagen** niet meer en moet je opnieuw bouwen; met een betaald Apple Developer Program-lidmaatschap is dat een jaar.
+
+Twee dingen werken anders dan op andere platforms. Je server moet bereikbaar zijn — de eerste keer dat je verbindt vraagt iOS toestemming voor het lokale netwerk, en weiger je die, dan zijn servers in je eigen netwerk onbereikbaar. En downloads lopen alleen door zolang Ister openstaat: iOS geeft geen enkele app toestemming om op de achtergrond te blijven downloaden, dus de app houdt het scherm aan zolang een download bezig is.
 
 ## Het web zelf hosten
 

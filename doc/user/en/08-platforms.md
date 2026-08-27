@@ -1,10 +1,10 @@
 ---
-description: How the Ister media player adapts to Android phones and tablets, Android TV, Android Auto, Linux, Windows and macOS desktops and the web browser.
+description: How the Ister media player adapts to Android phones and tablets, Android TV, Android Auto, Linux, Windows and macOS desktops, iPhone and iPad, and the web browser.
 ---
 
 # Platforms
 
-The same app runs on Android phones and tablets, Android TV, Android Auto, Linux, Windows and macOS desktops, and the web. This chapter covers what's different on each.
+The same app runs on Android phones and tablets, Android TV, Android Auto, Linux, Windows and macOS desktops, iPhone and iPad, and the web. This chapter covers what's different on each.
 
 ## Android
 
@@ -31,6 +31,12 @@ On Linux the app ships as a flatpak, with the desktop layout: navigation rail, k
 ## Windows and macOS
 
 Both desktop builds are new and still experimental — they use the same desktop layout as Linux, readers included. On Windows, playback shows up in the system's media panel and the keyboard's media keys work; on macOS the same happens through Now Playing. Neither build is signed yet, so the operating system asks for confirmation the first time you open it — see [Installation](00-installation.md).
+
+## iPhone and iPad
+
+The iOS version is new and has to be built on a Mac and installed from there — there's no download in the App Store, see [Installation](00-installation.md). It uses the same phone and tablet layout as Android, readers included, and playback appears on the lock screen and in Control Centre.
+
+Two limits are worth knowing. iOS asks once for permission to use your local network; without it a server on your own network can't be reached. And downloads only continue while the app is open — iOS doesn't let apps download in the background, so Ister keeps the screen on while a download runs and picks up where it left off next time you open it.
 
 ## Web
 

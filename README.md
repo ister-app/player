@@ -1,7 +1,8 @@
 # player
 
 A media player for [Ister](https://github.com/ister-app), the self-hosted media server.
-Ships for Android (incl. Android TV and Android Auto), Linux (flatpak), Windows, macOS and web.
+Ships for Android (incl. Android TV and Android Auto), Linux (flatpak), Windows, macOS, iOS
+and web.
 
 User guide: [ister.app/player](https://ister.app/player) — architecture docs for
 contributors: [ister.app/development](https://ister.app/development).
@@ -47,6 +48,16 @@ Linux; CI builds them and attaches a zip to each release.
 ```bash
 flutter build windows --release
 flutter build macos --release
+```
+
+## iOS
+
+Builds on macOS only, and only for sideloading: no signed artefact is published, so there is
+nothing to install from a release. CI compiles it unsigned as a regression gate. See
+`doc/user/en/00-installation.md` for the sideload steps.
+
+```bash
+flutter build ios --release          # needs a signing team configured in Xcode
 ```
 
 ## Linux flatpak version

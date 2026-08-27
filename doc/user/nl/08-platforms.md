@@ -1,10 +1,10 @@
 ---
-description: Zo past de Ister-mediaspeler zich aan op Android-telefoons en -tablets, Android TV, Android Auto, Linux-, Windows- en macOS-desktops en de browser.
+description: Zo past de Ister-mediaspeler zich aan op Android-telefoons en -tablets, Android TV, Android Auto, Linux-, Windows- en macOS-desktops, iPhone en iPad, en de browser.
 ---
 
 # Platforms
 
-Dezelfde app draait op Android-telefoons en -tablets, Android TV, Android Auto, Linux-, Windows- en macOS-desktops en het web. Dit hoofdstuk beschrijft wat er per platform anders is.
+Dezelfde app draait op Android-telefoons en -tablets, Android TV, Android Auto, Linux-, Windows- en macOS-desktops, iPhone en iPad, en het web. Dit hoofdstuk beschrijft wat er per platform anders is.
 
 ## Android
 
@@ -31,6 +31,12 @@ Op Linux komt de app als flatpak, met de desktopindeling: navigatiebalk, toetsen
 ## Windows en macOS
 
 Beide desktopbuilds zijn nieuw en nog experimenteel — ze gebruiken dezelfde desktopindeling als Linux, lezers inbegrepen. Op Windows verschijnt wat er speelt in het mediapaneel van het systeem en werken de mediatoetsen van je toetsenbord; op macOS gebeurt hetzelfde via Now Playing. Geen van beide builds is al ondertekend, dus het besturingssysteem vraagt de eerste keer om bevestiging — zie [Installatie](00-installation.md).
+
+## iPhone en iPad
+
+De iOS-versie is nieuw en moet op een Mac gebouwd en van daaruit geïnstalleerd worden — er is geen download in de App Store, zie [Installatie](00-installation.md). Hij gebruikt dezelfde telefoon- en tabletindeling als Android, lezers inbegrepen, en wat er speelt verschijnt op het toegangsscherm en in het bedieningspaneel.
+
+Twee beperkingen zijn goed om te weten. iOS vraagt eenmalig toestemming voor je lokale netwerk; zonder die toestemming is een server in je eigen netwerk niet bereikbaar. En downloads lopen alleen door zolang de app openstaat — iOS laat apps niet op de achtergrond downloaden, dus Ister houdt het scherm aan tijdens een download en pakt de volgende keer verder op waar hij gebleven was.
 
 ## Web
 
