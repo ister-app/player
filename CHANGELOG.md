@@ -1,5 +1,27 @@
 # Changelog
 
+## player v2.1.1
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.1.1` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Fixes
+
+- fix(notification): re-publish the session after a service recreate ([`f8cd0ff`](https://github.com/ister-app/player/commit/f8cd0ff))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.1.1
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.1.0...v2.1.1
+
 ## player v2.1.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
