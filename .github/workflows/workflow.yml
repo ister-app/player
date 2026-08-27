@@ -168,6 +168,44 @@ jobs:
       - name: Build macOS
         run: flutter build macos --release
 
+  # Compile gate only. The app is sideloaded from a developer's own Mac
+  # (doc/user/en/00-installation.md), so there is nothing to sign here and
+  # nothing installable to publish — an unsigned .ipa cannot be installed.
+  # This job exists so an iOS-breaking change is caught without anyone
+  # having to reach for a Mac.
+  build-ios:
+    name: Build iOS
+    if: ${{ github.event_name == 'pull_request' || !startsWith(github.event.head_commit.message, 'chore(release):') }}
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+      - name: Cache pub dependencies
+        uses: actions/cache@v6
+        with:
+          path: ~/.pub-cache
+          # No restore-keys fallback, for the same reason as the Linux job above.
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+      - run: flutter pub get
+      - name: Build iOS
+        run: flutter build ios --release --no-codesign
+      # A green build does not prove *which* libmpv got embedded: if the
+      # xcframework is missing, media_kit_video silently compiles its stub
+      # sources and ships an app with sound but no picture.
+      - name: Verify libmpv is embedded
+        run: |
+          APP=build/ios/iphoneos/Runner.app
+          if [ ! -d "$APP/Frameworks/Mpv.framework" ]; then
+            echo "::error::Mpv.framework missing from $APP — media_kit fell back to its stub"
+            ls -la "$APP/Frameworks" || true
+            exit 1
+          fi
+          dwarfdump --uuid "$APP/Frameworks/Mpv.framework/Mpv"
+
   # End-to-end: the real app against a real server in kind (deployed with the chart
   # repo's ci/up.sh, media from the testdata repo). Non-blocking while it beds in —
   # remove continue-on-error once it has proven stable.
