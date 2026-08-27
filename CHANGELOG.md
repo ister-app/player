@@ -1,5 +1,44 @@
 # Changelog
 
+## player v2.1.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.1.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(shows): give the related-shows row bones and its own page ([`727ff0d`](https://github.com/ister-app/player/commit/727ff0d))
+- feat(music): show the playback history of tracks, albums and artists ([`e8f49be`](https://github.com/ister-app/player/commit/e8f49be))
+- feat: show a related-shows row on the show page ([`f47c5fe`](https://github.com/ister-app/player/commit/f47c5fe))
+
+### Fixes
+
+- fix(ui): give the about page one card for all data sources ([`2f427c5`](https://github.com/ister-app/player/commit/2f427c5))
+- fix(ui): make the loading skeletons match the pages they stand in for ([`3a92ce5`](https://github.com/ister-app/player/commit/3a92ce5))
+- fix(routing): push episodes through their show route from outside the shell ([`bc51cdb`](https://github.com/ister-app/player/commit/bc51cdb))
+
+### Other
+
+- test(downloads): wait for the segment window instead of the clock ([`ea9e073`](https://github.com/ister-app/player/commit/ea9e073))
+- docs(tour): stop playback after the mini-player shot ([`97b2fed`](https://github.com/ister-app/player/commit/97b2fed))
+- perf(images): key the image caches on a token-free url ([`5f6b5b8`](https://github.com/ister-app/player/commit/5f6b5b8))
+- ci(e2e): pin the server snapshot with related shows and container history ([`667e2b6`](https://github.com/ister-app/player/commit/667e2b6))
+- build(docker): pin the nginx base image to 1.31.4-alpine ([`e93727a`](https://github.com/ister-app/player/commit/e93727a))
+- ci: bump actions/setup-java to v6 ([`85e1f7c`](https://github.com/ister-app/player/commit/85e1f7c))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.1.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.0.0...v2.1.0
+
 ## player v2.0.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
