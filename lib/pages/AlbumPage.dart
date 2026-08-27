@@ -417,6 +417,8 @@ class _AlbumPageState extends State<AlbumPage> {
   Widget _albumMenu(BuildContext context, Fragment$fragmentAlbum album,
       List<Fragment$fragmentTrack> tracks) {
     final loc = AppLocalizations.of(context)!;
+    // Resolved during build: the menu is gone before onPressed runs.
+    final scope = DownloadActionScope.of(context);
     final playable = tracks.where(_trackHasFile).toList();
     return MenuAnchor(
       menuChildren: [
@@ -458,7 +460,7 @@ class _AlbumPageState extends State<AlbumPage> {
           ),
         if (playable.isNotEmpty && !kIsWeb)
           MenuItemButton(
-            onPressed: () => enqueueDownloads(context, widget.serverName,
+            onPressed: () => enqueueDownloads(scope, widget.serverName,
                 (client) => DownloadLoaders.album(client, album.id)),
             child: ListTile(
               leading: const Icon(Icons.download_for_offline_outlined),

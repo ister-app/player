@@ -184,13 +184,15 @@ class _PodcastPageState extends State<PodcastPage> {
 
   /// The next N episodes (in the page's order) that were not listened to and
   /// that the server already holds — loading further pages until N are found.
-  Future<void> _downloadNextUnlistened(BuildContext context) async {
+  Future<void> _downloadNextUnlistened(DownloadActionScope scope) async {
     final podcast = _podcast;
     if (podcast == null) return;
+    // The State's own context, not the menu item's: that one is deactivated
+    // the moment the menu closes, so the dialog would never open.
     final n = await showDownloadNextDialog(context,
         defaultCount:
             await DownloadPreferences.getDefaultNextCount(widget.serverName));
-    if (n == null || n <= 0 || !context.mounted) return;
+    if (n == null || n <= 0 || !mounted) return;
     bool candidate(Fragment$fragmentPodcastEpisode e) =>
         e.downloaded &&
         (e.mediaFile?.isNotEmpty ?? false) &&
@@ -200,8 +202,8 @@ class _PodcastPageState extends State<PodcastPage> {
       if (!mounted) return;
     }
     final picked = _episodes.where(candidate).take(n).toList();
-    if (!context.mounted) return;
-    await enqueueDownloads(context, widget.serverName,
+    if (!mounted) return;
+    await enqueueDownloads(scope, widget.serverName,
         (_) async => [for (final e in picked) DownloadLoaders.podcastEpisode(e, podcast)]);
   }
 
@@ -251,6 +253,8 @@ class _PodcastPageState extends State<PodcastPage> {
 
   Widget _buildContent({bool skeleton = false}) {
     final loc = AppLocalizations.of(context)!;
+    // Resolved during build: the menu is gone before onPressed runs.
+    final scope = DownloadActionScope.of(context);
     final podcast = _podcast;
     final description =
         podcast != null ? MetadataUtil.getDescription(podcast.metadata) : null;
@@ -279,7 +283,7 @@ class _PodcastPageState extends State<PodcastPage> {
                         context, loc.oldestFirst, Enum$SortingOrder.ASCENDING),
                     if (!kIsWeb)
                       MenuItemButton(
-                        onPressed: () => _downloadNextUnlistened(context),
+                        onPressed: () => _downloadNextUnlistened(scope),
                         child: ListTile(
                           leading: const Icon(Icons.download_for_offline_outlined),
                           title: Text(loc.downloadNextUnlistened),

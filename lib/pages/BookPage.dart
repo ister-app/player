@@ -583,11 +583,13 @@ class _BookPageState extends State<BookPage> {
   /// (all chapters) and each epub/comic file.
   List<Widget> _downloadItems(BuildContext context, Query$bookById$bookById book) {
     final loc = AppLocalizations.of(context)!;
+    // Resolved during build: the menu is gone before onPressed runs.
+    final scope = DownloadActionScope.of(context);
     final cover = ImageUtil.getImageByType(book.images, ImageTypes.cover);
     return [
       if (_hasListenableChapter)
         MenuItemButton(
-          onPressed: () => enqueueDownloads(context, widget.serverName,
+          onPressed: () => enqueueDownloads(scope, widget.serverName,
               (client) => DownloadLoaders.book(client, book.id)),
           child: ListTile(
               leading: const Icon(Icons.headphones_outlined),

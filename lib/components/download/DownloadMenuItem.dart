@@ -25,11 +25,43 @@ class DownloadAction {
   String get key => DownloadEntry.keyFor(kind, mediaId);
 }
 
+/// The context-dependent things a download action needs, resolved up front.
+///
+/// Every download entry point is a `MenuItemButton`, and `_handleSelect`
+/// closes the menu *before* it calls `onPressed`. That deactivates the menu
+/// item's element, so a `BuildContext` captured in the callback is already
+/// dead by the time the action reads it: `AppLocalizations.of` then throws
+/// "Looking up a deactivated widget's ancestor is unsafe" and the download
+/// never starts. Build one of these while the widget is still mounted and
+/// hand it to the action instead — the resolved objects outlive the element.
+class DownloadActionScope {
+  const DownloadActionScope({
+    required this.loc,
+    required this.messenger,
+    required this.client,
+  });
+
+  /// Call from `build`, never from inside the callback.
+  factory DownloadActionScope.of(BuildContext context) => DownloadActionScope(
+        loc: AppLocalizations.of(context)!,
+        messenger: ScaffoldMessenger.of(context),
+        client: GraphQLProvider.of(context),
+      );
+
+  final AppLocalizations loc;
+  final ScaffoldMessengerState messenger;
+
+  /// The notifier, not its value: the client may still be swapped between
+  /// building the menu and picking an item.
+  final ValueNotifier<GraphQLClient> client;
+}
+
 /// Runs [action]: enqueues when nothing is on disk (or the last attempt
 /// failed), removes/cancels otherwise. Reports through a snackbar.
-Future<void> runDownloadAction(BuildContext context, DownloadAction action) async {
-  final loc = AppLocalizations.of(context)!;
-  final messenger = ScaffoldMessenger.of(context);
+Future<void> runDownloadAction(
+    DownloadActionScope scope, DownloadAction action) async {
+  final loc = scope.loc;
+  final messenger = scope.messenger;
   final service = DownloadService.instance;
   final existing = service.entryFor(action.serverName, action.key);
   if (existing != null && existing.status != DownloadStatus.failed) {
@@ -40,7 +72,7 @@ Future<void> runDownloadAction(BuildContext context, DownloadAction action) asyn
     await service.retry(action.serverName, action.key);
     return;
   }
-  final client = GraphQLProvider.of(context).value;
+  final client = scope.client.value;
   final List<DownloadRequest> requests;
   try {
     requests = await action.load(client);
@@ -60,11 +92,11 @@ Future<void> runDownloadAction(BuildContext context, DownloadAction action) asyn
 
 /// Enqueues a whole group (album, audiobook, "next N episodes") — never
 /// toggles, existing entries just become pinned.
-Future<void> enqueueDownloads(BuildContext context, String serverName,
+Future<void> enqueueDownloads(DownloadActionScope scope, String serverName,
     Future<List<DownloadRequest>> Function(GraphQLClient client) load) async {
-  final loc = AppLocalizations.of(context)!;
-  final messenger = ScaffoldMessenger.of(context);
-  final client = GraphQLProvider.of(context).value;
+  final loc = scope.loc;
+  final messenger = scope.messenger;
+  final client = scope.client.value;
   final List<DownloadRequest> requests;
   try {
     requests = await load(client);
@@ -114,6 +146,9 @@ class DownloadMenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     if (kIsWeb) return const SizedBox.shrink();
     final loc = AppLocalizations.of(context)!;
+    // Resolved here, while this element is still mounted: by the time
+    // onPressed runs the menu has closed and taken this context with it.
+    final scope = DownloadActionScope.of(context);
     return ValueListenableBuilder<int>(
       valueListenable: DownloadService.instance.revision,
       builder: (context, _, __) {
@@ -121,7 +156,7 @@ class DownloadMenuItem extends StatelessWidget {
             DownloadService.instance.entryFor(action.serverName, action.key);
         final (icon, text) = downloadActionPresentation(loc, entry);
         return MenuItemButton(
-          onPressed: enabled ? () => runDownloadAction(context, action) : null,
+          onPressed: enabled ? () => runDownloadAction(scope, action) : null,
           child: ListTile(
               leading: Icon(icon),
               title: Text(entry == null ? (label ?? text) : text)),

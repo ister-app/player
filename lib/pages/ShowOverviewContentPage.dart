@@ -139,6 +139,8 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
       {Query$showById$showById? show,
       bool skeleton = false,
       Widget? relatedRow}) {
+    // Resolved during build: the menu is gone before onPressed runs.
+    final scope = DownloadActionScope.of(context);
     return SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       LayoutBuilder(builder: (context, constraints) {
@@ -188,7 +190,7 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
                       ),
                       if (!kIsWeb)
                         MenuItemButton(
-                          onPressed: () => _downloadNextUnwatched(context),
+                          onPressed: () => _downloadNextUnwatched(scope),
                           child: ListTile(
                             leading: const Icon(Icons.download_for_offline_outlined),
                             title: Text(AppLocalizations.of(context)!.downloadNextUnwatched),
@@ -363,12 +365,14 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
 
   /// "Download the next N unwatched": continues from the last episode that
   /// was watched or started (a started one counts as the first of the N).
-  Future<void> _downloadNextUnwatched(BuildContext context) async {
+  Future<void> _downloadNextUnwatched(DownloadActionScope scope) async {
+    // The State's own context, not the menu item's: that one is deactivated
+    // the moment the menu closes, so the dialog would never open.
     final n = await showDownloadNextDialog(context,
         defaultCount:
             await DownloadPreferences.getDefaultNextCount(widget.serverName));
-    if (n == null || n <= 0 || !context.mounted) return;
-    await enqueueDownloads(context, widget.serverName, (client) async {
+    if (n == null || n <= 0 || !mounted) return;
+    await enqueueDownloads(scope, widget.serverName, (client) async {
       final (title, episodes, seasonNumbers) = await _loadShowEpisodeList(client);
       final picked = NextUnwatched.select(episodes, n);
       final requests = <DownloadRequest>[];
