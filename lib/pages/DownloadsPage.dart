@@ -16,6 +16,7 @@ import 'package:player/utils/download/AutoNextPreferences.dart';
 import 'package:player/utils/download/AutoNextService.dart';
 import 'package:player/utils/download/DownloadModels.dart';
 import 'package:player/utils/download/DownloadService.dart';
+import 'package:player/utils/download/DownloadWakelock.dart';
 import 'package:player/utils/download/LocalPlayQueue.dart';
 import 'package:player/utils/download/OfflineProgressStore.dart';
 import 'package:player/utils/download/OfflineSyncService.dart';
@@ -171,6 +172,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
                   padding: const EdgeInsets.all(16.0),
                   children: [
                     SettingsIntro(loc.downloadsIntro),
+                    _foregroundOnlyBanner(context),
                     _networkBanner(context),
                     _summary(context, entries),
                     const SizedBox(height: 8),
@@ -189,6 +191,23 @@ class _DownloadsPageState extends State<DownloadsPage> {
       icon: Icons.download_for_offline_outlined,
       title: loc.noDownloadsYet,
       message: loc.noDownloadsHint,
+    );
+  }
+
+  /// iOS has no equivalent of the Android download foreground service
+  /// (see DownloadWakelock), so downloads only run while the app is open.
+  /// Say so where the user is looking at a queue that would otherwise seem
+  /// to stall for no reason.
+  Widget _foregroundOnlyBanner(BuildContext context) {
+    if (!DownloadWakelock.supported) return const SizedBox.shrink();
+    final loc = AppLocalizations.of(context)!;
+    return Card(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: ListTile(
+        leading: const Icon(Icons.info_outline),
+        title: Text(loc.downloadsKeepAppOpen),
+        subtitle: Text(loc.downloadsKeepAppOpenHint),
+      ),
     );
   }
 

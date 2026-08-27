@@ -610,6 +610,8 @@
   "downloadNetworkPolicyAutomatic": "Automatische downloads alleen zonder datalimiet",
   "downloadNetworkPolicyAll": "Alleen verbindingen zonder datalimiet",
   "downloadsWaitingForNetwork": "Wacht op een verbinding zonder datalimiet",
+  "downloadsKeepAppOpen": "Houd Ister open tijdens het downloaden",
+  "downloadsKeepAppOpenHint": "iOS stopt downloads zodra de app wordt afgesloten. Het scherm blijft aan zolang ze lopen.",
   "concurrentDownloads": "Gelijktijdige downloads",
   "defaultNextCount": "Standaard voor \"volgende afleveringen downloaden\"",
   "autoNextTitle": "Volgende afleveringen gedownload houden",

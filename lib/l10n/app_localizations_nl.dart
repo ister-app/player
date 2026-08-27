@@ -1890,6 +1890,13 @@ class AppLocalizationsNl extends AppLocalizations {
       'Wacht op een verbinding zonder datalimiet';
 
   @override
+  String get downloadsKeepAppOpen => 'Houd Ister open tijdens het downloaden';
+
+  @override
+  String get downloadsKeepAppOpenHint =>
+      'iOS stopt downloads zodra de app wordt afgesloten. Het scherm blijft aan zolang ze lopen.';
+
+  @override
   String get concurrentDownloads => 'Gelijktijdige downloads';
 
   @override

@@ -25,6 +25,7 @@ import 'package:player/utils/TvDirectionalFocusPolicy.dart';
 
 import 'l10n/app_localizations.dart';
 import 'utils/download/DownloadForegroundService.dart';
+import 'utils/download/DownloadWakelock.dart';
 import 'utils/download/DownloadService.dart';
 import 'utils/download/MusicCacheService.dart';
 
@@ -109,6 +110,8 @@ Future<void> main() async {
 
   // Resume queued downloads and make completed ones playable (no-op on web).
   unawaited(DownloadForegroundService.install());
+  // iOS has no foreground service; the best it can do is keep the screen on.
+  unawaited(DownloadWakelock.install());
   unawaited(DownloadService.instance.ensureStarted().then((_) {
     MusicCacheService.instance.ensurePeriodic();
     for (final server in DownloadService.instance.store.loadedServers) {

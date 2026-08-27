@@ -3224,6 +3224,18 @@ abstract class AppLocalizations {
   /// **'Waiting for a connection without a data cap'**
   String get downloadsWaitingForNetwork;
 
+  /// Shown on the downloads page on iOS, which has no background download service
+  ///
+  /// In en, this message translates to:
+  /// **'Keep Ister open while downloading'**
+  String get downloadsKeepAppOpen;
+
+  /// Subtitle explaining why downloads need the app in the foreground on iOS
+  ///
+  /// In en, this message translates to:
+  /// **'iOS stops downloads when the app is closed. The screen is kept on while they run.'**
+  String get downloadsKeepAppOpenHint;
+
   /// No description provided for @concurrentDownloads.
   ///
   /// In en, this message translates to:

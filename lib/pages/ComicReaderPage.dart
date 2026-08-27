@@ -24,7 +24,7 @@ import 'package:player/utils/download/ComicDownloader.dart';
 import 'package:player/utils/download/DownloadService.dart';
 import 'package:player/utils/comic/SeriesDirectionService.dart';
 import 'package:player/utils/ReaderFullscreen.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:player/utils/ScreenWakelock.dart';
 
 /// The comic reader: page images in a swiping [PageView], one *spread* per
 /// view — a single page, or two side by side on a wide viewport. Handles
@@ -68,6 +68,7 @@ class ComicReaderPage extends StatefulWidget {
 
 class _ComicReaderPageState extends State<ComicReaderPage>
     with WidgetsBindingObserver {
+  ScreenWakelockToken? _wakelock;
   ComicResourceClient? _client;
   ComicPageSource? _source;
   ComicSyncService? _sync;
@@ -113,8 +114,8 @@ class _ComicReaderPageState extends State<ComicReaderPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Tolerates platforms/tests without the wakelock plugin.
-    unawaited(WakelockPlus.enable().catchError((_) {}));
+    // Refcounted: a running download holds the same lock.
+    _wakelock = ScreenWakelock.acquire();
   }
 
   /// The load needs the inherited GraphQL client (series reading direction),
@@ -134,7 +135,7 @@ class _ComicReaderPageState extends State<ComicReaderPage>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    unawaited(WakelockPlus.disable().catchError((_) {}));
+    _wakelock?.release();
     // Leave fullscreen but keep the preference: the next open restores it.
     if (_fullscreen) unawaited(ReaderFullscreen.exit());
     _sync?.dispose(); // flushes the pending position

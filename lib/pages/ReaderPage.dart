@@ -23,7 +23,7 @@ import 'package:player/utils/epub/ReadingSyncService.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/ReaderFullscreen.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:player/utils/ScreenWakelock.dart';
 
 /// The native epub reader. Loads the book's structure through the node's
 /// `/epub` resource endpoint, renders one chapter at a time as a scrolling
@@ -65,6 +65,7 @@ class ReaderPage extends StatefulWidget {
 }
 
 class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
+  ScreenWakelockToken? _wakelock;
   ReaderBookController? _book;
   ReadingSyncService? _sync;
   ReadAloudController? _readAloud;
@@ -110,8 +111,8 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Tolerates platforms/tests without the wakelock plugin.
-    unawaited(WakelockPlus.enable().catchError((_) {}));
+    // Refcounted: a running download holds the same lock.
+    _wakelock = ScreenWakelock.acquire();
     _itemPositionsListener.itemPositions.addListener(_onPositionsChanged);
     unawaited(_load());
   }
@@ -119,7 +120,7 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    unawaited(WakelockPlus.disable().catchError((_) {}));
+    _wakelock?.release();
     // Leave fullscreen but keep the preference: the next open restores it.
     if (_fullscreen) unawaited(ReaderFullscreen.exit());
     _readAloud?.dispose();

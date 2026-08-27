@@ -1885,6 +1885,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Waiting for a connection without a data cap';
 
   @override
+  String get downloadsKeepAppOpen => 'Keep Ister open while downloading';
+
+  @override
+  String get downloadsKeepAppOpenHint =>
+      'iOS stops downloads when the app is closed. The screen is kept on while they run.';
+
+  @override
   String get concurrentDownloads => 'Simultaneous downloads';
 
   @override

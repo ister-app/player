@@ -2026,6 +2026,14 @@
   "@downloadsWaitingForNetwork": {
     "description": "Shown on the downloads page when the network policy holds the queue back"
   },
+  "downloadsKeepAppOpen": "Keep Ister open while downloading",
+  "@downloadsKeepAppOpen": {
+    "description": "Shown on the downloads page on iOS, which has no background download service"
+  },
+  "downloadsKeepAppOpenHint": "iOS stops downloads when the app is closed. The screen is kept on while they run.",
+  "@downloadsKeepAppOpenHint": {
+    "description": "Subtitle explaining why downloads need the app in the foreground on iOS"
+  },
   "concurrentDownloads": "Simultaneous downloads",
   "defaultNextCount": "Default for \"download next episodes\"",
   "autoNextTitle": "Keep the next episodes downloaded",
