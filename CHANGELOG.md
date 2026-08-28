@@ -1,5 +1,45 @@
 # Changelog
 
+## player v2.2.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.2.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(downloads): keep the screen awake while downloading on iOS ([`6199aa6`](https://github.com/ister-app/player/commit/6199aa6))
+- feat(ios): add the iOS runner project ([`e5a257e`](https://github.com/ister-app/player/commit/e5a257e))
+
+### Fixes
+
+- fix(downloads): resolve the action's dependencies before the menu closes ([`4ab6c3d`](https://github.com/ister-app/player/commit/4ab6c3d))
+- fix(ios): give iOS its own device name, demuxer budget and transition ([`ca6128e`](https://github.com/ister-app/player/commit/ca6128e))
+
+### Dependency updates
+
+- chore(deps): update gradle to v9.7.1 and com.android.application to v9.3.2 ([`acc979e`](https://github.com/ister-app/player/commit/acc979e))
+- fix(deps): update pdfrx to 2.5.0 ([`1c487c4`](https://github.com/ister-app/player/commit/1c487c4))
+
+### Other
+
+- ci(e2e): pin the chart that waits for the per-file scan analysis ([`e02cf94`](https://github.com/ister-app/player/commit/e02cf94))
+- test: silence the media_kit video channel where the handler is built ([`f4045b7`](https://github.com/ister-app/player/commit/f4045b7))
+- docs: document iOS as a supported platform ([`09e833a`](https://github.com/ister-app/player/commit/09e833a))
+- ci: add an iOS compile gate ([`f0b4cae`](https://github.com/ister-app/player/commit/f0b4cae))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.2.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.1.1...v2.2.0
+
 ## player v2.1.1
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
