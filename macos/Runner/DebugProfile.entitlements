@@ -10,11 +10,8 @@
 	<true/>
 	<key>com.apple.security.network.server</key>
 	<true/>
-	<!-- Same group as Release.entitlements: flutter_secure_storage's keychain
-	     access under a team-signed sandbox. -->
-	<key>keychain-access-groups</key>
-	<array>
-		<string>$(AppIdentifierPrefix)app.ister.player</string>
-	</array>
+	<!-- No keychain-access-groups here: local builds sign ad-hoc, and AMFI
+	     refuses to spawn an ad-hoc app carrying that restricted entitlement.
+	     See ReleaseTestFlight.entitlements. -->
 </dict>
 </plist>

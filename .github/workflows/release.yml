@@ -369,6 +369,14 @@ jobs:
         run: |
           KEY="$HOME/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8"
 
+          # The checked-in Release.entitlements deliberately lacks
+          # keychain-access-groups: it is a restricted entitlement and AMFI
+          # refuses to launch the ad-hoc signed zip built above if it carries
+          # one (RBS error 163 — shipped broken in v2.4.0). The team-signed
+          # TestFlight build does need it (Keychain access for the OIDC
+          # tokens), so swap in the TestFlight variant for the archive only.
+          cp macos/Runner/ReleaseTestFlight.entitlements macos/Runner/Release.entitlements
+
           xcodebuild -workspace macos/Runner.xcworkspace -scheme Runner \
             -configuration Release -destination 'generic/platform=macOS' \
             -archivePath build/macos/archive/Runner.xcarchive archive

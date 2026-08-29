@@ -10,9 +10,15 @@
 	     (which uses DebugProfile.entitlements) works fine. -->
 	<key>com.apple.security.network.client</key>
 	<true/>
-	<!-- keychain-access-groups lives in ReleaseTestFlight.entitlements only:
-	     it is a restricted entitlement, and an ad-hoc signed app carrying it is
-	     refused by AMFI at spawn (RBS error 163, shipped broken in the v2.4.0
-	     zip). release.yml copies that file over this one before archiving. -->
+	<!-- flutter_secure_storage keeps the OIDC tokens in the Keychain; a sandboxed,
+	     team-signed build (TestFlight / Mac App Store) gets no keychain access
+	     without this group. Only the TestFlight archive may carry it: it is a
+	     restricted entitlement, and AMFI refuses to spawn an ad-hoc signed app
+	     that has it (RBS error 163) — which is why release.yml copies this file
+	     over Release.entitlements only after the ad-hoc zip has been built. -->
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)app.ister.player</string>
+	</array>
 </dict>
 </plist>
