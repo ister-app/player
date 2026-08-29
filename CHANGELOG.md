@@ -1,5 +1,32 @@
 # Changelog
 
+## player v2.3.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.3.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(ios): ship a signed TestFlight build with each release ([`32967b1`](https://github.com/ister-app/player/commit/32967b1))
+
+### Other
+
+- ci(release): archive iOS unsigned and sign at export via cloud signing ([`e3eabc0`](https://github.com/ister-app/player/commit/e3eabc0))
+- ci(release): sign the iOS archive with explicit xcodebuild auth flags ([`8e461e8`](https://github.com/ister-app/player/commit/8e461e8))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.3.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.2.0...v2.3.0
+
 ## player v2.2.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
