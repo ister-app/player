@@ -52,6 +52,11 @@ modules:
       - --disable-programs
       - --disable-encoders
       - --disable-muxers
+      # Hardware decode is the difference between smooth and slideshow HEVC on
+      # handheld APUs (Steam Deck). Autodetect would pick VA-API up silently
+      # when libva happens to be in the SDK; making it explicit turns a missing
+      # libva into a build failure instead of a software-decoding flatpak.
+      - --enable-vaapi
     sources:
       - type: git
         url: https://github.com/FFmpeg/FFmpeg
@@ -73,6 +78,10 @@ modules:
 #      - -Dsdl2=enabled
       - -Dshaderc=disabled
       - -Dvulkan=disabled
+      # Explicit for the same reason as ffmpeg's --enable-vaapi: hardware
+      # decode (and its EGL interop for the render-API texture path) must not
+      # silently drop out of the build.
+      - -Dvaapi=enabled
     sources:
       - type: git
         url: https://github.com/mpv-player/mpv
