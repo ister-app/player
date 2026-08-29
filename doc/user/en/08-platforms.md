@@ -28,6 +28,20 @@ In the car, Ister appears in Android Auto's media apps. You get a simple, glance
 
 On Linux the app ships as a flatpak, with the desktop layout: navigation rail, keyboard navigation, resizable windows. Everything works natively — including the ebook and comic readers, which many players leave out on desktop.
 
+### Steam Deck and Steam Machine (SteamOS)
+
+The flatpak also runs on SteamOS devices, straight from Game Mode:
+
+1. Switch to **desktop mode** and install the flatpak as on any Linux machine — see [Installation](00-installation.md).
+2. In Steam, choose **Add a Non-Steam Game** and pick **Ister player**.
+3. Back in Game Mode, launch it from your library.
+
+Ister detects the SteamOS session and starts fullscreen in the TV layout: the same remote-friendly navigation as on Android TV, driven by the controller. For the controller to reach the app, apply a **keyboard-style Steam Input layout** to it (controller settings for Ister in Game Mode): D-pad and left stick → arrow keys, **A** → Enter, **B** → Escape, **X** → Space (play/pause), and optionally the shoulder buttons → left/right arrows for seeking. A community layout named "Ister player" is available where published; the mapping above recreates it in a minute.
+
+On other Linux desktops (an HTPC, say) the same layout can be switched on by hand: **Settings → This device → TV / controller mode**.
+
+Two notes on the picture. Video decoding is done in hardware, so even a handheld plays 4K HEVC smoothly — if playback stutters, check that your quality setting isn't forcing a transcode the server has to catch up with. And if you use HDR: the Deck's **HDR toggle makes SDR apps look washed out**, Ister included — turn HDR off for Ister in the per-game display settings (Quick Access → gear icon) until HDR video output lands in a future release. The app's interface itself always renders in SDR.
+
 ## Windows and macOS
 
 Both desktop builds are new and still experimental — they use the same desktop layout as Linux, readers included. On Windows, playback shows up in the system's media panel and the keyboard's media keys work; on macOS the same happens through Now Playing. On macOS the TestFlight build is signed and installs without warnings; the downloadable zip and the Windows build aren't signed, so the operating system asks for confirmation the first time you open them — see [Installation](00-installation.md).

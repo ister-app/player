@@ -28,6 +28,20 @@ In de auto verschijnt Ister tussen de media-apps van Android Auto. Je krijgt een
 
 Op Linux komt de app als flatpak, met de desktopindeling: navigatiebalk, toetsenbordnavigatie, schaalbare vensters. Alles werkt native — inclusief de e-boek- en stripslezer, die veel spelers op de desktop laten liggen.
 
+### Steam Deck en Steam Machine (SteamOS)
+
+De flatpak draait ook op SteamOS-apparaten, gewoon vanuit Game Mode:
+
+1. Schakel naar **desktop mode** en installeer de flatpak zoals op elke Linux-machine — zie [Installatie](00-installation.md).
+2. Kies in Steam **Een niet-Steam-game toevoegen** en selecteer **Ister player**.
+3. Terug in Game Mode start je hem vanuit je bibliotheek.
+
+Ister herkent de SteamOS-sessie en start beeldvullend in de tv-indeling: dezelfde afstandsbedieningvriendelijke navigatie als op Android TV, aangestuurd door de controller. Om de controller bij de app te laten komen geef je hem een **toetsenbord-achtige Steam Input-indeling** (controllerinstellingen van Ister in Game Mode): D-pad en linkerstick → pijltjestoetsen, **A** → Enter, **B** → Escape, **X** → spatie (afspelen/pauzeren), en eventueel de schouderknoppen → pijltje links/rechts om te spoelen. Een community-indeling met de naam "Ister player" staat klaar waar die gepubliceerd is; met de mapping hierboven zet je hem zo zelf in elkaar.
+
+Op andere Linux-desktops (een HTPC bijvoorbeeld) zet je dezelfde indeling handmatig aan: **Instellingen → Dit apparaat → Tv-/controllermodus**.
+
+Twee opmerkingen over het beeld. Videodecodering gebeurt in hardware, dus ook een handheld speelt 4K-HEVC soepel af — hapert het, controleer dan of je kwaliteitsinstelling geen transcode afdwingt waar de server achteraan moet rennen. En gebruik je HDR: de **HDR-schakelaar van de Deck laat SDR-apps er verbleekt uitzien**, Ister ook — zet HDR voor Ister uit in de beeldscherminstellingen per game (Quick Access → tandwiel) tot HDR-videoweergave in een toekomstige release landt. De interface van de app zelf rendert altijd in SDR.
+
 ## Windows en macOS
 
 Beide desktopbuilds zijn nieuw en nog experimenteel — ze gebruiken dezelfde desktopindeling als Linux, lezers inbegrepen. Op Windows verschijnt wat er speelt in het mediapaneel van het systeem en werken de mediatoetsen van je toetsenbord; op macOS gebeurt hetzelfde via Now Playing. Op macOS is de TestFlight-build ondertekend en installeert die zonder waarschuwingen; de losse zip en de Windows-build zijn niet ondertekend, dus daar vraagt het besturingssysteem de eerste keer om bevestiging — zie [Installatie](00-installation.md).
