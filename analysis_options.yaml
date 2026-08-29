@@ -17,6 +17,7 @@ analyzer:
     # makes `flutter analyze` take hours.
     - build/**
     - builddir/**
+    - flatpak-build-test/**
     - repo/**
     - .flatpak-builder/**
     - linux/flutter/ephemeral/**
