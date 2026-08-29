@@ -150,6 +150,76 @@ void main() {
     });
   });
 
+  group('predictedAudioLanguage', () {
+    // The subtitle decision can run before mpv delivered its audio track list
+    // (side-loaded SRTs beat the HLS audio rendition); the server's stream
+    // metadata then predicts the language the audio block is going to pick.
+    test('a preference match predicts the preferred track', () {
+      expect(
+          MediaPlayerHandler.predictedAudioLanguage(
+              audioStreamLanguages: ['eng', 'nld'], preferences: ['nld']),
+          'nld');
+    });
+
+    test('matches across ISO standards like preferredTrack does', () {
+      expect(
+          MediaPlayerHandler.predictedAudioLanguage(
+              audioStreamLanguages: ['en'], preferences: ['eng']),
+          'en');
+    });
+
+    test('a single-language file is predictable without a preference match',
+        () {
+      expect(
+          MediaPlayerHandler.predictedAudioLanguage(
+              audioStreamLanguages: ['eng'], preferences: ['fra']),
+          'eng');
+      expect(
+          MediaPlayerHandler.predictedAudioLanguage(
+              audioStreamLanguages: ['eng', 'eng'], preferences: []),
+          'eng');
+    });
+
+    test('multiple languages without a preference match cannot be predicted',
+        () {
+      // mpv plays the file's default track and we cannot tell which one.
+      expect(
+          MediaPlayerHandler.predictedAudioLanguage(
+              audioStreamLanguages: ['eng', 'nld'], preferences: ['fra']),
+          isNull);
+    });
+
+    test('unlabeled streams cannot be predicted', () {
+      expect(
+          MediaPlayerHandler.predictedAudioLanguage(
+              audioStreamLanguages: [null], preferences: ['eng']),
+          isNull);
+      expect(
+          MediaPlayerHandler.predictedAudioLanguage(
+              audioStreamLanguages: ['eng', null], preferences: ['fra']),
+          isNull);
+      expect(
+          MediaPlayerHandler.predictedAudioLanguage(
+              audioStreamLanguages: [], preferences: ['eng']),
+          isNull);
+    });
+
+    test('the Victorious case: eng-only file suppresses eng subtitles', () {
+      // Audio prefs [eng, nld], subtitle prefs [nld, eng], hide on, and the
+      // file offers only eng audio + eng subs — even before mpv reports the
+      // audio track, the prediction lets the suppression rule fire.
+      final predicted = MediaPlayerHandler.predictedAudioLanguage(
+          audioStreamLanguages: ['eng'], preferences: ['eng', 'nld']);
+      expect(
+          resolve(
+              available: [englishSubtitle],
+              preferences: ['nld', 'eng'],
+              audioLanguage: predicted,
+              hide: true),
+          isNull);
+    });
+  });
+
   group('sameLanguage', () {
     test('spans the ISO standards for one language', () {
       expect(LanguageService().sameLanguage('eng', 'en'), isTrue);

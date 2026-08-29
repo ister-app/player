@@ -3041,12 +3041,23 @@ class MediaPlayerHandler extends BaseAudioHandler
             tracks.subtitle,
             await LanguagePreferences.getSubtitleLanguages(serverName: serverName),
           );
-          // The audio block ran first (it is guarded on its own flag and the
-          // audio list always arrives no later than the subtitle one), so its
-          // language is known here. Fall back to what mpv resolved for an
-          // 'auto' audio selection.
-          final audioLanguage =
-              _selectedAudioLanguage ?? _player.state.track.audio.language;
+          // The audio block usually ran first, but the side-loaded external
+          // SRTs (sub-add right after open) can beat the HLS audio track list
+          // — the player then doesn't know the audio language yet and the
+          // suppression rule below would lose the race. A pending forced
+          // restore or the server's stream metadata predicts what the audio
+          // language is going to be.
+          final audioLanguage = _selectedAudioLanguage ??
+              _player.state.track.audio.language ??
+              _forcedAudio?.language ??
+              predictedAudioLanguage(
+                audioStreamLanguages: [
+                  for (final s in currentVideoFileStreams)
+                    if (s != null && s.codecType == 'AUDIO') s.language,
+                ],
+                preferences: await LanguagePreferences.getSpokenLanguages(
+                    serverName: serverName),
+              );
           final suppressed = suppressesSubtitle(
             hideSubtitlesMatchingAudio:
                 await PlaybackPreferences.getHideSubtitlesMatchingAudio(
@@ -4489,6 +4500,32 @@ class MediaPlayerHandler extends BaseAudioHandler
   }) {
     if (!hideSubtitlesMatchingAudio) return false;
     return LanguageService().sameLanguage(subtitleLanguage, audioLanguage);
+  }
+
+  /// The audio language playback is going to end up with, predicted from the
+  /// server's stream metadata — for when the subtitle decision runs before mpv
+  /// has delivered its audio track list. A preference match predicts the
+  /// track [preferredTrack] will select; without one mpv plays the file's
+  /// default track, which can only be pinned down when every audio stream in
+  /// the file carries the same known language. Null means "cannot tell", and
+  /// the suppression rule already treats an unknown audio language as
+  /// never-matching.
+  @visibleForTesting
+  static String? predictedAudioLanguage({
+    required List<String?> audioStreamLanguages,
+    required List<String> preferences,
+  }) {
+    var i = 0;
+    final tracks = [
+      for (final lang in audioStreamLanguages) AudioTrack('${i++}', null, lang),
+    ];
+    final preferred = preferredTrack<AudioTrack>(tracks, preferences);
+    if (preferred != null) return preferred.language;
+    final known = audioStreamLanguages.nonNulls.toSet();
+    if (known.length == 1 && !audioStreamLanguages.contains(null)) {
+      return known.single;
+    }
+    return null;
   }
 
   static String? _trackLanguage<T>(T track) {
