@@ -35,6 +35,28 @@ cleanup:
   - '*.a'
 
 modules:
+  - name: ffmpeg
+    cleanup:
+      - /include
+      - /lib/pkgconfig
+      - /share/ffmpeg/examples
+    config-opts:
+      - --enable-shared
+      - --disable-static
+      - --enable-gnutls
+      - --disable-doc
+      - --disable-ffplay
+      - --enable-version3
+      - --enable-demuxer=dash
+      - --enable-libxml2
+      - --disable-programs
+      - --disable-encoders
+      - --disable-muxers
+    sources:
+      - type: git
+        url: https://github.com/FFmpeg/FFmpeg
+        tag: n9.0.1
+        commit: bf1b838f2ab88b4f8fd83443325c782ea0e0f7fa
   - name: libmpv
     cleanup:
       - /include
@@ -128,28 +150,6 @@ modules:
                       project-id: 205796
                       stable-only: true
                       url-template: https://github.com/KhronosGroup/glslang/archive/refs/tags/$version.tar.gz
-  - name: ffmpeg
-    cleanup:
-      - /include
-      - /lib/pkgconfig
-      - /share/ffmpeg/examples
-    config-opts:
-      - --enable-shared
-      - --disable-static
-      - --enable-gnutls
-      - --disable-doc
-      - --disable-ffplay
-      - --enable-version3
-      - --enable-demuxer=dash
-      - --enable-libxml2
-      - --disable-programs
-      - --disable-encoders
-      - --disable-muxers
-    sources:
-      - type: git
-        url: https://github.com/FFmpeg/FFmpeg
-        tag: n9.0.1
-        commit: 501bb49457b9dfb25d6a208832e0a6e6cd53108d
   - name: mpv
     buildsystem: simple
     build-commands:
