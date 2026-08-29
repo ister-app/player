@@ -1219,6 +1219,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sleepTimerDeviceOnly => 'Applies to this device only';
 
   @override
+  String get tvModeTitle => 'TV / controller mode';
+
+  @override
+  String get tvModeSubtitle =>
+      'Navigate with a remote or game controller; detected automatically on SteamOS';
+
+  @override
+  String get tvModeRestartNote => 'Takes full effect after restarting the app';
+
+  @override
   String sleepTimerStartedMessage(int minutes) {
     return 'Sleep timer started: playback pauses in $minutes min';
   }

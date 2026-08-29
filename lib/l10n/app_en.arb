@@ -1339,6 +1339,18 @@
   "@sleepTimerDeviceOnly": {
     "description": "Note that sleep timer settings are not synced to the server"
   },
+  "tvModeTitle": "TV / controller mode",
+  "@tvModeTitle": {
+    "description": "Settings switch enabling the 10-foot UI (focus highlights, directional navigation) on desktop, e.g. HTPCs and SteamOS devices"
+  },
+  "tvModeSubtitle": "Navigate with a remote or game controller; detected automatically on SteamOS",
+  "@tvModeSubtitle": {
+    "description": "Subtitle of the TV mode switch"
+  },
+  "tvModeRestartNote": "Takes full effect after restarting the app",
+  "@tvModeRestartNote": {
+    "description": "Snackbar shown after flipping the TV mode switch"
+  },
   "sleepTimerStartedMessage": "Sleep timer started: playback pauses in {minutes} min",
   "@sleepTimerStartedMessage": {
     "description": "Snackbar shown when a sleep timer is armed, manually or automatically",

@@ -28,7 +28,7 @@ Color videoAccentOf(BuildContext context) {
 /// primary-tinted fill the app's [TvFocusable] draws. Null elsewhere —
 /// pointer/touch devices keep the default (invisible) button chrome.
 ButtonStyle? videoControlButtonStyle(BuildContext context) {
-  if (!PlatformService.isAndroidTvSync) return null;
+  if (!PlatformService.isTvModeSync) return null;
   final scheme = Theme.of(context).colorScheme;
   return ButtonStyle(
     backgroundColor: WidgetStateProperty.resolveWith(

@@ -95,7 +95,7 @@ class _IsterPlayerState extends State<IsterPlayer> {
         // playing. While watching along, pause would halt the *whole* session
         // (it becomes a remote command) and the leader's sync would restart
         // playback anyway — backing out means leaving the watch party instead.
-        if (PlatformService.isAndroidTvSync) {
+        if (PlatformService.isTvModeSync) {
           if (_handler.followMode) {
             // Leaving the watch party means the shared media is gone from this
             // device: end playback rather than leave a paused stream behind.
@@ -142,7 +142,7 @@ class _IsterVideoControlsState extends State<_IsterVideoControls> {
     // drives it; the fullscreen copy of these controls just renders the UI.
     if (_initialised ||
         isFullscreen(context) ||
-        !PlatformService.isAndroidTvSync) {
+        !PlatformService.isTvModeSync) {
       return;
     }
     _initialised = true;
@@ -197,7 +197,7 @@ class _IsterVideoControlsState extends State<_IsterVideoControls> {
     // own controls overlay — including the fullscreen toggle to go back and
     // forth, and the watch-together/stop top bar that is crucial in
     // fullscreen, where the page's app bar is unreachable.
-    if (isFullscreen(context) || !PlatformService.isAndroidTvSync) {
+    if (isFullscreen(context) || !PlatformService.isTvModeSync) {
       return IsterVideoControls(state: widget.state);
     }
     // Embedded on TV: transparent tap target over the (paused) video frame,

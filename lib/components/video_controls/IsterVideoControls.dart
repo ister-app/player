@@ -59,7 +59,7 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
 
   Player get _player => widget.state.widget.controller.player;
 
-  bool get _isTv => PlatformService.isAndroidTvSync;
+  bool get _isTv => PlatformService.isTvModeSync;
 
   bool get _pointerDevice {
     if (_isTv) return false;

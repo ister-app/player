@@ -218,7 +218,7 @@ class _VideoSeekBarState extends State<VideoSeekBar> {
       );
     });
 
-    if (PlatformService.isAndroidTvSync) {
+    if (PlatformService.isTvModeSync) {
       // The bar seeks with left/right itself, so it handles its own key events
       // rather than going through TvFocusable's activate-only mapping. The
       // focus glow matches the TvFocusable style.

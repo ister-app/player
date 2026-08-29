@@ -113,7 +113,7 @@ class VideoCoverView extends StatelessWidget {
     final label = AppLocalizations.of(context)?.play ?? 'Play';
     return TvFocusable(
       onTap: onPlay,
-      autofocus: PlatformService.isAndroidTvSync,
+      autofocus: PlatformService.isTvModeSync,
       borderRadius: const BorderRadius.all(Radius.circular(48)),
       child: Semantics(
         button: true,

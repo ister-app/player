@@ -2150,6 +2150,24 @@ abstract class AppLocalizations {
   /// **'Applies to this device only'**
   String get sleepTimerDeviceOnly;
 
+  /// Settings switch enabling the 10-foot UI (focus highlights, directional navigation) on desktop, e.g. HTPCs and SteamOS devices
+  ///
+  /// In en, this message translates to:
+  /// **'TV / controller mode'**
+  String get tvModeTitle;
+
+  /// Subtitle of the TV mode switch
+  ///
+  /// In en, this message translates to:
+  /// **'Navigate with a remote or game controller; detected automatically on SteamOS'**
+  String get tvModeSubtitle;
+
+  /// Snackbar shown after flipping the TV mode switch
+  ///
+  /// In en, this message translates to:
+  /// **'Takes full effect after restarting the app'**
+  String get tvModeRestartNote;
+
   /// Snackbar shown when a sleep timer is armed, manually or automatically
   ///
   /// In en, this message translates to:

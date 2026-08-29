@@ -69,9 +69,10 @@ Future<void> main() async {
   // language tables have to be in memory before anything renders.
   await LanguageService().ensureLoaded();
   registerLanguageDataLicenses();
-  // Detect Android TV up front so the UI can branch synchronously in build().
+  // Detect TV mode (Android TV / gamescope / user toggle) up front so the UI
+  // can branch synchronously in build().
   await PlatformService.ensureInitialized();
-  if (PlatformService.isAndroidTvSync) {
+  if (PlatformService.isTvModeSync) {
     // Android defaults to "touch" focus-highlight mode and doesn't reliably
     // flip to "traditional" for a D-pad remote, leaving focus rings invisible.
     // Force traditional so every focusable (buttons, tiles, nav) shows where
@@ -236,14 +237,14 @@ class _MainState extends State<Main> {
     return MaterialApp.router(
       title: 'Ister',
       scaffoldMessengerKey: rootScaffoldMessengerKey,
-      // On Android TV use directional navigation mode. Among other things it
+      // In TV mode use directional navigation mode. Among other things it
       // tells widgets like Slider to only bind left/right to adjustment and let
       // up/down move focus out — so the progress bar no longer traps the D-pad.
       // The traversal policy keeps vertical D-pad moves inside the page's
       // scrollable while unvisited items remain, so below-the-fold content
       // (e.g. the season list on the show page) isn't shadowed by the mini
       // player bar.
-      builder: PlatformService.isAndroidTvSync
+      builder: PlatformService.isTvModeSync
           ? (context, child) => FocusTraversalGroup(
                 policy: TvDirectionalFocusPolicy(),
                 child: MediaQuery(

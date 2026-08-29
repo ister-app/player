@@ -101,7 +101,7 @@ class _ServerHomePageState extends State<ServerHomePage> {
   /// with the device-code flow (QR + code on another device) instead of the
   /// authorization-code flow everything else uses.
   Future<void> _login() async {
-    final isTV = await PlatformService.isAndroidTv();
+    final isTV = await PlatformService.isTvMode();
     if (!isTV) {
       startLogin(widget.serverName);
       return;
@@ -205,7 +205,7 @@ class _ServerHomePageState extends State<ServerHomePage> {
     // out of the horizontal content rows, whereas a bottom bar is trapped below
     // an ever-scrolling grid and can't be reached.
     final isWideScreen = MediaQuery.of(context).size.width >= 1280 ||
-        PlatformService.isAndroidTvSync;
+        PlatformService.isTvModeSync;
 
     final railDestinations = <NavigationRailDestination>[
       NavigationRailDestination(icon: const Icon(Icons.home), label: Text(loc.home)),

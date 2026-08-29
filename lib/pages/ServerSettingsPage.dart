@@ -3,9 +3,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 
+import 'dart:io' show Platform;
+
 import '../components/AdminGate.dart';
 import '../components/SaveLogTile.dart';
 import '../components/SettingsSection.dart';
+import '../components/TvModeTile.dart';
 import '../utils/AppVersion.dart';
 import '../l10n/app_localizations.dart';
 
@@ -87,6 +90,11 @@ class ServerSettingsPage extends StatelessWidget {
                       AutoRouter.of(context)
                           .push(const SleepTimerSettingsRoute()),
                 ),
+                // On mobile and Android TV the input model is fixed by the
+                // hardware; only desktop can meaningfully switch to the
+                // controller-driven 10-foot UI.
+                if (Platform.isLinux || Platform.isWindows || Platform.isMacOS)
+                  const TvModeTile(),
               ],
             ),
           SettingsSection(
