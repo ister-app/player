@@ -14,11 +14,25 @@ struct _MyApplication {
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
 
+// A SteamOS game-mode session (Steam Deck or Steam Machine under gamescope)
+// has no window manager chrome: the window must be undecorated and
+// fullscreen or gamescope scales it oddly. ISTER_TV_MODE=1 forces the same
+// for testing; the Dart side (PlatformService.isGamescopeSession) reads the
+// same variables.
+static gboolean is_gamescope_session() {
+  return g_strcmp0(g_getenv("XDG_CURRENT_DESKTOP"), "gamescope") == 0 ||
+         g_strcmp0(g_getenv("SteamOS"), "1") == 0 ||
+         g_strcmp0(g_getenv("SteamDeck"), "1") == 0 ||
+         g_strcmp0(g_getenv("ISTER_TV_MODE"), "1") == 0;
+}
+
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
+
+  gboolean gamescope = is_gamescope_session();
 
   // Use a header bar when running in GNOME as this is the common style used
   // by applications and is the setup most users will be using (e.g. Ubuntu
@@ -27,7 +41,7 @@ static void my_application_activate(GApplication* application) {
   // in case the window manager does more exotic layout, e.g. tiling.
   // If running on Wayland assume the header bar will work (may need changing
   // if future cases occur).
-  gboolean use_header_bar = TRUE;
+  gboolean use_header_bar = !gamescope;
 #ifdef GDK_WINDOWING_X11
   GdkScreen* screen = gtk_window_get_screen(window);
   if (GDK_IS_X11_SCREEN(screen)) {
@@ -47,7 +61,15 @@ static void my_application_activate(GApplication* application) {
     gtk_window_set_title(window, "Ister player");
   }
 
+  // The default size only matters outside gamescope (and as the size the
+  // window falls back to if fullscreen ever ends); under gamescope the
+  // fullscreen request below adopts whatever resolution the compositor
+  // provides (Deck panel, Steam Machine TV, external display).
   gtk_window_set_default_size(window, 1280, 720);
+  if (gamescope) {
+    gtk_window_set_decorated(window, FALSE);
+    gtk_window_fullscreen(window);
+  }
   gtk_widget_show(GTK_WIDGET(window));
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
