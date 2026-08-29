@@ -342,6 +342,95 @@ jobs:
           name: macos-zip
           path: player-macos-*.zip
 
+      # ---- TestFlight. Everything below may fail without costing the zip above:
+      # the artifact is already uploaded, the job is continue-on-error, and publish
+      # downloads both artifacts with continue-on-error. ----
+
+      - name: Install the App Store Connect API key
+        env:
+          KEY_P8: ${{ secrets.APP_STORE_CONNECT_KEY_P8 }}
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          printf '%s\n' "$KEY_P8" > ~/.appstoreconnect/private_keys/"AuthKey_${KEY_ID}.p8"
+
+      # Unlike iOS, the archive is signed — ad-hoc ("-" from the pbxproj), which
+      # needs no keychain but DOES embed the sandbox + keychain entitlements the
+      # Mac App Store validator requires (an entirely unsigned archive risks
+      # ITMS-90296 "App sandbox not enabled" at validate). The export re-signs
+      # everything with Apple's cloud-managed distribution certificates via the
+      # API key, exactly like the iOS job. The flutter build above already ran
+      # pod install and generated Generated.xcconfig + DART_DEFINES, so this
+      # archives the same app.
+      - name: Build the signed pkg
+        env:
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          KEY="$HOME/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8"
+
+          xcodebuild -workspace macos/Runner.xcworkspace -scheme Runner \
+            -configuration Release -destination 'generic/platform=macOS' \
+            -archivePath build/macos/archive/Runner.xcarchive archive
+
+          # `app-store-connect` needs Xcode >= 15.3; macos-latest is well past that.
+          cat > "$RUNNER_TEMP/ExportOptionsMac.plist" <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>teamID</key><string>68TXJMQZH4</string>
+            <key>uploadSymbols</key><true/>
+          </dict>
+          </plist>
+          EOF
+
+          xcodebuild -exportArchive \
+            -archivePath build/macos/archive/Runner.xcarchive \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptionsMac.plist" \
+            -exportPath build/macos/pkg \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY" \
+            -authenticationKeyID "$KEY_ID" \
+            -authenticationKeyIssuerID "$ISSUER_ID"
+
+      # Same rationale as the iOS job's check, plus the archived entitlements:
+      # the validator rejects a pkg whose app lost the sandbox or keychain group,
+      # and this log line is the only place to see what actually got signed.
+      - name: Verify libmpv is embedded and the entitlements survived
+        run: |
+          APP="build/macos/archive/Runner.xcarchive/Products/Applications/Ister player.app"
+          if [ ! -d "$APP/Contents/Frameworks/Mpv.framework" ]; then
+            echo "::error::Mpv.framework missing from $APP — media_kit fell back to its stub"
+            ls -la "$APP/Contents/Frameworks" || true
+            exit 1
+          fi
+          dwarfdump --uuid "$APP/Contents/Frameworks/Mpv.framework/Mpv"
+          codesign -d --entitlements - "$APP"
+
+      - name: Name the pkg
+        env:
+          VERSION: ${{ needs.gate.outputs.version }}
+        run: mv build/macos/pkg/*.pkg "player-macos-${VERSION}.pkg"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: macos-pkg
+          path: player-macos-*.pkg
+
+      - name: Upload to TestFlight
+        env:
+          VERSION: ${{ needs.gate.outputs.version }}
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          xcrun altool --validate-app -f "player-macos-${VERSION}.pkg" -t macos \
+            --apiKey "$KEY_ID" --apiIssuer "$ISSUER_ID"
+          xcrun altool --upload-app -f "player-macos-${VERSION}.pkg" -t macos \
+            --apiKey "$KEY_ID" --apiIssuer "$ISSUER_ID"
+
   # Same continue-on-error rationale as the two desktop jobs above: iOS pulls its libmpv
   # xcframeworks over the network at build time, and additionally depends on Apple's
   # signing and upload services being reachable — none of that may sink the release.
@@ -700,6 +789,10 @@ jobs:
       - uses: actions/download-artifact@v8
         continue-on-error: true
         with:
+          name: macos-pkg
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
           name: ios-ipa
 
       - name: Log in to GitHub Container Registry
@@ -799,6 +892,7 @@ jobs:
           [ -f "player-docs-${VERSION}.zip" ] && assets+=("player-docs-${VERSION}.zip")
           [ -f "player-windows-x64-${VERSION}.zip" ] && assets+=("player-windows-x64-${VERSION}.zip")
           [ -f "player-macos-${VERSION}.zip" ] && assets+=("player-macos-${VERSION}.zip")
+          [ -f "player-macos-${VERSION}.pkg" ] && assets+=("player-macos-${VERSION}.pkg")
           [ -f "player-ios-${VERSION}.ipa" ] && assets+=("player-ios-${VERSION}.ipa")
           gh release create "v${VERSION}" \
             --title "v${VERSION}" \

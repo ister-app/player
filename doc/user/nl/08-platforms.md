@@ -30,7 +30,7 @@ Op Linux komt de app als flatpak, met de desktopindeling: navigatiebalk, toetsen
 
 ## Windows en macOS
 
-Beide desktopbuilds zijn nieuw en nog experimenteel — ze gebruiken dezelfde desktopindeling als Linux, lezers inbegrepen. Op Windows verschijnt wat er speelt in het mediapaneel van het systeem en werken de mediatoetsen van je toetsenbord; op macOS gebeurt hetzelfde via Now Playing. Geen van beide builds is al ondertekend, dus het besturingssysteem vraagt de eerste keer om bevestiging — zie [Installatie](00-installation.md).
+Beide desktopbuilds zijn nieuw en nog experimenteel — ze gebruiken dezelfde desktopindeling als Linux, lezers inbegrepen. Op Windows verschijnt wat er speelt in het mediapaneel van het systeem en werken de mediatoetsen van je toetsenbord; op macOS gebeurt hetzelfde via Now Playing. Op macOS is de TestFlight-build ondertekend en installeert die zonder waarschuwingen; de losse zip en de Windows-build zijn niet ondertekend, dus daar vraagt het besturingssysteem de eerste keer om bevestiging — zie [Installatie](00-installation.md).
 
 ## iPhone en iPad
 

@@ -34,7 +34,9 @@ flutter build windows --release
 flutter build macos --release
 # iOS: workflow.yml compiles unsigned as a gate (--no-codesign); release.yml builds a signed
 # .ipa (App Store Connect API key in secrets, DEVELOPMENT_TEAM in the pbxproj) and uploads it
-# to TestFlight. Local builds need a signing team (see README).
+# to TestFlight. Local builds need a signing team (see README). macOS gets the same TestFlight
+# treatment in release.yml (ad-hoc archive, cloud-signed .pkg via -exportArchive, altool -t
+# macos) on top of the ad-hoc zip it always shipped.
 flutter build ios --release
 
 # Linux flatpak
@@ -110,7 +112,9 @@ parallel tarball pin that must be kept in sync but is effectively dead code, and
 `system("make")` swallows failures. A green macOS build therefore proves nothing about which
 libmpv got embedded: after a bump, check the `LC_UUID` of `Mpv.framework` inside the released
 `player-macos-*.zip` against the new libmpv release asset (this exact miss shipped v1.17.2 with
-the old crashing mpv).
+the old crashing mpv). The release workflow's macOS TestFlight steps print exactly that
+`dwarfdump --uuid` (plus the signed entitlements) for the archived app, so the release run log
+is the place to read it off.
 
 Platform notes that bit before:
 

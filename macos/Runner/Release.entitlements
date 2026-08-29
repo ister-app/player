@@ -10,5 +10,12 @@
 	     (which uses DebugProfile.entitlements) works fine. -->
 	<key>com.apple.security.network.client</key>
 	<true/>
+	<!-- flutter_secure_storage keeps the OIDC tokens in the Keychain; a sandboxed,
+	     team-signed build (TestFlight / Mac App Store) gets no keychain access
+	     without this group. Ad-hoc builds ignore it. -->
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)app.ister.player</string>
+	</array>
 </dict>
 </plist>

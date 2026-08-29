@@ -30,7 +30,7 @@ On Linux the app ships as a flatpak, with the desktop layout: navigation rail, k
 
 ## Windows and macOS
 
-Both desktop builds are new and still experimental — they use the same desktop layout as Linux, readers included. On Windows, playback shows up in the system's media panel and the keyboard's media keys work; on macOS the same happens through Now Playing. Neither build is signed yet, so the operating system asks for confirmation the first time you open it — see [Installation](00-installation.md).
+Both desktop builds are new and still experimental — they use the same desktop layout as Linux, readers included. On Windows, playback shows up in the system's media panel and the keyboard's media keys work; on macOS the same happens through Now Playing. On macOS the TestFlight build is signed and installs without warnings; the downloadable zip and the Windows build aren't signed, so the operating system asks for confirmation the first time you open them — see [Installation](00-installation.md).
 
 ## iPhone and iPad
 

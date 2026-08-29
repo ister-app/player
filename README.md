@@ -43,7 +43,9 @@ https://iso639-3.sil.org/code_tables/download_tables
 ## Desktop builds
 
 Windows and macOS need their own toolchain (MSVC resp. Xcode) and cannot be cross-built from
-Linux; CI builds them and attaches a zip to each release.
+Linux; CI builds them and attaches a zip to each release. For macOS each release additionally
+builds a signed `.pkg` and uploads it to **TestFlight** — the friction-free install route; the
+ad-hoc zip stays for direct download (with the one-time quarantine `xattr`, see the user docs).
 
 ```bash
 flutter build windows --release

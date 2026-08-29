@@ -38,9 +38,9 @@ Windows builds are new and still experimental. Download `player-windows-x64-<ver
 
 ## macOS
 
-macOS builds are new and still experimental. Download `player-macos-<version>.zip` from the [latest release](https://github.com/ister-app/player/releases), unzip it and drag `Ister player.app` to your Applications folder.
+macOS builds are new and still experimental. The easiest route is **TestFlight**: install Apple's [TestFlight app](https://apps.apple.com/app/testflight/id899247664) from the Mac App Store (needs macOS 12 or newer), accept the invitation from the person running your server (or the project), and Ister installs and updates like any other app — no Terminal, no warnings.
 
-The app isn't notarised by Apple, so macOS blocks it on first launch. Clear the download quarantine once from Terminal:
+Alternatively, download `player-macos-<version>.zip` from the [latest release](https://github.com/ister-app/player/releases), unzip it and drag `Ister player.app` to your Applications folder. That build isn't notarised by Apple, so macOS blocks it on first launch; clear the download quarantine once from Terminal:
 
 ```shell
 xattr -dr com.apple.quarantine "/Applications/Ister player.app"
