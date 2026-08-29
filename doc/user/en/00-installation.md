@@ -50,14 +50,16 @@ After that it opens normally.
 
 ## iOS
 
-There is no ready-made iOS download. Apple only allows installing an app that has been signed for your own Apple ID, so the iPhone and iPad version has to be built on a Mac and copied across from there. You need a Mac with [Xcode](https://apps.apple.com/app/xcode/id497799835) and the [Flutter SDK](https://docs.flutter.dev/get-started/install/macos), and an Apple ID.
+The iPhone and iPad version is distributed through **TestFlight**: install Apple's [TestFlight app](https://apps.apple.com/app/testflight/id899247664), accept the invitation from the person running your server (or the project), and Ister installs and updates like any other app — no Mac, no cable. New releases appear in TestFlight automatically.
+
+Building it yourself remains possible for developers. You need a Mac with [Xcode](https://apps.apple.com/app/xcode/id497799835) and the [Flutter SDK](https://docs.flutter.dev/get-started/install/macos), and an Apple ID.
 
 1. Clone the repository and run `flutter pub get`.
 2. Open `ios/Runner.xcworkspace` in Xcode, select the **Runner** target, and under **Signing & Capabilities** tick *Automatically manage signing* and pick your Apple ID under **Team**. If Xcode reports that the bundle identifier is taken, change it to something unique — and change the URL scheme in `ios/Runner/Info.plist` to match, because signing in uses it.
 3. Connect the iPhone, enable **Settings → Privacy & Security → Developer Mode** on it, and run `flutter run --release -d <your iPhone>`.
 4. On first launch iOS says the developer isn't trusted: **Settings → General → VPN & Device Management → your Apple ID → Trust**.
 
-With a free Apple ID the app stops working after **seven days** and you have to rebuild it; a paid Apple Developer Program membership extends that to a year.
+With a free Apple ID a self-built app stops working after **seven days** and you have to rebuild it; a paid Apple Developer Program membership extends that to a year. The TestFlight route has neither limit.
 
 Two things work differently than on other platforms. Your server has to be reachable — the first time you connect, iOS asks permission to use the local network, and refusing it makes servers on your home network unreachable. And downloads only continue while Ister is open: iOS gives no app permission to keep downloading in the background, so the app keeps the screen on while a download runs.
 

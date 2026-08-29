@@ -32,7 +32,9 @@ flutter build web --release
 # Windows, macOS and iOS cannot be cross-built from Linux (MSVC resp. Xcode); CI builds these.
 flutter build windows --release
 flutter build macos --release
-# iOS: compile gate in CI (--no-codesign); a real install needs a signing team (see README).
+# iOS: workflow.yml compiles unsigned as a gate (--no-codesign); release.yml builds a signed
+# .ipa (App Store Connect API key in secrets, DEVELOPMENT_TEAM in the pbxproj) and uploads it
+# to TestFlight. Local builds need a signing team (see README).
 flutter build ios --release
 
 # Linux flatpak

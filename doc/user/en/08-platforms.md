@@ -34,7 +34,7 @@ Both desktop builds are new and still experimental — they use the same desktop
 
 ## iPhone and iPad
 
-The iOS version is new and has to be built on a Mac and installed from there — there's no download in the App Store, see [Installation](00-installation.md). It uses the same phone and tablet layout as Android, readers included, and playback appears on the lock screen and in Control Centre.
+The iOS version is new and comes via TestFlight rather than the App Store — see [Installation](00-installation.md). It uses the same phone and tablet layout as Android, readers included, and playback appears on the lock screen and in Control Centre.
 
 Two limits are worth knowing. iOS asks once for permission to use your local network; without it a server on your own network can't be reached. And downloads only continue while the app is open — iOS doesn't let apps download in the background, so Ister keeps the screen on while a download runs and picks up where it left off next time you open it.
 

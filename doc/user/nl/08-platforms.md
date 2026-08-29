@@ -34,7 +34,7 @@ Beide desktopbuilds zijn nieuw en nog experimenteel — ze gebruiken dezelfde de
 
 ## iPhone en iPad
 
-De iOS-versie is nieuw en moet op een Mac gebouwd en van daaruit geïnstalleerd worden — er is geen download in de App Store, zie [Installatie](00-installation.md). Hij gebruikt dezelfde telefoon- en tabletindeling als Android, lezers inbegrepen, en wat er speelt verschijnt op het toegangsscherm en in het bedieningspaneel.
+De iOS-versie is nieuw en komt via TestFlight in plaats van de App Store — zie [Installatie](00-installation.md). Hij gebruikt dezelfde telefoon- en tabletindeling als Android, lezers inbegrepen, en wat er speelt verschijnt op het toegangsscherm en in het bedieningspaneel.
 
 Twee beperkingen zijn goed om te weten. iOS vraagt eenmalig toestemming voor je lokale netwerk; zonder die toestemming is een server in je eigen netwerk niet bereikbaar. En downloads lopen alleen door zolang de app openstaat — iOS laat apps niet op de achtergrond downloaden, dus Ister houdt het scherm aan tijdens een download en pakt de volgende keer verder op waar hij gebleven was.
 

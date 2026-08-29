@@ -342,6 +342,97 @@ jobs:
           name: macos-zip
           path: player-macos-*.zip
 
+  # Same continue-on-error rationale as the two desktop jobs above: iOS pulls its libmpv
+  # xcframeworks over the network at build time, and additionally depends on Apple's
+  # signing and upload services being reachable — none of that may sink the release.
+  build-ios:
+    needs: gate
+    if: needs.gate.outputs.release == 'true'
+    continue-on-error: true
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # Becomes CFBundleShortVersionString (semver) and CFBundleVersion (commit count).
+      # TestFlight refuses a build number it has seen for the same version; the commit
+      # count is monotonic because every release adds its own chore(release) commit.
+      - name: Set the release version
+        id: version
+        uses: ./.github/actions/set-release-version
+        with:
+          version: ${{ needs.gate.outputs.version }}
+          build: ${{ needs.gate.outputs.build }}
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+      - name: Cache pub dependencies
+        uses: actions/cache@v6
+        with:
+          path: ~/.pub-cache
+          # No restore-keys fallback, for the same reason as workflow.yml's build job.
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+      - run: flutter pub get
+
+      # ~/.appstoreconnect/private_keys is where both xcodebuild (for automatic signing:
+      # flutter build ipa passes -allowProvisioningUpdates itself) and altool look for
+      # the key on their own, so it never has to be passed to the build explicitly.
+      - name: Install the App Store Connect API key
+        env:
+          KEY_P8: ${{ secrets.APP_STORE_CONNECT_KEY_P8 }}
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          printf '%s\n' "$KEY_P8" > ~/.appstoreconnect/private_keys/"AuthKey_${KEY_ID}.p8"
+
+      # No hand-written ExportOptions.plist: Flutter generates one from the build
+      # settings and maps `app-store` to whatever name the runner's Xcode wants
+      # (`app-store` vs `app-store-connect` since 15.3) — hardcoding a plist breaks
+      # on the next runner image bump.
+      - name: Build the signed ipa
+        run: |
+          flutter build ipa --release \
+            --dart-define=GIT_COMMIT=${{ steps.version.outputs.sha }} \
+            --export-method app-store
+
+      # Same check as workflow.yml's compile gate: a green build does not prove which
+      # libmpv got embedded — without the xcframework, media_kit_video silently
+      # compiles its stub sources and ships an app with sound but no picture.
+      - name: Verify libmpv is embedded
+        run: |
+          APP="build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app"
+          if [ ! -d "$APP/Frameworks/Mpv.framework" ]; then
+            echo "::error::Mpv.framework missing from $APP — media_kit fell back to its stub"
+            ls -la "$APP/Frameworks" || true
+            exit 1
+          fi
+          dwarfdump --uuid "$APP/Frameworks/Mpv.framework/Mpv"
+
+      - name: Name the ipa
+        env:
+          VERSION: ${{ needs.gate.outputs.version }}
+        run: mv build/ios/ipa/*.ipa "player-ios-${VERSION}.ipa"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ios-ipa
+          path: player-ios-*.ipa
+
+      # Validate before uploading: the difference between a readable error in this log
+      # and a mail from Apple half an hour after the upload.
+      - name: Upload to TestFlight
+        env:
+          VERSION: ${{ needs.gate.outputs.version }}
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          xcrun altool --validate-app -f "player-ios-${VERSION}.ipa" -t ios \
+            --apiKey "$KEY_ID" --apiIssuer "$ISSUER_ID"
+          xcrun altool --upload-app -f "player-ios-${VERSION}.ipa" -t ios \
+            --apiKey "$KEY_ID" --apiIssuer "$ISSUER_ID"
+
   flatpak:
     needs: [gate, build]
     runs-on: ubuntu-latest
@@ -527,7 +618,7 @@ jobs:
           done
 
   publish:
-    needs: [gate, build, build-windows, build-macos, flatpak, docs]
+    needs: [gate, build, build-windows, build-macos, build-ios, flatpak, docs]
     runs-on: ubuntu-latest
     permissions:
       contents: write   # commit the bump, push the tag, create the release
@@ -565,6 +656,10 @@ jobs:
         continue-on-error: true
         with:
           name: macos-zip
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: ios-ipa
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v4
@@ -663,6 +758,7 @@ jobs:
           [ -f "player-docs-${VERSION}.zip" ] && assets+=("player-docs-${VERSION}.zip")
           [ -f "player-windows-x64-${VERSION}.zip" ] && assets+=("player-windows-x64-${VERSION}.zip")
           [ -f "player-macos-${VERSION}.zip" ] && assets+=("player-macos-${VERSION}.zip")
+          [ -f "player-ios-${VERSION}.ipa" ] && assets+=("player-ios-${VERSION}.ipa")
           gh release create "v${VERSION}" \
             --title "v${VERSION}" \
             --notes-file RELEASE_NOTES.md \

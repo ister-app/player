@@ -52,9 +52,10 @@ flutter build macos --release
 
 ## iOS
 
-Builds on macOS only, and only for sideloading: no signed artefact is published, so there is
-nothing to install from a release. CI compiles it unsigned as a regression gate. See
-`doc/user/en/00-installation.md` for the sideload steps.
+Builds on macOS only. Each release builds a signed `.ipa` in CI, uploads it to **TestFlight**
+and attaches it to the release; testers install via the TestFlight app, no Mac needed. The
+pull-request gate still compiles unsigned as a regression check. Building and sideloading it
+yourself from a Mac remains possible — see `doc/user/en/00-installation.md`.
 
 ```bash
 flutter build ios --release          # needs a signing team configured in Xcode
