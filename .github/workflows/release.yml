@@ -376,9 +376,11 @@ jobs:
           key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
       - run: flutter pub get
 
-      # ~/.appstoreconnect/private_keys is where both xcodebuild (for automatic signing:
-      # flutter build ipa passes -allowProvisioningUpdates itself) and altool look for
-      # the key on their own, so it never has to be passed to the build explicitly.
+      # ~/.appstoreconnect/private_keys is where altool finds the key on its own.
+      # xcodebuild does NOT look there — it needs the -authenticationKey* flags below
+      # (`flutter build ipa` cannot pass them, which is why the archive/export steps
+      # call xcodebuild directly: without the flags automatic signing has no
+      # credentials and dies on "No profiles for 'app.ister.player' were found").
       - name: Install the App Store Connect API key
         env:
           KEY_P8: ${{ secrets.APP_STORE_CONNECT_KEY_P8 }}
@@ -387,15 +389,55 @@ jobs:
           mkdir -p ~/.appstoreconnect/private_keys
           printf '%s\n' "$KEY_P8" > ~/.appstoreconnect/private_keys/"AuthKey_${KEY_ID}.p8"
 
-      # No hand-written ExportOptions.plist: Flutter generates one from the build
-      # settings and maps `app-store` to whatever name the runner's Xcode wants
-      # (`app-store` vs `app-store-connect` since 15.3) — hardcoding a plist breaks
-      # on the next runner image bump.
+      # Signing runs entirely on Apple's cloud-managed certificates (Xcode 13+): the
+      # API key both mints/fetches the Apple Distribution certificate and creates the
+      # App Store provisioning profile, so the runner needs no keychain, .p12 or
+      # profile. CODE_SIGN_IDENTITY is forced to "Apple Distribution" because
+      # automatic signing would otherwise archive with an Apple Development identity,
+      # whose private key only exists in a developer's local keychain.
       - name: Build the signed ipa
+        env:
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
         run: |
-          flutter build ipa --release \
-            --dart-define=GIT_COMMIT=${{ steps.version.outputs.sha }} \
-            --export-method app-store
+          # Generates Generated.xcconfig and the encoded DART_DEFINES so the direct
+          # xcodebuild below produces the same app `flutter build ipa` would.
+          flutter build ios --release --config-only \
+            --dart-define=GIT_COMMIT=${{ steps.version.outputs.sha }}
+
+          KEY="$HOME/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8"
+
+          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -archivePath build/ios/archive/Runner.xcarchive archive \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY" \
+            -authenticationKeyID "$KEY_ID" \
+            -authenticationKeyIssuerID "$ISSUER_ID" \
+            CODE_SIGN_IDENTITY="Apple Distribution"
+
+          # `app-store-connect` needs Xcode >= 15.3; macos-latest is well past that.
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>teamID</key><string>68TXJMQZH4</string>
+            <key>uploadSymbols</key><true/>
+          </dict>
+          </plist>
+          EOF
+
+          xcodebuild -exportArchive \
+            -archivePath build/ios/archive/Runner.xcarchive \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath build/ios/ipa \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY" \
+            -authenticationKeyID "$KEY_ID" \
+            -authenticationKeyIssuerID "$ISSUER_ID"
 
       # Same check as workflow.yml's compile gate: a green build does not prove which
       # libmpv got embedded — without the xcframework, media_kit_video silently
