@@ -135,11 +135,24 @@ class MediaPlayerHandler extends BaseAudioHandler
         'reconnect=1,reconnect_streamed=1,reconnect_on_network_error=1,reconnect_delay_max=30';
     // Setting demuxer-lavf-o here REPLACES the options media_kit configured at
     // player init (seg_max_retry, allowed_extensions) — merge them back in.
-    // Deliberately NOT extension_picky=0: ffmpeg dropping the `.srt` subtitle
-    // renditions is what keeps them out of the track list — subtitles are
-    // side-loaded as external files instead (_loadExternalSubtitleTracks).
+    // extension_picky=1 must be EXPLICIT even though it is ffmpeg's default:
+    // mpv ≥ 0.40 force-sets extension_picky=0 whenever the user leaves it out
+    // of demuxer-lavf-o (demux_lavf.c, "known FFmpeg bugs"), and with picky
+    // off ffmpeg stops dropping the in-manifest `.srt` subtitle renditions.
+    // Those tracks then win the language preference over the side-loaded
+    // external SRTs (_loadExternalSubtitleTracks) and re-deliver segment cues
+    // on every seek/refetch, which libass stacks as doubled subtitle lines.
+    // http_persistent=0 belongs with it: ffmpeg 8.x only rejects the `.srt`
+    // rendition mid-parse of its sub playlist, leaving the shared keep-alive
+    // playlist connection desynced — the *video* playlist then reads garbage
+    // ("parse_playlist error", "Empty segment") and playback is a black
+    // screen with a growing live-style duration. A fresh connection per
+    // playlist makes the rejection harmless. ffmpeg 9 drops unsupported
+    // renditions before parsing ("Can't support the subtitle") and never
+    // hits this.
     const demuxerExtras =
-        'seg_max_retry=5,strict=experimental,allowed_extensions=ALL';
+        'seg_max_retry=5,strict=experimental,allowed_extensions=ALL,'
+        'extension_picky=1,http_persistent=0';
     try {
       // Dynamic dispatch: on web media_kit substitutes a stub NativePlayer
       // without setProperty, so a static call breaks dart2js/dart2wasm even
