@@ -64,7 +64,7 @@ dependency_overrides:
     git:
       url: https://github.com/ister-app/audio_service
       path: audio_service
-      ref: fix/restore-listener-on-service-recreate
+      ref: feat/carplay-audio
   media_kit:
     git:
       url: https://github.com/ister-app/media-kit

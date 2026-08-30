@@ -77,8 +77,8 @@ packages:
     dependency: "direct main"
     description:
       path: audio_service
-      ref: "fix/restore-listener-on-service-recreate"
-      resolved-ref: aff871ddb0618d6b1562d0592da026456885dab8
+      ref: "feat/carplay-audio"
+      resolved-ref: "2c6bf79c268b40ebe07bae0734198497cd1748f2"
       url: "https://github.com/ister-app/audio_service"
     source: git
     version: "0.18.19"
