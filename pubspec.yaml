@@ -49,7 +49,6 @@ dependencies:
   html: ^0.15.4
   flutter_widget_from_html_core: ^0.17.2
   scrollable_positioned_list: ^0.3.8
-  pdfrx: ^2.4.7
   wakelock_plus: ^1.2.10
   volume_controller: ^3.4.0 # Device volume for the fullscreen swipe gesture
   screen_brightness: ^2.1.1 # Window brightness for the fullscreen swipe gesture

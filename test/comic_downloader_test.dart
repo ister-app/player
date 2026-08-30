@@ -68,9 +68,24 @@ void main() {
     expect(manifest.pages.map((p) => p.name), ['001.png', '002.jpg', '003.webp']);
   });
 
-  test('pdf: the whole file', () async {
-    await run({'mediaFileId': 'mf-comic', 'bookId': 'b', 'format': 'PDF', 'pageCount': 12}, []);
-    expect(File('${dir.path}/${ComicDownloader.pdfFile}').readAsStringSync(), '%PDF');
-    expect((await ComicDownloader.readLocalManifest(dir))!.pageCount, 12);
+  test('pdf: every server-rendered page, like a cbz', () async {
+    final log = <String>[];
+    await run(
+        {'mediaFileId': 'mf-comic', 'bookId': 'b', 'format': 'PDF', 'pageCount': 3, 'pages': []},
+        log);
+    expect(File('${dir.path}/page_00000.jpg').existsSync(), isTrue);
+    expect(File('${dir.path}/page_00002.jpg').existsSync(), isTrue);
+    expect(log.where((p) => p.contains('/page/')), hasLength(3));
+    expect((await ComicDownloader.readLocalManifest(dir))!.pageCount, 3);
+  });
+
+  test('pdf: a legacy whole-file mirror is deleted on re-download', () async {
+    final legacy = File('${dir.path}/${ComicDownloader.pdfFile}');
+    await legacy.writeAsString('%PDF');
+    await run(
+        {'mediaFileId': 'mf-comic', 'bookId': 'b', 'format': 'PDF', 'pageCount': 2, 'pages': []},
+        []);
+    expect(legacy.existsSync(), isFalse);
+    expect(File('${dir.path}/page_00001.jpg').existsSync(), isTrue);
   });
 }

@@ -20,14 +20,17 @@ import 'package:shared_preferences_platform_interface/shared_preferences_async_p
 final Uint8List _pixel = base64Decode(
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==');
 
-String _manifest(int pages) => json.encode({
+String _manifest(int pages, {String format = 'CBZ'}) => json.encode({
       'mediaFileId': 'file-1',
       'bookId': 'book-1',
-      'format': 'CBZ',
+      'format': format,
       'pageCount': pages,
+      // Like the server: the page list is cbz-only, a pdf manifest carries
+      // just the count.
       'pages': [
-        for (var i = 0; i < pages; i++)
-          {'index': i, 'name': 'page$i.png', 'size': 100},
+        if (format == 'CBZ')
+          for (var i = 0; i < pages; i++)
+            {'index': i, 'name': 'page$i.png', 'size': 100},
       ],
     });
 
@@ -35,11 +38,12 @@ MockClient _fakeServer(
   List<Map<String, dynamic>> progressPosts, {
   String? savedLocation,
   double savedProgress = 0,
+  String format = 'CBZ',
 }) =>
     MockClient((request) async {
       final path = request.url.path;
       if (path.endsWith('/manifest')) {
-        return http.Response(_manifest(10), 200);
+        return http.Response(_manifest(10, format: format), 200);
       }
       if (path.endsWith('/book-progress')) {
         return http.Response(
@@ -175,6 +179,22 @@ void main() {
       expect(find.text('Test Comic'), findsOneWidget);
       expect(find.text('Page 1 of 10'), findsOneWidget);
     }, () => _fakeServer([]));
+  });
+
+  testWidgets(
+      'a pdf reads through the same server-rendered page path as a cbz',
+      (tester) async {
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+
+      // The empty pages[] list of a pdf manifest must not matter: paging works
+      // off pageCount, through CbzPageSource (server-rasterized pages).
+      expect(find.text('Page 1 of 10'), findsOneWidget);
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.pumpAndSettle();
+      expect(find.text('Page 2 of 10'), findsOneWidget);
+    }, () => _fakeServer([], format: 'PDF'));
   });
 
   testWidgets('resumes at the saved locator page', (tester) async {

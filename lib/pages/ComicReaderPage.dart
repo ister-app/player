@@ -17,7 +17,6 @@ import 'package:player/utils/comic/ComicPageSource.dart';
 import 'package:player/utils/comic/ComicPreferences.dart';
 import 'package:player/utils/comic/ComicResourceClient.dart';
 import 'package:player/utils/comic/ComicSyncService.dart';
-import 'package:player/utils/comic/PdfPageSource.dart';
 import 'dart:io';
 
 import 'package:player/utils/download/ComicDownloader.dart';
@@ -207,17 +206,27 @@ class _ComicReaderPageState extends State<ComicReaderPage>
           ? null
           : await ComicDownloader.readLocalManifest(localDir);
       final manifest = localManifest ?? await client.manifest();
-      final source = localDir != null && localManifest != null
+      // A pre-page-mirror download of a pdf holds a whole `file.pdf` and no page
+      // images; treat it as not downloaded so the reader streams server pages
+      // (re-downloading converts it to the per-page mirror).
+      final usableLocal = localDir != null &&
+          localManifest != null &&
+          (localManifest.format != 'PDF' ||
+              await File(
+                      '${localDir.path}/${ComicDownloader.pageFileName(0, 'page.jpg')}')
+                  .exists());
+      final source = usableLocal
           ? switch (manifest.format) {
-              'CBZ' => LocalCbzPageSource(dir: localDir, manifest: manifest),
-              'PDF' when !kIsWeb => await PdfPageSource.openFile(
-                  '${localDir.path}/${ComicDownloader.pdfFile}'),
+              'CBZ' ||
+              'PDF' =>
+                LocalCbzPageSource(dir: localDir!, manifest: manifest),
               _ => null,
             }
           : switch (manifest.format) {
-              'CBZ' => CbzPageSource(client: client, manifest: manifest),
-              // pdfrx has no custom-read source on web; cbz works everywhere.
-              'PDF' when !kIsWeb => await PdfPageSource.open(client),
+              // Both cbz entries and pdf pages are served as page images by the
+              // node (pdfs rasterized server-side), so one reader covers both —
+              // web included.
+              'CBZ' || 'PDF' => CbzPageSource(client: client, manifest: manifest),
               _ => null,
             };
       if (source == null || source.pageCount <= 0) {

@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -58,33 +56,9 @@ void main() {
     expect(url.queryParameters['width'], '240');
   });
 
-  test('readRange sends a Range header', () async {
-    late http.Request requested;
-    final client = _client(MockClient((request) async {
-      requested = request;
-      return http.Response.bytes(utf8.encode('abcd'), 206);
-    }));
-
-    final bytes = await client.readRange(100, 4);
-
-    expect(requested.headers['Range'], 'bytes=100-103');
-    expect(utf8.decode(bytes), 'abcd');
-  });
-
   test('failed requests throw with the status code', () async {
     final client = _client(MockClient((_) async => http.Response('', 500)));
 
     expect(client.manifest(), throwsA(isA<ComicResourceException>()));
-    expect(client.readRange(0, 10), throwsA(isA<ComicResourceException>()));
-  });
-
-  test('fileSize comes from the Content-Range probe', () async {
-    final client = _client(MockClient((request) async {
-      expect(request.headers['Range'], 'bytes=0-0');
-      return http.Response.bytes(const [0], 206,
-          headers: {'content-range': 'bytes 0-0/12345'});
-    }));
-
-    expect(await client.fileSize(), 12345);
   });
 }

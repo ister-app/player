@@ -9,8 +9,8 @@ import 'package:player/utils/download/DownloadModels.dart';
 import 'package:player/utils/download/EpubDownloader.dart';
 import 'package:player/utils/download/HlsDownloader.dart' show HlsDownloader;
 
-/// Mirrors a comic volume: the manifest plus, for a cbz, every page at full
-/// resolution (`page_00000.jpg`…), or for a pdf the whole file (`file.pdf`).
+/// Mirrors a comic volume: the manifest plus every page at full resolution
+/// (`page_00000.jpg`…) — cbz entries and server-rasterized pdf pages alike.
 class ComicDownloader {
   ComicDownloader({http.Client? httpClient, DownloadHttp? http})
       : _httpClient = httpClient,
@@ -20,6 +20,9 @@ class ComicDownloader {
   final DownloadHttp _http;
 
   static const String manifestFile = 'manifest.json';
+
+  /// Whole-file mirror name from before pdfs became per-page; only referenced
+  /// to detect and clean up those legacy downloads.
   static const String pdfFile = 'file.pdf';
   static const Duration _timeout = Duration(seconds: 90);
 
@@ -65,17 +68,14 @@ class ComicDownloader {
     }
 
     switch (manifest.format) {
-      case 'PDF':
-        total = 1;
-        final target = File('${dir.path}/$pdfFile');
-        if (!await target.exists()) {
-          bytes += await _http.getToFile(
-              serverName, client.fileUrl, target, cancel,
-              timeout: _timeout,
-              bodyTimeoutOverride: const Duration(minutes: 30));
-        }
-        done = 1;
       case 'CBZ':
+      case 'PDF':
+        // A mirror from before pdfs became per-page holds the whole file;
+        // deleting it here lets a re-run convert itself to the page mirror.
+        final legacyPdf = File('${dir.path}/$pdfFile');
+        if (await legacyPdf.exists()) {
+          await legacyPdf.delete();
+        }
         final count = manifest.pageCount ?? manifest.pages.length;
         total = count;
         for (var i = 0; i < count; i++) {
