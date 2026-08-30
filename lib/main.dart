@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/scheduler.dart' show SchedulerBinding;
 import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -120,6 +122,28 @@ Future<void> main() async {
       MusicCacheService.instance.schedule(server, delay: const Duration(seconds: 15));
     }
   }));
+
+  // Frame-pacing probe: forces a frame every vsync and logs the achieved rate
+  // once per second. For diagnosing compositor pacing on devices without
+  // DevTools access (SteamOS game mode runs at ~10fps for reasons a nested
+  // gamescope does not reproduce) — enable from Steam launch options with
+  // `--env=ISTER_FPS_PROBE=1` on the flatpak run command.
+  if (!kIsWeb && Platform.environment['ISTER_FPS_PROBE'] == '1') {
+    var frames = 0;
+    var last = DateTime.now();
+    SchedulerBinding.instance.addPersistentFrameCallback((_) {
+      frames++;
+      final now = DateTime.now();
+      if (now.difference(last) >= const Duration(seconds: 1)) {
+        // ignore: avoid_print
+        print('FPS_PROBE: $frames');
+        frames = 0;
+        last = now;
+      }
+      SchedulerBinding.instance.scheduleFrame();
+    });
+    SchedulerBinding.instance.scheduleFrame();
+  }
 
   runApp(Main(initialServer: initialServer));
 }
