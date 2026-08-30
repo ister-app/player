@@ -214,7 +214,9 @@ jobs:
     if: ${{ github.event_name == 'pull_request' || !startsWith(github.event.head_commit.message, 'chore(release):') }}
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    continue-on-error: true
+    # Deliberately NOT continue-on-error: it hid red e2e runs for days (a green run
+    # said nothing about this job), and the schema preflight below now removes the
+    # main source of expected-but-confusing failures.
     steps:
       - uses: actions/checkout@v7
         with:
@@ -302,6 +304,29 @@ jobs:
           sleep 5
           curl -fsS http://localhost:8080/api/.well-known/ister
 
+      # What actually got deployed: a -snapshot tag is mutable, so the tag name in
+      # ci/e2e-pins.env doesn't identify an image. The digest in the log does — and
+      # when the optional SERVER_IMAGE_DIGEST pin is set, drifting away from it is
+      # called out instead of having to be reconstructed after a red run.
+      - name: Log the server image digest
+        if: steps.chart-e2e.outputs.supported == 'true'
+        run: |
+          imageid=$(kubectl get pods -n ister -o json | jq -r '
+            [.items[].status.containerStatuses // [] | .[] | select(.name == "server")][0].imageID // empty')
+          echo "server imageID: ${imageid:-<not found>}"
+          if [ -n "$SERVER_IMAGE_DIGEST" ] && [ -n "$imageid" ] \
+              && [ "${imageid##*@}" != "$SERVER_IMAGE_DIGEST" ]; then
+            echo "::warning::server tag $SERVER_IMAGE_TAG now resolves to ${imageid##*@}, not the noted SERVER_IMAGE_DIGEST=$SERVER_IMAGE_DIGEST — the mutable tag has moved since the pin was written"
+          fi
+
+      # Fail fast (and with a clear message) when the pinned server is behind the
+      # player's GraphQL operations — historically the biggest cause of red runs,
+      # surfacing half an hour in as FieldUndefined inside a random test.
+      - name: Schema preflight (player operations vs the running server)
+        if: steps.chart-e2e.outputs.supported == 'true'
+        working-directory: player
+        run: ci/schema-preflight.sh
+
       - name: Scan the libraries (the tests need indexed media)
         if: steps.chart-e2e.outputs.supported == 'true'
         working-directory: chart
@@ -322,10 +347,25 @@ jobs:
           # ✅ on "no errors seen", the engine never records the pass). Every test in the
           # file passed, so count it as a pass — a retry can lose the event just as easily
           # (and has, twice in a row).
+          # The health gate between files keeps one dying server (DB starved, pod
+          # restarted) from dragging every later file down as a cascade of test
+          # failures: wait for recovery, and if it does not come back, fail once
+          # with an infra label instead.
           xvfb-run -a dbus-run-session -- bash -c '
             pulseaudio --start --exit-idle-time=-1 || true
             status=0
             for t in integration_test/*_test.dart; do
+              waited=0
+              until curl -fsS -o /dev/null --max-time 5 http://localhost:8080/api/.well-known/ister; do
+                if [ "$waited" -ge 90 ]; then
+                  echo "::error::infra: server still unhealthy after ${waited}s before $t — aborting the remaining files"
+                  exit 1
+                fi
+                sleep 5; waited=$((waited + 5))
+              done
+              if [ "$waited" -gt 0 ]; then
+                echo "::warning::server was unhealthy before $t, recovered after ${waited}s"
+              fi
               echo "=== $t"
               log=$(mktemp)
               flutter test "$t" -d linux --dart-define=ISTER_TEST_MODE=true 2>&1 | tee "$log"

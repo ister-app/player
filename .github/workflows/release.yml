@@ -848,6 +848,9 @@ jobs:
         run: |
           if [ -n "$RESOLVED" ]; then
             sed -i -E "s|^SERVER_IMAGE_TAG=.*$|SERVER_IMAGE_TAG=${RESOLVED}|" ci/e2e-pins.env
+            # The noted digest belonged to the snapshot tag; blank it rather than
+            # letting it warn against the resolved release on every following run.
+            sed -i -E "s|^SERVER_IMAGE_DIGEST=.*$|SERVER_IMAGE_DIGEST=|" ci/e2e-pins.env
           fi
           ! grep -qiE '^SERVER_IMAGE_TAG=.*-snapshot' ci/e2e-pins.env \
             || { echo "a -snapshot survived in ci/e2e-pins.env" >&2; exit 1; }
