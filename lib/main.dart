@@ -135,8 +135,9 @@ Future<void> main() async {
       frames++;
       final now = DateTime.now();
       if (now.difference(last) >= const Duration(seconds: 1)) {
-        // ignore: avoid_print
-        print('FPS_PROBE: $frames');
+        // Through the logger so it lands in the exportable on-disk log — in
+        // game mode there is no console to read stdout from.
+        LoggerService().logger.i('FPS_PROBE: $frames');
         frames = 0;
         last = now;
       }
