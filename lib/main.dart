@@ -9,6 +9,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:auto_route/auto_route.dart';
+import 'package:player/components/TvBackKeyHandler.dart';
 import 'package:player/routes/AppRouter.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ImageCacheConfig.dart';
@@ -188,6 +189,7 @@ class Main extends StatefulWidget {
 }
 
 class _MainState extends State<Main> {
+  late final AppRouter _appRouter;
   late final RouterConfig<UrlState> _routerConfig;
   late final AppLifecycleListener _lifecycleListener;
 
@@ -205,8 +207,8 @@ class _MainState extends State<Main> {
       // when the system recreated the audio service underneath us.
       MediaPlayerHandler.instance.republishSession();
     });
-    final appRouter = AppRouter();
-    _routerConfig = appRouter.config(
+    _appRouter = AppRouter();
+    _routerConfig = _appRouter.config(
       deepLinkBuilder: widget.initialServer != null
           ? (platformDeepLink) =>
               bootDeepLink(platformDeepLink, widget.initialServer!)
@@ -245,12 +247,20 @@ class _MainState extends State<Main> {
       // (e.g. the season list on the show page) isn't shadowed by the mini
       // player bar.
       builder: PlatformService.isTvModeSync
-          ? (context, child) => FocusTraversalGroup(
-                policy: TvDirectionalFocusPolicy(),
-                child: MediaQuery(
-                  data: MediaQuery.of(context)
-                      .copyWith(navigationMode: NavigationMode.directional),
-                  child: child ?? const SizedBox.shrink(),
+          // The back-key handler makes Escape/GoBack/BrowserBack pop the
+          // current route (Steam Input maps the gamepad's B to Escape; Android
+          // TV's back arrives as a system pop and never gets here). It goes
+          // through the delegate so the music-player overlay still dismisses
+          // with its slide-down animation.
+          ? (context, child) => TvBackKeyHandler(
+                onBack: () => unawaited(_appRouter.delegate().popRoute()),
+                child: FocusTraversalGroup(
+                  policy: TvDirectionalFocusPolicy(),
+                  child: MediaQuery(
+                    data: MediaQuery.of(context)
+                        .copyWith(navigationMode: NavigationMode.directional),
+                    child: child ?? const SizedBox.shrink(),
+                  ),
                 ),
               )
           : null,
