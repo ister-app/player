@@ -6,6 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   audio_service_win
   connectivity_plus
   flutter_secure_storage_windows
+  gamepads_windows
   media_kit_libs_windows_video
   media_kit_video
   oidc_windows

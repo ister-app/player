@@ -2873,6 +2873,11 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (playing) {
       _loadRetries = 0;
       final session = await AudioSession.instance;
+      // Re-assert the playback category before activating: mpv's audiounit
+      // output configures the AVAudioSession itself, and a session that ends
+      // up outside category `playback` never becomes the iOS "now playing"
+      // app — audio keeps working but lock screen and CarPlay show nothing.
+      await session.configure(const AudioSessionConfiguration.music());
       await session.setActive(true);
     }
     updatePlaybackState();

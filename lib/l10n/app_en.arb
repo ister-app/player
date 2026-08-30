@@ -2409,6 +2409,18 @@
   "@aboutSectionProject": {
     "description": "Section header above the website, source code and licenses links"
   },
+  "audioDiagnostics": "Audio diagnostics",
+  "@audioDiagnostics": {
+    "description": "About-page tile opening the iOS audio-session diagnostics dialog"
+  },
+  "audioDiagnosticsSubtitle": "Lock screen and CarPlay status",
+  "@audioDiagnosticsSubtitle": {
+    "description": "Subtitle of the iOS audio diagnostics tile"
+  },
+  "audioDiagnosticsHint": "Start playback first, then open this to see the live audio session state.",
+  "@audioDiagnosticsHint": {
+    "description": "Body text shown above the raw values in the diagnostics dialog"
+  },
   "noLibrariesYet": "No libraries yet — add one on the server first.",
   "@noLibrariesYet": {
     "description": "Empty state on the library visibility and user access pages"

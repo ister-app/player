@@ -2285,6 +2285,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutSectionProject => 'The app';
 
   @override
+  String get audioDiagnostics => 'Audio diagnostics';
+
+  @override
+  String get audioDiagnosticsSubtitle => 'Lock screen and CarPlay status';
+
+  @override
+  String get audioDiagnosticsHint =>
+      'Start playback first, then open this to see the live audio session state.';
+
+  @override
   String get noLibrariesYet =>
       'No libraries yet — add one on the server first.';
 

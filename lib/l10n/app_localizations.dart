@@ -3854,6 +3854,24 @@ abstract class AppLocalizations {
   /// **'The app'**
   String get aboutSectionProject;
 
+  /// About-page tile opening the iOS audio-session diagnostics dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Audio diagnostics'**
+  String get audioDiagnostics;
+
+  /// Subtitle of the iOS audio diagnostics tile
+  ///
+  /// In en, this message translates to:
+  /// **'Lock screen and CarPlay status'**
+  String get audioDiagnosticsSubtitle;
+
+  /// Body text shown above the raw values in the diagnostics dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Start playback first, then open this to see the live audio session state.'**
+  String get audioDiagnosticsHint;
+
   /// Empty state on the library visibility and user access pages
   ///
   /// In en, this message translates to:

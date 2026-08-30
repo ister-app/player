@@ -2294,6 +2294,16 @@ class AppLocalizationsNl extends AppLocalizations {
   String get aboutSectionProject => 'De app';
 
   @override
+  String get audioDiagnostics => 'Audiodiagnose';
+
+  @override
+  String get audioDiagnosticsSubtitle => 'Status vergrendelscherm en CarPlay';
+
+  @override
+  String get audioDiagnosticsHint =>
+      'Start eerst het afspelen en open dit daarna om de actuele audiosessie-status te zien.';
+
+  @override
   String get noLibrariesYet =>
       'Nog geen bibliotheken — voeg er eerst een toe op de server.';
 

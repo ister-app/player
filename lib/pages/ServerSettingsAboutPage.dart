@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../components/SettingsSection.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/IosAudioDebug.dart';
 
 /// Credits the external metadata/artwork providers the server reports via the
 /// attributions query (with any provider-mandated notice, e.g. TMDB's), and
@@ -37,6 +38,52 @@ class ServerSettingsAboutPage extends StatelessWidget {
       context: context,
       applicationName: info.appName,
       applicationVersion: '${info.version}+${info.buildNumber}',
+    );
+  }
+
+  /// Shows the native audio-session / now-playing state (iOS only). The user
+  /// has no Mac, so a TestFlight build's About page is the only console for
+  /// debugging missing lock screen / CarPlay controls.
+  Future<void> _showAudioDiagnostics(BuildContext context) async {
+    final loc = AppLocalizations.of(context)!;
+    Map<String, Object?> info;
+    try {
+      info = await IosAudioDebug.sessionInfo();
+    } catch (e) {
+      info = {'error': '$e'};
+    }
+    if (!context.mounted) return;
+    final entries = info.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(loc.audioDiagnostics),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(loc.audioDiagnosticsHint),
+              const SizedBox(height: 12),
+              for (final entry in entries)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: SelectableText(
+                    '${entry.key}: ${entry.value}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(MaterialLocalizations.of(context).okButtonLabel),
+          ),
+        ],
+      ),
     );
   }
 
@@ -205,6 +252,15 @@ class ServerSettingsAboutPage extends StatelessWidget {
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => _showLicenses(context),
                       ),
+                      if (IosAudioDebug.isAvailable)
+                        ListTile(
+                          key: const ValueKey('audio-diagnostics'),
+                          leading: const Icon(Icons.graphic_eq),
+                          title: Text(loc.audioDiagnostics),
+                          subtitle: Text(loc.audioDiagnosticsSubtitle),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => _showAudioDiagnostics(context),
+                        ),
                       // The settings entry promises the app version lives
                       // here, and the license page is the only other place
                       // that shows it.
