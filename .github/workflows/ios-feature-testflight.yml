@@ -1,0 +1,134 @@
+name: iOS feature branch → TestFlight
+
+# TEMPORARY — remove once the iOS fix has proven itself and lands on main.
+# Ships every commit of a feature branch to TestFlight so a fix can be verified on a
+# real device without cutting a release. The steps mirror release.yml's build-ios job;
+# the differences are the trigger, and the version stamp: the pubspec version is kept
+# as-is (TestFlight namespaces build numbers per version, so builds under the current
+# version never clash with a future release, which always bumps it) and the build
+# number is the branch's commit count — monotonic per commit, and ahead of the last
+# release's count because the branch contains main. TestFlight refuses a build number
+# it has already seen for the same version, so amend + force-push won't upload again:
+# add a new (or empty) commit instead.
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'fix/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ios-feature-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0   # the build number is the commit count
+
+      - name: Set the version
+        id: version
+        run: |
+          version=$(sed -nE 's|^version: ([0-9.]+)\+.*|\1|p' pubspec.yaml)
+          build=$(git rev-list --count HEAD)
+          sed -E "s|^version: .*|version: ${version}+${build}|" pubspec.yaml > pubspec.yaml.tmp
+          mv pubspec.yaml.tmp pubspec.yaml
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "build=$build" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+      - name: Cache pub dependencies
+        uses: actions/cache@v6
+        with:
+          path: ~/.pub-cache
+          # No restore-keys fallback, for the same reason as workflow.yml's build job.
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+      - run: flutter pub get
+
+      # See release.yml build-ios for why the key install, the unsigned archive and the
+      # cloud-signed export look the way they do.
+      - name: Install the App Store Connect API key
+        env:
+          KEY_P8: ${{ secrets.APP_STORE_CONNECT_KEY_P8 }}
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          printf '%s\n' "$KEY_P8" > ~/.appstoreconnect/private_keys/"AuthKey_${KEY_ID}.p8"
+
+      - name: Build the signed ipa
+        env:
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          flutter build ios --release --config-only \
+            --dart-define=GIT_COMMIT=${{ steps.version.outputs.sha }}
+
+          KEY="$HOME/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8"
+
+          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -archivePath build/ios/archive/Runner.xcarchive archive \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>teamID</key><string>68TXJMQZH4</string>
+            <key>uploadSymbols</key><true/>
+          </dict>
+          </plist>
+          EOF
+
+          xcodebuild -exportArchive \
+            -archivePath build/ios/archive/Runner.xcarchive \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath build/ios/ipa \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY" \
+            -authenticationKeyID "$KEY_ID" \
+            -authenticationKeyIssuerID "$ISSUER_ID"
+
+      - name: Verify libmpv is embedded
+        run: |
+          APP="build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app"
+          if [ ! -d "$APP/Frameworks/Mpv.framework" ]; then
+            echo "::error::Mpv.framework missing from $APP — media_kit fell back to its stub"
+            ls -la "$APP/Frameworks" || true
+            exit 1
+          fi
+          dwarfdump --uuid "$APP/Frameworks/Mpv.framework/Mpv"
+
+      - name: Name the ipa
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          BUILD: ${{ steps.version.outputs.build }}
+        run: mv build/ios/ipa/*.ipa "player-ios-${VERSION}+${BUILD}.ipa"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ios-ipa
+          path: player-ios-*.ipa
+
+      - name: Upload to TestFlight
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          BUILD: ${{ steps.version.outputs.build }}
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          xcrun altool --validate-app -f "player-ios-${VERSION}+${BUILD}.ipa" -t ios \
+            --apiKey "$KEY_ID" --apiIssuer "$ISSUER_ID"
+          xcrun altool --upload-app -f "player-ios-${VERSION}+${BUILD}.ipa" -t ios \
+            --apiKey "$KEY_ID" --apiIssuer "$ISSUER_ID"
