@@ -23,8 +23,10 @@ import 'package:player/utils/WellKnownService.dart';
 import 'package:player/utils/LanguageService.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
+import 'package:player/utils/GamepadNavigationService.dart';
 import 'package:player/utils/PlatformService.dart';
 import 'package:player/utils/TvDirectionalFocusPolicy.dart';
+import 'package:player/utils/TvInputCommands.dart';
 
 import 'l10n/app_localizations.dart';
 import 'utils/download/DownloadForegroundService.dart';
@@ -82,6 +84,14 @@ Future<void> main() async {
     // the selection is.
     FocusManager.instance.highlightStrategy =
         FocusHighlightStrategy.alwaysTraditional;
+    // Native controller input, desktop TV mode only. Android TV already
+    // delivers the D-pad as key events (running both would double every
+    // press), and outside TV mode there are no focus highlights to follow.
+    if (!kIsWeb &&
+        !PlatformService.isAndroidTvSync &&
+        (Platform.isLinux || Platform.isWindows || Platform.isMacOS)) {
+      GamepadNavigationService.instance.install();
+    }
   }
   // Necessary initialization for package:media_kit.
   MediaKit.ensureInitialized();
@@ -233,6 +243,9 @@ class _MainState extends State<Main> {
       MediaPlayerHandler.instance.republishSession();
     });
     _appRouter = AppRouter();
+    // The gamepad's B button pops through the same delegate as the keyboard
+    // back keys (TvBackKeyHandler in build), music-player dismissal included.
+    TvInputCommands.onBack = () => unawaited(_appRouter.delegate().popRoute());
     _routerConfig = _appRouter.config(
       deepLinkBuilder: widget.initialServer != null
           ? (platformDeepLink) =>

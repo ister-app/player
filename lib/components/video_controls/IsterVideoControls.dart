@@ -9,6 +9,7 @@ import 'package:media_kit_video/media_kit_video.dart';
 import '../../l10n/app_localizations.dart';
 import '../../utils/MediaPlayerHandler.dart';
 import '../../utils/PlatformService.dart';
+import '../../utils/TvInputCommands.dart';
 import '../VideoCoverView.dart';
 import '../WatchTogetherButton.dart';
 import 'SegmentOverlayButtons.dart';
@@ -86,10 +87,35 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
       }
     });
     _scheduleHide();
+    if (_isTv) {
+      // Gamepad commands bypass the key pipeline, so _onTvKeyEvent never sees
+      // them; this hook mirrors its semantics — a press while the chrome is
+      // hidden only reveals it, activity while visible restarts the countdown.
+      // (There is no key-up to swallow: the gamepad service only emits
+      // down-edge commands.)
+      TvInputCommands.videoControlsInterceptor = _gamepadIntercept;
+      TvInputCommands.videoControlsActivity = _scheduleHide;
+    }
+  }
+
+  bool _gamepadIntercept() {
+    if (_visible) return false;
+    _show();
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _tvPlayPauseNode.requestFocus());
+    return true;
   }
 
   @override
   void dispose() {
+    // Only clear our own registration — a newer video page may already have
+    // replaced it.
+    if (TvInputCommands.videoControlsInterceptor == _gamepadIntercept) {
+      TvInputCommands.videoControlsInterceptor = null;
+    }
+    if (TvInputCommands.videoControlsActivity == _scheduleHide) {
+      TvInputCommands.videoControlsActivity = null;
+    }
     // Don't drop an accumulated keyboard seek on teardown.
     if (_seekDebounce != null) _firePendingSeek();
     _seekPreview.dispose();

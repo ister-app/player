@@ -36,7 +36,7 @@ De flatpak draait ook op SteamOS-apparaten, gewoon vanuit Game Mode:
 2. Kies in Steam **Een niet-Steam-game toevoegen** en selecteer **Ister player**.
 3. Terug in Game Mode start je hem vanuit je bibliotheek.
 
-Ister herkent de SteamOS-sessie en start beeldvullend in de tv-indeling: dezelfde afstandsbedieningvriendelijke navigatie als op Android TV, aangestuurd door de controller. Om de controller bij de app te laten komen geef je hem een **toetsenbord-achtige Steam Input-indeling** (controllerinstellingen van Ister in Game Mode): D-pad en linkerstick → pijltjestoetsen, **A** → Enter, **B** → Escape, **X** → spatie (afspelen/pauzeren), en eventueel de schouderknoppen → pijltje links/rechts om te spoelen. Een community-indeling met de naam "Ister player" staat klaar waar die gepubliceerd is; met de mapping hierboven zet je hem zo zelf in elkaar.
+Ister herkent de SteamOS-sessie en start beeldvullend in de tv-indeling: dezelfde afstandsbedieningvriendelijke navigatie als op Android TV, aangestuurd door de controller. De controller werkt direct met het standaard **Gamepad**-Steam Input-sjabloon: D-pad en linkerstick verplaatsen de selectie, **A** kiest, **B** gaat terug, **X** pauzeert/hervat, en de schouderknoppen springen naar het vorige/volgende item. Had je eerder een toetsenbord-achtige indeling ingesteld, zet die dan terug naar het Gamepad-sjabloon — met allebei actief komt elke druk dubbel binnen. (Toetsenbord-indelingen blijven werken, bijvoorbeeld voor een afstandsbediening; met de startoptie `--env=ISTER_GAMEPAD=0` schakel je de ingebouwde controllerondersteuning uit als je die route verkiest.)
 
 Op andere Linux-desktops (een HTPC bijvoorbeeld) zet je dezelfde indeling handmatig aan: **Instellingen → Dit apparaat → Tv-/controllermodus**.
 

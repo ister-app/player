@@ -36,7 +36,7 @@ The flatpak also runs on SteamOS devices, straight from Game Mode:
 2. In Steam, choose **Add a Non-Steam Game** and pick **Ister player**.
 3. Back in Game Mode, launch it from your library.
 
-Ister detects the SteamOS session and starts fullscreen in the TV layout: the same remote-friendly navigation as on Android TV, driven by the controller. For the controller to reach the app, apply a **keyboard-style Steam Input layout** to it (controller settings for Ister in Game Mode): D-pad and left stick → arrow keys, **A** → Enter, **B** → Escape, **X** → Space (play/pause), and optionally the shoulder buttons → left/right arrows for seeking. A community layout named "Ister player" is available where published; the mapping above recreates it in a minute.
+Ister detects the SteamOS session and starts fullscreen in the TV layout: the same remote-friendly navigation as on Android TV, driven by the controller. The controller works out of the box with the default **Gamepad** Steam Input template: D-pad and left stick move the highlight, **A** selects, **B** goes back, **X** toggles play/pause, and the shoulder buttons skip to the previous/next item. If you previously set up a keyboard-style layout, switch it back to the Gamepad template — with both active every press registers twice. (Keyboard-style layouts do still work, for instance for a remote; add the launch option `--env=ISTER_GAMEPAD=0` to turn the native controller support off if you prefer that route.)
 
 On other Linux desktops (an HTPC, say) the same layout can be switched on by hand: **Settings → This device → TV / controller mode**.
 
