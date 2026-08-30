@@ -70,10 +70,22 @@
 	<false/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
+		<!-- true so the CarPlay scene and the phone scene can run at the same
+		     time; CarPlay support lives in the audio_service fork
+		     (AudioServiceCarPlaySceneDelegate). -->
 		<key>UIApplicationSupportsMultipleScenes</key>
-		<false/>
+		<true/>
 		<key>UISceneConfigurations</key>
 		<dict>
+			<key>CPTemplateApplicationSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>CarPlay</string>
+					<key>UISceneDelegateClassName</key>
+					<string>AudioServiceCarPlaySceneDelegate</string>
+				</dict>
+			</array>
 			<key>UIWindowSceneSessionRoleApplication</key>
 			<array>
 				<dict>

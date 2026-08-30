@@ -78,7 +78,7 @@ packages:
     description:
       path: audio_service
       ref: "feat/carplay-audio"
-      resolved-ref: "2c6bf79c268b40ebe07bae0734198497cd1748f2"
+      resolved-ref: e597319d471db2f9f3f251e5db8688c3807f054d
       url: "https://github.com/ister-app/audio_service"
     source: git
     version: "0.18.19"

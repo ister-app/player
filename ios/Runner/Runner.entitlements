@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Needed for the app icon to appear on the CarPlay home screen. The
+	     simulator accepts this unapproved; device/TestFlight builds need
+	     Apple's CarPlay Audio grant, so Release does not reference this file
+	     until that lands (see CODE_SIGN_ENTITLEMENTS in project.pbxproj). -->
+	<key>com.apple.developer.carplay-audio</key>
+	<true/>
+</dict>
+</plist>
