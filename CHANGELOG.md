@@ -1,5 +1,57 @@
 # Changelog
 
+## player v2.5.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.5.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(comic): read pdf volumes via server-rendered pages on all platforms ([`a89b16f`](https://github.com/ister-app/player/commit/a89b16f))
+- feat: native controller support in desktop TV mode ([`1c0d814`](https://github.com/ister-app/player/commit/1c0d814))
+- feat(ios): CarPlay browse via the audio_service fork ([`e7f2bf6`](https://github.com/ister-app/player/commit/e7f2bf6))
+- feat: controller-driven TV mode on desktop ([`5aa03f7`](https://github.com/ister-app/player/commit/5aa03f7))
+- feat(linux): fullscreen undecorated window under gamescope ([`4cee26c`](https://github.com/ister-app/player/commit/4cee26c))
+
+### Fixes
+
+- fix(ios): audio-session guard and an in-app audio diagnostics panel ([`b45219b`](https://github.com/ister-app/player/commit/b45219b))
+- fix: back navigation for keyboard-driven TV mode ([`98da4db`](https://github.com/ister-app/player/commit/98da4db))
+- fix(flatpak): make VA-API hardware decode explicit ([`26e3f4a`](https://github.com/ister-app/player/commit/26e3f4a))
+- fix(flatpak): build mpv against the bundled FFmpeg 9 ([`87d7379`](https://github.com/ister-app/player/commit/87d7379))
+- fix(macos): keep the restricted keychain entitlement out of ad-hoc builds ([`11d6a7b`](https://github.com/ister-app/player/commit/11d6a7b))
+- fix(player): predict the audio language so late HLS audio can't beat the subtitle rule ([`733977a`](https://github.com/ister-app/player/commit/733977a))
+- fix(player): keep in-manifest srt renditions out of the track list on mpv >= 0.40 ([`6510e98`](https://github.com/ister-app/player/commit/6510e98))
+
+### Other
+
+- ci(e2e): fail fast on schema skew and stop hiding red runs ([`c2fdd14`](https://github.com/ister-app/player/commit/c2fdd14))
+- ci: temporary TestFlight upload for every iOS feature-branch commit ([`e9555ed`](https://github.com/ister-app/player/commit/e9555ed))
+- build: bump audio_service fork (CarPlay compile fix) ([`e7321f7`](https://github.com/ister-app/player/commit/e7321f7))
+- build: pin audio_service fork to feat/carplay-audio ([`d861cd5`](https://github.com/ister-app/player/commit/d861cd5))
+- build: bump Flutter to 3.47.2 and upgrade dependencies ([`9c78fed`](https://github.com/ister-app/player/commit/9c78fed))
+- chore: route the FPS probe through the logger ([`3182bd8`](https://github.com/ister-app/player/commit/3182bd8))
+- chore: env-gated frame-pacing probe (ISTER_FPS_PROBE=1) ([`8a4c77a`](https://github.com/ister-app/player/commit/8a4c77a))
+- chore: keep the analyzer out of flatpak-build-test ([`afd0857`](https://github.com/ister-app/player/commit/afd0857))
+- docs: SteamOS setup guide (Steam Deck and Steam Machine) ([`c01837d`](https://github.com/ister-app/player/commit/c01837d))
+
+### Other changes
+
+- Revert "ci: temporary TestFlight upload for every iOS feature-branch commit" ([`4143365`](https://github.com/ister-app/player/commit/4143365))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.5.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.4.0...v2.5.0
+
 ## player v2.4.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
