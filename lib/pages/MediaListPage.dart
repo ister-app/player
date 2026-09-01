@@ -24,6 +24,7 @@ import '../components/BookCarouselTile.dart';
 import '../components/BookScroll.dart';
 import '../components/CarouselItemView.dart';
 import '../components/MovieScroll.dart';
+import '../components/MediaGrid.dart';
 import '../components/PagedContentView.dart';
 import '../components/PodcastCarouselTile.dart';
 import '../components/PodcastScroll.dart';
@@ -34,7 +35,13 @@ import '../components/TvShowScroll.dart';
 import '../l10n/app_localizations.dart';
 
 /// Which carousel a [MediaListPage] shows in full.
-enum MediaListKind { watchNext, recentlyAdded, recentlyPlayed, mostPlayed, highestRated }
+enum MediaListKind {
+  watchNext,
+  recentlyAdded,
+  recentlyPlayed,
+  mostPlayed,
+  highestRated,
+}
 
 /// URL round-trip for [MediaListKind]: kebab-case in the `kind` query param,
 /// unknown/absent values fall back to watch-next so a bare or hand-mangled
@@ -55,9 +62,10 @@ extension MediaListKindUrl on MediaListKind {
     }
   }
 
-  static MediaListKind parse(String? value) =>
-      MediaListKind.values.firstWhere((k) => k.urlValue == value,
-          orElse: () => MediaListKind.watchNext);
+  static MediaListKind parse(String? value) => MediaListKind.values.firstWhere(
+    (k) => k.urlValue == value,
+    orElse: () => MediaListKind.watchNext,
+  );
 }
 
 /// The vertical "show all" page behind a carousel header: the same items as
@@ -86,8 +94,9 @@ class MediaListPage extends StatelessWidget {
   Enum$LibraryType? get libraryType {
     if (libraryTypeName == null) return null;
     final parsed = Enum$LibraryType.values.firstWhere(
-        (t) => t.name == libraryTypeName,
-        orElse: () => Enum$LibraryType.$unknown);
+      (t) => t.name == libraryTypeName,
+      orElse: () => Enum$LibraryType.$unknown,
+    );
     return parsed == Enum$LibraryType.$unknown ? null : parsed;
   }
 
@@ -103,7 +112,8 @@ class MediaListPage extends StatelessWidget {
 
   String _title(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final reads = libraryType == Enum$LibraryType.BOOK ||
+    final reads =
+        libraryType == Enum$LibraryType.BOOK ||
         libraryType == Enum$LibraryType.COMIC;
     switch (kind) {
       case MediaListKind.watchNext:
@@ -142,40 +152,46 @@ class MediaListPage extends StatelessWidget {
     switch (libraryType) {
       case Enum$LibraryType.SHOW:
         return TvShowScroll(
-            serverName: serverName,
-            libraryId: libraryId,
-            sorting: Enum$SortingEnum.DATE_CREATED,
-            sortingOrder: Enum$SortingOrder.DESCENDING);
+          serverName: serverName,
+          libraryId: libraryId,
+          sorting: Enum$SortingEnum.DATE_CREATED,
+          sortingOrder: Enum$SortingOrder.DESCENDING,
+        );
       case Enum$LibraryType.MUSIC:
         return AlbumScroll(
-            serverName: serverName,
-            libraryId: libraryId,
-            sorting: Enum$SortingEnum.DATE_CREATED,
-            sortingOrder: Enum$SortingOrder.DESCENDING);
+          serverName: serverName,
+          libraryId: libraryId,
+          sorting: Enum$SortingEnum.DATE_CREATED,
+          sortingOrder: Enum$SortingOrder.DESCENDING,
+        );
       case Enum$LibraryType.BOOK:
         return BookScroll(
-            serverName: serverName,
-            libraryId: libraryId,
-            sorting: Enum$SortingEnum.DATE_CREATED,
-            sortingOrder: Enum$SortingOrder.DESCENDING);
+          serverName: serverName,
+          libraryId: libraryId,
+          sorting: Enum$SortingEnum.DATE_CREATED,
+          sortingOrder: Enum$SortingOrder.DESCENDING,
+        );
       case Enum$LibraryType.COMIC:
         return SeriesScroll(
-            serverName: serverName,
-            libraryId: libraryId,
-            sorting: Enum$SortingEnum.DATE_CREATED,
-            sortingOrder: Enum$SortingOrder.DESCENDING);
+          serverName: serverName,
+          libraryId: libraryId,
+          sorting: Enum$SortingEnum.DATE_CREATED,
+          sortingOrder: Enum$SortingOrder.DESCENDING,
+        );
       case Enum$LibraryType.PODCAST:
         return PodcastScroll(
-            serverName: serverName,
-            libraryId: libraryId,
-            sorting: Enum$SortingEnum.DATE_CREATED,
-            sortingOrder: Enum$SortingOrder.DESCENDING);
+          serverName: serverName,
+          libraryId: libraryId,
+          sorting: Enum$SortingEnum.DATE_CREATED,
+          sortingOrder: Enum$SortingOrder.DESCENDING,
+        );
       default:
         return MovieScroll(
-            serverName: serverName,
-            libraryId: libraryId,
-            sorting: Enum$SortingEnum.DATE_CREATED,
-            sortingOrder: Enum$SortingOrder.DESCENDING);
+          serverName: serverName,
+          libraryId: libraryId,
+          sorting: Enum$SortingEnum.DATE_CREATED,
+          sortingOrder: Enum$SortingOrder.DESCENDING,
+        );
     }
   }
 
@@ -197,10 +213,13 @@ class MediaListPage extends StatelessWidget {
           document: documentNodeQueryrankedShows,
           field: 'rankedShows',
           fromJson: Query$rankedShows$libraryById$rankedShows$content.fromJson,
-          childAspectRatio: 0.65,
+          artAspectRatio: 0.65,
           tile: (dynamic show) => _landscapeTile(
-              context, show, () => ShowOverviewRoute(showId: show.id),
-              subTitle: show.releaseYear > 0 ? '${show.releaseYear}' : ''),
+            context,
+            show,
+            () => ShowOverviewRoute(showId: show.id),
+            subTitle: show.releaseYear > 0 ? '${show.releaseYear}' : '',
+          ),
           subtitleWords: 1,
         );
       case Enum$LibraryType.MUSIC:
@@ -208,8 +227,9 @@ class MediaListPage extends StatelessWidget {
           document: documentNodeQueryrankedAlbums,
           field: 'rankedAlbums',
           fromJson: Fragment$fragmentAlbum.fromJson,
-          childAspectRatio: 1.0,
-          tile: (album) => AlbumCarouselTile(serverName: serverName, album: album),
+          artAspectRatio: 1.0,
+          tile: (album) =>
+              AlbumCarouselTile(serverName: serverName, album: album),
           placeholderIcon: Icons.music_note,
         );
       case Enum$LibraryType.BOOK:
@@ -217,7 +237,7 @@ class MediaListPage extends StatelessWidget {
           document: documentNodeQueryrankedBooks,
           field: 'rankedBooks',
           fromJson: Fragment$fragmentBook.fromJson,
-          childAspectRatio: BookCarouselTile.coverAspectRatio,
+          artAspectRatio: BookCarouselTile.coverAspectRatio,
           tile: (book) => BookCarouselTile(serverName: serverName, book: book),
           placeholderIcon: Icons.menu_book,
         );
@@ -226,7 +246,7 @@ class MediaListPage extends StatelessWidget {
           document: documentNodeQueryrankedSeries,
           field: 'rankedSeries',
           fromJson: Fragment$fragmentSeries.fromJson,
-          childAspectRatio: SeriesCarouselTile.coverAspectRatio,
+          artAspectRatio: SeriesCarouselTile.coverAspectRatio,
           tile: (series) =>
               SeriesCarouselTile(serverName: serverName, series: series),
           placeholderIcon: Icons.auto_stories,
@@ -237,7 +257,7 @@ class MediaListPage extends StatelessWidget {
           document: documentNodeQueryrankedPodcasts,
           field: 'rankedPodcasts',
           fromJson: Fragment$fragmentPodcast.fromJson,
-          childAspectRatio: 1.0,
+          artAspectRatio: 1.0,
           tile: (podcast) =>
               PodcastCarouselTile(serverName: serverName, podcast: podcast),
           placeholderIcon: Icons.podcasts,
@@ -248,9 +268,12 @@ class MediaListPage extends StatelessWidget {
           field: 'rankedMovies',
           fromJson:
               Query$rankedMovies$libraryById$rankedMovies$content.fromJson,
-          childAspectRatio: 0.65,
+          artAspectRatio: 0.65,
           tile: (dynamic movie) => _landscapeTile(
-              context, movie, () => MovieRoute(movieId: movie.id)),
+            context,
+            movie,
+            () => MovieRoute(movieId: movie.id),
+          ),
           subtitleWords: 4,
         );
     }
@@ -260,7 +283,7 @@ class MediaListPage extends StatelessWidget {
     required DocumentNode document,
     required String field,
     required ItemFromJson<T> fromJson,
-    required double childAspectRatio,
+    required double artAspectRatio,
     required Widget Function(T item) tile,
     IconData? placeholderIcon,
     int subtitleWords = 2,
@@ -274,23 +297,26 @@ class MediaListPage extends StatelessWidget {
       pageSize: _pageSize,
       builder: (context, data, requestPage) {
         final itemCount = data.totalItems ?? (_pageSize * 2);
-        return GridView.builder(
-          padding: const EdgeInsets.all(8),
-          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 300,
-            childAspectRatio: childAspectRatio,
-            mainAxisSpacing: 0,
-            crossAxisSpacing: 0,
-          ),
-          itemCount: itemCount,
-          itemBuilder: (context, index) {
-            final item = data.itemAt(index);
-            if (item != null) return tile(item);
-            return pagedSkeletonSlot(
-              key: ValueKey('ranked-$field-skeleton-$index'),
-              onVisible: () => requestPage(index ~/ _pageSize),
-              placeholderIcon: placeholderIcon,
-              subtitleWords: subtitleWords,
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return GridView.builder(
+              padding: const EdgeInsets.all(8),
+              gridDelegate: mediaGridDelegate(
+                context,
+                constraints.maxWidth,
+                artAspectRatio: artAspectRatio,
+              ),
+              itemCount: itemCount,
+              itemBuilder: (context, index) {
+                final item = data.itemAt(index);
+                if (item != null) return tile(item);
+                return pagedSkeletonSlot(
+                  key: ValueKey('ranked-$field-skeleton-$index'),
+                  onVisible: () => requestPage(index ~/ _pageSize),
+                  placeholderIcon: placeholderIcon,
+                  subtitleWords: subtitleWords,
+                );
+              },
             );
           },
         );
@@ -302,15 +328,20 @@ class MediaListPage extends StatelessWidget {
   // identical fields, so the tile takes them dynamically (the LibraryDiscoverView
   // rows do the same).
   Widget _landscapeTile(
-      BuildContext context, dynamic item, PageRouteInfo Function() route,
-      {String? subTitle}) {
+    BuildContext context,
+    dynamic item,
+    PageRouteInfo Function() route, {
+    String? subTitle,
+  }) {
     final img = ImageUtil.getImageByType(item.images, ImageTypes.cover);
     return CarouselItemView(
       serverName: serverName,
       title: MetadataUtil.getTitle(item.metadata) ?? item.name,
       subTitle: subTitle ?? MetadataUtil.getDescription(item.metadata) ?? '',
-      imageUrl: ImageUtil.buildUrl(img,
-          token: StreamTokenService.getToken(serverName)),
+      imageUrl: ImageUtil.buildUrl(
+        img,
+        token: StreamTokenService.getToken(serverName),
+      ),
       blurHash: img?.blurHash,
       onTap: () => AutoRouter.of(context).push(route()),
     );

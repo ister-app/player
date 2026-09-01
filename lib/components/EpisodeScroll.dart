@@ -13,6 +13,7 @@ import 'package:player/utils/StreamTokenService.dart';
 import '../graphql/fragmentImages.graphql.dart';
 import 'BrowseListRow.dart';
 import 'CarouselItemView.dart';
+import 'MediaGrid.dart';
 import 'PagedContentView.dart';
 
 /// Scrollable grid or list of every episode in a show library, loaded page by
@@ -49,11 +50,13 @@ class EpisodeScroll extends StatelessWidget {
   String _subtitle(Query$episodes$episodes$content episode) {
     final show = episode.$show?.name ?? '';
     final season = episode.season?.number;
-    var marker =
-        season != null ? 'S${season}E${episode.number}' : 'E${episode.number}';
+    var marker = season != null
+        ? 'S${season}E${episode.number}'
+        : 'E${episode.number}';
     // Mark episodes that share one media file with others (s04e06-e07.mkv).
     final numbers = EpisodeParts.sharedNumbers(
-        episode.mediaFile?.firstOrNull?.episodes?.map((e) => e.number));
+      episode.mediaFile?.firstOrNull?.episodes?.map((e) => e.number),
+    );
     if (numbers != null) {
       marker = '$marker ⧉ ${numbers.map((n) => 'E$n').join('+')}';
     }
@@ -79,12 +82,12 @@ class EpisodeScroll extends StatelessWidget {
     if (showId == null) return;
     // ShowEpisodeRoute is a child of ShowOverviewRoute, so from outside the
     // show shell it must be pushed through its parent.
-    AutoRouter.of(context).push(ShowOverviewRoute(
-          showId: showId,
-          children: [
-            ShowEpisodeRoute(showId: showId, episodeId: episode.id),
-          ],
-        ));
+    AutoRouter.of(context).push(
+      ShowOverviewRoute(
+        showId: showId,
+        children: [ShowEpisodeRoute(showId: showId, episodeId: episode.id)],
+      ),
+    );
   }
 
   @override
@@ -96,8 +99,7 @@ class EpisodeScroll extends StatelessWidget {
       sorting: sorting,
       sortingOrder: sortingOrder,
       libraryId: libraryId,
-      extraVariables:
-          filter == null ? null : {'filter': filter!.toJson()},
+      extraVariables: filter == null ? null : {'filter': filter!.toJson()},
       onRefetch: onRefetch,
       pageSize: _pageSize,
       builder: (context, data, requestPage) {
@@ -120,8 +122,10 @@ class EpisodeScroll extends StatelessWidget {
               }
               final img = _image(episode);
               return BrowseListRow(
-                imageUrl: ImageUtil.buildUrl(img,
-                    token: StreamTokenService.getToken(serverName)),
+                imageUrl: ImageUtil.buildUrl(
+                  img,
+                  token: StreamTokenService.getToken(serverName),
+                ),
                 placeholderIcon: Icons.tv,
                 title: MetadataUtil.getTitle(episode.metadata) ?? '',
                 subtitle: _subtitle(episode),
@@ -132,39 +136,44 @@ class EpisodeScroll extends StatelessWidget {
           );
         }
 
-        return GridView.builder(
-          // Attach to ShowHomePage's NestedScrollView so the view-selector header
-          // scrolls away with the grid (desktop does not inherit it implicitly).
-          primary: true,
-          padding: const EdgeInsets.all(8),
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 300,
-            childAspectRatio: 1.3,
-            mainAxisSpacing: 0,
-            crossAxisSpacing: 0,
-          ),
-          itemCount: itemCount,
-          itemBuilder: (context, index) {
-            final episode = data.itemAt(index);
-            if (episode != null) {
-              final img = _image(episode);
-              return CarouselItemView(
-                serverName: serverName,
-                title: MetadataUtil.getTitle(episode.metadata) ?? '',
-                subTitle: _subtitle(episode),
-                imageUrl: ImageUtil.buildUrl(img,
-                    token: StreamTokenService.getToken(serverName)),
-                blurHash: img?.blurHash,
-                placeholderIcon: Icons.tv,
-                progress: _progress(episode),
-                onTap: () => _open(context, episode),
-              );
-            }
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return GridView.builder(
+              // Attach to ShowHomePage's NestedScrollView so the view-selector header
+              // scrolls away with the grid (desktop does not inherit it implicitly).
+              primary: true,
+              padding: const EdgeInsets.all(8),
+              gridDelegate: mediaGridDelegate(
+                context,
+                constraints.maxWidth,
+                artAspectRatio: 1.3,
+              ),
+              itemCount: itemCount,
+              itemBuilder: (context, index) {
+                final episode = data.itemAt(index);
+                if (episode != null) {
+                  final img = _image(episode);
+                  return CarouselItemView(
+                    serverName: serverName,
+                    title: MetadataUtil.getTitle(episode.metadata) ?? '',
+                    subTitle: _subtitle(episode),
+                    imageUrl: ImageUtil.buildUrl(
+                      img,
+                      token: StreamTokenService.getToken(serverName),
+                    ),
+                    blurHash: img?.blurHash,
+                    placeholderIcon: Icons.tv,
+                    progress: _progress(episode),
+                    onTap: () => _open(context, episode),
+                  );
+                }
 
-            return pagedSkeletonSlot(
-              key: ValueKey('episode-scroll-skeleton-$index'),
-              placeholderIcon: Icons.tv,
-              onVisible: () => requestPage(index ~/ _pageSize),
+                return pagedSkeletonSlot(
+                  key: ValueKey('episode-scroll-skeleton-$index'),
+                  placeholderIcon: Icons.tv,
+                  onVisible: () => requestPage(index ~/ _pageSize),
+                );
+              },
             );
           },
         );

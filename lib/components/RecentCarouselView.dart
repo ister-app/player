@@ -19,6 +19,7 @@ import '../utils/PlayQueueService.dart';
 import '../utils/StreamTokenService.dart';
 import 'BookCarouselTile.dart';
 import 'CarouselItemView.dart';
+import 'MediaGrid.dart';
 
 class RecentCarouselView extends StatefulWidget {
   final String serverName;
@@ -65,10 +66,10 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
     _playQueueSubscription = playQueueService
         .getPlayQueueChangedStream(includeOptimistic: false)
         .listen((event) {
-      if (refetch != null) {
-        refetch!();
-      }
-    });
+          if (refetch != null) {
+            refetch!();
+          }
+        });
   }
 
   @override
@@ -105,20 +106,23 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
           if (widget.scrollDirection == Axis.vertical) {
             return Skeletonizer(
               enabled: true,
-              child: GridView.builder(
-                padding: const EdgeInsets.all(8),
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 300,
-                  childAspectRatio: 1.5,
-                ),
-                itemCount: _skeletonItemCount,
-                itemBuilder: (context, index) => CarouselItemView(
-                  serverName: widget.serverName,
-                  title: BoneMock.name,
-                  subTitle: BoneMock.words(3),
-                  // Recent items are half-watched by definition, so the real
-                  // tiles carry a progress bar the stand-in has to reserve.
-                  progress: 0,
+              child: LayoutBuilder(
+                builder: (context, constraints) => GridView.builder(
+                  padding: const EdgeInsets.all(8),
+                  gridDelegate: mediaGridDelegate(
+                    context,
+                    constraints.maxWidth,
+                    artAspectRatio: 1.5,
+                  ),
+                  itemCount: _skeletonItemCount,
+                  itemBuilder: (context, index) => CarouselItemView(
+                    serverName: widget.serverName,
+                    title: BoneMock.name,
+                    subTitle: BoneMock.words(3),
+                    // Recent items are half-watched by definition, so the real
+                    // tiles carry a progress bar the stand-in has to reserve.
+                    progress: 0,
+                  ),
                 ),
               ),
             );
@@ -157,14 +161,18 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
         }
 
         if (widget.scrollDirection == Axis.vertical) {
-          return GridView.builder(
-            padding: const EdgeInsets.all(8),
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 300,
-              childAspectRatio: 1.5,
+          return LayoutBuilder(
+            builder: (context, constraints) => GridView.builder(
+              padding: const EdgeInsets.all(8),
+              gridDelegate: mediaGridDelegate(
+                context,
+                constraints.maxWidth,
+                artAspectRatio: 1.5,
+              ),
+              itemCount: items.length,
+              itemBuilder: (context, index) =>
+                  _buildTile(context, items[index]),
             ),
-            itemCount: items.length,
-            itemBuilder: (context, index) => _buildTile(context, items[index]),
           );
         }
 
@@ -174,7 +182,8 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
         return ListView(
           scrollDirection: Axis.horizontal,
           children: items.map((item) {
-            final bool portraitCover = item.type == Enum$MediaType.BOOK ||
+            final bool portraitCover =
+                item.type == Enum$MediaType.BOOK ||
                 item.type == Enum$MediaType.CHAPTER ||
                 item.type == Enum$MediaType.COMIC;
             // Square, like the tiles in the podcast library carousel.
@@ -184,8 +193,8 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
               width: portraitCover
                   ? 200 * BookCarouselTile.coverAspectRatio
                   : squareCover
-                      ? 200
-                      : 300,
+                  ? 200
+                  : 300,
               child: _buildTile(context, item),
             );
           }).toList(),
@@ -195,7 +204,9 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
   }
 
   Widget _buildTile(
-      BuildContext context, Query$recentlyWatched$recentlyWatched item) {
+    BuildContext context,
+    Query$recentlyWatched$recentlyWatched item,
+  ) {
     if (item.type == Enum$MediaType.EPISODE && item.episode != null) {
       final episode = item.episode!;
       List<Fragment$fragmentImages>? images = episode.images
@@ -205,54 +216,58 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
       var imageByType = ImageUtil.getImageByType(images, ImageTypes.background);
       final showId = episode.$show?.id;
       return MenuAnchor(
-          controller: menuController,
-          menuChildren: <Widget>[
-            if (showId != null)
-              MenuItemButton(
-                  onPressed: () {
-                    AutoRouter.of(context)
-                        .push(ShowOverviewRoute(showId: showId));
-                  },
-                  child: ListTile(
-                    leading: const Icon(Icons.tv),
-                    title: Text(AppLocalizations.of(context)!.goToShow),
-                  )),
-          ],
-          child: CarouselItemView(
-              serverName: widget.serverName,
-              title: MetadataUtil.getTitle(episode.metadata) ??
-                  AppLocalizations.of(context)!.episode(episode.number),
-              subTitle: MetadataUtil.getTitle(episode.$show?.metadata) ?? "",
-              imageUrl: ImageUtil.buildUrl(imageByType,
-                  token: StreamTokenService.getToken(widget.serverName)),
-              blurHash: imageByType?.blurHash,
-              progress: episode.watchStatus != null &&
-                      episode.watchStatus!.isNotEmpty &&
-                      episode.watchStatus!.first.watched != true &&
-                      (episode.mediaFile?.firstOrNull?.durationInMilliseconds ??
-                              0) >
-                          0
-                  ? episode.watchStatus!.first.progressInMilliseconds /
-                      episode.mediaFile!.first.durationInMilliseconds!
-                  : null,
-              onSecondaryTapDown: (TapDownDetails details) =>
-                  menuController.isOpen
-                      ? menuController.close()
-                      : menuController.open(position: details.localPosition),
-              onLongPress: () => menuController.isOpen
-                  ? menuController.close()
-                  : menuController.open(),
-              onTap: showId == null
-                  ? null
-                  : () => AutoRouter.of(context).push(ShowOverviewRoute(
-                        showId: showId,
-                        children: [
-                          ShowEpisodeRoute(
-                            showId: showId,
-                            episodeId: episode.id,
-                          ),
-                        ],
-                      ))));
+        controller: menuController,
+        menuChildren: <Widget>[
+          if (showId != null)
+            MenuItemButton(
+              onPressed: () {
+                AutoRouter.of(context).push(ShowOverviewRoute(showId: showId));
+              },
+              child: ListTile(
+                leading: const Icon(Icons.tv),
+                title: Text(AppLocalizations.of(context)!.goToShow),
+              ),
+            ),
+        ],
+        child: CarouselItemView(
+          serverName: widget.serverName,
+          title:
+              MetadataUtil.getTitle(episode.metadata) ??
+              AppLocalizations.of(context)!.episode(episode.number),
+          subTitle: MetadataUtil.getTitle(episode.$show?.metadata) ?? "",
+          imageUrl: ImageUtil.buildUrl(
+            imageByType,
+            token: StreamTokenService.getToken(widget.serverName),
+          ),
+          blurHash: imageByType?.blurHash,
+          progress:
+              episode.watchStatus != null &&
+                  episode.watchStatus!.isNotEmpty &&
+                  episode.watchStatus!.first.watched != true &&
+                  (episode.mediaFile?.firstOrNull?.durationInMilliseconds ??
+                          0) >
+                      0
+              ? episode.watchStatus!.first.progressInMilliseconds /
+                    episode.mediaFile!.first.durationInMilliseconds!
+              : null,
+          onSecondaryTapDown: (TapDownDetails details) => menuController.isOpen
+              ? menuController.close()
+              : menuController.open(position: details.localPosition),
+          onLongPress: () => menuController.isOpen
+              ? menuController.close()
+              : menuController.open(),
+          onTap: showId == null
+              ? null
+              : () => AutoRouter.of(context).push(
+                  ShowOverviewRoute(
+                    showId: showId,
+                    children: [
+                      ShowEpisodeRoute(showId: showId, episodeId: episode.id),
+                    ],
+                  ),
+                ),
+        ),
+      );
     } else if (item.type == Enum$MediaType.MOVIE && item.movie != null) {
       final mv = item.movie!;
       List<Fragment$fragmentImages>? images = mv.images
@@ -261,32 +276,34 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
       var menuController = MenuController();
       var imageByType = ImageUtil.getImageByType(images, ImageTypes.background);
       return MenuAnchor(
-          controller: menuController,
-          menuChildren: const <Widget>[],
-          child: CarouselItemView(
-              serverName: widget.serverName,
-              title: MetadataUtil.getTitle(mv.metadata) ?? mv.name,
-              subTitle: MetadataUtil.getDescription(mv.metadata) ?? "",
-              imageUrl: ImageUtil.buildUrl(imageByType,
-                  token: StreamTokenService.getToken(widget.serverName)),
-              blurHash: imageByType?.blurHash,
-              progress: mv.watchStatus != null &&
-                      mv.watchStatus!.isNotEmpty &&
-                      mv.watchStatus!.first.watched != true &&
-                      (mv.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0) >
-                          0
-                  ? mv.watchStatus!.first.progressInMilliseconds /
-                      mv.mediaFile!.first.durationInMilliseconds!
-                  : null,
-              onSecondaryTapDown: (TapDownDetails details) =>
-                  menuController.isOpen
-                      ? menuController.close()
-                      : menuController.open(position: details.localPosition),
-              onLongPress: () => menuController.isOpen
-                  ? menuController.close()
-                  : menuController.open(),
-              onTap: () =>
-                  AutoRouter.of(context).push(MovieRoute(movieId: mv.id))));
+        controller: menuController,
+        menuChildren: const <Widget>[],
+        child: CarouselItemView(
+          serverName: widget.serverName,
+          title: MetadataUtil.getTitle(mv.metadata) ?? mv.name,
+          subTitle: MetadataUtil.getDescription(mv.metadata) ?? "",
+          imageUrl: ImageUtil.buildUrl(
+            imageByType,
+            token: StreamTokenService.getToken(widget.serverName),
+          ),
+          blurHash: imageByType?.blurHash,
+          progress:
+              mv.watchStatus != null &&
+                  mv.watchStatus!.isNotEmpty &&
+                  mv.watchStatus!.first.watched != true &&
+                  (mv.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0) > 0
+              ? mv.watchStatus!.first.progressInMilliseconds /
+                    mv.mediaFile!.first.durationInMilliseconds!
+              : null,
+          onSecondaryTapDown: (TapDownDetails details) => menuController.isOpen
+              ? menuController.close()
+              : menuController.open(position: details.localPosition),
+          onLongPress: () => menuController.isOpen
+              ? menuController.close()
+              : menuController.open(),
+          onTap: () => AutoRouter.of(context).push(MovieRoute(movieId: mv.id)),
+        ),
+      );
     } else if (item.type == Enum$MediaType.CHAPTER && item.chapter != null) {
       // Continue listening: the next unfinished audiobook chapter (legacy shape,
       // one entry per chapter; a BOOK entry below carries the same thing today).
@@ -314,24 +331,27 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
           .toList();
       var imageByType = ImageUtil.getImageByType(images, ImageTypes.cover);
       return CarouselItemView(
-          serverName: widget.serverName,
-          title: podcast.title,
-          subTitle: MetadataUtil.getTitle(episode.metadata) ?? '',
-          imageUrl: ImageUtil.buildUrl(imageByType,
-              token: StreamTokenService.getToken(widget.serverName)),
-          blurHash: imageByType?.blurHash,
-          placeholderIcon: Icons.podcasts,
-          progress: episode.watchStatus != null &&
-                  episode.watchStatus!.isNotEmpty &&
-                  episode.watchStatus!.first.watched != true &&
-                  (episode.mediaFile?.firstOrNull?.durationInMilliseconds ??
-                          0) >
-                      0
-              ? episode.watchStatus!.first.progressInMilliseconds /
+        serverName: widget.serverName,
+        title: podcast.title,
+        subTitle: MetadataUtil.getTitle(episode.metadata) ?? '',
+        imageUrl: ImageUtil.buildUrl(
+          imageByType,
+          token: StreamTokenService.getToken(widget.serverName),
+        ),
+        blurHash: imageByType?.blurHash,
+        placeholderIcon: Icons.podcasts,
+        progress:
+            episode.watchStatus != null &&
+                episode.watchStatus!.isNotEmpty &&
+                episode.watchStatus!.first.watched != true &&
+                (episode.mediaFile?.firstOrNull?.durationInMilliseconds ?? 0) >
+                    0
+            ? episode.watchStatus!.first.progressInMilliseconds /
                   episode.mediaFile!.first.durationInMilliseconds!
-              : null,
-          onTap: () =>
-              AutoRouter.of(context).push(PodcastRoute(podcastId: podcast.id)));
+            : null,
+        onTap: () =>
+            AutoRouter.of(context).push(PodcastRoute(podcastId: podcast.id)),
+      );
     } else if (item.type == Enum$MediaType.BOOK && item.book != null) {
       // One entry per book, carrying a reading target (epub) and/or a listening target (chapter).
       // The server says which of the two the user is in and how far they are in the book as a
@@ -346,8 +366,9 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
           .firstOrNull
           ?.readingProgress;
       final bool reading = readingProgress != null && readingProgress > 0;
-      final double? chapterProgress =
-          reading ? null : _chapterFraction(chapter);
+      final double? chapterProgress = reading
+          ? null
+          : _chapterFraction(chapter);
 
       final bool listening = book.progress != null
           ? BookProgressUtil.isListening(book.progress)
@@ -365,8 +386,9 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
             ?.map((e) => Fragment$fragmentImages.fromJson(e.toJson()))
             .toList(),
         progress: book.progress,
-        fallbackProgress:
-            reading ? readingProgress.clamp(0.0, 1.0) : chapterProgress,
+        fallbackProgress: reading
+            ? readingProgress.clamp(0.0, 1.0)
+            : chapterProgress,
         fallbackListening: listening,
       );
     } else if (item.type == Enum$MediaType.COMIC && item.book != null) {
@@ -385,37 +407,39 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
       final seriesId = book.series?.id;
       var menuController = MenuController();
       return MenuAnchor(
-          controller: menuController,
-          menuChildren: <Widget>[
-            if (seriesId != null)
-              MenuItemButton(
-                  onPressed: () {
-                    AutoRouter.of(context)
-                        .push(SeriesRoute(seriesId: seriesId));
-                  },
-                  child: ListTile(
-                    leading: const Icon(Icons.auto_stories),
-                    title: Text(AppLocalizations.of(context)!.goToSeries),
-                  )),
-          ],
-          child: CarouselItemView(
-              serverName: widget.serverName,
-              title: book.series?.name ?? book.title,
-              subTitle: book.title,
-              imageUrl: ImageUtil.buildUrl(imageByType,
-                  token: StreamTokenService.getToken(widget.serverName)),
-              blurHash: imageByType?.blurHash,
-              placeholderIcon: Icons.auto_stories,
-              progress: progress,
-              onSecondaryTapDown: (TapDownDetails details) =>
-                  menuController.isOpen
-                      ? menuController.close()
-                      : menuController.open(position: details.localPosition),
-              onLongPress: () => menuController.isOpen
-                  ? menuController.close()
-                  : menuController.open(),
-              onTap: () =>
-                  AutoRouter.of(context).push(BookRoute(bookId: book.id))));
+        controller: menuController,
+        menuChildren: <Widget>[
+          if (seriesId != null)
+            MenuItemButton(
+              onPressed: () {
+                AutoRouter.of(context).push(SeriesRoute(seriesId: seriesId));
+              },
+              child: ListTile(
+                leading: const Icon(Icons.auto_stories),
+                title: Text(AppLocalizations.of(context)!.goToSeries),
+              ),
+            ),
+        ],
+        child: CarouselItemView(
+          serverName: widget.serverName,
+          title: book.series?.name ?? book.title,
+          subTitle: book.title,
+          imageUrl: ImageUtil.buildUrl(
+            imageByType,
+            token: StreamTokenService.getToken(widget.serverName),
+          ),
+          blurHash: imageByType?.blurHash,
+          placeholderIcon: Icons.auto_stories,
+          progress: progress,
+          onSecondaryTapDown: (TapDownDetails details) => menuController.isOpen
+              ? menuController.close()
+              : menuController.open(position: details.localPosition),
+          onLongPress: () => menuController.isOpen
+              ? menuController.close()
+              : menuController.open(),
+          onTap: () => AutoRouter.of(context).push(BookRoute(bookId: book.id)),
+        ),
+      );
     } else {
       return const SizedBox.shrink();
     }
@@ -441,28 +465,34 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
         ? BookProgressUtil.isListening(progress)
         : fallbackListening;
     return CarouselItemView(
-        serverName: widget.serverName,
-        title: title,
-        subTitle: subTitle,
-        imageUrl: ImageUtil.buildUrl(imageByType,
-            token: StreamTokenService.getToken(widget.serverName)),
-        blurHash: imageByType?.blurHash,
-        placeholderIcon: listening ? Icons.headphones : Icons.menu_book,
-        progress: progress != null
-            ? BookProgressUtil.barValue(progress)
-            : fallbackProgress,
-        onTap: () => AutoRouter.of(context).push(BookRoute(bookId: bookId)));
+      serverName: widget.serverName,
+      title: title,
+      subTitle: subTitle,
+      imageUrl: ImageUtil.buildUrl(
+        imageByType,
+        token: StreamTokenService.getToken(widget.serverName),
+      ),
+      blurHash: imageByType?.blurHash,
+      placeholderIcon: listening ? Icons.headphones : Icons.menu_book,
+      progress: progress != null
+          ? BookProgressUtil.barValue(progress)
+          : fallbackProgress,
+      onTap: () => AutoRouter.of(context).push(BookRoute(bookId: bookId)),
+    );
   }
 
-  String _chapterTitle(BuildContext context,
-          Query$recentlyWatched$recentlyWatched$chapter chapter) =>
+  String _chapterTitle(
+    BuildContext context,
+    Query$recentlyWatched$recentlyWatched$chapter chapter,
+  ) =>
       MetadataUtil.getTitle(chapter.metadata) ??
       '${AppLocalizations.of(context)!.chapter} ${chapter.number}';
 
   /// How far into the playing chapter the user is — the pre-`Book.progress`
   /// answer, kept as the fallback for older servers.
   double? _chapterFraction(
-      Query$recentlyWatched$recentlyWatched$chapter? chapter) {
+    Query$recentlyWatched$recentlyWatched$chapter? chapter,
+  ) {
     final status = chapter?.watchStatus?.firstOrNull;
     final duration = chapter?.mediaFile?.firstOrNull?.durationInMilliseconds;
     if (status == null || status.watched == true || (duration ?? 0) <= 0) {

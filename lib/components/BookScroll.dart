@@ -11,6 +11,7 @@ import 'package:player/utils/StreamTokenService.dart';
 import '../graphql/fragmentBook.graphql.dart';
 import 'BookCarouselTile.dart';
 import 'BrowseListRow.dart';
+import 'MediaGrid.dart';
 import 'PagedContentView.dart';
 
 /// Scrollable grid or list of all books in a book library, loaded page by page.
@@ -63,11 +64,15 @@ class BookScroll extends StatelessWidget {
                   onVisible: () => requestPage(index ~/ _pageSize),
                 );
               }
-              final img =
-                  ImageUtil.getImageByType(book.images, ImageTypes.cover);
+              final img = ImageUtil.getImageByType(
+                book.images,
+                ImageTypes.cover,
+              );
               return BrowseListRow(
-                imageUrl: ImageUtil.buildUrl(img,
-                    token: StreamTokenService.getToken(serverName)),
+                imageUrl: ImageUtil.buildUrl(
+                  img,
+                  token: StreamTokenService.getToken(serverName),
+                ),
                 placeholderIcon: Icons.menu_book,
                 squareThumb: true,
                 title: book.title,
@@ -79,28 +84,31 @@ class BookScroll extends StatelessWidget {
           );
         }
 
-        return GridView.builder(
-          // Attach to ShowHomePage's NestedScrollView so the view-selector header
-          // scrolls away with the grid (desktop does not inherit it implicitly).
-          primary: true,
-          padding: const EdgeInsets.all(8),
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 300,
-            childAspectRatio: BookCarouselTile.coverAspectRatio,
-            mainAxisSpacing: 0,
-            crossAxisSpacing: 0,
-          ),
-          itemCount: itemCount,
-          itemBuilder: (context, index) {
-            final book = data.itemAt(index);
-            if (book != null) {
-              return BookCarouselTile(serverName: serverName, book: book);
-            }
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return GridView.builder(
+              // Attach to ShowHomePage's NestedScrollView so the view-selector header
+              // scrolls away with the grid (desktop does not inherit it implicitly).
+              primary: true,
+              padding: const EdgeInsets.all(8),
+              gridDelegate: mediaGridDelegate(
+                context,
+                constraints.maxWidth,
+                artAspectRatio: BookCarouselTile.coverAspectRatio,
+              ),
+              itemCount: itemCount,
+              itemBuilder: (context, index) {
+                final book = data.itemAt(index);
+                if (book != null) {
+                  return BookCarouselTile(serverName: serverName, book: book);
+                }
 
-            return pagedSkeletonSlot(
-              key: ValueKey('book-scroll-skeleton-$index'),
-              placeholderIcon: Icons.menu_book,
-              onVisible: () => requestPage(index ~/ _pageSize),
+                return pagedSkeletonSlot(
+                  key: ValueKey('book-scroll-skeleton-$index'),
+                  placeholderIcon: Icons.menu_book,
+                  onVisible: () => requestPage(index ~/ _pageSize),
+                );
+              },
             );
           },
         );

@@ -70,14 +70,19 @@ class _RankedRow {
 }
 
 class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
-  static const double _rowHeight = 200;
+  /// Artwork height of a carousel row; the row itself is taller by the
+  /// caption below the artwork. Tile widths derive from the art height so
+  /// the art keeps its shape.
+  static const double _artHeight = 200;
+  static double _rowHeight(BuildContext context) =>
+      _artHeight + CarouselItemView.captionHeightOf(context);
   static const double _landscapeTileWidth = 300;
 
   /// Tiles a skeleton row reserves — roughly a wide screen's worth.
   static const int _skeletonTileCount = 7;
   static const double _squareTileWidth = 200;
   static const double _portraitTileWidth =
-      _rowHeight * BookCarouselTile.coverAspectRatio;
+      _artHeight * BookCarouselTile.coverAspectRatio;
 
   bool _recentEmpty = false;
 
@@ -96,7 +101,7 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
             onTap: () => _pushList(context, MediaListKind.watchNext),
           ),
           SizedBox(
-            height: _rowHeight,
+            height: _rowHeight(context),
             child: RecentCarouselView(
               serverName: widget.serverName,
               libraryId: widget.libraryId,
@@ -112,7 +117,7 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
           label: loc.recentlyAdded,
           onTap: () => _pushList(context, MediaListKind.recentlyAdded),
         ),
-        SizedBox(height: _rowHeight, child: _recentlyAddedSlide()),
+        SizedBox(height: _rowHeight(context), child: _recentlyAddedSlide()),
         _playlistsRow(context),
         _rankedRowsQuery(context),
       ],
@@ -120,11 +125,13 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
   }
 
   void _pushList(BuildContext context, MediaListKind kind) {
-    AutoRouter.of(context).push(MediaListRoute(
-      kindName: kind.urlValue,
-      libraryId: widget.libraryId,
-      libraryTypeName: widget.libraryType.name,
-    ));
+    AutoRouter.of(context).push(
+      MediaListRoute(
+        kindName: kind.urlValue,
+        libraryId: widget.libraryId,
+        libraryTypeName: widget.libraryType.name,
+      ),
+    );
   }
 
   /// The newest items of the library — the existing home-page carousels,
@@ -133,22 +140,34 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
     switch (widget.libraryType) {
       case Enum$LibraryType.SHOW:
         return TvShowSlide(
-            serverName: widget.serverName, libraryId: widget.libraryId);
+          serverName: widget.serverName,
+          libraryId: widget.libraryId,
+        );
       case Enum$LibraryType.MUSIC:
         return AlbumSlide(
-            serverName: widget.serverName, libraryId: widget.libraryId);
+          serverName: widget.serverName,
+          libraryId: widget.libraryId,
+        );
       case Enum$LibraryType.BOOK:
         return BookSlide(
-            serverName: widget.serverName, libraryId: widget.libraryId);
+          serverName: widget.serverName,
+          libraryId: widget.libraryId,
+        );
       case Enum$LibraryType.COMIC:
         return SeriesSlide(
-            serverName: widget.serverName, libraryId: widget.libraryId);
+          serverName: widget.serverName,
+          libraryId: widget.libraryId,
+        );
       case Enum$LibraryType.PODCAST:
         return PodcastSlide(
-            serverName: widget.serverName, libraryId: widget.libraryId);
+          serverName: widget.serverName,
+          libraryId: widget.libraryId,
+        );
       default:
         return MovieSlide(
-            serverName: widget.serverName, libraryId: widget.libraryId);
+          serverName: widget.serverName,
+          libraryId: widget.libraryId,
+        );
     }
   }
 
@@ -180,16 +199,16 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
     return Query(
       options: QueryOptions(
         document: documentNodeQueryplaylists,
-        variables:
-            Variables$Query$playlists(libraryId: widget.libraryId).toJson(),
+        variables: Variables$Query$playlists(libraryId: widget.libraryId)
+            .toJson(),
         fetchPolicy: FetchPolicy.cacheAndNetwork,
       ),
       builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
         if (result.hasException || result.data == null) {
           if (result.hasException) {
-            LoggerService()
-                .logger
-                .w('Playlists unavailable: ${result.exception}');
+            LoggerService().logger.w(
+              'Playlists unavailable: ${result.exception}',
+            );
           }
           return const SizedBox.shrink();
         }
@@ -206,13 +225,15 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
           children: [
             RowHeader(
               label: loc.playlists,
-              onTap: () => AutoRouter.of(context).push(PlaylistListRoute(
-                libraryId: widget.libraryId,
-                libraryTypeName: widget.libraryType.name,
-              )),
+              onTap: () => AutoRouter.of(context).push(
+                PlaylistListRoute(
+                  libraryId: widget.libraryId,
+                  libraryTypeName: widget.libraryType.name,
+                ),
+              ),
             ),
             SizedBox(
-              height: _rowHeight,
+              height: _rowHeight(context),
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemExtent: _squareTileWidth,
@@ -228,7 +249,9 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
   }
 
   Widget _playlistTile(
-      BuildContext context, Fragment$fragmentPlaylist playlist) {
+    BuildContext context,
+    Fragment$fragmentPlaylist playlist,
+  ) {
     final loc = AppLocalizations.of(context)!;
     final placeholderIcon = widget.libraryType == Enum$LibraryType.MUSIC
         ? Icons.queue_music
@@ -248,8 +271,8 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
         placeholderIcon: placeholderIcon,
         borderRadius: 0,
       ),
-      onTap: () => AutoRouter.of(context)
-          .push(PlaylistRoute(playlistId: playlist.id)),
+      onTap: () =>
+          AutoRouter.of(context).push(PlaylistRoute(playlistId: playlist.id)),
     );
   }
 
@@ -267,17 +290,18 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
         if (result.hasException) {
           // An older server has no libraryById query yet: keep the rows that
           // do work (continue watching, recently added) and log the rest away.
-          LoggerService()
-              .logger
-              .w('Discover top-lists unavailable: ${result.exception}');
+          LoggerService().logger.w(
+            'Discover top-lists unavailable: ${result.exception}',
+          );
           return const SizedBox.shrink();
         }
         if (result.data == null) {
           return _skeletonRow(context);
         }
-        final rows = _parseRows(context, result.data!)
-            .where((row) => row.tiles.isNotEmpty)
-            .toList();
+        final rows = _parseRows(
+          context,
+          result.data!,
+        ).where((row) => row.tiles.isNotEmpty).toList();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -287,7 +311,7 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
                 onTap: () => _pushList(context, row.kind),
               ),
               SizedBox(
-                height: _rowHeight,
+                height: _rowHeight(context),
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemExtent: row.tileWidth,
@@ -307,43 +331,44 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
   /// landscape row where the loaded view has two or three rows of possibly
   /// narrower tiles, so the page grew by hundreds of pixels on load.
   ({List<String> labels, double tileWidth, IconData? icon}) _skeletonShape(
-      AppLocalizations loc) {
+    AppLocalizations loc,
+  ) {
     switch (widget.libraryType) {
       case Enum$LibraryType.SHOW:
         return (
           labels: [loc.recentlyPlayed, loc.mostPlayed, loc.highestRated],
           tileWidth: _landscapeTileWidth,
-          icon: null
+          icon: null,
         );
       case Enum$LibraryType.MUSIC:
         return (
           labels: [loc.recentlyPlayed, loc.mostPlayed, loc.highestRated],
           tileWidth: _squareTileWidth,
-          icon: Icons.music_note
+          icon: Icons.music_note,
         );
       case Enum$LibraryType.BOOK:
         return (
           labels: [loc.recentlyRead, loc.highestRated],
           tileWidth: _portraitTileWidth,
-          icon: Icons.menu_book
+          icon: Icons.menu_book,
         );
       case Enum$LibraryType.COMIC:
         return (
           labels: [loc.recentlyRead],
           tileWidth: _portraitTileWidth,
-          icon: Icons.auto_stories
+          icon: Icons.auto_stories,
         );
       case Enum$LibraryType.PODCAST:
         return (
           labels: [loc.recentlyPlayed, loc.mostPlayed, loc.highestRated],
           tileWidth: _squareTileWidth,
-          icon: Icons.podcasts
+          icon: Icons.podcasts,
         );
       default:
         return (
           labels: [loc.recentlyPlayed, loc.mostPlayed, loc.highestRated],
           tileWidth: _landscapeTileWidth,
-          icon: null
+          icon: null,
         );
     }
   }
@@ -356,7 +381,7 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
         for (final label in shape.labels) ...[
           RowHeader(label: label),
           SizedBox(
-            height: _rowHeight,
+            height: _rowHeight(context),
             child: Skeletonizer(
               enabled: true,
               child: ListView.builder(
@@ -385,105 +410,120 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
         if (library == null) return [];
         return [
           _RankedRow(
-              loc.recentlyPlayed,
-              MediaListKind.recentlyPlayed,
-              library.recentlyPlayedShows.map(_showTile).toList(),
-              _landscapeTileWidth),
+            loc.recentlyPlayed,
+            MediaListKind.recentlyPlayed,
+            library.recentlyPlayedShows.map(_showTile).toList(),
+            _landscapeTileWidth,
+          ),
           _RankedRow(
-              loc.mostPlayed,
-              MediaListKind.mostPlayed,
-              library.mostPlayedShows.map(_showTile).toList(),
-              _landscapeTileWidth),
+            loc.mostPlayed,
+            MediaListKind.mostPlayed,
+            library.mostPlayedShows.map(_showTile).toList(),
+            _landscapeTileWidth,
+          ),
           _RankedRow(
-              loc.highestRated,
-              MediaListKind.highestRated,
-              library.highestRatedShows.map(_showTile).toList(),
-              _landscapeTileWidth),
+            loc.highestRated,
+            MediaListKind.highestRated,
+            library.highestRatedShows.map(_showTile).toList(),
+            _landscapeTileWidth,
+          ),
         ];
       case Enum$LibraryType.MUSIC:
         final library = Query$discoverAlbums.fromJson(data).libraryById;
         if (library == null) return [];
         return [
           _RankedRow(
-              loc.recentlyPlayed,
-              MediaListKind.recentlyPlayed,
-              library.recentlyPlayedAlbums.map(_albumTile).toList(),
-              _squareTileWidth),
+            loc.recentlyPlayed,
+            MediaListKind.recentlyPlayed,
+            library.recentlyPlayedAlbums.map(_albumTile).toList(),
+            _squareTileWidth,
+          ),
           _RankedRow(
-              loc.mostPlayed,
-              MediaListKind.mostPlayed,
-              library.mostPlayedAlbums.map(_albumTile).toList(),
-              _squareTileWidth),
+            loc.mostPlayed,
+            MediaListKind.mostPlayed,
+            library.mostPlayedAlbums.map(_albumTile).toList(),
+            _squareTileWidth,
+          ),
           _RankedRow(
-              loc.highestRated,
-              MediaListKind.highestRated,
-              library.highestRatedAlbums.map(_albumTile).toList(),
-              _squareTileWidth),
+            loc.highestRated,
+            MediaListKind.highestRated,
+            library.highestRatedAlbums.map(_albumTile).toList(),
+            _squareTileWidth,
+          ),
         ];
       case Enum$LibraryType.BOOK:
         final library = Query$discoverBooks.fromJson(data).libraryById;
         if (library == null) return [];
         return [
           _RankedRow(
-              loc.recentlyRead,
-              MediaListKind.recentlyPlayed,
-              library.recentlyReadBooks.map(_bookTile).toList(),
-              _portraitTileWidth),
+            loc.recentlyRead,
+            MediaListKind.recentlyPlayed,
+            library.recentlyReadBooks.map(_bookTile).toList(),
+            _portraitTileWidth,
+          ),
           _RankedRow(
-              loc.highestRated,
-              MediaListKind.highestRated,
-              library.highestRatedBooks.map(_bookTile).toList(),
-              _portraitTileWidth),
+            loc.highestRated,
+            MediaListKind.highestRated,
+            library.highestRatedBooks.map(_bookTile).toList(),
+            _portraitTileWidth,
+          ),
         ];
       case Enum$LibraryType.COMIC:
         final library = Query$discoverSeries.fromJson(data).libraryById;
         if (library == null) return [];
         return [
           _RankedRow(
-              loc.recentlyRead,
-              MediaListKind.recentlyPlayed,
-              library.recentlyReadSeries.map(_seriesTile).toList(),
-              _portraitTileWidth),
+            loc.recentlyRead,
+            MediaListKind.recentlyPlayed,
+            library.recentlyReadSeries.map(_seriesTile).toList(),
+            _portraitTileWidth,
+          ),
         ];
       case Enum$LibraryType.PODCAST:
         final library = Query$discoverPodcasts.fromJson(data).libraryById;
         if (library == null) return [];
         return [
           _RankedRow(
-              loc.recentlyPlayed,
-              MediaListKind.recentlyPlayed,
-              library.recentlyPlayedPodcasts.map(_podcastTile).toList(),
-              _squareTileWidth),
+            loc.recentlyPlayed,
+            MediaListKind.recentlyPlayed,
+            library.recentlyPlayedPodcasts.map(_podcastTile).toList(),
+            _squareTileWidth,
+          ),
           _RankedRow(
-              loc.mostPlayed,
-              MediaListKind.mostPlayed,
-              library.mostPlayedPodcasts.map(_podcastTile).toList(),
-              _squareTileWidth),
+            loc.mostPlayed,
+            MediaListKind.mostPlayed,
+            library.mostPlayedPodcasts.map(_podcastTile).toList(),
+            _squareTileWidth,
+          ),
           _RankedRow(
-              loc.highestRated,
-              MediaListKind.highestRated,
-              library.highestRatedPodcasts.map(_podcastTile).toList(),
-              _squareTileWidth),
+            loc.highestRated,
+            MediaListKind.highestRated,
+            library.highestRatedPodcasts.map(_podcastTile).toList(),
+            _squareTileWidth,
+          ),
         ];
       default:
         final library = Query$discoverMovies.fromJson(data).libraryById;
         if (library == null) return [];
         return [
           _RankedRow(
-              loc.recentlyPlayed,
-              MediaListKind.recentlyPlayed,
-              library.recentlyPlayedMovies.map(_movieTile).toList(),
-              _landscapeTileWidth),
+            loc.recentlyPlayed,
+            MediaListKind.recentlyPlayed,
+            library.recentlyPlayedMovies.map(_movieTile).toList(),
+            _landscapeTileWidth,
+          ),
           _RankedRow(
-              loc.mostPlayed,
-              MediaListKind.mostPlayed,
-              library.mostPlayedMovies.map(_movieTile).toList(),
-              _landscapeTileWidth),
+            loc.mostPlayed,
+            MediaListKind.mostPlayed,
+            library.mostPlayedMovies.map(_movieTile).toList(),
+            _landscapeTileWidth,
+          ),
           _RankedRow(
-              loc.highestRated,
-              MediaListKind.highestRated,
-              library.highestRatedMovies.map(_movieTile).toList(),
-              _landscapeTileWidth),
+            loc.highestRated,
+            MediaListKind.highestRated,
+            library.highestRatedMovies.map(_movieTile).toList(),
+            _landscapeTileWidth,
+          ),
         ];
     }
   }
@@ -497,8 +537,10 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
       serverName: widget.serverName,
       title: MetadataUtil.getTitle(movie.metadata) ?? movie.name,
       subTitle: MetadataUtil.getDescription(movie.metadata) ?? '',
-      imageUrl: ImageUtil.buildUrl(img,
-          token: StreamTokenService.getToken(widget.serverName)),
+      imageUrl: ImageUtil.buildUrl(
+        img,
+        token: StreamTokenService.getToken(widget.serverName),
+      ),
       blurHash: img?.blurHash,
       onTap: () => AutoRouter.of(context).push(MovieRoute(movieId: movie.id)),
     );
@@ -510,8 +552,10 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
       serverName: widget.serverName,
       title: MetadataUtil.getTitle(show.metadata) ?? show.name,
       subTitle: show.releaseYear > 0 ? '${show.releaseYear}' : '',
-      imageUrl: ImageUtil.buildUrl(img,
-          token: StreamTokenService.getToken(widget.serverName)),
+      imageUrl: ImageUtil.buildUrl(
+        img,
+        token: StreamTokenService.getToken(widget.serverName),
+      ),
       blurHash: img?.blurHash,
       onTap: () =>
           AutoRouter.of(context).push(ShowOverviewRoute(showId: show.id)),

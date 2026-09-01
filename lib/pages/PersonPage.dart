@@ -33,6 +33,7 @@ import '../components/ArtistTrackList.dart';
 import '../components/BookCarouselTile.dart';
 import '../components/CarouselItemView.dart';
 import '../components/ExpandableText.dart';
+import '../components/MediaGrid.dart';
 import '../components/MusicDetailHero.dart';
 import '../components/PlaybackHistorySheet.dart';
 import '../components/SourceAttribution.dart';
@@ -95,18 +96,15 @@ class _PersonPageState extends State<PersonPage> {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
       valueListenable: MediaPlayerHandler.instance.musicPlayerOpen,
-      builder: (context, musicPlayerOpen, child) => PopScope(
-        canPop: !musicPlayerOpen,
-        child: child!,
-      ),
+      builder: (context, musicPlayerOpen, child) =>
+          PopScope(canPop: !musicPlayerOpen, child: child!),
       child: Query(
         options: QueryOptions(
           document: documentNodeQueryartistById,
           variables: {'id': personId},
           fetchPolicy: FetchPolicy.cacheAndNetwork,
         ),
-        builder: (QueryResult result,
-            {VoidCallback? refetch, FetchMore? fetchMore}) {
+        builder: (QueryResult result, {VoidCallback? refetch, FetchMore? fetchMore}) {
           if (result.hasException) {
             return Scaffold(
               appBar: AppBar(),
@@ -140,79 +138,105 @@ class _PersonPageState extends State<PersonPage> {
               },
               fetchPolicy: FetchPolicy.cacheAndNetwork,
             ),
-            builder: (QueryResult albumsResult,
-                {VoidCallback? refetch, FetchMore? fetchMore}) {
-              final albums = albumsResult.data == null
-                  ? const <Fragment$fragmentAlbum>[]
-                  : (Query$albums.fromJson(albumsResult.data!).albums?.content ??
-                      const <Fragment$fragmentAlbum>[]);
-              // The albums grid is part of the skeleton too: without this it
-              // pops in on its own once this query lands, after the person's
-              // own data already rendered.
-              final albumsLoading =
-                  albumsResult.data == null && albumsResult.isLoading;
-
-              // Compilations and guest appearances: albums the person is
-              // credited on without owning them (disjoint from the query above).
-              return Query(
-                options: QueryOptions(
-                  document: documentNodeQueryappearsOnAlbums,
-                  variables: {'id': personId},
-                  fetchPolicy: FetchPolicy.cacheAndNetwork,
-                ),
-                builder: (QueryResult appearsOnResult,
-                    {VoidCallback? refetch, FetchMore? fetchMore}) {
-                  final appearsOn = appearsOnResult.data == null
+            builder:
+                (
+                  QueryResult albumsResult, {
+                  VoidCallback? refetch,
+                  FetchMore? fetchMore,
+                }) {
+                  final albums = albumsResult.data == null
                       ? const <Fragment$fragmentAlbum>[]
-                      : (Query$appearsOnAlbums.fromJson(appearsOnResult.data!)
-                              .albums
-                              ?.content ??
-                          const <Fragment$fragmentAlbum>[]);
+                      : (Query$albums.fromJson(albumsResult.data!)
+                                .albums
+                                ?.content ??
+                            const <Fragment$fragmentAlbum>[]);
+                  // The albums grid is part of the skeleton too: without this it
+                  // pops in on its own once this query lands, after the person's
+                  // own data already rendered.
+                  final albumsLoading =
+                      albumsResult.data == null && albumsResult.isLoading;
 
+                  // Compilations and guest appearances: albums the person is
+                  // credited on without owning them (disjoint from the query above).
                   return Query(
                     options: QueryOptions(
-                      document: documentNodeQuerybooks,
-                      variables: {
-                        'authorId': personId,
-                        'sorting': Enum$SortingEnum.RELEASE_YEAR,
-                        'sortingOrder': Enum$SortingOrder.DESCENDING,
-                        'page': 0,
-                        'size': 200,
-                      },
+                      document: documentNodeQueryappearsOnAlbums,
+                      variables: {'id': personId},
                       fetchPolicy: FetchPolicy.cacheAndNetwork,
                     ),
-                    builder: (QueryResult booksResult,
-                        {VoidCallback? refetch, FetchMore? fetchMore}) {
-                      final books = booksResult.data == null
-                          ? const <Fragment$fragmentBook>[]
-                          : (Query$books.fromJson(booksResult.data!)
-                                  .books
-                                  ?.content ??
-                              const <Fragment$fragmentBook>[]);
+                    builder:
+                        (
+                          QueryResult appearsOnResult, {
+                          VoidCallback? refetch,
+                          FetchMore? fetchMore,
+                        }) {
+                          final appearsOn = appearsOnResult.data == null
+                              ? const <Fragment$fragmentAlbum>[]
+                              : (Query$appearsOnAlbums.fromJson(
+                                      appearsOnResult.data!,
+                                    ).albums?.content ??
+                                    const <Fragment$fragmentAlbum>[]);
 
-                      if (!loading && artist == null) {
-                        return Scaffold(
-                          appBar: AppBar(),
-                          body: Center(
-                              child: Text(AppLocalizations.of(context)!
-                                  .personNotFound)),
-                        );
-                      }
+                          return Query(
+                            options: QueryOptions(
+                              document: documentNodeQuerybooks,
+                              variables: {
+                                'authorId': personId,
+                                'sorting': Enum$SortingEnum.RELEASE_YEAR,
+                                'sortingOrder': Enum$SortingOrder.DESCENDING,
+                                'page': 0,
+                                'size': 200,
+                              },
+                              fetchPolicy: FetchPolicy.cacheAndNetwork,
+                            ),
+                            builder:
+                                (
+                                  QueryResult booksResult, {
+                                  VoidCallback? refetch,
+                                  FetchMore? fetchMore,
+                                }) {
+                                  final books = booksResult.data == null
+                                      ? const <Fragment$fragmentBook>[]
+                                      : (Query$books.fromJson(booksResult.data!)
+                                                .books
+                                                ?.content ??
+                                            const <Fragment$fragmentBook>[]);
 
-                      final skeleton = loading || albumsLoading;
-                      final content = _buildContent(context, artist, albums,
-                          appearsOn, books, skeleton);
+                                  if (!loading && artist == null) {
+                                    return Scaffold(
+                                      appBar: AppBar(),
+                                      body: Center(
+                                        child: Text(
+                                          AppLocalizations.of(context)!
+                                              .personNotFound,
+                                        ),
+                                      ),
+                                    );
+                                  }
 
-                      return Scaffold(
-                        body: skeleton
-                            ? Skeletonizer(enabled: true, child: content)
-                            : content,
-                      );
-                    },
+                                  final skeleton = loading || albumsLoading;
+                                  final content = _buildContent(
+                                    context,
+                                    artist,
+                                    albums,
+                                    appearsOn,
+                                    books,
+                                    skeleton,
+                                  );
+
+                                  return Scaffold(
+                                    body: skeleton
+                                        ? Skeletonizer(
+                                            enabled: true,
+                                            child: content,
+                                          )
+                                        : content,
+                                  );
+                                },
+                          );
+                        },
                   );
                 },
-              );
-            },
           );
         },
       ),
@@ -220,15 +244,18 @@ class _PersonPageState extends State<PersonPage> {
   }
 
   Widget _buildContent(
-      BuildContext context,
-      Query$artistById$artistById? artist,
-      List<Fragment$fragmentAlbum> albums,
-      List<Fragment$fragmentAlbum> appearsOn,
-      List<Fragment$fragmentBook> books,
-      bool skeleton) {
+    BuildContext context,
+    Query$artistById$artistById? artist,
+    List<Fragment$fragmentAlbum> albums,
+    List<Fragment$fragmentAlbum> appearsOn,
+    List<Fragment$fragmentBook> books,
+    bool skeleton,
+  ) {
     final loc = AppLocalizations.of(context)!;
     final credits = artist?.credits ?? [];
-    final description = artist != null ? MetadataUtil.getDescription(artist.metadata) : null;
+    final description = artist != null
+        ? MetadataUtil.getDescription(artist.metadata)
+        : null;
     // While the albums query is still out we don't know whether this person has
     // any, so the grid is drawn with placeholder tiles: reserving the space is
     // what keeps everything below it from jumping when the albums arrive.
@@ -275,66 +302,80 @@ class _PersonPageState extends State<PersonPage> {
           ],
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
-            background:
-                _buildHero(context, loc, artist, albums, appearsOn, books,
-                    skeleton: skeleton),
+            background: _buildHero(
+              context,
+              loc,
+              artist,
+              albums,
+              appearsOn,
+              books,
+              skeleton: skeleton,
+            ),
           ),
         ),
         if (hasAlbums)
-        SliverToBoxAdapter(
-          child: Center(
-            child: Container(
-              width: double.infinity,
-              constraints: const BoxConstraints(maxWidth: 1600),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Wrap(
-                  spacing: 12,
-                  runSpacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    FilledButton.icon(
-                      onPressed: albums.isNotEmpty
-                          ? () => AutoRouter.of(context)
-                              .push(AlbumRoute(albumId: albums.first.id))
-                          : null,
-                      icon: const Icon(Icons.play_arrow),
-                      label: Text(loc.play),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: _accent,
-                        foregroundColor: _accent != null ? Colors.black : null,
-                        shape: const StadiumBorder(),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 28, vertical: 14),
+          SliverToBoxAdapter(
+            child: Center(
+              child: Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(maxWidth: 1600),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      FilledButton.icon(
+                        onPressed: albums.isNotEmpty
+                            ? () => AutoRouter.of(context)
+                                  .push(AlbumRoute(albumId: albums.first.id))
+                            : null,
+                        icon: const Icon(Icons.play_arrow),
+                        label: Text(loc.play),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: _accent,
+                          foregroundColor: _accent != null
+                              ? Colors.black
+                              : null,
+                          shape: const StadiumBorder(),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 28,
+                            vertical: 14,
+                          ),
+                        ),
                       ),
-                    ),
-                    FilledButton.icon(
-                      onPressed: albums.isNotEmpty
-                          ? () {
-                              final randomAlbum =
-                                  albums[_random.nextInt(albums.length)];
-                              AutoRouter.of(context)
-                                  .push(AlbumRoute(albumId: randomAlbum.id));
-                            }
-                          : null,
-                      icon: const Icon(Icons.shuffle),
-                      label: Text(loc.shuffle),
-                      style: FilledButton.styleFrom(
-                        backgroundColor:
-                            Theme.of(context).colorScheme.surfaceContainerHighest,
-                        foregroundColor:
-                            Theme.of(context).colorScheme.onSurface,
-                        shape: const StadiumBorder(),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 28, vertical: 14),
+                      FilledButton.icon(
+                        onPressed: albums.isNotEmpty
+                            ? () {
+                                final randomAlbum =
+                                    albums[_random.nextInt(albums.length)];
+                                AutoRouter.of(context)
+                                    .push(AlbumRoute(albumId: randomAlbum.id));
+                              }
+                            : null,
+                        icon: const Icon(Icons.shuffle),
+                        label: Text(loc.shuffle),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
+                          foregroundColor: Theme.of(context)
+                              .colorScheme
+                              .onSurface,
+                          shape: const StadiumBorder(),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 28,
+                            vertical: 14,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
         if (description != null || skeleton)
           SliverToBoxAdapter(
             child: Center(
@@ -354,9 +395,10 @@ class _PersonPageState extends State<PersonPage> {
                       ExpandableText(text: description ?? BoneMock.paragraph),
                       const SizedBox(height: 6),
                       SourceAttribution(
-                          metadata: artist?.metadata,
-                          images: artist?.images,
-                          skeleton: skeleton),
+                        metadata: artist?.metadata,
+                        images: artist?.images,
+                        skeleton: skeleton,
+                      ),
                     ],
                   ),
                 ),
@@ -390,20 +432,21 @@ class _PersonPageState extends State<PersonPage> {
               child: Container(
                 width: double.infinity,
                 constraints: const BoxConstraints(maxWidth: 1600),
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: EdgeInsets.zero,
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 300,
-                    childAspectRatio: BookCarouselTile.coverAspectRatio,
-                    mainAxisSpacing: 0,
-                    crossAxisSpacing: 0,
-                  ),
-                  itemCount: books.length,
-                  itemBuilder: (context, index) => BookCarouselTile(
-                    serverName: serverName,
-                    book: books[index],
+                child: LayoutBuilder(
+                  builder: (context, constraints) => GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.zero,
+                    gridDelegate: mediaGridDelegate(
+                      context,
+                      constraints.maxWidth,
+                      artAspectRatio: BookCarouselTile.coverAspectRatio,
+                    ),
+                    itemCount: books.length,
+                    itemBuilder: (context, index) => BookCarouselTile(
+                      serverName: serverName,
+                      book: books[index],
+                    ),
                   ),
                 ),
               ),
@@ -418,48 +461,59 @@ class _PersonPageState extends State<PersonPage> {
 
   /// The album grid; with [placeholderCount] set it renders that many empty
   /// tiles instead — the page-level [Skeletonizer] turns those into bones.
-  Widget _albumGrid(BuildContext context, List<Fragment$fragmentAlbum> albums,
-      {int placeholderCount = 0}) {
+  Widget _albumGrid(
+    BuildContext context,
+    List<Fragment$fragmentAlbum> albums, {
+    int placeholderCount = 0,
+  }) {
     return SliverToBoxAdapter(
       child: Center(
         child: Container(
           width: double.infinity,
           constraints: const BoxConstraints(maxWidth: 1600),
-          child: GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.zero,
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 300,
-              childAspectRatio: 1.0,
-              mainAxisSpacing: 0,
-              crossAxisSpacing: 0,
-            ),
-            itemCount: placeholderCount > 0 ? placeholderCount : albums.length,
-            itemBuilder: (context, index) {
-              if (placeholderCount > 0) {
+          child: LayoutBuilder(
+            builder: (context, constraints) => GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              gridDelegate: mediaGridDelegate(
+                context,
+                constraints.maxWidth,
+                artAspectRatio: 1.0,
+              ),
+              itemCount: placeholderCount > 0
+                  ? placeholderCount
+                  : albums.length,
+              itemBuilder: (context, index) {
+                if (placeholderCount > 0) {
+                  return CarouselItemView(
+                    serverName: serverName,
+                    title: BoneMock.name,
+                    subTitle: BoneMock.words(3),
+                    placeholderIcon: Icons.music_note,
+                  );
+                }
+                final album = albums[index];
+                final img = ImageUtil.getImageByType(
+                  album.images,
+                  ImageTypes.cover,
+                );
                 return CarouselItemView(
                   serverName: serverName,
-                  title: BoneMock.name,
-                  subTitle: BoneMock.words(3),
+                  title: MetadataUtil.getTitle(album.metadata) ?? album.name,
+                  subTitle: album.artist.name,
+                  imageUrl: ImageUtil.buildUrl(
+                    img,
+                    token: StreamTokenService.getToken(serverName),
+                  ),
+                  blurHash: img?.blurHash,
                   placeholderIcon: Icons.music_note,
+                  onTap: () =>
+                      AutoRouter.of(context)
+                          .push(AlbumRoute(albumId: album.id)),
                 );
-              }
-              final album = albums[index];
-              final img =
-                  ImageUtil.getImageByType(album.images, ImageTypes.cover);
-              return CarouselItemView(
-                serverName: serverName,
-                title: MetadataUtil.getTitle(album.metadata) ?? album.name,
-                subTitle: album.artist.name,
-                imageUrl: ImageUtil.buildUrl(img,
-                    token: StreamTokenService.getToken(serverName)),
-                blurHash: img?.blurHash,
-                placeholderIcon: Icons.music_note,
-                onTap: () =>
-                    AutoRouter.of(context).push(AlbumRoute(albumId: album.id)),
-              );
-            },
+              },
+            ),
           ),
         ),
       ),
@@ -474,19 +528,19 @@ class _PersonPageState extends State<PersonPage> {
           constraints: const BoxConstraints(maxWidth: 1600),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-            child: Text(
-              title,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            child: Text(title, style: Theme.of(context).textTheme.titleMedium),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildFilmography(BuildContext context, AppLocalizations loc,
-      List<Fragment$fragmentPersonCredit> credits,
-      {bool skeleton = false}) {
+  Widget _buildFilmography(
+    BuildContext context,
+    AppLocalizations loc,
+    List<Fragment$fragmentPersonCredit> credits, {
+    bool skeleton = false,
+  }) {
     // A person can hold several credits for the same title — a show-level credit
     // (with a role) plus one credit per episode. Merge everything per title so a
     // show shows up exactly once, with its episode count and role combined.
@@ -541,8 +595,7 @@ class _PersonPageState extends State<PersonPage> {
             name: m.name,
             subtitle: _subtitle(loc, year: m.releaseYear, role: m.role),
             images: m.images,
-            onTap: () =>
-                AutoRouter.of(context).push(MovieRoute(movieId: m.id)),
+            onTap: () => AutoRouter.of(context).push(MovieRoute(movieId: m.id)),
           ),
         ),
       for (final s in shows.values)
@@ -611,8 +664,12 @@ class _PersonPageState extends State<PersonPage> {
   /// Joins the release year, episode count and role into a single subtitle
   /// line, e.g. "1984 · 65 afleveringen · Johnny Lawrence". Any part may be
   /// absent (a year of 0 means unknown and is dropped).
-  String? _subtitle(AppLocalizations loc,
-      {int? year, int? episodeCount, String? role}) {
+  String? _subtitle(
+    AppLocalizations loc, {
+    int? year,
+    int? episodeCount,
+    String? role,
+  }) {
     final parts = <String>[
       if (year != null && year > 0) '$year',
       if (episodeCount != null) loc.episodeCount(episodeCount),
@@ -631,10 +688,13 @@ class _PersonPageState extends State<PersonPage> {
   }) {
     // Prefer the portrait poster/cover so it isn't cropped into a landscape
     // frame; fall back to the wide background art.
-    final img = ImageUtil.getImageByType(images, ImageTypes.cover) ??
+    final img =
+        ImageUtil.getImageByType(images, ImageTypes.cover) ??
         ImageUtil.getImageByType(images, ImageTypes.background);
-    final imageUrl =
-        ImageUtil.buildUrl(img, token: StreamTokenService.getToken(serverName));
+    final imageUrl = ImageUtil.buildUrl(
+      img,
+      token: StreamTokenService.getToken(serverName),
+    );
     final placeholder = Icon(
       placeholderIcon,
       size: 32,
@@ -671,8 +731,10 @@ class _PersonPageState extends State<PersonPage> {
               ),
               Expanded(
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -681,9 +743,7 @@ class _PersonPageState extends State<PersonPage> {
                         name,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
+                        style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w600),
                       ),
                       if ((subtitle ?? '').isNotEmpty) ...[
@@ -692,12 +752,12 @@ class _PersonPageState extends State<PersonPage> {
                           subtitle!,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                  ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                              ),
                         ),
                       ],
                     ],
@@ -731,13 +791,14 @@ class _PersonPageState extends State<PersonPage> {
   }
 
   Widget _buildHero(
-      BuildContext context,
-      AppLocalizations loc,
-      Query$artistById$artistById? artist,
-      List<Fragment$fragmentAlbum> albums,
-      List<Fragment$fragmentAlbum> appearsOn,
-      List<Fragment$fragmentBook> books,
-      {bool skeleton = false}) {
+    BuildContext context,
+    AppLocalizations loc,
+    Query$artistById$artistById? artist,
+    List<Fragment$fragmentAlbum> albums,
+    List<Fragment$fragmentAlbum> appearsOn,
+    List<Fragment$fragmentBook> books, {
+    bool skeleton = false,
+  }) {
     final backgroundImg = artist != null
         ? ImageUtil.getImageByType(artist.images, ImageTypes.background)
         : null;
@@ -749,22 +810,24 @@ class _PersonPageState extends State<PersonPage> {
         : null;
     // Guest artists without an album of their own still get a cover: the
     // newest album they appear on.
-    final firstAlbum =
-        albums.isNotEmpty ? albums.first : appearsOn.firstOrNull;
+    final firstAlbum = albums.isNotEmpty ? albums.first : appearsOn.firstOrNull;
     final firstAlbumCoverImg = firstAlbum != null
         ? ImageUtil.getImageByType(firstAlbum.images, ImageTypes.cover)
         : null;
     final heroImg = backgroundImg ?? personCoverImg ?? firstAlbumCoverImg;
     final imageUrl = heroImg != null
-        ? ImageUtil.buildUrl(heroImg,
-            token: StreamTokenService.getToken(serverName))
+        ? ImageUtil.buildUrl(
+            heroImg,
+            token: StreamTokenService.getToken(serverName),
+          )
         : null;
     _updateAccent(imageUrl);
 
     final name = artist != null
         ? MetadataUtil.titleWithYear(
             MetadataUtil.getTitle(artist.metadata) ?? artist.name,
-            artist.birthYear)
+            artist.birthYear,
+          )
         : null;
 
     return MusicDetailHero(
@@ -784,8 +847,12 @@ class _PersonPageState extends State<PersonPage> {
 
   /// Summarises what a person has, showing only the categories they actually
   /// appear in — e.g. "2 films" or "3 albums · 1 serie", never "0 albums".
-  String? _heroSubtitle(AppLocalizations loc,
-      Query$artistById$artistById artist, int albumCount, int bookCount) {
+  String? _heroSubtitle(
+    AppLocalizations loc,
+    Query$artistById$artistById artist,
+    int albumCount,
+    int bookCount,
+  ) {
     // Count distinct movies and shows across the credits, mirroring how the
     // filmography merges episode credits back onto their show.
     final movieIds = <String>{};
@@ -849,7 +916,9 @@ class _ShowEntry {
   final Map<String, Fragment$fragmentPersonCredit$episode> _episodesById = {};
 
   void addEpisode(
-      Fragment$fragmentPersonCredit$episode episode, String? character) {
+    Fragment$fragmentPersonCredit$episode episode,
+    String? character,
+  ) {
     _episodesById[episode.id] = episode;
     if ((_episodeRole ?? '').isEmpty && (character ?? '').isNotEmpty) {
       _episodeRole = character;
@@ -861,8 +930,7 @@ class _ShowEntry {
 
   int get episodeCount => _episodesById.length;
 
-  String? get role =>
-      (showRole ?? '').isNotEmpty ? showRole : _episodeRole;
+  String? get role => (showRole ?? '').isNotEmpty ? showRole : _episodeRole;
 }
 
 /// One season's worth of a person's episodes, ready to render in the sheet.
@@ -911,14 +979,18 @@ class _PersonShowEpisodesSheetState extends State<_PersonShowEpisodesSheet> {
   }
 
   List<_SeasonBucket> _groupBySeason(
-      List<Fragment$fragmentPersonCredit$episode> episodes) {
+    List<Fragment$fragmentPersonCredit$episode> episodes,
+  ) {
     const noSeasonKey = '__none__';
     final buckets = <String, _SeasonBucket>{};
     for (final episode in episodes) {
       final season = episode.season;
       final key = season?.id ?? noSeasonKey;
       buckets
-          .putIfAbsent(key, () => _SeasonBucket(id: key, number: season?.number))
+          .putIfAbsent(
+            key,
+            () => _SeasonBucket(id: key, number: season?.number),
+          )
           .episodes
           .add(episode);
     }
@@ -951,7 +1023,9 @@ class _PersonShowEpisodesSheetState extends State<_PersonShowEpisodesSheet> {
               InkWell(
                 onTap: () {
                   Navigator.of(context).pop();
-                  widget.resolveRouter().push(ShowOverviewRoute(showId: widget.showId));
+                  widget.resolveRouter().push(
+                    ShowOverviewRoute(showId: widget.showId),
+                  );
                 },
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -971,17 +1045,18 @@ class _PersonShowEpisodesSheetState extends State<_PersonShowEpisodesSheet> {
               ExpansionPanelList(
                 expansionCallback: (index, isExpanded) {
                   setState(() {
-                    _expandedSeasonId =
-                        isExpanded ? _seasons[index].id : null;
+                    _expandedSeasonId = isExpanded ? _seasons[index].id : null;
                   });
                 },
                 children: _seasons.map<ExpansionPanel>((bucket) {
                   return ExpansionPanel(
                     canTapOnHeader: true,
                     headerBuilder: (context, isExpanded) => ListTile(
-                      title: Text(bucket.number != null
-                          ? loc.season(bucket.number!)
-                          : widget.showName),
+                      title: Text(
+                        bucket.number != null
+                            ? loc.season(bucket.number!)
+                            : widget.showName,
+                      ),
                       subtitle: Text(loc.episodeCount(bucket.episodes.length)),
                     ),
                     body: Column(
@@ -1001,14 +1076,20 @@ class _PersonShowEpisodesSheetState extends State<_PersonShowEpisodesSheet> {
     );
   }
 
-  Widget _episodeTile(BuildContext context, AppLocalizations loc,
-      Fragment$fragmentPersonCredit$episode episode) {
+  Widget _episodeTile(
+    BuildContext context,
+    AppLocalizations loc,
+    Fragment$fragmentPersonCredit$episode episode,
+  ) {
     final metaTitle = MetadataUtil.getTitle(episode.metadata);
     final title = metaTitle ?? loc.episode(episode.number);
-    final img = ImageUtil.getImageByType(episode.images, ImageTypes.background) ??
+    final img =
+        ImageUtil.getImageByType(episode.images, ImageTypes.background) ??
         ImageUtil.getImageByType(episode.images, ImageTypes.cover);
-    final imageUrl = ImageUtil.buildUrl(img,
-        token: StreamTokenService.getToken(widget.serverName));
+    final imageUrl = ImageUtil.buildUrl(
+      img,
+      token: StreamTokenService.getToken(widget.serverName),
+    );
     final showId = episode.$show?.id;
 
     return ListTile(
@@ -1031,20 +1112,21 @@ class _PersonShowEpisodesSheetState extends State<_PersonShowEpisodesSheet> {
         ),
       ),
       title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-      subtitle:
-          metaTitle != null ? Text(loc.episode(episode.number)) : null,
+      subtitle: metaTitle != null ? Text(loc.episode(episode.number)) : null,
       onTap: showId == null
           ? null
           : () {
               Navigator.of(context).pop();
               // ShowEpisodeRoute is a child of ShowOverviewRoute, so from
               // outside the show shell it must be pushed through its parent.
-              widget.resolveRouter().push(ShowOverviewRoute(
-                    showId: showId,
-                    children: [
-                      ShowEpisodeRoute(showId: showId, episodeId: episode.id),
-                    ],
-                  ));
+              widget.resolveRouter().push(
+                ShowOverviewRoute(
+                  showId: showId,
+                  children: [
+                    ShowEpisodeRoute(showId: showId, episodeId: episode.id),
+                  ],
+                ),
+              );
             },
     );
   }
@@ -1108,40 +1190,51 @@ class _ArtistTrackTabsState extends State<_ArtistTrackTabs> {
         title: loc.mostPlayedTracks,
         variant: ArtistTrackListVariant.plays,
         document: documentNodeQuerytopPlayedTracksByArtist,
-        parse: (data) => (Query$topPlayedTracksByArtist.fromJson(data)
-                    .personById
-                    ?.topPlayedTracks ??
-                const [])
-            .map((t) => ArtistTrackListItem(
-                track: t, album: t.album, playCount: t.playCount))
-            .toList(),
+        parse: (data) =>
+            (Query$topPlayedTracksByArtist.fromJson(data)
+                        .personById
+                        ?.topPlayedTracks ??
+                    const [])
+                .map(
+                  (t) => ArtistTrackListItem(
+                    track: t,
+                    album: t.album,
+                    playCount: t.playCount,
+                  ),
+                )
+                .toList(),
       ),
       _ArtistTrackTabConfig(
         title: loc.recentlyPlayedTracks,
         variant: ArtistTrackListVariant.recency,
         document: documentNodeQueryrecentlyPlayedTracksByArtist,
-        parse: (data) => (Query$recentlyPlayedTracksByArtist.fromJson(data)
-                    .personById
-                    ?.recentlyPlayedTracks ??
-                const [])
-            .map((t) => ArtistTrackListItem(
-                track: t,
-                album: t.album,
-                lastPlayedAt: t.lastPlayedAt != null
-                    ? DateTime.tryParse(t.lastPlayedAt!)?.toLocal()
-                    : null))
-            .toList(),
+        parse: (data) =>
+            (Query$recentlyPlayedTracksByArtist.fromJson(data)
+                        .personById
+                        ?.recentlyPlayedTracks ??
+                    const [])
+                .map(
+                  (t) => ArtistTrackListItem(
+                    track: t,
+                    album: t.album,
+                    lastPlayedAt: t.lastPlayedAt != null
+                        ? DateTime.tryParse(t.lastPlayedAt!)?.toLocal()
+                        : null,
+                  ),
+                )
+                .toList(),
       ),
       _ArtistTrackTabConfig(
         title: loc.highestRatedTracks,
         variant: ArtistTrackListVariant.rating,
         document: documentNodeQuerytopRatedTracksByArtist,
-        parse: (data) => (Query$topRatedTracksByArtist.fromJson(data)
-                    .personById
-                    ?.topRatedTracks ??
-                const [])
-            .map((t) => ArtistTrackListItem(track: t, album: t.album))
-            .toList(),
+        parse: (data) =>
+            (Query$topRatedTracksByArtist.fromJson(data)
+                        .personById
+                        ?.topRatedTracks ??
+                    const [])
+                .map((t) => ArtistTrackListItem(track: t, album: t.album))
+                .toList(),
       ),
       // Not a per-user ranking: the newest tracks by this artist (incl. guest
       // spots) by the date they were added to the library.
@@ -1149,17 +1242,21 @@ class _ArtistTrackTabsState extends State<_ArtistTrackTabs> {
         title: loc.recentlyAdded,
         variant: ArtistTrackListVariant.added,
         document: documentNodeQueryrecentlyAddedTracksByArtist,
-        parse: (data) => (Query$recentlyAddedTracksByArtist.fromJson(data)
-                    .personById
-                    ?.recentlyAddedTracks ??
-                const [])
-            .map((t) => ArtistTrackListItem(
-                track: t,
-                album: t.album,
-                dateAdded: t.dateAdded != null
-                    ? DateTime.tryParse(t.dateAdded!)?.toLocal()
-                    : null))
-            .toList(),
+        parse: (data) =>
+            (Query$recentlyAddedTracksByArtist.fromJson(data)
+                        .personById
+                        ?.recentlyAddedTracks ??
+                    const [])
+                .map(
+                  (t) => ArtistTrackListItem(
+                    track: t,
+                    album: t.album,
+                    dateAdded: t.dateAdded != null
+                        ? DateTime.tryParse(t.dateAdded!)?.toLocal()
+                        : null,
+                  ),
+                )
+                .toList(),
       ),
     ];
 
@@ -1188,10 +1285,10 @@ class _ArtistTrackTabsState extends State<_ArtistTrackTabs> {
   }
 
   Widget _buildTabs(
-      BuildContext context,
-      List<({_ArtistTrackTabConfig config, _TrackSection section})> sections) {
-    final visible =
-        sections.where((s) => s.section.items.isNotEmpty).toList();
+    BuildContext context,
+    List<({_ArtistTrackTabConfig config, _TrackSection section})> sections,
+  ) {
+    final visible = sections.where((s) => s.section.items.isNotEmpty).toList();
     if (visible.isEmpty) {
       // Nothing yet: hold the footprint while a query is still coming, so the
       // sections below don't shift once it lands.
@@ -1208,9 +1305,12 @@ class _ArtistTrackTabsState extends State<_ArtistTrackTabs> {
             mainAxisSize: MainAxisSize.min,
             children: [
               for (final s in sections)
-                _buildTab(s.config.title, s.config.variant,
-                    selected: s.config.variant == sections.first.config.variant,
-                    enabled: false),
+                _buildTab(
+                  s.config.title,
+                  s.config.variant,
+                  selected: s.config.variant == sections.first.config.variant,
+                  enabled: false,
+                ),
             ],
           ),
         ),
@@ -1218,7 +1318,8 @@ class _ArtistTrackTabsState extends State<_ArtistTrackTabs> {
       );
     }
 
-    final selected = visible
+    final selected =
+        visible
             .where((s) => s.config.variant == _selectedVariant)
             .firstOrNull ??
         visible.first;
@@ -1279,8 +1380,12 @@ class _ArtistTrackTabsState extends State<_ArtistTrackTabs> {
     );
   }
 
-  Widget _buildTab(String label, ArtistTrackListVariant variant,
-      {required bool selected, bool enabled = true}) {
+  Widget _buildTab(
+    String label,
+    ArtistTrackListVariant variant, {
+    required bool selected,
+    bool enabled = true,
+  }) {
     final colors = Theme.of(context).colorScheme;
     void select() {
       if (enabled) setState(() => _selectedVariant = variant);
@@ -1341,18 +1446,18 @@ class _TrackListQuery extends StatelessWidget {
         variables: {'id': personId},
         fetchPolicy: FetchPolicy.cacheAndNetwork,
       ),
-      builder: (QueryResult result,
-          {VoidCallback? refetch, FetchMore? fetchMore}) {
-        final items = (result.hasException || result.data == null)
-            ? const <ArtistTrackListItem>[]
-            : config.parse(result.data!);
-        // Cold load only: with cacheAndNetwork `isLoading` stays true while
-        // revalidating on top of cached data, and re-skeletonizing then would
-        // make the page jump — the very thing this reserves space against.
-        final loading =
-            result.data == null && result.isLoading && !result.hasException;
-        return builder((items: items, loading: loading));
-      },
+      builder:
+          (QueryResult result, {VoidCallback? refetch, FetchMore? fetchMore}) {
+            final items = (result.hasException || result.data == null)
+                ? const <ArtistTrackListItem>[]
+                : config.parse(result.data!);
+            // Cold load only: with cacheAndNetwork `isLoading` stays true while
+            // revalidating on top of cached data, and re-skeletonizing then would
+            // make the page jump — the very thing this reserves space against.
+            final loading =
+                result.data == null && result.isLoading && !result.hasException;
+            return builder((items: items, loading: loading));
+          },
     );
   }
 }

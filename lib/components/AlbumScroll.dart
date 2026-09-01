@@ -12,6 +12,7 @@ import 'package:player/utils/StreamTokenService.dart';
 import '../graphql/fragmentAlbum.graphql.dart';
 import 'AlbumCarouselTile.dart';
 import 'BrowseListRow.dart';
+import 'MediaGrid.dart';
 import 'PagedContentView.dart';
 
 /// Scrollable grid or list of all albums in a music library, loaded page by page.
@@ -46,8 +47,7 @@ class AlbumScroll extends StatelessWidget {
       sorting: sorting,
       sortingOrder: sortingOrder,
       libraryId: libraryId,
-      extraVariables:
-          filter == null ? null : {'filter': filter!.toJson()},
+      extraVariables: filter == null ? null : {'filter': filter!.toJson()},
       onRefetch: onRefetch,
       pageSize: _pageSize,
       builder: (context, data, requestPage) {
@@ -68,44 +68,54 @@ class AlbumScroll extends StatelessWidget {
                   onVisible: () => requestPage(index ~/ _pageSize),
                 );
               }
-              final img =
-                  ImageUtil.getImageByType(album.images, ImageTypes.cover);
+              final img = ImageUtil.getImageByType(
+                album.images,
+                ImageTypes.cover,
+              );
               return BrowseListRow(
-                imageUrl: ImageUtil.buildUrl(img,
-                    token: StreamTokenService.getToken(serverName)),
+                imageUrl: ImageUtil.buildUrl(
+                  img,
+                  token: StreamTokenService.getToken(serverName),
+                ),
                 placeholderIcon: Icons.music_note,
                 squareThumb: true,
                 title: MetadataUtil.getTitle(album.metadata) ?? album.name,
                 subtitle: album.artist.name,
-                onTap: () => AutoRouter.of(context)
-                    .push(AlbumRoute(albumId: album.id)),
+                onTap: () =>
+                    AutoRouter.of(context).push(AlbumRoute(albumId: album.id)),
               );
             },
           );
         }
 
-        return GridView.builder(
-          // Attach to ShowHomePage's NestedScrollView so the view-selector header
-          // scrolls away with the grid (desktop does not inherit it implicitly).
-          primary: true,
-          padding: const EdgeInsets.all(8),
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 300,
-            childAspectRatio: 1.0,
-            mainAxisSpacing: 0,
-            crossAxisSpacing: 0,
-          ),
-          itemCount: itemCount,
-          itemBuilder: (context, index) {
-            final album = data.itemAt(index);
-            if (album != null) {
-              return AlbumCarouselTile(serverName: serverName, album: album);
-            }
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return GridView.builder(
+              // Attach to ShowHomePage's NestedScrollView so the view-selector header
+              // scrolls away with the grid (desktop does not inherit it implicitly).
+              primary: true,
+              padding: const EdgeInsets.all(8),
+              gridDelegate: mediaGridDelegate(
+                context,
+                constraints.maxWidth,
+                artAspectRatio: 1.0,
+              ),
+              itemCount: itemCount,
+              itemBuilder: (context, index) {
+                final album = data.itemAt(index);
+                if (album != null) {
+                  return AlbumCarouselTile(
+                    serverName: serverName,
+                    album: album,
+                  );
+                }
 
-            return pagedSkeletonSlot(
-              key: ValueKey('album-scroll-skeleton-$index'),
-              placeholderIcon: Icons.music_note,
-              onVisible: () => requestPage(index ~/ _pageSize),
+                return pagedSkeletonSlot(
+                  key: ValueKey('album-scroll-skeleton-$index'),
+                  placeholderIcon: Icons.music_note,
+                  onVisible: () => requestPage(index ~/ _pageSize),
+                );
+              },
             );
           },
         );

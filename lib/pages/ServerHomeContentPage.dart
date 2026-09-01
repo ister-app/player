@@ -13,6 +13,7 @@ import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/WellKnownService.dart';
 
+import '../components/CarouselItemView.dart';
 import '../components/RecentCarouselView.dart';
 import '../components/RowHeader.dart';
 import '../l10n/app_localizations.dart';
@@ -70,8 +71,11 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
     LoggerService().logger.i("refreshing");
     await Future.wait([
       if (_refetchRecent != null) _safeRefetch(_refetchRecent!, "recent"),
-      if (_refetchLibraries != null) _safeRefetch(_refetchLibraries!, "libraries"),
-      ..._refetchSlides.entries.map((e) => _safeRefetch(e.value, "slide ${e.key}")),
+      if (_refetchLibraries != null)
+        _safeRefetch(_refetchLibraries!, "libraries"),
+      ..._refetchSlides.entries.map(
+        (e) => _safeRefetch(e.value, "slide ${e.key}"),
+      ),
     ]);
     if (!mounted) return;
     setState(() {
@@ -192,22 +196,27 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
         ],
       ),
       body: RefreshIndicator(
-          key: _refreshIndicatorKey,
-          onRefresh: _refresh,
-          child: Query(
-            options: QueryOptions(
-              document: documentNodeQuerylibraries,
-              fetchPolicy: FetchPolicy.cacheAndNetwork,
-            ),
-            builder: (QueryResult libraryResult,
-                {Refetch? refetch, FetchMore? fetchMore}) {
-              if (refetch != null) _refetchLibraries = refetch;
-              final libraries = libraryResult.data == null
-                  ? <Query$libraries$libraries>[]
-                  : (Query$libraries.fromJson(libraryResult.data!).libraries ??
-                      <Query$libraries$libraries>[]);
+        key: _refreshIndicatorKey,
+        onRefresh: _refresh,
+        child: Query(
+          options: QueryOptions(
+            document: documentNodeQuerylibraries,
+            fetchPolicy: FetchPolicy.cacheAndNetwork,
+          ),
+          builder:
+              (
+                QueryResult libraryResult, {
+                Refetch? refetch,
+                FetchMore? fetchMore,
+              }) {
+                if (refetch != null) _refetchLibraries = refetch;
+                final libraries = libraryResult.data == null
+                    ? <Query$libraries$libraries>[]
+                    : (Query$libraries.fromJson(libraryResult.data!)
+                              .libraries ??
+                          <Query$libraries$libraries>[]);
 
-              return ListView(
+                return ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   children: [
                     _recentViewEmpty
@@ -216,88 +225,103 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                             label: AppLocalizations.of(context)!.watchNext,
                             onTap: () => AutoRouter.of(context).push(
                               MediaListRoute(
-                                  kindName: MediaListKind.watchNext.urlValue),
+                                kindName: MediaListKind.watchNext.urlValue,
+                              ),
                             ),
                           ),
                     _recentViewEmpty
                         ? Container()
                         : SizedBox(
-                            height: 200,
+                            height:
+                                200 + CarouselItemView.captionHeightOf(context),
                             child: RecentCarouselView(
                               serverName: widget.serverName,
                               onRefetch: (refetch) {
                                 _refetchRecent = refetch;
                               },
                               onEmptyView: _setRecentViewEmpty,
-                            )),
-                    ...libraries.expand((library) => [
-                          RowHeader(
-                            label: library.name,
-                            onTap: () {
-                              // Announce the pick and switch to the library
-                              // tab; ShowHomePage consumes and persists it.
-                              pendingLibrarySelection.value =
-                                  PendingLibrarySelection(
-                                serverName: widget.serverName,
-                                libraryId: library.id,
-                                libraryType: library.type,
-                              );
-                              tabNavigationNotifier.value = 1;
-                            },
+                            ),
                           ),
-                          SizedBox(
-                              height: 200,
-                              child: library.type == Enum$LibraryType.SHOW
-                                  ? TvShowSlide(
-                                      serverName: widget.serverName,
-                                      libraryId: library.id,
-                                      onRefetch: (r) {
-                                        if (r != null) _refetchSlides[library.id] = r;
-                                      },
-                                    )
-                                  : library.type == Enum$LibraryType.MUSIC
-                                      ? AlbumSlide(
-                                          serverName: widget.serverName,
-                                          libraryId: library.id,
-                                          onRefetch: (r) {
-                                            if (r != null) _refetchSlides[library.id] = r;
-                                          },
-                                        )
-                                      : library.type == Enum$LibraryType.BOOK
-                                          ? BookSlide(
-                                              serverName: widget.serverName,
-                                              libraryId: library.id,
-                                              onRefetch: (r) {
-                                                if (r != null) _refetchSlides[library.id] = r;
-                                              },
-                                            )
-                                          : library.type == Enum$LibraryType.PODCAST
-                                          ? PodcastSlide(
-                                              serverName: widget.serverName,
-                                              libraryId: library.id,
-                                              onRefetch: (r) {
-                                                if (r != null) _refetchSlides[library.id] = r;
-                                              },
-                                            )
-                                          : library.type == Enum$LibraryType.COMIC
-                                          ? SeriesSlide(
-                                              serverName: widget.serverName,
-                                              libraryId: library.id,
-                                              onRefetch: (r) {
-                                                if (r != null) _refetchSlides[library.id] = r;
-                                              },
-                                            )
-                                          : MovieSlide(
-                                              serverName: widget.serverName,
-                                              libraryId: library.id,
-                                              onRefetch: (r) {
-                                                if (r != null) _refetchSlides[library.id] = r;
-                                              },
-                                            )),
-                        ]),
-                  ]);
-            },
-          )),
+                    ...libraries.expand(
+                      (library) => [
+                        RowHeader(
+                          label: library.name,
+                          onTap: () {
+                            // Announce the pick and switch to the library
+                            // tab; ShowHomePage consumes and persists it.
+                            pendingLibrarySelection.value =
+                                PendingLibrarySelection(
+                                  serverName: widget.serverName,
+                                  libraryId: library.id,
+                                  libraryType: library.type,
+                                );
+                            tabNavigationNotifier.value = 1;
+                          },
+                        ),
+                        SizedBox(
+                          height:
+                              200 + CarouselItemView.captionHeightOf(context),
+                          child: library.type == Enum$LibraryType.SHOW
+                              ? TvShowSlide(
+                                  serverName: widget.serverName,
+                                  libraryId: library.id,
+                                  onRefetch: (r) {
+                                    if (r != null)
+                                      _refetchSlides[library.id] = r;
+                                  },
+                                )
+                              : library.type == Enum$LibraryType.MUSIC
+                              ? AlbumSlide(
+                                  serverName: widget.serverName,
+                                  libraryId: library.id,
+                                  onRefetch: (r) {
+                                    if (r != null)
+                                      _refetchSlides[library.id] = r;
+                                  },
+                                )
+                              : library.type == Enum$LibraryType.BOOK
+                              ? BookSlide(
+                                  serverName: widget.serverName,
+                                  libraryId: library.id,
+                                  onRefetch: (r) {
+                                    if (r != null)
+                                      _refetchSlides[library.id] = r;
+                                  },
+                                )
+                              : library.type == Enum$LibraryType.PODCAST
+                              ? PodcastSlide(
+                                  serverName: widget.serverName,
+                                  libraryId: library.id,
+                                  onRefetch: (r) {
+                                    if (r != null)
+                                      _refetchSlides[library.id] = r;
+                                  },
+                                )
+                              : library.type == Enum$LibraryType.COMIC
+                              ? SeriesSlide(
+                                  serverName: widget.serverName,
+                                  libraryId: library.id,
+                                  onRefetch: (r) {
+                                    if (r != null)
+                                      _refetchSlides[library.id] = r;
+                                  },
+                                )
+                              : MovieSlide(
+                                  serverName: widget.serverName,
+                                  libraryId: library.id,
+                                  onRefetch: (r) {
+                                    if (r != null)
+                                      _refetchSlides[library.id] = r;
+                                  },
+                                ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+        ),
+      ),
     );
   }
 }

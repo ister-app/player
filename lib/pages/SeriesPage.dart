@@ -15,6 +15,7 @@ import 'package:player/utils/comic/ComicPreferences.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/CarouselItemView.dart';
+import '../components/MediaGrid.dart';
 import '../components/MusicDetailHero.dart';
 import '../components/SourceAttribution.dart';
 import '../components/SeriesCarouselTile.dart';
@@ -62,39 +63,42 @@ class _SeriesPageState extends State<SeriesPage> {
         variables: {'id': widget.seriesId},
         fetchPolicy: FetchPolicy.cacheAndNetwork,
       ),
-      builder: (QueryResult result,
-          {VoidCallback? refetch, FetchMore? fetchMore}) {
-        _refetch = refetch;
-        if (result.hasException) {
-          return Scaffold(
-            appBar: AppBar(),
-            body: Center(child: Text(result.exception.toString())),
-          );
-        }
+      builder:
+          (QueryResult result, {VoidCallback? refetch, FetchMore? fetchMore}) {
+            _refetch = refetch;
+            if (result.hasException) {
+              return Scaffold(
+                appBar: AppBar(),
+                body: Center(child: Text(result.exception.toString())),
+              );
+            }
 
-        if (result.data == null) {
-          return Scaffold(
-            body: Skeletonizer(
-                enabled: true, child: _buildContent(skeleton: true)),
-          );
-        }
+            if (result.data == null) {
+              return Scaffold(
+                body: Skeletonizer(
+                  enabled: true,
+                  child: _buildContent(skeleton: true),
+                ),
+              );
+            }
 
-        _series = Query$seriesById.fromJson(result.data!).seriesById;
-        final series = _series;
-        if (series != null && series.userReadingDirection == null) {
-          // Without an override the effective direction *is* the default.
-          _detectedDefault = series.readingDirection;
-        }
-        return Scaffold(body: _buildContent());
-      },
+            _series = Query$seriesById.fromJson(result.data!).seriesById;
+            final series = _series;
+            if (series != null && series.userReadingDirection == null) {
+              // Without an override the effective direction *is* the default.
+              _detectedDefault = series.readingDirection;
+            }
+            return Scaffold(body: _buildContent());
+          },
     );
   }
 
   Widget _buildContent({bool skeleton = false}) {
     final loc = AppLocalizations.of(context)!;
     final series = _series;
-    final description =
-        series != null ? MetadataUtil.getDescription(series.metadata) : null;
+    final description = series != null
+        ? MetadataUtil.getDescription(series.metadata)
+        : null;
     final books = series?.books ?? [];
 
     return CustomScrollView(
@@ -125,9 +129,10 @@ class _SeriesPageState extends State<SeriesPage> {
                     Text(description ?? BoneMock.paragraph),
                     const SizedBox(height: 6),
                     SourceAttribution(
-                        metadata: series?.metadata,
-                        images: series?.images,
-                        skeleton: skeleton),
+                      metadata: series?.metadata,
+                      images: series?.images,
+                      skeleton: skeleton,
+                    ),
                   ],
                 ),
               ),
@@ -156,23 +161,26 @@ class _SeriesPageState extends State<SeriesPage> {
           ),
         SliverToBoxAdapter(
           child: _constrained(
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(8),
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 300,
-                childAspectRatio: SeriesCarouselTile.coverAspectRatio,
+            LayoutBuilder(
+              builder: (context, constraints) => GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(8),
+                gridDelegate: mediaGridDelegate(
+                  context,
+                  constraints.maxWidth,
+                  artAspectRatio: SeriesCarouselTile.coverAspectRatio,
+                ),
+                itemCount: skeleton ? _skeletonVolumeCount : books.length,
+                itemBuilder: (context, index) => skeleton
+                    ? CarouselItemView(
+                        serverName: widget.serverName,
+                        title: BoneMock.name,
+                        subTitle: BoneMock.chars(3),
+                        placeholderIcon: Icons.auto_stories,
+                      )
+                    : _buildVolumeTile(books[index]),
               ),
-              itemCount: skeleton ? _skeletonVolumeCount : books.length,
-              itemBuilder: (context, index) => skeleton
-                  ? CarouselItemView(
-                      serverName: widget.serverName,
-                      title: BoneMock.name,
-                      subTitle: BoneMock.chars(3),
-                      placeholderIcon: Icons.auto_stories,
-                    )
-                  : _buildVolumeTile(books[index]),
             ),
           ),
         ),
@@ -184,20 +192,26 @@ class _SeriesPageState extends State<SeriesPage> {
   /// per user on the server; "default" clears the override so the detected
   /// series direction (RTL for manga) applies again.
   Widget _buildReadingDirectionRow(
-      AppLocalizations loc, Query$seriesById$seriesById? series) {
-    final selected =
-        _choicePending ? _pendingChoice : series?.userReadingDirection;
+    AppLocalizations loc,
+    Query$seriesById$seriesById? series,
+  ) {
+    final selected = _choicePending
+        ? _pendingChoice
+        : series?.userReadingDirection;
     final defaultLabel = _detectedDefault == null
         ? loc.readingDirectionDefault('LTR')
         : loc.readingDirectionDefault(
-            _detectedDefault == Enum$ReadingDirection.RTL ? 'RTL' : 'LTR');
+            _detectedDefault == Enum$ReadingDirection.RTL ? 'RTL' : 'LTR',
+          );
     return Wrap(
       spacing: 16,
       runSpacing: 8,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Text(loc.readingDirection,
-            style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          loc.readingDirection,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         SegmentedButton<Enum$ReadingDirection?>(
           segments: [
             ButtonSegment(value: null, label: Text(defaultLabel)),
@@ -228,13 +242,15 @@ class _SeriesPageState extends State<SeriesPage> {
     });
     try {
       final client = GraphQLProvider.of(context).value;
-      final result = await client.mutate(MutationOptions(
-        document: documentNodeMutationsetSeriesReadingDirection,
-        variables: Variables$Mutation$setSeriesReadingDirection(
-          seriesId: widget.seriesId,
-          direction: choice,
-        ).toJson(),
-      ));
+      final result = await client.mutate(
+        MutationOptions(
+          document: documentNodeMutationsetSeriesReadingDirection,
+          variables: Variables$Mutation$setSeriesReadingDirection(
+            seriesId: widget.seriesId,
+            direction: choice,
+          ).toJson(),
+        ),
+      );
       if (result.hasException) {
         throw result.exception!;
       }
@@ -243,13 +259,16 @@ class _SeriesPageState extends State<SeriesPage> {
       final effective = choice ?? _detectedDefault;
       if (effective != null) {
         await ComicPreferences.setRightToLeft(
-            widget.seriesId, effective == Enum$ReadingDirection.RTL);
+          widget.seriesId,
+          effective == Enum$ReadingDirection.RTL,
+        );
       }
       _refetch?.call();
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(loc.couldNotSaveReadingDirection)));
+          SnackBar(content: Text(loc.couldNotSaveReadingDirection)),
+        );
       }
     } finally {
       if (mounted) setState(() => _choicePending = false);
@@ -259,8 +278,7 @@ class _SeriesPageState extends State<SeriesPage> {
   Widget _buildVolumeTile(Query$seriesById$seriesById$books book) {
     final img = ImageUtil.getImageByType(book.images, ImageTypes.cover);
     final status = book.watchStatus
-        ?.where((status) =>
-            status.watched || (status.readingProgress ?? 0) > 0)
+        ?.where((status) => status.watched || (status.readingProgress ?? 0) > 0)
         .firstOrNull;
     final progress = status?.watched == true
         ? 1.0
@@ -274,8 +292,10 @@ class _SeriesPageState extends State<SeriesPage> {
       serverName: widget.serverName,
       title: book.title,
       subTitle: indexLabel,
-      imageUrl: ImageUtil.buildUrl(img,
-          token: StreamTokenService.getToken(widget.serverName)),
+      imageUrl: ImageUtil.buildUrl(
+        img,
+        token: StreamTokenService.getToken(widget.serverName),
+      ),
       blurHash: img?.blurHash,
       progress: progress,
       placeholderIcon: Icons.auto_stories,
@@ -287,16 +307,20 @@ class _SeriesPageState extends State<SeriesPage> {
     );
   }
 
-  Widget _buildHeader(Query$seriesById$seriesById? series,
-      {bool skeleton = false}) {
+  Widget _buildHeader(
+    Query$seriesById$seriesById? series, {
+    bool skeleton = false,
+  }) {
     final img = series != null
         ? (series.cover ??
-            ImageUtil.getImageByType(series.images, ImageTypes.cover))
+              ImageUtil.getImageByType(series.images, ImageTypes.cover))
         : null;
     return MusicDetailHero(
       imageUrl: img != null
-          ? ImageUtil.buildUrl(img,
-              token: StreamTokenService.getToken(widget.serverName))
+          ? ImageUtil.buildUrl(
+              img,
+              token: StreamTokenService.getToken(widget.serverName),
+            )
           : null,
       blurHash: img?.blurHash,
       placeholderIcon: Icons.auto_stories,

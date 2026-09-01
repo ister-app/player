@@ -12,6 +12,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import 'BrowseListRow.dart';
 import 'CarouselItemView.dart';
+import 'MediaGrid.dart';
 import 'PagedContentView.dart' show pagedSkeletonRow, pagedSkeletonSlot;
 
 class TvShowScroll extends StatefulWidget {
@@ -62,11 +63,13 @@ class _TvShowScrollState extends State<TvShowScroll> {
             return previous!;
           }
 
-          final fresh =
-              (fetchMoreResult['shows']['content'] as List<dynamic>)
-                  .map((e) => Query$shows$shows$content.fromJson(
-                      e as Map<String, dynamic>))
-                  .toList();
+          final fresh = (fetchMoreResult['shows']['content'] as List<dynamic>)
+              .map(
+                (e) => Query$shows$shows$content.fromJson(
+                  e as Map<String, dynamic>,
+                ),
+              )
+              .toList();
 
           if (mounted) {
             setState(() => _pageData[page] = fresh);
@@ -137,63 +140,76 @@ class _TvShowScrollState extends State<TvShowScroll> {
                 );
               }
               final show = pageItems[itemIndex];
-              final img =
-                  ImageUtil.getImageByType(show.images, ImageTypes.cover);
+              final img = ImageUtil.getImageByType(
+                show.images,
+                ImageTypes.cover,
+              );
               return BrowseListRow(
-                imageUrl: ImageUtil.buildUrl(img,
-                    token: StreamTokenService.getToken(widget.serverName)),
+                imageUrl: ImageUtil.buildUrl(
+                  img,
+                  token: StreamTokenService.getToken(widget.serverName),
+                ),
                 placeholderIcon: Icons.tv,
                 title: MetadataUtil.getTitle(show.metadata) ?? '',
                 subtitle: MetadataUtil.getDescription(show.metadata) ?? '',
-                onTap: () => AutoRouter.of(context)
-                    .push(ShowOverviewRoute(showId: show.id)),
+                onTap: () =>
+                    AutoRouter.of(context)
+                        .push(ShowOverviewRoute(showId: show.id)),
               );
             },
           );
         }
 
-        return GridView.builder(
-          // Attach to ShowHomePage's NestedScrollView so the view-selector header
-          // scrolls away with the grid (desktop does not inherit it implicitly).
-          primary: true,
-          padding: const EdgeInsets.all(8),
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 300,
-            childAspectRatio: 0.65,
-            mainAxisSpacing: 0,
-            crossAxisSpacing: 0,
-          ),
-          itemCount: itemCount,
-          itemBuilder: (context, index) {
-            final page = index ~/ _pageSize;
-            final itemIndex = index % _pageSize;
-            final pageItems = _pageData[page];
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return GridView.builder(
+              // Attach to ShowHomePage's NestedScrollView so the view-selector header
+              // scrolls away with the grid (desktop does not inherit it implicitly).
+              primary: true,
+              padding: const EdgeInsets.all(8),
+              gridDelegate: mediaGridDelegate(
+                context,
+                constraints.maxWidth,
+                artAspectRatio: 0.65,
+              ),
+              itemCount: itemCount,
+              itemBuilder: (context, index) {
+                final page = index ~/ _pageSize;
+                final itemIndex = index % _pageSize;
+                final pageItems = _pageData[page];
 
-            if (pageItems != null && itemIndex < pageItems.length) {
-              final show = pageItems[itemIndex];
-              final img =
-                  ImageUtil.getImageByType(show.images, ImageTypes.cover);
-              return CarouselItemView(
-                serverName: widget.serverName,
-                title: MetadataUtil.getTitle(show.metadata) ?? '',
-                subTitle: show.releaseYear > 0 ? '${show.releaseYear}' : '',
-                imageUrl: ImageUtil.buildUrl(img,
-                    token: StreamTokenService.getToken(widget.serverName)),
-                blurHash: img?.blurHash,
-                onTap: () => AutoRouter.of(context)
-                    .push(ShowOverviewRoute(showId: show.id)),
-              );
-            }
+                if (pageItems != null && itemIndex < pageItems.length) {
+                  final show = pageItems[itemIndex];
+                  final img = ImageUtil.getImageByType(
+                    show.images,
+                    ImageTypes.cover,
+                  );
+                  return CarouselItemView(
+                    serverName: widget.serverName,
+                    title: MetadataUtil.getTitle(show.metadata) ?? '',
+                    subTitle: show.releaseYear > 0 ? '${show.releaseYear}' : '',
+                    imageUrl: ImageUtil.buildUrl(
+                      img,
+                      token: StreamTokenService.getToken(widget.serverName),
+                    ),
+                    blurHash: img?.blurHash,
+                    onTap: () =>
+                        AutoRouter.of(context)
+                            .push(ShowOverviewRoute(showId: show.id)),
+                  );
+                }
 
-            // The shared slot, not a copy: the real tile's subtitle is a
-            // release year, and the hand-rolled mock was a ten-word bone.
-            return pagedSkeletonSlot(
-              key: ValueKey('tvshow-skeleton-$index'),
-              onVisible: () {
-                if (fetchMore != null) _requestPage(page, fetchMore);
+                // The shared slot, not a copy: the real tile's subtitle is a
+                // release year, and the hand-rolled mock was a ten-word bone.
+                return pagedSkeletonSlot(
+                  key: ValueKey('tvshow-skeleton-$index'),
+                  onVisible: () {
+                    if (fetchMore != null) _requestPage(page, fetchMore);
+                  },
+                  placeholderIcon: Icons.tv,
+                  subtitleWords: 1,
+                );
               },
-              placeholderIcon: Icons.tv,
-              subtitleWords: 1,
             );
           },
         );

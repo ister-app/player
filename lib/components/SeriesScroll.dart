@@ -10,6 +10,7 @@ import 'package:player/utils/StreamTokenService.dart';
 
 import '../graphql/fragmentSeries.graphql.dart';
 import 'BrowseListRow.dart';
+import 'MediaGrid.dart';
 import 'PagedContentView.dart';
 import 'SeriesCarouselTile.dart';
 
@@ -64,45 +65,55 @@ class SeriesScroll extends StatelessWidget {
                   onVisible: () => requestPage(index ~/ _pageSize),
                 );
               }
-              final img = series.cover ??
+              final img =
+                  series.cover ??
                   ImageUtil.getImageByType(series.images, ImageTypes.cover);
               return BrowseListRow(
-                imageUrl: ImageUtil.buildUrl(img,
-                    token: StreamTokenService.getToken(serverName)),
+                imageUrl: ImageUtil.buildUrl(
+                  img,
+                  token: StreamTokenService.getToken(serverName),
+                ),
                 placeholderIcon: Icons.auto_stories,
                 squareThumb: true,
                 title: series.name,
                 subtitle: series.startYear > 0 ? '${series.startYear}' : '',
-                onTap: () => AutoRouter.of(context)
-                    .push(SeriesRoute(seriesId: series.id)),
+                onTap: () =>
+                    AutoRouter.of(context)
+                        .push(SeriesRoute(seriesId: series.id)),
               );
             },
           );
         }
 
-        return GridView.builder(
-          // Attach to ShowHomePage's NestedScrollView so the view-selector header
-          // scrolls away with the grid (desktop does not inherit it implicitly).
-          primary: true,
-          padding: const EdgeInsets.all(8),
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 300,
-            childAspectRatio: SeriesCarouselTile.coverAspectRatio,
-            mainAxisSpacing: 0,
-            crossAxisSpacing: 0,
-          ),
-          itemCount: itemCount,
-          itemBuilder: (context, index) {
-            final series = data.itemAt(index);
-            if (series != null) {
-              return SeriesCarouselTile(serverName: serverName, series: series);
-            }
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return GridView.builder(
+              // Attach to ShowHomePage's NestedScrollView so the view-selector header
+              // scrolls away with the grid (desktop does not inherit it implicitly).
+              primary: true,
+              padding: const EdgeInsets.all(8),
+              gridDelegate: mediaGridDelegate(
+                context,
+                constraints.maxWidth,
+                artAspectRatio: SeriesCarouselTile.coverAspectRatio,
+              ),
+              itemCount: itemCount,
+              itemBuilder: (context, index) {
+                final series = data.itemAt(index);
+                if (series != null) {
+                  return SeriesCarouselTile(
+                    serverName: serverName,
+                    series: series,
+                  );
+                }
 
-            return pagedSkeletonSlot(
-              key: ValueKey('series-scroll-skeleton-$index'),
-              placeholderIcon: Icons.auto_stories,
-              subtitleWords: 1,
-              onVisible: () => requestPage(index ~/ _pageSize),
+                return pagedSkeletonSlot(
+                  key: ValueKey('series-scroll-skeleton-$index'),
+                  placeholderIcon: Icons.auto_stories,
+                  subtitleWords: 1,
+                  onVisible: () => requestPage(index ~/ _pageSize),
+                );
+              },
             );
           },
         );

@@ -10,6 +10,7 @@ import 'package:player/utils/StreamTokenService.dart';
 
 import 'BrowseListRow.dart';
 import 'CarouselItemView.dart';
+import 'MediaGrid.dart';
 import 'PagedContentView.dart';
 
 /// Scrollable grid or list of all artists in a music library, loaded page by
@@ -46,8 +47,7 @@ class ArtistScroll extends StatelessWidget {
       sorting: sorting,
       sortingOrder: sortingOrder,
       libraryId: libraryId,
-      extraVariables:
-          filter == null ? null : {'filter': filter!.toJson()},
+      extraVariables: filter == null ? null : {'filter': filter!.toJson()},
       onRefetch: onRefetch,
       pageSize: _pageSize,
       builder: (context, data, requestPage) {
@@ -69,56 +69,69 @@ class ArtistScroll extends StatelessWidget {
                   onVisible: () => requestPage(index ~/ _pageSize),
                 );
               }
-              final img =
-                  ImageUtil.getImageByType(artist.images, ImageTypes.cover);
+              final img = ImageUtil.getImageByType(
+                artist.images,
+                ImageTypes.cover,
+              );
               return BrowseListRow(
-                imageUrl: ImageUtil.buildUrl(img,
-                    token: StreamTokenService.getToken(serverName)),
+                imageUrl: ImageUtil.buildUrl(
+                  img,
+                  token: StreamTokenService.getToken(serverName),
+                ),
                 placeholderIcon: Icons.person,
                 squareThumb: true,
                 title: artist.name,
-                onTap: () => AutoRouter.of(context)
-                    .push(PersonRoute(personId: artist.id)),
+                onTap: () =>
+                    AutoRouter.of(context)
+                        .push(PersonRoute(personId: artist.id)),
               );
             },
           );
         }
 
-        return GridView.builder(
-          // Attach to ShowHomePage's NestedScrollView so the view-selector header
-          // scrolls away with the grid (desktop does not inherit it implicitly).
-          primary: true,
-          padding: const EdgeInsets.all(8),
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 300,
-            childAspectRatio: 1.0,
-            mainAxisSpacing: 0,
-            crossAxisSpacing: 0,
-          ),
-          itemCount: itemCount,
-          itemBuilder: (context, index) {
-            final artist = data.itemAt(index);
-            if (artist != null) {
-              final img =
-                  ImageUtil.getImageByType(artist.images, ImageTypes.cover);
-              return CarouselItemView(
-                serverName: serverName,
-                title: artist.name,
-                subTitle: '',
-                imageUrl: ImageUtil.buildUrl(img,
-                    token: StreamTokenService.getToken(serverName)),
-                blurHash: img?.blurHash,
-                placeholderIcon: Icons.person,
-                onTap: () => AutoRouter.of(context)
-                    .push(PersonRoute(personId: artist.id)),
-              );
-            }
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return GridView.builder(
+              // Attach to ShowHomePage's NestedScrollView so the view-selector header
+              // scrolls away with the grid (desktop does not inherit it implicitly).
+              primary: true,
+              padding: const EdgeInsets.all(8),
+              gridDelegate: mediaGridDelegate(
+                context,
+                constraints.maxWidth,
+                artAspectRatio: 1.0,
+              ),
+              itemCount: itemCount,
+              itemBuilder: (context, index) {
+                final artist = data.itemAt(index);
+                if (artist != null) {
+                  final img = ImageUtil.getImageByType(
+                    artist.images,
+                    ImageTypes.cover,
+                  );
+                  return CarouselItemView(
+                    serverName: serverName,
+                    title: artist.name,
+                    subTitle: '',
+                    imageUrl: ImageUtil.buildUrl(
+                      img,
+                      token: StreamTokenService.getToken(serverName),
+                    ),
+                    blurHash: img?.blurHash,
+                    placeholderIcon: Icons.person,
+                    onTap: () =>
+                        AutoRouter.of(context)
+                            .push(PersonRoute(personId: artist.id)),
+                  );
+                }
 
-            return pagedSkeletonSlot(
-              key: ValueKey('artist-scroll-skeleton-$index'),
-              placeholderIcon: Icons.person,
-              subtitleWords: 0,
-              onVisible: () => requestPage(index ~/ _pageSize),
+                return pagedSkeletonSlot(
+                  key: ValueKey('artist-scroll-skeleton-$index'),
+                  placeholderIcon: Icons.person,
+                  subtitleWords: 0,
+                  onVisible: () => requestPage(index ~/ _pageSize),
+                );
+              },
             );
           },
         );

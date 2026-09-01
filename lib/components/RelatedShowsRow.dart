@@ -11,13 +11,17 @@ import 'package:skeletonizer/skeletonizer.dart';
 
 import '../l10n/app_localizations.dart';
 import 'CarouselItemView.dart';
+import 'MediaGrid.dart';
 import 'RowHeader.dart';
 import 'SkeletonPlaceholder.dart';
 
-/// Height of the strip and width of a single tile — the same backdrop tiles
-/// the home-page carousels use, so the row reads as one of them.
-const double _kRelatedRowHeight = 200;
+/// Artwork height of the strip and width of a single tile — the same backdrop
+/// tiles the home-page carousels use, so the row reads as one of them. The
+/// strip itself is taller by the caption under the artwork.
+const double _kRelatedArtHeight = 200;
 const double _kRelatedTileWidth = 300;
+double _kRelatedRowHeight(BuildContext context) =>
+    _kRelatedArtHeight + CarouselItemView.captionHeightOf(context);
 
 /// How many tiles the strip reserves while the query is in flight. Shared with
 /// [RelatedShowsRowSkeleton] so the show page's own skeleton reserves exactly
@@ -30,24 +34,24 @@ const int kRelatedShowsPageLimit = 60;
 
 /// The section header above every related-shows strip.
 Widget _relatedHeader(BuildContext context, {VoidCallback? onTap}) => RowHeader(
-      label: AppLocalizations.of(context)!.relatedShows,
-      style: Theme.of(context).textTheme.titleMedium,
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-      trailingColon: false,
-      onTap: onTap,
-    );
+  label: AppLocalizations.of(context)!.relatedShows,
+  style: Theme.of(context).textTheme.titleMedium,
+  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+  trailingColon: false,
+  onTap: onTap,
+);
 
 /// The strip's outer shell: full width, capped like the rest of the page.
 Widget _relatedShell(BuildContext context, List<Widget> children) => Center(
-      child: Container(
-        width: double.infinity,
-        constraints: const BoxConstraints(maxWidth: 1600),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: children,
-        ),
-      ),
-    );
+  child: Container(
+    width: double.infinity,
+    constraints: const BoxConstraints(maxWidth: 1600),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
+    ),
+  ),
+);
 
 /// The loading stand-in for the strip: the same header and the same tiles the
 /// live row shows while its query is in flight.
@@ -63,7 +67,7 @@ class RelatedShowsRowSkeleton extends StatelessWidget {
     return _relatedShell(context, [
       _relatedHeader(context),
       SizedBox(
-        height: _kRelatedRowHeight,
+        height: _kRelatedRowHeight(context),
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -145,7 +149,7 @@ class RelatedShowsRow extends StatelessWidget {
         }
         final shows =
             Query$relatedShows.fromJson(result.data!).showById?.related ??
-                const [];
+            const [];
         // An older server without the field, or simply a show that shares
         // nothing with its neighbours: collapse instead of showing a bare
         // header.
@@ -157,25 +161,28 @@ class RelatedShowsRow extends StatelessWidget {
             _RelatedTile(serverName: serverName, show: shows[index]);
 
         if (asGrid) {
-          return GridView.builder(
-            padding: const EdgeInsets.all(8),
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: _kRelatedTileWidth,
-              childAspectRatio: _kRelatedTileWidth / _kRelatedRowHeight,
+          return LayoutBuilder(
+            builder: (context, constraints) => GridView.builder(
+              padding: const EdgeInsets.all(8),
+              gridDelegate: mediaGridDelegate(
+                context,
+                constraints.maxWidth,
+                artAspectRatio: _kRelatedTileWidth / _kRelatedArtHeight,
+              ),
+              itemCount: shows.length,
+              itemBuilder: (context, index) => tile(index),
             ),
-            itemCount: shows.length,
-            itemBuilder: (context, index) => tile(index),
           );
         }
 
         return _relatedShell(context, [
           _relatedHeader(
             context,
-            onTap: () => AutoRouter.of(context)
-                .push(RelatedShowsRoute(showId: showId)),
+            onTap: () =>
+                AutoRouter.of(context).push(RelatedShowsRoute(showId: showId)),
           ),
           SizedBox(
-            height: _kRelatedRowHeight,
+            height: _kRelatedRowHeight(context),
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -197,15 +204,18 @@ class _RelatedShowsGridSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(8),
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: _kRelatedTileWidth,
-        childAspectRatio: _kRelatedTileWidth / _kRelatedRowHeight,
+    return LayoutBuilder(
+      builder: (context, constraints) => GridView.builder(
+        padding: const EdgeInsets.all(8),
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: mediaGridDelegate(
+          context,
+          constraints.maxWidth,
+          artAspectRatio: _kRelatedTileWidth / _kRelatedArtHeight,
+        ),
+        itemCount: kRelatedPlaceholderCount,
+        itemBuilder: (context, index) => const _RelatedSkeletonTile(),
       ),
-      itemCount: kRelatedPlaceholderCount,
-      itemBuilder: (context, index) => const _RelatedSkeletonTile(),
     );
   }
 }
@@ -224,8 +234,10 @@ class _RelatedTile extends StatelessWidget {
       serverName: serverName,
       title: MetadataUtil.getTitle(show.metadata) ?? show.name,
       subTitle: show.releaseYear > 0 ? '${show.releaseYear}' : '',
-      imageUrl: ImageUtil.buildUrl(image,
-          token: StreamTokenService.getToken(serverName)),
+      imageUrl: ImageUtil.buildUrl(
+        image,
+        token: StreamTokenService.getToken(serverName),
+      ),
       blurHash: image?.blurHash,
       placeholderIcon: Icons.tv,
       onTap: () =>

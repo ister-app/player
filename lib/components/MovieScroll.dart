@@ -11,6 +11,7 @@ import 'package:player/utils/StreamTokenService.dart';
 
 import 'BrowseListRow.dart';
 import 'CarouselItemView.dart';
+import 'MediaGrid.dart';
 import 'PagedContentView.dart';
 
 /// Scrollable grid or list of all movies in a library, loaded page by page.
@@ -45,8 +46,7 @@ class MovieScroll extends StatelessWidget {
       sorting: sorting,
       sortingOrder: sortingOrder,
       libraryId: libraryId,
-      extraVariables:
-          filter == null ? null : {'filter': filter!.toJson()},
+      extraVariables: filter == null ? null : {'filter': filter!.toJson()},
       onRefetch: onRefetch,
       pageSize: _pageSize,
       builder: (context, data, requestPage) {
@@ -66,11 +66,15 @@ class MovieScroll extends StatelessWidget {
                   onVisible: () => requestPage(index ~/ _pageSize),
                 );
               }
-              final img =
-                  ImageUtil.getImageByType(movie.images, ImageTypes.cover);
+              final img = ImageUtil.getImageByType(
+                movie.images,
+                ImageTypes.cover,
+              );
               return BrowseListRow(
-                imageUrl: ImageUtil.buildUrl(img,
-                    token: StreamTokenService.getToken(serverName)),
+                imageUrl: ImageUtil.buildUrl(
+                  img,
+                  token: StreamTokenService.getToken(serverName),
+                ),
                 placeholderIcon: Icons.movie,
                 title: MetadataUtil.getTitle(movie.metadata) ?? movie.name,
                 subtitle: MetadataUtil.getDescription(movie.metadata) ?? '',
@@ -81,39 +85,47 @@ class MovieScroll extends StatelessWidget {
           );
         }
 
-        return GridView.builder(
-          // Attach to ShowHomePage's NestedScrollView so the view-selector header
-          // scrolls away with the grid (desktop does not inherit it implicitly).
-          primary: true,
-          padding: const EdgeInsets.all(8),
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 300,
-            childAspectRatio: 0.65,
-            mainAxisSpacing: 0,
-            crossAxisSpacing: 0,
-          ),
-          itemCount: itemCount,
-          itemBuilder: (context, index) {
-            final movie = data.itemAt(index);
-            if (movie != null) {
-              final img =
-                  ImageUtil.getImageByType(movie.images, ImageTypes.cover);
-              return CarouselItemView(
-                serverName: serverName,
-                title: MetadataUtil.getTitle(movie.metadata) ?? movie.name,
-                subTitle: MetadataUtil.getDescription(movie.metadata) ?? '',
-                imageUrl: ImageUtil.buildUrl(img,
-                    token: StreamTokenService.getToken(serverName)),
-                blurHash: img?.blurHash,
-                onTap: () =>
-                    AutoRouter.of(context).push(MovieRoute(movieId: movie.id)),
-              );
-            }
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return GridView.builder(
+              // Attach to ShowHomePage's NestedScrollView so the view-selector header
+              // scrolls away with the grid (desktop does not inherit it implicitly).
+              primary: true,
+              padding: const EdgeInsets.all(8),
+              gridDelegate: mediaGridDelegate(
+                context,
+                constraints.maxWidth,
+                artAspectRatio: 0.65,
+              ),
+              itemCount: itemCount,
+              itemBuilder: (context, index) {
+                final movie = data.itemAt(index);
+                if (movie != null) {
+                  final img = ImageUtil.getImageByType(
+                    movie.images,
+                    ImageTypes.cover,
+                  );
+                  return CarouselItemView(
+                    serverName: serverName,
+                    title: MetadataUtil.getTitle(movie.metadata) ?? movie.name,
+                    subTitle: MetadataUtil.getDescription(movie.metadata) ?? '',
+                    imageUrl: ImageUtil.buildUrl(
+                      img,
+                      token: StreamTokenService.getToken(serverName),
+                    ),
+                    blurHash: img?.blurHash,
+                    onTap: () =>
+                        AutoRouter.of(context)
+                            .push(MovieRoute(movieId: movie.id)),
+                  );
+                }
 
-            return pagedSkeletonSlot(
-              key: ValueKey('movie-scroll-skeleton-$index'),
-              subtitleWords: 4,
-              onVisible: () => requestPage(index ~/ _pageSize),
+                return pagedSkeletonSlot(
+                  key: ValueKey('movie-scroll-skeleton-$index'),
+                  subtitleWords: 4,
+                  onVisible: () => requestPage(index ~/ _pageSize),
+                );
+              },
             );
           },
         );
