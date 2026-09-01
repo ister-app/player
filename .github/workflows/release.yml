@@ -553,6 +553,26 @@ jobs:
           VERSION: ${{ needs.gate.outputs.version }}
         run: mv build/ios/ipa/*.ipa "player-ios-${VERSION}.ipa"
 
+      # The archive is unsigned, so the entitlements only materialise when the
+      # export step signs with the cloud-managed profile. If the CarPlay Audio
+      # capability is ever dropped from the app.ister.player App ID, automatic
+      # signing quietly hands back a profile without it and the app disappears
+      # from the CarPlay home screen — with no build failure to explain why.
+      - name: Verify the CarPlay entitlement survived signing
+        env:
+          VERSION: ${{ needs.gate.outputs.version }}
+        run: |
+          rm -rf "$RUNNER_TEMP/ipacheck"
+          unzip -q "player-ios-${VERSION}.ipa" -d "$RUNNER_TEMP/ipacheck"
+          APP=$(echo "$RUNNER_TEMP/ipacheck/Payload/"*.app)
+          codesign -d --entitlements - --xml "$APP" > "$RUNNER_TEMP/ipa-entitlements.plist"
+          plutil -p "$RUNNER_TEMP/ipa-entitlements.plist"
+          if ! /usr/libexec/PlistBuddy -c 'Print :com.apple.developer.carplay-audio' \
+               "$RUNNER_TEMP/ipa-entitlements.plist" 2>/dev/null | grep -q true; then
+            echo "::error::com.apple.developer.carplay-audio missing from the signed ipa — check the capability on the App ID"
+            exit 1
+          fi
+
       - uses: actions/upload-artifact@v7
         with:
           name: ios-ipa

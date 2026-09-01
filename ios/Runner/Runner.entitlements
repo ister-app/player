@@ -2,10 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- Needed for the app icon to appear on the CarPlay home screen. The
-	     simulator accepts this unapproved; device/TestFlight builds need
-	     Apple's CarPlay Audio grant, so Release does not reference this file
-	     until that lands (see CODE_SIGN_ENTITLEMENTS in project.pbxproj). -->
+	<!-- Needed for the app icon to appear on the CarPlay home screen. Apple
+	     granted the CarPlay Audio App entitlement on 2026-09-01, so every
+	     configuration (Debug/Profile/Release) references this file; the
+	     capability must stay enabled on the app.ister.player App ID or
+	     automatic signing cannot mint a matching profile at export time.
+	     release.yml asserts the key survives into the signed ipa. -->
 	<key>com.apple.developer.carplay-audio</key>
 	<true/>
 </dict>
