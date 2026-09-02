@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/components/VideoCoverView.dart';
@@ -12,6 +13,8 @@ import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/LoginManager.dart';
 import 'package:player/utils/WellKnownService.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'hang_watchdog.dart';
 
 /// The server identifier as typed into the app. The kind cluster's ister-server
 /// service is expected on localhost:8080 via kubectl port-forward; the chart's
@@ -67,6 +70,22 @@ Future<String> mintToken({bool admin = false}) async {
 
 bool _appBooted = false;
 
+/// Marks a step of the test on stderr, live, and feeds the hang watchdog
+/// (see hang_watchdog.dart). Call it at every stop of a test: when a test
+/// hangs, the last traced step is the one thing the CI log has to go on.
+void trace(String step) => traceStep(step);
+
+/// The scheduler's view for the watchdog report: a pump that never returns
+/// shows up as a frame that stays scheduled and never gets produced.
+Map<String, Object?> _schedulerState() {
+  final scheduler = SchedulerBinding.instance;
+  return {
+    'phase': scheduler.schedulerPhase.name,
+    'hasScheduledFrame': scheduler.hasScheduledFrame,
+    'framesEnabled': scheduler.framesEnabled,
+  };
+}
+
 /// Installs the token seam, optionally seeds the server list, and boots the
 /// real app (once per process). The app always starts on the server overview:
 /// the deep-link entry cannot express a server identifier containing a path
@@ -93,8 +112,11 @@ Future<void> bootApp(
         'keep one testWidgets per integration test file');
   }
   _appBooted = true;
+  await startHangWatchdog(extraState: _schedulerState);
+  trace('bootApp: starting the app');
   await app.main();
   await tester.pump();
+  trace('bootApp: first frame pumped');
 }
 
 /// From the server overview, opens the (seeded) server's card and waits for
@@ -102,6 +124,7 @@ Future<void> bootApp(
 /// snapshot layers make a synthesized pointer tap land on the wrong render
 /// object while the well-known fetch is settling.
 Future<void> enterServerShell(WidgetTester tester) async {
+  trace('enterServerShell');
   await pumpUntilFound(tester, find.textContaining('http://'),
       timeout: const Duration(seconds: 30));
   final tile = tester.widget<ListTile>(find.byType(ListTile).first);
@@ -128,6 +151,7 @@ Future<void> pumpUntilFound(
   Finder finder, {
   Duration timeout = const Duration(seconds: 30),
 }) async {
+  trace('waiting for $finder');
   final deadline = DateTime.now().add(timeout);
   while (DateTime.now().isBefore(deadline)) {
     await tester.pump(const Duration(milliseconds: 200));
@@ -158,6 +182,7 @@ Future<void> pumpUntil(
   Duration timeout = const Duration(seconds: 30),
   String description = 'condition',
 }) async {
+  trace('waiting for $description');
   final deadline = DateTime.now().add(timeout);
   while (DateTime.now().isBefore(deadline)) {
     await tester.pump(const Duration(milliseconds: 200));
@@ -236,6 +261,7 @@ Future<dynamic> restGet(String pathAndQuery) async {
 /// app's own tiles do: from a context inside the server shell, so the
 /// `serverName` path param is inherited. Call after [enterServerShell].
 Future<void> pushRoute(WidgetTester tester, PageRouteInfo route) async {
+  trace('pushRoute ${route.routeName}');
   final context = tester.element(find.byType(Scaffold).last);
   final future = AutoRouter.of(context).push(route);
   await tester.pump();

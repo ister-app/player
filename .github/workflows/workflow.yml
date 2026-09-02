@@ -213,7 +213,7 @@ jobs:
     name: Integration tests on kind
     if: ${{ github.event_name == 'pull_request' || !startsWith(github.event.head_commit.message, 'chore(release):') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 50
     # Deliberately NOT continue-on-error: it hid red e2e runs for days (a green run
     # said nothing about this job), and the schema preflight below now removes the
     # main source of expected-but-confusing failures.
@@ -284,7 +284,7 @@ jobs:
       - name: Install dependencies from Apt
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg zip curl git unzip xz-utils libglu1-mesa clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libmpv-dev mpv libsecret-1-0 libsecret-1-dev libjsoncpp25 libjsoncpp-dev xvfb dbus-x11 pulseaudio
+          sudo apt-get install -y ffmpeg zip curl git unzip xz-utils libglu1-mesa clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libmpv-dev mpv libsecret-1-0 libsecret-1-dev libjsoncpp25 libjsoncpp-dev xvfb dbus-x11 pulseaudio gdb imagemagick x11-utils
 
       - uses: azure/setup-helm@v5
 
@@ -351,8 +351,37 @@ jobs:
           # restarted) from dragging every later file down as a cascade of test
           # failures: wait for recovery, and if it does not come back, fail once
           # with an infra label instead.
+          # Per-file `timeout`: the doc tour hung three times in one week (built,
+          # then 30 minutes of silence until the *job* timeout cancelled it — which
+          # skips the Diagnostics step and leaves nothing to debug). A file gets
+          # 12 minutes (the tour takes ~5, the rest ~1); two minutes before the kill
+          # a hang dump captures what a cancelled job never could: the app's
+          # process state, its native threads (a Dart isolate blocked in mpv/GL
+          # only shows up here — the in-test watchdog in
+          # integration_test/support/hang_watchdog.dart covers the Dart side and
+          # prints into this log by itself) and a screenshot of the Xvfb display.
+          # The dump dir and the failed files' logs are uploaded as the e2e-hang
+          # artifact.
           xvfb-run -a dbus-run-session -- bash -c '
             pulseaudio --start --exit-idle-time=-1 || true
+            hang_dir="$RUNNER_TEMP/e2e-hang"
+            mkdir -p "$hang_dir"
+            hang_dump() {
+              local name; name=$(basename "$1" .dart)
+              echo "::group::hang dump for $1 (no result after 10 minutes)"
+              local pid; pid=$(pgrep -f "build/linux/x64/debug/bundle/player" | head -1)
+              echo "app pid: ${pid:-not running}"
+              if [ -n "$pid" ]; then
+                grep -E "^(State|Threads|VmRSS)" "/proc/$pid/status" || true
+                echo "--- native threads (gdb, 15 frames each)"
+                sudo gdb -p "$pid" -batch -ex "set pagination off" -ex "thread apply all bt 15" 2>&1 \
+                  | grep -vE "^\[New LWP|^warning:|^\[Thread debugging" | head -600 || true
+              fi
+              echo "--- X windows"
+              xwininfo -root -tree 2>&1 | head -30 || true
+              import -window root "$hang_dir/$name.png" 2>&1 || true
+              echo "::endgroup::"
+            }
             status=0
             for t in integration_test/*_test.dart; do
               waited=0
@@ -367,9 +396,19 @@ jobs:
                 echo "::warning::server was unhealthy before $t, recovered after ${waited}s"
               fi
               echo "=== $t"
-              log=$(mktemp)
-              flutter test "$t" -d linux --dart-define=ISTER_TEST_MODE=true 2>&1 | tee "$log"
+              log="$hang_dir/$(basename "$t" .dart).log"
+              ( sleep 600; hang_dump "$t" ) &
+              dumper=$!
+              timeout -k 30s 12m flutter test "$t" -d linux --dart-define=ISTER_TEST_MODE=true 2>&1 | tee "$log"
               code=${PIPESTATUS[0]}
+              pkill -P "$dumper" 2>/dev/null; kill "$dumper" 2>/dev/null; wait "$dumper" 2>/dev/null
+              if [ "$code" -eq 124 ] || [ "$code" -eq 137 ]; then
+                echo "::error::hang: $t gave no result within 12 minutes — see its last [e2e] trace line, the WATCHDOG report and the hang dump above"
+                # The killed flutter tool leaves the app behind; the next file needs the display.
+                pkill -f "build/linux/x64/debug/bundle/player" 2>/dev/null || true
+                status=1
+                continue
+              fi
               if [ "$code" -ne 0 ]; then
                 if grep -q "No tests were found." "$log" \
                     && grep -q "✅" "$log" && ! grep -q "❌" "$log"; then
@@ -378,8 +417,17 @@ jobs:
                   status=1
                 fi
               fi
+              [ "$code" -eq 0 ] && rm -f "$log"
             done
             exit $status'
+
+      - name: Upload hang dumps and failed-file logs
+        if: always() && steps.chart-e2e.outputs.supported == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-hang
+          path: ${{ runner.temp }}/e2e-hang
+          if-no-files-found: ignore
 
       - name: Diagnostics
         if: failure() && steps.chart-e2e.outputs.supported == 'true'

@@ -37,6 +37,7 @@ void main() {
   var docLocale = docLocales.first;
 
   Future<void> shot(WidgetTester tester, String name) async {
+    trace('shot $docLocale/$name');
     // Settle what can settle; live playback never goes idle, hence pump-based.
     for (var i = 0; i < 10; i++) {
       await tester.pump(const Duration(milliseconds: 100));
@@ -58,6 +59,7 @@ void main() {
 
   /// Pops the top-most route (a detail page pushed with [pushRoute]).
   Future<void> pop(WidgetTester tester) async {
+    trace('pop');
     final context = tester.element(find.byType(Scaffold).last);
     await AutoRouter.of(context).maybePop();
     await tester.pump(const Duration(milliseconds: 500));
@@ -69,6 +71,7 @@ void main() {
   /// the whole stack with a fresh overview instead. The sticky server must be
   /// cleared first, or the fresh ServerList auto-opens it again in initState.
   Future<void> resetToServerOverview(WidgetTester tester) async {
+    trace('resetToServerOverview');
     ClientManager.instance.lastClientUsed = null;
     final context = tester.element(find.byType(Scaffold).last);
     await AutoRouter.of(context).root.replaceAll([const HomeRoute()]);
@@ -364,6 +367,7 @@ void main() {
     WidgetsApp.debugAllowBannerOverride = false;
     for (final locale in docLocales) {
       docLocale = locale;
+      trace('locale pass $locale');
       binding.platformDispatcher.localeTestValue = Locale(locale);
       binding.platformDispatcher.localesTestValue = [Locale(locale)];
       if (locale == docLocales.first) {

@@ -115,6 +115,9 @@ dev_dependencies:
   auto_route_generator: ^10.2.3
   build_runner: ^2.5.4
   graphql_codegen: ^3.0.0
+  # integration_test/support/harness.dart's hang watchdog reads the main
+  # isolate's stack through the VM service when a test stops making progress.
+  vm_service: ^15.0.0
 
 flutter:
   generate: true
