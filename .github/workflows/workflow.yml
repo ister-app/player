@@ -369,10 +369,18 @@ jobs:
             hang_dump() {
               local name; name=$(basename "$1" .dart)
               echo "::group::hang dump for $1 (no result after 10 minutes)"
-              local pid; pid=$(pgrep -f "build/linux/x64/debug/bundle/player" | head -1)
+              # Anchored on argv[0]: an unanchored -f also matches this very bash -c
+              # script, whose command line contains the same path (that got a gdb
+              # dump of xvfb-run once).
+              local pid; pid=$(pgrep -f "^[^ ]*build/linux/x64/debug/bundle/player( |$)" | head -1)
               echo "app pid: ${pid:-not running}"
+              ps -eo pid,ppid,stat,etime,args | grep -E "bundle/player|flutter_tester|Xvfb" | grep -v grep || true
               if [ -n "$pid" ]; then
                 grep -E "^(State|Threads|VmRSS)" "/proc/$pid/status" || true
+                echo "--- thread states (comm / state / wchan)"
+                for task in /proc/$pid/task/*; do
+                  printf "%s %s %s\n" "$(cat $task/comm)" "$(awk "{print \$3}" $task/stat)" "$(cat $task/wchan 2>/dev/null)"
+                done || true
                 echo "--- native threads (gdb, 15 frames each)"
                 sudo gdb -p "$pid" -batch -ex "set pagination off" -ex "thread apply all bt 15" 2>&1 \
                   | grep -vE "^\[New LWP|^warning:|^\[Thread debugging" | head -600 || true
