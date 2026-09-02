@@ -68,10 +68,11 @@ installs it via `LoginManager.testTokenProvider` — a seam that is only consult
 `--dart-define=ISTER_TEST_MODE=true`, because the interactive OIDC flow cannot run headless.
 Navigate with `enterServerShell`/`pushRoute` (typed routes), never `pushPath`: a server identifier
 containing a path (`localhost:8080/api`) breaks URL-based deep links. Call `trace('…')` at every
-stop of a test: the reporter only prints a test's output once it *finishes*, so `trace` writes to
-stderr live, and `integration_test/support/hang_watchdog.dart` (armed by `bootApp`, a second
-isolate) prints the main isolate's Dart stack via the VM service when the heartbeat or the traced
-step stops moving. The CI loop in `workflow.yml` gives each file 12 minutes and takes a hang dump
+stop of a test: `flutter test -d linux` prints the app's output (stderr included) only once the
+test *finishes*, so `trace` also appends to the file in `$E2E_TRACE_FILE`, which the CI loop tails
+live, and `integration_test/support/hang_watchdog.dart` (armed by `bootApp`, a second isolate)
+prints the main isolate's Dart stack via the VM service when the heartbeat or the traced step
+stops moving. The CI loop in `workflow.yml` gives each file 12 minutes and takes a hang dump
 (app `/proc` state, native threads via gdb, Xvfb screenshot → `e2e-hang` artifact) after 10 —
 the doc tour used to hang ~1 in 8 runs right after its build, with nothing to debug.
 

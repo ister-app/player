@@ -10,13 +10,15 @@ import 'package:vm_service/vm_service_io.dart';
 
 /// Live progress trace + hang watchdog for the integration tests.
 ///
-/// The test reporter only prints a test's output once the test has *finished*,
-/// so a test that hangs (the doc tour did, three times in one week, right
-/// after its build with 30 minutes of silence until the job timeout) leaves
-/// nothing behind to say where it got stuck. [traceStep] therefore writes
-/// straight to the process's stderr, which `flutter test -d linux` forwards
-/// live (that is how mpv's own messages reach the CI log), and
-/// [startHangWatchdog] runs a second isolate that keeps checking on the main
+/// `flutter test -d linux` only prints the app's output (stdout *and* stderr,
+/// mpv's messages included) once the test has *finished*, so a test that
+/// hangs (the doc tour did, three times in one week, right after its build
+/// with 30 minutes of silence until the job timeout) leaves nothing behind to
+/// say where it got stuck. [traceStep] therefore also appends every line to
+/// the file named by the `E2E_TRACE_FILE` environment variable — the app
+/// inherits the tool's environment — which the CI loop tails live into the
+/// job log and uploads with the hang dump. [startHangWatchdog] runs a
+/// second isolate that keeps checking on the main
 /// one: it receives a heartbeat from a timer in the main isolate every few
 /// seconds (carrying the last traced step and whatever [extraState] adds) and
 /// when either stops moving it prints the main isolate's Dart stack through
@@ -60,11 +62,11 @@ Future<void> startHangWatchdog({
     }
     mainIsolateId = developer.Service.getIsolateId(Isolate.current);
   } catch (e) {
-    stderr.writeln('[e2e ${_clock()}] watchdog: no VM service ($e); '
+    _out('[e2e ${_clock()}] watchdog: no VM service ($e); '
         'it will report progress only, no stacks');
   }
   if (wsUri == null || mainIsolateId == null) {
-    stderr.writeln('[e2e ${_clock()}] watchdog: VM service not available '
+    _out('[e2e ${_clock()}] watchdog: VM service not available '
         '(uri=$wsUri isolate=$mainIsolateId); progress only, no stacks');
   }
   _watchdogIsolate = await Isolate.spawn(
@@ -83,7 +85,7 @@ Future<void> startHangWatchdog({
   _heartbeatTimer =
       Timer.periodic(heartbeatEvery, (_) => _watchdogPort?.send(_heartbeat()));
   _watchdogPort!.send(_heartbeat());
-  stderr.writeln('[e2e ${_clock()}] watchdog armed '
+  _out('[e2e ${_clock()}] watchdog armed '
       '(heartbeat stall ${heartbeatStall.inSeconds}s, '
       'step stall ${stepStall.inSeconds}s)');
 }
@@ -93,8 +95,22 @@ Future<void> startHangWatchdog({
 void traceStep(String step) {
   _lastStep = step;
   _lastStepAt = DateTime.now();
-  stderr.writeln('[e2e ${_clock()}] $step');
+  _out('[e2e ${_clock()}] $step');
   _watchdogPort?.send(_heartbeat());
+}
+
+/// One line to stderr and, when `E2E_TRACE_FILE` is set, appended to that
+/// file (opened per line: rare writes, from two isolates, must survive a
+/// process kill). Synchronous on purpose — the caller may be about to hang.
+void _out(String line) {
+  stderr.writeln(line);
+  final path = Platform.environment['E2E_TRACE_FILE'];
+  if (path == null || path.isEmpty) return;
+  try {
+    File(path).writeAsStringSync('$line\n', mode: FileMode.append, flush: true);
+  } catch (_) {
+    // A trace that cannot be written must never fail the test.
+  }
 }
 
 String _lastStep = 'not started';
@@ -178,9 +194,9 @@ Future<void> _watchdogMain(_WatchdogConfig config) async {
           '${beatStalled ? "the main isolate is NOT running its event loop "
               "(synchronous loop, blocking native call or deadlock)" : "the main isolate is alive; the test awaits something that never completes"}')
       ..writeln('  state          : $extra');
-    stderr.write(out);
+    _out(out.toString().trimRight());
     await _dumpMainIsolateStack(config);
-    stderr.writeln('[e2e ${_clock()}] ===== end of watchdog report =====');
+    _out('[e2e ${_clock()}] ===== end of watchdog report =====');
   }
 }
 
@@ -188,7 +204,7 @@ Future<void> _dumpMainIsolateStack(_WatchdogConfig config) async {
   final wsUri = config.wsUri;
   final isolateId = config.mainIsolateId;
   if (wsUri == null || isolateId == null) {
-    stderr.writeln('  (no VM service: no stack available)');
+    _out('  (no VM service: no stack available)');
     return;
   }
   vms.VmService? service;
@@ -221,13 +237,13 @@ Future<void> _dumpMainIsolateStack(_WatchdogConfig config) async {
 
     Future<void> printFrames(String title, List<vms.Frame>? frames) async {
       if (frames == null || frames.isEmpty) return;
-      stderr.writeln('  --- $title');
+      _out('  --- $title');
       for (final f in frames) {
         if (f.kind == vms.FrameKind.kAsyncSuspensionMarker) {
-          stderr.writeln('    <asynchronous suspension>');
+          _out('    <asynchronous suspension>');
           continue;
         }
-        stderr.writeln('    #${f.index}  ${await describe(f)}');
+        _out('    #${f.index}  ${await describe(f)}');
       }
     }
 
@@ -236,11 +252,11 @@ Future<void> _dumpMainIsolateStack(_WatchdogConfig config) async {
         'main isolate: async causal frames', stack.asyncCausalFrames);
     if ((stack.frames?.isEmpty ?? true) &&
         (stack.asyncCausalFrames?.isEmpty ?? true)) {
-      stderr.writeln('  main isolate has no Dart frames: idle in the event '
+      _out('  main isolate has no Dart frames: idle in the event '
           'loop, waiting on a future/frame that never arrives');
     }
   } catch (e) {
-    stderr.writeln('  (stack dump failed: $e — a main isolate blocked in '
+    _out('  (stack dump failed: $e — a main isolate blocked in '
         'native code cannot reach a safepoint; the native gdb dump in the '
         'workflow is the next stop)');
   } finally {

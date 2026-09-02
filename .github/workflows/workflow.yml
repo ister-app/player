@@ -397,11 +397,18 @@ jobs:
               fi
               echo "=== $t"
               log="$hang_dir/$(basename "$t" .dart).log"
+              # The tool prints the app output only once the test has finished, so
+              # the harness trace and watchdog lines also go to this file; tail it live.
+              export E2E_TRACE_FILE="$hang_dir/$(basename "$t" .dart).trace"
+              : > "$E2E_TRACE_FILE"
+              tail -n +1 -F "$E2E_TRACE_FILE" 2>/dev/null &
+              tailer=$!
               ( sleep 600; hang_dump "$t" ) &
               dumper=$!
               timeout -k 30s 12m flutter test "$t" -d linux --dart-define=ISTER_TEST_MODE=true 2>&1 | tee "$log"
               code=${PIPESTATUS[0]}
               pkill -P "$dumper" 2>/dev/null; kill "$dumper" 2>/dev/null; wait "$dumper" 2>/dev/null
+              sleep 1; kill "$tailer" 2>/dev/null; wait "$tailer" 2>/dev/null
               if [ "$code" -eq 124 ] || [ "$code" -eq 137 ]; then
                 echo "::error::hang: $t gave no result within 12 minutes — see its last [e2e] trace line, the WATCHDOG report and the hang dump above"
                 # The killed flutter tool leaves the app behind; the next file needs the display.
@@ -417,7 +424,7 @@ jobs:
                   status=1
                 fi
               fi
-              [ "$code" -eq 0 ] && rm -f "$log"
+              [ "$code" -eq 0 ] && rm -f "$log" "$E2E_TRACE_FILE"
             done
             exit $status'
 
