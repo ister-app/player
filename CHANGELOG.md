@@ -1,5 +1,34 @@
 # Changelog
 
+## player v2.6.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.6.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(ui): card tiles with captions below artwork and three-column phone grids ([`6051c05`](https://github.com/ister-app/player/commit/6051c05))
+
+### Other
+
+- ci(e2e): dump the app's threads, not xvfb-run's, in the hang dump ([`b7cdfa1`](https://github.com/ister-app/player/commit/b7cdfa1))
+- ci(e2e): tail the harness trace from a file — the tool prints app output only after the test ([`057132c`](https://github.com/ister-app/player/commit/057132c))
+- ci(e2e): per-file timeout, hang dump and an in-test watchdog for silent hangs ([`a11969c`](https://github.com/ister-app/player/commit/a11969c))
+- ci(ios): ship the CarPlay entitlement in release builds ([`c309bf5`](https://github.com/ister-app/player/commit/c309bf5))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.6.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.5.0...v2.6.0
+
 ## player v2.5.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
