@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -10,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:player/components/reader/ReaderChrome.dart';
 import 'package:player/l10n/app_localizations.dart';
+import 'package:flutter/foundation.dart';
 import 'package:player/pages/ComicReaderPage.dart';
 import 'package:player/utils/comic/ComicPageSource.dart';
 import 'package:player/utils/comic/ComicPreferences.dart';
@@ -19,6 +21,19 @@ import 'package:shared_preferences_platform_interface/shared_preferences_async_p
 /// A 1×1 transparent PNG; every page image in the tests is this.
 final Uint8List _pixel = base64Decode(
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==');
+
+/// An image that never produces a frame — stands in for a page still coming
+/// off the network.
+class _NeverDecodesImage extends ImageProvider<_NeverDecodesImage> {
+  @override
+  Future<_NeverDecodesImage> obtainKey(ImageConfiguration configuration) =>
+      SynchronousFuture<_NeverDecodesImage>(this);
+
+  @override
+  ImageStreamCompleter loadImage(
+          _NeverDecodesImage key, ImageDecoderCallback decode) =>
+      OneFrameImageStreamCompleter(Completer<ImageInfo>().future);
+}
 
 String _manifest(int pages, {String format = 'CBZ'}) => json.encode({
       'mediaFileId': 'file-1',
@@ -168,6 +183,24 @@ void main() {
 
   tearDown(() {
     CbzPageSource.providerFactory = null;
+  });
+
+  testWidgets('a page that has not decoded shows a skeleton, not black',
+      (tester) async {
+    CbzPageSource.providerFactory = (_, __) => _NeverDecodesImage();
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app());
+      // Not pumpAndSettle: the skeleton shimmer never settles.
+      for (var i = 0;
+          i < 40 && find.text('Page 1 of 10').evaluate().isEmpty;
+          i++) {
+        await tester.pump(const Duration(milliseconds: 20));
+      }
+      // The comic itself is open (the page label is up) while its artwork is
+      // still coming, and that wait is a skeleton rather than a black screen.
+      expect(find.text('Page 1 of 10'), findsOneWidget);
+      expect(find.byType(ComicPageSkeleton), findsWidgets);
+    }, () => _fakeServer([]));
   });
 
   testWidgets('opens at the first page and shows the page label',

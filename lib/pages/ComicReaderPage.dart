@@ -24,6 +24,7 @@ import 'package:player/utils/download/DownloadService.dart';
 import 'package:player/utils/comic/SeriesDirectionService.dart';
 import 'package:player/utils/ReaderFullscreen.dart';
 import 'package:player/utils/ScreenWakelock.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 /// The comic reader: page images in a swiping [PageView], one *spread* per
 /// view — a single page, or two side by side on a wide viewport. Handles
@@ -627,6 +628,11 @@ class _ComicReaderPageState extends State<ComicReaderPage>
                           errorBuilder: (_, __, ___) => const Center(
                               child: Icon(Icons.broken_image,
                                   color: Colors.white38)),
+                          frameBuilder: (context, child, frame,
+                                  wasSynchronouslyLoaded) =>
+                              wasSynchronouslyLoaded || frame != null
+                                  ? child
+                                  : const ComicPageSkeleton(),
                         ),
                       ),
                     ),
@@ -658,7 +664,9 @@ class _ComicReaderPageState extends State<ComicReaderPage>
   Widget _pageArea(AppLocalizations loc) {
     final source = _source;
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      // Same stand-in as a page that is still decoding, so opening a comic
+      // and turning to an uncached page look like one continuous load.
+      return const ComicPageSkeleton();
     }
     if (_loadFailed || source == null || _pageController == null) {
       return Center(
@@ -882,10 +890,15 @@ class _SpreadViewState extends State<_SpreadView> {
         gaplessPlayback: true,
         errorBuilder: (_, __, ___) => const Center(
             child: Icon(Icons.broken_image, color: Colors.white38, size: 48)),
-        loadingBuilder: (context, child, progress) => progress == null
-            ? child
-            : const Center(
-                child: CircularProgressIndicator(color: Colors.white38)),
+        // A page that has not decoded yet paints nothing, which on the
+        // reader's black backdrop looked like a hung app. The skeleton also
+        // replaces the old spinner: it only appeared once the provider
+        // reported download progress, which the cached/local providers never
+        // do, so the wait was black either way.
+        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) =>
+            wasSynchronouslyLoaded || frame != null
+                ? child
+                : const ComicPageSkeleton(),
       );
 
   @override
@@ -917,6 +930,11 @@ class _SpreadViewState extends State<_SpreadView> {
                       height: 200,
                       child: Icon(Icons.broken_image,
                           color: Colors.white38, size: 48)),
+                  frameBuilder:
+                      (context, child, frame, wasSynchronouslyLoaded) =>
+                          wasSynchronouslyLoaded || frame != null
+                              ? child
+                              : const ComicPageSkeleton(),
                 )),
             ],
           ),
@@ -939,4 +957,39 @@ class _SpreadViewState extends State<_SpreadView> {
       ),
     );
   }
+}
+
+/// Shimmering stand-in for a comic page that is still loading — the reader
+/// sits on a black backdrop, where an undecoded [Image] paints nothing at all
+/// and reads as a hung app. Page-shaped and centred, so the placeholder lands
+/// roughly where the artwork will.
+class ComicPageSkeleton extends StatelessWidget {
+  const ComicPageSkeleton({super.key});
+
+  /// Portrait, near enough to a comic page; the real one replaces it as soon
+  /// as its first frame decodes.
+  static const double _aspectRatio = 2 / 3;
+
+  @override
+  Widget build(BuildContext context) => Skeletonizer(
+        // Spelled out rather than taken from the ambient colour scheme: the
+        // reader is dark whatever the app's theme is. Deliberately *not* a
+        // shimmer — a page can sit here for a while on a slow connection, and
+        // an animation that never ends also makes `pumpAndSettle` unusable in
+        // every reader test (images never decode in a widget test, so the
+        // placeholder is always on screen there).
+        effect: const SoldColorEffect(color: Color(0x1FFFFFFF)),
+        child: Center(
+          child: AspectRatio(
+            aspectRatio: _aspectRatio,
+            child: Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+        ),
+      );
 }
