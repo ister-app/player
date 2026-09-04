@@ -1,4 +1,5 @@
 import 'package:cached_network_image_ce/cached_network_image.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:player/components/ArtworkImage.dart';
 import 'package:player/utils/ArtworkSizing.dart';
@@ -134,6 +135,36 @@ void main() {
     test('asks the server for the bucket that covers the painted size', () {
       expect(describe(isWeb: false).imageUrl, '$_artwork?width=320&token=abc');
       expect(describe(isWeb: false).cacheKey, '$_artwork?width=320');
+    });
+
+    test('providerFor sizes the url and caps the decode off-widget', () {
+      // The blurred backdrop and epub images have no layout to measure, so
+      // they name a width. Native wraps in ResizeImage; web cannot (the
+      // HttpGet loader sets its own target size and ResizeImage asserts on
+      // that), so there the provider's own maxWidth does the work.
+      final provider = ArtworkImage.providerFor('$_artwork?token=abc',
+          physicalWidth: 320) as ResizeImage;
+
+      expect(provider.width, 320);
+      expect(provider.allowUpscaling, isFalse);
+      final inner = provider.imageProvider as CachedNetworkImageProvider;
+      expect(inner.url, '$_artwork?width=320&token=abc');
+      expect(inner.cacheKey, '$_artwork?width=320');
+    });
+
+    test('providerFor is null for no url, so callers can bail out', () {
+      expect(ArtworkImage.providerFor(null, physicalWidth: 320), isNull);
+      expect(ArtworkImage.providerFor('', physicalWidth: 320), isNull);
+    });
+
+    test('providerFor leaves a non-artwork url alone but still caps it', () {
+      final provider = ArtworkImage.providerFor(
+          'https://media.example.org/api/epub/abc/resource/img.png',
+          physicalWidth: 1080) as ResizeImage;
+
+      expect((provider.imageProvider as CachedNetworkImageProvider).url,
+          'https://media.example.org/api/epub/abc/resource/img.png');
+      expect(provider.width, 1080);
     });
 
     test('takes the original above the top bucket but still caps the decode', () {
