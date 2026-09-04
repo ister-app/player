@@ -23,6 +23,13 @@ class _TvShowSeasonExpansionPanelListState
     extends State<TvShowSeasonExpansionPanelList> {
   String? _expanded = "";
 
+  /// A show with a single season has nothing to choose between, so that season
+  /// stays open instead of hiding its episodes behind a tap.
+  bool get _singleSeason => widget.seasons?.length == 1;
+
+  bool _isExpanded(Query$showById$showById$seasons season) =>
+      _singleSeason || _expanded == season.id;
+
   @override
   Widget build(BuildContext context) {
     if (widget.seasons == null) {
@@ -30,6 +37,7 @@ class _TvShowSeasonExpansionPanelListState
     } else {
       return ExpansionPanelList(
           expansionCallback: (int index, bool isExpanded) {
+            if (_singleSeason) return;
             setState(() {
               if (isExpanded) {
                 _expanded = widget.seasons?[index].id;
@@ -43,21 +51,23 @@ class _TvShowSeasonExpansionPanelListState
                 headerBuilder: (context, isExpanded) => ListTile(
                     title: Text(
                         AppLocalizations.of(context)!.season(season.number)),
-                    onTap: () => setState(
-                          () {
-                            if (_expanded == season.id) {
-                              _expanded = null;
-                            } else {
-                              _expanded = season.id;
-                            }
-                          },
-                        )),
+                    onTap: _singleSeason
+                        ? null
+                        : () => setState(
+                              () {
+                                if (_expanded == season.id) {
+                                  _expanded = null;
+                                } else {
+                                  _expanded = season.id;
+                                }
+                              },
+                            )),
                 body: TvShowSeasonList(
                   serverName: widget.serverName,
                   seasonId: season.id,
-                  expanded: _expanded == season.id,
+                  expanded: _isExpanded(season),
                 ),
-                isExpanded: _expanded == season.id);
+                isExpanded: _isExpanded(season));
           }).toList());
     }
   }
