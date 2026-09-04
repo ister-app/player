@@ -15,7 +15,7 @@ class UserSettings {
     this.spokenLanguages = const [],
     this.subtitleLanguages = const [],
     this.directPlay = true,
-    this.transcode = true,
+    this.transcode = false,
     this.maxVideoHeight,
     this.autoSkipIntro = false,
     this.hideSubtitlesMatchingAudio = false,
@@ -25,6 +25,9 @@ class UserSettings {
   final List<String> spokenLanguages;
   final List<String> subtitleLanguages;
   final bool directPlay;
+
+  /// Whether the server's re-encoded variants may be played at all. Off by default: direct play
+  /// alone is the cheaper path, and web overrides both flags anyway (it cannot direct play).
   final bool transcode;
 
   /// Highest video variant the server pre-transcodes (720 / 480); null means every variant.
@@ -213,7 +216,7 @@ class UserSettingsService {
       spokenLanguages: spoken ?? const [],
       subtitleLanguages: subtitle ?? const [],
       directPlay: await _prefs.getBool('pref_direct_play_$server') ?? true,
-      transcode: await _prefs.getBool('pref_transcode_$server') ?? true,
+      transcode: await _prefs.getBool('pref_transcode_$server') ?? false,
       maxVideoHeight: await _prefs.getInt('pref_max_video_height_$server'),
       autoSkipIntro: await _prefs.getBool('pref_auto_skip_intro_$server') ?? false,
       hideSubtitlesMatchingAudio:

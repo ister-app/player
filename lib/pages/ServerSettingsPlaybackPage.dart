@@ -23,7 +23,7 @@ class ServerSettingsPlaybackPage extends StatefulWidget {
 class _ServerSettingsPlaybackPageState
     extends State<ServerSettingsPlaybackPage> {
   bool _directPlay = true;
-  bool _transcode = true;
+  bool _transcode = false;
   bool _autoSkipIntro = false;
   int? _maxVideoHeight;
   late Future<void> _preferencesFuture;
@@ -84,14 +84,18 @@ class _ServerSettingsPlaybackPageState
                     secondary: const Icon(Icons.play_circle_outline),
                     title: Text(loc.directPlay),
                     subtitle: Text(loc.directPlayDescription),
-                    value: _directPlay,
-                    onChanged: (value) {
-                      PlaybackPreferences.setDirectPlay(
-                        value,
-                        serverName: server,
-                      );
-                      setState(() => _directPlay = value);
-                    },
+                    // Web cannot direct play, so it streams the transcoded variants no matter
+                    // what is stored: show that instead of a switch that changes nothing.
+                    value: kIsWeb ? false : _directPlay,
+                    onChanged: kIsWeb
+                        ? null
+                        : (value) {
+                            PlaybackPreferences.setDirectPlay(
+                              value,
+                              serverName: server,
+                            );
+                            setState(() => _directPlay = value);
+                          },
                   ),
                   SwitchListTile(
                     key: const ValueKey('playback-transcode'),
