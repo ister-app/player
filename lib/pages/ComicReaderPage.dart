@@ -632,7 +632,7 @@ class _ComicReaderPageState extends State<ComicReaderPage>
                                   wasSynchronouslyLoaded) =>
                               wasSynchronouslyLoaded || frame != null
                                   ? child
-                                  : const ComicPageSkeleton(),
+                                  : ComicPageSkeleton.centered,
                         ),
                       ),
                     ),
@@ -666,7 +666,7 @@ class _ComicReaderPageState extends State<ComicReaderPage>
     if (_loading) {
       // Same stand-in as a page that is still decoding, so opening a comic
       // and turning to an uncached page look like one continuous load.
-      return const ComicPageSkeleton();
+      return ComicPageSkeleton.centered;
     }
     if (_loadFailed || source == null || _pageController == null) {
       return Center(
@@ -959,12 +959,23 @@ class _SpreadViewState extends State<_SpreadView> {
   }
 }
 
-/// Shimmering stand-in for a comic page that is still loading — the reader
-/// sits on a black backdrop, where an undecoded [Image] paints nothing at all
-/// and reads as a hung app. Page-shaped and centred, so the placeholder lands
-/// roughly where the artwork will.
+/// Stand-in for a comic page that is still loading — the reader sits on a
+/// black backdrop, where an undecoded [Image] paints nothing at all and reads
+/// as a hung app.
+///
+/// It shrink-wraps to a page-shaped block filling the slot it is given, with
+/// no margin of its own, so that in a two-page spread the two placeholders
+/// touch exactly like the two `BoxFit.contain` images that replace them — a
+/// centred, inset placeholder made the spread visibly jump apart as it
+/// decoded. Use [ComicPageSkeleton.centered] where the slot is a tightly
+/// constrained box (the whole reader area, a thumbnail cell) rather than a
+/// flex slot, since tight constraints would stretch the block.
 class ComicPageSkeleton extends StatelessWidget {
   const ComicPageSkeleton({super.key});
+
+  /// Wraps the page block in a [Center] so it keeps its page shape inside a
+  /// tightly constrained parent.
+  static const Widget centered = Center(child: ComicPageSkeleton());
 
   /// Portrait, near enough to a comic page; the real one replaces it as soon
   /// as its first frame decodes.
@@ -979,15 +990,12 @@ class ComicPageSkeleton extends StatelessWidget {
         // every reader test (images never decode in a widget test, so the
         // placeholder is always on screen there).
         effect: const SoldColorEffect(color: Color(0x1FFFFFFF)),
-        child: Center(
-          child: AspectRatio(
-            aspectRatio: _aspectRatio,
-            child: Container(
-              margin: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(4),
-              ),
+        child: AspectRatio(
+          aspectRatio: _aspectRatio,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(4),
             ),
           ),
         ),

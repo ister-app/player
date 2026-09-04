@@ -526,6 +526,42 @@ void main() {
     }, () => _fakeServer([]));
   });
 
+  testWidgets('the two placeholders of a spread touch, like the pages do',
+      (tester) async {
+    tester.view.physicalSize = const Size(1600, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await ComicPreferences.setRightToLeft('series-1', false);
+    CbzPageSource.providerFactory = (_, __) => _NeverDecodesImage();
+
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.pumpAndSettle();
+      expect(find.text('Page 2-3 of 10'), findsOneWidget);
+
+      // Page images never decode in a widget test, so both halves of the
+      // spread show the placeholder: they must sit flush against each other,
+      // exactly where the decoded pages will, or the spread visibly jumps
+      // apart as it loads.
+      // The AspectRatio, not the ComicPageSkeleton element: the painted page
+      // block is what has to line up, and a wrapper could fill the slot while
+      // the block inside it sits anywhere.
+      final placeholders = find.descendant(
+          of: find.descendant(
+              of: find.byType(PageView),
+              matching: find.byType(ComicPageSkeleton)),
+          matching: find.byType(AspectRatio));
+      expect(placeholders, findsNWidgets(2));
+      final boxes = [
+        for (var i = 0; i < 2; i++) tester.getRect(placeholders.at(i)),
+      ]..sort((a, b) => a.left.compareTo(b.left));
+      expect(boxes.first.right, moreOrLessEquals(boxes.last.left, epsilon: 0.5));
+      expect(boxes.first.height, moreOrLessEquals(boxes.last.height));
+    }, () => _fakeServer([]));
+  });
+
   testWidgets('reaching the last page reports progress 1.0', (tester) async {
     final posts = <Map<String, dynamic>>[];
     await http.runWithClient(() async {
