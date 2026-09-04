@@ -488,13 +488,23 @@ jobs:
 
       # The archive is deliberately built UNSIGNED: signing at archive time would
       # need an Apple Development certificate whose private key lives in a keychain,
-      # and the runner has none. (Forcing CODE_SIGN_IDENTITY="Apple Distribution" on
-      # the command line does not work either: the override hits every SwiftPM plugin
-      # target in the workspace, and Xcode rejects automatic signing combined with a
-      # manually specified identity.) The export step below does all the signing via
-      # Apple's cloud-managed Apple Distribution certificate: the API key mints or
-      # fetches the certificate and the App Store profile, so no keychain, .p12 or
-      # profile ever touches the runner.
+      # and the runner has none. (Forcing an identity on the command line does not
+      # work either: a command-line CODE_SIGN_IDENTITY cannot beat the pbxproj's
+      # sdk-qualified one, xcodebuild reads "CODE_SIGN_IDENTITY[sdk=iphoneos*]=-" as
+      # a certificate *named* 'iphoneos*]=-', and CODE_SIGN_STYLE=Manual then demands
+      # a provisioning profile even for ad-hoc.) The export step below does all the
+      # real signing via Apple's cloud-managed Apple Distribution certificate: the API
+      # key mints or fetches the certificate and the App Store profile, so no keychain,
+      # .p12 or profile ever touches the runner.
+      #
+      # But an unsigned archive means Xcode never runs ProcessProductPackaging, so
+      # Runner.entitlements never reaches the binary — and -exportArchive *preserves*
+      # the archived app's entitlements, it does not synthesise them from the pbxproj.
+      # v2.6.0 shipped an ipa with only the profile's four default keys because of
+      # that. So the archived app is ad-hoc signed by hand with the entitlements
+      # first: no keychain needed, no build setting touched (which is what keeps the
+      # SwiftPM plugin targets out of it), and the export re-signs everything properly
+      # afterwards. macOS gets the same shape for free — its pbxproj signs ad-hoc.
       - name: Build the signed ipa
         env:
           KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
@@ -511,6 +521,17 @@ jobs:
             -configuration Release -destination 'generic/platform=iOS' \
             -archivePath build/ios/archive/Runner.xcarchive archive \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+
+          # Ad-hoc sign the archived app with the entitlements, so the export below has
+          # something to carry over. Nested code first: codesign refuses a bundle whose
+          # frameworks are unsigned.
+          APP="build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app"
+          find "$APP/Frameworks" -maxdepth 1 \( -name '*.framework' -o -name '*.dylib' \) \
+            -exec codesign --force --sign - {} \;
+          [ -d "$APP/PlugIns" ] && find "$APP/PlugIns" -maxdepth 1 -name '*.appex' \
+            -exec codesign --force --sign - {} \; || true
+          codesign --force --sign - --generate-entitlement-der \
+            --entitlements ios/Runner/Runner.entitlements "$APP"
 
           # `app-store-connect` needs Xcode >= 15.3; macos-latest is well past that.
           cat > "$RUNNER_TEMP/ExportOptions.plist" <<'EOF'
@@ -553,11 +574,11 @@ jobs:
           VERSION: ${{ needs.gate.outputs.version }}
         run: mv build/ios/ipa/*.ipa "player-ios-${VERSION}.ipa"
 
-      # The archive is unsigned, so the entitlements only materialise when the
-      # export step signs with the cloud-managed profile. If the CarPlay Audio
-      # capability is ever dropped from the app.ister.player App ID, automatic
-      # signing quietly hands back a profile without it and the app disappears
-      # from the CarPlay home screen — with no build failure to explain why.
+      # Two ways to lose the entitlement, both silent: the ad-hoc signing above stops
+      # embedding it (then the archive is already wrong), or the CarPlay Audio
+      # capability is dropped from the app.ister.player App ID, after which automatic
+      # signing quietly hands back a profile without it and the app disappears from the
+      # CarPlay home screen. Either way the app still builds, installs and plays.
       - name: Verify the CarPlay entitlement survived signing
         env:
           VERSION: ${{ needs.gate.outputs.version }}
