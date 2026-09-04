@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:gql/ast.dart';
@@ -40,8 +38,6 @@ import '../components/SourceAttribution.dart';
 import '../components/TvFocusable.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/ServerTaskRunner.dart';
-
-final _random = Random();
 
 @RoutePage()
 class PersonPage extends StatefulWidget {
@@ -285,6 +281,9 @@ class _PersonPageState extends State<PersonPage> {
     final albumPlaceholders = skeleton && albums.isEmpty ? 6 : 0;
     final hasAlbums = albums.isNotEmpty || albumPlaceholders > 0;
     final hasAppearsOn = appearsOn.isNotEmpty;
+    // The play/shuffle queue spans everything the artist is credited on, so a
+    // guest artist without an album of their own still has tracks to play.
+    final hasTracks = albums.isNotEmpty || hasAppearsOn;
     final hasBooks = books.isNotEmpty;
 
     return CustomScrollView(
@@ -336,7 +335,7 @@ class _PersonPageState extends State<PersonPage> {
             ),
           ),
         ),
-        if (hasAlbums)
+        if (hasAlbums || hasAppearsOn)
           SliverToBoxAdapter(
             child: Center(
               child: Container(
@@ -354,9 +353,18 @@ class _PersonPageState extends State<PersonPage> {
                       // colour for a frame or two and then recolour itself.
                       _untilAccent(
                         FilledButton.icon(
-                          onPressed: albums.isNotEmpty && _accentResolved
-                              ? () => AutoRouter.of(context)
-                                  .push(AlbumRoute(albumId: albums.first.id))
+                          // The whole catalogue, newest addition first: the only
+                          // ranking that isn't narrowed to what this user has
+                          // already played or rated.
+                          onPressed: hasTracks && _accentResolved
+                              ? () => MediaPlayerHandler.instance
+                                  .startPlayQueueForArtistRankedList(
+                                    GraphQLProvider.of(context).value,
+                                    serverName,
+                                    personId,
+                                    Enum$RankKind.RECENTLY_ADDED,
+                                    null,
+                                  )
                               : null,
                           icon: const Icon(Icons.play_arrow),
                           label: Text(loc.play),
@@ -374,13 +382,13 @@ class _PersonPageState extends State<PersonPage> {
                         ),
                       ),
                       FilledButton.icon(
-                        onPressed: albums.isNotEmpty
-                            ? () {
-                                final randomAlbum =
-                                    albums[_random.nextInt(albums.length)];
-                                AutoRouter.of(context)
-                                    .push(AlbumRoute(albumId: randomAlbum.id));
-                              }
+                        onPressed: hasTracks
+                            ? () => MediaPlayerHandler.instance
+                                  .startArtistShuffle(
+                                    GraphQLProvider.of(context).value,
+                                    serverName,
+                                    personId,
+                                  )
                             : null,
                         icon: const Icon(Icons.shuffle),
                         label: Text(loc.shuffle),

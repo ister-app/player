@@ -208,10 +208,25 @@ MockClient _fakeGraphQL({
   // so the reserved skeleton can be observed.
   Future<void>? trackGate,
   Future<void>? albumGate,
+  List<Map<String, dynamic>>? createPlayQueueRequests,
 }) =>
     MockClient((request) async {
-      final query =
-          (json.decode(request.body) as Map<String, dynamic>)['query'] as String;
+      final body = json.decode(request.body) as Map<String, dynamic>;
+      final query = body['query'] as String;
+      if (query.contains('createPlayQueue')) {
+        // Record the variables and fail the mutation, so the handler never
+        // starts real playback inside the widget test.
+        createPlayQueueRequests?.add(body['variables'] as Map<String, dynamic>);
+        return http.Response(
+          json.encode({
+            'errors': [
+              {'message': 'queue creation stubbed out in this test'}
+            ]
+          }),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      }
       if (query.contains('artistById')) {
         return _json({'__typename': 'Query', 'artistById': person});
       }
@@ -487,5 +502,70 @@ void main() {
 
     expect(_skeleton, findsNothing);
     expect(find.text('Rocky Sings'), findsOneWidget);
+  });
+
+  testWidgets('shuffle plays every track of the artist, not a random album',
+      (tester) async {
+    final createRequests = <Map<String, dynamic>>[];
+    final client = _fakeGraphQL(
+      person: _person(),
+      albums: [_ownAlbum()],
+      createPlayQueueRequests: createRequests,
+    );
+    useClient(client);
+    await tester.pumpWidget(_app(client));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Shuffle'));
+    await tester.pumpAndSettle();
+
+    expect(createRequests, hasLength(1));
+    final input = createRequests.single['input'] as Map<String, dynamic>;
+    expect(input['sourceType'], 'ARTIST');
+    expect(input['sourceId'], 'person-1');
+    expect(input['shuffle'], true);
+    // The shuffle is the order: a ranking would only be thrown away.
+    expect(input['rankKind'], isNull);
+  });
+
+  testWidgets('play starts the artist\'s whole catalogue, newest first',
+      (tester) async {
+    final createRequests = <Map<String, dynamic>>[];
+    final client = _fakeGraphQL(
+      person: _person(),
+      albums: [_ownAlbum()],
+      createPlayQueueRequests: createRequests,
+    );
+    useClient(client);
+    await tester.pumpWidget(_app(client));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Play'));
+    await tester.pumpAndSettle();
+
+    expect(createRequests, hasLength(1));
+    final input = createRequests.single['input'] as Map<String, dynamic>;
+    expect(input['sourceType'], 'ARTIST');
+    expect(input['rankKind'], 'RECENTLY_ADDED');
+    expect(input['shuffle'], isNull);
+    expect(input['startId'], isNull);
+  });
+
+  testWidgets('a guest artist without albums of their own can still play',
+      (tester) async {
+    final createRequests = <Map<String, dynamic>>[];
+    final client = _fakeGraphQL(
+      person: _person(),
+      appearsOn: [_compilationAlbum()],
+      createPlayQueueRequests: createRequests,
+    );
+    useClient(client);
+    await tester.pumpWidget(_app(client));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Shuffle'));
+    await tester.pumpAndSettle();
+
+    expect(createRequests, hasLength(1));
   });
 }
