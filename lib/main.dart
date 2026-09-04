@@ -78,6 +78,9 @@ Future<void> main() async {
   // can branch synchronously in build().
   await PlatformService.ensureInitialized();
   if (PlatformService.isTvModeSync) {
+    // Only valid from here: TV detection is what decides the tighter budget.
+    PaintingBinding.instance.imageCache.maximumSizeBytes =
+        ImageCacheConfig.maxBytesTv;
     // Android defaults to "touch" focus-highlight mode and doesn't reliably
     // flip to "traditional" for a D-pad remote, leaving focus rings invisible.
     // Force traditional so every focusable (buttons, tiles, nav) shows where
