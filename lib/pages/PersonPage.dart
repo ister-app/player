@@ -1,10 +1,10 @@
 import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:gql/ast.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/components/ArtworkImage.dart';
 import 'package:player/graphql/albumsQuery.graphql.dart';
 import 'package:player/graphql/refreshPerson.graphql.dart';
 import 'package:player/graphql/appearsOnAlbums.graphql.dart';
@@ -717,14 +717,10 @@ class _PersonPageState extends State<PersonPage> {
                 child: Container(
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   child: (imageUrl != null && imageUrl != '')
-                      ? CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          cacheKey: ImageUtil.cacheKeyFor(imageUrl),
-                          fit: BoxFit.cover,
-                          fadeInDuration: Duration.zero,
-                          fadeOutDuration: Duration.zero,
-                          errorBuilder: (_, __, ___) =>
-                              Center(child: placeholder),
+                      ? ArtworkImage(
+                          url: imageUrl,
+                          logicalWidth: 108 * BookCarouselTile.coverAspectRatio,
+                          errorBuilder: (_) => Center(child: placeholder),
                         )
                       : Center(child: placeholder),
                 ),
@@ -1100,13 +1096,9 @@ class _PersonShowEpisodesSheetState extends State<_PersonShowEpisodesSheet> {
           height: 56,
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
           child: (imageUrl != null && imageUrl != '')
-              ? CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  cacheKey: ImageUtil.cacheKeyFor(imageUrl),
-                  fit: BoxFit.cover,
-                  fadeInDuration: Duration.zero,
-                  fadeOutDuration: Duration.zero,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              ? ArtworkImage(
+                  url: imageUrl,
+                  logicalWidth: 80,
                 )
               : const SizedBox.shrink(),
         ),

@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/components/ArtworkImage.dart';
 import 'package:player/graphql/castByParent.graphql.dart';
 import 'package:player/graphql/fragmentCredit.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
@@ -405,13 +405,10 @@ class _CastAvatar extends StatelessWidget {
       context,
       size,
       child: (imageUrl != null && imageUrl != '')
-          ? CachedNetworkImage(
-              imageUrl: imageUrl,
-              cacheKey: ImageUtil.cacheKeyFor(imageUrl),
-              fit: BoxFit.cover,
-              fadeInDuration: Duration.zero,
-              fadeOutDuration: Duration.zero,
-              errorBuilder: (_, __, ___) => Center(child: placeholder),
+          ? ArtworkImage(
+              url: imageUrl,
+              logicalWidth: size,
+              errorBuilder: (_) => Center(child: placeholder),
             )
           : Center(child: placeholder),
     );

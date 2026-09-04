@@ -1,9 +1,9 @@
 import 'dart:ui';
 
 import 'package:audio_service/audio_service.dart';
-import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/components/ArtworkImage.dart';
 import 'package:player/graphql/fragmentAlbum.graphql.dart';
 import 'package:player/graphql/fragmentTrack.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
@@ -403,11 +403,10 @@ class _ArtistTrackListState extends State<ArtistTrackList> {
         width: 40,
         height: 40,
         child: imageUrl != null
-            ? CachedNetworkImage(
-                imageUrl: imageUrl,
-                cacheKey: ImageUtil.cacheKeyFor(imageUrl),
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _thumbPlaceholder(context),
+            ? ArtworkImage(
+                url: imageUrl,
+                logicalWidth: 40,
+                errorBuilder: (context) => _thumbPlaceholder(context),
               )
             : _thumbPlaceholder(context),
       ),

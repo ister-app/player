@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/components/ArtworkImage.dart';
 import 'package:player/graphql/fragmentServerActivity.graphql.dart';
 import 'package:player/graphql/nowPlayingSubscription.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
@@ -415,16 +415,13 @@ class _Artwork extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: url == null
           ? placeholder
-          : CachedNetworkImage(
-              imageUrl: url!,
-              cacheKey: ImageUtil.cacheKeyFor(url!),
+          : ArtworkImage(
+              url: url,
+              logicalWidth: _size,
               width: _size,
               height: _size,
-              fit: BoxFit.cover,
-              placeholder: (_, __) => placeholder,
-              errorBuilder: (_, __, ___) => placeholder,
-              fadeInDuration: Duration.zero,
-              fadeOutDuration: Duration.zero,
+              placeholder: (_) => placeholder,
+              errorBuilder: (_) => placeholder,
             ),
     );
   }

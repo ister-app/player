@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:player/components/ArtworkImage.dart';
 import 'package:player/components/IsterPlayer.dart';
 import 'package:player/components/PlayPauseButton.dart';
 import 'package:player/components/PlayerView.dart';
@@ -11,7 +11,6 @@ import 'package:player/components/TvFocusable.dart';
 import 'package:player/dto/IsterMediaItem.dart';
 import 'package:player/dto/MediaItemId.dart';
 import 'package:player/routes/AppRouter.gr.dart';
-import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:player/utils/VideoSurfaceNavigator.dart';
 
@@ -294,11 +293,14 @@ class _MiniPlayerState extends State<MiniPlayer> {
                               width: 44,
                               height: 44,
                               child: item.artUri != null
-                                  ? CachedNetworkImage(
-                                      imageUrl: item.artUri.toString(),
-                                      cacheKey: ImageUtil.cacheKeyFor(item.artUri.toString()),
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) =>
+                                  ? ArtworkImage(
+                                      url: item.artUri.toString(),
+                                      logicalWidth: 44,
+                                      fadeInDuration:
+                                          const Duration(milliseconds: 500),
+                                      fadeOutDuration:
+                                          const Duration(milliseconds: 1000),
+                                      errorBuilder: (context) =>
                                           _artPlaceholder(
                                               context, placeholderIcon),
                                     )

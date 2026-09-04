@@ -1,9 +1,9 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/components/AddToSessionSheet.dart';
+import 'package:player/components/ArtworkImage.dart';
 import 'package:player/components/DevicePickerSheet.dart';
 import 'package:player/components/CastRow.dart';
 import 'package:player/components/MediaMetaLine.dart';
@@ -149,8 +149,10 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
           width: constraints.maxWidth,
           decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
           child: (imageUrl != null && imageUrl != '')
-              ? CachedNetworkImage(
-                  placeholder: (context, url) => blurHash != null
+              ? ArtworkImage(
+                  url: imageUrl,
+                  logicalWidth: constraints.maxWidth,
+                  placeholder: (context) => blurHash != null
                       ? BlurHash(
                           hash: blurHash,
                           optimizationMode: BlurHashOptimizationMode.standard,
@@ -158,11 +160,6 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
                           duration: Duration.zero,
                         )
                       : Container(),
-                  fit: BoxFit.cover,
-                  imageUrl: imageUrl,
-                  cacheKey: ImageUtil.cacheKeyFor(imageUrl),
-                  fadeOutDuration: Duration.zero,
-                  fadeInDuration: Duration.zero,
                 )
               : Container(),
         );

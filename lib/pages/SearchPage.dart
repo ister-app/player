@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:player/components/ArtworkImage.dart';
 import 'package:player/graphql/search.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
@@ -313,13 +313,10 @@ class _SearchPageState extends State<SearchPage> {
                 child: Container(
                   color: theme.colorScheme.surfaceContainerHighest,
                   child: (imageUrl != null && imageUrl != '')
-                      ? CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          cacheKey: ImageUtil.cacheKeyFor(imageUrl),
-                          fit: BoxFit.cover,
-                          fadeInDuration: Duration.zero,
-                          fadeOutDuration: Duration.zero,
-                          errorBuilder: (_, __, ___) =>
+                      ? ArtworkImage(
+                          url: imageUrl,
+                          logicalWidth: 96,
+                          errorBuilder: (_) =>
                               Center(child: Icon(v.icon, color: theme.colorScheme.onSurfaceVariant)),
                         )
                       : Center(child: Icon(v.icon, color: theme.colorScheme.onSurfaceVariant)),

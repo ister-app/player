@@ -1,5 +1,5 @@
-import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:player/components/ArtworkImage.dart';
 import 'package:player/graphql/fragmentImages.graphql.dart';
 
 import '../utils/ImageUtil.dart';
@@ -89,13 +89,9 @@ class PlaylistCoverMosaic extends StatelessWidget {
                       color: theme.colorScheme.onSurfaceVariant)),
             );
             if (url == null || url.isEmpty) return placeholder;
-            return CachedNetworkImage(
-              imageUrl: url,
-              cacheKey: ImageUtil.cacheKeyFor(url),
-              fit: BoxFit.cover,
-              fadeInDuration: Duration.zero,
-              fadeOutDuration: Duration.zero,
-              errorBuilder: (_, __, ___) => placeholder,
+            return ArtworkImage(
+              url: url,
+              errorBuilder: (_) => placeholder,
             );
           },
         ),

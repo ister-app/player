@@ -1,10 +1,10 @@
 import 'dart:io';
 
-import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 
+import 'ArtworkImage.dart';
 import '../graphql/fragmentImages.graphql.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/ImageTypes.dart';
@@ -78,11 +78,11 @@ class VideoCoverView extends StatelessWidget {
           token: StreamTokenService.getToken(serverName));
       if (url == null) return null;
       final blurHash = image.blurHash;
-      return CachedNetworkImage(
-        imageUrl: url,
-        cacheKey: ImageUtil.cacheKeyFor(url),
-        fit: BoxFit.cover,
-        placeholder: (context, url) => blurHash != null
+      // Measured, not fixed: this cover is page-wide, from a phone in
+      // portrait to a full-screen video surface on a desktop.
+      return ArtworkImage(
+        url: url,
+        placeholder: (context) => blurHash != null
             ? BlurHash(
                 hash: blurHash,
                 optimizationMode: BlurHashOptimizationMode.standard,
@@ -91,7 +91,7 @@ class VideoCoverView extends StatelessWidget {
               )
             : const SizedBox.shrink(),
         // An unreachable server (offline) must not show a broken-image icon.
-        errorBuilder: (context, url, error) => const SizedBox.shrink(),
+        errorBuilder: (context) => const SizedBox.shrink(),
       );
     }
     final uri = artUri;
@@ -101,11 +101,9 @@ class VideoCoverView extends StatelessWidget {
           fit: BoxFit.cover,
           errorBuilder: (_, _, _) => const SizedBox.shrink());
     }
-    return CachedNetworkImage(
-      imageUrl: uri.toString(),
-      cacheKey: ImageUtil.cacheKeyFor(uri.toString()),
-      fit: BoxFit.cover,
-      errorBuilder: (context, url, error) => const SizedBox.shrink(),
+    return ArtworkImage(
+      url: uri.toString(),
+      errorBuilder: (context) => const SizedBox.shrink(),
     );
   }
 

@@ -1,8 +1,7 @@
-import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'TvFocusable.dart';
-import 'package:player/utils/ImageUtil.dart';
+import 'package:player/components/ArtworkImage.dart';
 
 /// One row of the browse list layout: thumbnail, title/subtitle lines, an
 /// optional watched-progress bar and an optional trailing widget (context
@@ -63,13 +62,10 @@ class BrowseListRow extends StatelessWidget {
                   child: Container(
                     color: theme.colorScheme.surfaceContainerHighest,
                     child: (imageUrl != null && imageUrl != '')
-                        ? CachedNetworkImage(
-                            imageUrl: imageUrl!,
-                            cacheKey: ImageUtil.cacheKeyFor(imageUrl!),
-                            fit: BoxFit.cover,
-                            fadeInDuration: Duration.zero,
-                            fadeOutDuration: Duration.zero,
-                            errorBuilder: (_, __, ___) => placeholder,
+                        ? ArtworkImage(
+                            url: imageUrl,
+                            logicalWidth: squareThumb ? 64 : 96,
+                            errorBuilder: (_) => placeholder,
                           )
                         : placeholder,
                   ),

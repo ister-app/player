@@ -146,8 +146,14 @@ class _AddPodcastSheetState extends State<_AddPodcastSheet> {
                       ? const Icon(Icons.podcasts)
                       : ClipRRect(
                           borderRadius: BorderRadius.circular(6),
+                          // A third-party url (iTunes/podcastindex), so no
+                          // ?width= and no shared cache manager — but the
+                          // decode still has to fit the 44dp box.
                           child: Image.network(result.artworkUrl!,
                               width: 44, height: 44, fit: BoxFit.cover,
+                              cacheWidth:
+                                  (44 * MediaQuery.devicePixelRatioOf(context))
+                                      .round(),
                               errorBuilder: (_, __, ___) =>
                                   const Icon(Icons.podcasts)),
                         ),

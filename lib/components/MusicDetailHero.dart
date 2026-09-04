@@ -1,9 +1,8 @@
 import 'dart:ui';
 
-import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
-import 'package:player/utils/ImageUtil.dart';
+import 'package:player/components/ArtworkImage.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 /// SliverAppBar background shared by the album and artist detail pages: a
@@ -89,15 +88,15 @@ class MusicDetailHero extends StatelessWidget {
         if (imageUrl != null)
           ImageFiltered(
             imageFilter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-            child: CachedNetworkImage(
-              imageUrl: imageUrl!,
-              cacheKey: ImageUtil.cacheKeyFor(imageUrl!),
-              fit: BoxFit.cover,
+            // Fixed width rather than the page's: it is painted behind a
+            // 25px blur, which resolves nothing finer, and a separate key from
+            // the cover below keeps the two off each other's image stream.
+            child: ArtworkImage(
+              url: imageUrl,
+              logicalWidth: 160,
               alignment: backgroundAlignment,
-              placeholder: (context, url) =>
+              placeholder: (_) =>
                   _blurHashOr(ColoredBox(color: Colors.grey[900]!)),
-              fadeOutDuration: Duration.zero,
-              fadeInDuration: Duration.zero,
             ),
           )
         else
@@ -131,15 +130,12 @@ class MusicDetailHero extends StatelessWidget {
                     width: coverHeight * coverAspectRatio,
                     height: coverHeight,
                     child: imageUrl != null
-                        ? CachedNetworkImage(
-                            imageUrl: imageUrl!,
-                            cacheKey: ImageUtil.cacheKeyFor(imageUrl!),
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) =>
+                        ? ArtworkImage(
+                            url: imageUrl,
+                            logicalWidth: coverHeight * coverAspectRatio,
+                            placeholder: (_) =>
                                 _blurHashOr(Container(color: Colors.grey[900])),
-                            errorBuilder: (_, __, ___) => _coverPlaceholder(),
-                            fadeOutDuration: Duration.zero,
-                            fadeInDuration: Duration.zero,
+                            errorBuilder: (_) => _coverPlaceholder(),
                           )
                         : _coverPlaceholder(),
                   ),

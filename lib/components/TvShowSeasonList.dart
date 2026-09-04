@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/components/ArtworkImage.dart';
 import 'package:player/components/MediaMetaLine.dart';
 import 'package:player/graphql/seasonById.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
@@ -198,8 +198,14 @@ class TvShowSeasonList extends StatelessWidget {
                 decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest),
                 child: OverflowBox(
                   child: (imageUrl != null && imageUrl != '')
-                      ? CachedNetworkImage(
-                          placeholder: (context, url) => blurHash != null
+                      ? ArtworkImage(
+                          url: imageUrl,
+                          // Wider than the 120 box on purpose: the OverflowBox
+                          // fits by height, so a 16:9 still paints ~142 wide
+                          // and anything squarer paints wider still.
+                          logicalWidth: 160,
+                          fit: BoxFit.fitHeight,
+                          placeholder: (context) => blurHash != null
                               ? BlurHash(
                                   hash: blurHash,
                                   optimizationMode:
@@ -208,11 +214,6 @@ class TvShowSeasonList extends StatelessWidget {
                                   duration: Duration.zero,
                                 )
                               : Container(),
-                          fit: BoxFit.fitHeight,
-                          imageUrl: imageUrl,
-                          cacheKey: ImageUtil.cacheKeyFor(imageUrl),
-                          fadeOutDuration: Duration.zero,
-                          fadeInDuration: Duration.zero,
                         )
                       : Container(),
                 )),
