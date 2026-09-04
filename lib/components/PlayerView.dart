@@ -750,10 +750,6 @@ class _PlayerViewState extends State<PlayerView>
     // touch the screen edge and its drop shadow/accent glow has room to fall.
     const artSideMargin = 40.0;
     const artBottomMargin = 32.0;
-    final imageSize = min(
-      constraints.maxHeight - 48 - artBottomMargin,
-      constraints.maxWidth * 0.45 - artSideMargin * 2,
-    );
     final previous = widget.controller.previous;
     final upNext = widget.controller.upNext;
     final banner = _buildBanner();
@@ -771,11 +767,31 @@ class _PlayerViewState extends State<PlayerView>
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: artBottomMargin),
-                  child: Center(
-                    child: _artworkOrPlaceholder(artUri, imageSize, loading: loading),
+                  // Sized from what is actually left over rather than from the
+                  // full column height: the banner below claims its share
+                  // first, so the cover shrinks instead of overflowing.
+                  child: LayoutBuilder(
+                    builder: (context, art) {
+                      final size = min(art.maxHeight,
+                              art.maxWidth - artSideMargin * 2)
+                          .clamp(0.0, double.infinity);
+                      return Center(
+                        child: _artworkOrPlaceholder(artUri, size,
+                            loading: loading),
+                      );
+                    },
                   ),
                 ),
               ),
+              // The listen-along/session banner rides under the cover, not on
+              // top of the right column: there it stole the height the seek
+              // bar and transport controls needed and they ran into the
+              // bottom bar.
+              if (banner != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: banner,
+                ),
             ],
           ),
           ),
@@ -792,18 +808,36 @@ class _PlayerViewState extends State<PlayerView>
                   height: constraints.maxHeight,
                   child: Column(
                     children: [
-                      if (banner != null) banner,
                       Expanded(
-                        child: Center(
-                          child: ConstrainedBox(
-                            constraints:
-                                const BoxConstraints(maxWidth: 560),
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.fromLTRB(32, 16, 32, 4),
-                              child: _Controls(controller: widget.controller, accent: _accent, loading: loading, onNavigate: _openMetaRoute),
-                            ),
-                          ),
+                        // The controls stack has a fixed natural height; on a
+                        // short landscape window (a phone on its side) it is a
+                        // few pixels taller than what is left over and used to
+                        // overflow into the bottom bar. Keep the width fixed
+                        // and let a scale-down absorb the difference.
+                        child: LayoutBuilder(
+                          builder: (context, box) {
+                            final width = min(560.0, box.maxWidth);
+                            return Center(
+                              child: SizedBox(
+                                width: width,
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: SizedBox(
+                                    width: width,
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          32, 16, 32, 4),
+                                      child: _Controls(
+                                          controller: widget.controller,
+                                          accent: _accent,
+                                          loading: loading,
+                                          onNavigate: _openMetaRoute),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                       ConstrainedBox(
