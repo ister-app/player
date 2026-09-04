@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:cached_network_image_ce/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:player/utils/ArtworkSizing.dart';
 import 'package:player/utils/ImageCacheConfig.dart';
@@ -14,8 +15,23 @@ class AccentColorUtil {
   /// Artwork width the accent is extracted from. One of the server's buckets.
   static const int _accentWidth = 240;
 
-  /// Extracts an accent from the artwork at [url]; null on failure or no url.
-  static Future<Color?> fromImageUrl(String? url) async {
+  /// How long an extraction may take before it gives up. Callers hold UI in a
+  /// loading state until this resolves, so a cover download that never
+  /// finishes must not keep them there forever.
+  static const Duration _timeout = Duration(seconds: 5);
+
+  /// Test seam: stands in for the extraction, which needs the artwork cache
+  /// and a network. Lets a test hold an accent pending and decide when (and
+  /// as what) it resolves.
+  @visibleForTesting
+  static Future<Color?> Function(String? url)? testExtractor;
+
+  /// Extracts an accent from the artwork at [url]; null on failure, timeout or
+  /// no url.
+  static Future<Color?> fromImageUrl(String? url) =>
+      (testExtractor ?? _extract)(url).timeout(_timeout, onTimeout: () => null);
+
+  static Future<Color?> _extract(String? url) async {
     if (url == null || url.isEmpty) return null;
     try {
       // Deliberately *not* a CachedNetworkImageProvider: that resolves to the

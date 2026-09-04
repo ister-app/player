@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -13,10 +14,12 @@ import 'package:player/dto/IsterMediaItem.dart';
 import 'package:player/dto/MediaItemId.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/pages/AlbumPage.dart';
+import 'package:player/utils/AccentColorUtil.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 const _server = 'test-server';
 const _trackCount = 40;
@@ -39,13 +42,29 @@ Map<String, dynamic> _metadata(String id, String title,
 /// With [discs] = 2 the 40 tracks split 1–20 → disc 1 and 21–40 → disc 2,
 /// with the track number restarting per disc; titles stay globally unique.
 /// [guestTrack] gives that track a different artist than the album.
-Map<String, dynamic> _album({int discs = 1, int? guestTrack, String? genre}) => {
+Map<String, dynamic> _album(
+        {int discs = 1, int? guestTrack, String? genre, bool cover = false}) =>
+    {
       '__typename': 'Album',
       'id': 'album-1',
       'name': 'Long Album',
       'releaseYear': 2001,
       'artist': {'__typename': 'Person', 'id': 'artist-1', 'name': 'The Band'},
-      'images': [],
+      'images': [
+        if (cover)
+          {
+            '__typename': 'Image',
+            'type': 'cover',
+            'id': 'image-1',
+            'language': null,
+            'source': null,
+            'blurHash': null,
+            'directory': {
+              '__typename': 'Directory',
+              'node': {'__typename': 'Node', 'url': 'https://node.example'},
+            },
+          },
+      ],
       'metadata': [
         if (genre != null)
           _metadata('album-meta', 'Long Album',
@@ -79,7 +98,8 @@ Map<String, dynamic> _album({int discs = 1, int? guestTrack, String? genre}) => 
       ],
     };
 
-MockClient _fakeGraphQL({int discs = 1, int? guestTrack, String? genre}) =>
+MockClient _fakeGraphQL(
+        {int discs = 1, int? guestTrack, String? genre, bool cover = false}) =>
     MockClient((request) async {
       final body = json.decode(request.body) as Map<String, dynamic>;
       final query = body['query'] as String;
@@ -88,8 +108,11 @@ MockClient _fakeGraphQL({int discs = 1, int? guestTrack, String? genre}) =>
         payload = {
           'data': {
             '__typename': 'Query',
-            'albumById':
-                _album(discs: discs, guestTrack: guestTrack, genre: genre)
+            'albumById': _album(
+                discs: discs,
+                guestTrack: guestTrack,
+                genre: genre,
+                cover: cover)
           }
         };
       } else if (query.contains('me {') || query.contains('me{')) {
@@ -357,6 +380,40 @@ void main() {
 
     await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();
+  });
+
+  testWidgets('the play button waits for the cover accent instead of flashing',
+      (tester) async {
+    // Hold the extraction open so the window between "album data is in" and
+    // "accent is known" — the one that used to flash the theme's default
+    // colour — is actually observable.
+    final accent = Completer<Color?>();
+    AccentColorUtil.testExtractor = (_) => accent.future;
+    addTearDown(() => AccentColorUtil.testExtractor = null);
+
+    await tester.pumpWidget(_app(_fakeGraphQL(cover: true)));
+    for (var i = 0; i < 20 && find.text('Track 1').evaluate().isEmpty; i++) {
+      await tester.pump(const Duration(milliseconds: 10));
+    }
+    // The album itself has arrived...
+    expect(find.text('Track 1'), findsWidgets);
+
+    final play = find.widgetWithText(FilledButton, 'Play');
+    final skeletonAroundPlay =
+        // `Skeletonizer` builds a private subclass, so match on the type
+        // rather than the exact widget class.
+        find.ancestor(
+            of: play, matching: find.byWidgetPredicate((w) => w is Skeletonizer));
+    // ...but the accent-tinted button is still loading rather than painting
+    // the theme's default colour and recolouring a frame later.
+    expect(skeletonAroundPlay, findsWidgets);
+
+    accent.complete(const Color(0xFFB05CE8));
+    await tester.pumpAndSettle();
+
+    expect(skeletonAroundPlay, findsNothing);
+    final style = tester.widget<FilledButton>(play).style!;
+    expect(style.backgroundColor!.resolve({}), const Color(0xFFB05CE8));
   });
 
   testWidgets('a trackId scrolls the requested track into view and highlights it',

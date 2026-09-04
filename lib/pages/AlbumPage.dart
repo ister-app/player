@@ -76,16 +76,39 @@ class _AlbumPageState extends State<AlbumPage> {
   /// now-playing indicator; null until extraction succeeds.
   Color? _accent;
   String? _accentUrl;
+  bool _accentRequested = false;
+
+  /// False while an extraction is still running. The play button is held in
+  /// its loading state until then: painting it with the theme's default
+  /// colour first and recolouring on arrival showed a green flash on every
+  /// page load.
+  bool _accentResolved = false;
 
   void _updateAccent(String? url) {
-    if (url == _accentUrl) return;
+    if (_accentRequested && url == _accentUrl) return;
+    _accentRequested = true;
     _accentUrl = url;
+    // A url change on a page that already has an accent (a refreshed stream
+    // token) keeps showing the old colour rather than dropping back to the
+    // loading state.
+    if (_accent == null) _accentResolved = false;
     AccentColorUtil.fromImageUrl(url).then((color) {
       // A cover change may have superseded this load; only apply if current.
-      if (!mounted || _accentUrl != url || color == null) return;
-      setState(() => _accent = color);
+      if (!mounted || _accentUrl != url) return;
+      // Also on a null colour (no artwork, or extraction failed): the button
+      // has to leave its loading state either way.
+      setState(() {
+        _accent = color;
+        _accentResolved = true;
+      });
     });
   }
+
+  /// Keeps [child] in the skeleton until the accent is known. Wrapping only
+  /// while it is pending (instead of a permanently mounted, disabled
+  /// [Skeletonizer]) keeps "a skeleton on screen" meaning "still loading".
+  Widget _untilAccent(Widget child) =>
+      _accentResolved ? child : Skeletonizer(child: child);
 
   @override
   void initState() {
@@ -279,19 +302,26 @@ class _AlbumPageState extends State<AlbumPage> {
                 runSpacing: 8,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  FilledButton.icon(
-                    onPressed: album != null && tracks.any(_trackHasFile)
-                        ? () => _playTrack(
-                            context, album, tracks.firstWhere(_trackHasFile).id)
-                        : null,
-                    icon: const Icon(Icons.play_arrow),
-                    label: Text(loc.play),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: _accent,
-                      foregroundColor: _accent != null ? Colors.black : null,
-                      shape: const StadiumBorder(),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 28, vertical: 14),
+                  // Held in the skeleton until the cover's accent is known,
+                  // so the button doesn't paint the theme's default colour
+                  // for a frame or two and then recolour itself.
+                  _untilAccent(
+                    FilledButton.icon(
+                      onPressed: album != null &&
+                              tracks.any(_trackHasFile) &&
+                              _accentResolved
+                          ? () => _playTrack(context, album,
+                              tracks.firstWhere(_trackHasFile).id)
+                          : null,
+                      icon: const Icon(Icons.play_arrow),
+                      label: Text(loc.play),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: _accent,
+                        foregroundColor: _accent != null ? Colors.black : null,
+                        shape: const StadiumBorder(),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 28, vertical: 14),
+                      ),
                     ),
                   ),
                   FilledButton.icon(
@@ -321,12 +351,15 @@ class _AlbumPageState extends State<AlbumPage> {
                   if (skeleton)
                     const RatingStarsDisplay(rating: null, size: 30),
                   if (album != null)
-                    RatingStars(
-                      mediaType: Enum$RatingMediaType.ALBUM,
-                      mediaId: album.id,
-                      rating: album.rating,
-                      // Tint with the cover accent, like the play button.
-                      color: _accent,
+                    // Same accent, same wait as the play button.
+                    _untilAccent(
+                      RatingStars(
+                        mediaType: Enum$RatingMediaType.ALBUM,
+                        mediaId: album.id,
+                        rating: album.rating,
+                        // Tint with the cover accent, like the play button.
+                        color: _accent,
+                      ),
                     ),
                 ],
               ),
