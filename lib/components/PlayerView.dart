@@ -273,11 +273,32 @@ class _PlayerViewState extends State<PlayerView>
     });
   }
 
-  bool _onScrollNotification(ScrollNotification n, double height) {
-    if (n is OverscrollNotification && n.overscroll < 0) {
+  /// Drag arriving at the queue list while the sheet is (or is about to be)
+  /// partly dragged down. It is swallowed by the sheet instead of scrolling
+  /// the list, in *both* directions: relying on the list's overscroll to start
+  /// the dismiss meant the way back up scrolled the page — clamping physics
+  /// reports no overscroll to give back, so the upward drag went to the list.
+  /// Returns true when the drag was consumed and the list must not move.
+  bool _consumeSheetDrag(ScrollMetrics position, double offset, double height) {
+    // A downward drag with the list already at the top starts the dismiss.
+    if (!_isDismissing) {
+      if (offset <= 0 || position.pixels > position.minScrollExtent) {
+        return false;
+      }
       _isDismissing = true;
-      _slide.value = (_slide.value + n.overscroll / height).clamp(0.0, 1.0);
-    } else if (n is ScrollEndNotification && _isDismissing) {
+    }
+    _slide.value = (_slide.value - offset / height).clamp(0.0, 1.0);
+    // Fully back up again: hand the rest of an upward drag back to the list,
+    // so a single gesture can restore the sheet and then keep scrolling.
+    if (_slide.value >= 1.0 && offset < 0) {
+      _isDismissing = false;
+      return false;
+    }
+    return true;
+  }
+
+  bool _onScrollNotification(ScrollNotification n, double height) {
+    if (n is ScrollEndNotification && _isDismissing) {
       _isDismissing = false;
       final velocity = n.dragDetails?.velocity.pixelsPerSecond.dy ?? 0;
       if (_slide.value < 0.7 || velocity > 600) {
@@ -294,7 +315,9 @@ class _PlayerViewState extends State<PlayerView>
   }
 
   void _onDragUpdate(DragUpdateDetails d, double height) {
-    if (d.delta.dy > 0) {
+    // Upward drag only counts while the sheet is already partly down —
+    // otherwise it would be a no-op that pins the sheet at the top.
+    if (d.delta.dy > 0 || _slide.value < 1.0) {
       _slide.value = (_slide.value - d.delta.dy / height).clamp(0.0, 1.0);
     }
   }
@@ -702,7 +725,7 @@ class _PlayerViewState extends State<PlayerView>
       onNotification: (n) => _onScrollNotification(n, constraints.maxHeight),
       child: CustomScrollView(
       controller: _scrollController,
-      physics: const ClampingScrollPhysics(),
+      physics: _SheetDragPhysics(this, constraints.maxHeight),
       slivers: [
         SliverToBoxAdapter(
           child: SizedBox(
@@ -801,7 +824,7 @@ class _PlayerViewState extends State<PlayerView>
           onNotification: (n) => _onScrollNotification(n, constraints.maxHeight),
           child: CustomScrollView(
             controller: _scrollController,
-            physics: const ClampingScrollPhysics(),
+            physics: _SheetDragPhysics(this, constraints.maxHeight),
             slivers: [
               SliverToBoxAdapter(
                 child: SizedBox(
@@ -1555,4 +1578,24 @@ class _BufferedTrackShape extends SliderTrackShape {
       );
     }
   }
+}
+
+/// Clamping physics that hands the drag to the [PlayerView] sheet while it is
+/// being dragged down (or dragged back up), so the queue list underneath stays
+/// put until the sheet is fully open again.
+class _SheetDragPhysics extends ClampingScrollPhysics {
+  const _SheetDragPhysics(this.owner, this.height, {super.parent});
+
+  final _PlayerViewState owner;
+  final double height;
+
+  @override
+  _SheetDragPhysics applyTo(ScrollPhysics? ancestor) =>
+      _SheetDragPhysics(owner, height, parent: buildParent(ancestor));
+
+  @override
+  double applyPhysicsToUserOffset(ScrollMetrics position, double offset) =>
+      owner._consumeSheetDrag(position, offset, height)
+          ? 0.0
+          : super.applyPhysicsToUserOffset(position, offset);
 }
