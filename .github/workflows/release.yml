@@ -428,13 +428,7 @@ jobs:
           name: macos-pkg
           path: player-macos-*.pkg
 
-      #
-      # The only step of this job allowed to fail: the ipa is uploaded as an artifact
-      # above and attached to the release either way, so an unreachable App Store Connect
-      # costs the TestFlight build, not the release. Check the log when a version never
-      # turns up in TestFlight.
       - name: Upload to TestFlight
-        continue-on-error: true
         env:
           VERSION: ${{ needs.gate.outputs.version }}
           KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
@@ -612,7 +606,13 @@ jobs:
 
       # Validate before uploading: the difference between a readable error in this log
       # and a mail from Apple half an hour after the upload.
+      #
+      # The only step of this job allowed to fail: the ipa is an artifact by now and is
+      # attached to the release either way, so an unreachable App Store Connect costs
+      # the TestFlight build, not the release. Check this log when a version never turns
+      # up in TestFlight.
       - name: Upload to TestFlight
+        continue-on-error: true
         env:
           VERSION: ${{ needs.gate.outputs.version }}
           KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
