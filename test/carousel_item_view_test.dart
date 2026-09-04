@@ -111,8 +111,11 @@ void main() {
     final first = tester.widget<CachedNetworkImage>(
       find.byType(CachedNetworkImage),
     );
-    expect(first.imageUrl, 'http://node/images/img-1/download?token=tok-1');
-    expect(first.cacheKey, 'http://node/images/img-1/download');
+    expect(
+      first.imageUrl,
+      'http://node/images/img-1/download?width=640&token=tok-1',
+    );
+    expect(first.cacheKey, 'http://node/images/img-1/download?width=640');
 
     await tester.pumpWidget(
       _tile(
@@ -125,5 +128,37 @@ void main() {
       find.byType(CachedNetworkImage),
     );
     expect(second.cacheKey, first.cacheKey);
+  });
+
+  testWidgets('the artwork is fetched at the width the tile paints it', (
+    tester,
+  ) async {
+    // A phone grid cell and a desktop carousel tile must not both pull the
+    // stored original: that is what filled the browser's GPU memory and left
+    // tiles grey. The widths below are the tile minus its 5dp padding, times
+    // the test binding's device pixel ratio of 3, snapped to a bucket.
+    await tester.pumpWidget(
+      _tile(
+        width: 133,
+        height: 256,
+        imageUrl: 'http://node/images/img-1/download?token=tok',
+      ),
+    );
+    expect(
+      tester.widget<CachedNetworkImage>(find.byType(CachedNetworkImage)).cacheKey,
+      'http://node/images/img-1/download?width=480',
+    );
+
+    await tester.pumpWidget(
+      _tile(
+        width: 300,
+        height: 400,
+        imageUrl: 'http://node/images/img-1/download?token=tok',
+      ),
+    );
+    expect(
+      tester.widget<CachedNetworkImage>(find.byType(CachedNetworkImage)).cacheKey,
+      'http://node/images/img-1/download?width=960',
+    );
   });
 }

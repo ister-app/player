@@ -1,8 +1,7 @@
-import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
+import 'package:player/components/ArtworkImage.dart';
 import 'package:player/components/TvFocusable.dart';
-import 'package:player/utils/ImageUtil.dart';
 
 class CarouselItemView extends StatelessWidget {
   const CarouselItemView({
@@ -68,11 +67,15 @@ class CarouselItemView extends StatelessWidget {
             ),
           )
         : Container();
+    // No logicalWidth: the artwork fills the tile's art box, so its own
+    // constraints are the painted width — anything from a three-column phone
+    // grid cell to a 300dp desktop tile.
     final Widget image =
         artwork ??
         ((imageUrl != null && imageUrl != '')
-            ? CachedNetworkImage(
-                placeholder: (context, url) => blurHash != null
+            ? ArtworkImage(
+                url: imageUrl,
+                placeholder: (context) => blurHash != null
                     ? BlurHash(
                         hash: blurHash!,
                         optimizationMode: BlurHashOptimizationMode.standard,
@@ -82,12 +85,7 @@ class CarouselItemView extends StatelessWidget {
                         duration: Duration.zero,
                       )
                     : Container(),
-                imageUrl: imageUrl!,
-                cacheKey: ImageUtil.cacheKeyFor(imageUrl!),
-                fit: BoxFit.cover,
-                fadeOutDuration: Duration.zero,
-                fadeInDuration: Duration.zero,
-                errorBuilder: (_, __, ___) => placeholder,
+                errorBuilder: (_) => placeholder,
               )
             : placeholder);
     return LayoutBuilder(
