@@ -372,8 +372,11 @@ class _ComicReaderPageState extends State<ComicReaderPage>
   void _probeAspect(int pageIndex) {
     final source = _source;
     if (source == null || !_probedPages.add(pageIndex)) return;
+    // The thumbnail, not the full page: this only reads the aspect ratio, and
+    // resolving the unresized page decoded a whole scan per page just to
+    // compare two numbers.
     final stream = source
-        .pageImage(pageIndex)
+        .thumbnail(pageIndex)
         .resolve(createLocalImageConfiguration(context));
     late final ImageStreamListener listener;
     listener = ImageStreamListener((info, _) {

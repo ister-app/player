@@ -1,8 +1,7 @@
-import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
-import 'package:player/utils/ImageUtil.dart';
+import 'package:player/components/ArtworkImage.dart';
 import 'package:player/utils/epub/ChapterContent.dart';
 
 /// fwfh widget factory for chapter documents: resolves the `epub:///` entry
@@ -23,6 +22,10 @@ class ReaderWidgetFactory extends WidgetFactory {
     if (resolved.isEmpty) return null;
     // A downloaded epub resolves entries to absolute paths.
     if (resolved.startsWith('/')) return FileImage(File(resolved));
-    return CachedNetworkImageProvider(resolved, cacheKey: ImageUtil.cacheKeyFor(resolved));
+    // Prose illustrations are laid out by fwfh, so there is no width to read
+    // here; 1080 physical pixels is past any reading column and still stops a
+    // cover-sized scan from decoding at full size. (sizedUrl leaves /epub/
+    // urls alone, so this is a decode cap only.)
+    return ArtworkImage.providerFor(resolved, physicalWidth: 1080)!;
   }
 }

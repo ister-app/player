@@ -80,7 +80,15 @@ class CbzPageSource implements ComicPageSource {
 
   static ImageProvider _provider(String url, String cacheKey) =>
       providerFactory?.call(url, cacheKey) ??
-      CachedNetworkImageProvider(url, cacheKey: cacheKey);
+      CachedNetworkImageProvider(
+        url,
+        cacheKey: cacheKey,
+        // Without HttpGet the web loader ignores the decode callback entirely,
+        // which made the ResizeImage wrapper below do nothing there — pages
+        // decoded at full scan resolution in the browser.
+        imageRenderMethodForWeb:
+            kIsWeb ? ImageRenderMethodForWeb.HttpGet : ImageRenderMethodForWeb.HtmlImage,
+      );
 
   @override
   final int pageCount;
