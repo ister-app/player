@@ -46,15 +46,25 @@ Future<void> main() async {
   // settings page) and route uncaught errors through it, before the awaited
   // init below so boot failures are captured too.
   unawaited(AppLogStore.instance.install());
+  // Chain, don't replace: in production the previous handler is Flutter's
+  // own presentError, so nothing changes there. Under `flutter test` it is the
+  // test binding's handler, and that one *must* keep seeing errors — the
+  // binding asserts, inside its uncaught-error path, that its handler recorded
+  // the failure, and when an app-installed handler has swallowed it the
+  // assertion fires in the error handler itself and the test never completes.
+  // Every failing integration test then turned into a silent hang until the
+  // CI's per-file kill instead of a reported failure (the doc tour, 2026-09).
+  final previousOnError = FlutterError.onError ?? FlutterError.presentError;
   FlutterError.onError = (details) {
     LoggerService().logger.e('Uncaught Flutter error',
         error: details.exception, stackTrace: details.stack);
-    FlutterError.presentError(details);
+    previousOnError(details);
   };
+  final previousDispatcherOnError = PlatformDispatcher.instance.onError;
   PlatformDispatcher.instance.onError = (error, stack) {
     LoggerService().logger
         .e('Uncaught error', error: error, stackTrace: stack);
-    return false;
+    return previousDispatcherOnError?.call(error, stack) ?? false;
   };
   LoggerService().logger.i("Starting Ister Player");
   // Before anything can resolve an image — the audio handler publishes artwork

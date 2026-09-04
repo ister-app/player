@@ -72,7 +72,14 @@ stop of a test: `flutter test -d linux` prints the app's output (stderr included
 test *finishes*, so `trace` also appends to the file in `$E2E_TRACE_FILE`, which the CI loop tails
 live, and `integration_test/support/hang_watchdog.dart` (armed by `bootApp`, a second isolate)
 prints the main isolate's Dart stack via the VM service when the heartbeat or the traced step
-stops moving. The CI loop in `workflow.yml` gives each file 12 minutes and takes a hang dump
+stops moving. `bootApp` also wraps the error handlers so every `FlutterError` lands in the
+trace live, and the wait helpers pump through `pumpOrFail`, which fails the test when no frame
+arrives for 30 s. The app's `main()` must *chain* the `FlutterError.onError` it finds rather
+than replace it: the test binding asserts inside its own uncaught-error path that its handler
+saw the failure, and with the handler swallowed that assertion fires in the error handler and
+the test never completes — every failing e2e then showed up as 12 minutes of silence instead of
+a failure (that was the doc-tour "hang" of 2026-09; the trigger was the e2e postgres getting
+OOM-killed at 512Mi, fixed in the chart). The CI loop in `workflow.yml` gives each file 12 minutes and takes a hang dump
 (app `/proc` state, native threads via gdb, Xvfb screenshot → `e2e-hang` artifact) after 10 —
 the doc tour used to hang ~1 in 8 runs right after its build, with nothing to debug.
 

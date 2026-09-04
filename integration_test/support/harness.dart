@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -115,8 +116,74 @@ Future<void> bootApp(
   await startHangWatchdog(extraState: _schedulerState);
   trace('bootApp: starting the app');
   await app.main();
+  _traceUncaughtErrors();
   await tester.pump();
   trace('bootApp: first frame pumped');
+}
+
+/// The last error the app reported, for the message of a stalled [pumpOrFail].
+String? _lastReportedError;
+
+/// Mirrors every reported error into the trace, live. The app installs its own
+/// FlutterError.onError / PlatformDispatcher.onError in main() (logging to the
+/// in-app log store, then chaining to the handler it found — the test
+/// binding's, here), which is why these wrap *after* app.main(). A
+/// `flutter test -d linux` run only prints the app's console once the test has
+/// finished, so while a test is stuck the error that ended it is the one thing
+/// the CI log never shows. Note that a test failure (`fail`, a timeout in
+/// [pumpUntil]) also passes through here: the binding reports the uncaught
+/// error through FlutterError before completing the test.
+void _traceUncaughtErrors() {
+  final appOnError = FlutterError.onError;
+  FlutterError.onError = (details) {
+    _lastReportedError = details.exceptionAsString();
+    trace('FlutterError: ${_oneLine(details.exceptionAsString())}'
+        '${_topFrames(details.stack)}');
+    appOnError?.call(details);
+  };
+  final appDispatcherOnError = PlatformDispatcher.instance.onError;
+  PlatformDispatcher.instance.onError = (error, stack) {
+    _lastReportedError = error.toString();
+    trace('uncaught: ${_oneLine(error.toString())}${_topFrames(stack)}');
+    return appDispatcherOnError?.call(error, stack) ?? false;
+  };
+}
+
+String _oneLine(String text) {
+  final flat = text.replaceAll(RegExp(r'\s+'), ' ').trim();
+  return flat.length > 400 ? '${flat.substring(0, 400)}…' : flat;
+}
+
+String _topFrames(StackTrace? stack) {
+  if (stack == null) return '';
+  final frames = stack
+      .toString()
+      .split('\n')
+      .where((l) => l.trim().isNotEmpty)
+      .take(4)
+      .map((l) => l.trim())
+      .join(' | ');
+  return frames.isEmpty ? '' : '\n    at $frames';
+}
+
+/// How long one [WidgetTester.pump] may take before the frame loop counts as
+/// dead. On the live binding a pump resolves when the engine delivers the next
+/// frame; a frame normally follows within milliseconds of the requested delay.
+const Duration framePumpTimeout = Duration(seconds: 30);
+
+/// [WidgetTester.pump] that fails the test instead of waiting forever when no
+/// frame comes. The live test binding completes a pump from handleDrawFrame,
+/// so an engine that stops delivering frames (or a frame that throws past the
+/// binding's own state checks) leaves the pump's future pending for good, and
+/// the test then sits silent until the CI's 12-minute kill. The watchdog only
+/// *reports* that state; failing here ends the test, which is also what gets
+/// the buffered app output (the real exception among it) printed.
+Future<void> pumpOrFail(WidgetTester tester, [Duration? duration]) {
+  return tester.pump(duration).timeout(framePumpTimeout, onTimeout: () {
+    fail('no frame for ${framePumpTimeout.inSeconds}s: the frame loop is '
+        'dead (scheduler: ${_schedulerState()}; last reported error: '
+        '${_lastReportedError ?? 'none'})');
+  });
 }
 
 /// From the server overview, opens the (seeded) server's card and waits for
@@ -154,7 +221,7 @@ Future<void> pumpUntilFound(
   trace('waiting for $finder');
   final deadline = DateTime.now().add(timeout);
   while (DateTime.now().isBefore(deadline)) {
-    await tester.pump(const Duration(milliseconds: 200));
+    await pumpOrFail(tester, const Duration(milliseconds: 200));
     if (finder.evaluate().isNotEmpty) return;
   }
   fail('Timed out after $timeout waiting for $finder');
@@ -185,7 +252,7 @@ Future<void> pumpUntil(
   trace('waiting for $description');
   final deadline = DateTime.now().add(timeout);
   while (DateTime.now().isBefore(deadline)) {
-    await tester.pump(const Duration(milliseconds: 200));
+    await pumpOrFail(tester, const Duration(milliseconds: 200));
     if (condition()) return;
   }
   final texts = find
