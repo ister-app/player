@@ -33,10 +33,25 @@ class ImageCacheConfig {
   /// entry count matters as much as the bytes when a screen is hundreds of
   /// small avatars.
   ///
-  /// Web is deliberately left at Flutter's defaults. Tightening it there was
-  /// aimed at CanvasKit's GPU textures, but the request-side sizing already
-  /// keeps those small, and a cache too small to hold a screen risks evicting
-  /// images that are still on it.
+  /// Web caches nothing, and that is the fix for a real bug rather than a
+  /// tuning choice.
+  ///
+  /// CanvasKit on a GPU does not upload an image when it decodes it: it builds
+  /// a *lazy* SkImage holding the `<img>` element it came from and uploads the
+  /// texture at paint time (`MakeLazyImageFromTextureSourceWithInfo`). Firefox
+  /// reclaims the decoded data of an `<img>` that is not in the document, and
+  /// the next upload then yields "Resource has no data (yet?). Uploading
+  /// zeros" — a blank tile. Feeding it bytes instead does not help: without
+  /// WebCodecs' ImageDecoder the engine wraps those in a blob `<img>` and ends
+  /// up on the same path.
+  ///
+  /// The cache is what makes that reachable: it keeps the stale `ui.Image`
+  /// alive across a navigation, so coming back to a page repaints from an
+  /// image whose source the browser has already thrown away. Evicting on the
+  /// last listener means a return decodes afresh. It is cheap now that artwork
+  /// arrives at the size it is painted — a tile is ~18 kB and comes from the
+  /// browser's own HTTP cache. Images currently on screen are unaffected;
+  /// Flutter tracks those separately as live images.
   static const int _maxBytesNative = 200 << 20;
 
   /// Android TV boxes commonly cap the app heap around 256 MB.
@@ -46,7 +61,9 @@ class ImageCacheConfig {
   /// image resolves, so before the audio handler can publish any artwork.
   static void install() {
     CachedNetworkImageProvider.defaultCacheManager = manager;
-    if (!kIsWeb) {
+    if (kIsWeb) {
+      PaintingBinding.instance.imageCache.maximumSize = 0;
+    } else {
       PaintingBinding.instance.imageCache
         ..maximumSizeBytes = _maxBytesNative
         ..maximumSize = 600;
