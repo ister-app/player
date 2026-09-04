@@ -23,20 +23,20 @@ class ImageCacheConfig {
     stalePeriod: const Duration(days: 7),
   );
 
-  /// Decoded-image budget, per platform.
+  /// Decoded-image budget.
   ///
-  /// These belong *after* the decode caps in [ArtworkImage], not instead of
-  /// them: raising the cache alone was never the fix. With artwork bucketed to
-  /// at most 1280px a tile decodes to well under a megabyte, so a full grid is
-  /// tens of megabytes rather than the 872 MiB one home screen used to be.
+  /// This belongs *after* the sizing in [ArtworkImage], not instead of it:
+  /// raising the cache alone was never the fix. With artwork fetched at the
+  /// width it is painted, a tile decodes to well under a megabyte and a full
+  /// grid is tens of megabytes rather than the 872 MiB one home screen used to
+  /// be. 200 MB then holds several screens, so back-navigation is instant; the
+  /// entry count matters as much as the bytes when a screen is hundreds of
+  /// small avatars.
   ///
-  /// Web gets *less* than Flutter's 100 MB default on purpose: every live
-  /// entry is also a CanvasKit GPU texture, and exhausting that is what made
-  /// the browser upload empty textures and paint tiles grey. The persistent
-  /// cache manager absorbs the re-decodes. Native can hold a few screens so
-  /// back-navigation is instant; the entry count matters as much as the bytes
-  /// when a screen is hundreds of small avatars.
-  static const int _maxBytesWeb = 64 << 20;
+  /// Web is deliberately left at Flutter's defaults. Tightening it there was
+  /// aimed at CanvasKit's GPU textures, but the request-side sizing already
+  /// keeps those small, and a cache too small to hold a screen risks evicting
+  /// images that are still on it.
   static const int _maxBytesNative = 200 << 20;
 
   /// Android TV boxes commonly cap the app heap around 256 MB.
@@ -46,8 +46,10 @@ class ImageCacheConfig {
   /// image resolves, so before the audio handler can publish any artwork.
   static void install() {
     CachedNetworkImageProvider.defaultCacheManager = manager;
-    PaintingBinding.instance.imageCache
-      ..maximumSizeBytes = kIsWeb ? _maxBytesWeb : _maxBytesNative
-      ..maximumSize = kIsWeb ? 300 : 600;
+    if (!kIsWeb) {
+      PaintingBinding.instance.imageCache
+        ..maximumSizeBytes = _maxBytesNative
+        ..maximumSize = 600;
+    }
   }
 }

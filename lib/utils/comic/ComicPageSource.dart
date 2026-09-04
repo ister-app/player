@@ -1,8 +1,8 @@
 import 'package:cached_network_image_ce/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:io';
 
 import 'package:player/utils/download/ComicDownloader.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:player/utils/comic/ComicManifest.dart';
 import 'package:player/utils/comic/ComicResourceClient.dart';
@@ -80,15 +80,10 @@ class CbzPageSource implements ComicPageSource {
 
   static ImageProvider _provider(String url, String cacheKey) =>
       providerFactory?.call(url, cacheKey) ??
-      CachedNetworkImageProvider(
-        url,
-        cacheKey: cacheKey,
-        // Without HttpGet the web loader ignores the decode callback entirely,
-        // which made the ResizeImage wrapper below do nothing there — pages
-        // decoded at full scan resolution in the browser.
-        imageRenderMethodForWeb:
-            kIsWeb ? ImageRenderMethodForWeb.HttpGet : ImageRenderMethodForWeb.HtmlImage,
-      );
+      // Note the ResizeImage wrapper below does nothing on web: its loader
+      // ignores the decode callback. Page requests carry ?width= for the sizes
+      // that matter (the thumbnail strip); a full page is meant to be full size.
+      CachedNetworkImageProvider(url, cacheKey: cacheKey);
 
   @override
   final int pageCount;

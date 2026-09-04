@@ -7,23 +7,22 @@ import 'package:player/utils/ImageUtil.dart';
 /// Every network artwork in the app, fetched and decoded at the size it is
 /// painted rather than at the size it is stored.
 ///
-/// The whole point of funnelling the call sites through one widget is the
-/// per-platform asymmetry below, which is easy to get silently wrong:
+/// Two ways to keep an image small, and the platforms do not agree on them:
 ///
-/// * On native, `memCacheWidth` works — the io loader hands the decoder no
-///   target size of its own, so `ResizeImage` gets to set one.
-/// * On web under the default `HtmlImage` loader, `memCacheWidth` does
-///   **nothing**: that path calls `ui_web.createImageCodecFromUrl` and drops
-///   the decode callback entirely, so the image always decodes at full size.
-///   That is what filled the WebGL context and turned tiles grey.
-/// * On web under `HttpGet`, `maxWidthDiskCache`/`maxHeightDiskCache` *are*
-///   the decode target, and combining them with `memCacheWidth` trips
-///   `ResizeImage`'s `getTargetSize == null` assert in debug builds.
+/// * `?width=` asks the server for a smaller variant. Platform-independent,
+///   and the only lever that works on web — an older server ignores it and
+///   hands back the original, which is the pre-existing behaviour.
+/// * `memCacheWidth` caps the decode. It works on native, where the io loader
+///   hands the decoder no target size of its own so `ResizeImage` gets to set
+///   one. On web it does **nothing**: the default `HtmlImage` loader calls
+///   `ui_web.createImageCodecFromUrl` and drops the decode callback entirely.
 ///
-/// So: exactly one of the two knobs, decided by platform, in one place.
-/// `HttpGet` on web is load-bearing, not cosmetic — it is also what finally
-/// routes web artwork through the shared cache manager, which is why
-/// [AccentColorUtil] stops downloading every cover a second time there.
+/// The `HttpGet` web loader *would* honour a decode cap (through
+/// `maxWidthDiskCache`, not `memCacheWidth` — and combining the two trips
+/// `ResizeImage`'s `getTargetSize == null` assert). It is not worth it: routing
+/// web images through the cache manager instead of the browser's own `<img>`
+/// left tiles blank, and with the server sizing the bytes there is nothing
+/// left for a client-side cap to save.
 class ArtworkImage extends StatelessWidget {
   const ArtworkImage({
     super.key,
@@ -97,10 +96,8 @@ class ArtworkImage extends StatelessWidget {
           ? null
           : (context, _) => placeholder!(context),
       errorBuilder: (context, _, _) => error,
-      imageRenderMethodForWeb:
-          kIsWeb ? ImageRenderMethodForWeb.HttpGet : ImageRenderMethodForWeb.HtmlImage,
+      // Null on web, where it is a no-op — see the class doc.
       memCacheWidth: kIsWeb ? null : decodeWidth,
-      maxWidthDiskCache: kIsWeb ? decodeWidth : null,
     );
   }
 
@@ -114,12 +111,9 @@ class ArtworkImage extends StatelessWidget {
     final provider = CachedNetworkImageProvider(
       sized,
       cacheKey: ImageUtil.cacheKeyFor(sized),
-      imageRenderMethodForWeb:
-          kIsWeb ? ImageRenderMethodForWeb.HttpGet : ImageRenderMethodForWeb.HtmlImage,
-      // On web this is the decode target (see the class doc); on native
-      // ResizeImage below does that job and this would resize the stored file.
-      maxWidth: kIsWeb ? physicalWidth : null,
     );
+    // No ResizeImage on web: the default loader ignores the target size it
+    // would set, and wrapping it only hides that. The url carries the size.
     if (kIsWeb) return provider;
     return ResizeImage(provider, width: physicalWidth, allowUpscaling: false);
   }
@@ -141,9 +135,6 @@ class ArtworkImage extends StatelessWidget {
       imageUrl: sized,
       cacheKey: ImageUtil.cacheKeyFor(sized)!,
       memCacheWidth: isWeb ? null : decodeWidth,
-      maxWidthDiskCache: isWeb ? decodeWidth : null,
-      renderMethodForWeb:
-          isWeb ? ImageRenderMethodForWeb.HttpGet : ImageRenderMethodForWeb.HtmlImage,
     );
   }
 }
@@ -154,13 +145,9 @@ class ArtworkImageDescription {
     required this.imageUrl,
     required this.cacheKey,
     required this.memCacheWidth,
-    required this.maxWidthDiskCache,
-    required this.renderMethodForWeb,
   });
 
   final String imageUrl;
   final String cacheKey;
   final int? memCacheWidth;
-  final int? maxWidthDiskCache;
-  final ImageRenderMethodForWeb renderMethodForWeb;
 }

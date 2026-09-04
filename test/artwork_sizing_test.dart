@@ -94,10 +94,10 @@ void main() {
   });
 
   group('ArtworkImage decode arguments', () {
-    // The decode caps disappear inside OctoImage, so a widget test cannot see
-    // them. This is the regression guard for the bug that started all this:
-    // on web the knob has to be maxWidthDiskCache under the HttpGet loader,
-    // because memCacheWidth is a silent no-op there.
+    // The decode cap disappears inside OctoImage, so a widget test cannot see
+    // it. Web deliberately gets none: memCacheWidth is a silent no-op under
+    // its loader, and the ?width= on the url is what keeps the bytes (and so
+    // the decode) small there.
     ArtworkImageDescription describe({required bool isWeb, double width = 150}) =>
         ArtworkImage.describeFor(
           url: '$_artwork?token=abc',
@@ -107,29 +107,15 @@ void main() {
         );
 
     test('native caps the decode with memCacheWidth', () {
-      final native = describe(isWeb: false);
-
-      expect(native.memCacheWidth, 300);
-      expect(native.maxWidthDiskCache, isNull);
-      expect(native.renderMethodForWeb, ImageRenderMethodForWeb.HtmlImage);
+      expect(describe(isWeb: false).memCacheWidth, 300);
     });
 
-    test('web caps the decode with maxWidthDiskCache under HttpGet', () {
-      final web = describe(isWeb: true);
-
-      expect(web.maxWidthDiskCache, 300);
-      expect(web.memCacheWidth, isNull);
-      expect(web.renderMethodForWeb, ImageRenderMethodForWeb.HttpGet);
+    test('web sets no decode cap, because none of them work there', () {
+      expect(describe(isWeb: true).memCacheWidth, isNull);
     });
 
-    test('never sets both knobs at once (ResizeImage asserts on that)', () {
-      for (final isWeb in [true, false]) {
-        final description = describe(isWeb: isWeb);
-        expect(
-            description.memCacheWidth == null ||
-                description.maxWidthDiskCache == null,
-            isTrue);
-      }
+    test('web still asks the server for the smaller variant', () {
+      expect(describe(isWeb: true).imageUrl, '$_artwork?width=320&token=abc');
     });
 
     test('asks the server for the bucket that covers the painted size', () {
@@ -139,9 +125,7 @@ void main() {
 
     test('providerFor sizes the url and caps the decode off-widget', () {
       // The blurred backdrop and epub images have no layout to measure, so
-      // they name a width. Native wraps in ResizeImage; web cannot (the
-      // HttpGet loader sets its own target size and ResizeImage asserts on
-      // that), so there the provider's own maxWidth does the work.
+      // they name a width.
       final provider = ArtworkImage.providerFor('$_artwork?token=abc',
           physicalWidth: 320) as ResizeImage;
 
