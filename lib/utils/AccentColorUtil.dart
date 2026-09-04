@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:player/utils/ArtworkSizing.dart';
 import 'package:player/utils/ImageCacheConfig.dart';
 import 'package:player/utils/ImageUtil.dart';
 
@@ -9,6 +10,9 @@ import 'package:player/utils/ImageUtil.dart';
 /// album page so both derive the same tint from the same cover.
 class AccentColorUtil {
   AccentColorUtil._();
+
+  /// Artwork width the accent is extracted from. One of the server's buckets.
+  static const int _accentWidth = 240;
 
   /// Extracts an accent from the artwork at [url]; null on failure or no url.
   static Future<Color?> fromImageUrl(String? url) async {
@@ -25,13 +29,21 @@ class AccentColorUtil {
       // downloaded, so this costs no extra request; the private MemoryImage is
       // evicted right after so it does not linger in the image cache at full
       // size.
-      final key = ImageUtil.cacheKeyFor(url)!;
+      // A fixed bucket, not the display's: deterministic (every caller gets
+      // the same accent for the same artwork) and deliberately not the key any
+      // visible widget is listening to, which is what the note above is about.
+      // 240 is plenty — fromImageProvider quantizes at 112x112 anyway.
+      final sized = ArtworkSizing.sizedUrl(url, _accentWidth)!;
+      final key = ImageUtil.cacheKeyFor(sized)!;
       final info = await ImageCacheConfig.manager.getFileFromCache(key) ??
           await ImageCacheConfig.manager
-              .getFileStream(url, key: key)
+              .getFileStream(sized, key: key)
               .firstWhere((r) => r is FileInfo) as FileInfo;
       final Uint8List bytes = await info.file.readAsBytes();
-      final provider = MemoryImage(bytes);
+      // Still resized: an older server ignores ?width= and hands back the
+      // original, and this used to be the second-largest decode in the app.
+      final provider = ResizeImage(MemoryImage(bytes),
+          width: _accentWidth, allowUpscaling: false);
       try {
         // `content` keeps the source artwork's hue and chroma instead of pulling
         // it towards a muted tonal palette, which is what we want for an accent.

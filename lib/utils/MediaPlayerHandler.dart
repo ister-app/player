@@ -39,6 +39,7 @@ import 'package:player/utils/WellKnownService.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../graphql/fragmentAlbum.graphql.dart';
+import '../graphql/fragmentImages.graphql.dart';
 import '../graphql/fragmentEpisode.graphql.dart';
 import '../graphql/fragmentMediafiles.graphql.dart';
 import '../graphql/fragmentMovie.graphql.dart';
@@ -51,6 +52,7 @@ import '../graphql/playbackCommandsSubscription.graphql.dart';
 import '../graphql/schema.graphql.dart';
 import 'FollowSyncDecision.dart';
 import 'ImageTypes.dart';
+import 'ArtworkSizing.dart';
 import 'ImageUtil.dart';
 import 'MetadataUtil.dart';
 import 'PlayQueueService.dart';
@@ -499,7 +501,7 @@ class MediaPlayerHandler extends BaseAudioHandler
                   ImageTypes.background,
                 );
                 imgUri = imageByType != null
-                    ? Uri.tryParse(ImageUtil.buildUrl(imageByType, token: StreamTokenService.getToken(newServerName)) ?? '')
+                    ? Uri.tryParse(_publishedArtUrl(imageByType, newServerName) ?? '')
                     : null;
               }
 
@@ -687,7 +689,7 @@ class MediaPlayerHandler extends BaseAudioHandler
                 ImageTypes.background,
               );
               imgUri = imageByType != null
-                  ? Uri.tryParse(ImageUtil.buildUrl(imageByType, token: StreamTokenService.getToken(newServerName)) ?? '')
+                  ? Uri.tryParse(_publishedArtUrl(imageByType, newServerName) ?? '')
                   : null;
             }
             return MediaItem(
@@ -770,9 +772,7 @@ class MediaPlayerHandler extends BaseAudioHandler
                 ImageTypes.cover,
               );
               imgUri = imageByType != null
-                  ? Uri.tryParse(ImageUtil.buildUrl(imageByType,
-                          token: StreamTokenService.getToken(newServerName)) ??
-                      '')
+                  ? Uri.tryParse(_publishedArtUrl(imageByType, newServerName) ?? '')
                   : null;
             }
             return MediaItem(
@@ -1458,6 +1458,21 @@ class MediaPlayerHandler extends BaseAudioHandler
       LoggerService().logger.e('Failed to open media: $e');
     }
   }
+
+  /// The artwork url published on a [MediaItem].
+  ///
+  /// Capped at a bucket rather than the stored original because this url is
+  /// not only what the in-app player shows: audio_service downloads it for the
+  /// Android notification, the lock screen and CarPlay, where a 3840x2160
+  /// episode still was being fetched to fill an icon. The in-app surfaces
+  /// re-size it per surface through [ArtworkImage] anyway.
+  static String? _publishedArtUrl(Fragment$fragmentImages image, String serverName) =>
+      ArtworkSizing.sizedUrl(
+          ImageUtil.buildUrl(image, token: StreamTokenService.getToken(serverName)),
+          _publishedArtworkWidth);
+
+  /// Wide enough for a tablet lock screen and a car head unit.
+  static const int _publishedArtworkWidth = 640;
 
   /// Replaces the stream token embedded in [item]'s artUri with [token].
   /// Returns [item] unchanged when there is no artwork or the token already

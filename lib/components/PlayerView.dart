@@ -2,9 +2,9 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:player/components/ArtworkImage.dart';
 import 'package:player/components/ListenTogetherSheet.dart';
 import 'package:player/components/video_controls/SegmentOverlayButtons.dart';
 import 'package:player/components/AppModalSheet.dart';
@@ -13,7 +13,6 @@ import 'package:player/components/TvFocusable.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/AccentColorUtil.dart';
-import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/SleepTimerService.dart';
 import 'package:player/utils/DurationUtil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -617,11 +616,12 @@ class _PlayerViewState extends State<PlayerView>
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: artUri != null
-            ? CachedNetworkImage(
-                imageUrl: artUri,
-                cacheKey: ImageUtil.cacheKeyFor(artUri),
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _artPlaceholder(size),
+            ? ArtworkImage(
+                url: artUri,
+                logicalWidth: size,
+                fadeInDuration: const Duration(milliseconds: 500),
+                fadeOutDuration: const Duration(milliseconds: 1000),
+                errorBuilder: (_) => _artPlaceholder(size),
               )
             : _artPlaceholder(size),
       ),
@@ -865,7 +865,12 @@ class _BlurredBackgroundState extends State<_BlurredBackground> {
     // art is unchanged / already loading — avoids a mid-switch flash to grey.
     if (uri == null || uri == _shownUri || uri == _loadingUri) return;
     _loadingUri = uri;
-    final provider = NetworkImage(uri);
+    // A fixed 320 physical pixels: it is only ever painted through a sigma-40
+    // blur, which resolves nothing finer, and keeping it off the hero cover's
+    // cache key means the two never share an image stream — the race
+    // AccentColorUtil's comment describes.
+    final provider = ArtworkImage.providerFor(uri, physicalWidth: 320);
+    if (provider == null) return;
     precacheImage(provider, context).then((_) {
       // A newer switch may have superseded this load; only swap if still current.
       if (mounted && widget.artUri == uri) {
@@ -961,13 +966,14 @@ class _QueueItemState extends State<_QueueItem> {
               artUrl != null
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(4),
-                      child: CachedNetworkImage(
-                        imageUrl: artUrl,
-                        cacheKey: ImageUtil.cacheKeyFor(artUrl),
+                      child: ArtworkImage(
+                        url: artUrl,
+                        logicalWidth: 48,
                         width: 48,
                         height: 48,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _queueArtPlaceholder(),
+                        fadeInDuration: const Duration(milliseconds: 500),
+                        fadeOutDuration: const Duration(milliseconds: 1000),
+                        errorBuilder: (_) => _queueArtPlaceholder(),
                       ),
                     )
                   : _queueArtPlaceholder(),
