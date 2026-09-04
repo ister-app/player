@@ -1,0 +1,131 @@
+name: iOS signing probe
+
+# TEMPORARY. Delete once release.yml's iOS entitlement handling is fixed.
+#
+# release.yml's build-ios archives unsigned, so ProcessProductPackaging never runs and
+# Runner.entitlements never reaches the binary; -exportArchive then re-signs an app that
+# carries no entitlements and the CarPlay key is silently absent from the ipa. This probe
+# runs the archive/export pair on demand — no version bump, no tag, no release, no
+# TestFlight upload — and reports what each stage actually embedded.
+on:
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: How to get the entitlements into the archive
+        type: choice
+        default: adhoc
+        options: [adhoc, resign, both]
+
+jobs:
+  probe:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+      - run: flutter pub get
+
+      - name: Install the App Store Connect API key
+        env:
+          KEY_P8: ${{ secrets.APP_STORE_CONNECT_KEY_P8 }}
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          printf '%s\n' "$KEY_P8" > ~/.appstoreconnect/private_keys/"AuthKey_${KEY_ID}.p8"
+
+      - run: flutter build ios --release --config-only
+
+      # Variant A: let Xcode package the entitlements, ad-hoc signed so no keychain
+      # identity is needed — what the macOS job gets for free from its pbxproj.
+      - name: Archive ad-hoc signed
+        if: inputs.variant != 'resign'
+        id: adhoc
+        continue-on-error: true
+        run: |
+          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -archivePath build/ios/archive/Runner.xcarchive archive \
+            CODE_SIGNING_ALLOWED=YES CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="-" "CODE_SIGN_IDENTITY[sdk=iphoneos*]=-" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            DEVELOPMENT_TEAM="" 2>&1 | tail -60
+
+      # Variant B: archive unsigned as today, then ad-hoc sign the archived app with the
+      # entitlements by hand. Uglier, but touches no build settings, so it cannot upset
+      # the SwiftPM plugin targets the way an identity override might.
+      - name: Archive unsigned, then re-sign by hand
+        if: inputs.variant == 'resign' || (inputs.variant == 'both' && steps.adhoc.outcome == 'failure')
+        continue-on-error: true
+        run: |
+          rm -rf build/ios/archive
+          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -archivePath build/ios/archive/Runner.xcarchive archive \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | tail -40
+          APP="build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app"
+          # Nested code first: codesign refuses a bundle whose frameworks are unsigned.
+          find "$APP/Frameworks" -maxdepth 1 -name '*.framework' -print0 |
+            xargs -0 -I{} codesign --force --sign - {}
+          codesign --force --sign - --generate-entitlement-der \
+            --entitlements ios/Runner/Runner.entitlements "$APP"
+
+      # The decisive signal, and the one release.yml never looked at: what the ARCHIVE
+      # carries. If the entitlement is missing here, no amount of exporting adds it.
+      - name: What did the archive embed?
+        run: |
+          APP="build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app"
+          ls -la "$APP" || true
+          echo "--- archived entitlements ---"
+          codesign -d --entitlements - --xml "$APP" 2>&1 | plutil -p - || \
+            echo "(no entitlements / not signed)"
+          echo "--- Mpv.framework ---"
+          [ -d "$APP/Frameworks/Mpv.framework" ] && echo present || echo MISSING
+
+      - name: Export
+        continue-on-error: true
+        env:
+          KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          KEY="$HOME/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8"
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>teamID</key><string>68TXJMQZH4</string>
+            <key>uploadSymbols</key><true/>
+          </dict>
+          </plist>
+          EOF
+          xcodebuild -exportArchive \
+            -archivePath build/ios/archive/Runner.xcarchive \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath build/ios/ipa \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY" \
+            -authenticationKeyID "$KEY_ID" \
+            -authenticationKeyIssuerID "$ISSUER_ID" 2>&1 | tail -40
+
+      - name: What did the ipa end up with?
+        run: |
+          rm -rf "$RUNNER_TEMP/ipacheck"
+          IPA=$(echo build/ios/ipa/*.ipa)
+          unzip -q "$IPA" -d "$RUNNER_TEMP/ipacheck"
+          APP=$(echo "$RUNNER_TEMP/ipacheck/Payload/"*.app)
+          codesign -d --entitlements - --xml "$APP" > "$RUNNER_TEMP/e.plist"
+          plutil -p "$RUNNER_TEMP/e.plist"
+          if /usr/libexec/PlistBuddy -c 'Print :com.apple.developer.carplay-audio' \
+               "$RUNNER_TEMP/e.plist" 2>/dev/null | grep -q true; then
+            echo "RESULT: carplay-audio survived"
+          else
+            echo "RESULT: carplay-audio MISSING"
+            exit 1
+          fi
