@@ -19,6 +19,7 @@ import 'package:player/utils/NotificationArtCache.dart';
 import 'package:player/utils/AppLogStore.dart';
 import 'package:player/utils/AppMessenger.dart';
 import 'package:player/utils/ClientManager.dart';
+import 'package:player/utils/GraphQLCacheStore.dart';
 import 'package:player/utils/WellKnownService.dart';
 import 'package:player/utils/LanguageService.dart';
 import 'package:player/utils/LoggerService.dart';
@@ -62,6 +63,10 @@ Future<void> main() async {
   // Init the client manager and wait until lastClientUsed is loaded
   ClientManager.instance;
   await ClientManager.ensureInitialized();
+  // Open the per-server GraphQL caches before anything can build a client —
+  // createClient is synchronous and a server without an open box falls back to
+  // an in-memory store for the rest of the run.
+  await GraphQLCacheStore.ensureInitialized();
   // Populate the in-memory well-known cache before the first frame. A cold web
   // load can land straight on a root deep link (e.g. a restored `/remote/...`
   // URL) that reaches ClientManager.createClient synchronously in initState,

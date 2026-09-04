@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/utils/GraphQLCacheStore.dart';
 import 'package:player/utils/LoginManager.dart';
 import 'package:player/utils/WellKnownService.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -170,7 +171,9 @@ class ClientManager {
     ValueNotifier<GraphQLClient> client = ValueNotifier(
       GraphQLClient(
         link: link,
-        cache: GraphQLCache(store: InMemoryStore()),
+        // Disk-backed where the platform allows it, so a restart repaints the
+        // last browsed content instead of empty shelves (GraphQLCacheStore).
+        cache: GraphQLCache(store: GraphQLCacheStore.storeFor(url)),
         queryRequestTimeout: Duration(seconds: 30),
         // Every cache write rebroadcasts by deep-comparing all watched
         // queries on the UI thread; the default DeepCollectionEquality makes

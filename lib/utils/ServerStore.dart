@@ -1,6 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ClientManager.dart';
+import 'GraphQLCacheStore.dart';
 import 'LoginManager.dart';
 import 'StreamTokenService.dart';
 import 'WellKnownService.dart';
@@ -26,6 +27,9 @@ class ServerStore {
     if (!servers.contains(server)) {
       servers.add(server);
       await _prefs.setStringList(key, servers);
+      // Its box has to exist before the first client is built for it,
+      // otherwise the new server only starts caching after a restart.
+      await GraphQLCacheStore.openFor(server);
     }
     return servers;
   }
@@ -39,6 +43,7 @@ class ServerStore {
     await LoginManager.remove(server);
     StreamTokenService.invalidateToken(server);
     ClientManager.removeClient(server);
+    await GraphQLCacheStore.removeFor(server);
     await _prefs.setStringList(key, servers);
     return servers;
   }
