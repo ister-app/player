@@ -1,5 +1,58 @@
 # Changelog
 
+## player v2.7.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.7.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(artist): play and shuffle every track of an artist ([`bf255ea`](https://github.com/ister-app/player/commit/bf255ea))
+- feat(settings): default to direct play without transcoding ([`f7ff1d7`](https://github.com/ister-app/player/commit/f7ff1d7))
+- feat(cache): persist the GraphQL cache across restarts ([`4591a92`](https://github.com/ister-app/player/commit/4591a92))
+- feat(shows): keep the only season of a show expanded ([`51e6329`](https://github.com/ister-app/player/commit/51e6329))
+- feat(images): add ArtworkSizing and the ArtworkImage widget ([`a82cdc9`](https://github.com/ister-app/player/commit/a82cdc9))
+
+### Fixes
+
+- fix(e2e): report a failing integration test instead of hanging on it ([`6966826`](https://github.com/ister-app/player/commit/6966826))
+- fix(comic): keep the loading placeholders where the pages land ([`6ccd38c`](https://github.com/ister-app/player/commit/6ccd38c))
+- fix(comic): show a page skeleton instead of a black screen while loading ([`12f0a98`](https://github.com/ister-app/player/commit/12f0a98))
+- fix(album): stop the play button flashing before the accent is known ([`c244de5`](https://github.com/ister-app/player/commit/c244de5))
+- fix(player): let a half-dismissed player be dragged back up ([`5df302b`](https://github.com/ister-app/player/commit/5df302b))
+- fix(player): stop the landscape controls running into the bottom bar ([`9081036`](https://github.com/ister-app/player/commit/9081036))
+- fix(images): do not repaint web artwork from a cached, stale texture source ([`54fc4a0`](https://github.com/ister-app/player/commit/54fc4a0))
+- fix(images): stop routing web artwork through the cache manager ([`c8a7d3f`](https://github.com/ister-app/player/commit/c8a7d3f))
+- fix(ci): put the TestFlight exemption on the iOS step, not the macOS one ([`0acaeab`](https://github.com/ister-app/player/commit/0acaeab))
+- fix(ci): embed the iOS entitlements before exporting the archive ([`b6d29a0`](https://github.com/ister-app/player/commit/b6d29a0))
+
+### Other
+
+- ci(release): a broken iOS build now blocks the release ([`131ef07`](https://github.com/ister-app/player/commit/131ef07))
+- ci(ios): probe round 2 — hand-signed archive vs cloud-signed archive ([`e2c1c9d`](https://github.com/ister-app/player/commit/e2c1c9d))
+- ci(ios): add a temporary probe for the entitlement signing path ([`5daf985`](https://github.com/ister-app/player/commit/5daf985))
+- docs: record the artwork sizing invariant ([`cd40279`](https://github.com/ister-app/player/commit/cd40279))
+- test(images): cover ArtworkImage.providerFor ([`ad6138d`](https://github.com/ister-app/player/commit/ad6138d))
+- test(images): require artwork to go through ArtworkImage ([`7c41880`](https://github.com/ister-app/player/commit/7c41880))
+- perf(images): tune the Flutter image cache per platform ([`2e5546a`](https://github.com/ister-app/player/commit/2e5546a))
+- perf(images): make the comic and epub decode caps work on web ([`4427cdb`](https://github.com/ister-app/player/commit/4427cdb))
+- perf(images): cap the player backdrop, the accent decode and published artwork ([`9c1e1d4`](https://github.com/ister-app/player/commit/9c1e1d4))
+- perf(images): size the remaining artwork call sites ([`69eec9f`](https://github.com/ister-app/player/commit/69eec9f))
+- perf(images): size carousel and grid artwork from its tile width ([`9d91064`](https://github.com/ister-app/player/commit/9d91064))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.7.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.6.0...v2.7.0
+
 ## player v2.6.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.

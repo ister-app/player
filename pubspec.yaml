@@ -3,7 +3,7 @@ description: "A media player for Ister"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 license: GPL-3.0-or-later
 
-version: 2.6.0+465
+version: 2.7.0+492
 
 environment:
   sdk: ^3.13.0
