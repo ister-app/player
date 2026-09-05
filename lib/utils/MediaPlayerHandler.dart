@@ -1964,26 +1964,40 @@ class MediaPlayerHandler extends BaseAudioHandler
     } catch (e) {
       LoggerService().logger.w('setting sub-delay failed: $e');
     }
-    var n = 0;
-    for (final s in tracks) {
-      // A queue skip or re-open may have replaced the stream while adding.
-      if (_currentMediaUrl != urlAtOpen || _currentMediaUrl == null) return;
-      n++;
-      final url = local
-          ? localFiles[s.id]!
-          : '$nodeUrl/hls/${mediaFile.id}/sub_${s.id}.srt?token=$token';
-      final title = (s.title?.isNotEmpty ?? false)
-          ? s.title!
-          : (s.language?.isNotEmpty ?? false)
-              ? s.language!
-              : 'Subtitle $n';
-      final lang = (s.language?.isNotEmpty ?? false) ? s.language! : 'und';
-      try {
-        // 'auto' loads without selecting; the language preference / forced
-        // restore in _applyTrackPreferences picks the track afterwards.
-        await native.command(['sub-add', url, 'auto', title, lang]);
-      } catch (e) {
-        LoggerService().logger.w('sub-add failed for $title: $e');
+    // Hold the subtitle preference until every SRT is in: mpv fires a
+    // `tracks` event per sub-add, and applying on the first one picked the
+    // best match among a single (English) track — the Dutch one still to
+    // come never got a look-in (Seinfeld on Android, 2026-09).
+    _externalSubtitlesLoadingFor = urlAtOpen;
+    try {
+      var n = 0;
+      for (final s in tracks) {
+        // A queue skip or re-open may have replaced the stream while adding.
+        if (_currentMediaUrl != urlAtOpen || _currentMediaUrl == null) return;
+        n++;
+        final url = local
+            ? localFiles[s.id]!
+            : '$nodeUrl/hls/${mediaFile.id}/sub_${s.id}.srt?token=$token';
+        final title = (s.title?.isNotEmpty ?? false)
+            ? s.title!
+            : (s.language?.isNotEmpty ?? false)
+                ? s.language!
+                : 'Subtitle $n';
+        final lang = (s.language?.isNotEmpty ?? false) ? s.language! : 'und';
+        try {
+          // 'auto' loads without selecting; the language preference / forced
+          // restore in _applyTrackPreferences picks the track afterwards.
+          await native.command(['sub-add', url, 'auto', title, lang]);
+        } catch (e) {
+          LoggerService().logger.w('sub-add failed for $title: $e');
+        }
+      }
+    } finally {
+      if (_externalSubtitlesLoadingFor == urlAtOpen) {
+        _externalSubtitlesLoadingFor = null;
+        if (_currentMediaUrl == urlAtOpen && !_subtitlePreferenceApplied) {
+          unawaited(_applyTrackPreferences(_player.state.tracks));
+        }
       }
     }
   }
@@ -3052,6 +3066,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       }
 
       if (!_subtitlePreferenceApplied &&
+          _externalSubtitlesLoadingFor != _currentMediaUrl &&
           tracks.subtitle.any((t) => t.id != 'auto' && t.id != 'no')) {
         _subtitlePreferenceApplied = true;
         final forcedSubtitle = _forcedSubtitle;
@@ -4464,6 +4479,10 @@ class MediaPlayerHandler extends BaseAudioHandler
   bool _interrupted = false;
   bool _audioPreferenceApplied = false;
   bool _subtitlePreferenceApplied = false;
+
+  /// Media URL whose external SRTs are still being side-loaded; the subtitle
+  /// preference waits for the full list (see _loadExternalSubtitleTracks).
+  String? _externalSubtitlesLoadingFor;
 
   /// Language of the audio track that was actually selected for the open media,
   /// so the subtitle rule can compare against it.
