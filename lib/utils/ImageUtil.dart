@@ -13,25 +13,41 @@ class ImageUtil {
     return getImageByType(images, backgroundType)?.id;
   }
 
+  /// The artwork of [backgroundType] to show for an entity.
+  ///
+  /// Order-independent on purpose: the server returns image lists without an
+  /// ORDER BY, and the same show reaches the client through several queries
+  /// (`showById`, the shows list, `related`, `recentlyWatched`), each of which
+  /// can hand the list back in a different order. All of them write the same
+  /// normalized `Show` entity, so a list that comes back reordered is
+  /// rebroadcast to every widget showing that show — and picking "the first"
+  /// then swaps the tile to another image for a moment, which the user sees as
+  /// a grey flash. Ties are therefore broken on the image id, which is stable.
   static Fragment$fragmentImages? getImageByType(
       List<Fragment$fragmentImages>? images, ImageTypes backgroundType) {
-    if (images != null) {
-      var coverImages = images.where((element) =>
-      ImageTypes.values.byName(element.type.toLowerCase()) ==
-          backgroundType);
-      if (coverImages.isNotEmpty) {
-        // Local artwork shipped next to the media files wins over scraped
-        // provider images. Newer servers label it LOCAL_FILE; older ones
-        // leave the source null.
-        return coverImages
-                .where((i) =>
-                    i.source == null ||
-                    i.source == Enum$MetadataSource.LOCAL_FILE)
-                .firstOrNull ??
-            coverImages.first;
+    if (images == null) return null;
+    final candidates = images.where((element) =>
+        ImageTypes.values.byName(element.type.toLowerCase()) ==
+        backgroundType);
+    if (candidates.isEmpty) return null;
+    // Local artwork shipped next to the media files wins over scraped
+    // provider images. Newer servers label it LOCAL_FILE; older ones leave
+    // the source null.
+    bool isLocal(Fragment$fragmentImages i) =>
+        i.source == null || i.source == Enum$MetadataSource.LOCAL_FILE;
+    Fragment$fragmentImages? best;
+    for (final image in candidates) {
+      if (best == null) {
+        best = image;
+        continue;
+      }
+      final localWins = isLocal(image) && !isLocal(best);
+      final localLoses = !isLocal(image) && isLocal(best);
+      if (localWins || (!localLoses && image.id.compareTo(best.id) < 0)) {
+        best = image;
       }
     }
-    return null;
+    return best;
   }
 
   /// Cache key for an artwork URL: the same URL without the expiring `token`

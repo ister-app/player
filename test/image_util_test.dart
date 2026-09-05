@@ -45,6 +45,22 @@ void main() {
     expect(ImageUtil.getImageByType(images, ImageTypes.background), isNull);
   });
 
+  test('the pick does not depend on the order the server returns', () {
+    // Two scraped backgrounds, as the server hands them back in whatever
+    // order the database feels like — every query must agree on one.
+    final a = _image('bg-a', 'BACKGROUND', source: 'TMDB');
+    final b = _image('bg-b', 'BACKGROUND', source: 'TMDB');
+    expect(ImageUtil.getImageByType([a, b], ImageTypes.background)?.id, 'bg-a');
+    expect(ImageUtil.getImageByType([b, a], ImageTypes.background)?.id, 'bg-a');
+
+    // A local one still beats a scraped one with a smaller id, either way round.
+    final local = _image('zz-local', 'BACKGROUND', source: 'LOCAL_FILE');
+    expect(ImageUtil.getImageByType([a, local], ImageTypes.background)?.id,
+        'zz-local');
+    expect(ImageUtil.getImageByType([local, a], ImageTypes.background)?.id,
+        'zz-local');
+  });
+
   test('handles null and empty lists', () {
     expect(ImageUtil.getImageByType(null, ImageTypes.cover), isNull);
     expect(ImageUtil.getImageByType([], ImageTypes.cover), isNull);

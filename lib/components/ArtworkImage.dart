@@ -95,6 +95,11 @@ class ArtworkImage extends StatelessWidget {
       placeholder: placeholder == null
           ? null
           : (context, _) => placeholder!(context),
+      // Keep painting the previous picture while a changed url loads. A tile
+      // whose artwork genuinely changes then cross-fades instead of dropping
+      // to the placeholder for a few frames — that grey blink is what the
+      // user sees when a GraphQL rebroadcast momentarily swaps an image.
+      useOldImageOnUrlChange: true,
       errorBuilder: (context, _, _) => error,
       // Null on web, where it is a no-op — see the class doc.
       memCacheWidth: kIsWeb ? null : decodeWidth,

@@ -118,6 +118,8 @@ dev_dependencies:
   # integration_test/support/harness.dart's hang watchdog reads the main
   # isolate's stack through the VM service when a test stops making progress.
   vm_service: ^15.0.0
+  # test/artwork_rebroadcast_test.dart serves artwork from a MemoryFileSystem.
+  file: ^7.0.0
 
 flutter:
   generate: true
