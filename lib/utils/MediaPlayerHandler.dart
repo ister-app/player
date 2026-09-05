@@ -167,6 +167,14 @@ class MediaPlayerHandler extends BaseAudioHandler
       // until it catches up). Dropping at the decoder as well skips the
       // expensive part of the pipeline and recovers within a few frames.
       await native.setProperty('framedrop', 'decoder+vo');
+      // media_kit turns on cache-on-disk but sets no demuxer-cache-dir; on
+      // Android mpv has no user cache dir to fall back to, so every demuxer
+      // open (one per HLS sub-playlist) logs "Failed to create file cache"
+      // and buffers in RAM anyway. Say so explicitly. Desktop keeps the disk
+      // cache: there mp_find_user_file resolves a real directory.
+      if (Platform.isAndroid) {
+        await native.setProperty('cache-on-disk', 'no');
+      }
       await native.setProperty('network-timeout', '30');
       await native.setProperty('stream-lavf-o', reconnect);
       await native.setProperty('demuxer-lavf-o', '$reconnect,$demuxerExtras');
@@ -2994,7 +3002,15 @@ class MediaPlayerHandler extends BaseAudioHandler
       final openPosition = Duration(milliseconds: _streamOpenPositionMs);
       final advanced =
           _player.state.position - openPosition > const Duration(seconds: 1);
-      if (!advanced) {
+      // A decoder that fails to open is not a failed load: mpv tries the
+      // hardware decoder first and falls back to software on its own (on
+      // Android, ffmpeg's mediacodec logs "Both surface and native_window are
+      // NULL" + "Could not open codec" for every codec the SoC has no
+      // hardware path for, e.g. MPEG-2 on a Pixel), and when software fails
+      // too the track is dropped and audio keeps playing. Letting it latch
+      // shrank the watchdog's retry budget to one for a stream that was
+      // loading fine — fatal for a slow cold remux start.
+      if (!advanced && !message.contains('Could not open codec')) {
         _loadErrorSeen = true;
         LoggerService()
             .logger
