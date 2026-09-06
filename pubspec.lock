@@ -985,8 +985,8 @@ packages:
     dependency: "direct main"
     description:
       path: media_kit
-      ref: "7f4d424ef0ae417136c472dc1826a5cb04ed00f9"
-      resolved-ref: "7f4d424ef0ae417136c472dc1826a5cb04ed00f9"
+      ref: "15e95cdda849095d5de36f68e1d860ea4c3e24e2"
+      resolved-ref: "15e95cdda849095d5de36f68e1d860ea4c3e24e2"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.2.6"
@@ -994,8 +994,8 @@ packages:
     dependency: "direct overridden"
     description:
       path: "libs/android/media_kit_libs_android_video"
-      ref: "7f4d424ef0ae417136c472dc1826a5cb04ed00f9"
-      resolved-ref: "7f4d424ef0ae417136c472dc1826a5cb04ed00f9"
+      ref: "15e95cdda849095d5de36f68e1d860ea4c3e24e2"
+      resolved-ref: "15e95cdda849095d5de36f68e1d860ea4c3e24e2"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.3.9"
@@ -1003,8 +1003,8 @@ packages:
     dependency: "direct overridden"
     description:
       path: "libs/ios/media_kit_libs_ios_video"
-      ref: "7f4d424ef0ae417136c472dc1826a5cb04ed00f9"
-      resolved-ref: "7f4d424ef0ae417136c472dc1826a5cb04ed00f9"
+      ref: "15e95cdda849095d5de36f68e1d860ea4c3e24e2"
+      resolved-ref: "15e95cdda849095d5de36f68e1d860ea4c3e24e2"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.1.5"
@@ -1012,8 +1012,8 @@ packages:
     dependency: "direct overridden"
     description:
       path: "libs/linux/media_kit_libs_linux"
-      ref: "7f4d424ef0ae417136c472dc1826a5cb04ed00f9"
-      resolved-ref: "7f4d424ef0ae417136c472dc1826a5cb04ed00f9"
+      ref: "15e95cdda849095d5de36f68e1d860ea4c3e24e2"
+      resolved-ref: "15e95cdda849095d5de36f68e1d860ea4c3e24e2"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.2.1"
@@ -1021,8 +1021,8 @@ packages:
     dependency: "direct overridden"
     description:
       path: "libs/macos/media_kit_libs_macos_video"
-      ref: "7f4d424ef0ae417136c472dc1826a5cb04ed00f9"
-      resolved-ref: "7f4d424ef0ae417136c472dc1826a5cb04ed00f9"
+      ref: "15e95cdda849095d5de36f68e1d860ea4c3e24e2"
+      resolved-ref: "15e95cdda849095d5de36f68e1d860ea4c3e24e2"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.1.5"
@@ -1030,8 +1030,8 @@ packages:
     dependency: "direct main"
     description:
       path: "libs/universal/media_kit_libs_video"
-      ref: "7f4d424ef0ae417136c472dc1826a5cb04ed00f9"
-      resolved-ref: "7f4d424ef0ae417136c472dc1826a5cb04ed00f9"
+      ref: "15e95cdda849095d5de36f68e1d860ea4c3e24e2"
+      resolved-ref: "15e95cdda849095d5de36f68e1d860ea4c3e24e2"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.0.8"
@@ -1039,8 +1039,8 @@ packages:
     dependency: "direct overridden"
     description:
       path: "libs/windows/media_kit_libs_windows_video"
-      ref: "7f4d424ef0ae417136c472dc1826a5cb04ed00f9"
-      resolved-ref: "7f4d424ef0ae417136c472dc1826a5cb04ed00f9"
+      ref: "15e95cdda849095d5de36f68e1d860ea4c3e24e2"
+      resolved-ref: "15e95cdda849095d5de36f68e1d860ea4c3e24e2"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.0.12"
@@ -1048,8 +1048,8 @@ packages:
     dependency: "direct main"
     description:
       path: media_kit_video
-      ref: "7f4d424ef0ae417136c472dc1826a5cb04ed00f9"
-      resolved-ref: "7f4d424ef0ae417136c472dc1826a5cb04ed00f9"
+      ref: "15e95cdda849095d5de36f68e1d860ea4c3e24e2"
+      resolved-ref: "15e95cdda849095d5de36f68e1d860ea4c3e24e2"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "2.0.1"
