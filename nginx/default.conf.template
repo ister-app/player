@@ -1,0 +1,68 @@
+# Rendered by the nginx image's entrypoint (envsubst) into
+# /etc/nginx/conf.d/default.conf. Only ${CROSS_ORIGIN_ISOLATION} is
+# substituted (NGINX_ENVSUBST_FILTER in the Dockerfile); nginx's own
+# $uri-style variables are left alone.
+server {
+    # Dual-stack: IPv6-primary clusters hand out IPv6 ClusterIPs, and a
+    # Service can't reach a pod that only binds IPv4.
+    listen 8080;
+    listen [::]:8080;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    types {
+        text/html                             html htm;
+        text/css                              css;
+        application/javascript                js mjs;
+        application/wasm                      wasm;
+        image/png                             png;
+        image/jpeg                            jpg jpeg;
+        image/svg+xml                         svg svgz;
+        application/json                      json;
+        font/woff2                            woff2;
+        font/woff                             woff;
+    }
+
+    # COOP/COEP (needed for the multi-threaded wasm renderer), toggled with
+    # CROSS_ORIGIN_ISOLATION=on|off. nginx does NOT inherit add_header into a
+    # location that sets its own add_header, so every location below that
+    # adds Cache-Control repeats this include.
+    include /etc/nginx/snippets/cross-origin-isolation-${CROSS_ORIGIN_ISOLATION}.conf;
+
+    # Entrypoints gate every andere asset: altijd revalideren zodat een
+    # nieuwe deployment meteen wordt opgepikt (goedkope 304 als niets wijzigt).
+    location = /index.html {
+        add_header Cache-Control "no-cache";
+        include /etc/nginx/snippets/cross-origin-isolation-${CROSS_ORIGIN_ISOLATION}.conf;
+    }
+    location = /flutter_bootstrap.js {
+        add_header Cache-Control "no-cache";
+        include /etc/nginx/snippets/cross-origin-isolation-${CROSS_ORIGIN_ISOLATION}.conf;
+    }
+    location = /flutter_service_worker.js {
+        add_header Cache-Control "no-cache";
+        include /etc/nginx/snippets/cross-origin-isolation-${CROSS_ORIGIN_ISOLATION}.conf;
+    }
+    location = /manifest.json {
+        add_header Cache-Control "no-cache";
+        include /etc/nginx/snippets/cross-origin-isolation-${CROSS_ORIGIN_ISOLATION}.conf;
+    }
+
+    # Server-discovery document, mounted into the html root by the Helm
+    # chart. It has no extension, so without default_type nginx would serve
+    # it as application/octet-stream.
+    location = /.well-known/ister {
+        default_type text/plain;
+        add_header Cache-Control "no-cache";
+        include /etc/nginx/snippets/cross-origin-isolation-${CROSS_ORIGIN_ISOLATION}.conf;
+        try_files $uri =404;
+    }
+
+    location / {
+        # try_files valt terug op index.html; die krijgt hier ook no-cache.
+        add_header Cache-Control "no-cache";
+        include /etc/nginx/snippets/cross-origin-isolation-${CROSS_ORIGIN_ISOLATION}.conf;
+        try_files $uri $uri/ /index.html;
+    }
+}

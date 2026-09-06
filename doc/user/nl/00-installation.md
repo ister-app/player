@@ -67,6 +67,8 @@ Twee dingen werken anders dan op andere platforms. Je server moet bereikbaar zij
 
 Om [player.ister.app](https://player.ister.app) te gebruiken hoef je niets te hosten, maar wil je de webapp liever zelf serveren, dan hangt aan elke release ook een `player-web-<versie>.tar.gz`-tarball — pak die uit in een willekeurige statische webserver. Dit is optioneel en bedoeld voor wie al eigen hosting draait.
 
+Het Docker-image (`nginx/default.conf.template`) stuurt standaard de cross-origin-isolation-headers mee (`Cross-Origin-Opener-Policy: same-origin` en `Cross-Origin-Embedder-Policy: require-corp`), die de multi-threaded renderer nodig heeft. Zet de omgevingsvariabele `CROSS_ORIGIN_ISOLATION` op `off` als je de app cross-origin insluit of als je inlogflow pop-ups moet openen; die headers blokkeren allebei. Serveer je de tarball met je eigen webserver, dan voeg je diezelfde twee headers zelf toe of laat je ze weg.
+
 ## Verder lezen
 
 - Voeg je server toe en log in: [Aan de slag](01-getting-started.md)

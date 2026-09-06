@@ -67,6 +67,8 @@ Two things work differently than on other platforms. Your server has to be reach
 
 You don't need to host anything to use [player.ister.app](https://player.ister.app), but if you'd rather serve the web app yourself, every release also attaches a `player-web-<version>.tar.gz` tarball — unpack it into any static web server. This is optional and aimed at people who already run their own hosting.
 
+The Docker image (`nginx/default.conf.template`) sends the cross-origin-isolation headers (`Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`) by default, which the multi-threaded renderer needs. Set the `CROSS_ORIGIN_ISOLATION` environment variable to `off` when you embed the app cross-origin or when your login flow has to open popups; those headers block both. If you serve the tarball with your own web server, add or leave out the same two headers yourself.
+
 ## Where to next
 
 - Add your server and sign in: [Getting started](01-getting-started.md)
