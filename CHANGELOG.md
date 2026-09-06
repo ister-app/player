@@ -1,5 +1,31 @@
 # Changelog
 
+## player v2.7.1
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.7.1` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Fixes
+
+- fix(playback): keep mpv's decoder probe and disk-cache noise out of the load watchdog ([`6183b3e`](https://github.com/ister-app/player/commit/6183b3e))
+- fix(subtitles): pick the preferred language after every side-loaded SRT is in ([`d20339c`](https://github.com/ister-app/player/commit/d20339c))
+- fix(ios): pin the media-kit fork with libmpv built against mbedtls 3.6.7 ([`09de137`](https://github.com/ister-app/player/commit/09de137))
+- fix(artwork): stop tiles blinking grey after a GraphQL rebroadcast ([`2cfb63a`](https://github.com/ister-app/player/commit/2cfb63a))
+- fix(playback): stop the crash when mpv wakes a client from a dead isolate ([`50451c6`](https://github.com/ister-app/player/commit/50451c6))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.7.1
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.7.0...v2.7.1
+
 ## player v2.7.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
