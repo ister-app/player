@@ -4003,6 +4003,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Refresh metadata'**
   String get refreshMetadataItem;
+
+  /// No description provided for @activityKindSubtitles.
+  ///
+  /// In en, this message translates to:
+  /// **'Extracting subtitles'**
+  String get activityKindSubtitles;
+
+  /// No description provided for @activityQueuedSubtitles.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} subtitle streams to extract'**
+  String activityQueuedSubtitles(int count);
+
+  /// No description provided for @activityStepUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading result to the owning node'**
+  String get activityStepUpload;
+
+  /// No description provided for @activityOnNode.
+  ///
+  /// In en, this message translates to:
+  /// **'on {node}'**
+  String activityOnNode(String node);
+
+  /// No description provided for @activityGroupOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other work'**
+  String get activityGroupOther;
+
+  /// No description provided for @nodeDetailsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a node for its disks and details.'**
+  String get nodeDetailsHint;
+
+  /// No description provided for @nodeStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get nodeStatus;
+
+  /// No description provided for @nodeOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get nodeOnline;
+
+  /// No description provided for @nodeOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Not heard from'**
+  String get nodeOffline;
+
+  /// No description provided for @nodeUpFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Up for {duration}'**
+  String nodeUpFor(String duration);
+
+  /// No description provided for @nodeHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Host'**
+  String get nodeHost;
+
+  /// No description provided for @nodeAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get nodeAddress;
+
+  /// No description provided for @nodeVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get nodeVersion;
+
+  /// No description provided for @nodeJava.
+  ///
+  /// In en, this message translates to:
+  /// **'Java'**
+  String get nodeJava;
+
+  /// No description provided for @nodeCpus.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} CPUs'**
+  String nodeCpus(int count);
+
+  /// No description provided for @nodeHeapLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Heap limit'**
+  String get nodeHeapLimit;
+
+  /// No description provided for @nodeDisks.
+  ///
+  /// In en, this message translates to:
+  /// **'Disks'**
+  String get nodeDisks;
+
+  /// No description provided for @nodeCacheDisk.
+  ///
+  /// In en, this message translates to:
+  /// **'Cache'**
+  String get nodeCacheDisk;
+
+  /// No description provided for @nodeNotMounted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not mounted'**
+  String get nodeNotMounted;
+
+  /// No description provided for @nodeFreeOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{free} free of {total}'**
+  String nodeFreeOf(String free, String total);
+
+  /// No description provided for @nodeHelperDisks.
+  ///
+  /// In en, this message translates to:
+  /// **'Helps other nodes with'**
+  String get nodeHelperDisks;
+
+  /// No description provided for @nodeOffloadJobs.
+  ///
+  /// In en, this message translates to:
+  /// **'Hands off to helpers'**
+  String get nodeOffloadJobs;
+
+  /// No description provided for @nodeNoDisks.
+  ///
+  /// In en, this message translates to:
+  /// **'This node reports no disks.'**
+  String get nodeNoDisks;
+
+  /// No description provided for @nodeIdle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is running on this node.'**
+  String get nodeIdle;
+
+  /// No description provided for @nodeInfoUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This node runs an older server version and does not report its details yet.'**
+  String get nodeInfoUnavailable;
+
+  /// No description provided for @nodeNoActivityYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No activity received from this node yet.'**
+  String get nodeNoActivityYet;
 }
 
 class _AppLocalizationsDelegate

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:player/graphql/fragmentServerActivity.graphql.dart';
 
 import '../l10n/app_localizations.dart';
 
@@ -15,8 +16,79 @@ enum ActivityKind {
   podcast,
   continueWatching,
   segments,
+  subtitles,
   searchIndex,
   other,
+}
+
+/// One step of work on the activity screen: a processing item or a transcode
+/// pass, reduced to what the tile shows.
+class ActivityEntry {
+  final String nodeName;
+  final ActivityKind kind;
+
+  /// What is being worked on (file name, episode code); null when the server
+  /// reported no subject — the tile then shows the kind label instead.
+  final String? subject;
+
+  /// The sub-step or, for transcodes, the quality; null when unknown.
+  final String? detail;
+  final DateTime? startedAt;
+  final bool background;
+
+  /// The AMQP queue the work came from; null for transcode passes.
+  final String? queue;
+
+  const ActivityEntry({
+    required this.nodeName,
+    required this.kind,
+    required this.subject,
+    required this.detail,
+    required this.startedAt,
+    this.background = false,
+    this.queue,
+  });
+}
+
+/// Every step that belongs to one thing (a show, a movie, an album, a
+/// library sweep), so the screen can show "Seinfeld" once with the files and
+/// steps under it instead of a flat list of look-alike rows.
+class ActivityGroup {
+  final String key;
+
+  /// Server token for the kind of thing ("show", "movie", ...); null for the
+  /// fallback group of work that reported no context.
+  final String? contextType;
+  final String title;
+  final Set<String> directories;
+  final Set<String> libraries;
+  final List<ActivityEntry> entries;
+
+  /// True for the catch-all group of one kind of work whose items reported no
+  /// context at all; its title is the kind label, so rows show the raw queue
+  /// rather than repeating it.
+  final bool isKindFallback;
+
+  const ActivityGroup({
+    required this.key,
+    required this.contextType,
+    required this.title,
+    required this.directories,
+    required this.libraries,
+    required this.entries,
+    this.isKindFallback = false,
+  });
+
+  DateTime? get startedAt {
+    DateTime? earliest;
+    for (final entry in entries) {
+      final at = entry.startedAt;
+      if (at != null && (earliest == null || at.isBefore(earliest))) {
+        earliest = at;
+      }
+    }
+    return earliest;
+  }
 }
 
 /// Pure presentation helpers for the server-activity screen. Kept free of
@@ -65,6 +137,7 @@ class ServerActivityPresentation {
     'PodcastEpisodeDownloadRequested': ActivityKind.podcast,
     'ContinueWatchingRebuildRequested': ActivityKind.continueWatching,
     'DetectSegments': ActivityKind.segments,
+    'SubtitleExtractRequested': ActivityKind.subtitles,
     'SearchIndexRequested': ActivityKind.searchIndex,
     'SearchReindexRequested': ActivityKind.searchIndex,
   };
@@ -101,6 +174,8 @@ class ServerActivityPresentation {
         return Icons.play_circle_outline;
       case ActivityKind.segments:
         return Icons.skip_next_outlined;
+      case ActivityKind.subtitles:
+        return Icons.subtitles_outlined;
       case ActivityKind.searchIndex:
         return Icons.search;
       case ActivityKind.other:
@@ -131,6 +206,8 @@ class ServerActivityPresentation {
         return loc.activityKindContinueWatching;
       case ActivityKind.segments:
         return loc.activityKindSegments;
+      case ActivityKind.subtitles:
+        return loc.activityKindSubtitles;
       case ActivityKind.searchIndex:
         return loc.activityKindSearchIndex;
       case ActivityKind.other:
@@ -153,6 +230,8 @@ class ServerActivityPresentation {
         return loc.activityQueuedTranscode(depth);
       case ActivityKind.segments:
         return loc.activityQueuedSegments(depth);
+      case ActivityKind.subtitles:
+        return loc.activityQueuedSubtitles(depth);
       default:
         return loc.activityQueuedGeneric(depth, labelFor(loc, kind));
     }
@@ -178,9 +257,163 @@ class ServerActivityPresentation {
         return loc.activityStepMatch;
       case 'transcode':
         return loc.activityStepTranscode;
+      case 'upload':
+        return loc.activityStepUpload;
       default:
         return null;
     }
+  }
+
+  /// Icon for the thing a group is about; unknown tokens (a newer server) get
+  /// a neutral icon.
+  static IconData contextIcon(String? contextType) {
+    switch (contextType) {
+      case 'show':
+        return Icons.tv_outlined;
+      case 'movie':
+        return Icons.movie_outlined;
+      case 'album':
+        return Icons.album_outlined;
+      case 'book':
+        return Icons.menu_book_outlined;
+      case 'podcast':
+        return Icons.podcasts;
+      case 'person':
+        return Icons.person_outline;
+      case 'library':
+        return Icons.folder_outlined;
+      default:
+        return Icons.work_outline;
+    }
+  }
+
+  /// Bundles in-flight work and transcode passes by the thing they belong to.
+  /// The key is the server's contextType + contextId; work without a context
+  /// falls back to its context title, and work with neither is collected per
+  /// kind ("Refreshing metadata"). Groups come oldest-first, entries too, so
+  /// the row that has been running longest stays at the top.
+  static List<ActivityGroup> groupActivity(
+    AppLocalizations loc,
+    Iterable<Fragment$fragmentServerActivityEvent> nodes,
+    Iterable<Fragment$fragmentTranscodePass> transcodes,
+  ) {
+    final groups = <String, _GroupBuilder>{};
+
+    _GroupBuilder builderFor({
+      required String? contextType,
+      required String? contextId,
+      required String? context,
+      required ActivityKind kind,
+    }) {
+      final String key;
+      final String title;
+      var fallback = false;
+      if (contextType != null && contextId != null) {
+        key = '$contextType:$contextId';
+        title = context ?? contextType;
+      } else if (context != null) {
+        key = 'context:$context';
+        title = context;
+      } else {
+        key = 'kind:${kind.name}';
+        title = labelFor(loc, kind);
+        fallback = true;
+      }
+      return groups.putIfAbsent(
+          key,
+          () => _GroupBuilder(
+              key: key,
+              contextType:
+                  contextType != null && contextId != null ? contextType : null,
+              title: title,
+              isKindFallback: fallback));
+    }
+
+    for (final node in nodes) {
+      for (final item in node.processing ??
+          const <Fragment$fragmentServerActivityEvent$processing>[]) {
+        final kind = kindFor(item.queue);
+        final builder = builderFor(
+          contextType: item.contextType,
+          contextId: item.contextId,
+          context: item.context,
+          kind: kind,
+        );
+        if (item.directory != null) builder.directories.add(item.directory!);
+        if (item.$library != null) builder.libraries.add(item.$library!);
+        builder.entries.add(ActivityEntry(
+          nodeName: node.nodeName,
+          kind: kind,
+          subject: item.subject,
+          detail: stepLabel(loc, item.step),
+          startedAt: parseInstant(item.startedAt),
+          queue: item.queue,
+        ));
+      }
+    }
+    for (final pass in transcodes) {
+      final builder = builderFor(
+        contextType: pass.contextType,
+        contextId: pass.contextId,
+        context: pass.context,
+        kind: ActivityKind.transcode,
+      );
+      builder.entries.add(ActivityEntry(
+        nodeName: pass.nodeName,
+        kind: ActivityKind.transcode,
+        subject: pass.title,
+        detail: '${loc.transcodesTag} · ${qualityLabel(pass.quality)}',
+        startedAt: parseInstant(pass.startedAt),
+        background: pass.background,
+      ));
+    }
+
+    final result = groups.values.map((b) => b.build()).toList();
+    int byStart(DateTime? a, DateTime? b) {
+      if (a == null && b == null) return 0;
+      if (a == null) return 1;
+      if (b == null) return -1;
+      return a.compareTo(b);
+    }
+    for (final group in result) {
+      group.entries.sort((a, b) => byStart(a.startedAt, b.startedAt));
+    }
+    result.sort((a, b) {
+      final order = byStart(a.startedAt, b.startedAt);
+      return order != 0 ? order : a.title.compareTo(b.title);
+    });
+    return result;
+  }
+
+  /// "1.2 TB" / "512 GB" / "3.4 MB" — decimal units, the way disk vendors and
+  /// `df -H` count.
+  static String formatBytes(double bytes) {
+    const units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB'];
+    var value = bytes < 0 ? 0.0 : bytes;
+    var unit = 0;
+    while (value >= 1000 && unit < units.length - 1) {
+      value /= 1000;
+      unit++;
+    }
+    final text = unit == 0
+        ? value.toStringAsFixed(0)
+        : value >= 100
+            ? value.toStringAsFixed(0)
+            : value.toStringAsFixed(1);
+    return '$text ${units[unit]}';
+  }
+
+  /// Coarse uptime: "3d 4h", "5h 12m", "42m".
+  static String formatUptime(DateTime since, DateTime now) {
+    var elapsed = now.difference(since);
+    if (elapsed.isNegative) elapsed = Duration.zero;
+    if (elapsed.inDays >= 1) {
+      return '${elapsed.inDays}d ${elapsed.inHours % 24}h';
+    }
+    if (elapsed.inHours >= 1) {
+      return '${elapsed.inHours}h ${elapsed.inMinutes % 60}m';
+    }
+    return '${elapsed.inMinutes}m';
   }
 
   /// "video 720p" from the server's quality token "video_720p"/"audio_0_128k".
@@ -217,4 +450,31 @@ class ServerActivityPresentation {
   /// Parses the server's `String.valueOf(Instant)` timestamps; null on garbage.
   static DateTime? parseInstant(String? value) =>
       value == null ? null : DateTime.tryParse(value);
+}
+
+class _GroupBuilder {
+  final String key;
+  final String? contextType;
+  final String title;
+  final bool isKindFallback;
+  final Set<String> directories = {};
+  final Set<String> libraries = {};
+  final List<ActivityEntry> entries = [];
+
+  _GroupBuilder({
+    required this.key,
+    required this.contextType,
+    required this.title,
+    required this.isKindFallback,
+  });
+
+  ActivityGroup build() => ActivityGroup(
+        key: key,
+        contextType: contextType,
+        title: title,
+        directories: directories,
+        libraries: libraries,
+        entries: entries,
+        isKindFallback: isKindFallback,
+      );
 }

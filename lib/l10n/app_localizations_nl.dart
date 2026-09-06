@@ -2382,4 +2382,94 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get refreshMetadataItem => 'Metadata vernieuwen';
+
+  @override
+  String get activityKindSubtitles => 'Ondertitels uitpakken';
+
+  @override
+  String activityQueuedSubtitles(int count) {
+    return '$count ondertitelstromen uit te pakken';
+  }
+
+  @override
+  String get activityStepUpload => 'Resultaat uploaden naar de eigenaar-node';
+
+  @override
+  String activityOnNode(String node) {
+    return 'op $node';
+  }
+
+  @override
+  String get activityGroupOther => 'Overig werk';
+
+  @override
+  String get nodeDetailsHint => 'Tik op een node voor de schijven en details.';
+
+  @override
+  String get nodeStatus => 'Status';
+
+  @override
+  String get nodeOnline => 'Online';
+
+  @override
+  String get nodeOffline => 'Niets van gehoord';
+
+  @override
+  String nodeUpFor(String duration) {
+    return 'Draait sinds $duration';
+  }
+
+  @override
+  String get nodeHost => 'Host';
+
+  @override
+  String get nodeAddress => 'Adres';
+
+  @override
+  String get nodeVersion => 'Versie';
+
+  @override
+  String get nodeJava => 'Java';
+
+  @override
+  String nodeCpus(int count) {
+    return '$count CPU\'s';
+  }
+
+  @override
+  String get nodeHeapLimit => 'Heap-limiet';
+
+  @override
+  String get nodeDisks => 'Schijven';
+
+  @override
+  String get nodeCacheDisk => 'Cache';
+
+  @override
+  String get nodeNotMounted => 'Niet gekoppeld';
+
+  @override
+  String nodeFreeOf(String free, String total) {
+    return '$free vrij van $total';
+  }
+
+  @override
+  String get nodeHelperDisks => 'Helpt andere nodes met';
+
+  @override
+  String get nodeOffloadJobs => 'Besteedt uit aan helpers';
+
+  @override
+  String get nodeNoDisks => 'Deze node meldt geen schijven.';
+
+  @override
+  String get nodeIdle => 'Er draait niets op deze node.';
+
+  @override
+  String get nodeInfoUnavailable =>
+      'Deze node draait een oudere serverversie en meldt zijn details nog niet.';
+
+  @override
+  String get nodeNoActivityYet =>
+      'Nog geen activiteit van deze node ontvangen.';
 }

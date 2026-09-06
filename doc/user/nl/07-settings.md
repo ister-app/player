@@ -76,9 +76,15 @@ Een live lijst van alles wat er op dit moment op deze server speelt — dat van 
 
 De serverpagina geeft het complete beeld van je Ister-server op één plek: om welke server het gaat, op welke nodes hij draait — met hun versie, adres en of ze zich nog melden — waar die nodes op dit moment mee bezig zijn, wat er nog in de wachtrij staat en welke fouten er recent optraden. Handig voor een snelle check of alles draait, en om een scan of transcodering te volgen.
 
+**Nu bezig met** groepeert het werk op waar het bij hoort: één kop per serie, film, album, boek of podcast (met de bibliotheek en de schijf waar het op staat), en daaronder een regel per bestand en stap — zo zie je in één oogopslag dat van *Seinfeld* het bestand *s06e22.mkv* op de ene node zijn ondertitels uitgepakt krijgt terwijl de volgende aflevering op een andere node geanalyseerd wordt. Werk dat nergens specifiek bij hoort (een bibliotheekscan, het herbouwen van de zoekindex) krijgt een kop van zijn eigen soort.
+
 Beheerders vinden onderaan deze pagina ook de onderhoudsacties — zie [Beheer](09-admin.md).
 
 ![De serverpagina](../images/nl/settings-cluster.png)
+
+Tik op een node om zijn eigen pagina te openen: of hij online is en hoe lang al, de host waarop hij draait, en zijn **schijven** — elke map die de node bedient, met de bibliotheek waar hij bij hoort, het pad en hoeveel ruimte er nog vrij is (een bijna volle schijf kleurt rood; een pad dat niet gekoppeld is zegt dat). Nodes die andere nodes helpen met zwaar werk, of hun eigen werk uitbesteden, staan dat hier ook, gevolgd door het werk dat op dit moment op deze node draait.
+
+![De pagina van een node](../images/nl/settings-node.png)
 
 ### Gebruikers & toegang, Bibliotheek-zichtbaarheid
 

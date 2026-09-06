@@ -2373,4 +2373,93 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get refreshMetadataItem => 'Refresh metadata';
+
+  @override
+  String get activityKindSubtitles => 'Extracting subtitles';
+
+  @override
+  String activityQueuedSubtitles(int count) {
+    return '$count subtitle streams to extract';
+  }
+
+  @override
+  String get activityStepUpload => 'Uploading result to the owning node';
+
+  @override
+  String activityOnNode(String node) {
+    return 'on $node';
+  }
+
+  @override
+  String get activityGroupOther => 'Other work';
+
+  @override
+  String get nodeDetailsHint => 'Tap a node for its disks and details.';
+
+  @override
+  String get nodeStatus => 'Status';
+
+  @override
+  String get nodeOnline => 'Online';
+
+  @override
+  String get nodeOffline => 'Not heard from';
+
+  @override
+  String nodeUpFor(String duration) {
+    return 'Up for $duration';
+  }
+
+  @override
+  String get nodeHost => 'Host';
+
+  @override
+  String get nodeAddress => 'Address';
+
+  @override
+  String get nodeVersion => 'Version';
+
+  @override
+  String get nodeJava => 'Java';
+
+  @override
+  String nodeCpus(int count) {
+    return '$count CPUs';
+  }
+
+  @override
+  String get nodeHeapLimit => 'Heap limit';
+
+  @override
+  String get nodeDisks => 'Disks';
+
+  @override
+  String get nodeCacheDisk => 'Cache';
+
+  @override
+  String get nodeNotMounted => 'Not mounted';
+
+  @override
+  String nodeFreeOf(String free, String total) {
+    return '$free free of $total';
+  }
+
+  @override
+  String get nodeHelperDisks => 'Helps other nodes with';
+
+  @override
+  String get nodeOffloadJobs => 'Hands off to helpers';
+
+  @override
+  String get nodeNoDisks => 'This node reports no disks.';
+
+  @override
+  String get nodeIdle => 'Nothing is running on this node.';
+
+  @override
+  String get nodeInfoUnavailable =>
+      'This node runs an older server version and does not report its details yet.';
+
+  @override
+  String get nodeNoActivityYet => 'No activity received from this node yet.';
 }

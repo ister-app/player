@@ -107,6 +107,7 @@ class AppRouter extends RootStackRouter {
           ),
           AutoRoute(path: 'settings/languages', page: ServerSettingsLanguageRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/cluster', page: ServerSettingsClusterRoute.page, guards: [_deepLinkGuard]),
+          AutoRoute(path: 'settings/cluster/node/:nodeName', page: ServerNodeRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/playback', page: ServerSettingsPlaybackRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/sleep-timer', page: SleepTimerSettingsRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/sharing', page: ServerSettingsSharingRoute.page, guards: [_deepLinkGuard]),

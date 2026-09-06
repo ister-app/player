@@ -115,7 +115,111 @@ void main() {
       now: _now,
     )));
 
+    // The kind is the group heading; the row then shows the raw queue rather
+    // than repeating the label.
     expect(find.text('Updating search index'), findsOneWidget);
+    expect(find.text('app.ister.server.SearchIndexRequested'), findsOneWidget);
+  });
+
+  testWidgets('groups every step of one show under one heading with its disk',
+      (tester) async {
+    Fragment$fragmentServerActivityEvent$processing step(
+            String queue, String subject, String? stepToken) =>
+        Fragment$fragmentServerActivityEvent$processing(
+          queue: queue,
+          eventType: 'x',
+          startedAt: _now.toIso8601String(),
+          subject: subject,
+          step: stepToken,
+          context: 'Seinfeld',
+          contextType: 'show',
+          contextId: 'show-1',
+          directory: 'disk1',
+          $library: 'Series',
+        );
+    await tester.pumpWidget(_app(ServerActivityBody(
+      nodes: [
+        _node('node-a', processing: [
+          step('app.ister.server.SubtitleExtractRequested.disk1',
+              'S06E22 · s06e22.mkv', 'subtitles'),
+        ]),
+        _node('node-b', processing: [
+          step('app.ister.server.MediaFileFound.disk1', 'S06E23 · s06e23.mkv',
+              'crop'),
+          Fragment$fragmentServerActivityEvent$processing(
+            queue: 'app.ister.server.MovieFound',
+            eventType: 'MovieFoundData',
+            startedAt: _now.toIso8601String(),
+            subject: 'Die Hard',
+            context: 'Die Hard (1988)',
+            contextType: 'movie',
+            contextId: 'movie-1',
+          ),
+        ]),
+      ],
+      queueStats: const [],
+      failures: const [],
+      transcodes: [
+        Fragment$fragmentTranscodePass(
+          nodeName: 'node-b',
+          mediaFileId: 'id-1',
+          title: 'S06E22 · s06e22.mkv',
+          quality: 'video_720p',
+          background: false,
+          startedAt: _now.toIso8601String(),
+          context: 'Seinfeld',
+          contextType: 'show',
+          contextId: 'show-1',
+        ),
+      ],
+      liveFeedBroken: false,
+      now: _now,
+    )));
+
+    // One heading for the show, one for the movie.
+    expect(find.byKey(const ValueKey('activity-group-show:show-1')),
+        findsOneWidget);
+    expect(find.byKey(const ValueKey('activity-group-movie:movie-1')),
+        findsOneWidget);
+    expect(find.text('Seinfeld'), findsOneWidget);
+    expect(find.text('Series · disk1'), findsOneWidget);
+    // Three rows under the show: subtitle extraction, crop and the transcode.
+    final showCard = find.byKey(const ValueKey('activity-group-show:show-1'));
+    expect(
+        find.descendant(
+            of: showCard, matching: find.text('S06E22 · s06e22.mkv')),
+        findsNWidgets(2));
+    expect(
+        find.descendant(
+            of: showCard,
+            matching: find.text('Extracting subtitles · on node-a')),
+        findsOneWidget);
+    expect(
+        find.descendant(
+            of: showCard, matching: find.text('Detecting black bars · on node-b')),
+        findsOneWidget);
+    expect(
+        find.descendant(
+            of: showCard,
+            matching: find.text('Transcoding · video 720p · on node-b')),
+        findsOneWidget);
+  });
+
+  testWidgets('tapping a node hands its name to onNodeTap', (tester) async {
+    String? tapped;
+    await tester.pumpWidget(_app(ServerActivityBody(
+      nodes: [_node('node-a')],
+      queueStats: const [],
+      failures: const [],
+      transcodes: const [],
+      liveFeedBroken: false,
+      now: _now,
+      onNodeTap: (name) => tapped = name,
+    )));
+
+    await tester.tap(find.byKey(const ValueKey('node-tile-node-a')));
+    expect(tapped, 'node-a');
+    expect(find.text('Tap a node for its disks and details.'), findsOneWidget);
   });
 
   testWidgets('shows transcode passes with quality and background tag',

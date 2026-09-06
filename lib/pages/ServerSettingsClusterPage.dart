@@ -1,17 +1,13 @@
-import 'dart:async';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:player/graphql/fragmentServerActivity.graphql.dart';
 import 'package:player/graphql/getServerInfo.graphql.dart';
 import 'package:player/graphql/libraries.graphql.dart';
 import 'package:player/graphql/rebuildSearchIndex.graphql.dart';
 import 'package:player/graphql/refreshMetadata.graphql.dart';
 import 'package:player/graphql/scanLibraries.graphql.dart';
+import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/graphql/schema.graphql.dart';
-import 'package:player/graphql/serverActivitySnapshot.graphql.dart';
-import 'package:player/graphql/serverActivitySubscription.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../components/ConfirmDialog.dart';
@@ -20,9 +16,8 @@ import '../l10n/app_localizations.dart';
 import '../components/AdminGate.dart';
 import '../components/ServerActivityBody.dart';
 import '../utils/ClientManager.dart';
+import '../utils/ServerActivityFeed.dart';
 import '../utils/LibraryIcons.dart';
-import '../utils/LoggerService.dart';
-import '../utils/ResilientSubscription.dart';
 import '../utils/ServerTaskRunner.dart';
 
 /// Everything about the server in one screen: which server this is and the
@@ -30,11 +25,8 @@ import '../utils/ServerTaskRunner.dart';
 /// are doing right now, the queued work, recent failures, and — for admins —
 /// the maintenance actions.
 ///
-/// The live half is seeded from serverActivitySnapshot and then kept current by
-/// merging serverActivity events (NODE_ACTIVITY replaces that node's entry,
-/// TRANSCODE_ACTIVITY replaces that node's transcode passes, QUEUE_STATS
-/// replaces the whole list, FAILURE is prepended). A 30s ticker keeps the
-/// elapsed/relative times moving between events.
+/// The live half comes from [ServerActivityFeed]; tapping a node opens
+/// [ServerNodePage] with that node's disks and details.
 @RoutePage()
 class ServerSettingsClusterPage extends StatefulWidget {
   final String serverName;
@@ -50,112 +42,27 @@ class ServerSettingsClusterPage extends StatefulWidget {
 }
 
 class _ServerSettingsClusterPageState extends State<ServerSettingsClusterPage> {
-  static const int _maxFailures = 100;
-
-  bool _loaded = false;
-  String? _error;
-  bool _liveFeedBroken = false;
-  final Map<String, Fragment$fragmentServerActivityEvent> _nodes = {};
-  final Map<String, List<Fragment$fragmentTranscodePass>> _transcodesByNode =
-      {};
-  List<Fragment$fragmentQueueStat> _queueStats = [];
-  List<Fragment$fragmentEventFailure> _failures = [];
-  ResilientSubscription? _subscription;
-  Timer? _ticker;
+  late final ServerActivityFeed _feed;
 
   @override
   void initState() {
     super.initState();
-    final client = ClientManager.getClientForUrl(widget.serverName).value;
-
-    _ticker = Timer.periodic(const Duration(seconds: 30), (_) {
-      if (mounted && _loaded) setState(() {});
-    });
-
-    _subscription = ResilientSubscription(
-      client: client,
-      document: documentNodeSubscriptionserverActivity,
-      onData: (result) {
-        if (!mounted) return;
-        setState(() {
-          _loaded = true;
-          _error = null;
-          _liveFeedBroken = false;
-          _applyEvent(
-              Subscription$serverActivity.fromJson(result.data!).serverActivity);
-        });
-      },
-      onFailure: (_) {
-        if (!mounted) return;
-        setState(() => _liveFeedBroken = true);
-      },
-    );
-
-    client
-        .query(QueryOptions(
-            document: documentNodeQueryserverActivitySnapshot,
-            fetchPolicy: FetchPolicy.networkOnly))
-        .then((result) {
-      if (!mounted) return;
-      if (result.hasException) {
-        LoggerService().logger.e(result.exception);
-        setState(() => _error ??= result.exception.toString());
-        return;
-      }
-      final data = result.data;
-      if (data == null) return;
-      final snapshot =
-          Query$serverActivitySnapshot.fromJson(data).serverActivitySnapshot;
-      setState(() {
-        _loaded = true;
-        // Events that already arrived via the subscription are fresher than
-        // the snapshot — only fill in what is still missing.
-        for (final node in snapshot.nodes) {
-          _nodes.putIfAbsent(node.nodeName, () => node);
-        }
-        final snapshotTranscodes =
-            <String, List<Fragment$fragmentTranscodePass>>{};
-        for (final pass in snapshot.transcodes) {
-          snapshotTranscodes.putIfAbsent(pass.nodeName, () => []).add(pass);
-        }
-        for (final entry in snapshotTranscodes.entries) {
-          _transcodesByNode.putIfAbsent(entry.key, () => entry.value);
-        }
-        if (_queueStats.isEmpty) _queueStats = snapshot.queueStats;
-        if (_failures.isEmpty) _failures = snapshot.recentFailures;
-      });
-    });
+    _feed = ServerActivityFeed(
+        ClientManager.getClientForUrl(widget.serverName).value)
+      ..addListener(_onFeed)
+      ..start();
   }
 
-  void _applyEvent(Fragment$fragmentServerActivityEvent event) {
-    switch (event.type) {
-      case Enum$ServerActivityEventType.NODE_ACTIVITY:
-        _nodes[event.nodeName] = event;
-        break;
-      case Enum$ServerActivityEventType.TRANSCODE_ACTIVITY:
-        _transcodesByNode[event.nodeName] = event.transcodes ?? [];
-        break;
-      case Enum$ServerActivityEventType.QUEUE_STATS:
-        _queueStats = event.queueStats ?? _queueStats;
-        break;
-      case Enum$ServerActivityEventType.FAILURE:
-        final failure = event.failure;
-        if (failure != null) {
-          _failures = [failure, ..._failures.take(_maxFailures - 1)];
-        }
-        break;
-      default:
-        break;
-    }
+  void _onFeed() {
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
-    _ticker?.cancel();
-    _subscription?.dispose();
+    _feed.removeListener(_onFeed);
+    _feed.dispose();
     super.dispose();
   }
-
 
   /// Picks the library to rebuild, then confirms — the FORCE refresh deletes
   /// that library's stored metadata and artwork before re-fetching everything.
@@ -381,8 +288,8 @@ class _ServerSettingsClusterPageState extends State<ServerSettingsClusterPage> {
                 ? null
                 : Query$getServerInfoQuery.fromJson(result.data!).getServerInfo;
 
-            if (!_loaded) {
-              if (_error == null) return _skeleton(context, loc);
+            if (!_feed.loaded) {
+              if (_feed.error == null) return _skeleton(context, loc);
               return ListView(
                 padding: const EdgeInsets.all(16.0),
                 children: [
@@ -391,7 +298,7 @@ class _ServerSettingsClusterPageState extends State<ServerSettingsClusterPage> {
                   SettingsErrorState(
                     message: loc.couldNotLoad,
                     detailsLabel: loc.errorDetails,
-                    details: _error,
+                    details: _feed.error,
                   ),
                   _gatedManagementSection(context),
                 ],
@@ -406,15 +313,15 @@ class _ServerSettingsClusterPageState extends State<ServerSettingsClusterPage> {
                     const <Query$getServerInfoQuery$getServerInfo$nodes>[])
                   node.name: node,
               },
-              nodes: _nodes.values.toList(),
-              queueStats: _queueStats,
-              failures: _failures,
-              transcodes: [
-                for (final passes in _transcodesByNode.values) ...passes,
-              ],
-              liveFeedBroken: _liveFeedBroken,
+              nodes: _feed.nodes.values.toList(),
+              queueStats: _feed.queueStats,
+              failures: _feed.failures,
+              transcodes: _feed.transcodes,
+              liveFeedBroken: _feed.liveFeedBroken,
               now: DateTime.now().toUtc(),
               footer: _gatedManagementSection(context),
+              onNodeTap: (nodeName) => AutoRouter.of(context)
+                  .push(ServerNodeRoute(nodeName: nodeName)),
             );
           },
         ),

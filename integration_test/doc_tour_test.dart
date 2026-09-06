@@ -279,6 +279,17 @@ void main() {
       await pop(tester);
     }
 
+    // A node's own page (disks, host, uptime); the node name comes from the
+    // server, the e2e deployment has exactly one.
+    final serverInfo =
+        await gqlRaw('query { getServerInfo { nodes { name } } }');
+    final nodeName = ((serverInfo['getServerInfo'] as Map<String, dynamic>)['nodes']
+        as List).first['name'] as String;
+    await pushRoute(tester, ServerNodeRoute(nodeName: nodeName));
+    await tester.pump(const Duration(seconds: 2));
+    await shot(tester, 'settings-node');
+    await pop(tester);
+
     // Admin / beheer screens — reachable because the tour boots with an admin
     // token (see bootApp(admin: true)). AdminUserAccessRoute needs a real user
     // id, so ask the server for one first.

@@ -284,6 +284,7 @@ const documentNodeQueryserverActivitySnapshot = DocumentNode(
     fragmentDefinitionfragmentQueueStat,
     fragmentDefinitionfragmentEventFailure,
     fragmentDefinitionfragmentTranscodePass,
+    fragmentDefinitionfragmentNodeInfo,
     fragmentDefinitionfragmentPlaybackSession,
   ],
 );

@@ -454,6 +454,9 @@ class Fragment$fragmentTranscodePass {
     required this.quality,
     required this.background,
     required this.startedAt,
+    this.context,
+    this.contextType,
+    this.contextId,
     this.$__typename = 'TranscodePass',
   });
 
@@ -464,6 +467,9 @@ class Fragment$fragmentTranscodePass {
     final l$quality = json['quality'];
     final l$background = json['background'];
     final l$startedAt = json['startedAt'];
+    final l$context = json['context'];
+    final l$contextType = json['contextType'];
+    final l$contextId = json['contextId'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentTranscodePass(
       nodeName: (l$nodeName as String),
@@ -472,6 +478,9 @@ class Fragment$fragmentTranscodePass {
       quality: (l$quality as String),
       background: (l$background as bool),
       startedAt: (l$startedAt as String),
+      context: (l$context as String?),
+      contextType: (l$contextType as String?),
+      contextId: (l$contextId as String?),
       $__typename: (l$$__typename as String),
     );
   }
@@ -487,6 +496,12 @@ class Fragment$fragmentTranscodePass {
   final bool background;
 
   final String startedAt;
+
+  final String? context;
+
+  final String? contextType;
+
+  final String? contextId;
 
   final String $__typename;
 
@@ -504,6 +519,12 @@ class Fragment$fragmentTranscodePass {
     _resultData['background'] = l$background;
     final l$startedAt = startedAt;
     _resultData['startedAt'] = l$startedAt;
+    final l$context = context;
+    _resultData['context'] = l$context;
+    final l$contextType = contextType;
+    _resultData['contextType'] = l$contextType;
+    final l$contextId = contextId;
+    _resultData['contextId'] = l$contextId;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -517,6 +538,9 @@ class Fragment$fragmentTranscodePass {
     final l$quality = quality;
     final l$background = background;
     final l$startedAt = startedAt;
+    final l$context = context;
+    final l$contextType = contextType;
+    final l$contextId = contextId;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$nodeName,
@@ -525,6 +549,9 @@ class Fragment$fragmentTranscodePass {
       l$quality,
       l$background,
       l$startedAt,
+      l$context,
+      l$contextType,
+      l$contextId,
       l$$__typename,
     ]);
   }
@@ -568,6 +595,21 @@ class Fragment$fragmentTranscodePass {
     if (l$startedAt != lOther$startedAt) {
       return false;
     }
+    final l$context = context;
+    final lOther$context = other.context;
+    if (l$context != lOther$context) {
+      return false;
+    }
+    final l$contextType = contextType;
+    final lOther$contextType = other.contextType;
+    if (l$contextType != lOther$contextType) {
+      return false;
+    }
+    final l$contextId = contextId;
+    final lOther$contextId = other.contextId;
+    if (l$contextId != lOther$contextId) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -599,6 +641,9 @@ abstract class CopyWith$Fragment$fragmentTranscodePass<TRes> {
     String? quality,
     bool? background,
     String? startedAt,
+    String? context,
+    String? contextType,
+    String? contextId,
     String? $__typename,
   });
 }
@@ -620,6 +665,9 @@ class _CopyWithImpl$Fragment$fragmentTranscodePass<TRes>
     Object? quality = _undefined,
     Object? background = _undefined,
     Object? startedAt = _undefined,
+    Object? context = _undefined,
+    Object? contextType = _undefined,
+    Object? contextId = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentTranscodePass(
@@ -639,6 +687,13 @@ class _CopyWithImpl$Fragment$fragmentTranscodePass<TRes>
       startedAt: startedAt == _undefined || startedAt == null
           ? _instance.startedAt
           : (startedAt as String),
+      context: context == _undefined ? _instance.context : (context as String?),
+      contextType: contextType == _undefined
+          ? _instance.contextType
+          : (contextType as String?),
+      contextId: contextId == _undefined
+          ? _instance.contextId
+          : (contextId as String?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -659,6 +714,9 @@ class _CopyWithStubImpl$Fragment$fragmentTranscodePass<TRes>
     String? quality,
     bool? background,
     String? startedAt,
+    String? context,
+    String? contextType,
+    String? contextId,
     String? $__typename,
   }) => _res;
 }
@@ -714,6 +772,27 @@ const fragmentDefinitionfragmentTranscodePass = FragmentDefinitionNode(
         selectionSet: null,
       ),
       FieldNode(
+        name: NameNode(value: 'context'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'contextType'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'contextId'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
         name: NameNode(value: '__typename'),
         alias: null,
         arguments: [],
@@ -727,6 +806,883 @@ const documentNodeFragmentfragmentTranscodePass = DocumentNode(
   definitions: [fragmentDefinitionfragmentTranscodePass],
 );
 
+class Fragment$fragmentNodeInfo {
+  Fragment$fragmentNodeInfo({
+    this.hostname,
+    this.startedAt,
+    this.javaVersion,
+    this.availableProcessors,
+    this.maxMemoryBytes,
+    required this.directories,
+    required this.helperDisks,
+    required this.offloadJobs,
+    this.$__typename = 'NodeInfo',
+  });
+
+  factory Fragment$fragmentNodeInfo.fromJson(Map<String, dynamic> json) {
+    final l$hostname = json['hostname'];
+    final l$startedAt = json['startedAt'];
+    final l$javaVersion = json['javaVersion'];
+    final l$availableProcessors = json['availableProcessors'];
+    final l$maxMemoryBytes = json['maxMemoryBytes'];
+    final l$directories = json['directories'];
+    final l$helperDisks = json['helperDisks'];
+    final l$offloadJobs = json['offloadJobs'];
+    final l$$__typename = json['__typename'];
+    return Fragment$fragmentNodeInfo(
+      hostname: (l$hostname as String?),
+      startedAt: (l$startedAt as String?),
+      javaVersion: (l$javaVersion as String?),
+      availableProcessors: (l$availableProcessors as int?),
+      maxMemoryBytes: (l$maxMemoryBytes as num?)?.toDouble(),
+      directories: (l$directories as List<dynamic>)
+          .map(
+            (e) => Fragment$fragmentNodeInfo$directories.fromJson(
+              (e as Map<String, dynamic>),
+            ),
+          )
+          .toList(),
+      helperDisks: (l$helperDisks as List<dynamic>)
+          .map(
+            (e) => Fragment$fragmentNodeInfo$helperDisks.fromJson(
+              (e as Map<String, dynamic>),
+            ),
+          )
+          .toList(),
+      offloadJobs: (l$offloadJobs as List<dynamic>)
+          .map((e) => (e as String))
+          .toList(),
+      $__typename: (l$$__typename as String),
+    );
+  }
+
+  final String? hostname;
+
+  final String? startedAt;
+
+  final String? javaVersion;
+
+  final int? availableProcessors;
+
+  final double? maxMemoryBytes;
+
+  final List<Fragment$fragmentNodeInfo$directories> directories;
+
+  final List<Fragment$fragmentNodeInfo$helperDisks> helperDisks;
+
+  final List<String> offloadJobs;
+
+  final String $__typename;
+
+  Map<String, dynamic> toJson() {
+    final _resultData = <String, dynamic>{};
+    final l$hostname = hostname;
+    _resultData['hostname'] = l$hostname;
+    final l$startedAt = startedAt;
+    _resultData['startedAt'] = l$startedAt;
+    final l$javaVersion = javaVersion;
+    _resultData['javaVersion'] = l$javaVersion;
+    final l$availableProcessors = availableProcessors;
+    _resultData['availableProcessors'] = l$availableProcessors;
+    final l$maxMemoryBytes = maxMemoryBytes;
+    _resultData['maxMemoryBytes'] = l$maxMemoryBytes;
+    final l$directories = directories;
+    _resultData['directories'] = l$directories.map((e) => e.toJson()).toList();
+    final l$helperDisks = helperDisks;
+    _resultData['helperDisks'] = l$helperDisks.map((e) => e.toJson()).toList();
+    final l$offloadJobs = offloadJobs;
+    _resultData['offloadJobs'] = l$offloadJobs.map((e) => e).toList();
+    final l$$__typename = $__typename;
+    _resultData['__typename'] = l$$__typename;
+    return _resultData;
+  }
+
+  @override
+  int get hashCode {
+    final l$hostname = hostname;
+    final l$startedAt = startedAt;
+    final l$javaVersion = javaVersion;
+    final l$availableProcessors = availableProcessors;
+    final l$maxMemoryBytes = maxMemoryBytes;
+    final l$directories = directories;
+    final l$helperDisks = helperDisks;
+    final l$offloadJobs = offloadJobs;
+    final l$$__typename = $__typename;
+    return Object.hashAll([
+      l$hostname,
+      l$startedAt,
+      l$javaVersion,
+      l$availableProcessors,
+      l$maxMemoryBytes,
+      Object.hashAll(l$directories.map((v) => v)),
+      Object.hashAll(l$helperDisks.map((v) => v)),
+      Object.hashAll(l$offloadJobs.map((v) => v)),
+      l$$__typename,
+    ]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Fragment$fragmentNodeInfo ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$hostname = hostname;
+    final lOther$hostname = other.hostname;
+    if (l$hostname != lOther$hostname) {
+      return false;
+    }
+    final l$startedAt = startedAt;
+    final lOther$startedAt = other.startedAt;
+    if (l$startedAt != lOther$startedAt) {
+      return false;
+    }
+    final l$javaVersion = javaVersion;
+    final lOther$javaVersion = other.javaVersion;
+    if (l$javaVersion != lOther$javaVersion) {
+      return false;
+    }
+    final l$availableProcessors = availableProcessors;
+    final lOther$availableProcessors = other.availableProcessors;
+    if (l$availableProcessors != lOther$availableProcessors) {
+      return false;
+    }
+    final l$maxMemoryBytes = maxMemoryBytes;
+    final lOther$maxMemoryBytes = other.maxMemoryBytes;
+    if (l$maxMemoryBytes != lOther$maxMemoryBytes) {
+      return false;
+    }
+    final l$directories = directories;
+    final lOther$directories = other.directories;
+    if (l$directories.length != lOther$directories.length) {
+      return false;
+    }
+    for (int i = 0; i < l$directories.length; i++) {
+      final l$directories$entry = l$directories[i];
+      final lOther$directories$entry = lOther$directories[i];
+      if (l$directories$entry != lOther$directories$entry) {
+        return false;
+      }
+    }
+    final l$helperDisks = helperDisks;
+    final lOther$helperDisks = other.helperDisks;
+    if (l$helperDisks.length != lOther$helperDisks.length) {
+      return false;
+    }
+    for (int i = 0; i < l$helperDisks.length; i++) {
+      final l$helperDisks$entry = l$helperDisks[i];
+      final lOther$helperDisks$entry = lOther$helperDisks[i];
+      if (l$helperDisks$entry != lOther$helperDisks$entry) {
+        return false;
+      }
+    }
+    final l$offloadJobs = offloadJobs;
+    final lOther$offloadJobs = other.offloadJobs;
+    if (l$offloadJobs.length != lOther$offloadJobs.length) {
+      return false;
+    }
+    for (int i = 0; i < l$offloadJobs.length; i++) {
+      final l$offloadJobs$entry = l$offloadJobs[i];
+      final lOther$offloadJobs$entry = lOther$offloadJobs[i];
+      if (l$offloadJobs$entry != lOther$offloadJobs$entry) {
+        return false;
+      }
+    }
+    final l$$__typename = $__typename;
+    final lOther$$__typename = other.$__typename;
+    if (l$$__typename != lOther$$__typename) {
+      return false;
+    }
+    return true;
+  }
+}
+
+extension UtilityExtension$Fragment$fragmentNodeInfo
+    on Fragment$fragmentNodeInfo {
+  CopyWith$Fragment$fragmentNodeInfo<Fragment$fragmentNodeInfo> get copyWith =>
+      CopyWith$Fragment$fragmentNodeInfo(this, (i) => i);
+}
+
+abstract class CopyWith$Fragment$fragmentNodeInfo<TRes> {
+  factory CopyWith$Fragment$fragmentNodeInfo(
+    Fragment$fragmentNodeInfo instance,
+    TRes Function(Fragment$fragmentNodeInfo) then,
+  ) = _CopyWithImpl$Fragment$fragmentNodeInfo;
+
+  factory CopyWith$Fragment$fragmentNodeInfo.stub(TRes res) =
+      _CopyWithStubImpl$Fragment$fragmentNodeInfo;
+
+  TRes call({
+    String? hostname,
+    String? startedAt,
+    String? javaVersion,
+    int? availableProcessors,
+    double? maxMemoryBytes,
+    List<Fragment$fragmentNodeInfo$directories>? directories,
+    List<Fragment$fragmentNodeInfo$helperDisks>? helperDisks,
+    List<String>? offloadJobs,
+    String? $__typename,
+  });
+  TRes directories(
+    Iterable<Fragment$fragmentNodeInfo$directories> Function(
+      Iterable<
+        CopyWith$Fragment$fragmentNodeInfo$directories<
+          Fragment$fragmentNodeInfo$directories
+        >
+      >,
+    )
+    _fn,
+  );
+  TRes helperDisks(
+    Iterable<Fragment$fragmentNodeInfo$helperDisks> Function(
+      Iterable<
+        CopyWith$Fragment$fragmentNodeInfo$helperDisks<
+          Fragment$fragmentNodeInfo$helperDisks
+        >
+      >,
+    )
+    _fn,
+  );
+}
+
+class _CopyWithImpl$Fragment$fragmentNodeInfo<TRes>
+    implements CopyWith$Fragment$fragmentNodeInfo<TRes> {
+  _CopyWithImpl$Fragment$fragmentNodeInfo(this._instance, this._then);
+
+  final Fragment$fragmentNodeInfo _instance;
+
+  final TRes Function(Fragment$fragmentNodeInfo) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? hostname = _undefined,
+    Object? startedAt = _undefined,
+    Object? javaVersion = _undefined,
+    Object? availableProcessors = _undefined,
+    Object? maxMemoryBytes = _undefined,
+    Object? directories = _undefined,
+    Object? helperDisks = _undefined,
+    Object? offloadJobs = _undefined,
+    Object? $__typename = _undefined,
+  }) => _then(
+    Fragment$fragmentNodeInfo(
+      hostname: hostname == _undefined
+          ? _instance.hostname
+          : (hostname as String?),
+      startedAt: startedAt == _undefined
+          ? _instance.startedAt
+          : (startedAt as String?),
+      javaVersion: javaVersion == _undefined
+          ? _instance.javaVersion
+          : (javaVersion as String?),
+      availableProcessors: availableProcessors == _undefined
+          ? _instance.availableProcessors
+          : (availableProcessors as int?),
+      maxMemoryBytes: maxMemoryBytes == _undefined
+          ? _instance.maxMemoryBytes
+          : (maxMemoryBytes as double?),
+      directories: directories == _undefined || directories == null
+          ? _instance.directories
+          : (directories as List<Fragment$fragmentNodeInfo$directories>),
+      helperDisks: helperDisks == _undefined || helperDisks == null
+          ? _instance.helperDisks
+          : (helperDisks as List<Fragment$fragmentNodeInfo$helperDisks>),
+      offloadJobs: offloadJobs == _undefined || offloadJobs == null
+          ? _instance.offloadJobs
+          : (offloadJobs as List<String>),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
+
+  TRes directories(
+    Iterable<Fragment$fragmentNodeInfo$directories> Function(
+      Iterable<
+        CopyWith$Fragment$fragmentNodeInfo$directories<
+          Fragment$fragmentNodeInfo$directories
+        >
+      >,
+    )
+    _fn,
+  ) => call(
+    directories: _fn(
+      _instance.directories.map(
+        (e) => CopyWith$Fragment$fragmentNodeInfo$directories(e, (i) => i),
+      ),
+    ).toList(),
+  );
+
+  TRes helperDisks(
+    Iterable<Fragment$fragmentNodeInfo$helperDisks> Function(
+      Iterable<
+        CopyWith$Fragment$fragmentNodeInfo$helperDisks<
+          Fragment$fragmentNodeInfo$helperDisks
+        >
+      >,
+    )
+    _fn,
+  ) => call(
+    helperDisks: _fn(
+      _instance.helperDisks.map(
+        (e) => CopyWith$Fragment$fragmentNodeInfo$helperDisks(e, (i) => i),
+      ),
+    ).toList(),
+  );
+}
+
+class _CopyWithStubImpl$Fragment$fragmentNodeInfo<TRes>
+    implements CopyWith$Fragment$fragmentNodeInfo<TRes> {
+  _CopyWithStubImpl$Fragment$fragmentNodeInfo(this._res);
+
+  TRes _res;
+
+  call({
+    String? hostname,
+    String? startedAt,
+    String? javaVersion,
+    int? availableProcessors,
+    double? maxMemoryBytes,
+    List<Fragment$fragmentNodeInfo$directories>? directories,
+    List<Fragment$fragmentNodeInfo$helperDisks>? helperDisks,
+    List<String>? offloadJobs,
+    String? $__typename,
+  }) => _res;
+
+  directories(_fn) => _res;
+
+  helperDisks(_fn) => _res;
+}
+
+const fragmentDefinitionfragmentNodeInfo = FragmentDefinitionNode(
+  name: NameNode(value: 'fragmentNodeInfo'),
+  typeCondition: TypeConditionNode(
+    on: NamedTypeNode(name: NameNode(value: 'NodeInfo'), isNonNull: false),
+  ),
+  directives: [],
+  selectionSet: SelectionSetNode(
+    selections: [
+      FieldNode(
+        name: NameNode(value: 'hostname'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'startedAt'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'javaVersion'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'availableProcessors'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'maxMemoryBytes'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'directories'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: SelectionSetNode(
+          selections: [
+            FieldNode(
+              name: NameNode(value: 'name'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'path'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'type'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'library'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'totalBytes'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'freeBytes'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: '__typename'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+          ],
+        ),
+      ),
+      FieldNode(
+        name: NameNode(value: 'helperDisks'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: SelectionSetNode(
+          selections: [
+            FieldNode(
+              name: NameNode(value: 'name'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'jobs'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: '__typename'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+          ],
+        ),
+      ),
+      FieldNode(
+        name: NameNode(value: 'offloadJobs'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: '__typename'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+    ],
+  ),
+);
+const documentNodeFragmentfragmentNodeInfo = DocumentNode(
+  definitions: [fragmentDefinitionfragmentNodeInfo],
+);
+
+class Fragment$fragmentNodeInfo$directories {
+  Fragment$fragmentNodeInfo$directories({
+    required this.name,
+    required this.path,
+    this.type,
+    this.$library,
+    this.totalBytes,
+    this.freeBytes,
+    this.$__typename = 'NodeDirectory',
+  });
+
+  factory Fragment$fragmentNodeInfo$directories.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final l$name = json['name'];
+    final l$path = json['path'];
+    final l$type = json['type'];
+    final l$$library = json['library'];
+    final l$totalBytes = json['totalBytes'];
+    final l$freeBytes = json['freeBytes'];
+    final l$$__typename = json['__typename'];
+    return Fragment$fragmentNodeInfo$directories(
+      name: (l$name as String),
+      path: (l$path as String),
+      type: (l$type as String?),
+      $library: (l$$library as String?),
+      totalBytes: (l$totalBytes as num?)?.toDouble(),
+      freeBytes: (l$freeBytes as num?)?.toDouble(),
+      $__typename: (l$$__typename as String),
+    );
+  }
+
+  final String name;
+
+  final String path;
+
+  final String? type;
+
+  final String? $library;
+
+  final double? totalBytes;
+
+  final double? freeBytes;
+
+  final String $__typename;
+
+  Map<String, dynamic> toJson() {
+    final _resultData = <String, dynamic>{};
+    final l$name = name;
+    _resultData['name'] = l$name;
+    final l$path = path;
+    _resultData['path'] = l$path;
+    final l$type = type;
+    _resultData['type'] = l$type;
+    final l$$library = $library;
+    _resultData['library'] = l$$library;
+    final l$totalBytes = totalBytes;
+    _resultData['totalBytes'] = l$totalBytes;
+    final l$freeBytes = freeBytes;
+    _resultData['freeBytes'] = l$freeBytes;
+    final l$$__typename = $__typename;
+    _resultData['__typename'] = l$$__typename;
+    return _resultData;
+  }
+
+  @override
+  int get hashCode {
+    final l$name = name;
+    final l$path = path;
+    final l$type = type;
+    final l$$library = $library;
+    final l$totalBytes = totalBytes;
+    final l$freeBytes = freeBytes;
+    final l$$__typename = $__typename;
+    return Object.hashAll([
+      l$name,
+      l$path,
+      l$type,
+      l$$library,
+      l$totalBytes,
+      l$freeBytes,
+      l$$__typename,
+    ]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Fragment$fragmentNodeInfo$directories ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$name = name;
+    final lOther$name = other.name;
+    if (l$name != lOther$name) {
+      return false;
+    }
+    final l$path = path;
+    final lOther$path = other.path;
+    if (l$path != lOther$path) {
+      return false;
+    }
+    final l$type = type;
+    final lOther$type = other.type;
+    if (l$type != lOther$type) {
+      return false;
+    }
+    final l$$library = $library;
+    final lOther$$library = other.$library;
+    if (l$$library != lOther$$library) {
+      return false;
+    }
+    final l$totalBytes = totalBytes;
+    final lOther$totalBytes = other.totalBytes;
+    if (l$totalBytes != lOther$totalBytes) {
+      return false;
+    }
+    final l$freeBytes = freeBytes;
+    final lOther$freeBytes = other.freeBytes;
+    if (l$freeBytes != lOther$freeBytes) {
+      return false;
+    }
+    final l$$__typename = $__typename;
+    final lOther$$__typename = other.$__typename;
+    if (l$$__typename != lOther$$__typename) {
+      return false;
+    }
+    return true;
+  }
+}
+
+extension UtilityExtension$Fragment$fragmentNodeInfo$directories
+    on Fragment$fragmentNodeInfo$directories {
+  CopyWith$Fragment$fragmentNodeInfo$directories<
+    Fragment$fragmentNodeInfo$directories
+  >
+  get copyWith =>
+      CopyWith$Fragment$fragmentNodeInfo$directories(this, (i) => i);
+}
+
+abstract class CopyWith$Fragment$fragmentNodeInfo$directories<TRes> {
+  factory CopyWith$Fragment$fragmentNodeInfo$directories(
+    Fragment$fragmentNodeInfo$directories instance,
+    TRes Function(Fragment$fragmentNodeInfo$directories) then,
+  ) = _CopyWithImpl$Fragment$fragmentNodeInfo$directories;
+
+  factory CopyWith$Fragment$fragmentNodeInfo$directories.stub(TRes res) =
+      _CopyWithStubImpl$Fragment$fragmentNodeInfo$directories;
+
+  TRes call({
+    String? name,
+    String? path,
+    String? type,
+    String? $library,
+    double? totalBytes,
+    double? freeBytes,
+    String? $__typename,
+  });
+}
+
+class _CopyWithImpl$Fragment$fragmentNodeInfo$directories<TRes>
+    implements CopyWith$Fragment$fragmentNodeInfo$directories<TRes> {
+  _CopyWithImpl$Fragment$fragmentNodeInfo$directories(
+    this._instance,
+    this._then,
+  );
+
+  final Fragment$fragmentNodeInfo$directories _instance;
+
+  final TRes Function(Fragment$fragmentNodeInfo$directories) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? name = _undefined,
+    Object? path = _undefined,
+    Object? type = _undefined,
+    Object? $library = _undefined,
+    Object? totalBytes = _undefined,
+    Object? freeBytes = _undefined,
+    Object? $__typename = _undefined,
+  }) => _then(
+    Fragment$fragmentNodeInfo$directories(
+      name: name == _undefined || name == null
+          ? _instance.name
+          : (name as String),
+      path: path == _undefined || path == null
+          ? _instance.path
+          : (path as String),
+      type: type == _undefined ? _instance.type : (type as String?),
+      $library: $library == _undefined
+          ? _instance.$library
+          : ($library as String?),
+      totalBytes: totalBytes == _undefined
+          ? _instance.totalBytes
+          : (totalBytes as double?),
+      freeBytes: freeBytes == _undefined
+          ? _instance.freeBytes
+          : (freeBytes as double?),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
+}
+
+class _CopyWithStubImpl$Fragment$fragmentNodeInfo$directories<TRes>
+    implements CopyWith$Fragment$fragmentNodeInfo$directories<TRes> {
+  _CopyWithStubImpl$Fragment$fragmentNodeInfo$directories(this._res);
+
+  TRes _res;
+
+  call({
+    String? name,
+    String? path,
+    String? type,
+    String? $library,
+    double? totalBytes,
+    double? freeBytes,
+    String? $__typename,
+  }) => _res;
+}
+
+class Fragment$fragmentNodeInfo$helperDisks {
+  Fragment$fragmentNodeInfo$helperDisks({
+    required this.name,
+    required this.jobs,
+    this.$__typename = 'HelperDisk',
+  });
+
+  factory Fragment$fragmentNodeInfo$helperDisks.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final l$name = json['name'];
+    final l$jobs = json['jobs'];
+    final l$$__typename = json['__typename'];
+    return Fragment$fragmentNodeInfo$helperDisks(
+      name: (l$name as String),
+      jobs: (l$jobs as List<dynamic>).map((e) => (e as String)).toList(),
+      $__typename: (l$$__typename as String),
+    );
+  }
+
+  final String name;
+
+  final List<String> jobs;
+
+  final String $__typename;
+
+  Map<String, dynamic> toJson() {
+    final _resultData = <String, dynamic>{};
+    final l$name = name;
+    _resultData['name'] = l$name;
+    final l$jobs = jobs;
+    _resultData['jobs'] = l$jobs.map((e) => e).toList();
+    final l$$__typename = $__typename;
+    _resultData['__typename'] = l$$__typename;
+    return _resultData;
+  }
+
+  @override
+  int get hashCode {
+    final l$name = name;
+    final l$jobs = jobs;
+    final l$$__typename = $__typename;
+    return Object.hashAll([
+      l$name,
+      Object.hashAll(l$jobs.map((v) => v)),
+      l$$__typename,
+    ]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Fragment$fragmentNodeInfo$helperDisks ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$name = name;
+    final lOther$name = other.name;
+    if (l$name != lOther$name) {
+      return false;
+    }
+    final l$jobs = jobs;
+    final lOther$jobs = other.jobs;
+    if (l$jobs.length != lOther$jobs.length) {
+      return false;
+    }
+    for (int i = 0; i < l$jobs.length; i++) {
+      final l$jobs$entry = l$jobs[i];
+      final lOther$jobs$entry = lOther$jobs[i];
+      if (l$jobs$entry != lOther$jobs$entry) {
+        return false;
+      }
+    }
+    final l$$__typename = $__typename;
+    final lOther$$__typename = other.$__typename;
+    if (l$$__typename != lOther$$__typename) {
+      return false;
+    }
+    return true;
+  }
+}
+
+extension UtilityExtension$Fragment$fragmentNodeInfo$helperDisks
+    on Fragment$fragmentNodeInfo$helperDisks {
+  CopyWith$Fragment$fragmentNodeInfo$helperDisks<
+    Fragment$fragmentNodeInfo$helperDisks
+  >
+  get copyWith =>
+      CopyWith$Fragment$fragmentNodeInfo$helperDisks(this, (i) => i);
+}
+
+abstract class CopyWith$Fragment$fragmentNodeInfo$helperDisks<TRes> {
+  factory CopyWith$Fragment$fragmentNodeInfo$helperDisks(
+    Fragment$fragmentNodeInfo$helperDisks instance,
+    TRes Function(Fragment$fragmentNodeInfo$helperDisks) then,
+  ) = _CopyWithImpl$Fragment$fragmentNodeInfo$helperDisks;
+
+  factory CopyWith$Fragment$fragmentNodeInfo$helperDisks.stub(TRes res) =
+      _CopyWithStubImpl$Fragment$fragmentNodeInfo$helperDisks;
+
+  TRes call({String? name, List<String>? jobs, String? $__typename});
+}
+
+class _CopyWithImpl$Fragment$fragmentNodeInfo$helperDisks<TRes>
+    implements CopyWith$Fragment$fragmentNodeInfo$helperDisks<TRes> {
+  _CopyWithImpl$Fragment$fragmentNodeInfo$helperDisks(
+    this._instance,
+    this._then,
+  );
+
+  final Fragment$fragmentNodeInfo$helperDisks _instance;
+
+  final TRes Function(Fragment$fragmentNodeInfo$helperDisks) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? name = _undefined,
+    Object? jobs = _undefined,
+    Object? $__typename = _undefined,
+  }) => _then(
+    Fragment$fragmentNodeInfo$helperDisks(
+      name: name == _undefined || name == null
+          ? _instance.name
+          : (name as String),
+      jobs: jobs == _undefined || jobs == null
+          ? _instance.jobs
+          : (jobs as List<String>),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
+}
+
+class _CopyWithStubImpl$Fragment$fragmentNodeInfo$helperDisks<TRes>
+    implements CopyWith$Fragment$fragmentNodeInfo$helperDisks<TRes> {
+  _CopyWithStubImpl$Fragment$fragmentNodeInfo$helperDisks(this._res);
+
+  TRes _res;
+
+  call({String? name, List<String>? jobs, String? $__typename}) => _res;
+}
+
 class Fragment$fragmentServerActivityEvent {
   Fragment$fragmentServerActivityEvent({
     required this.type,
@@ -738,6 +1694,7 @@ class Fragment$fragmentServerActivityEvent {
     this.queueStats,
     this.failure,
     this.transcodes,
+    this.nodeInfo,
     this.$__typename = 'ServerActivityEvent',
   });
 
@@ -753,6 +1710,7 @@ class Fragment$fragmentServerActivityEvent {
     final l$queueStats = json['queueStats'];
     final l$failure = json['failure'];
     final l$transcodes = json['transcodes'];
+    final l$nodeInfo = json['nodeInfo'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentServerActivityEvent(
       type: fromJson$Enum$ServerActivityEventType((l$type as String)),
@@ -786,6 +1744,11 @@ class Fragment$fragmentServerActivityEvent {
             ),
           )
           .toList(),
+      nodeInfo: l$nodeInfo == null
+          ? null
+          : Fragment$fragmentNodeInfo.fromJson(
+              (l$nodeInfo as Map<String, dynamic>),
+            ),
       $__typename: (l$$__typename as String),
     );
   }
@@ -807,6 +1770,8 @@ class Fragment$fragmentServerActivityEvent {
   final Fragment$fragmentEventFailure? failure;
 
   final List<Fragment$fragmentTranscodePass>? transcodes;
+
+  final Fragment$fragmentNodeInfo? nodeInfo;
 
   final String $__typename;
 
@@ -830,6 +1795,8 @@ class Fragment$fragmentServerActivityEvent {
     _resultData['failure'] = l$failure?.toJson();
     final l$transcodes = transcodes;
     _resultData['transcodes'] = l$transcodes?.map((e) => e.toJson()).toList();
+    final l$nodeInfo = nodeInfo;
+    _resultData['nodeInfo'] = l$nodeInfo?.toJson();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -846,6 +1813,7 @@ class Fragment$fragmentServerActivityEvent {
     final l$queueStats = queueStats;
     final l$failure = failure;
     final l$transcodes = transcodes;
+    final l$nodeInfo = nodeInfo;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$type,
@@ -857,6 +1825,7 @@ class Fragment$fragmentServerActivityEvent {
       l$queueStats == null ? null : Object.hashAll(l$queueStats.map((v) => v)),
       l$failure,
       l$transcodes == null ? null : Object.hashAll(l$transcodes.map((v) => v)),
+      l$nodeInfo,
       l$$__typename,
     ]);
   }
@@ -948,6 +1917,11 @@ class Fragment$fragmentServerActivityEvent {
     } else if (l$transcodes != lOther$transcodes) {
       return false;
     }
+    final l$nodeInfo = nodeInfo;
+    final lOther$nodeInfo = other.nodeInfo;
+    if (l$nodeInfo != lOther$nodeInfo) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -984,6 +1958,7 @@ abstract class CopyWith$Fragment$fragmentServerActivityEvent<TRes> {
     List<Fragment$fragmentQueueStat>? queueStats,
     Fragment$fragmentEventFailure? failure,
     List<Fragment$fragmentTranscodePass>? transcodes,
+    Fragment$fragmentNodeInfo? nodeInfo,
     String? $__typename,
   });
   TRes processing(
@@ -1013,6 +1988,7 @@ abstract class CopyWith$Fragment$fragmentServerActivityEvent<TRes> {
     )
     _fn,
   );
+  CopyWith$Fragment$fragmentNodeInfo<TRes> get nodeInfo;
 }
 
 class _CopyWithImpl$Fragment$fragmentServerActivityEvent<TRes>
@@ -1038,6 +2014,7 @@ class _CopyWithImpl$Fragment$fragmentServerActivityEvent<TRes>
     Object? queueStats = _undefined,
     Object? failure = _undefined,
     Object? transcodes = _undefined,
+    Object? nodeInfo = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentServerActivityEvent(
@@ -1069,6 +2046,9 @@ class _CopyWithImpl$Fragment$fragmentServerActivityEvent<TRes>
       transcodes: transcodes == _undefined
           ? _instance.transcodes
           : (transcodes as List<Fragment$fragmentTranscodePass>?),
+      nodeInfo: nodeInfo == _undefined
+          ? _instance.nodeInfo
+          : (nodeInfo as Fragment$fragmentNodeInfo?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -1134,6 +2114,16 @@ class _CopyWithImpl$Fragment$fragmentServerActivityEvent<TRes>
       ),
     )?.toList(),
   );
+
+  CopyWith$Fragment$fragmentNodeInfo<TRes> get nodeInfo {
+    final local$nodeInfo = _instance.nodeInfo;
+    return local$nodeInfo == null
+        ? CopyWith$Fragment$fragmentNodeInfo.stub(_then(_instance))
+        : CopyWith$Fragment$fragmentNodeInfo(
+            local$nodeInfo,
+            (e) => call(nodeInfo: e),
+          );
+  }
 }
 
 class _CopyWithStubImpl$Fragment$fragmentServerActivityEvent<TRes>
@@ -1152,6 +2142,7 @@ class _CopyWithStubImpl$Fragment$fragmentServerActivityEvent<TRes>
     List<Fragment$fragmentQueueStat>? queueStats,
     Fragment$fragmentEventFailure? failure,
     List<Fragment$fragmentTranscodePass>? transcodes,
+    Fragment$fragmentNodeInfo? nodeInfo,
     String? $__typename,
   }) => _res;
 
@@ -1163,6 +2154,9 @@ class _CopyWithStubImpl$Fragment$fragmentServerActivityEvent<TRes>
       CopyWith$Fragment$fragmentEventFailure.stub(_res);
 
   transcodes(_fn) => _res;
+
+  CopyWith$Fragment$fragmentNodeInfo<TRes> get nodeInfo =>
+      CopyWith$Fragment$fragmentNodeInfo.stub(_res);
 }
 
 const fragmentDefinitionfragmentServerActivityEvent = FragmentDefinitionNode(
@@ -1234,6 +2228,41 @@ const fragmentDefinitionfragmentServerActivityEvent = FragmentDefinitionNode(
             ),
             FieldNode(
               name: NameNode(value: 'step'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'context'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'contextType'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'contextId'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'directory'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
+              name: NameNode(value: 'library'),
               alias: null,
               arguments: [],
               directives: [],
@@ -1327,6 +2356,27 @@ const fragmentDefinitionfragmentServerActivityEvent = FragmentDefinitionNode(
         ),
       ),
       FieldNode(
+        name: NameNode(value: 'nodeInfo'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: SelectionSetNode(
+          selections: [
+            FragmentSpreadNode(
+              name: NameNode(value: 'fragmentNodeInfo'),
+              directives: [],
+            ),
+            FieldNode(
+              name: NameNode(value: '__typename'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+          ],
+        ),
+      ),
+      FieldNode(
         name: NameNode(value: '__typename'),
         alias: null,
         arguments: [],
@@ -1342,6 +2392,7 @@ const documentNodeFragmentfragmentServerActivityEvent = DocumentNode(
     fragmentDefinitionfragmentQueueStat,
     fragmentDefinitionfragmentEventFailure,
     fragmentDefinitionfragmentTranscodePass,
+    fragmentDefinitionfragmentNodeInfo,
   ],
 );
 
@@ -1352,6 +2403,11 @@ class Fragment$fragmentServerActivityEvent$processing {
     required this.startedAt,
     this.subject,
     this.step,
+    this.context,
+    this.contextType,
+    this.contextId,
+    this.directory,
+    this.$library,
     this.$__typename = 'ProcessingItem',
   });
 
@@ -1363,6 +2419,11 @@ class Fragment$fragmentServerActivityEvent$processing {
     final l$startedAt = json['startedAt'];
     final l$subject = json['subject'];
     final l$step = json['step'];
+    final l$context = json['context'];
+    final l$contextType = json['contextType'];
+    final l$contextId = json['contextId'];
+    final l$directory = json['directory'];
+    final l$$library = json['library'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentServerActivityEvent$processing(
       queue: (l$queue as String),
@@ -1370,6 +2431,11 @@ class Fragment$fragmentServerActivityEvent$processing {
       startedAt: (l$startedAt as String),
       subject: (l$subject as String?),
       step: (l$step as String?),
+      context: (l$context as String?),
+      contextType: (l$contextType as String?),
+      contextId: (l$contextId as String?),
+      directory: (l$directory as String?),
+      $library: (l$$library as String?),
       $__typename: (l$$__typename as String),
     );
   }
@@ -1383,6 +2449,16 @@ class Fragment$fragmentServerActivityEvent$processing {
   final String? subject;
 
   final String? step;
+
+  final String? context;
+
+  final String? contextType;
+
+  final String? contextId;
+
+  final String? directory;
+
+  final String? $library;
 
   final String $__typename;
 
@@ -1398,6 +2474,16 @@ class Fragment$fragmentServerActivityEvent$processing {
     _resultData['subject'] = l$subject;
     final l$step = step;
     _resultData['step'] = l$step;
+    final l$context = context;
+    _resultData['context'] = l$context;
+    final l$contextType = contextType;
+    _resultData['contextType'] = l$contextType;
+    final l$contextId = contextId;
+    _resultData['contextId'] = l$contextId;
+    final l$directory = directory;
+    _resultData['directory'] = l$directory;
+    final l$$library = $library;
+    _resultData['library'] = l$$library;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -1410,6 +2496,11 @@ class Fragment$fragmentServerActivityEvent$processing {
     final l$startedAt = startedAt;
     final l$subject = subject;
     final l$step = step;
+    final l$context = context;
+    final l$contextType = contextType;
+    final l$contextId = contextId;
+    final l$directory = directory;
+    final l$$library = $library;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$queue,
@@ -1417,6 +2508,11 @@ class Fragment$fragmentServerActivityEvent$processing {
       l$startedAt,
       l$subject,
       l$step,
+      l$context,
+      l$contextType,
+      l$contextId,
+      l$directory,
+      l$$library,
       l$$__typename,
     ]);
   }
@@ -1455,6 +2551,31 @@ class Fragment$fragmentServerActivityEvent$processing {
     if (l$step != lOther$step) {
       return false;
     }
+    final l$context = context;
+    final lOther$context = other.context;
+    if (l$context != lOther$context) {
+      return false;
+    }
+    final l$contextType = contextType;
+    final lOther$contextType = other.contextType;
+    if (l$contextType != lOther$contextType) {
+      return false;
+    }
+    final l$contextId = contextId;
+    final lOther$contextId = other.contextId;
+    if (l$contextId != lOther$contextId) {
+      return false;
+    }
+    final l$directory = directory;
+    final lOther$directory = other.directory;
+    if (l$directory != lOther$directory) {
+      return false;
+    }
+    final l$$library = $library;
+    final lOther$$library = other.$library;
+    if (l$$library != lOther$$library) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -1489,6 +2610,11 @@ abstract class CopyWith$Fragment$fragmentServerActivityEvent$processing<TRes> {
     String? startedAt,
     String? subject,
     String? step,
+    String? context,
+    String? contextType,
+    String? contextId,
+    String? directory,
+    String? $library,
     String? $__typename,
   });
 }
@@ -1512,6 +2638,11 @@ class _CopyWithImpl$Fragment$fragmentServerActivityEvent$processing<TRes>
     Object? startedAt = _undefined,
     Object? subject = _undefined,
     Object? step = _undefined,
+    Object? context = _undefined,
+    Object? contextType = _undefined,
+    Object? contextId = _undefined,
+    Object? directory = _undefined,
+    Object? $library = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentServerActivityEvent$processing(
@@ -1526,6 +2657,19 @@ class _CopyWithImpl$Fragment$fragmentServerActivityEvent$processing<TRes>
           : (startedAt as String),
       subject: subject == _undefined ? _instance.subject : (subject as String?),
       step: step == _undefined ? _instance.step : (step as String?),
+      context: context == _undefined ? _instance.context : (context as String?),
+      contextType: contextType == _undefined
+          ? _instance.contextType
+          : (contextType as String?),
+      contextId: contextId == _undefined
+          ? _instance.contextId
+          : (contextId as String?),
+      directory: directory == _undefined
+          ? _instance.directory
+          : (directory as String?),
+      $library: $library == _undefined
+          ? _instance.$library
+          : ($library as String?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -1545,6 +2689,11 @@ class _CopyWithStubImpl$Fragment$fragmentServerActivityEvent$processing<TRes>
     String? startedAt,
     String? subject,
     String? step,
+    String? context,
+    String? contextType,
+    String? contextId,
+    String? directory,
+    String? $library,
     String? $__typename,
   }) => _res;
 }

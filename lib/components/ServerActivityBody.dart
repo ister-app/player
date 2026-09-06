@@ -5,7 +5,9 @@ import 'package:player/graphql/getServerInfo.graphql.dart';
 
 import '../l10n/app_localizations.dart';
 import '../utils/ServerActivityPresentation.dart';
+import 'ActivityGroupList.dart';
 import 'LiveFeedBanner.dart';
+import 'TvFocusable.dart';
 
 /// The rendered content of the server settings screen. Stateless and fed plain
 /// fragment lists (plus an injectable [now]) so widget tests can drive it
@@ -28,6 +30,9 @@ class ServerActivityBody extends StatelessWidget {
   final Widget? footer;
   final Map<String, Query$getServerInfoQuery$getServerInfo$nodes> nodeInfo;
 
+  /// Opens the node detail page; null renders the node rows as plain text.
+  final void Function(String nodeName)? onNodeTap;
+
   const ServerActivityBody({
     super.key,
     required this.nodes,
@@ -40,15 +45,17 @@ class ServerActivityBody extends StatelessWidget {
     this.header,
     this.footer,
     this.nodeInfo = const {},
+    this.onNodeTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final busyTiles = _busyTiles(context, loc);
+    final groups =
+        ServerActivityPresentation.groupActivity(loc, nodes, transcodes);
     final totalQueued =
         queueStats.fold<int>(0, (sum, stat) => sum + stat.depth);
-    final idle = busyTiles.isEmpty && totalQueued == 0;
+    final idle = groups.isEmpty && totalQueued == 0;
 
     final nodeNames = _sortedNodeNames();
 
@@ -61,9 +68,9 @@ class ServerActivityBody extends StatelessWidget {
         if (idle)
           _idleHero(context, loc)
         else ...[
-          if (busyTiles.isNotEmpty) ...[
+          if (groups.isNotEmpty) ...[
             SettingsSectionLabel(loc.busyNow),
-            _sectionCard(busyTiles),
+            ActivityGroupList(groups: groups, now: now, showNode: _multiNode),
           ],
           SettingsSectionLabel(loc.queuedWork),
           _queueSection(context, loc),
@@ -73,6 +80,13 @@ class ServerActivityBody extends StatelessWidget {
           _sectionCard([
             for (final name in nodeNames) _nodeTile(context, loc, name),
           ]),
+          if (onNodeTap != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+              child: Text(loc.nodeDetailsHint,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            ),
         ],
         SettingsSectionLabel(loc.recentFailures),
         if (failures.isEmpty)
@@ -94,9 +108,6 @@ class ServerActivityBody extends StatelessWidget {
     );
   }
 
-  List<Fragment$fragmentServerActivityEvent> _sortedNodes() =>
-      nodes.toList()..sort((a, b) => a.nodeName.compareTo(b.nodeName));
-
   Fragment$fragmentServerActivityEvent? _nodeEventFor(String name) {
     for (final node in nodes) {
       if (node.nodeName == name) return node;
@@ -113,77 +124,6 @@ class ServerActivityBody extends StatelessWidget {
         ..sort();
 
   bool get _multiNode => nodes.length > 1;
-
-  // ===== Busy now =====
-
-  List<Widget> _busyTiles(BuildContext context, AppLocalizations loc) {
-    final tiles = <Widget>[];
-    for (final node in _sortedNodes()) {
-      for (final item in node.processing ??
-          const <Fragment$fragmentServerActivityEvent$processing>[]) {
-        tiles.add(_processingTile(context, loc, node.nodeName, item));
-      }
-    }
-    for (final pass in transcodes) {
-      tiles.add(_transcodeTile(context, loc, pass));
-    }
-    return tiles;
-  }
-
-  Widget _processingTile(BuildContext context, AppLocalizations loc,
-      String nodeName, Fragment$fragmentServerActivityEvent$processing item) {
-    final kind = ServerActivityPresentation.kindFor(item.queue);
-    final title = item.subject ?? ServerActivityPresentation.labelFor(loc, kind);
-    final stepLabel = ServerActivityPresentation.stepLabel(loc, item.step);
-    final subtitleParts = <String>[
-      if (item.subject != null || stepLabel != null)
-        stepLabel ?? ServerActivityPresentation.labelFor(loc, kind)
-      else
-        item.queue,
-      if (_multiNode) nodeName,
-    ];
-    final startedAt = ServerActivityPresentation.parseInstant(item.startedAt);
-    return ListTile(
-      leading: Icon(ServerActivityPresentation.iconFor(kind),
-          size: 20, color: Theme.of(context).colorScheme.primary),
-      title: Text(title,
-          style: Theme.of(context).textTheme.bodyMedium,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis),
-      subtitle: Text(subtitleParts.join(' · '),
-          style: Theme.of(context).textTheme.bodySmall),
-      trailing: startedAt == null
-          ? null
-          : _chip(context,
-              ServerActivityPresentation.formatElapsed(startedAt, now)),
-    );
-  }
-
-  Widget _transcodeTile(BuildContext context, AppLocalizations loc,
-      Fragment$fragmentTranscodePass pass) {
-    final startedAt = ServerActivityPresentation.parseInstant(pass.startedAt);
-    final subtitleParts = <String>[
-      '${loc.transcodesTag} · ${ServerActivityPresentation.qualityLabel(pass.quality)}',
-      if (pass.background) loc.backgroundTag,
-      if (_multiNode) pass.nodeName,
-    ];
-    return ListTile(
-      leading: Icon(
-          ServerActivityPresentation.iconFor(ActivityKind.transcode),
-          size: 20,
-          color: Theme.of(context).colorScheme.primary),
-      title: Text(pass.title ?? loc.activityKindTranscode,
-          style: Theme.of(context).textTheme.bodyMedium,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis),
-      subtitle: Text(subtitleParts.join(' · '),
-          style: Theme.of(context).textTheme.bodySmall),
-      trailing: startedAt == null
-          ? null
-          : _chip(context,
-              ServerActivityPresentation.formatElapsed(startedAt, now)),
-    );
-  }
 
   // ===== Queued work =====
 
@@ -280,7 +220,9 @@ class ServerActivityBody extends StatelessWidget {
         ),
     ];
 
-    return ListTile(
+    final onTap = onNodeTap;
+    final tile = ListTile(
+      key: ValueKey('node-tile-$name'),
       leading: Icon(stale ? Icons.cloud_off : Icons.storage,
           size: 20, color: stale ? staleColor : mutedColor),
       title: Text(
@@ -296,17 +238,21 @@ class ServerActivityBody extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: subtitleLines,
             ),
-      trailing: node == null
-          ? null
-          : Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _chip(context, loc.processedCount(node.processedCount ?? 0)),
-                const SizedBox(width: 4),
-                _chip(context, loc.failedCount(node.failedCount ?? 0)),
-              ],
-            ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (node != null) ...[
+            _chip(context, loc.processedCount(node.processedCount ?? 0)),
+            const SizedBox(width: 4),
+            _chip(context, loc.failedCount(node.failedCount ?? 0)),
+          ],
+          if (onTap != null) Icon(Icons.chevron_right, color: mutedColor),
+        ],
+      ),
+      onTap: onTap == null ? null : () => onTap(name),
     );
+    if (onTap == null) return tile;
+    return TvFocusable(onTap: () => onTap(name), child: tile);
   }
 
   // ===== Shared bits =====

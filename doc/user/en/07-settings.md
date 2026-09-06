@@ -76,9 +76,15 @@ A live list of everything playing on this server right now — yours and, where 
 
 The server page is the whole picture of your Ister server in one place: which server this is, the nodes it runs on — with their version, address and whether they are still reporting in — what those nodes are working on right now, the work still queued up, and any recent failures. Useful for a quick "is everything up?" check, and for watching a scan or a transcode make progress.
 
+**Working on now** groups the work by what it belongs to: one heading per show, movie, album, book or podcast (with the library and disk it lives on), and under it a row per file and step — so you can see at a glance that *s06e22.mkv* of *Seinfeld* is having its subtitles extracted on one node while the next episode is being analyzed on another. Work that belongs to nothing in particular (a library scan, a search-index rebuild) gets a heading of its own kind.
+
 Administrators also find the maintenance actions at the bottom of this page — see [Administration](09-admin.md).
 
 ![The server page](../images/en/settings-cluster.png)
+
+Tap a node to open its own page: whether it is online and for how long, the host it runs on, and its **disks** — every directory the node serves, with the library it belongs to, its path and how much space is left (a nearly full disk turns red; a path that is not mounted says so). Nodes that help other nodes with heavy jobs, or hand their own off, list that here too, followed by the work running on this node right now.
+
+![A node's page](../images/en/settings-node.png)
 
 ### Users & access, Library visibility
 

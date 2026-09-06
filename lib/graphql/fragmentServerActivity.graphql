@@ -19,6 +19,30 @@ fragment fragmentTranscodePass on TranscodePass {
     quality
     background
     startedAt
+    context
+    contextType
+    contextId
+}
+
+fragment fragmentNodeInfo on NodeInfo {
+    hostname
+    startedAt
+    javaVersion
+    availableProcessors
+    maxMemoryBytes
+    directories {
+        name
+        path
+        type
+        library
+        totalBytes
+        freeBytes
+    }
+    helperDisks {
+        name
+        jobs
+    }
+    offloadJobs
 }
 
 fragment fragmentServerActivityEvent on ServerActivityEvent {
@@ -31,6 +55,11 @@ fragment fragmentServerActivityEvent on ServerActivityEvent {
         startedAt
         subject
         step
+        context
+        contextType
+        contextId
+        directory
+        library
     }
     processedCount
     failedCount
@@ -42,6 +71,9 @@ fragment fragmentServerActivityEvent on ServerActivityEvent {
     }
     transcodes {
         ...fragmentTranscodePass
+    }
+    nodeInfo {
+        ...fragmentNodeInfo
     }
 }
 
