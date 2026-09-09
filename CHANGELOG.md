@@ -1,5 +1,36 @@
 # Changelog
 
+## player v2.8.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.8.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(server-status): group activity by what it belongs to and add a node page ([`f4716fb`](https://github.com/ister-app/player/commit/f4716fb))
+- feat(web): dual-stack listen, COOP/COEP toggle and a text/plain discovery document ([`a9f742f`](https://github.com/ister-app/player/commit/a9f742f))
+
+### Fixes
+
+- fix(web): keep the video playing across fullscreen and page navigation ([`aa5fac3`](https://github.com/ister-app/player/commit/aa5fac3))
+
+### Other
+
+- ci(e2e): pin the server at 3.5.1, which can transcode again ([`cf274f4`](https://github.com/ister-app/player/commit/cf274f4))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.8.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.7.1...v2.8.0
+
 ## player v2.7.1
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
