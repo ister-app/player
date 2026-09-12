@@ -989,7 +989,7 @@ class ComicPageSkeleton extends StatelessWidget {
         // an animation that never ends also makes `pumpAndSettle` unusable in
         // every reader test (images never decode in a widget test, so the
         // placeholder is always on screen there).
-        effect: const SoldColorEffect(color: Color(0x1FFFFFFF)),
+        effect: const SolidColorEffect(color: Color(0x1FFFFFFF)),
         child: AspectRatio(
           aspectRatio: _aspectRatio,
           child: Container(
