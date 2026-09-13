@@ -7,7 +7,7 @@ query seriesReadingDirection($id: ID) {
             id title seriesIndex
             epubFiles {
                 id format
-                directory { node { url } }
+                directory { servingNode { url } }
             }
         }
     }

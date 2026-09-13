@@ -11,7 +11,7 @@ Fragment$fragmentMediaFiles sharedFile(String id, List<int> numbers) =>
       size: 1,
       durationInMilliseconds: 2400000,
       directory: Fragment$fragmentMediaFiles$directory(
-        node: Fragment$fragmentMediaFiles$directory$node(
+        servingNode: Fragment$fragmentMediaFiles$directory$servingNode(
             url: 'https://node.example'),
       ),
       episodes: [

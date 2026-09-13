@@ -27,7 +27,7 @@ Query$seasonById$seasonById$episodes _ep(int n,
                 path: '/e$n.mkv',
                 size: 1,
                 directory: Fragment$fragmentMediaFiles$directory(
-                    node: Fragment$fragmentMediaFiles$directory$node(
+                    servingNode: Fragment$fragmentMediaFiles$directory$servingNode(
                         url: 'https://n')),
               ).toJson()
             ]

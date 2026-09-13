@@ -3190,6 +3190,39 @@ Enum$MediaSegmentType fromJson$Enum$MediaSegmentType(String value) {
   }
 }
 
+enum Enum$StorageKind {
+  LOCAL,
+  S3,
+  $unknown;
+
+  factory Enum$StorageKind.fromJson(String value) =>
+      fromJson$Enum$StorageKind(value);
+
+  String toJson() => toJson$Enum$StorageKind(this);
+}
+
+String toJson$Enum$StorageKind(Enum$StorageKind e) {
+  switch (e) {
+    case Enum$StorageKind.LOCAL:
+      return r'LOCAL';
+    case Enum$StorageKind.S3:
+      return r'S3';
+    case Enum$StorageKind.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$StorageKind fromJson$Enum$StorageKind(String value) {
+  switch (value) {
+    case r'LOCAL':
+      return Enum$StorageKind.LOCAL;
+    case r'S3':
+      return Enum$StorageKind.S3;
+    default:
+      return Enum$StorageKind.$unknown;
+  }
+}
+
 enum Enum$SharingScope {
   EVERYONE,
   ALLOWLIST,

@@ -52,7 +52,7 @@ class ComicReaderPage extends StatefulWidget {
   final String bookId;
   final String mediaFileId;
 
-  /// URL of the node that stores the volume (mediaFile.directory.node.url).
+  /// URL of the node that stores the volume (mediaFile.directory.servingNode.url).
   final String? nodeUrl;
   final String? title;
 
@@ -493,7 +493,7 @@ class _ComicReaderPageState extends State<ComicReaderPage>
     unawaited(context.router.replace(ComicReaderRoute(
       bookId: next.id,
       mediaFileId: file.id,
-      nodeUrl: file.directory.node.url,
+      nodeUrl: file.directory.servingNode.url,
       title: next.title,
       seriesId: widget.seriesId,
     )));

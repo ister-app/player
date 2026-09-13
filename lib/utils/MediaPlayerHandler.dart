@@ -1946,7 +1946,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     final local = urlAtOpen != null && isLocalMediaUrl(urlAtOpen);
     final token = local ? null : StreamTokenService.getToken(serverName);
     if (!local && token == null) return;
-    final nodeUrl = mediaFile.directory.node.url;
+    final nodeUrl = mediaFile.directory.servingNode.url;
 
     // Local playback side-loads the mirrored SRT files; online the server's.
     final sideloadable = SubtitleStreams.sideloadable(streams);

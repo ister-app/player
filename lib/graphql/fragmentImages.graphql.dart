@@ -286,7 +286,7 @@ const fragmentDefinitionfragmentImages = FragmentDefinitionNode(
         selectionSet: SelectionSetNode(
           selections: [
             FieldNode(
-              name: NameNode(value: 'node'),
+              name: NameNode(value: 'servingNode'),
               alias: null,
               arguments: [],
               directives: [],
@@ -335,31 +335,31 @@ const documentNodeFragmentfragmentImages = DocumentNode(
 
 class Fragment$fragmentImages$directory {
   Fragment$fragmentImages$directory({
-    required this.node,
+    required this.servingNode,
     this.$__typename = 'Directory',
   });
 
   factory Fragment$fragmentImages$directory.fromJson(
     Map<String, dynamic> json,
   ) {
-    final l$node = json['node'];
+    final l$servingNode = json['servingNode'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentImages$directory(
-      node: Fragment$fragmentImages$directory$node.fromJson(
-        (l$node as Map<String, dynamic>),
+      servingNode: Fragment$fragmentImages$directory$servingNode.fromJson(
+        (l$servingNode as Map<String, dynamic>),
       ),
       $__typename: (l$$__typename as String),
     );
   }
 
-  final Fragment$fragmentImages$directory$node node;
+  final Fragment$fragmentImages$directory$servingNode servingNode;
 
   final String $__typename;
 
   Map<String, dynamic> toJson() {
     final _resultData = <String, dynamic>{};
-    final l$node = node;
-    _resultData['node'] = l$node.toJson();
+    final l$servingNode = servingNode;
+    _resultData['servingNode'] = l$servingNode.toJson();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -367,9 +367,9 @@ class Fragment$fragmentImages$directory {
 
   @override
   int get hashCode {
-    final l$node = node;
+    final l$servingNode = servingNode;
     final l$$__typename = $__typename;
-    return Object.hashAll([l$node, l$$__typename]);
+    return Object.hashAll([l$servingNode, l$$__typename]);
   }
 
   @override
@@ -381,9 +381,9 @@ class Fragment$fragmentImages$directory {
         runtimeType != other.runtimeType) {
       return false;
     }
-    final l$node = node;
-    final lOther$node = other.node;
-    if (l$node != lOther$node) {
+    final l$servingNode = servingNode;
+    final lOther$servingNode = other.servingNode;
+    if (l$servingNode != lOther$servingNode) {
       return false;
     }
     final l$$__typename = $__typename;
@@ -411,10 +411,10 @@ abstract class CopyWith$Fragment$fragmentImages$directory<TRes> {
       _CopyWithStubImpl$Fragment$fragmentImages$directory;
 
   TRes call({
-    Fragment$fragmentImages$directory$node? node,
+    Fragment$fragmentImages$directory$servingNode? servingNode,
     String? $__typename,
   });
-  CopyWith$Fragment$fragmentImages$directory$node<TRes> get node;
+  CopyWith$Fragment$fragmentImages$directory$servingNode<TRes> get servingNode;
 }
 
 class _CopyWithImpl$Fragment$fragmentImages$directory<TRes>
@@ -427,23 +427,25 @@ class _CopyWithImpl$Fragment$fragmentImages$directory<TRes>
 
   static const _undefined = <dynamic, dynamic>{};
 
-  TRes call({Object? node = _undefined, Object? $__typename = _undefined}) =>
-      _then(
-        Fragment$fragmentImages$directory(
-          node: node == _undefined || node == null
-              ? _instance.node
-              : (node as Fragment$fragmentImages$directory$node),
-          $__typename: $__typename == _undefined || $__typename == null
-              ? _instance.$__typename
-              : ($__typename as String),
-        ),
-      );
+  TRes call({
+    Object? servingNode = _undefined,
+    Object? $__typename = _undefined,
+  }) => _then(
+    Fragment$fragmentImages$directory(
+      servingNode: servingNode == _undefined || servingNode == null
+          ? _instance.servingNode
+          : (servingNode as Fragment$fragmentImages$directory$servingNode),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 
-  CopyWith$Fragment$fragmentImages$directory$node<TRes> get node {
-    final local$node = _instance.node;
-    return CopyWith$Fragment$fragmentImages$directory$node(
-      local$node,
-      (e) => call(node: e),
+  CopyWith$Fragment$fragmentImages$directory$servingNode<TRes> get servingNode {
+    final local$servingNode = _instance.servingNode;
+    return CopyWith$Fragment$fragmentImages$directory$servingNode(
+      local$servingNode,
+      (e) => call(servingNode: e),
     );
   }
 }
@@ -454,25 +456,28 @@ class _CopyWithStubImpl$Fragment$fragmentImages$directory<TRes>
 
   TRes _res;
 
-  call({Fragment$fragmentImages$directory$node? node, String? $__typename}) =>
-      _res;
+  call({
+    Fragment$fragmentImages$directory$servingNode? servingNode,
+    String? $__typename,
+  }) => _res;
 
-  CopyWith$Fragment$fragmentImages$directory$node<TRes> get node =>
-      CopyWith$Fragment$fragmentImages$directory$node.stub(_res);
+  CopyWith$Fragment$fragmentImages$directory$servingNode<TRes>
+  get servingNode =>
+      CopyWith$Fragment$fragmentImages$directory$servingNode.stub(_res);
 }
 
-class Fragment$fragmentImages$directory$node {
-  Fragment$fragmentImages$directory$node({
+class Fragment$fragmentImages$directory$servingNode {
+  Fragment$fragmentImages$directory$servingNode({
     required this.url,
     this.$__typename = 'Node',
   });
 
-  factory Fragment$fragmentImages$directory$node.fromJson(
+  factory Fragment$fragmentImages$directory$servingNode.fromJson(
     Map<String, dynamic> json,
   ) {
     final l$url = json['url'];
     final l$$__typename = json['__typename'];
-    return Fragment$fragmentImages$directory$node(
+    return Fragment$fragmentImages$directory$servingNode(
       url: (l$url as String),
       $__typename: (l$$__typename as String),
     );
@@ -503,7 +508,7 @@ class Fragment$fragmentImages$directory$node {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! Fragment$fragmentImages$directory$node ||
+    if (other is! Fragment$fragmentImages$directory$servingNode ||
         runtimeType != other.runtimeType) {
       return false;
     }
@@ -521,43 +526,44 @@ class Fragment$fragmentImages$directory$node {
   }
 }
 
-extension UtilityExtension$Fragment$fragmentImages$directory$node
-    on Fragment$fragmentImages$directory$node {
-  CopyWith$Fragment$fragmentImages$directory$node<
-    Fragment$fragmentImages$directory$node
+extension UtilityExtension$Fragment$fragmentImages$directory$servingNode
+    on Fragment$fragmentImages$directory$servingNode {
+  CopyWith$Fragment$fragmentImages$directory$servingNode<
+    Fragment$fragmentImages$directory$servingNode
   >
   get copyWith =>
-      CopyWith$Fragment$fragmentImages$directory$node(this, (i) => i);
+      CopyWith$Fragment$fragmentImages$directory$servingNode(this, (i) => i);
 }
 
-abstract class CopyWith$Fragment$fragmentImages$directory$node<TRes> {
-  factory CopyWith$Fragment$fragmentImages$directory$node(
-    Fragment$fragmentImages$directory$node instance,
-    TRes Function(Fragment$fragmentImages$directory$node) then,
-  ) = _CopyWithImpl$Fragment$fragmentImages$directory$node;
+abstract class CopyWith$Fragment$fragmentImages$directory$servingNode<TRes> {
+  factory CopyWith$Fragment$fragmentImages$directory$servingNode(
+    Fragment$fragmentImages$directory$servingNode instance,
+    TRes Function(Fragment$fragmentImages$directory$servingNode) then,
+  ) = _CopyWithImpl$Fragment$fragmentImages$directory$servingNode;
 
-  factory CopyWith$Fragment$fragmentImages$directory$node.stub(TRes res) =
-      _CopyWithStubImpl$Fragment$fragmentImages$directory$node;
+  factory CopyWith$Fragment$fragmentImages$directory$servingNode.stub(
+    TRes res,
+  ) = _CopyWithStubImpl$Fragment$fragmentImages$directory$servingNode;
 
   TRes call({String? url, String? $__typename});
 }
 
-class _CopyWithImpl$Fragment$fragmentImages$directory$node<TRes>
-    implements CopyWith$Fragment$fragmentImages$directory$node<TRes> {
-  _CopyWithImpl$Fragment$fragmentImages$directory$node(
+class _CopyWithImpl$Fragment$fragmentImages$directory$servingNode<TRes>
+    implements CopyWith$Fragment$fragmentImages$directory$servingNode<TRes> {
+  _CopyWithImpl$Fragment$fragmentImages$directory$servingNode(
     this._instance,
     this._then,
   );
 
-  final Fragment$fragmentImages$directory$node _instance;
+  final Fragment$fragmentImages$directory$servingNode _instance;
 
-  final TRes Function(Fragment$fragmentImages$directory$node) _then;
+  final TRes Function(Fragment$fragmentImages$directory$servingNode) _then;
 
   static const _undefined = <dynamic, dynamic>{};
 
   TRes call({Object? url = _undefined, Object? $__typename = _undefined}) =>
       _then(
-        Fragment$fragmentImages$directory$node(
+        Fragment$fragmentImages$directory$servingNode(
           url: url == _undefined || url == null
               ? _instance.url
               : (url as String),
@@ -568,9 +574,9 @@ class _CopyWithImpl$Fragment$fragmentImages$directory$node<TRes>
       );
 }
 
-class _CopyWithStubImpl$Fragment$fragmentImages$directory$node<TRes>
-    implements CopyWith$Fragment$fragmentImages$directory$node<TRes> {
-  _CopyWithStubImpl$Fragment$fragmentImages$directory$node(this._res);
+class _CopyWithStubImpl$Fragment$fragmentImages$directory$servingNode<TRes>
+    implements CopyWith$Fragment$fragmentImages$directory$servingNode<TRes> {
+  _CopyWithStubImpl$Fragment$fragmentImages$directory$servingNode(this._res);
 
   TRes _res;
 

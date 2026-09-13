@@ -498,7 +498,7 @@ const fragmentDefinitionfragmentMediaFiles = FragmentDefinitionNode(
         selectionSet: SelectionSetNode(
           selections: [
             FieldNode(
-              name: NameNode(value: 'node'),
+              name: NameNode(value: 'servingNode'),
               alias: null,
               arguments: [],
               directives: [],
@@ -839,31 +839,31 @@ class _CopyWithStubImpl$Fragment$fragmentMediaFiles$episodes<TRes>
 
 class Fragment$fragmentMediaFiles$directory {
   Fragment$fragmentMediaFiles$directory({
-    required this.node,
+    required this.servingNode,
     this.$__typename = 'Directory',
   });
 
   factory Fragment$fragmentMediaFiles$directory.fromJson(
     Map<String, dynamic> json,
   ) {
-    final l$node = json['node'];
+    final l$servingNode = json['servingNode'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentMediaFiles$directory(
-      node: Fragment$fragmentMediaFiles$directory$node.fromJson(
-        (l$node as Map<String, dynamic>),
+      servingNode: Fragment$fragmentMediaFiles$directory$servingNode.fromJson(
+        (l$servingNode as Map<String, dynamic>),
       ),
       $__typename: (l$$__typename as String),
     );
   }
 
-  final Fragment$fragmentMediaFiles$directory$node node;
+  final Fragment$fragmentMediaFiles$directory$servingNode servingNode;
 
   final String $__typename;
 
   Map<String, dynamic> toJson() {
     final _resultData = <String, dynamic>{};
-    final l$node = node;
-    _resultData['node'] = l$node.toJson();
+    final l$servingNode = servingNode;
+    _resultData['servingNode'] = l$servingNode.toJson();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -871,9 +871,9 @@ class Fragment$fragmentMediaFiles$directory {
 
   @override
   int get hashCode {
-    final l$node = node;
+    final l$servingNode = servingNode;
     final l$$__typename = $__typename;
-    return Object.hashAll([l$node, l$$__typename]);
+    return Object.hashAll([l$servingNode, l$$__typename]);
   }
 
   @override
@@ -885,9 +885,9 @@ class Fragment$fragmentMediaFiles$directory {
         runtimeType != other.runtimeType) {
       return false;
     }
-    final l$node = node;
-    final lOther$node = other.node;
-    if (l$node != lOther$node) {
+    final l$servingNode = servingNode;
+    final lOther$servingNode = other.servingNode;
+    if (l$servingNode != lOther$servingNode) {
       return false;
     }
     final l$$__typename = $__typename;
@@ -918,10 +918,11 @@ abstract class CopyWith$Fragment$fragmentMediaFiles$directory<TRes> {
       _CopyWithStubImpl$Fragment$fragmentMediaFiles$directory;
 
   TRes call({
-    Fragment$fragmentMediaFiles$directory$node? node,
+    Fragment$fragmentMediaFiles$directory$servingNode? servingNode,
     String? $__typename,
   });
-  CopyWith$Fragment$fragmentMediaFiles$directory$node<TRes> get node;
+  CopyWith$Fragment$fragmentMediaFiles$directory$servingNode<TRes>
+  get servingNode;
 }
 
 class _CopyWithImpl$Fragment$fragmentMediaFiles$directory<TRes>
@@ -937,23 +938,26 @@ class _CopyWithImpl$Fragment$fragmentMediaFiles$directory<TRes>
 
   static const _undefined = <dynamic, dynamic>{};
 
-  TRes call({Object? node = _undefined, Object? $__typename = _undefined}) =>
-      _then(
-        Fragment$fragmentMediaFiles$directory(
-          node: node == _undefined || node == null
-              ? _instance.node
-              : (node as Fragment$fragmentMediaFiles$directory$node),
-          $__typename: $__typename == _undefined || $__typename == null
-              ? _instance.$__typename
-              : ($__typename as String),
-        ),
-      );
+  TRes call({
+    Object? servingNode = _undefined,
+    Object? $__typename = _undefined,
+  }) => _then(
+    Fragment$fragmentMediaFiles$directory(
+      servingNode: servingNode == _undefined || servingNode == null
+          ? _instance.servingNode
+          : (servingNode as Fragment$fragmentMediaFiles$directory$servingNode),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 
-  CopyWith$Fragment$fragmentMediaFiles$directory$node<TRes> get node {
-    final local$node = _instance.node;
-    return CopyWith$Fragment$fragmentMediaFiles$directory$node(
-      local$node,
-      (e) => call(node: e),
+  CopyWith$Fragment$fragmentMediaFiles$directory$servingNode<TRes>
+  get servingNode {
+    final local$servingNode = _instance.servingNode;
+    return CopyWith$Fragment$fragmentMediaFiles$directory$servingNode(
+      local$servingNode,
+      (e) => call(servingNode: e),
     );
   }
 }
@@ -965,26 +969,27 @@ class _CopyWithStubImpl$Fragment$fragmentMediaFiles$directory<TRes>
   TRes _res;
 
   call({
-    Fragment$fragmentMediaFiles$directory$node? node,
+    Fragment$fragmentMediaFiles$directory$servingNode? servingNode,
     String? $__typename,
   }) => _res;
 
-  CopyWith$Fragment$fragmentMediaFiles$directory$node<TRes> get node =>
-      CopyWith$Fragment$fragmentMediaFiles$directory$node.stub(_res);
+  CopyWith$Fragment$fragmentMediaFiles$directory$servingNode<TRes>
+  get servingNode =>
+      CopyWith$Fragment$fragmentMediaFiles$directory$servingNode.stub(_res);
 }
 
-class Fragment$fragmentMediaFiles$directory$node {
-  Fragment$fragmentMediaFiles$directory$node({
+class Fragment$fragmentMediaFiles$directory$servingNode {
+  Fragment$fragmentMediaFiles$directory$servingNode({
     required this.url,
     this.$__typename = 'Node',
   });
 
-  factory Fragment$fragmentMediaFiles$directory$node.fromJson(
+  factory Fragment$fragmentMediaFiles$directory$servingNode.fromJson(
     Map<String, dynamic> json,
   ) {
     final l$url = json['url'];
     final l$$__typename = json['__typename'];
-    return Fragment$fragmentMediaFiles$directory$node(
+    return Fragment$fragmentMediaFiles$directory$servingNode(
       url: (l$url as String),
       $__typename: (l$$__typename as String),
     );
@@ -1015,7 +1020,7 @@ class Fragment$fragmentMediaFiles$directory$node {
     if (identical(this, other)) {
       return true;
     }
-    if (other is! Fragment$fragmentMediaFiles$directory$node ||
+    if (other is! Fragment$fragmentMediaFiles$directory$servingNode ||
         runtimeType != other.runtimeType) {
       return false;
     }
@@ -1033,43 +1038,49 @@ class Fragment$fragmentMediaFiles$directory$node {
   }
 }
 
-extension UtilityExtension$Fragment$fragmentMediaFiles$directory$node
-    on Fragment$fragmentMediaFiles$directory$node {
-  CopyWith$Fragment$fragmentMediaFiles$directory$node<
-    Fragment$fragmentMediaFiles$directory$node
+extension UtilityExtension$Fragment$fragmentMediaFiles$directory$servingNode
+    on Fragment$fragmentMediaFiles$directory$servingNode {
+  CopyWith$Fragment$fragmentMediaFiles$directory$servingNode<
+    Fragment$fragmentMediaFiles$directory$servingNode
   >
-  get copyWith =>
-      CopyWith$Fragment$fragmentMediaFiles$directory$node(this, (i) => i);
+  get copyWith => CopyWith$Fragment$fragmentMediaFiles$directory$servingNode(
+    this,
+    (i) => i,
+  );
 }
 
-abstract class CopyWith$Fragment$fragmentMediaFiles$directory$node<TRes> {
-  factory CopyWith$Fragment$fragmentMediaFiles$directory$node(
-    Fragment$fragmentMediaFiles$directory$node instance,
-    TRes Function(Fragment$fragmentMediaFiles$directory$node) then,
-  ) = _CopyWithImpl$Fragment$fragmentMediaFiles$directory$node;
+abstract class CopyWith$Fragment$fragmentMediaFiles$directory$servingNode<
+  TRes
+> {
+  factory CopyWith$Fragment$fragmentMediaFiles$directory$servingNode(
+    Fragment$fragmentMediaFiles$directory$servingNode instance,
+    TRes Function(Fragment$fragmentMediaFiles$directory$servingNode) then,
+  ) = _CopyWithImpl$Fragment$fragmentMediaFiles$directory$servingNode;
 
-  factory CopyWith$Fragment$fragmentMediaFiles$directory$node.stub(TRes res) =
-      _CopyWithStubImpl$Fragment$fragmentMediaFiles$directory$node;
+  factory CopyWith$Fragment$fragmentMediaFiles$directory$servingNode.stub(
+    TRes res,
+  ) = _CopyWithStubImpl$Fragment$fragmentMediaFiles$directory$servingNode;
 
   TRes call({String? url, String? $__typename});
 }
 
-class _CopyWithImpl$Fragment$fragmentMediaFiles$directory$node<TRes>
-    implements CopyWith$Fragment$fragmentMediaFiles$directory$node<TRes> {
-  _CopyWithImpl$Fragment$fragmentMediaFiles$directory$node(
+class _CopyWithImpl$Fragment$fragmentMediaFiles$directory$servingNode<TRes>
+    implements
+        CopyWith$Fragment$fragmentMediaFiles$directory$servingNode<TRes> {
+  _CopyWithImpl$Fragment$fragmentMediaFiles$directory$servingNode(
     this._instance,
     this._then,
   );
 
-  final Fragment$fragmentMediaFiles$directory$node _instance;
+  final Fragment$fragmentMediaFiles$directory$servingNode _instance;
 
-  final TRes Function(Fragment$fragmentMediaFiles$directory$node) _then;
+  final TRes Function(Fragment$fragmentMediaFiles$directory$servingNode) _then;
 
   static const _undefined = <dynamic, dynamic>{};
 
   TRes call({Object? url = _undefined, Object? $__typename = _undefined}) =>
       _then(
-        Fragment$fragmentMediaFiles$directory$node(
+        Fragment$fragmentMediaFiles$directory$servingNode(
           url: url == _undefined || url == null
               ? _instance.url
               : (url as String),
@@ -1080,9 +1091,12 @@ class _CopyWithImpl$Fragment$fragmentMediaFiles$directory$node<TRes>
       );
 }
 
-class _CopyWithStubImpl$Fragment$fragmentMediaFiles$directory$node<TRes>
-    implements CopyWith$Fragment$fragmentMediaFiles$directory$node<TRes> {
-  _CopyWithStubImpl$Fragment$fragmentMediaFiles$directory$node(this._res);
+class _CopyWithStubImpl$Fragment$fragmentMediaFiles$directory$servingNode<TRes>
+    implements
+        CopyWith$Fragment$fragmentMediaFiles$directory$servingNode<TRes> {
+  _CopyWithStubImpl$Fragment$fragmentMediaFiles$directory$servingNode(
+    this._res,
+  );
 
   TRes _res;
 

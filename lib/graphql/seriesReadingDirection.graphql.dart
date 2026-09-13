@@ -339,7 +339,7 @@ const documentNodeQueryseriesReadingDirection = DocumentNode(
                               selectionSet: SelectionSetNode(
                                 selections: [
                                   FieldNode(
-                                    name: NameNode(value: 'node'),
+                                    name: NameNode(value: 'servingNode'),
                                     alias: null,
                                     arguments: [],
                                     directives: [],
@@ -1073,33 +1073,33 @@ class _CopyWithStubImpl$Query$seriesReadingDirection$seriesById$books$epubFiles<
 
 class Query$seriesReadingDirection$seriesById$books$epubFiles$directory {
   Query$seriesReadingDirection$seriesById$books$epubFiles$directory({
-    required this.node,
+    required this.servingNode,
     this.$__typename = 'Directory',
   });
 
   factory Query$seriesReadingDirection$seriesById$books$epubFiles$directory.fromJson(
     Map<String, dynamic> json,
   ) {
-    final l$node = json['node'];
+    final l$servingNode = json['servingNode'];
     final l$$__typename = json['__typename'];
     return Query$seriesReadingDirection$seriesById$books$epubFiles$directory(
-      node:
-          Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node.fromJson(
-            (l$node as Map<String, dynamic>),
+      servingNode:
+          Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode.fromJson(
+            (l$servingNode as Map<String, dynamic>),
           ),
       $__typename: (l$$__typename as String),
     );
   }
 
-  final Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node
-  node;
+  final Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode
+  servingNode;
 
   final String $__typename;
 
   Map<String, dynamic> toJson() {
     final _resultData = <String, dynamic>{};
-    final l$node = node;
-    _resultData['node'] = l$node.toJson();
+    final l$servingNode = servingNode;
+    _resultData['servingNode'] = l$servingNode.toJson();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -1107,9 +1107,9 @@ class Query$seriesReadingDirection$seriesById$books$epubFiles$directory {
 
   @override
   int get hashCode {
-    final l$node = node;
+    final l$servingNode = servingNode;
     final l$$__typename = $__typename;
-    return Object.hashAll([l$node, l$$__typename]);
+    return Object.hashAll([l$servingNode, l$$__typename]);
   }
 
   @override
@@ -1122,9 +1122,9 @@ class Query$seriesReadingDirection$seriesById$books$epubFiles$directory {
         runtimeType != other.runtimeType) {
       return false;
     }
-    final l$node = node;
-    final lOther$node = other.node;
-    if (l$node != lOther$node) {
+    final l$servingNode = servingNode;
+    final lOther$servingNode = other.servingNode;
+    if (l$servingNode != lOther$servingNode) {
       return false;
     }
     final l$$__typename = $__typename;
@@ -1164,14 +1164,14 @@ abstract class CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$
   ) = _CopyWithStubImpl$Query$seriesReadingDirection$seriesById$books$epubFiles$directory;
 
   TRes call({
-    Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node?
-    node,
+    Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode?
+    servingNode,
     String? $__typename,
   });
-  CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node<
+  CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode<
     TRes
   >
-  get node;
+  get servingNode;
 }
 
 class _CopyWithImpl$Query$seriesReadingDirection$seriesById$books$epubFiles$directory<
@@ -1197,28 +1197,28 @@ class _CopyWithImpl$Query$seriesReadingDirection$seriesById$books$epubFiles$dire
   static const _undefined = <dynamic, dynamic>{};
 
   TRes call({
-    Object? node = _undefined,
+    Object? servingNode = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Query$seriesReadingDirection$seriesById$books$epubFiles$directory(
-      node: node == _undefined || node == null
-          ? _instance.node
-          : (node
-                as Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node),
+      servingNode: servingNode == _undefined || servingNode == null
+          ? _instance.servingNode
+          : (servingNode
+                as Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
     ),
   );
 
-  CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node<
+  CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode<
     TRes
   >
-  get node {
-    final local$node = _instance.node;
-    return CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node(
-      local$node,
-      (e) => call(node: e),
+  get servingNode {
+    final local$servingNode = _instance.servingNode;
+    return CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode(
+      local$servingNode,
+      (e) => call(servingNode: e),
     );
   }
 }
@@ -1237,32 +1237,32 @@ class _CopyWithStubImpl$Query$seriesReadingDirection$seriesById$books$epubFiles$
   TRes _res;
 
   call({
-    Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node?
-    node,
+    Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode?
+    servingNode,
     String? $__typename,
   }) => _res;
 
-  CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node<
+  CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode<
     TRes
   >
-  get node =>
-      CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node.stub(
+  get servingNode =>
+      CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode.stub(
         _res,
       );
 }
 
-class Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node {
-  Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node({
+class Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode {
+  Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode({
     required this.url,
     this.$__typename = 'Node',
   });
 
-  factory Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node.fromJson(
+  factory Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode.fromJson(
     Map<String, dynamic> json,
   ) {
     final l$url = json['url'];
     final l$$__typename = json['__typename'];
-    return Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node(
+    return Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode(
       url: (l$url as String),
       $__typename: (l$$__typename as String),
     );
@@ -1294,7 +1294,7 @@ class Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node {
       return true;
     }
     if (other
-            is! Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node ||
+            is! Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode ||
         runtimeType != other.runtimeType) {
       return false;
     }
@@ -1312,80 +1312,80 @@ class Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node {
   }
 }
 
-extension UtilityExtension$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node
-    on Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node {
-  CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node<
-    Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node
+extension UtilityExtension$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode
+    on Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode {
+  CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode<
+    Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode
   >
   get copyWith =>
-      CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node(
+      CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode(
         this,
         (i) => i,
       );
 }
 
-abstract class CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node<
+abstract class CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode<
   TRes
 > {
-  factory CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node(
-    Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node
+  factory CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode(
+    Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode
     instance,
     TRes Function(
-      Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node,
+      Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode,
     )
     then,
-  ) = _CopyWithImpl$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node;
+  ) = _CopyWithImpl$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode;
 
-  factory CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node.stub(
+  factory CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode.stub(
     TRes res,
-  ) = _CopyWithStubImpl$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node;
+  ) = _CopyWithStubImpl$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode;
 
   TRes call({String? url, String? $__typename});
 }
 
-class _CopyWithImpl$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node<
+class _CopyWithImpl$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode<
   TRes
 >
     implements
-        CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node<
+        CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode<
           TRes
         > {
-  _CopyWithImpl$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node(
+  _CopyWithImpl$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode(
     this._instance,
     this._then,
   );
 
-  final Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node
+  final Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode
   _instance;
 
   final TRes Function(
-    Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node,
+    Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode,
   )
   _then;
 
   static const _undefined = <dynamic, dynamic>{};
 
-  TRes call({Object? url = _undefined, Object? $__typename = _undefined}) =>
-      _then(
-        Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node(
-          url: url == _undefined || url == null
-              ? _instance.url
-              : (url as String),
-          $__typename: $__typename == _undefined || $__typename == null
-              ? _instance.$__typename
-              : ($__typename as String),
-        ),
-      );
+  TRes call({
+    Object? url = _undefined,
+    Object? $__typename = _undefined,
+  }) => _then(
+    Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode(
+      url: url == _undefined || url == null ? _instance.url : (url as String),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 }
 
-class _CopyWithStubImpl$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node<
+class _CopyWithStubImpl$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode<
   TRes
 >
     implements
-        CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node<
+        CopyWith$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode<
           TRes
         > {
-  _CopyWithStubImpl$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$node(
+  _CopyWithStubImpl$Query$seriesReadingDirection$seriesById$books$epubFiles$directory$servingNode(
     this._res,
   );
 

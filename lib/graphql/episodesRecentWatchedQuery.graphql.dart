@@ -1143,7 +1143,7 @@ const documentNodeQueryrecentlyWatched = DocumentNode(
                               selectionSet: SelectionSetNode(
                                 selections: [
                                   FieldNode(
-                                    name: NameNode(value: 'node'),
+                                    name: NameNode(value: 'servingNode'),
                                     alias: null,
                                     arguments: [],
                                     directives: [],
@@ -5888,33 +5888,33 @@ class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles<
 
 class Query$recentlyWatched$recentlyWatched$book$epubFiles$directory {
   Query$recentlyWatched$recentlyWatched$book$epubFiles$directory({
-    required this.node,
+    required this.servingNode,
     this.$__typename = 'Directory',
   });
 
   factory Query$recentlyWatched$recentlyWatched$book$epubFiles$directory.fromJson(
     Map<String, dynamic> json,
   ) {
-    final l$node = json['node'];
+    final l$servingNode = json['servingNode'];
     final l$$__typename = json['__typename'];
     return Query$recentlyWatched$recentlyWatched$book$epubFiles$directory(
-      node:
-          Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node.fromJson(
-            (l$node as Map<String, dynamic>),
+      servingNode:
+          Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode.fromJson(
+            (l$servingNode as Map<String, dynamic>),
           ),
       $__typename: (l$$__typename as String),
     );
   }
 
-  final Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node
-  node;
+  final Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode
+  servingNode;
 
   final String $__typename;
 
   Map<String, dynamic> toJson() {
     final _resultData = <String, dynamic>{};
-    final l$node = node;
-    _resultData['node'] = l$node.toJson();
+    final l$servingNode = servingNode;
+    _resultData['servingNode'] = l$servingNode.toJson();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -5922,9 +5922,9 @@ class Query$recentlyWatched$recentlyWatched$book$epubFiles$directory {
 
   @override
   int get hashCode {
-    final l$node = node;
+    final l$servingNode = servingNode;
     final l$$__typename = $__typename;
-    return Object.hashAll([l$node, l$$__typename]);
+    return Object.hashAll([l$servingNode, l$$__typename]);
   }
 
   @override
@@ -5937,9 +5937,9 @@ class Query$recentlyWatched$recentlyWatched$book$epubFiles$directory {
         runtimeType != other.runtimeType) {
       return false;
     }
-    final l$node = node;
-    final lOther$node = other.node;
-    if (l$node != lOther$node) {
+    final l$servingNode = servingNode;
+    final lOther$servingNode = other.servingNode;
+    if (l$servingNode != lOther$servingNode) {
       return false;
     }
     final l$$__typename = $__typename;
@@ -5979,13 +5979,14 @@ abstract class CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$dir
   ) = _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory;
 
   TRes call({
-    Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node? node,
+    Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode?
+    servingNode,
     String? $__typename,
   });
-  CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node<
+  CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode<
     TRes
   >
-  get node;
+  get servingNode;
 }
 
 class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory<
@@ -6011,28 +6012,28 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles$directo
   static const _undefined = <dynamic, dynamic>{};
 
   TRes call({
-    Object? node = _undefined,
+    Object? servingNode = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Query$recentlyWatched$recentlyWatched$book$epubFiles$directory(
-      node: node == _undefined || node == null
-          ? _instance.node
-          : (node
-                as Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node),
+      servingNode: servingNode == _undefined || servingNode == null
+          ? _instance.servingNode
+          : (servingNode
+                as Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
     ),
   );
 
-  CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node<
+  CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode<
     TRes
   >
-  get node {
-    final local$node = _instance.node;
-    return CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node(
-      local$node,
-      (e) => call(node: e),
+  get servingNode {
+    final local$servingNode = _instance.servingNode;
+    return CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode(
+      local$servingNode,
+      (e) => call(servingNode: e),
     );
   }
 }
@@ -6051,31 +6052,32 @@ class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles$dir
   TRes _res;
 
   call({
-    Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node? node,
+    Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode?
+    servingNode,
     String? $__typename,
   }) => _res;
 
-  CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node<
+  CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode<
     TRes
   >
-  get node =>
-      CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node.stub(
+  get servingNode =>
+      CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode.stub(
         _res,
       );
 }
 
-class Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node {
-  Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node({
+class Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode {
+  Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode({
     required this.url,
     this.$__typename = 'Node',
   });
 
-  factory Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node.fromJson(
+  factory Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode.fromJson(
     Map<String, dynamic> json,
   ) {
     final l$url = json['url'];
     final l$$__typename = json['__typename'];
-    return Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node(
+    return Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode(
       url: (l$url as String),
       $__typename: (l$$__typename as String),
     );
@@ -6107,7 +6109,7 @@ class Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node {
       return true;
     }
     if (other
-            is! Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node ||
+            is! Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode ||
         runtimeType != other.runtimeType) {
       return false;
     }
@@ -6125,80 +6127,80 @@ class Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node {
   }
 }
 
-extension UtilityExtension$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node
-    on Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node {
-  CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node<
-    Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node
+extension UtilityExtension$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode
+    on Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode {
+  CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode<
+    Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode
   >
   get copyWith =>
-      CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node(
+      CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode(
         this,
         (i) => i,
       );
 }
 
-abstract class CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node<
+abstract class CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode<
   TRes
 > {
-  factory CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node(
-    Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node
+  factory CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode(
+    Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode
     instance,
     TRes Function(
-      Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node,
+      Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode,
     )
     then,
-  ) = _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node;
+  ) = _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode;
 
-  factory CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node.stub(
+  factory CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode.stub(
     TRes res,
-  ) = _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node;
+  ) = _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode;
 
   TRes call({String? url, String? $__typename});
 }
 
-class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node<
+class _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode<
   TRes
 >
     implements
-        CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node<
+        CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode<
           TRes
         > {
-  _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node(
+  _CopyWithImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode(
     this._instance,
     this._then,
   );
 
-  final Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node
+  final Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode
   _instance;
 
   final TRes Function(
-    Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node,
+    Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode,
   )
   _then;
 
   static const _undefined = <dynamic, dynamic>{};
 
-  TRes call({Object? url = _undefined, Object? $__typename = _undefined}) =>
-      _then(
-        Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node(
-          url: url == _undefined || url == null
-              ? _instance.url
-              : (url as String),
-          $__typename: $__typename == _undefined || $__typename == null
-              ? _instance.$__typename
-              : ($__typename as String),
-        ),
-      );
+  TRes call({
+    Object? url = _undefined,
+    Object? $__typename = _undefined,
+  }) => _then(
+    Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode(
+      url: url == _undefined || url == null ? _instance.url : (url as String),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
 }
 
-class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node<
+class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode<
   TRes
 >
     implements
-        CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node<
+        CopyWith$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode<
           TRes
         > {
-  _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$node(
+  _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched$book$epubFiles$directory$servingNode(
     this._res,
   );
 

@@ -8,7 +8,7 @@ fragment fragmentMediaFiles on MediaFile {
         number
     }
     directory {
-        node {
+        servingNode {
             url
         }
     }

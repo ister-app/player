@@ -52,7 +52,7 @@ class ReaderPage extends StatefulWidget {
   final String bookId;
   final String mediaFileId;
 
-  /// URL of the node that stores the epub file (epubFile.directory.node.url).
+  /// URL of the node that stores the epub file (epubFile.directory.servingNode.url).
   final String? nodeUrl;
   final String? title;
 

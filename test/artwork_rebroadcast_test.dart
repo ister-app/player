@@ -78,7 +78,7 @@ Map<String, dynamic> _image(String id) => {
   'blurHash': null,
   'directory': {
     '__typename': 'Directory',
-    'node': {'__typename': 'Node', 'url': 'http://srv'},
+    'servingNode': {'__typename': 'Node', 'url': 'http://srv'},
   },
 };
 

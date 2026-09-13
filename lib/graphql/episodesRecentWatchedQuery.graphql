@@ -44,7 +44,7 @@ query recentlyWatched($libraryId: ID) {
             metadata { ...fragmentMetadata }
             watchStatus { id watched readingLocation readingProgress }
             progress { ...fragmentBookProgress }
-            epubFiles { id path format mediaOverlays directory { node { url } } }
+            epubFiles { id path format mediaOverlays directory { servingNode { url } } }
         }
         podcastEpisode {
             id

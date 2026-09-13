@@ -22,7 +22,7 @@ Fragment$fragmentMediaFiles _mediaFile(String id) =>
       size: 1,
       durationInMilliseconds: 180000,
       directory: Fragment$fragmentMediaFiles$directory(
-        node: Fragment$fragmentMediaFiles$directory$node(
+        servingNode: Fragment$fragmentMediaFiles$directory$servingNode(
             url: 'http://node.example'),
       ),
     );

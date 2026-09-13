@@ -469,7 +469,7 @@ class DownloadService {
       kind: kind,
       mediaId: mediaId,
       mediaFileId: mf.id,
-      nodeUrl: mf.directory.node.url,
+      nodeUrl: mf.directory.servingNode.url,
       groupId: req.groupId ?? groupId,
       groupTitle: req.groupTitle ?? groupTitle,
       title: display.title,

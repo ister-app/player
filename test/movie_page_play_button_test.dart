@@ -34,7 +34,7 @@ Fragment$fragmentMovie _movie() => Fragment$fragmentMovie(
           size: 1,
           durationInMilliseconds: 5400000,
           directory: Fragment$fragmentMediaFiles$directory(
-            node: Fragment$fragmentMediaFiles$directory$node(
+            servingNode: Fragment$fragmentMediaFiles$directory$servingNode(
                 url: 'http://node.example'),
           ),
         ),

@@ -11,7 +11,7 @@ Fragment$fragmentImages _image(String id, String type, {String? source}) =>
       'source': source,
       'directory': {
         '__typename': 'Directory',
-        'node': {'__typename': 'Node', 'url': 'http://localhost'},
+        'servingNode': {'__typename': 'Node', 'url': 'http://localhost'},
       },
     });
 

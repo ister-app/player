@@ -43,7 +43,7 @@ Map<String, dynamic> _comicEntry() => {
             'mediaOverlays': null,
             'directory': {
               '__typename': 'Directory',
-              'node': {'__typename': 'Node', 'url': 'https://node.example'}
+              'servingNode': {'__typename': 'Node', 'url': 'https://node.example'}
             },
           }
         ],

@@ -8,7 +8,7 @@ Fragment$fragmentImages _image(String id) => Fragment$fragmentImages(
       id: id,
       type: 'COVER',
       directory: Fragment$fragmentImages$directory(
-        node: Fragment$fragmentImages$directory$node(url: 'http://node.example'),
+        servingNode: Fragment$fragmentImages$directory$servingNode(url: 'http://node.example'),
       ),
     );
 

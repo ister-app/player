@@ -150,7 +150,7 @@ void main() {
       size: 1,
       durationInMilliseconds: 2400000,
       directory: Fragment$fragmentMediaFiles$directory(
-        node: Fragment$fragmentMediaFiles$directory$node(url: 'https://node.example'),
+        servingNode: Fragment$fragmentMediaFiles$directory$servingNode(url: 'https://node.example'),
       ),
       episodes: [
         Fragment$fragmentMediaFiles$episodes(id: 'e6', number: 6),

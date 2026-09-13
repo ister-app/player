@@ -15,7 +15,7 @@ Map<String, dynamic> _image(String id) => {
       'blurHash': null,
       'directory': {
         '__typename': 'Directory',
-        'node': {'__typename': 'Node', 'url': 'https://node.example'},
+        'servingNode': {'__typename': 'Node', 'url': 'https://node.example'},
       },
     };
 
@@ -27,7 +27,7 @@ Map<String, dynamic> _mediaFile(int durationMs) => {
       'size': 1,
       'directory': {
         '__typename': 'Directory',
-        'node': {'__typename': 'Node', 'url': 'https://node.example'},
+        'servingNode': {'__typename': 'Node', 'url': 'https://node.example'},
       },
       'mediaFileStreams': null,
     };

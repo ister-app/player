@@ -111,7 +111,7 @@ MockClient _fakeGraphQL({
                       'format': 'CBZ',
                       'directory': {
                         '__typename': 'Directory',
-                        'node': {
+                        'servingNode': {
                           '__typename': 'Node',
                           'url': 'https://node.example'
                         }
@@ -132,7 +132,7 @@ MockClient _fakeGraphQL({
                         'format': 'CBZ',
                         'directory': {
                           '__typename': 'Directory',
-                          'node': {
+                          'servingNode': {
                             '__typename': 'Node',
                             'url': 'https://node.example'
                           }

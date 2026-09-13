@@ -31,7 +31,7 @@ Fragment$fragmentEpisode _episode(String id) => Fragment$fragmentEpisode(
           size: 1,
           durationInMilliseconds: 2400000,
           directory: Fragment$fragmentMediaFiles$directory(
-            node: Fragment$fragmentMediaFiles$directory$node(
+            servingNode: Fragment$fragmentMediaFiles$directory$servingNode(
                 url: 'http://node.example'),
           ),
         ),

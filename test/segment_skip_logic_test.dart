@@ -19,7 +19,7 @@ Fragment$fragmentMediaFiles _file({
           (i) => Fragment$fragmentMediaFiles$episodes(
               id: 'ep-$i', number: i + 1)),
       directory: Fragment$fragmentMediaFiles$directory(
-          node: Fragment$fragmentMediaFiles$directory$node(
+          servingNode: Fragment$fragmentMediaFiles$directory$servingNode(
               url: 'http://node.test')),
       segments: segments,
     );

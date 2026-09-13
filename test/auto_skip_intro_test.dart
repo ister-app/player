@@ -27,7 +27,7 @@ Fragment$fragmentEpisode _episodeWithSegments() => Fragment$fragmentEpisode(
           durationInMilliseconds: 2400000,
           episodes: const [],
           directory: Fragment$fragmentMediaFiles$directory(
-              node: Fragment$fragmentMediaFiles$directory$node(
+              servingNode: Fragment$fragmentMediaFiles$directory$servingNode(
                   url: 'http://node.test')),
           segments: [
             Fragment$fragmentMediaFiles$segments(

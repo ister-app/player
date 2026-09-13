@@ -5,7 +5,7 @@ query seriesById($id: ID) {
             ...fragmentBook
             epubFiles {
                 id path format pageCount mediaOverlays
-                directory { node { url } }
+                directory { servingNode { url } }
             }
             watchStatus { id watched readingLocation readingProgress }
         }

@@ -219,7 +219,7 @@ class _BookPageState extends State<BookPage> {
     await context.router.push(ReaderRoute(
       bookId: widget.bookId,
       mediaFileId: epubFile.id,
-      nodeUrl: epubFile.directory.node.url,
+      nodeUrl: epubFile.directory.servingNode.url,
       title: _book?.title,
       chapter: chapterIndex >= 0 ? chapterIndex : null,
       readAloud: readAloud,
@@ -236,7 +236,7 @@ class _BookPageState extends State<BookPage> {
     await context.router.push(ComicReaderRoute(
       bookId: widget.bookId,
       mediaFileId: comicFile.id,
-      nodeUrl: comicFile.directory.node.url,
+      nodeUrl: comicFile.directory.servingNode.url,
       title: _book?.title,
       seriesId: _book?.series?.id,
     ));
@@ -611,7 +611,7 @@ class _BookPageState extends State<BookPage> {
                 DownloadRequest.book(
                   bookId: book.id,
                   mediaFileId: f.id,
-                  nodeUrl: f.directory.node.url,
+                  nodeUrl: f.directory.servingNode.url,
                   title: book.title,
                   format: format,
                   author: book.author?.name,

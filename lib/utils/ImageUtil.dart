@@ -74,7 +74,7 @@ class ImageUtil {
 
   static String? buildUrl(Fragment$fragmentImages? image, {String? token}) {
     if (image == null) return null;
-    final base = '${image.directory.node.url}/images/${image.id}/download';
+    final base = '${image.directory.servingNode.url}/images/${image.id}/download';
     return token != null ? '$base?token=$token' : base;
   }
 
@@ -104,7 +104,7 @@ class ImageUtil {
 
   static String? buildMediaFileUrl(Fragment$fragmentMediaFiles? mediaFile, {String? token, bool direct = true, bool transcode = true}) {
     if (mediaFile == null) return null;
-    return buildMasterUrl(mediaFile.directory.node.url, mediaFile.id,
+    return buildMasterUrl(mediaFile.directory.servingNode.url, mediaFile.id,
         token: token, direct: direct, transcode: transcode);
   }
 

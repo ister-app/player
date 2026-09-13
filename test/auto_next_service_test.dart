@@ -62,7 +62,7 @@ Map<String, dynamic> _episode(int n, {bool watched = false, int progress = 0}) =
           size: 1,
           durationInMilliseconds: 1200000,
           directory: Fragment$fragmentMediaFiles$directory(
-            node: Fragment$fragmentMediaFiles$directory$node(
+            servingNode: Fragment$fragmentMediaFiles$directory$servingNode(
                 url: 'https://node.example'),
           ),
           mediaFileStreams: [
