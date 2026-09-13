@@ -1,5 +1,27 @@
 # Changelog
 
+## player v2.8.1
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.8.1` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Other
+
+- build: bump Flutter to 3.47.4 and upgrade dependencies ([`fb11282`](https://github.com/ister-app/player/commit/fb11282))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.8.1
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.8.0...v2.8.1
+
 ## player v2.8.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
