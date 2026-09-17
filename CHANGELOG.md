@@ -1,5 +1,32 @@
 # Changelog
 
+## player v2.9.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.9.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat: stream every directory from Directory.servingNode ([`8c1c185`](https://github.com/ister-app/player/commit/8c1c185))
+
+### Other
+
+- build: upgrade dependencies and pin the e2e at chart v1.2.2 / server 4.0.0 ([`47a0679`](https://github.com/ister-app/player/commit/47a0679))
+- ci: run the e2e against server 3.5.3-snapshot (Directory.servingNode) ([`9a0e359`](https://github.com/ister-app/player/commit/9a0e359))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.9.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.8.1...v2.9.0
+
 ## player v2.8.1
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
