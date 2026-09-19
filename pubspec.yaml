@@ -33,7 +33,8 @@ dependencies:
   cached_network_image_ce: ^4.6.3
   visibility_detector: ^0.4.0
   audio_service: ^0.18.18
-  audio_service_mpris: ^0.2.0
+  audio_service_mpris: ^1.0.0-beta.2
+  audio_service_platform_interface: ^0.1.3 # for the MPRIS lifecycle call in mpris_linux.dart
   audio_service_win: ^0.0.3 # SMTC on Windows, what audio_service_mpris is on Linux
   audio_session: ^0.2.2
   rxdart: ^0.28.0

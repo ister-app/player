@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'utils/url_strategy_stub.dart'
     if (dart.library.html) 'utils/url_strategy_web.dart';
+import 'utils/mpris_stub.dart' if (dart.library.io) 'utils/mpris_linux.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -114,6 +115,10 @@ Future<void> main() async {
   // Necessary initialization for package:media_kit.
   MediaKit.ensureInitialized();
 
+  // Linux media controls (MPRIS). Must run before AudioService.init, which
+  // configures the platform side.
+  configureMpris();
+
   // store this in a singleton
   await AudioService.init(
     builder: () => MediaPlayerHandler.instance,
@@ -139,6 +144,8 @@ Future<void> main() async {
       },
     ),
   );
+
+  await hideMprisUntilPlayback();
 
   // Resume queued downloads and make completed ones playable (no-op on web).
   unawaited(DownloadForegroundService.install());

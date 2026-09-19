@@ -2940,6 +2940,18 @@ class MediaPlayerHandler extends BaseAudioHandler
     // state so audio_service drops the notification instead of leaving a dead
     // one behind.
     if (playQueue == null && mediaItem.valueOrNull == null) {
+      // Only once. The player keeps emitting after the teardown (mpv reports
+      // playing=false, buffering=false, position=0 well after stop()), and
+      // every one of those would republish this state — which the platform
+      // sides read as a *new* state: audio_service maps it to Paused and only
+      // runs stopService() on the transition *into* idle, so on Linux (MPRIS)
+      // the status flipped Stopped → Paused again and the media notification
+      // stayed up with the stopped item in it.
+      final current = playbackState.value;
+      if (current.processingState == AudioProcessingState.idle &&
+          !current.playing) {
+        return;
+      }
       playbackState.add(playbackState.value.copyWith(
         controls: const [],
         systemActions: const {},
