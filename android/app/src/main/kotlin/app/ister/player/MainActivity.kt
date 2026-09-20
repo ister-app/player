@@ -1,5 +1,6 @@
 package app.ister.player
 
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -8,8 +9,11 @@ import io.flutter.plugin.common.MethodChannel
 // Extends AudioServiceActivity (not FlutterActivity): audio_service needs its
 // activity to share the Flutter engine with the background audio task.
 class MainActivity : AudioServiceActivity() {
+    private var uploadSource: UploadSourceChannel? = null
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        uploadSource = UploadSourceChannel(this, flutterEngine.dartExecutor.binaryMessenger)
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "app.ister.player/orientation",
@@ -30,5 +34,12 @@ class MainActivity : AudioServiceActivity() {
                 else -> result.notImplemented()
             }
         }
+    }
+
+    // The folder picker of the admin upload answers here; everything else is the plugins'.
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (uploadSource?.onActivityResult(requestCode, resultCode, data) == true) return
+        super.onActivityResult(requestCode, resultCode, data)
     }
 }
