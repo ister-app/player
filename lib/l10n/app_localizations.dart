@@ -4561,6 +4561,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Version: {label}'**
   String videoVersionChip(String label);
+
+  /// Snackbar when a picked version is another cut than the one the resume position was recorded in
+  ///
+  /// In en, this message translates to:
+  /// **'This version has a different length, so it starts from the beginning.'**
+  String get videoVersionOtherCutRestart;
 }
 
 class _AppLocalizationsDelegate

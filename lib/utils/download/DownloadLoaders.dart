@@ -175,7 +175,10 @@ class DownloadLoaders {
   /// season; without it just "Episode 3".
   static DownloadRequest episodeRequest(
       Map<String, dynamic> episodeJson, String episodeId, int number,
-      {String? groupTitle, int? seasonNumber, bool autoNext = false}) {
+      {String? groupTitle,
+      int? seasonNumber,
+      bool autoNext = false,
+      String? mediaFileId}) {
     final item = QueueItemFactory.fromJsonParts(
         kind: DownloadKind.episode, mediaId: episodeId, json: episodeJson);
     final loc = IsterMediaService.loc;
@@ -189,6 +192,7 @@ class DownloadLoaders {
           : loc.seasonEpisodeLabel(seasonNumber, number),
       sortKey: (seasonNumber ?? 0) * 1000 + number,
       autoNext: autoNext,
+      mediaFileId: mediaFileId,
     );
   }
 

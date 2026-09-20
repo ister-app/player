@@ -943,10 +943,12 @@ class Input$StreamSettingsInput {
     required bool direct,
     required bool transcode,
     Enum$SubtitleFormat? subtitleFormat,
+    String? mediaFileId,
   }) => Input$StreamSettingsInput._({
     r'direct': direct,
     r'transcode': transcode,
     if (subtitleFormat != null) r'subtitleFormat': subtitleFormat,
+    if (mediaFileId != null) r'mediaFileId': mediaFileId,
   });
 
   Input$StreamSettingsInput._(this._$data);
@@ -963,6 +965,10 @@ class Input$StreamSettingsInput {
           ? null
           : fromJson$Enum$SubtitleFormat((l$subtitleFormat as String));
     }
+    if (data.containsKey('mediaFileId')) {
+      final l$mediaFileId = data['mediaFileId'];
+      result$data['mediaFileId'] = (l$mediaFileId as String?);
+    }
     return Input$StreamSettingsInput._(result$data);
   }
 
@@ -975,6 +981,8 @@ class Input$StreamSettingsInput {
   Enum$SubtitleFormat? get subtitleFormat =>
       (_$data['subtitleFormat'] as Enum$SubtitleFormat?);
 
+  String? get mediaFileId => (_$data['mediaFileId'] as String?);
+
   Map<String, dynamic> toJson() {
     final result$data = <String, dynamic>{};
     final l$direct = direct;
@@ -986,6 +994,10 @@ class Input$StreamSettingsInput {
       result$data['subtitleFormat'] = l$subtitleFormat == null
           ? null
           : toJson$Enum$SubtitleFormat(l$subtitleFormat);
+    }
+    if (_$data.containsKey('mediaFileId')) {
+      final l$mediaFileId = mediaFileId;
+      result$data['mediaFileId'] = l$mediaFileId;
     }
     return result$data;
   }
@@ -1021,6 +1033,15 @@ class Input$StreamSettingsInput {
     if (l$subtitleFormat != lOther$subtitleFormat) {
       return false;
     }
+    final l$mediaFileId = mediaFileId;
+    final lOther$mediaFileId = other.mediaFileId;
+    if (_$data.containsKey('mediaFileId') !=
+        other._$data.containsKey('mediaFileId')) {
+      return false;
+    }
+    if (l$mediaFileId != lOther$mediaFileId) {
+      return false;
+    }
     return true;
   }
 
@@ -1029,10 +1050,12 @@ class Input$StreamSettingsInput {
     final l$direct = direct;
     final l$transcode = transcode;
     final l$subtitleFormat = subtitleFormat;
+    final l$mediaFileId = mediaFileId;
     return Object.hashAll([
       l$direct,
       l$transcode,
       _$data.containsKey('subtitleFormat') ? l$subtitleFormat : const {},
+      _$data.containsKey('mediaFileId') ? l$mediaFileId : const {},
     ]);
   }
 }
@@ -1050,6 +1073,7 @@ abstract class CopyWith$Input$StreamSettingsInput<TRes> {
     bool? direct,
     bool? transcode,
     Enum$SubtitleFormat? subtitleFormat,
+    String? mediaFileId,
   });
 }
 
@@ -1067,6 +1091,7 @@ class _CopyWithImpl$Input$StreamSettingsInput<TRes>
     Object? direct = _undefined,
     Object? transcode = _undefined,
     Object? subtitleFormat = _undefined,
+    Object? mediaFileId = _undefined,
   }) => _then(
     Input$StreamSettingsInput._({
       ..._instance._$data,
@@ -1075,6 +1100,7 @@ class _CopyWithImpl$Input$StreamSettingsInput<TRes>
         'transcode': (transcode as bool),
       if (subtitleFormat != _undefined)
         'subtitleFormat': (subtitleFormat as Enum$SubtitleFormat?),
+      if (mediaFileId != _undefined) 'mediaFileId': (mediaFileId as String?),
     }),
   );
 }
@@ -1085,8 +1111,12 @@ class _CopyWithStubImpl$Input$StreamSettingsInput<TRes>
 
   TRes _res;
 
-  call({bool? direct, bool? transcode, Enum$SubtitleFormat? subtitleFormat}) =>
-      _res;
+  call({
+    bool? direct,
+    bool? transcode,
+    Enum$SubtitleFormat? subtitleFormat,
+    String? mediaFileId,
+  }) => _res;
 }
 
 class Input$UserSettingsInput {

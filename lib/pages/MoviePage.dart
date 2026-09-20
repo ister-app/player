@@ -119,6 +119,16 @@ class _MoviePageState extends State<MoviePage> {
 
   void _onPlay() => setState(() => _playRequested = true);
 
+  /// The version a download of this movie mirrors: the one that plays, else
+  /// the page's pick, else (null) the default.
+  String? get _versionForDownload {
+    final handler = MediaPlayerHandler.instance;
+    return handler.isCurrentVideo(
+            movieId: widget.movieId, serverName: widget.serverName)
+        ? handler.currentMediaFileId.value
+        : _pickedFileId;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Query(
@@ -303,7 +313,9 @@ class _MoviePageState extends State<MoviePage> {
                                 item: QueueItemFactory.fromJsonParts(
                                     kind: DownloadKind.movie,
                                     mediaId: movie.id,
-                                    json: movie.toJson())),
+                                    json: movie.toJson()),
+                                // The version the chip shows.
+                                mediaFileId: _versionForDownload),
                           ],
                         ),
                       ),

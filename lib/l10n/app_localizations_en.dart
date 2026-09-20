@@ -2725,4 +2725,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String videoVersionChip(String label) {
     return 'Version: $label';
   }
+
+  @override
+  String get videoVersionOtherCutRestart =>
+      'This version has a different length, so it starts from the beginning.';
 }

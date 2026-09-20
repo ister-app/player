@@ -861,5 +861,6 @@
   "videoVersionFromStart": "Vanaf het begin",
   "videoVersionSameTime": "Zelfde tijdstip",
   "videoVersionAuto": "Automatisch",
-  "videoVersionChip": "Versie: {label}"
+  "videoVersionChip": "Versie: {label}",
+  "videoVersionOtherCutRestart": "Deze versie heeft een andere lengte en begint daarom bij het begin."
 }

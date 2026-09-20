@@ -87,6 +87,7 @@ fragment fragmentPlaybackSession on PlaybackSession {
     mediaId
     title
     durationInMilliseconds
+    mediaFileId
     artworkImageId
     progressInMilliseconds
     playState

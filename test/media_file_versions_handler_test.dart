@@ -18,12 +18,15 @@ const _server = 'test-server';
 /// One movie, two files: each with its *own* stream ids, crop and size — what
 /// the server's per-file analysis produces.
 Fragment$fragmentMediaFiles _file(String id,
-        {required int width, required int height, required double size}) =>
+        {required int width,
+        required int height,
+        required double size,
+        int durationMs = 5400000}) =>
     Fragment$fragmentMediaFiles(
       id: id,
       path: '/movies/The Movie (2020)/$id.mkv',
       size: size,
-      durationInMilliseconds: 5400000,
+      durationInMilliseconds: durationMs,
       directory: Fragment$fragmentMediaFiles$directory(
         servingNode: Fragment$fragmentMediaFiles$directory$servingNode(
             url: 'http://node.example'),
@@ -72,6 +75,36 @@ void main() {
           (call) async => null);
   MediaKit.ensureInitialized();
   final handler = MediaPlayerHandler.instance;
+  final updateVariables = <Map<String, dynamic>>[];
+  // The file the server-side queue says it was last played with.
+  String? queueFileId;
+  var movie = _movie();
+
+  Map<String, dynamic> queueJson() => {
+        '__typename': 'PlayQueue',
+        'id': 'pq-1',
+        'currentItemId': 'item-1',
+        'currentMediaFileId': queueFileId,
+        'progressInMilliseconds': 0,
+        'shuffle': false,
+        'sourceType': 'MOVIE',
+        'sourceExhausted': true,
+        'controlScopeOverride': null,
+        'controlAllowedUserIds': <dynamic>[],
+        'playQueueItems': [
+          {
+            '__typename': 'PlayQueueItem',
+            'id': 'item-1',
+            'position': 1.0,
+            'accessible': true,
+            'episode': null,
+            'movie': movie.toJson(),
+            'track': null,
+            'chapter': null,
+            'podcastEpisode': null,
+          }
+        ],
+      };
 
   GraphQLClient client() => GraphQLClient(
         link: HttpLink('https://api.example/graphql',
@@ -88,34 +121,19 @@ void main() {
                     200,
                     headers: {'content-type': 'application/json'});
               }
+              final body = json.decode(request.body) as Map;
               if (query.contains('createPlayQueue')) {
-                return _json({
-                  '__typename': 'Mutation',
-                  'createPlayQueue': {
-                    '__typename': 'PlayQueue',
-                    'id': 'pq-1',
-                    'currentItemId': 'item-1',
-                    'progressInMilliseconds': 0,
-                    'shuffle': false,
-                    'sourceType': 'MOVIE',
-                    'sourceExhausted': true,
-                    'controlScopeOverride': null,
-                    'controlAllowedUserIds': <dynamic>[],
-                    'playQueueItems': [
-                      {
-                        '__typename': 'PlayQueueItem',
-                        'id': 'item-1',
-                        'position': 1.0,
-                        'accessible': true,
-                        'episode': null,
-                        'movie': _movie().toJson(),
-                        'track': null,
-                        'chapter': null,
-                        'podcastEpisode': null,
-                      }
-                    ],
-                  },
-                });
+                return _json(
+                    {'__typename': 'Mutation', 'createPlayQueue': queueJson()});
+              }
+              if (query.contains('getPlayQueue')) {
+                return _json({'__typename': 'Query', 'getPlayQueue': queueJson()});
+              }
+              if (query.contains('updatePlayQueue')) {
+                updateVariables
+                    .add((body['variables'] as Map).cast<String, dynamic>());
+                return _json(
+                    {'__typename': 'Mutation', 'updatePlayQueue': queueJson()});
               }
               return _json({'__typename': 'Mutation', 'updatePlayQueue': null});
             })),
@@ -127,6 +145,9 @@ void main() {
         InMemorySharedPreferencesAsync.empty();
     ClientManager.clients.clear();
     ClientManager.testClientBuilder = (_) => client();
+    updateVariables.clear();
+    queueFileId = null;
+    movie = _movie();
   });
 
   tearDown(() async {
@@ -205,5 +226,63 @@ void main() {
   test('sharesTimelineWithCurrent tells the menu when to ask', () async {
     await handler.startPlayQueueForMovie(client(), null, _movie(), _server);
     expect(handler.sharesTimelineWithCurrent('mf-hd'), isTrue);
+  });
+
+  test('a queue that was last played with a version opens that version — a '
+      'handoff, or resuming on another device', () async {
+    queueFileId = 'mf-hd';
+    await handler.startPlayQueueForMovie(client(), 'pq-1', movie, _server);
+    expect(handler.currentMediaFileId.value, 'mf-hd');
+  });
+
+  test('an explicit pick wins over the queue\'s file', () async {
+    queueFileId = 'mf-hd';
+    await handler.startPlayQueueForMovie(client(), 'pq-1', movie, _server,
+        mediaFileId: 'mf-uhd');
+    expect(handler.currentMediaFileId.value, 'mf-uhd');
+  });
+
+  test('picking another cut than the one the position was recorded in '
+      'starts over instead of resuming blindly', () async {
+    final extended = _file('mf-extended',
+        width: 1920, height: 1080, size: 9e9, durationMs: 7200000);
+    movie = Fragment$fragmentMovie(
+      id: 'movie-1',
+      name: 'The Movie',
+      releaseYear: 2020,
+      mediaFile: [_hd, extended],
+      watchStatus: [
+        Fragment$fragmentMovie$watchStatus(
+            id: 'ws-1',
+            playQueueItemId: 'item-1',
+            progressInMilliseconds: 1800000,
+            watched: false),
+      ],
+    );
+    queueFileId = 'mf-hd';
+
+    // Same file as recorded: resumes.
+    await handler.startPlayQueueForMovie(client(), 'pq-1', movie, _server);
+    expect(handler.currentMediaFileId.value, 'mf-hd');
+    expect(handler.lastStartTimeMs, 1800000);
+
+    await handler.endPlaybackLocally(flushProgress: false);
+    handler.movie = null;
+    await handler.startPlayQueueForMovie(client(), 'pq-1', movie, _server,
+        mediaFileId: 'mf-extended');
+    expect(handler.currentMediaFileId.value, 'mf-extended');
+    expect(handler.lastStartTimeMs, isNull);
+  });
+
+  test('the heartbeat tells the server which version plays', () async {
+    await handler.startPlayQueueForMovie(client(), null, movie, _server);
+    // The switch flushes the old file's position first.
+    await handler.switchMediaFile('mf-hd');
+
+    final reported = [
+      for (final v in updateVariables)
+        (v['streamSettings'] as Map?)?['mediaFileId'],
+    ];
+    expect(reported, contains('mf-uhd'));
   });
 }

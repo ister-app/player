@@ -152,6 +152,16 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
 
   void _onPlay() => setState(() => _playRequested = true);
 
+  /// The version a download of this episode mirrors: the one that plays, else
+  /// the page's pick, else (null) the default.
+  String? get _versionForDownload {
+    final handler = MediaPlayerHandler.instance;
+    return handler.isCurrentVideo(
+            episodeId: widget.episodeId, serverName: widget.serverName)
+        ? handler.currentMediaFileId.value
+        : _pickedFileId;
+  }
+
   /// Scrolls the outer show-overview scroll view (ensureVisible walks every
   /// ancestor scrollable, so it crosses the nested router) until the video
   /// surface is at the top. Post-frame: playback kicks off during build.
@@ -354,7 +364,9 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                                   episode.toJson(), episode.id, episode.number,
                                   groupTitle: info?.name,
                                   seasonNumber:
-                                      info?.seasonNumbers[episode.season?.id]),
+                                      info?.seasonNumbers[episode.season?.id],
+                                  // The version the chip shows.
+                                  mediaFileId: _versionForDownload),
                             ];
                           },
                         ),

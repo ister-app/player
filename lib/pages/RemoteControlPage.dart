@@ -805,20 +805,24 @@ class _RemotePlayerController
   /// episode. The queue items already carry the episode fragment (and thus
   /// the segments), and heartbeat positions are absolute file time — the same
   /// timeline the segments use — so this is pure local math plus a SEEK.
+  /// Segment times are per media file: the session says which one plays.
   @override
   SegmentActions get segmentActions => SegmentOverlayButtons.visibilityFor(
         posMs: positionMs,
         intro: MediaPlayerHandler.segmentBounds(
-            _currentItem?.episode, Enum$MediaSegmentType.INTRO),
+            _currentItem?.episode, Enum$MediaSegmentType.INTRO,
+            mediaFileId: _session?.mediaFileId),
         outro: MediaPlayerHandler.segmentBounds(
-            _currentItem?.episode, Enum$MediaSegmentType.OUTRO),
+            _currentItem?.episode, Enum$MediaSegmentType.OUTRO,
+            mediaFileId: _session?.mediaFileId),
         hasNext: hasNext,
       );
 
   @override
   void skipIntro() {
     final intro = MediaPlayerHandler.segmentBounds(
-        _currentItem?.episode, Enum$MediaSegmentType.INTRO);
+        _currentItem?.episode, Enum$MediaSegmentType.INTRO,
+            mediaFileId: _session?.mediaFileId);
     if (intro == null) return;
     seek(Duration(milliseconds: intro.endMs));
   }

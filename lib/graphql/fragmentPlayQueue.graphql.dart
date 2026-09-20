@@ -14,6 +14,7 @@ class Fragment$fragmentPlayQueue {
   Fragment$fragmentPlayQueue({
     required this.id,
     this.currentItemId,
+    this.currentMediaFileId,
     required this.progressInMilliseconds,
     required this.shuffle,
     this.sourceType,
@@ -27,6 +28,7 @@ class Fragment$fragmentPlayQueue {
   factory Fragment$fragmentPlayQueue.fromJson(Map<String, dynamic> json) {
     final l$id = json['id'];
     final l$currentItemId = json['currentItemId'];
+    final l$currentMediaFileId = json['currentMediaFileId'];
     final l$progressInMilliseconds = json['progressInMilliseconds'];
     final l$shuffle = json['shuffle'];
     final l$sourceType = json['sourceType'];
@@ -38,6 +40,7 @@ class Fragment$fragmentPlayQueue {
     return Fragment$fragmentPlayQueue(
       id: (l$id as String),
       currentItemId: (l$currentItemId as String?),
+      currentMediaFileId: (l$currentMediaFileId as String?),
       progressInMilliseconds: (l$progressInMilliseconds as int),
       shuffle: (l$shuffle as bool),
       sourceType: l$sourceType == null
@@ -67,6 +70,8 @@ class Fragment$fragmentPlayQueue {
 
   final String? currentItemId;
 
+  final String? currentMediaFileId;
+
   final int progressInMilliseconds;
 
   final bool shuffle;
@@ -89,6 +94,8 @@ class Fragment$fragmentPlayQueue {
     _resultData['id'] = l$id;
     final l$currentItemId = currentItemId;
     _resultData['currentItemId'] = l$currentItemId;
+    final l$currentMediaFileId = currentMediaFileId;
+    _resultData['currentMediaFileId'] = l$currentMediaFileId;
     final l$progressInMilliseconds = progressInMilliseconds;
     _resultData['progressInMilliseconds'] = l$progressInMilliseconds;
     final l$shuffle = shuffle;
@@ -120,6 +127,7 @@ class Fragment$fragmentPlayQueue {
   int get hashCode {
     final l$id = id;
     final l$currentItemId = currentItemId;
+    final l$currentMediaFileId = currentMediaFileId;
     final l$progressInMilliseconds = progressInMilliseconds;
     final l$shuffle = shuffle;
     final l$sourceType = sourceType;
@@ -131,6 +139,7 @@ class Fragment$fragmentPlayQueue {
     return Object.hashAll([
       l$id,
       l$currentItemId,
+      l$currentMediaFileId,
       l$progressInMilliseconds,
       l$shuffle,
       l$sourceType,
@@ -161,6 +170,11 @@ class Fragment$fragmentPlayQueue {
     final l$currentItemId = currentItemId;
     final lOther$currentItemId = other.currentItemId;
     if (l$currentItemId != lOther$currentItemId) {
+      return false;
+    }
+    final l$currentMediaFileId = currentMediaFileId;
+    final lOther$currentMediaFileId = other.currentMediaFileId;
+    if (l$currentMediaFileId != lOther$currentMediaFileId) {
       return false;
     }
     final l$progressInMilliseconds = progressInMilliseconds;
@@ -244,6 +258,7 @@ abstract class CopyWith$Fragment$fragmentPlayQueue<TRes> {
   TRes call({
     String? id,
     String? currentItemId,
+    String? currentMediaFileId,
     int? progressInMilliseconds,
     bool? shuffle,
     Enum$PlayQueueSourceType? sourceType,
@@ -278,6 +293,7 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue<TRes>
   TRes call({
     Object? id = _undefined,
     Object? currentItemId = _undefined,
+    Object? currentMediaFileId = _undefined,
     Object? progressInMilliseconds = _undefined,
     Object? shuffle = _undefined,
     Object? sourceType = _undefined,
@@ -292,6 +308,9 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue<TRes>
       currentItemId: currentItemId == _undefined
           ? _instance.currentItemId
           : (currentItemId as String?),
+      currentMediaFileId: currentMediaFileId == _undefined
+          ? _instance.currentMediaFileId
+          : (currentMediaFileId as String?),
       progressInMilliseconds:
           progressInMilliseconds == _undefined || progressInMilliseconds == null
           ? _instance.progressInMilliseconds
@@ -349,6 +368,7 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue<TRes>
   call({
     String? id,
     String? currentItemId,
+    String? currentMediaFileId,
     int? progressInMilliseconds,
     bool? shuffle,
     Enum$PlayQueueSourceType? sourceType,
@@ -379,6 +399,13 @@ const fragmentDefinitionfragmentPlayQueue = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'currentItemId'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'currentMediaFileId'),
         alias: null,
         arguments: [],
         directives: [],

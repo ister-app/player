@@ -2902,5 +2902,9 @@
     "placeholders": {
       "label": {"type": "String"}
     }
+  },
+  "videoVersionOtherCutRestart": "This version has a different length, so it starts from the beginning.",
+  "@videoVersionOtherCutRestart": {
+    "description": "Snackbar when a picked version is another cut than the one the resume position was recorded in"
   }
 }

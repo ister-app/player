@@ -90,6 +90,7 @@ void main() {
               '__typename': 'PlayQueue',
               'id': 'pq-1',
               'currentItemId': 'item-1',
+              'currentMediaFileId': null,
               'progressInMilliseconds': 0,
               'shuffle': false,
               'sourceType': 'MOVIE',

@@ -33,8 +33,10 @@ class DownloadRequest {
     this.sortKey,
     this.videoQuality,
     this.audioQuality,
+    // The version to mirror, for an item with several media files; null
+    // takes the default (QueueItemFactory.mediaFileOf).
+    this.mediaFileId,
   })  : bookId = null,
-        mediaFileId = null,
         nodeUrl = null,
         title = null,
         format = null,
@@ -435,7 +437,7 @@ class DownloadService {
   DownloadEntry? _entryFrom(DownloadRequest req) {
     final item = req.item;
     if (item == null) return _bookEntryFrom(req);
-    final mf = QueueItemFactory.mediaFileOf(item);
+    final mf = QueueItemFactory.mediaFileOf(item, mediaFileId: req.mediaFileId);
     if (mf == null) return null;
     final kind = QueueItemFactory.kindOf(item);
     final mediaId = QueueItemFactory.mediaIdOf(item);

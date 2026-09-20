@@ -88,8 +88,10 @@ Fragment$fragmentPlaybackSession _session({
   Enum$PlayState playState = Enum$PlayState.PLAYING,
   int? anchorPositionMs,
   double? anchorServerTimeMs,
+  String? mediaFileId,
 }) =>
     Fragment$fragmentPlaybackSession(
+      mediaFileId: mediaFileId,
       playQueueId: playQueueId,
       playQueueItemId: playQueueItemId,
       userId: 'owner-1',
@@ -293,6 +295,45 @@ void main() {
 
     expect(handler.currentPlayQueueItem?.id, 'item-2');
     // Following the leader still never reports progress.
+    expect(operations, isNot(contains('updatePlayQueue')));
+  });
+
+  test('a follower opens the version the leader plays, and switches along '
+      'with it', () async {
+    // Two versions of one movie; on its own this device would take the first.
+    final twoVersions = Fragment$fragmentPlayQueue$playQueueItems(
+      accessible: true,
+      id: 'item-1',
+      position: 1,
+      movie: Fragment$fragmentMovie(
+        id: 'movie-1',
+        name: 'The Movie',
+        releaseYear: 2020,
+        mediaFile: [_mediaFile('mf-a'), _mediaFile('mf-b')],
+      ),
+    );
+    final operations = <String>[];
+    useClient(_fakeGraphQL(
+        queue: _queue(items: [twoVersions]).copyWith(currentMediaFileId: 'mf-b'),
+        operations: operations));
+
+    await handler.startFollowingQueue(_server, 'pq-follow');
+    expect(handler.currentMediaFileId.value, 'mf-b');
+
+    // The leader switches version within the same item.
+    await handler.debugApplyFollowNowPlaying(
+        [_session(mediaFileId: 'mf-a', progressInMilliseconds: 42000)]);
+    expect(handler.currentMediaFileId.value, 'mf-a');
+    expect(handler.lastStartTimeMs, 42000);
+
+    // A file this device does not have for the item keeps what plays.
+    await handler.debugApplyFollowNowPlaying(
+        [_session(mediaFileId: 'mf-unknown')]);
+    expect(handler.currentMediaFileId.value, 'mf-a');
+
+    // The follower's own switch is refused, and it still reports nothing.
+    await handler.switchMediaFile('mf-b');
+    expect(handler.currentMediaFileId.value, 'mf-a');
     expect(operations, isNot(contains('updatePlayQueue')));
   });
 

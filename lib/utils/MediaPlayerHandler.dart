@@ -487,6 +487,39 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// retry, the stall watchdog or coming back to the item from re-picking.
   final Map<String, String> _sessionFileChoice = {};
 
+  /// Settles the file and start position once the queue is in: [picked] was
+  /// chosen before the round-trip (the start position of a multi-episode
+  /// slice needs a file), but only the fetched queue says which file it was
+  /// last played with — on another device, or before a handoff.
+  ///
+  /// Without an [explicit] pick that file wins, so resuming continues the
+  /// version the position was recorded in. With one, the pick stands; when
+  /// it is another cut than the queue's file, the recorded position means a
+  /// different scene, so the item starts over instead of resuming blindly.
+  Future<({Fragment$fragmentMediaFiles? file, int? startMs})>
+      _fileForFetchedQueue(
+    String srv,
+    List<Fragment$fragmentMediaFiles>? files, {
+    required Fragment$fragmentMediaFiles? picked,
+    required bool explicit,
+    required int? resumeMs,
+    required int? Function(Fragment$fragmentMediaFiles? file) itemStartMs,
+  }) async {
+    final recordedId = playQueue?.currentMediaFileId;
+    final recorded = recordedId == null
+        ? null
+        : files?.where((f) => f.id == recordedId).firstOrNull;
+    if (recorded == null || picked == null || recorded.id == picked.id) {
+      return (file: picked, startMs: resumeMs);
+    }
+    if (!explicit) return (file: recorded, startMs: resumeMs);
+    if (MediaVersions.sameTimeline(picked, recorded)) {
+      return (file: picked, startMs: resumeMs);
+    }
+    showAppSnackBar(IsterMediaService.loc.videoVersionOtherCutRestart);
+    return (file: picked, startMs: itemStartMs(picked));
+  }
+
   static String? _choiceKeyForEpisode(String? id) =>
       id == null ? null : 'episode:$id';
   static String _choiceKeyForMovie(String id) => 'movie:$id';
@@ -497,9 +530,17 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// is no identity for this: [_restampToken] rewrites it in place.
   int _openGeneration = 0;
 
-  /// The file to open for an item with [files]: the session's pick for
-  /// [choiceKey], else [MediaVersions.pickDefault] with this device's
-  /// downloads and the user's playback settings.
+  /// The file the leader of the followed session plays (its now-playing
+  /// session reports it). A follower opens the same one: two versions of a
+  /// film need not share a timeline, and the leader's position is all a
+  /// follower has to go by.
+  String? _leaderMediaFileId;
+
+  /// The file to open for an item with [files], in order: an explicit
+  /// [preferredId], the session's pick for [choiceKey], the leader's file
+  /// while following, the file the queue was last played with (a handoff, or
+  /// resuming on another device), else [MediaVersions.pickDefault] with this
+  /// device's downloads and the user's playback settings.
   Future<Fragment$fragmentMediaFiles?> _pickMediaFile(
       String srv, List<Fragment$fragmentMediaFiles>? files,
       {String? choiceKey, String? preferredId}) async {
@@ -507,8 +548,12 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (files.length == 1) return files.first;
     return MediaVersions.resolve(
       files,
-      preferredId:
-          preferredId ?? (choiceKey == null ? null : _sessionFileChoice[choiceKey]),
+      // An id that is not one of [files] is ignored, so the leader's or the
+      // queue's file of *another* item can never leak into this one.
+      preferredId: preferredId ??
+          (choiceKey == null ? null : _sessionFileChoice[choiceKey]) ??
+          (_followMode ? _leaderMediaFileId : null) ??
+          playQueue?.currentMediaFileId,
       isLocal: kIsWeb
           ? null
           : (f) => DownloadService.instance.localMasterFor(srv, f.id) != null,
@@ -671,6 +716,14 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   Future<void>? _versionSwitch;
 
+  /// Whether the leader plays a version of the current item that this device
+  /// has but is not playing. An id this item does not have (no access to that
+  /// library, an older leader) keeps what plays.
+  bool _shouldFollowLeaderFile(String? leaderFileId) =>
+      leaderFileId != null &&
+      leaderFileId != _currentVideoFile?.id &&
+      currentVideoVersions.any((f) => f.id == leaderFileId);
+
   /// Whether switching to [mediaFileId] keeps the position meaningful — the
   /// version menu asks "from the start or at the same time?" when it does not
   /// (another cut of the film).
@@ -693,19 +746,27 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// the language preferences pick the tracks of the new file afresh. Switches
   /// are serialised: a second one waits for the first, so there is never more
   /// than one open in flight (the server has two interactive file slots).
-  Future<void> switchMediaFile(String mediaFileId, {bool fromStart = false}) {
+  Future<void> switchMediaFile(String mediaFileId, {bool fromStart = false}) =>
+      _queueVersionSwitch(mediaFileId, fromStart: fromStart);
+
+  Future<void> _queueVersionSwitch(String mediaFileId,
+      {bool fromStart = false, int? leaderPositionMs}) {
     final previous = _versionSwitch ?? Future<void>.value();
-    final next = previous
-        .catchError((_) {})
-        .then((_) => _switchMediaFile(mediaFileId, fromStart: fromStart));
+    final next = previous.catchError((_) {}).then((_) => _switchMediaFile(
+        mediaFileId,
+        fromStart: fromStart,
+        leaderPositionMs: leaderPositionMs));
     _versionSwitch = next;
     return next;
   }
 
+  /// [leaderPositionMs] marks a switch that follows the leader (absolute file
+  /// time, as the session reports it); the user's own switch is refused while
+  /// following.
   Future<void> _switchMediaFile(String mediaFileId,
-      {required bool fromStart}) async {
+      {required bool fromStart, int? leaderPositionMs}) async {
     // A follower plays what the leader plays.
-    if (_followMode) return;
+    if (_followMode && leaderPositionMs == null) return;
     final srv = serverName;
     final from = _currentVideoFile;
     final target =
@@ -722,11 +783,15 @@ class MediaPlayerHandler extends BaseAudioHandler
     final key = ep != null
         ? _choiceKeyForEpisode(ep.id)
         : (movie != null ? _choiceKeyForMovie(movie!.id) : null);
-    if (key != null) _sessionFileChoice[key] = target.id;
+    if (key != null && leaderPositionMs == null) {
+      _sessionFileChoice[key] = target.id;
+    }
 
     // The old file's last position is only worth recording when it means the
-    // same thing in the new one.
-    if (from != null && MediaVersions.sameTimeline(from, target)) {
+    // same thing in the new one. (A follower never reports progress.)
+    if (leaderPositionMs == null &&
+        from != null &&
+        MediaVersions.sameTimeline(from, target)) {
       await _syncProgress(_player.state.position, force: true);
     }
     final resume = _intendsToPlay;
@@ -738,7 +803,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     await _openMedia(
       serverName: srv,
       mediaFile: target,
-      startTimeInMilliseconds: newBase + offset,
+      startTimeInMilliseconds: leaderPositionMs ?? newBase + offset,
       mediaType: _currentMediaType,
       autoPlay: resume,
     );
@@ -841,10 +906,21 @@ class MediaPlayerHandler extends BaseAudioHandler
       _ensureCommandSubscription();
       currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
+      final open = await _fileForFetchedQueue(
+        newServerName,
+        newEpisode.mediaFile,
+        picked: file,
+        explicit: mediaFileId != null ||
+            _sessionFileChoice
+                .containsKey(_choiceKeyForEpisode(newEpisode.id)),
+        resumeMs: startMs,
+        itemStartMs: (f) =>
+            episodePartBounds(newEpisode, mediaFileId: f?.id)?.startMs,
+      );
       await _openMedia(
         serverName: newServerName,
-        mediaFile: file,
-        startTimeInMilliseconds: startMs,
+        mediaFile: open.file,
+        startTimeInMilliseconds: open.startMs,
       );
     } else {
       await _resumeCurrentItem();
@@ -928,7 +1004,10 @@ class MediaPlayerHandler extends BaseAudioHandler
                 ?.where((p) => p.mediaFile.id == mediaFileId)
                 .firstOrNull
                 ?.mediaFile ??
-            ep.mediaFile?.where((f) => f.id == mediaFileId).firstOrNull;
+            ep.mediaFile?.where((f) => f.id == mediaFileId).firstOrNull ??
+            // An id this episode does not list (an older snapshot of it).
+            ep.mediaFileParts?.firstOrNull?.mediaFile ??
+            ep.mediaFile?.firstOrNull;
     final segments = file?.segments;
     if (segments == null) return null;
     final multiEpisode = (file!.episodes?.length ?? 0) >= 2;
@@ -1067,10 +1146,19 @@ class MediaPlayerHandler extends BaseAudioHandler
       _ensureCommandSubscription();
       currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
+      final open = await _fileForFetchedQueue(
+        newServerName,
+        newMovie.mediaFile,
+        picked: file,
+        explicit: mediaFileId != null ||
+            _sessionFileChoice.containsKey(_choiceKeyForMovie(newMovie.id)),
+        resumeMs: startMs,
+        itemStartMs: (_) => null,
+      );
       await _openMedia(
         serverName: newServerName,
-        mediaFile: file,
-        startTimeInMilliseconds: startMs,
+        mediaFile: open.file,
+        startTimeInMilliseconds: open.startMs,
         mediaType: IsterMediaTypes.movie,
       );
     } else {
@@ -3840,6 +3928,9 @@ class MediaPlayerHandler extends BaseAudioHandler
       direct: directPlay,
       transcode: transcode,
       subtitleFormat: fromJson$Enum$SubtitleFormat(ImageUtil.subtitleFormat),
+      // Which version of the item this is: the server's watched boundary and
+      // session duration, followers and a device taking over all go by it.
+      mediaFileId: currentMediaFile?.id,
     );
   }
 
@@ -4385,6 +4476,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     _followSyncTimer?.cancel();
     _followSyncTimer = null;
     _followAnchor = null;
+    _leaderMediaFileId = null;
     await _resetFollowRate();
     _followNowPlayingSubscription?.dispose();
     _followNowPlayingSubscription = null;
@@ -4533,12 +4625,18 @@ class MediaPlayerHandler extends BaseAudioHandler
             itemId: session.playQueueItemId,
           )
         : null;
+    // Before the item switch below, so its open already picks this file.
+    _leaderMediaFileId = session.mediaFileId;
     _followSyncBusy = true;
     _applyingRemoteSync = true;
     try {
       final itemId = session.playQueueItemId;
       if (itemId != null && itemId != currentPlayQueueItem?.id) {
         await _skipToItemId(itemId);
+      } else if (_shouldFollowLeaderFile(session.mediaFileId)) {
+        // Same item, another version: the leader switched.
+        await _queueVersionSwitch(session.mediaFileId!,
+            leaderPositionMs: session.progressInMilliseconds);
       }
       final leaderPlaying = session.playState == Enum$PlayState.PLAYING;
       if (!ClientManager.usesTestClients) {

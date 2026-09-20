@@ -29,6 +29,7 @@ Map<String, dynamic> _session() => {
       'mediaId': 'track-1',
       'title': 'Zomerhit',
       'durationInMilliseconds': 180000,
+      'mediaFileId': null,
       'artworkImageId': null,
       'progressInMilliseconds': 42000,
       'playState': 'PAUSED',

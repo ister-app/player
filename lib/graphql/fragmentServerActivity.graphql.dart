@@ -2735,6 +2735,7 @@ class Fragment$fragmentPlaybackSession {
     this.mediaId,
     this.title,
     this.durationInMilliseconds,
+    this.mediaFileId,
     this.artworkImageId,
     required this.progressInMilliseconds,
     required this.playState,
@@ -2759,6 +2760,7 @@ class Fragment$fragmentPlaybackSession {
     final l$mediaId = json['mediaId'];
     final l$title = json['title'];
     final l$durationInMilliseconds = json['durationInMilliseconds'];
+    final l$mediaFileId = json['mediaFileId'];
     final l$artworkImageId = json['artworkImageId'];
     final l$progressInMilliseconds = json['progressInMilliseconds'];
     final l$playState = json['playState'];
@@ -2783,6 +2785,7 @@ class Fragment$fragmentPlaybackSession {
       mediaId: (l$mediaId as String?),
       title: (l$title as String?),
       durationInMilliseconds: (l$durationInMilliseconds as int?),
+      mediaFileId: (l$mediaFileId as String?),
       artworkImageId: (l$artworkImageId as String?),
       progressInMilliseconds: (l$progressInMilliseconds as int),
       playState: fromJson$Enum$PlayState((l$playState as String)),
@@ -2816,6 +2819,8 @@ class Fragment$fragmentPlaybackSession {
   final String? title;
 
   final int? durationInMilliseconds;
+
+  final String? mediaFileId;
 
   final String? artworkImageId;
 
@@ -2863,6 +2868,8 @@ class Fragment$fragmentPlaybackSession {
     _resultData['title'] = l$title;
     final l$durationInMilliseconds = durationInMilliseconds;
     _resultData['durationInMilliseconds'] = l$durationInMilliseconds;
+    final l$mediaFileId = mediaFileId;
+    _resultData['mediaFileId'] = l$mediaFileId;
     final l$artworkImageId = artworkImageId;
     _resultData['artworkImageId'] = l$artworkImageId;
     final l$progressInMilliseconds = progressInMilliseconds;
@@ -2904,6 +2911,7 @@ class Fragment$fragmentPlaybackSession {
     final l$mediaId = mediaId;
     final l$title = title;
     final l$durationInMilliseconds = durationInMilliseconds;
+    final l$mediaFileId = mediaFileId;
     final l$artworkImageId = artworkImageId;
     final l$progressInMilliseconds = progressInMilliseconds;
     final l$playState = playState;
@@ -2926,6 +2934,7 @@ class Fragment$fragmentPlaybackSession {
       l$mediaId,
       l$title,
       l$durationInMilliseconds,
+      l$mediaFileId,
       l$artworkImageId,
       l$progressInMilliseconds,
       l$playState,
@@ -2989,6 +2998,11 @@ class Fragment$fragmentPlaybackSession {
     final l$durationInMilliseconds = durationInMilliseconds;
     final lOther$durationInMilliseconds = other.durationInMilliseconds;
     if (l$durationInMilliseconds != lOther$durationInMilliseconds) {
+      return false;
+    }
+    final l$mediaFileId = mediaFileId;
+    final lOther$mediaFileId = other.mediaFileId;
+    if (l$mediaFileId != lOther$mediaFileId) {
       return false;
     }
     final l$artworkImageId = artworkImageId;
@@ -3084,6 +3098,7 @@ abstract class CopyWith$Fragment$fragmentPlaybackSession<TRes> {
     String? mediaId,
     String? title,
     int? durationInMilliseconds,
+    String? mediaFileId,
     String? artworkImageId,
     int? progressInMilliseconds,
     Enum$PlayState? playState,
@@ -3119,6 +3134,7 @@ class _CopyWithImpl$Fragment$fragmentPlaybackSession<TRes>
     Object? mediaId = _undefined,
     Object? title = _undefined,
     Object? durationInMilliseconds = _undefined,
+    Object? mediaFileId = _undefined,
     Object? artworkImageId = _undefined,
     Object? progressInMilliseconds = _undefined,
     Object? playState = _undefined,
@@ -3154,6 +3170,9 @@ class _CopyWithImpl$Fragment$fragmentPlaybackSession<TRes>
       durationInMilliseconds: durationInMilliseconds == _undefined
           ? _instance.durationInMilliseconds
           : (durationInMilliseconds as int?),
+      mediaFileId: mediaFileId == _undefined
+          ? _instance.mediaFileId
+          : (mediaFileId as String?),
       artworkImageId: artworkImageId == _undefined
           ? _instance.artworkImageId
           : (artworkImageId as String?),
@@ -3213,6 +3232,7 @@ class _CopyWithStubImpl$Fragment$fragmentPlaybackSession<TRes>
     String? mediaId,
     String? title,
     int? durationInMilliseconds,
+    String? mediaFileId,
     String? artworkImageId,
     int? progressInMilliseconds,
     Enum$PlayState? playState,
@@ -3291,6 +3311,13 @@ const fragmentDefinitionfragmentPlaybackSession = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'durationInMilliseconds'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'mediaFileId'),
         alias: null,
         arguments: [],
         directives: [],
