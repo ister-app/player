@@ -25,10 +25,4 @@ void main() {
     expect(find.byKey(VideoCoverView.playButtonKey), findsNothing);
   });
 
-  testWidgets('loading shows a spinner instead of the button', (tester) async {
-    await tester.pumpWidget(
-        host(const VideoCoverView(serverName: 'srv', loading: true)));
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    expect(find.byKey(VideoCoverView.playButtonKey), findsNothing);
-  });
 }

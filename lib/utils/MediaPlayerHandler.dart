@@ -60,6 +60,7 @@ import 'ImageUtil.dart';
 import 'MetadataUtil.dart';
 import 'PlayQueueService.dart';
 import 'SleepTimerService.dart';
+import 'VideoLoadState.dart';
 
 class MediaPlayerHandler extends BaseAudioHandler
     with SeekHandler, QueueHandler {
@@ -337,9 +338,41 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// event for the new stream was seen.
   bool _videoLoadStarted = false;
 
-  void _resetVideoStreamReady() {
+  /// What the video surface tells the user while [videoStreamReady] is false:
+  /// which step the start is at, how long it has been going, and — when the
+  /// load failed for good — that it did, with [retryVideoLoad] as the way out.
+  /// Null once the stream plays.
+  final ValueNotifier<VideoLoadState?> videoLoad = ValueNotifier(null);
+
+  /// [restartClock] is false for [_openMedia]'s backstop, which runs at the
+  /// end of a queue switch that already started the wait.
+  void _resetVideoStreamReady({bool restartClock = true}) {
     _videoLoadStarted = false;
     videoStreamReady.value = false;
+    final current = videoLoad.value;
+    if (restartClock || current == null || current.failed) {
+      videoLoad.value = VideoLoadState(
+          phase: VideoLoadPhase.preparing, startedAt: DateTime.now());
+    }
+  }
+
+  void _markVideoStreamReady() {
+    videoStreamReady.value = true;
+    videoLoad.value = null;
+  }
+
+  /// The load is over and nothing took its place: the surface swaps its
+  /// spinner for the failure and a retry button.
+  void _markVideoLoadFailed([String? detail]) {
+    final current = videoLoad.value;
+    videoLoad.value = VideoLoadState(
+      phase: VideoLoadPhase.failed,
+      startedAt: current?.startedAt ?? DateTime.now(),
+      attempt: current?.attempt ?? 0,
+      lastError: detail != null
+          ? VideoLoadState.redact(detail)
+          : current?.lastError,
+    );
   }
 
   /// Whether the stream that was opened at [openPositionMs] plays for real.
@@ -372,7 +405,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       position: _player.state.position,
       openPositionMs: _streamOpenPositionMs,
     )) {
-      videoStreamReady.value = true;
+      _markVideoStreamReady();
     }
   }
 
@@ -519,6 +552,64 @@ class MediaPlayerHandler extends BaseAudioHandler
     String? playQueueId,
     Fragment$fragmentEpisode newEpisode,
     String newServerName,
+  ) =>
+      _guardVideoStart(() =>
+          _startPlayQueue(client, playQueueId, newEpisode, newServerName));
+
+  /// The pages fire a video start without awaiting it, so an exception on the
+  /// way to [_openMedia] (the server unreachable for the play queue, a token
+  /// that cannot be refreshed) used to vanish — leaving the surface's spinner
+  /// turning over nothing. It now ends in the failed state, and the retry
+  /// redoes the queue round-trip instead of resuming a stream that never was.
+  Future<void> _guardVideoStart(Future<void> Function() start) async {
+    try {
+      await start();
+    } catch (e, stackTrace) {
+      LoggerService()
+          .logger
+          .e('Starting video playback failed', error: e, stackTrace: stackTrace);
+      _forceQueueRefresh = true;
+      mediaLoading.value = false;
+      _markVideoLoadFailed('$e');
+    }
+  }
+
+  bool _forceQueueRefresh = false;
+  Future<void> Function()? _retryVideoStart;
+
+  bool _takeForcedQueueRefresh() {
+    final forced = _forceQueueRefresh;
+    _forceQueueRefresh = false;
+    return forced;
+  }
+
+  /// The retry button of a failed video load. Re-opens the stream when there
+  /// is one (at the position it was opened at, with a fresh token), else
+  /// redoes the whole start.
+  Future<void> retryVideoLoad() async {
+    final url = _currentMediaUrl;
+    final srv = serverName;
+    if (_forceQueueRefresh || url == null || srv == null) {
+      await _retryVideoStart?.call();
+      return;
+    }
+    _intendsToPlay = true;
+    _loadRetries = 0;
+    _startHeartbeat();
+    _resetVideoStreamReady();
+    await _openMedia(
+      serverName: srv,
+      mediaUrl: _restampToken(url),
+      startTimeInMilliseconds: _streamOpenPositionMs,
+      mediaType: _currentMediaType,
+    );
+  }
+
+  Future<void> _startPlayQueue(
+    GraphQLClient client,
+    String? playQueueId,
+    Fragment$fragmentEpisode newEpisode,
+    String newServerName,
   ) async {
     // A not-yet-analyzed episode has no media file to open; bail out before
     // touching the queue instead of crashing on mediaFile!.first below.
@@ -533,9 +624,12 @@ class MediaPlayerHandler extends BaseAudioHandler
     _intendsToPlay = true;
     _loadRetries = 0;
     _startHeartbeat();
-    final shouldRefresh = episode == null ||
+    final shouldRefresh = _takeForcedQueueRefresh() ||
+        episode == null ||
         episode!.id != newEpisode.id ||
         serverName != newServerName;
+    _retryVideoStart =
+        () => startPlayQueue(client, playQueueId, newEpisode, newServerName);
 
     episode = newEpisode;
     movie = null;
@@ -713,6 +807,15 @@ class MediaPlayerHandler extends BaseAudioHandler
     String? playQueueId,
     Fragment$fragmentMovie newMovie,
     String newServerName,
+  ) =>
+      _guardVideoStart(() => _startPlayQueueForMovie(
+          client, playQueueId, newMovie, newServerName));
+
+  Future<void> _startPlayQueueForMovie(
+    GraphQLClient client,
+    String? playQueueId,
+    Fragment$fragmentMovie newMovie,
+    String newServerName,
   ) async {
     // Same not-ready rule as startPlayQueue: no media file, nothing to open.
     if (newMovie.mediaFile?.firstOrNull == null) {
@@ -724,9 +827,12 @@ class MediaPlayerHandler extends BaseAudioHandler
     _intendsToPlay = true;
     _loadRetries = 0;
     _startHeartbeat();
-    final shouldRefresh = movie == null ||
+    final shouldRefresh = _takeForcedQueueRefresh() ||
+        movie == null ||
         movie!.id != newMovie.id ||
         serverName != newServerName;
+    _retryVideoStart = () =>
+        startPlayQueueForMovie(client, playQueueId, newMovie, newServerName);
 
     movie = newMovie;
     episode = null;
@@ -1454,9 +1560,15 @@ class MediaPlayerHandler extends BaseAudioHandler
     // *different* stream: the stall watchdog and the seek-before-open-position
     // path re-open the same URL, and the cover must not pop over the video
     // mid-scrub there (the controls' buffering spinner covers those).
-    if (mediaUrl != _currentMediaUrl) _resetVideoStreamReady();
+    if (mediaUrl != _currentMediaUrl) {
+      _resetVideoStreamReady(restartClock: false);
+    }
+    if (!videoStreamReady.value) {
+      videoLoad.value = VideoLoadState.opened(videoLoad.value, DateTime.now(),
+          attempt: _loadRetries);
+    }
     // No mpv under flutter test: nothing would ever report the stream ready.
-    if (ClientManager.usesTestClients) videoStreamReady.value = true;
+    if (ClientManager.usesTestClients) _markVideoStreamReady();
     _currentMediaUrl = mediaUrl;
     lastStartTimeMs = startTimeInMilliseconds;
     _streamOpenPositionMs = startTimeInMilliseconds ?? 0;
@@ -1551,6 +1663,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     } catch (e) {
       mediaLoading.value = false;
       LoggerService().logger.e('Failed to open media: $e');
+      if (!videoStreamReady.value) _markVideoLoadFailed('$e');
     }
   }
 
@@ -3106,6 +3219,11 @@ class MediaPlayerHandler extends BaseAudioHandler
       // loading fine — fatal for a slow cold remux start.
       if (!advanced && !message.contains('Could not open codec')) {
         _loadErrorSeen = true;
+        final load = videoLoad.value;
+        if (load != null && !load.failed) {
+          videoLoad.value =
+              load.copyWith(lastError: VideoLoadState.redact(message));
+        }
         LoggerService()
             .logger
             .w('[LOADSTALL] player error during load window: $message');
@@ -3116,7 +3234,13 @@ class MediaPlayerHandler extends BaseAudioHandler
   void _listenToBuffering() {
     _player.stream.buffering.listen(
       (event) {
-        if (event) _videoLoadStarted = true;
+        if (event) {
+          _videoLoadStarted = true;
+          final load = videoLoad.value;
+          if (load != null && load.phase == VideoLoadPhase.connecting) {
+            videoLoad.value = load.copyWith(phase: VideoLoadPhase.buffering);
+          }
+        }
         _observeStreamReady();
         updatePlaybackState();
       },
@@ -4458,6 +4582,9 @@ class MediaPlayerHandler extends BaseAudioHandler
       if (nextPlayable != -1) {
         await skipToQueueItem(nextPlayable);
       } else {
+        // Nothing takes over: without this the surface kept its spinner over
+        // a stream that was never going to play.
+        _markVideoLoadFailed();
         await suspendPlayback();
       }
     } finally {

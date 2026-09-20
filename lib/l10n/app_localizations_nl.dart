@@ -2476,4 +2476,29 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get nodeNoActivityYet =>
       'Nog geen activiteit van deze node ontvangen.';
+
+  @override
+  String get videoLoadPreparing => 'Afspelen voorbereiden…';
+
+  @override
+  String get videoLoadConnecting => 'Verbinden met de server…';
+
+  @override
+  String get videoLoadBuffering => 'Video laden…';
+
+  @override
+  String get videoLoadSlow =>
+      'Dit duurt langer dan normaal. De server maakt de video mogelijk nog klaar — even geduld.';
+
+  @override
+  String get videoLoadFailedTitle => 'Deze video kon niet worden afgespeeld';
+
+  @override
+  String get videoLoadFailedBody =>
+      'De server heeft de video niet geleverd. Controleer de verbinding en probeer het opnieuw.';
+
+  @override
+  String videoLoadRetrying(int attempt) {
+    return 'Speelt nog niet — nieuwe poging ($attempt)…';
+  }
 }

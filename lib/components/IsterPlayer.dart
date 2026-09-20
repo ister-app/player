@@ -214,8 +214,14 @@ class _IsterVideoControlsState extends State<_IsterVideoControls> {
             // Cover + spinner until the stream plays (same as the controls).
             const VideoLoadingOverlay(),
             const Positioned(top: 8, left: 8, child: WatchingAlongChip()),
-            Center(
+            // The failure, without its retry: the whole surface is the tap
+            // target here, and fullscreen carries the button.
+            const VideoLoadFailedPanel(showRetry: false),
+            // In the corner, clear of the loading status in the centre.
+            Align(
+              alignment: Alignment.bottomRight,
               child: Container(
+                margin: const EdgeInsets.all(12),
                 padding: const EdgeInsets.all(12),
                 decoration: const BoxDecoration(
                   color: Colors.black45,

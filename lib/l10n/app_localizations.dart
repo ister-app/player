@@ -4165,6 +4165,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No activity received from this node yet.'**
   String get nodeNoActivityYet;
+
+  /// Video loading overlay: the play queue is being set up on the server
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing playback…'**
+  String get videoLoadPreparing;
+
+  /// Video loading overlay: the stream was requested, nothing received yet
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting to the server…'**
+  String get videoLoadConnecting;
+
+  /// Video loading overlay: the player is loading the first part of the stream
+  ///
+  /// In en, this message translates to:
+  /// **'Loading video…'**
+  String get videoLoadBuffering;
+
+  /// Video loading overlay: second line once the start has taken a while
+  ///
+  /// In en, this message translates to:
+  /// **'This is taking longer than usual. The server may still be preparing the video — hang on.'**
+  String get videoLoadSlow;
+
+  /// Title of the video surface when loading failed for good
+  ///
+  /// In en, this message translates to:
+  /// **'This video could not be played'**
+  String get videoLoadFailedTitle;
+
+  /// Explanation under the failed-load title
+  ///
+  /// In en, this message translates to:
+  /// **'The server did not deliver the video. Check the connection and try again.'**
+  String get videoLoadFailedBody;
+
+  /// Video loading overlay: the player re-opened a stream that did not start
+  ///
+  /// In en, this message translates to:
+  /// **'Still not playing — trying again (attempt {attempt})…'**
+  String videoLoadRetrying(int attempt);
 }
 
 class _AppLocalizationsDelegate

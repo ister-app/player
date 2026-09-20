@@ -2566,5 +2566,36 @@
   "nodeNoDisks": "This node reports no disks.",
   "nodeIdle": "Nothing is running on this node.",
   "nodeInfoUnavailable": "This node runs an older server version and does not report its details yet.",
-  "nodeNoActivityYet": "No activity received from this node yet."
+  "nodeNoActivityYet": "No activity received from this node yet.",
+  "videoLoadPreparing": "Preparing playback…",
+  "@videoLoadPreparing": {
+    "description": "Video loading overlay: the play queue is being set up on the server"
+  },
+  "videoLoadConnecting": "Connecting to the server…",
+  "@videoLoadConnecting": {
+    "description": "Video loading overlay: the stream was requested, nothing received yet"
+  },
+  "videoLoadBuffering": "Loading video…",
+  "@videoLoadBuffering": {
+    "description": "Video loading overlay: the player is loading the first part of the stream"
+  },
+  "videoLoadSlow": "This is taking longer than usual. The server may still be preparing the video — hang on.",
+  "@videoLoadSlow": {
+    "description": "Video loading overlay: second line once the start has taken a while"
+  },
+  "videoLoadFailedTitle": "This video could not be played",
+  "@videoLoadFailedTitle": {
+    "description": "Title of the video surface when loading failed for good"
+  },
+  "videoLoadFailedBody": "The server did not deliver the video. Check the connection and try again.",
+  "@videoLoadFailedBody": {
+    "description": "Explanation under the failed-load title"
+  },
+  "videoLoadRetrying": "Still not playing — trying again (attempt {attempt})…",
+  "@videoLoadRetrying": {
+    "description": "Video loading overlay: the player re-opened a stream that did not start",
+    "placeholders": {
+      "attempt": {"type": "int"}
+    }
+  }
 }

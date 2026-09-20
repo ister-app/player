@@ -10,6 +10,7 @@ import '../../l10n/app_localizations.dart';
 import '../../utils/MediaPlayerHandler.dart';
 import '../../utils/PlatformService.dart';
 import '../../utils/TvInputCommands.dart';
+import '../../utils/VideoLoadState.dart';
 import '../VideoCoverView.dart';
 import '../WatchTogetherButton.dart';
 import 'SegmentOverlayButtons.dart';
@@ -368,16 +369,24 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
               child: Row(children: _topBarChildren(loc)),
             ),
             if (centerTransport)
-              Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    SkipButtons(iconSize: 36, side: SkipButtonSide.previous),
-                    SizedBox(width: 24),
-                    PlayPauseButton(iconSize: 56),
-                    SizedBox(width: 24),
-                    SkipButtons(iconSize: 36, side: SkipButtonSide.next),
-                  ],
+              // The failed-load panel takes the centre; its retry replaces a
+              // play button that would resume a stream that never loaded.
+              ValueListenableBuilder<VideoLoadState?>(
+                valueListenable: _handler.videoLoad,
+                builder: (context, load, child) => load?.failed == true
+                    ? const SizedBox.shrink()
+                    : child!,
+                child: Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      SkipButtons(iconSize: 36, side: SkipButtonSide.previous),
+                      SizedBox(width: 24),
+                      PlayPauseButton(iconSize: 56),
+                      SizedBox(width: 24),
+                      SkipButtons(iconSize: 36, side: SkipButtonSide.next),
+                    ],
+                  ),
                 ),
               ),
             Positioned(
@@ -444,6 +453,9 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
           child: const SegmentOverlayButtons(),
         ),
         _bufferingIndicator(),
+        // On top of everything: its retry button must win over the centre
+        // transport and the gesture layer.
+        const VideoLoadFailedPanel(),
       ],
     );
 

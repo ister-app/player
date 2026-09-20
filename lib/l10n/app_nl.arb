@@ -795,5 +795,12 @@
   "nodeNoDisks": "Deze node meldt geen schijven.",
   "nodeIdle": "Er draait niets op deze node.",
   "nodeInfoUnavailable": "Deze node draait een oudere serverversie en meldt zijn details nog niet.",
-  "nodeNoActivityYet": "Nog geen activiteit van deze node ontvangen."
+  "nodeNoActivityYet": "Nog geen activiteit van deze node ontvangen.",
+  "videoLoadPreparing": "Afspelen voorbereiden…",
+  "videoLoadConnecting": "Verbinden met de server…",
+  "videoLoadBuffering": "Video laden…",
+  "videoLoadSlow": "Dit duurt langer dan normaal. De server maakt de video mogelijk nog klaar — even geduld.",
+  "videoLoadRetrying": "Speelt nog niet — nieuwe poging ({attempt})…",
+  "videoLoadFailedTitle": "Deze video kon niet worden afgespeeld",
+  "videoLoadFailedBody": "De server heeft de video niet geleverd. Controleer de verbinding en probeer het opnieuw."
 }

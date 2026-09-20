@@ -2465,4 +2465,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nodeNoActivityYet => 'No activity received from this node yet.';
+
+  @override
+  String get videoLoadPreparing => 'Preparing playback…';
+
+  @override
+  String get videoLoadConnecting => 'Connecting to the server…';
+
+  @override
+  String get videoLoadBuffering => 'Loading video…';
+
+  @override
+  String get videoLoadSlow =>
+      'This is taking longer than usual. The server may still be preparing the video — hang on.';
+
+  @override
+  String get videoLoadFailedTitle => 'This video could not be played';
+
+  @override
+  String get videoLoadFailedBody =>
+      'The server did not deliver the video. Check the connection and try again.';
+
+  @override
+  String videoLoadRetrying(int attempt) {
+    return 'Still not playing — trying again (attempt $attempt)…';
+  }
 }
