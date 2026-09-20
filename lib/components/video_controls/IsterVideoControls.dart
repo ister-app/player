@@ -482,6 +482,10 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
           child: MouseRegion(
             opaque: false,
             hitTestBehavior: HitTestBehavior.translucent,
+            // The pointer goes away with the chrome, as in any video player;
+            // moving it brings both back (the hover layer calls _show). The
+            // outermost region, so a button's own cursor still wins.
+            cursor: _visible ? MouseCursor.defer : SystemMouseCursors.none,
             onEnter: (_) => _shortcutsFocusNode.requestFocus(),
             child: result,
           ),
