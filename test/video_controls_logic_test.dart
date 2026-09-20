@@ -256,6 +256,31 @@ void main() {
           'Dutch');
     });
 
+    test('tracks that would read the same get a number', () {
+      // A DVD rip: main mix and commentary, same title, same language.
+      expect(
+          TrackSelectionController.audioLabels(const [
+            AudioTrack('1', 'AC3 Stereo', 'eng'),
+            AudioTrack('2', 'AC3 Stereo', 'fre'),
+            AudioTrack('4', 'AC3 Stereo', 'eng'),
+          ], loc),
+          [
+            'AC3 Stereo – English (1)',
+            'AC3 Stereo – French',
+            'AC3 Stereo – English (2)',
+          ]);
+      // Player tracks and picture tracks share one menu, so one numbering.
+      expect(
+          TrackSelectionController.subtitleMenuLabels(
+              [SubtitleTrack.no(), const SubtitleTrack('1', null, 'eng')],
+              const [
+                BitmapSubtitleTrack(streamId: 's1', language: 'eng'),
+                BitmapSubtitleTrack(streamId: 's2', language: 'dut'),
+              ],
+              loc),
+          [loc.trackNone, 'English (1)', 'English (2)', 'Dutch']);
+    });
+
     test('a track without a language falls back to its title, then its id', () {
       expect(
           TrackSelectionController.audioLabel(

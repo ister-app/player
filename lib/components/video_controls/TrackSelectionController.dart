@@ -167,6 +167,36 @@ class TrackSelectionController extends ChangeNotifier {
     return _trackLabel(t.title, t.language, t.id, loc);
   }
 
+  /// Numbers the labels that occur more than once — `"Stereo – English (1)"`,
+  /// `"Stereo – English (2)"` — and leaves the rest alone. A DVD rip carries the
+  /// main mix and the commentary under the same title and language; a current
+  /// server already tells them apart in the rendition name, an older one (or a
+  /// local file) does not.
+  static List<String> numberDuplicates(List<String> labels) {
+    final seen = <String, int>{};
+    return [
+      for (final label in labels)
+        labels.where((l) => l == label).length > 1
+            ? '$label (${seen[label] = (seen[label] ?? 0) + 1})'
+            : label,
+    ];
+  }
+
+  /// The audio menu's labels, in [tracks] order.
+  static List<String> audioLabels(
+          List<AudioTrack> tracks, AppLocalizations loc) =>
+      numberDuplicates([for (final t in tracks) audioLabel(t, loc)]);
+
+  /// The subtitle menu's labels: the player's [options] first, then the
+  /// [bitmapTracks] — numbered as one list, because they share one menu.
+  static List<String> subtitleMenuLabels(List<SubtitleTrack> options,
+          List<BitmapSubtitleTrack> bitmapTracks, AppLocalizations loc) =>
+      numberDuplicates([
+        for (final t in options) subtitleLabel(t, loc),
+        for (final (i, t) in bitmapTracks.indexed)
+          bitmapSubtitleLabel(t, i + 1, loc),
+      ]);
+
   Future<void> selectAudio(AudioTrack t) async {
     _currentAudio = t;
     notifyListeners();

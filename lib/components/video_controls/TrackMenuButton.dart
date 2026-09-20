@@ -35,6 +35,11 @@ class _TrackMenuButtonState extends State<TrackMenuButton> {
       builder: (context, _) {
         final tracks = widget.controller;
         if (!tracks.hasAnyMenu) return const SizedBox.shrink();
+        final audioLabels =
+            TrackSelectionController.audioLabels(tracks.audioTracks, loc);
+        final subtitleOptions = tracks.subtitleOptions;
+        final subtitleLabels = TrackSelectionController.subtitleMenuLabels(
+            subtitleOptions, tracks.bitmapSubtitleTracks, loc);
         return MenuAnchor(
           controller: _menuController,
           onOpen: () => widget.onMenuOpenChanged?.call(true),
@@ -45,9 +50,9 @@ class _TrackMenuButtonState extends State<TrackMenuButton> {
               SubmenuButton(
                 leadingIcon: const Icon(Icons.volume_up, size: 18),
                 menuChildren: [
-                  for (final t in tracks.audioTracks)
+                  for (final (i, t) in tracks.audioTracks.indexed)
                     _item(
-                      label: TrackSelectionController.audioLabel(t, loc),
+                      label: audioLabels[i],
                       selected: t == tracks.currentAudio,
                       onPressed: () => tracks.selectAudio(t),
                     ),
@@ -66,17 +71,16 @@ class _TrackMenuButtonState extends State<TrackMenuButton> {
               SubmenuButton(
                 leadingIcon: const Icon(Icons.subtitles, size: 18),
                 menuChildren: [
-                  for (final t in tracks.subtitleOptions)
+                  for (final (i, t) in subtitleOptions.indexed)
                     _item(
-                      label: TrackSelectionController.subtitleLabel(t, loc),
+                      label: subtitleLabels[i],
                       selected: t == tracks.currentSubtitle,
                       onPressed: () => tracks.selectSubtitle(t),
                     ),
                   // Picture-based tracks (Blu-ray/DVD), drawn by the app.
                   for (final (i, t) in tracks.bitmapSubtitleTracks.indexed)
                     _item(
-                      label: TrackSelectionController.bitmapSubtitleLabel(
-                          t, i + 1, loc),
+                      label: subtitleLabels[subtitleOptions.length + i],
                       selected: t == tracks.currentBitmapSubtitle,
                       onPressed: () => tracks.selectBitmapSubtitle(t),
                     ),

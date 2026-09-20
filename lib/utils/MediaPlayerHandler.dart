@@ -3143,6 +3143,29 @@ class MediaPlayerHandler extends BaseAudioHandler
     });
   }
 
+  /// The track in a re-opened stream that is the one the user had [selected].
+  ///
+  /// Language alone is not enough: a DVD rip carries the main mix and the
+  /// commentary as two English tracks, and matching on language put the viewer
+  /// back on the main mix after every re-open (a seek to before the stream-open
+  /// position, a watchdog retry). The same stream re-opened lists its tracks in
+  /// the same order, so the id settles it when title and language still agree;
+  /// after that the title (the server numbers same-named renditions), and only
+  /// then the language.
+  @visibleForTesting
+  static AudioTrack restoredAudioTrack(
+      List<AudioTrack> tracks, AudioTrack selected) {
+    if (selected.language == null) return AudioTrack.auto();
+    final sameLanguage =
+        tracks.where((t) => t.language == selected.language).toList();
+    final sameTitle =
+        sameLanguage.where((t) => t.title == selected.title).toList();
+    return sameTitle.where((t) => t.id == selected.id).firstOrNull ??
+        sameTitle.firstOrNull ??
+        sameLanguage.firstOrNull ??
+        AudioTrack.auto();
+  }
+
   Future<void> _applyTrackPreferences(Tracks tracks) async {
       debugPrint('[TRACKS_HANDLER] audioApplied=$_audioPreferenceApplied subApplied=$_subtitlePreferenceApplied | audio=${tracks.audio.map((t) => t.id).join(",")} sub=${tracks.subtitle.map((t) => t.id).join(",")}');
 
@@ -3153,10 +3176,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         _forcedAudio = null;
         if (forcedAudio != null && forcedAudio.id != 'auto') {
           // Restore the audio track the user had selected before the reload.
-          final match = tracks.audio.firstWhere(
-            (t) => t.language != null && t.language == forcedAudio.language,
-            orElse: () => AudioTrack.auto(),
-          );
+          final match = restoredAudioTrack(tracks.audio, forcedAudio);
           debugPrint('[TRACKS_HANDLER] restoring forced audio: ${match.id}');
           _selectedAudioLanguage = match.language;
           await _player.setAudioTrack(match);
