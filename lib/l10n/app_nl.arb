@@ -853,5 +853,13 @@
   "uploadPhaseDone": "Klaar",
   "uploadPhaseSkipped": "Overgeslagen, bestaat al",
   "uploadPhaseFailed": "Mislukt",
-  "nodeReadOnly": "Alleen-lezen"
+  "nodeReadOnly": "Alleen-lezen",
+  "videoVersionLabel": "Versie",
+  "videoVersionPickTitle": "Kies een versie",
+  "videoVersionOtherCutTitle": "Deze versie heeft een andere lengte",
+  "videoVersionOtherCutBody": "Het kan een andere montage zijn, dus hetzelfde tijdstip kan een andere scène zijn.",
+  "videoVersionFromStart": "Vanaf het begin",
+  "videoVersionSameTime": "Zelfde tijdstip",
+  "videoVersionAuto": "Automatisch",
+  "videoVersionChip": "Versie: {label}"
 }

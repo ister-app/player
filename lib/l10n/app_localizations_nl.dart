@@ -2711,4 +2711,31 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get nodeReadOnly => 'Alleen-lezen';
+
+  @override
+  String get videoVersionLabel => 'Versie';
+
+  @override
+  String get videoVersionPickTitle => 'Kies een versie';
+
+  @override
+  String get videoVersionOtherCutTitle => 'Deze versie heeft een andere lengte';
+
+  @override
+  String get videoVersionOtherCutBody =>
+      'Het kan een andere montage zijn, dus hetzelfde tijdstip kan een andere scène zijn.';
+
+  @override
+  String get videoVersionFromStart => 'Vanaf het begin';
+
+  @override
+  String get videoVersionSameTime => 'Zelfde tijdstip';
+
+  @override
+  String get videoVersionAuto => 'Automatisch';
+
+  @override
+  String videoVersionChip(String label) {
+    return 'Versie: $label';
+  }
 }

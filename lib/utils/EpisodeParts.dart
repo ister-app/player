@@ -11,8 +11,17 @@ class EpisodeParts {
   /// single-episode file, and while the server has not computed the slice
   /// boundaries yet (duration 0) — playback then falls back to whole-file
   /// behavior.
-  static ({int startMs, int endMs})? bounds(Fragment$fragmentEpisode? ep) {
-    final part = ep?.mediaFileParts?.firstOrNull;
+  ///
+  /// The server sends one part per media file of the episode. [mediaFileId]
+  /// names the file that plays (another version of the episode can be sliced
+  /// differently, or not be a multi-episode file at all); without it — lists,
+  /// tiles, anything that is not the player — the first part.
+  static ({int startMs, int endMs})? bounds(Fragment$fragmentEpisode? ep,
+      {String? mediaFileId}) {
+    final parts = ep?.mediaFileParts;
+    final part = mediaFileId == null
+        ? parts?.firstOrNull
+        : parts?.where((p) => p.mediaFile.id == mediaFileId).firstOrNull;
     if (part == null) return null;
     if ((part.mediaFile.episodes?.length ?? 0) < 2) return null;
     final durationMs = part.durationInMilliseconds.toInt();

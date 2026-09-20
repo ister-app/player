@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
 
+import '../../graphql/fragmentMediafiles.graphql.dart';
 import '../../l10n/app_localizations.dart';
 import '../../utils/LanguageService.dart';
 import '../../utils/MediaPlayerHandler.dart';
@@ -39,6 +40,7 @@ class TrackSelectionController extends ChangeNotifier {
     });
 
     _handler.bitmapSubtitle.addListener(notifyListeners);
+    _handler.currentMediaFileId.addListener(notifyListeners);
 
     // HLS on Linux: tracks can arrive late. One-shot re-read.
     if (_audioTracks.length <= 2 && _subtitleTracks.length <= 2) {
@@ -97,7 +99,25 @@ class TrackSelectionController extends ChangeNotifier {
     return fileStreamCodecTypes.any((t) => t == 'SUBTITLE');
   }
 
+  /// The media files (versions) of the playing item — a 4K and a 1080p file,
+  /// another cut. Empty while watching along: a follower plays the leader's.
+  List<Fragment$fragmentMediaFiles> get versions =>
+      _handler.followMode ? const [] : _handler.currentVideoVersions;
+
+  bool get hasVersions => versions.length > 1;
+
+  String? get currentVersionId => _handler.currentMediaFileId.value;
+
+  /// False when [mediaFileId] is another cut: the same position is then not
+  /// the same scene, and the menu asks where to continue.
+  bool versionSharesTimeline(String mediaFileId) =>
+      _handler.sharesTimelineWithCurrent(mediaFileId);
+
+  Future<void> selectVersion(String mediaFileId, {bool fromStart = false}) =>
+      _handler.switchMediaFile(mediaFileId, fromStart: fromStart);
+
   bool get hasAnyMenu =>
+      hasVersions ||
       hasMultipleAudio ||
       hasSubtitles ||
       bitmapSubtitleTracks.isNotEmpty ||
@@ -220,6 +240,7 @@ class TrackSelectionController extends ChangeNotifier {
   @override
   void dispose() {
     _handler.bitmapSubtitle.removeListener(notifyListeners);
+    _handler.currentMediaFileId.removeListener(notifyListeners);
     _tracksTimer?.cancel();
     _tracksSubscription.cancel();
     _trackSubscription.cancel();

@@ -591,7 +591,8 @@ class DownloadService {
         return;
       }
       final item = entry.queueItem;
-      final mf = QueueItemFactory.mediaFileOf(item);
+      final mf = QueueItemFactory.mediaFileOf(item,
+          mediaFileId: entry.mediaFileId);
       final videoQuality = entry.videoQuality ??
           await DownloadPreferences.getVideoQuality(server);
       List<String> spoken = const [];

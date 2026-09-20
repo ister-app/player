@@ -16,6 +16,7 @@ import '../components/CastRow.dart';
 import '../components/MediaMetaLine.dart';
 import '../components/IsterPlayer.dart';
 import '../components/VideoCoverView.dart';
+import '../components/VideoVersionPicker.dart';
 import '../components/RatingStars.dart';
 import '../graphql/fragmentEpisode.graphql.dart';
 import '../graphql/schema.graphql.dart';
@@ -70,6 +71,10 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
 
   /// The user tapped the cover's play button.
   bool _playRequested = false;
+
+  /// The version picked on the page for an episode with several media
+  /// files; null lets the player choose.
+  String? _pickedFileId;
   bool _showAdminActions = true;
 
   /// Anchor on the video surface, so starting playback can scroll it into
@@ -233,7 +238,8 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
               (autoStart || _playRequested)) {
             _playQueueStarted = true;
             handler.startPlayQueue(GraphQLProvider.of(context).value,
-                widget.playQueueId, episode!, widget.serverName);
+                widget.playQueueId, episode!, widget.serverName,
+                mediaFileId: _pickedFileId);
             _scrollPlayerIntoView();
           }
           return getContent(
@@ -300,6 +306,14 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                   ),
           );
         },
+      ),
+      VideoVersionRow(
+        files: episode?.mediaFile,
+        playing: _playQueueStarted &&
+            MediaPlayerHandler.instance.isCurrentVideo(
+                episodeId: widget.episodeId, serverName: widget.serverName),
+        pickedId: _pickedFileId,
+        onPicked: (id) => setState(() => _pickedFileId = id),
       ),
       Container(
           padding: const EdgeInsets.all(10),

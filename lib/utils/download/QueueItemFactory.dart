@@ -1,6 +1,7 @@
 import 'package:player/graphql/fragmentMediafiles.graphql.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 import 'package:player/utils/download/DownloadModels.dart';
+import 'package:player/utils/MediaVersions.dart';
 
 /// Builds the synthetic play-queue items that downloads store as their
 /// metadata snapshot. The kind-specific sub-objects come from the typed query
@@ -51,11 +52,20 @@ class QueueItemFactory {
       item.episode?.id ??
       '';
 
+  /// The file of [item] a download is about. An item can have several
+  /// (versions): [mediaFileId] names the one an existing entry mirrors — the
+  /// stored snapshot lists them all, and re-deriving "the first" is how a
+  /// resume could continue into another file's directory. Without it the same
+  /// default the player uses ([MediaVersions.pickDefault]), which does not
+  /// depend on the order of the list.
   static Fragment$fragmentMediaFiles? mediaFileOf(
-          Fragment$fragmentPlayQueue$playQueueItems item) =>
-      item.track?.mediaFile?.firstOrNull ??
-      item.chapter?.mediaFile?.firstOrNull ??
-      item.podcastEpisode?.mediaFile?.firstOrNull ??
-      item.movie?.mediaFile?.firstOrNull ??
-      item.episode?.mediaFile?.firstOrNull;
+      Fragment$fragmentPlayQueue$playQueueItems item,
+      {String? mediaFileId}) {
+    final files = item.track?.mediaFile ??
+        item.chapter?.mediaFile ??
+        item.podcastEpisode?.mediaFile ??
+        item.movie?.mediaFile ??
+        item.episode?.mediaFile;
+    return MediaVersions.resolve(files, preferredId: mediaFileId);
+  }
 }

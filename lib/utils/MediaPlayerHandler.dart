@@ -30,6 +30,7 @@ import 'package:player/utils/StreamTokenService.dart';
 import 'package:player/utils/download/AutoNextService.dart';
 import 'package:player/utils/download/DownloadService.dart';
 import 'package:player/utils/EpisodeParts.dart';
+import 'package:player/utils/MediaVersions.dart';
 import 'package:player/utils/download/LocalPlayQueue.dart';
 import 'package:player/utils/download/MusicCacheService.dart';
 import 'package:player/utils/download/PlayHistoryStore.dart';
@@ -282,7 +283,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// Where the user stopped, so the play button on the page they stayed on
   /// resumes there. The page's own episode/movie object still carries the
   /// watch status from *before* this viewing (it is never refetched), so
-  /// [_startTimeMs] alone would send them back to where they started.
+  /// [_episodeStartMs] alone would send them back to where they started.
   ({String serverName, String? episodeId, String? movieId, int positionMs})?
       _stoppedResume;
 
@@ -450,10 +451,72 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// server analyzed them. The track menu uses this to explain that a file
   /// *has* subtitles when the HLS stream offers none (image-based subs the
   /// server can't convert are dropped from the master playlist).
-  List<Fragment$fragmentMediaFiles$mediaFileStreams?> get currentVideoFileStreams {
-    final mediaFile =
-        movie?.mediaFile?.firstOrNull ?? episode?.mediaFile?.firstOrNull;
-    return mediaFile?.mediaFileStreams ?? const [];
+  List<Fragment$fragmentMediaFiles$mediaFileStreams?> get currentVideoFileStreams =>
+      _currentVideoFile?.mediaFileStreams ?? const [];
+
+  /// The media file that is open in the player — *the* answer to "which file
+  /// of this item": an item can have several (a 4K and a 1080p version,
+  /// another cut), and the server analyses every one on its own. Stream ids,
+  /// subtitles, crop, intro/outro times and multi-episode slices all belong
+  /// to a file, so everything reads them through here; each taking its own
+  /// `mediaFile.first` is how one file's subtitles landed on another's stream.
+  /// Set by [_openMedia], cleared when a queue switch silences the player.
+  Fragment$fragmentMediaFiles? currentMediaFile;
+
+  /// [currentMediaFile]'s id, for the UI (the version menu's check mark).
+  final ValueNotifier<String?> currentMediaFileId = ValueNotifier(null);
+
+  /// The versions the playing video item offers; the version menu shows up
+  /// for more than one.
+  List<Fragment$fragmentMediaFiles> get currentVideoVersions =>
+      movie?.mediaFile ?? episode?.mediaFile ?? const [];
+
+  /// [currentMediaFile] while a video item plays. Falls back to the item's
+  /// first file when nothing was opened through [_openMedia] (state that was
+  /// only assigned, as the widget tests do).
+  Fragment$fragmentMediaFiles? get _currentVideoFile {
+    if (movie == null && episode == null) return null;
+    final files = currentVideoVersions;
+    final current = currentMediaFile;
+    if (current != null && files.any((f) => f.id == current.id)) return current;
+    return files.firstOrNull;
+  }
+
+  /// What the user picked from the version menu, per queue item, for as long
+  /// as the queue lives — deliberately not remembered beyond that. Keeps a
+  /// retry, the stall watchdog or coming back to the item from re-picking.
+  final Map<String, String> _sessionFileChoice = {};
+
+  static String? _choiceKeyForEpisode(String? id) =>
+      id == null ? null : 'episode:$id';
+  static String _choiceKeyForMovie(String id) => 'movie:$id';
+
+  /// Bumped by every [_openMedia]. Work that was started for one open
+  /// (side-loading subtitles, applying the crop) checks it before it touches
+  /// the player, so nothing of file A lands on the stream of file B. The url
+  /// is no identity for this: [_restampToken] rewrites it in place.
+  int _openGeneration = 0;
+
+  /// The file to open for an item with [files]: the session's pick for
+  /// [choiceKey], else [MediaVersions.pickDefault] with this device's
+  /// downloads and the user's playback settings.
+  Future<Fragment$fragmentMediaFiles?> _pickMediaFile(
+      String srv, List<Fragment$fragmentMediaFiles>? files,
+      {String? choiceKey, String? preferredId}) async {
+    if (files == null || files.isEmpty) return null;
+    if (files.length == 1) return files.first;
+    return MediaVersions.resolve(
+      files,
+      preferredId:
+          preferredId ?? (choiceKey == null ? null : _sessionFileChoice[choiceKey]),
+      isLocal: kIsWeb
+          ? null
+          : (f) => DownloadService.instance.localMasterFor(srv, f.id) != null,
+      maxHeight: await PlaybackPreferences.getMaxVideoHeight(serverName: srv),
+      directPlay: kIsWeb
+          ? false
+          : await PlaybackPreferences.getDirectPlay(serverName: srv),
+    );
   }
 
   /// The picture-based subtitle streams (PGS/VobSub) of the current video.
@@ -464,8 +527,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     final url = _currentMediaUrl;
     if (tracks.isEmpty || url == null || !isLocalMediaUrl(url)) return tracks;
     // Offline: only what the download mirrored (its index file is the record).
-    final mediaFile =
-        movie?.mediaFile?.firstOrNull ?? episode?.mediaFile?.firstOrNull;
+    final mediaFile = _currentVideoFile;
     final dir = mediaFile == null || serverName == null
         ? null
         : DownloadService.instance.localMediaDir(serverName!, mediaFile.id);
@@ -492,8 +554,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// serving node, or the mirrored files of a download. Null when nothing
   /// that can have them is playing.
   BitmapSubtitleLoader? bitmapSubtitleLoader() {
-    final mediaFile =
-        movie?.mediaFile?.firstOrNull ?? episode?.mediaFile?.firstOrNull;
+    final mediaFile = _currentVideoFile;
     final name = serverName;
     final url = _currentMediaUrl;
     if (mediaFile == null || name == null || url == null) return null;
@@ -551,10 +612,13 @@ class MediaPlayerHandler extends BaseAudioHandler
     GraphQLClient client,
     String? playQueueId,
     Fragment$fragmentEpisode newEpisode,
-    String newServerName,
-  ) =>
-      _guardVideoStart(() =>
-          _startPlayQueue(client, playQueueId, newEpisode, newServerName));
+    String newServerName, {
+    // The version picked on the page, for an episode with several files.
+    String? mediaFileId,
+  }) =>
+      _guardVideoStart(() => _startPlayQueue(
+          client, playQueueId, newEpisode, newServerName,
+          mediaFileId: mediaFileId));
 
   /// The pages fire a video start without awaiting it, so an exception on the
   /// way to [_openMedia] (the server unreachable for the play queue, a token
@@ -605,12 +669,89 @@ class MediaPlayerHandler extends BaseAudioHandler
     );
   }
 
+  Future<void>? _versionSwitch;
+
+  /// Whether switching to [mediaFileId] keeps the position meaningful — the
+  /// version menu asks "from the start or at the same time?" when it does not
+  /// (another cut of the film).
+  bool sharesTimelineWithCurrent(String mediaFileId) {
+    final current = _currentVideoFile;
+    final target =
+        currentVideoVersions.where((f) => f.id == mediaFileId).firstOrNull;
+    return current == null ||
+        target == null ||
+        MediaVersions.sameTimeline(current, target);
+  }
+
+  /// Plays another version (media file) of the video item that is playing, at
+  /// the same position — or from the start of the item with [fromStart].
+  ///
+  /// Runs the queue-switch drill so the two streams never overlap: progress
+  /// responses of the old file are orphaned, the player is stopped before the
+  /// new file opens, and everything that belongs to a *file* (forced track
+  /// ids, the bitmap subtitle, the crop) is dropped rather than carried over —
+  /// the language preferences pick the tracks of the new file afresh. Switches
+  /// are serialised: a second one waits for the first, so there is never more
+  /// than one open in flight (the server has two interactive file slots).
+  Future<void> switchMediaFile(String mediaFileId, {bool fromStart = false}) {
+    final previous = _versionSwitch ?? Future<void>.value();
+    final next = previous
+        .catchError((_) {})
+        .then((_) => _switchMediaFile(mediaFileId, fromStart: fromStart));
+    _versionSwitch = next;
+    return next;
+  }
+
+  Future<void> _switchMediaFile(String mediaFileId,
+      {required bool fromStart}) async {
+    // A follower plays what the leader plays.
+    if (_followMode) return;
+    final srv = serverName;
+    final from = _currentVideoFile;
+    final target =
+        currentVideoVersions.where((f) => f.id == mediaFileId).firstOrNull;
+    if (srv == null || target == null || target.id == from?.id) return;
+
+    // The position within the item: a multi-episode file is sliced per file.
+    final ep = episode;
+    final oldBase = episodePartBounds(ep, mediaFileId: from?.id)?.startMs ?? 0;
+    final newBase = episodePartBounds(ep, mediaFileId: target.id)?.startMs ?? 0;
+    final position = _player.state.position.inMilliseconds;
+    final offset = fromStart || position < oldBase ? 0 : position - oldBase;
+
+    final key = ep != null
+        ? _choiceKeyForEpisode(ep.id)
+        : (movie != null ? _choiceKeyForMovie(movie!.id) : null);
+    if (key != null) _sessionFileChoice[key] = target.id;
+
+    // The old file's last position is only worth recording when it means the
+    // same thing in the new one.
+    if (from != null && MediaVersions.sameTimeline(from, target)) {
+      await _syncProgress(_player.state.position, force: true);
+    }
+    final resume = _intendsToPlay;
+    await _silenceForQueueSwitch();
+    _forcedAudio = null;
+    _forcedSubtitle = null;
+    bitmapSubtitle.value = null;
+    _loadRetries = 0;
+    await _openMedia(
+      serverName: srv,
+      mediaFile: target,
+      startTimeInMilliseconds: newBase + offset,
+      mediaType: _currentMediaType,
+      autoPlay: resume,
+    );
+    updatePlaybackState();
+  }
+
   Future<void> _startPlayQueue(
     GraphQLClient client,
     String? playQueueId,
     Fragment$fragmentEpisode newEpisode,
-    String newServerName,
-  ) async {
+    String newServerName, {
+    String? mediaFileId,
+  }) async {
     // A not-yet-analyzed episode has no media file to open; bail out before
     // touching the queue instead of crashing on mediaFile!.first below.
     if (newEpisode.mediaFile?.firstOrNull == null) {
@@ -628,6 +769,11 @@ class MediaPlayerHandler extends BaseAudioHandler
         episode == null ||
         episode!.id != newEpisode.id ||
         serverName != newServerName;
+    if (mediaFileId != null) {
+      _sessionFileChoice[_choiceKeyForEpisode(newEpisode.id)!] = mediaFileId;
+    }
+    // Without the id: the retry goes through the session's choice, which a
+    // version switch in between may have changed.
     _retryVideoStart =
         () => startPlayQueue(client, playQueueId, newEpisode, newServerName);
 
@@ -642,9 +788,13 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (shouldRefresh) {
       // Where the user stopped this very episode wins over the watch status on
       // the page's (stale) episode object; see [_takeStoppedResumeMs].
+      // Before the start position: a multi-episode slice is per file.
+      final file = await _pickMediaFile(newServerName, newEpisode.mediaFile,
+          choiceKey: _choiceKeyForEpisode(newEpisode.id),
+          preferredId: mediaFileId);
       final startMs =
           _takeStoppedResumeMs(newServerName, episodeId: newEpisode.id) ??
-              _startTimeMs;
+              _episodeStartMs(file);
       await _silenceForQueueSwitch();
       final playQueueObject = await _playQueueService.getOrCreatePlayQueue(
         client,
@@ -693,7 +843,7 @@ class MediaPlayerHandler extends BaseAudioHandler
 
       await _openMedia(
         serverName: newServerName,
-        mediaUrl: await _resolveMediaUrl(newServerName, newEpisode.mediaFile!.first),
+        mediaFile: file,
         startTimeInMilliseconds: startMs,
       );
     } else {
@@ -715,6 +865,8 @@ class MediaPlayerHandler extends BaseAudioHandler
     _resetVideoStreamReady();
     _currentMediaUrl = null;
     _mediaOpenedAt = null;
+    currentMediaFile = null;
+    currentMediaFileId.value = null;
     // Under flutter test there is no real mpv event loop and player calls
     // never complete — same seam as _openMedia.
     if (!ClientManager.usesTestClients) await _player.stop();
@@ -729,14 +881,14 @@ class MediaPlayerHandler extends BaseAudioHandler
     await play();
   }
 
-  int? get _startTimeMs {
+  int? _episodeStartMs(Fragment$fragmentMediaFiles? file) {
     final ws = episode?.watchStatus;
     if (ws != null && ws.isNotEmpty && !ws.first.watched) {
       return ws.first.progressInMilliseconds;
     }
     // No resume position: an episode inside a multi-episode file starts at its
     // own slice, not at the file's t=0 (which is a different episode).
-    final part = episodePartBounds(episode);
+    final part = episodePartBounds(episode, mediaFileId: file?.id);
     return part != null && part.startMs > 0 ? part.startMs : null;
   }
 
@@ -745,18 +897,38 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// server has not computed the slice boundaries yet (duration 0) — playback
   /// then falls back to whole-file behavior.
   static ({int startMs, int endMs})? episodePartBounds(
-          Fragment$fragmentEpisode? ep) =>
-      EpisodeParts.bounds(ep);
+          Fragment$fragmentEpisode? ep, {String? mediaFileId}) =>
+      EpisodeParts.bounds(ep, mediaFileId: mediaFileId);
+
+  /// [episodePartBounds] of [ep] in the file that plays it: the playing
+  /// episode's slice comes from [currentMediaFile], any other episode's from
+  /// its first file.
+  ({int startMs, int endMs})? _partBoundsOf(Fragment$fragmentEpisode? ep) =>
+      episodePartBounds(ep,
+          mediaFileId: ep != null && ep.id == episode?.id
+              ? currentMediaFile?.id
+              : null);
 
   /// The detected intro or outro of [ep], in absolute file time (the same
   /// timeline as [episodePartBounds] and the player position). Null while the
   /// server has not detected segments for the file, and for the sibling
   /// episodes' segments in a multi-episode file.
+  ///
+  /// Segment times come from audio fingerprinting *per file*, so another
+  /// version of the episode has other times: [mediaFileId] names the file
+  /// that plays. Without it the first file, as the lists and tiles use.
   static ({int startMs, int endMs})? segmentBounds(
-      Fragment$fragmentEpisode? ep, Enum$MediaSegmentType type) {
+      Fragment$fragmentEpisode? ep, Enum$MediaSegmentType type,
+      {String? mediaFileId}) {
     if (ep == null) return null;
-    final file =
-        ep.mediaFileParts?.firstOrNull?.mediaFile ?? ep.mediaFile?.firstOrNull;
+    final file = mediaFileId == null
+        ? ep.mediaFileParts?.firstOrNull?.mediaFile ??
+            ep.mediaFile?.firstOrNull
+        : ep.mediaFileParts
+                ?.where((p) => p.mediaFile.id == mediaFileId)
+                .firstOrNull
+                ?.mediaFile ??
+            ep.mediaFile?.where((f) => f.id == mediaFileId).firstOrNull;
     final segments = file?.segments;
     if (segments == null) return null;
     final multiEpisode = (file!.episodes?.length ?? 0) >= 2;
@@ -774,13 +946,15 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// The playing episode's detected intro, in absolute file time.
   ({int startMs, int endMs})? get currentIntroBounds =>
       _currentMediaType == IsterMediaTypes.episode
-          ? segmentBounds(episode, Enum$MediaSegmentType.INTRO)
+          ? segmentBounds(episode, Enum$MediaSegmentType.INTRO,
+              mediaFileId: currentMediaFile?.id)
           : null;
 
   /// The playing episode's detected outro (credits), in absolute file time.
   ({int startMs, int endMs})? get currentOutroBounds =>
       _currentMediaType == IsterMediaTypes.episode
-          ? segmentBounds(episode, Enum$MediaSegmentType.OUTRO)
+          ? segmentBounds(episode, Enum$MediaSegmentType.OUTRO,
+              mediaFileId: currentMediaFile?.id)
           : null;
 
   int? get _movieStartTimeMs {
@@ -806,17 +980,20 @@ class MediaPlayerHandler extends BaseAudioHandler
     GraphQLClient client,
     String? playQueueId,
     Fragment$fragmentMovie newMovie,
-    String newServerName,
-  ) =>
+    String newServerName, {
+    String? mediaFileId,
+  }) =>
       _guardVideoStart(() => _startPlayQueueForMovie(
-          client, playQueueId, newMovie, newServerName));
+          client, playQueueId, newMovie, newServerName,
+          mediaFileId: mediaFileId));
 
   Future<void> _startPlayQueueForMovie(
     GraphQLClient client,
     String? playQueueId,
     Fragment$fragmentMovie newMovie,
-    String newServerName,
-  ) async {
+    String newServerName, {
+    String? mediaFileId,
+  }) async {
     // Same not-ready rule as startPlayQueue: no media file, nothing to open.
     if (newMovie.mediaFile?.firstOrNull == null) {
       showAppSnackBar(IsterMediaService.loc.mediaNotReady);
@@ -831,6 +1008,9 @@ class MediaPlayerHandler extends BaseAudioHandler
         movie == null ||
         movie!.id != newMovie.id ||
         serverName != newServerName;
+    if (mediaFileId != null) {
+      _sessionFileChoice[_choiceKeyForMovie(newMovie.id)] = mediaFileId;
+    }
     _retryVideoStart = () =>
         startPlayQueueForMovie(client, playQueueId, newMovie, newServerName);
 
@@ -844,6 +1024,8 @@ class MediaPlayerHandler extends BaseAudioHandler
 
     if (shouldRefresh) {
       // Same rule as startPlayQueue: an own stop of this movie resumes there.
+      final file = await _pickMediaFile(newServerName, newMovie.mediaFile,
+          choiceKey: _choiceKeyForMovie(newMovie.id), preferredId: mediaFileId);
       final startMs =
           _takeStoppedResumeMs(newServerName, movieId: newMovie.id) ??
               _movieStartTimeMs;
@@ -887,7 +1069,7 @@ class MediaPlayerHandler extends BaseAudioHandler
 
       await _openMedia(
         serverName: newServerName,
-        mediaUrl: await _resolveMediaUrl(newServerName, newMovie.mediaFile!.first),
+        mediaFile: file,
         startTimeInMilliseconds: startMs,
         mediaType: IsterMediaTypes.movie,
       );
@@ -981,7 +1163,7 @@ class MediaPlayerHandler extends BaseAudioHandler
           currentTrack!.mediaFile!.isNotEmpty) {
         await _openMedia(
           serverName: newServerName,
-          mediaUrl: await _resolveMediaUrl(newServerName, currentTrack.mediaFile!.first),
+          mediaFile: await _pickMediaFile(newServerName, currentTrack.mediaFile),
           mediaType: IsterMediaTypes.track,
         );
       } else {
@@ -1330,7 +1512,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     final current = PlayQueueService.getCurrentPlayQueueItem(pq) ??
         PlayQueueService.sortedItems(pq).firstOrNull;
     final track = current?.track;
-    final mf = track?.mediaFile?.firstOrNull;
+    final mf = await _pickMediaFile(srv, track?.mediaFile);
     if (current == null || track == null || mf == null) {
       // The queue moved on to non-music (or lost its media): forget it.
       await LastMusicQueuePreferences.clear();
@@ -1362,7 +1544,7 @@ class MediaPlayerHandler extends BaseAudioHandler
 
     await _openMedia(
       serverName: srv,
-      mediaUrl: await _resolveMediaUrl(srv, mf),
+      mediaFile: mf,
       startTimeInMilliseconds: startMs,
       mediaType: IsterMediaTypes.track,
       autoPlay: false,
@@ -1425,11 +1607,11 @@ class MediaPlayerHandler extends BaseAudioHandler
       movie = null;
       album = null;
       _currentMediaType = IsterMediaTypes.track;
-      final mf = t.mediaFile?.firstOrNull;
+      final mf = await _pickMediaFile(srv, t.mediaFile);
       if (mf == null) return;
       await _openMedia(
         serverName: srv,
-        mediaUrl: await _resolveMediaUrl(srv, mf),
+        mediaFile: mf,
         startTimeInMilliseconds: startTimeMs,
         mediaType: IsterMediaTypes.track,
         autoPlay: autoPlay,
@@ -1443,11 +1625,11 @@ class MediaPlayerHandler extends BaseAudioHandler
       album = null;
       currentTrackId = null;
       _currentMediaType = IsterMediaTypes.track;
-      final mf = item.chapter?.mediaFile?.firstOrNull;
+      final mf = await _pickMediaFile(srv, item.chapter?.mediaFile);
       if (mf == null) return;
       await _openMedia(
         serverName: srv,
-        mediaUrl: await _resolveMediaUrl(srv, mf),
+        mediaFile: mf,
         startTimeInMilliseconds:
             startTimeMs ?? _resumeMs(item.chapter?.watchStatus),
         mediaType: IsterMediaTypes.track,
@@ -1460,11 +1642,11 @@ class MediaPlayerHandler extends BaseAudioHandler
       album = null;
       currentTrackId = null;
       _currentMediaType = IsterMediaTypes.track;
-      final mf = item.podcastEpisode?.mediaFile?.firstOrNull;
+      final mf = await _pickMediaFile(srv, item.podcastEpisode?.mediaFile);
       if (mf == null) return;
       await _openMedia(
         serverName: srv,
-        mediaUrl: await _resolveMediaUrl(srv, mf),
+        mediaFile: mf,
         startTimeInMilliseconds:
             startTimeMs ?? _resumeMs(item.podcastEpisode?.watchStatus),
         mediaType: IsterMediaTypes.track,
@@ -1476,11 +1658,12 @@ class MediaPlayerHandler extends BaseAudioHandler
       album = null;
       currentTrackId = null;
       _currentMediaType = IsterMediaTypes.movie;
-      final mf = item.movie?.mediaFile?.firstOrNull;
+      final mf = await _pickMediaFile(srv, item.movie?.mediaFile,
+          choiceKey: _choiceKeyForMovie(item.movie!.id));
       if (mf == null) return;
       await _openMedia(
         serverName: srv,
-        mediaUrl: await _resolveMediaUrl(srv, mf),
+        mediaFile: mf,
         startTimeInMilliseconds: startTimeMs,
         mediaType: IsterMediaTypes.movie,
         autoPlay: autoPlay,
@@ -1491,19 +1674,21 @@ class MediaPlayerHandler extends BaseAudioHandler
       album = null;
       currentTrackId = null;
       _currentMediaType = IsterMediaTypes.episode;
-      final mf = item.episode?.mediaFile?.firstOrNull;
+      final mf = await _pickMediaFile(srv, item.episode?.mediaFile,
+          choiceKey: _choiceKeyForEpisode(item.episode?.id));
       if (mf == null) return;
       // An episode inside a multi-episode file never starts before its own
       // slice: a null/0 start (fresh queue, end-of-queue pre-arm) would open
       // the previous episode's footage.
-      final partStart = episodePartBounds(item.episode)?.startMs;
+      final partStart =
+          episodePartBounds(item.episode, mediaFileId: mf.id)?.startMs;
       final start = partStart != null &&
               (startTimeMs == null || startTimeMs < partStart)
           ? partStart
           : startTimeMs;
       await _openMedia(
         serverName: srv,
-        mediaUrl: await _resolveMediaUrl(srv, mf),
+        mediaFile: mf,
         startTimeInMilliseconds: start,
         mediaType: IsterMediaTypes.episode,
         autoPlay: autoPlay,
@@ -1547,9 +1732,13 @@ class MediaPlayerHandler extends BaseAudioHandler
         '';
   }
 
+  /// Opens [mediaFile] (its local download or the server's stream), or
+  /// re-opens [mediaUrl] as is — the stall watchdog and the retry do that
+  /// with the url they already had, and keep [currentMediaFile].
   Future<void> _openMedia({
     required String serverName,
-    required String mediaUrl,
+    String? mediaUrl,
+    Fragment$fragmentMediaFiles? mediaFile,
     int? startTimeInMilliseconds,
     IsterMediaTypes mediaType = IsterMediaTypes.episode,
     // False only for the paused restore of the last music queue: the media is
@@ -1560,6 +1749,14 @@ class MediaPlayerHandler extends BaseAudioHandler
     // *different* stream: the stall watchdog and the seek-before-open-position
     // path re-open the same URL, and the cover must not pop over the video
     // mid-scrub there (the controls' buffering spinner covers those).
+    assert(mediaUrl != null || mediaFile != null);
+    if (mediaFile != null) {
+      currentMediaFile = mediaFile;
+      currentMediaFileId.value = mediaFile.id;
+      mediaUrl ??= await _resolveMediaUrl(serverName, mediaFile);
+    }
+    if (mediaUrl == null) return;
+    _openGeneration++;
     if (mediaUrl != _currentMediaUrl) {
       _resetVideoStreamReady(restartClock: false);
     }
@@ -1614,13 +1811,13 @@ class MediaPlayerHandler extends BaseAudioHandler
         // once the new stream's metadata is in, unless a newer open took over
         // or the user paused meanwhile.
         if (kIsWeb && autoPlay) {
-          final urlAtOpen = mediaUrl;
+          final generation = _openGeneration;
           unawaited(_player.stream.duration
               .firstWhere((d) => d > Duration.zero)
               .timeout(const Duration(seconds: 30))
               .then((_) async {
             if (_intendsToPlay &&
-                _currentMediaUrl == urlAtOpen &&
+                _openGeneration == generation &&
                 !_player.state.playing) {
               await _player.play();
             }
@@ -1943,7 +2140,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     // nothing to resume, and a stop in the closing seconds is a finished item —
     // the server's watched/finished rules should decide where that restarts.
     final srv = serverName;
-    final endMs = episodePartBounds(episode)?.endMs ??
+    final endMs = _partBoundsOf(episode)?.endMs ??
         _player.state.duration.inMilliseconds;
     final nearEnd =
         endMs > 0 && stopPosition.inMilliseconds >= endMs - 5000;
@@ -1959,6 +2156,10 @@ class MediaPlayerHandler extends BaseAudioHandler
             positionMs: stopPosition.inMilliseconds,
           )
         : null;
+    // The version picks were for this session only.
+    _sessionFileChoice.clear();
+    currentMediaFile = null;
+    currentMediaFileId.value = null;
     // In-flight progress responses must not resurrect the queue we clear below.
     _syncGeneration++;
     // stop(), not pause(): pausing leaves the HLS load (and the video texture)
@@ -2087,7 +2288,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   Future<void> _refreshSubtitleDecoder(String sid) async {
     final platform = _player.platform;
     if (platform is! NativePlayer) return;
-    final openedUrl = _currentMediaUrl;
+    final generation = _openGeneration;
     try {
       if (_player.state.buffering) {
         await _player.stream.buffering
@@ -2098,7 +2299,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       // Still buffering after 3s — refresh anyway; worst case it's a no-op.
     }
     // A queue skip or teardown may have replaced the stream while waiting.
-    if (_currentMediaUrl != openedUrl || _currentMediaUrl == null) return;
+    if (_openGeneration != generation || _currentMediaUrl == null) return;
     try {
       // Dynamic dispatch: see _applyMpvNetworkOptions.
       final dynamic native = platform;
@@ -2125,10 +2326,11 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
     final platform = _player.platform;
     if (platform is! NativePlayer) return;
-    final mediaFile =
-        movie?.mediaFile?.firstOrNull ?? episode?.mediaFile?.firstOrNull;
+    // The file that is open — its stream ids name the SRTs on the server.
+    final mediaFile = _currentVideoFile;
     final streams = mediaFile?.mediaFileStreams;
     if (mediaFile == null || streams == null || streams.isEmpty) return;
+    final generation = _openGeneration;
     final urlAtOpen = _currentMediaUrl;
     final local = urlAtOpen != null && isLocalMediaUrl(urlAtOpen);
     final token = local ? null : StreamTokenService.getToken(serverName);
@@ -2163,12 +2365,12 @@ class MediaPlayerHandler extends BaseAudioHandler
     // `tracks` event per sub-add, and applying on the first one picked the
     // best match among a single (English) track — the Dutch one still to
     // come never got a look-in (Seinfeld on Android, 2026-09).
-    _externalSubtitlesLoadingFor = urlAtOpen;
+    _externalSubtitlesLoadingFor = generation;
     try {
       var n = 0;
       for (final s in tracks) {
         // A queue skip or re-open may have replaced the stream while adding.
-        if (_currentMediaUrl != urlAtOpen || _currentMediaUrl == null) return;
+        if (_openGeneration != generation || _currentMediaUrl == null) return;
         n++;
         final url = local
             ? localFiles[s.id]!
@@ -2188,9 +2390,9 @@ class MediaPlayerHandler extends BaseAudioHandler
         }
       }
     } finally {
-      if (_externalSubtitlesLoadingFor == urlAtOpen) {
+      if (_externalSubtitlesLoadingFor == generation) {
         _externalSubtitlesLoadingFor = null;
-        if (_currentMediaUrl == urlAtOpen && !_subtitlePreferenceApplied) {
+        if (_openGeneration == generation && !_subtitlePreferenceApplied) {
           unawaited(_applyTrackPreferences(_player.state.tracks));
         }
       }
@@ -2222,7 +2424,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         appliedVideoCrop.value = null;
         return;
       }
-      final urlAtOpen = _currentMediaUrl;
+      final generation = _openGeneration;
       // The crop must be expressed in the decoded stream's *coded* pixels —
       // mpv applies video-crop to the source rectangle before anamorphic
       // stretch, and silently ignores a rect that falls outside it. A
@@ -2234,7 +2436,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       final actualW = decoded?.$1 ?? video.width;
       final actualH = decoded?.$2 ?? video.height;
       // A queue skip or re-open may have replaced the stream while waiting.
-      if (_currentMediaUrl != urlAtOpen || _currentMediaUrl == null) return;
+      if (_openGeneration != generation || _currentMediaUrl == null) return;
       final crop = mpvCropString(
         srcW: video.width,
         srcH: video.height,
@@ -2640,11 +2842,11 @@ class MediaPlayerHandler extends BaseAudioHandler
         episode = null;
         movie = null;
         _currentMediaType = IsterMediaTypes.track;
-        final mediaFile = track.mediaFile?.firstOrNull;
+        final mediaFile = await _pickMediaFile(mediaItemId.serverName, track.mediaFile);
         if (mediaFile == null) return;
         await _openMedia(
           serverName: mediaItemId.serverName,
-          mediaUrl: await _resolveMediaUrl(mediaItemId.serverName, mediaFile),
+          mediaFile: mediaFile,
           startTimeInMilliseconds: 0,
           mediaType: IsterMediaTypes.track,
         );
@@ -2655,11 +2857,12 @@ class MediaPlayerHandler extends BaseAudioHandler
         album = null;
         currentTrackId = null;
         _currentMediaType = IsterMediaTypes.track;
-        final mediaFile = queueItem.chapter?.mediaFile?.firstOrNull;
+        final mediaFile =
+            await _pickMediaFile(mediaItemId.serverName, queueItem.chapter?.mediaFile);
         if (mediaFile == null) return;
         await _openMedia(
           serverName: mediaItemId.serverName,
-          mediaUrl: await _resolveMediaUrl(mediaItemId.serverName, mediaFile),
+          mediaFile: mediaFile,
           startTimeInMilliseconds: _resumeMs(queueItem.chapter?.watchStatus),
           mediaType: IsterMediaTypes.track,
         );
@@ -2670,11 +2873,12 @@ class MediaPlayerHandler extends BaseAudioHandler
         album = null;
         currentTrackId = null;
         _currentMediaType = IsterMediaTypes.track;
-        final mediaFile = queueItem.podcastEpisode?.mediaFile?.firstOrNull;
+        final mediaFile = await _pickMediaFile(
+            mediaItemId.serverName, queueItem.podcastEpisode?.mediaFile);
         if (mediaFile == null) return;
         await _openMedia(
           serverName: mediaItemId.serverName,
-          mediaUrl: await _resolveMediaUrl(mediaItemId.serverName, mediaFile),
+          mediaFile: mediaFile,
           startTimeInMilliseconds: _resumeMs(queueItem.podcastEpisode?.watchStatus),
           mediaType: IsterMediaTypes.track,
         );
@@ -2684,11 +2888,13 @@ class MediaPlayerHandler extends BaseAudioHandler
         album = null;
         currentTrackId = null;
         _currentMediaType = IsterMediaTypes.movie;
-        final mediaFile = queueItem.movie?.mediaFile?.firstOrNull;
+        final mediaFile = await _pickMediaFile(
+            mediaItemId.serverName, queueItem.movie?.mediaFile,
+            choiceKey: _choiceKeyForMovie(queueItem.movie!.id));
         if (mediaFile == null) return;
         await _openMedia(
           serverName: mediaItemId.serverName,
-          mediaUrl: await _resolveMediaUrl(mediaItemId.serverName, mediaFile),
+          mediaFile: mediaFile,
           startTimeInMilliseconds: 0,
           mediaType: IsterMediaTypes.movie,
         );
@@ -2698,13 +2904,18 @@ class MediaPlayerHandler extends BaseAudioHandler
         album = null;
         currentTrackId = null;
         _currentMediaType = IsterMediaTypes.episode;
-        final mediaFile = queueItem.episode?.mediaFile?.firstOrNull;
+        final mediaFile = await _pickMediaFile(
+            mediaItemId.serverName, queueItem.episode?.mediaFile,
+            choiceKey: _choiceKeyForEpisode(queueItem.episode?.id));
         if (mediaFile == null) return;
         // An episode inside a multi-episode file starts at its own slice.
-        final partStart = episodePartBounds(queueItem.episode)?.startMs ?? 0;
+        final partStart = episodePartBounds(queueItem.episode,
+                    mediaFileId: mediaFile.id)
+                ?.startMs ??
+            0;
         await _openMedia(
           serverName: mediaItemId.serverName,
-          mediaUrl: await _resolveMediaUrl(mediaItemId.serverName, mediaFile),
+          mediaFile: mediaFile,
           startTimeInMilliseconds: partStart,
           mediaType: IsterMediaTypes.episode,
         );
@@ -2744,7 +2955,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         // Progress is absolute within the file: a multi-episode slice starts
         // at its own offset, not at 0 (that would resume in the previous
         // episode of the file).
-        Duration(milliseconds: episodePartBounds(queueItem.episode)?.startMs ?? 0),
+        Duration(milliseconds: _partBoundsOf(queueItem.episode)?.startMs ?? 0),
       );
       if (playQueueObject != null &&
           generation == _syncGeneration &&
@@ -3325,7 +3536,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       }
 
       if (!_subtitlePreferenceApplied &&
-          _externalSubtitlesLoadingFor != _currentMediaUrl &&
+          _externalSubtitlesLoadingFor != _openGeneration &&
           tracks.subtitle.any((t) => t.id != 'auto' && t.id != 'no')) {
         _subtitlePreferenceApplied = true;
         final forcedSubtitle = _forcedSubtitle;
@@ -3599,7 +3810,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (_followMode) return;
     if (_currentMediaType != IsterMediaTypes.episode) return;
     if (!_player.state.playing) return;
-    final part = episodePartBounds(episode);
+    final part = _partBoundsOf(episode);
     if (part == null) return;
     if (pos.inMilliseconds < part.endMs) return;
     // Debounce against the completion listener / stall watchdog.
@@ -3787,7 +3998,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       if (item != null && srv != null) {
         // A slice of a multi-episode file ends at its part boundary, not at
         // the end of the file.
-        final endMs = episodePartBounds(item.episode)?.endMs ??
+        final endMs = _partBoundsOf(item.episode)?.endMs ??
             _player.state.duration.inMilliseconds;
         await OfflineProgressStore.instance.record(srv, item,
             positionMs: pos.inMilliseconds,
@@ -4777,9 +4988,10 @@ class MediaPlayerHandler extends BaseAudioHandler
   bool _subtitlePreferenceApplied = false;
   bool _bitmapPreferenceApplied = false;
 
-  /// Media URL whose external SRTs are still being side-loaded; the subtitle
-  /// preference waits for the full list (see _loadExternalSubtitleTracks).
-  String? _externalSubtitlesLoadingFor;
+  /// The open ([_openGeneration]) whose external SRTs are still being
+  /// side-loaded; the subtitle preference waits for the full list (see
+  /// _loadExternalSubtitleTracks). Not the url: a token re-stamp rewrites it.
+  int? _externalSubtitlesLoadingFor;
 
   /// Language of the audio track that was actually selected for the open media,
   /// so the subtitle rule can compare against it.

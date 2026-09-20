@@ -2698,4 +2698,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nodeReadOnly => 'Read-only';
+
+  @override
+  String get videoVersionLabel => 'Version';
+
+  @override
+  String get videoVersionPickTitle => 'Choose a version';
+
+  @override
+  String get videoVersionOtherCutTitle => 'This version has a different length';
+
+  @override
+  String get videoVersionOtherCutBody =>
+      'It may be a different cut, so the same time can be a different scene.';
+
+  @override
+  String get videoVersionFromStart => 'From the start';
+
+  @override
+  String get videoVersionSameTime => 'Same time';
+
+  @override
+  String get videoVersionAuto => 'Automatic';
+
+  @override
+  String videoVersionChip(String label) {
+    return 'Version: $label';
+  }
 }

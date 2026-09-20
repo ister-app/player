@@ -2867,5 +2867,40 @@
   "nodeReadOnly": "Read-only",
   "@nodeReadOnly": {
     "description": "Marks a disk on the node page the server cannot write to (so it takes no uploads)"
+  },
+  "videoVersionLabel": "Version",
+  "@videoVersionLabel": {
+    "description": "Submenu in the video track menu listing the media files (versions) of the playing item"
+  },
+  "videoVersionPickTitle": "Choose a version",
+  "@videoVersionPickTitle": {
+    "description": "Title of the version picker on a movie/episode page with several media files"
+  },
+  "videoVersionOtherCutTitle": "This version has a different length",
+  "@videoVersionOtherCutTitle": {
+    "description": "Dialog title when switching to a media file whose duration differs (another cut)"
+  },
+  "videoVersionOtherCutBody": "It may be a different cut, so the same time can be a different scene.",
+  "@videoVersionOtherCutBody": {
+    "description": "Dialog body for switching to another cut"
+  },
+  "videoVersionFromStart": "From the start",
+  "@videoVersionFromStart": {
+    "description": "Dialog action: play the other version from the beginning"
+  },
+  "videoVersionSameTime": "Same time",
+  "@videoVersionSameTime": {
+    "description": "Dialog action: play the other version at the current position"
+  },
+  "videoVersionAuto": "Automatic",
+  "@videoVersionAuto": {
+    "description": "Version picker entry: let the app choose the best media file"
+  },
+  "videoVersionChip": "Version: {label}",
+  "@videoVersionChip": {
+    "description": "Chip on a movie/episode page with several media files, showing the selected version",
+    "placeholders": {
+      "label": {"type": "String"}
+    }
   }
 }

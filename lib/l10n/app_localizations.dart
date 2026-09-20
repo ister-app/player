@@ -4513,6 +4513,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Read-only'**
   String get nodeReadOnly;
+
+  /// Submenu in the video track menu listing the media files (versions) of the playing item
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get videoVersionLabel;
+
+  /// Title of the version picker on a movie/episode page with several media files
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a version'**
+  String get videoVersionPickTitle;
+
+  /// Dialog title when switching to a media file whose duration differs (another cut)
+  ///
+  /// In en, this message translates to:
+  /// **'This version has a different length'**
+  String get videoVersionOtherCutTitle;
+
+  /// Dialog body for switching to another cut
+  ///
+  /// In en, this message translates to:
+  /// **'It may be a different cut, so the same time can be a different scene.'**
+  String get videoVersionOtherCutBody;
+
+  /// Dialog action: play the other version from the beginning
+  ///
+  /// In en, this message translates to:
+  /// **'From the start'**
+  String get videoVersionFromStart;
+
+  /// Dialog action: play the other version at the current position
+  ///
+  /// In en, this message translates to:
+  /// **'Same time'**
+  String get videoVersionSameTime;
+
+  /// Version picker entry: let the app choose the best media file
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic'**
+  String get videoVersionAuto;
+
+  /// Chip on a movie/episode page with several media files, showing the selected version
+  ///
+  /// In en, this message translates to:
+  /// **'Version: {label}'**
+  String videoVersionChip(String label);
 }
 
 class _AppLocalizationsDelegate

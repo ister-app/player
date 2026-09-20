@@ -16,6 +16,7 @@ import '../components/CastRow.dart';
 import '../components/MediaMetaLine.dart';
 import '../components/IsterPlayer.dart';
 import '../components/VideoCoverView.dart';
+import '../components/VideoVersionPicker.dart';
 import '../components/RatingStars.dart';
 import '../graphql/schema.graphql.dart';
 import '../components/download/DownloadMenuItem.dart';
@@ -64,6 +65,10 @@ class _MoviePageState extends State<MoviePage> {
 
   /// The user tapped the cover's play button.
   bool _playRequested = false;
+
+  /// The version picked on the page for a movie with several media files;
+  /// null lets the player choose.
+  String? _pickedFileId;
   bool _showAdminActions = true;
 
   @override
@@ -182,6 +187,7 @@ class _MoviePageState extends State<MoviePage> {
               widget.playQueueId,
               movie!,
               widget.serverName,
+              mediaFileId: _pickedFileId,
             );
           }
           final title = MetadataUtil.titleWithYear(
@@ -240,6 +246,14 @@ class _MoviePageState extends State<MoviePage> {
                   ),
           );
         },
+      ),
+      VideoVersionRow(
+        files: movie?.mediaFile,
+        playing: _playQueueStarted &&
+            MediaPlayerHandler.instance.isCurrentVideo(
+                movieId: widget.movieId, serverName: widget.serverName),
+        pickedId: _pickedFileId,
+        onPicked: (id) => setState(() => _pickedFileId = id),
       ),
       Container(
           padding: const EdgeInsets.all(10),

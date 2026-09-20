@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../utils/MediaVersions.dart';
+import '../VideoVersionPicker.dart';
 import 'TrackSelectionController.dart';
 import 'VideoControlButtons.dart';
 
@@ -14,6 +16,10 @@ class TrackMenuButton extends StatefulWidget {
     required this.controller,
     this.onMenuOpenChanged,
   });
+
+  static const Key versionMenuKey = Key('track-menu-version');
+  static Key versionItemKey(String mediaFileId) =>
+      Key('track-menu-version-$mediaFileId');
 
   final TrackSelectionController controller;
 
@@ -37,6 +43,7 @@ class _TrackMenuButtonState extends State<TrackMenuButton> {
         if (!tracks.hasAnyMenu) return const SizedBox.shrink();
         final audioLabels =
             TrackSelectionController.audioLabels(tracks.audioTracks, loc);
+        final versionLabels = MediaVersions.labelsFor(tracks.versions);
         final subtitleOptions = tracks.subtitleOptions;
         final subtitleLabels = TrackSelectionController.subtitleMenuLabels(
             subtitleOptions, tracks.bitmapSubtitleTracks, loc);
@@ -46,6 +53,21 @@ class _TrackMenuButtonState extends State<TrackMenuButton> {
           onClose: () => widget.onMenuOpenChanged?.call(false),
           consumeOutsideTap: true,
           menuChildren: [
+            if (tracks.hasVersions)
+              SubmenuButton(
+                key: TrackMenuButton.versionMenuKey,
+                leadingIcon: const Icon(Icons.high_quality, size: 18),
+                menuChildren: [
+                  for (final (i, file) in tracks.versions.indexed)
+                    _item(
+                      key: TrackMenuButton.versionItemKey(file.id),
+                      label: versionLabels[i],
+                      selected: file.id == tracks.currentVersionId,
+                      onPressed: () => _selectVersion(file.id),
+                    ),
+                ],
+                child: Text(loc.videoVersionLabel),
+              ),
             if (tracks.hasMultipleAudio)
               SubmenuButton(
                 leadingIcon: const Icon(Icons.volume_up, size: 18),
@@ -101,12 +123,17 @@ class _TrackMenuButtonState extends State<TrackMenuButton> {
     );
   }
 
+  Future<void> _selectVersion(String mediaFileId) =>
+      switchVideoVersion(context, mediaFileId);
+
   Widget _item({
+    Key? key,
     required String label,
     required bool selected,
     required VoidCallback onPressed,
   }) {
     return MenuItemButton(
+      key: key,
       leadingIcon: selected
           ? const Icon(Icons.check, size: 18)
           : const SizedBox(width: 18),
