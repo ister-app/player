@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:player/utils/ArtworkSizing.dart';
 import 'package:player/utils/ImageUtil.dart';
+import 'package:player/utils/StreamTokenCookie.dart';
 
 /// Every network artwork in the app, fetched and decoded at the size it is
 /// painted rather than at the size it is stored.
@@ -84,7 +85,9 @@ class ArtworkImage extends StatelessWidget {
     // guess would show a blurry picture on a surface we know nothing about.
     final decodeWidth = px > 0 ? px : null;
     return CachedNetworkImage(
-      imageUrl: sized,
+      // Tokenless on web when the stream-token cookie covers it: the browser's
+      // HTTP cache is keyed on the url, and the token changes every page load.
+      imageUrl: StreamTokenCookie.urlFor(sized),
       cacheKey: ImageUtil.cacheKeyFor(sized),
       width: width,
       height: height,
@@ -114,7 +117,7 @@ class ArtworkImage extends StatelessWidget {
     if (url == null || url.isEmpty) return null;
     final sized = ArtworkSizing.sizedUrl(url, ArtworkSizing.bucketFor(physicalWidth))!;
     final provider = CachedNetworkImageProvider(
-      sized,
+      StreamTokenCookie.urlFor(sized),
       cacheKey: ImageUtil.cacheKeyFor(sized),
     );
     // No ResizeImage on web: the default loader ignores the target size it

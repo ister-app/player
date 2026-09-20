@@ -5,6 +5,8 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/createStreamToken.graphql.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/LoggerService.dart';
+import 'package:player/utils/StreamTokenCookie.dart';
+import 'package:player/utils/WellKnownService.dart';
 
 class StreamTokenService {
   static final Map<String, String> _tokens = {};
@@ -101,6 +103,11 @@ class StreamTokenService {
     }
     _tokens[serverName] = token;
     _expiry[serverName] = expiry;
+    // Web only: lets same-origin artwork urls drop their token and become
+    // cacheable. Before the revision bump, so the rebuild it triggers already
+    // sees the cookie.
+    StreamTokenCookie.publish(
+        WellKnownService.getCached(serverName)?.serverUrl, token, expiry);
     LoggerService().logger.d('Stream token fetched for $serverName, expires $expiry');
     _scheduleRefresh(serverName, expiry);
     if (!hadToken) tokenRevision.value++;
@@ -134,6 +141,7 @@ class StreamTokenService {
     _refreshTimers.remove(serverName);
     _tokens.remove(serverName);
     _expiry.remove(serverName);
+    StreamTokenCookie.clear(WellKnownService.getCached(serverName)?.serverUrl);
   }
 
   @visibleForTesting
