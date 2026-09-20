@@ -627,6 +627,9 @@ jobs:
     needs: [gate, build]
     runs-on: ubuntu-latest
     container:
+      # See the same job in workflow.yml: the image tag lags the manifest's
+      # runtime-version on purpose — no freedesktop-26.08 image exists yet, and
+      # the action installs the 26.08 SDK from flathub at build time.
       image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-25.08
       options: --privileged
     steps:

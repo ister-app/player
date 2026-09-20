@@ -480,6 +480,11 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     container:
+      # The manifest targets the 26.08 runtime, but flathub-infra publishes no
+      # freedesktop-26.08 image yet (25.08 is its highest tag). That only costs a
+      # download: the image supplies flatpak-builder, and the action passes
+      # --install-deps-from=flathub, so the 26.08 SDK is fetched at build time.
+      # Move this tag up once the matching image exists.
       image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-25.08
       options: --privileged
     steps:
