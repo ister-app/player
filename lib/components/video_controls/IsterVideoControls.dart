@@ -13,6 +13,7 @@ import '../../utils/TvInputCommands.dart';
 import '../VideoCoverView.dart';
 import '../WatchTogetherButton.dart';
 import 'SegmentOverlayButtons.dart';
+import 'BitmapSubtitleOverlay.dart';
 import 'TrackMenuButton.dart';
 import 'TrackSelectionController.dart';
 import 'VideoControlButtons.dart';
@@ -429,6 +430,9 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
         // the gesture layer (so it hides the black/stale texture) and below
         // the controls, which stay reachable — stop, watch-together, seek.
         const VideoLoadingOverlay(),
+        // Picture-based subtitles, drawn by the app itself. Below the chrome
+        // so the controls stay readable on top of a subtitle.
+        BitmapSubtitleOverlay(state: widget.state),
         overlay,
         // Outside the auto-hiding overlay on purpose: the skip-intro /
         // next-episode prompt must stay visible while the chrome is hidden.

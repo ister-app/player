@@ -62,7 +62,7 @@ class _TrackMenuButtonState extends State<TrackMenuButton> {
                 onPressed: null,
                 child: Text(loc.subtitlesUnsupportedImageBased),
               )
-            else if (tracks.hasSubtitles)
+            else if (tracks.hasSubtitles || tracks.bitmapSubtitleTracks.isNotEmpty)
               SubmenuButton(
                 leadingIcon: const Icon(Icons.subtitles, size: 18),
                 menuChildren: [
@@ -71,6 +71,14 @@ class _TrackMenuButtonState extends State<TrackMenuButton> {
                       label: TrackSelectionController.subtitleLabel(t, loc),
                       selected: t == tracks.currentSubtitle,
                       onPressed: () => tracks.selectSubtitle(t),
+                    ),
+                  // Picture-based tracks (Blu-ray/DVD), drawn by the app.
+                  for (final (i, t) in tracks.bitmapSubtitleTracks.indexed)
+                    _item(
+                      label: TrackSelectionController.bitmapSubtitleLabel(
+                          t, i + 1, loc),
+                      selected: t == tracks.currentBitmapSubtitle,
+                      onPressed: () => tracks.selectBitmapSubtitle(t),
                     ),
                 ],
                 child: Text(loc.subtitlesTrackLabel),

@@ -308,6 +308,13 @@ class DownloadService {
     return '$dir/${entry!.artworkFile}';
   }
 
+  /// The directory a downloaded media file's HLS tree is mirrored into, or
+  /// null when it is not downloaded.
+  String? localMediaDir(String server, String mediaFileId) {
+    if (entryForMediaFile(server, mediaFileId) == null) return null;
+    return store.itemDirPathSync(server, mediaFileId);
+  }
+
   /// `(streamId, absolute path)` of the mirrored SRT sidecars.
   List<(String, String)> localSubtitleFiles(String server, String mediaFileId) {
     final entry = entryForMediaFile(server, mediaFileId);

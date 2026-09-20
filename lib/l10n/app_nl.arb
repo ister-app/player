@@ -568,6 +568,7 @@
   "mute": "Dempen",
   "unmute": "Dempen opheffen",
   "subtitlesUnsupportedImageBased": "Ondertitels niet ondersteund (beeldgebaseerd)",
+  "subtitlesBitmapLoadFailed": "Deze ondertitels konden niet worden geladen",
   "zoomToFill": "Scherm vullen",
   "zoomToFit": "Passend weergeven",
   "fetchToServerStarted": "Download gestart — de aflevering verschijnt zo",

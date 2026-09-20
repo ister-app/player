@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui' show Rect;
 
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
@@ -34,6 +35,8 @@ import 'package:player/utils/download/MusicCacheService.dart';
 import 'package:player/utils/download/PlayHistoryStore.dart';
 import 'package:player/utils/download/OfflineProgressStore.dart';
 import 'package:player/utils/download/SubtitleStreams.dart';
+import 'package:player/utils/subtitles/BitmapSubtitles.dart';
+import 'package:player/utils/subtitles/BitmapSubtitleLoader.dart';
 import 'package:player/utils/VideoCrop.dart';
 import 'package:player/utils/WellKnownService.dart';
 import 'package:rxdart/rxdart.dart';
@@ -418,6 +421,65 @@ class MediaPlayerHandler extends BaseAudioHandler
     final mediaFile =
         movie?.mediaFile?.firstOrNull ?? episode?.mediaFile?.firstOrNull;
     return mediaFile?.mediaFileStreams ?? const [];
+  }
+
+  /// The picture-based subtitle streams (PGS/VobSub) of the current video.
+  /// Neither mpv nor hls.js knows them: the server leaves them out of the
+  /// stream and serves them as sprite sheets for `BitmapSubtitleOverlay`.
+  List<BitmapSubtitleTrack> get currentBitmapSubtitleTracks {
+    final tracks = BitmapSubtitleTrack.of(currentVideoFileStreams);
+    final url = _currentMediaUrl;
+    if (tracks.isEmpty || url == null || !isLocalMediaUrl(url)) return tracks;
+    // Offline: only what the download mirrored (its index file is the record).
+    final mediaFile =
+        movie?.mediaFile?.firstOrNull ?? episode?.mediaFile?.firstOrNull;
+    final dir = mediaFile == null || serverName == null
+        ? null
+        : DownloadService.instance.localMediaDir(serverName!, mediaFile.id);
+    if (dir == null) return const [];
+    return [
+      for (final t in tracks)
+        if (File('$dir/${BitmapSubtitleLoader.indexName(t.streamId)}')
+            .existsSync())
+          t,
+    ];
+  }
+
+  /// The black-bar crop mpv is applying, as fractions of the source frame, or
+  /// null. The bitmap subtitle overlay needs it: its cue coordinates refer to
+  /// the uncropped frame.
+  final ValueNotifier<Rect?> appliedVideoCrop = ValueNotifier(null);
+
+  /// The bitmap subtitle track the overlay should draw, or null. Selecting
+  /// one and selecting a player subtitle track are mutually exclusive.
+  final ValueNotifier<BitmapSubtitleTrack?> bitmapSubtitle =
+      ValueNotifier(null);
+
+  /// Where the overlay loads the current video's bitmap subtitles from: the
+  /// serving node, or the mirrored files of a download. Null when nothing
+  /// that can have them is playing.
+  BitmapSubtitleLoader? bitmapSubtitleLoader() {
+    final mediaFile =
+        movie?.mediaFile?.firstOrNull ?? episode?.mediaFile?.firstOrNull;
+    final name = serverName;
+    final url = _currentMediaUrl;
+    if (mediaFile == null || name == null || url == null) return null;
+    if (isLocalMediaUrl(url)) {
+      final dir = DownloadService.instance.localMediaDir(name, mediaFile.id);
+      return dir == null ? null : BitmapSubtitleLoader.local(dir);
+    }
+    return BitmapSubtitleLoader.remote(
+      baseUrl: '${mediaFile.directory.servingNode.url}/hls/${mediaFile.id}',
+      token: () => StreamTokenService.getToken(name),
+    );
+  }
+
+  /// Shows [track] in the overlay and turns the player's own subtitles off.
+  Future<void> selectBitmapSubtitle(BitmapSubtitleTrack track) async {
+    bitmapSubtitle.value = track;
+    if (!ClientManager.usesTestClients) {
+      await _player.setSubtitleTrack(SubtitleTrack.no());
+    }
   }
   Fragment$fragmentAlbum? album;
   String? currentTrackId;
@@ -1414,6 +1476,16 @@ class MediaPlayerHandler extends BaseAudioHandler
       _audioPreferenceApplied = false;
       _subtitlePreferenceApplied = false;
       _selectedAudioLanguage = null;
+      // A re-open of the same file (stall watchdog, token re-stamp) keeps the
+      // bitmap subtitle the viewer is looking at; a different file starts over.
+      final keptBitmap = bitmapSubtitle.value;
+      if (keptBitmap != null &&
+          currentBitmapSubtitleTracks.contains(keptBitmap)) {
+        _bitmapPreferenceApplied = true;
+      } else {
+        bitmapSubtitle.value = null;
+        _bitmapPreferenceApplied = false;
+      }
       // Under flutter test (mock GraphQL clients) there is no real mpv event
       // loop, so the player calls below would never complete; skip them and
       // still publish the mediaItem/queue state the tests assert on.
@@ -1793,6 +1865,8 @@ class MediaPlayerHandler extends BaseAudioHandler
     _forcedSubtitle = null;
     _audioPreferenceApplied = false;
     _subtitlePreferenceApplied = false;
+    _bitmapPreferenceApplied = false;
+    bitmapSubtitle.value = null;
     _selectedAudioLanguage = null;
     _streamOpenPositionMs = 0;
     _mediaOpenedAt = null;
@@ -2032,6 +2106,7 @@ class MediaPlayerHandler extends BaseAudioHandler
           : null;
       if (video == null || video.cropWidth == null) {
         await native.setProperty('video-crop', '');
+        appliedVideoCrop.value = null;
         return;
       }
       final urlAtOpen = _currentMediaUrl;
@@ -2058,6 +2133,13 @@ class MediaPlayerHandler extends BaseAudioHandler
         actualH: actualH,
       );
       await native.setProperty('video-crop', crop ?? '');
+      appliedVideoCrop.value = crop == null
+          ? null
+          : Rect.fromLTWH(
+              video.cropX! / video.width,
+              video.cropY! / video.height,
+              video.cropWidth! / video.width,
+              video.cropHeight! / video.height);
     } catch (e) {
       LoggerService().logger.w('applying video crop failed: $e');
     }
@@ -3091,6 +3173,11 @@ class MediaPlayerHandler extends BaseAudioHandler
           await _player.setAudioTrack(chosen ?? AudioTrack.auto());
         }
         debugPrint('[TRACKS_HANDLER] audio applied: ${_player.state.track.audio.id}');
+        // A file whose only subtitles are pictures never reaches the subtitle
+        // block below (the player reports no subtitle track at all).
+        if (SubtitleStreams.sideloadable(currentVideoFileStreams).isEmpty) {
+          await _applyBitmapSubtitlePreference(_selectedAudioLanguage);
+        }
       }
 
       if (!_subtitlePreferenceApplied &&
@@ -3099,7 +3186,10 @@ class MediaPlayerHandler extends BaseAudioHandler
         _subtitlePreferenceApplied = true;
         final forcedSubtitle = _forcedSubtitle;
         _forcedSubtitle = null;
-        if (forcedSubtitle != null) {
+        if (bitmapSubtitle.value != null) {
+          // The overlay is showing a bitmap track (kept across a re-open).
+          await _player.setSubtitleTrack(SubtitleTrack.no());
+        } else if (forcedSubtitle != null) {
           if (forcedSubtitle.id == 'no') {
             debugPrint('[TRACKS_HANDLER] restoring forced subtitle: no');
             await _player.setSubtitleTrack(SubtitleTrack.no());
@@ -3149,9 +3239,39 @@ class MediaPlayerHandler extends BaseAudioHandler
           }
           await _player.setSubtitleTrack(
               chosen == null || suppressed ? SubtitleTrack.no() : chosen);
+          // No text track in a preferred language: a picture-based one may be.
+          if (chosen == null) {
+            await _applyBitmapSubtitlePreference(audioLanguage);
+          }
         }
         debugPrint('[TRACKS_HANDLER] subtitle applied: ${_player.state.track.subtitle.id}');
     }
+  }
+
+  /// Picks a bitmap subtitle track by the same language rules as a text
+  /// track. Text wins when both exist in a preferred language: it is lighter
+  /// and the platform renders it natively.
+  Future<void> _applyBitmapSubtitlePreference(String? audioLanguage) async {
+    if (_bitmapPreferenceApplied) return;
+    _bitmapPreferenceApplied = true;
+    final tracks = currentBitmapSubtitleTracks;
+    if (tracks.isEmpty) return;
+    await LanguageService().ensureLoaded();
+    final chosen = preferredTrack<BitmapSubtitleTrack>(
+      tracks,
+      await LanguagePreferences.getSubtitleLanguages(serverName: serverName),
+    );
+    if (chosen == null) return;
+    final suppressed = suppressesSubtitle(
+      hideSubtitlesMatchingAudio:
+          await PlaybackPreferences.getHideSubtitlesMatchingAudio(
+              serverName: serverName),
+      subtitleLanguage: chosen.language,
+      audioLanguage: audioLanguage ?? _player.state.track.audio.language,
+    );
+    debugPrint('[TRACKS_HANDLER] bitmap subtitle ${chosen.language} '
+        '${suppressed ? "suppressed" : "applied"}');
+    if (!suppressed) await selectBitmapSubtitle(chosen);
   }
 
   /// Escape hatch: revert to the old reload-based subtitle switching if the
@@ -3165,6 +3285,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// Switches the subtitle track in place: select, re-seek to the current
   /// position (read-head reset), and refresh the subtitle decoder.
   Future<void> switchSubtitleTrack(SubtitleTrack track) async {
+    bitmapSubtitle.value = null;
     if (kIsWeb) {
       // On web, hls.js applies subtitle track changes immediately — no reload needed.
       await _player.setSubtitleTrack(track);
@@ -4507,6 +4628,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   bool _interrupted = false;
   bool _audioPreferenceApplied = false;
   bool _subtitlePreferenceApplied = false;
+  bool _bitmapPreferenceApplied = false;
 
   /// Media URL whose external SRTs are still being side-loaded; the subtitle
   /// preference waits for the full list (see _loadExternalSubtitleTracks).
@@ -4611,6 +4733,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   }
 
   static String? _trackLanguage<T>(T track) {
+    if (track is BitmapSubtitleTrack) return track.language;
     if (track is SubtitleTrack) return track.language;
     if (track is AudioTrack) return track.language;
     return null;

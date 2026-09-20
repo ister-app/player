@@ -250,8 +250,15 @@ stream_video_480p.m3u8?token=a
         return http.Response(one.replaceAll('SEG', '${name.replaceAll('stream_', 'seg_').replaceAll('.m3u8', '')}_00000.ts'), 200);
       }
       if (name.endsWith('.srt')) return http.Response('1\n00:00:01,000 --> 00:00:02,000\nhi\n', 200);
+      if (name == 'bsub_9.json') {
+        return http.Response(
+            '{"version":1,"width":1920,"height":1080,"sheets":["bsub_9_00.png","bsub_9_01.png"],"cues":[]}',
+            200);
+      }
       return http.Response('x', 200);
     });
+    final pgs = Fragment$fragmentMediaFiles$mediaFileStreams(
+        codecName: 'hdmv_pgs_subtitle', codecType: 'SUBTITLE', height: 0, width: 0, id: '9', path: '', streamIndex: 5, language: 'nld');
     final video = Fragment$fragmentMediaFiles$mediaFileStreams(
         codecName: 'h264', codecType: 'VIDEO', height: 1080, width: 1920, id: 'v', path: '', streamIndex: 0);
     final sub = Fragment$fragmentMediaFiles$mediaFileStreams(
@@ -262,7 +269,7 @@ stream_video_480p.m3u8?token=a
       dir: dir,
       nodeUrl: 'https://node.example',
       mediaFileId: 'mf1',
-      streams: [video, _audioStream, sub],
+      streams: [video, _audioStream, sub, pgs],
       selection: const DownloadSelection(
           videoQuality: DownloadVideoQuality.p480, spokenLanguages: ['nld']),
       onProgress: (_) {},
@@ -277,6 +284,11 @@ stream_video_480p.m3u8?token=a
     expect(fetched, contains('sub_7.srt'));
     expect(result.audioStreamIndexes, [1, 2]);
     expect(result.subtitleStreamIds, ['7']);
+    // Picture-based subtitles: the index and every sheet it names; the index
+    // on disk is what makes the track available offline.
+    expect(fetched, containsAll(['bsub_9.json', 'bsub_9_00.png', 'bsub_9_01.png']));
+    expect(File('${dir.path}/bsub_9.json').existsSync(), isTrue);
+    expect(File('${dir.path}/bsub_9_01.png').existsSync(), isTrue);
     final master = File('${dir.path}/master.m3u8').readAsStringSync();
     expect(master, isNot(contains('720p')));
     expect(master, isNot(contains('SUBTITLES')));

@@ -20,6 +20,8 @@ Films en afleveringen streamen via HLS, dat zich soepel aanpast aan je verbindin
 
 Heeft een video meerdere audiosporen of ondertitels, dan kies je ze via de spelerknoppen. De app onthoudt je voorkeurstalen voor spraak en ondertiteling (zie [Instellingen](07-settings.md)) en selecteert die automatisch als ze beschikbaar zijn.
 
+Blu-ray- en dvd-rips hebben hun ondertitels meestal als plaatjes in plaats van tekst. Die staan in hetzelfde menu en zien er precies zo uit als op de disc — op elk apparaat, ook in de browser, en in downloads.
+
 ### Kijkvoortgang
 
 Je positie wordt tijdens het kijken naar de server gesynchroniseerd. Stop op je telefoon, ga verder op de tv — de aflevering pakt op waar je was, en half bekeken items tonen door de hele app hun voortgangsbalk.

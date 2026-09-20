@@ -20,6 +20,8 @@ Movies and episodes stream over HLS, which adapts smoothly to your connection. T
 
 If a video has multiple audio tracks or subtitles, pick them from the player controls. The app remembers your preferred spoken and subtitle languages (see [Settings](07-settings.md)) and selects them automatically when available.
 
+Blu-ray and DVD rips usually carry their subtitles as pictures rather than text. These show up in the same menu and look exactly as they did on the disc — on every device, the browser included, and in downloads.
+
 ### Watch progress
 
 Your position is synced to the server as you watch. Stop on your phone, continue on the TV — the episode resumes where you left off, and partially watched items show their progress bar throughout the app.

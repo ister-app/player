@@ -2966,11 +2966,17 @@ abstract class AppLocalizations {
   /// **'Unmute'**
   String get unmute;
 
-  /// Disabled track-menu entry when the file only has image-based (DVD/PGS) subtitles the stream cannot offer
+  /// Disabled track-menu entry when the file only has image-based subtitles of a kind the server cannot serve (e.g. DVB)
   ///
   /// In en, this message translates to:
   /// **'Subtitles not supported (image-based)'**
   String get subtitlesUnsupportedImageBased;
+
+  /// Snackbar when the picture-based (Blu-ray/DVD) subtitle track the viewer picked could not be fetched from the server
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load these subtitles'**
+  String get subtitlesBitmapLoadFailed;
 
   /// Tooltip of the zoom button when the video is letterboxed (activating crops it to fill)
   ///

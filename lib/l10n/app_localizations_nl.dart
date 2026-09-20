@@ -1738,6 +1738,10 @@ class AppLocalizationsNl extends AppLocalizations {
       'Ondertitels niet ondersteund (beeldgebaseerd)';
 
   @override
+  String get subtitlesBitmapLoadFailed =>
+      'Deze ondertitels konden niet worden geladen';
+
+  @override
   String get zoomToFill => 'Scherm vullen';
 
   @override

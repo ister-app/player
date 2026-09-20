@@ -1938,7 +1938,11 @@
   },
   "subtitlesUnsupportedImageBased": "Subtitles not supported (image-based)",
   "@subtitlesUnsupportedImageBased": {
-    "description": "Disabled track-menu entry when the file only has image-based (DVD/PGS) subtitles the stream cannot offer"
+    "description": "Disabled track-menu entry when the file only has image-based subtitles of a kind the server cannot serve (e.g. DVB)"
+  },
+  "subtitlesBitmapLoadFailed": "Could not load these subtitles",
+  "@subtitlesBitmapLoadFailed": {
+    "description": "Snackbar when the picture-based (Blu-ray/DVD) subtitle track the viewer picked could not be fetched from the server"
   },
   "zoomToFill": "Fill screen",
   "@zoomToFill": {

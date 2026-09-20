@@ -6,6 +6,7 @@ import 'package:media_kit/media_kit.dart';
 import '../../l10n/app_localizations.dart';
 import '../../utils/LanguageService.dart';
 import '../../utils/MediaPlayerHandler.dart';
+import '../../utils/subtitles/BitmapSubtitles.dart';
 
 /// Observes the player's audio/subtitle tracks and performs track switches.
 ///
@@ -36,6 +37,8 @@ class TrackSelectionController extends ChangeNotifier {
       _currentSubtitle = track.subtitle;
       notifyListeners();
     });
+
+    _handler.bitmapSubtitle.addListener(notifyListeners);
 
     // HLS on Linux: tracks can arrive late. One-shot re-read.
     if (_audioTracks.length <= 2 && _subtitleTracks.length <= 2) {
@@ -69,23 +72,36 @@ class TrackSelectionController extends ChangeNotifier {
 
   bool get hasSubtitles => _subtitleTracks.isNotEmpty;
 
-  /// True when mpv reports no real subtitle track while the server's analysis
-  /// of the file *does* list subtitle streams: those are the image-based subs
-  /// (DVD/PGS bitmaps) the server dropped from the HLS master playlist. The
-  /// menu then shows a disabled explanation instead of hiding entirely.
+  /// Picture-based subtitle tracks (PGS/VobSub) the app draws itself; the
+  /// player knows nothing about them.
+  List<BitmapSubtitleTrack> get bitmapSubtitleTracks =>
+      _handler.currentBitmapSubtitleTracks;
+
+  /// The bitmap track on screen, or null when a player track (or none) is.
+  BitmapSubtitleTrack? get currentBitmapSubtitle =>
+      _handler.bitmapSubtitle.value;
+
+  /// True when the file has subtitle streams nobody can show: no player track,
+  /// no bitmap track the server has a parser for — what is left is e.g. DVB
+  /// bitmaps. The menu then shows a disabled explanation instead of hiding.
   bool get fileHasUnsupportedSubtitles => unsupportedSubtitlesFor(
       _subtitleTracks,
-      _handler.currentVideoFileStreams.map((s) => s?.codecType));
+      _handler.currentVideoFileStreams.map((s) => s?.codecType),
+      bitmapSubtitleTracks);
 
   static bool unsupportedSubtitlesFor(
-      List<SubtitleTrack> mpvTracks, Iterable<String?> fileStreamCodecTypes) {
+      List<SubtitleTrack> mpvTracks, Iterable<String?> fileStreamCodecTypes,
+      [List<BitmapSubtitleTrack> bitmapTracks = const []]) {
     final hasRealTrack = mpvTracks.any((t) => t.id != 'no' && t.id != 'auto');
-    if (hasRealTrack) return false;
+    if (hasRealTrack || bitmapTracks.isNotEmpty) return false;
     return fileStreamCodecTypes.any((t) => t == 'SUBTITLE');
   }
 
   bool get hasAnyMenu =>
-      hasMultipleAudio || hasSubtitles || fileHasUnsupportedSubtitles;
+      hasMultipleAudio ||
+      hasSubtitles ||
+      bitmapSubtitleTracks.isNotEmpty ||
+      fileHasUnsupportedSubtitles;
 
   AudioTrack get currentAudio => effectiveAudio(_currentAudio, _audioTracks);
 
@@ -93,8 +109,11 @@ class TrackSelectionController extends ChangeNotifier {
   List<SubtitleTrack> get subtitleOptions =>
       subtitleOptionsFor(_subtitleTracks);
 
-  SubtitleTrack get currentSubtitle =>
-      effectiveSubtitle(_currentSubtitle, subtitleOptions);
+  /// While a bitmap track is on screen the player's own track is "none",
+  /// which must not read as the selected menu entry.
+  SubtitleTrack? get currentSubtitle => currentBitmapSubtitle != null
+      ? null
+      : effectiveSubtitle(_currentSubtitle, subtitleOptions);
 
   // The derivation/label logic is static and pure so it can be unit tested
   // without a live (native) mpv player behind the controller.
@@ -139,6 +158,10 @@ class TrackSelectionController extends ChangeNotifier {
     return _trackLabel(t.title, t.language, t.id, loc);
   }
 
+  static String bitmapSubtitleLabel(
+          BitmapSubtitleTrack t, int number, AppLocalizations loc) =>
+      _trackLabel(t.title, t.language, '${loc.subtitlesTrackLabel} $number', loc);
+
   static String subtitleLabel(SubtitleTrack t, AppLocalizations loc) {
     if (t == SubtitleTrack.no()) return loc.trackNone;
     return _trackLabel(t.title, t.language, t.id, loc);
@@ -159,8 +182,14 @@ class TrackSelectionController extends ChangeNotifier {
     return _handler.switchSubtitleTrack(t);
   }
 
+  Future<void> selectBitmapSubtitle(BitmapSubtitleTrack t) {
+    _currentSubtitle = SubtitleTrack.no();
+    return _handler.selectBitmapSubtitle(t);
+  }
+
   @override
   void dispose() {
+    _handler.bitmapSubtitle.removeListener(notifyListeners);
     _tracksTimer?.cancel();
     _tracksSubscription.cancel();
     _trackSubscription.cancel();

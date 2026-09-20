@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:player/utils/subtitles/BitmapSubtitles.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:player/components/video_controls/TrackSelectionController.dart';
 import 'package:player/components/video_controls/VideoControlButtons.dart';
@@ -221,6 +222,13 @@ void main() {
               placeholders, ['VIDEO', 'AUDIO', 'EXTERNAL_SUBTITLE']),
           isFalse);
       expect(TrackSelectionController.unsupportedSubtitlesFor(placeholders, []),
+          isFalse);
+      // The image sub is one the app draws itself → a real choice, no hint.
+      expect(
+          TrackSelectionController.unsupportedSubtitlesFor(
+              placeholders,
+              ['VIDEO', 'SUBTITLE'],
+              const [BitmapSubtitleTrack(streamId: 's1', language: 'eng')]),
           isFalse);
     });
 

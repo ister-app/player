@@ -7,6 +7,8 @@ import 'package:player/utils/download/DownloadHttp.dart';
 import 'package:player/utils/download/DownloadModels.dart';
 import 'package:player/utils/download/M3u8.dart';
 import 'package:player/utils/download/SubtitleStreams.dart';
+import 'package:player/utils/subtitles/BitmapSubtitleLoader.dart';
+import 'package:player/utils/subtitles/BitmapSubtitles.dart';
 
 export 'package:player/utils/download/DownloadHttp.dart'
     show DownloadCancelToken, DownloadCancelled, DownloadFailure;
@@ -244,6 +246,22 @@ class HlsDownloader implements HlsDownloaderApi {
       }
     }
 
+    // 5b. Picture-based subtitles (Blu-ray/DVD): the cue index and the sprite
+    // sheets it names. Their presence on disk is the offline record — the
+    // player offers a bitmap track when its index file is there.
+    if (isVideo && selection.downloadSubtitles) {
+      for (final track in BitmapSubtitleTrack.of(streams)) {
+        DownloadHttp.checkCancel(cancel);
+        try {
+          bytes += await _fetchBitmapSubtitle(
+              serverName, nodeUrl, mediaFileId, track.streamId, dir, cancel);
+        } on DownloadFailure {
+          // Same rule as the text sidecars: never sink the download.
+          continue;
+        }
+      }
+    }
+
     // 6. Cover (best effort).
     final artworkFile = await fetchArtwork(_http, serverName, dir, artworkUrl,
         cancel, timeout: segmentTimeout);
@@ -375,6 +393,30 @@ class HlsDownloader implements HlsDownloaderApi {
   static int? _audioStreamIndex(String uri) {
     final m = RegExp(r'^stream_audio_(\d+)_').firstMatch(uri);
     return m == null ? null : int.tryParse(m.group(1)!);
+  }
+
+
+  /// Sheets first, index last: an index on disk means the track is complete.
+  Future<int> _fetchBitmapSubtitle(String serverName, String nodeUrl,
+      String mediaFileId, String streamId, Directory dir,
+      DownloadCancelToken cancel) async {
+    final indexName = BitmapSubtitleLoader.indexName(streamId);
+    final indexFile = File('${dir.path}/$indexName');
+    if (await indexFile.exists()) return 0;
+    final json = await _http.getText(
+        serverName, _fileUrl(nodeUrl, mediaFileId, indexName), cancel,
+        timeout: segmentTimeout);
+    var bytes = 0;
+    for (final sheet in BitmapSubtitleIndex.parse(json).sheets) {
+      DownloadHttp.checkCancel(cancel);
+      final target = File('${dir.path}/$sheet');
+      if (await target.exists()) continue;
+      bytes += await _http.getToFile(
+          serverName, _fileUrl(nodeUrl, mediaFileId, sheet), target, cancel,
+          timeout: segmentTimeout);
+    }
+    await indexFile.writeAsString(json);
+    return bytes + json.length;
   }
 
   static String _fileUrl(String nodeUrl, String mediaFileId, String name) {
