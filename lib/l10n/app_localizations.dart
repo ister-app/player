@@ -4213,6 +4213,300 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Removed ‘{title}’ from the queue'**
   String queueItemRemoved(String title);
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Upload media'**
+  String get uploadMedia;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Add shows, albums or books to a library'**
+  String get uploadMediaSubtitle;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Pick where the media goes and the folder to upload. Before anything is sent you see how the library will recognise every file.'**
+  String get uploadIntro;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading is not available on this device yet. Use the desktop app or the web player.'**
+  String get uploadNotSupportedHere;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get uploadLibrary;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Directory'**
+  String get uploadDirectory;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'{free} free · {node}'**
+  String uploadDirectoryFree(String free, String node);
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Not writable for the server'**
+  String get uploadDirectoryNotWritable;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'This server has no library directory to upload to'**
+  String get uploadNoDirectories;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Inside folder (optional)'**
+  String get uploadTargetParent;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'For example the artist folder an album belongs under. Empty = the root of the directory.'**
+  String get uploadTargetParentHint;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Choose folder…'**
+  String get uploadPickFolder;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · {count, plural, =1{1 file} other{{count} files}} · {size}'**
+  String uploadPickedFolder(String name, int count, String size);
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Upload as one folder'**
+  String get uploadKeepFolder;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Off: the folders inside it land directly in the target, for a folder full of artists or shows'**
+  String get uploadKeepFolderSubtitle;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Folder name on the server'**
+  String get uploadFolderName;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Overwrite existing files'**
+  String get uploadOverwrite;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Replaced files are analysed again; someone playing one right now is interrupted'**
+  String get uploadOverwriteSubtitle;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get uploadPreviewTitle;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'{files, plural, =1{1 file} other{{files} files}} to upload · {size}'**
+  String uploadPreviewSummary(int files, String size);
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'{name} — seen as {level}'**
+  String uploadRootLevel(String name, String level);
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'{name} — not recognised as a library folder'**
+  String uploadRootLevelNone(String name);
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Recognised'**
+  String get uploadStatusRecognised;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Ignored'**
+  String get uploadStatusIgnored;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Already there'**
+  String get uploadStatusExists;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Will be overwritten'**
+  String get uploadStatusWillOverwrite;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Being uploaded elsewhere'**
+  String get uploadStatusBusy;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid name'**
+  String get uploadStatusInvalid;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate'**
+  String get uploadStatusDuplicate;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Not a file this library uses'**
+  String get uploadIgnoredUnsupported;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'The scan does not look inside \"{folder}\"'**
+  String uploadIgnoredFolder(String folder);
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Only show files that will not be uploaded'**
+  String get uploadShowOnlyProblems;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Start upload'**
+  String get uploadStart;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'None of these files would be picked up by the library'**
+  String get uploadNothingToUpload;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'{sent} of {total}'**
+  String uploadProgress(String sent, String total);
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get uploadResume;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel upload'**
+  String get uploadCancelUpload;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this upload? Files that are already complete stay in the library; the rest is removed from the server.'**
+  String get uploadCancelConfirm;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Retry 1 failed file} other{Retry {count} failed files}}'**
+  String uploadRetryFailed(int count);
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Upload finished. The files are being added to the library.'**
+  String get uploadFinished;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Finished, 1 file failed} other{Finished, {count} files failed}}'**
+  String uploadFinishedWithFailures(int count);
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Upload something else'**
+  String get uploadAnother;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'An upload was not finished'**
+  String get uploadUnfinishedTitle;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the same folder again to continue where it stopped.'**
+  String get uploadUnfinishedBody;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get uploadPhaseQueued;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Finishing…'**
+  String get uploadPhaseCompleting;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get uploadPhaseDone;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped, already there'**
+  String get uploadPhaseSkipped;
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get uploadPhaseFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -2495,4 +2495,204 @@ class AppLocalizationsEn extends AppLocalizations {
   String queueItemRemoved(String title) {
     return 'Removed ‘$title’ from the queue';
   }
+
+  @override
+  String get uploadMedia => 'Upload media';
+
+  @override
+  String get uploadMediaSubtitle => 'Add shows, albums or books to a library';
+
+  @override
+  String get uploadIntro =>
+      'Pick where the media goes and the folder to upload. Before anything is sent you see how the library will recognise every file.';
+
+  @override
+  String get uploadNotSupportedHere =>
+      'Uploading is not available on this device yet. Use the desktop app or the web player.';
+
+  @override
+  String get uploadLibrary => 'Library';
+
+  @override
+  String get uploadDirectory => 'Directory';
+
+  @override
+  String uploadDirectoryFree(String free, String node) {
+    return '$free free · $node';
+  }
+
+  @override
+  String get uploadDirectoryNotWritable => 'Not writable for the server';
+
+  @override
+  String get uploadNoDirectories =>
+      'This server has no library directory to upload to';
+
+  @override
+  String get uploadTargetParent => 'Inside folder (optional)';
+
+  @override
+  String get uploadTargetParentHint =>
+      'For example the artist folder an album belongs under. Empty = the root of the directory.';
+
+  @override
+  String get uploadPickFolder => 'Choose folder…';
+
+  @override
+  String uploadPickedFolder(String name, int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files',
+      one: '1 file',
+    );
+    return '$name · $_temp0 · $size';
+  }
+
+  @override
+  String get uploadKeepFolder => 'Upload as one folder';
+
+  @override
+  String get uploadKeepFolderSubtitle =>
+      'Off: the folders inside it land directly in the target, for a folder full of artists or shows';
+
+  @override
+  String get uploadFolderName => 'Folder name on the server';
+
+  @override
+  String get uploadOverwrite => 'Overwrite existing files';
+
+  @override
+  String get uploadOverwriteSubtitle =>
+      'Replaced files are analysed again; someone playing one right now is interrupted';
+
+  @override
+  String get uploadPreviewTitle => 'Preview';
+
+  @override
+  String uploadPreviewSummary(int files, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      files,
+      locale: localeName,
+      other: '$files files',
+      one: '1 file',
+    );
+    return '$_temp0 to upload · $size';
+  }
+
+  @override
+  String uploadRootLevel(String name, String level) {
+    return '$name — seen as $level';
+  }
+
+  @override
+  String uploadRootLevelNone(String name) {
+    return '$name — not recognised as a library folder';
+  }
+
+  @override
+  String get uploadStatusRecognised => 'Recognised';
+
+  @override
+  String get uploadStatusIgnored => 'Ignored';
+
+  @override
+  String get uploadStatusExists => 'Already there';
+
+  @override
+  String get uploadStatusWillOverwrite => 'Will be overwritten';
+
+  @override
+  String get uploadStatusBusy => 'Being uploaded elsewhere';
+
+  @override
+  String get uploadStatusInvalid => 'Invalid name';
+
+  @override
+  String get uploadStatusDuplicate => 'Duplicate';
+
+  @override
+  String get uploadIgnoredUnsupported => 'Not a file this library uses';
+
+  @override
+  String uploadIgnoredFolder(String folder) {
+    return 'The scan does not look inside \"$folder\"';
+  }
+
+  @override
+  String get uploadShowOnlyProblems =>
+      'Only show files that will not be uploaded';
+
+  @override
+  String get uploadStart => 'Start upload';
+
+  @override
+  String get uploadNothingToUpload =>
+      'None of these files would be picked up by the library';
+
+  @override
+  String uploadProgress(String sent, String total) {
+    return '$sent of $total';
+  }
+
+  @override
+  String get uploadResume => 'Continue';
+
+  @override
+  String get uploadCancelUpload => 'Cancel upload';
+
+  @override
+  String get uploadCancelConfirm =>
+      'Cancel this upload? Files that are already complete stay in the library; the rest is removed from the server.';
+
+  @override
+  String uploadRetryFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Retry $count failed files',
+      one: 'Retry 1 failed file',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get uploadFinished =>
+      'Upload finished. The files are being added to the library.';
+
+  @override
+  String uploadFinishedWithFailures(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Finished, $count files failed',
+      one: 'Finished, 1 file failed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get uploadAnother => 'Upload something else';
+
+  @override
+  String get uploadUnfinishedTitle => 'An upload was not finished';
+
+  @override
+  String get uploadUnfinishedBody =>
+      'Choose the same folder again to continue where it stopped.';
+
+  @override
+  String get uploadPhaseQueued => 'Waiting';
+
+  @override
+  String get uploadPhaseCompleting => 'Finishing…';
+
+  @override
+  String get uploadPhaseDone => 'Done';
+
+  @override
+  String get uploadPhaseSkipped => 'Skipped, already there';
+
+  @override
+  String get uploadPhaseFailed => 'Failed';
 }

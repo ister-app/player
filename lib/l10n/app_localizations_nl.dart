@@ -2506,4 +2506,206 @@ class AppLocalizationsNl extends AppLocalizations {
   String queueItemRemoved(String title) {
     return '‘$title’ uit de wachtrij verwijderd';
   }
+
+  @override
+  String get uploadMedia => 'Media uploaden';
+
+  @override
+  String get uploadMediaSubtitle =>
+      'Series, albums of boeken aan een library toevoegen';
+
+  @override
+  String get uploadIntro =>
+      'Kies waar de media heen gaat en welke map je uploadt. Voordat er iets verstuurd wordt, zie je hoe de library elk bestand gaat herkennen.';
+
+  @override
+  String get uploadNotSupportedHere =>
+      'Uploaden kan op dit apparaat nog niet. Gebruik de desktop-app of de webplayer.';
+
+  @override
+  String get uploadLibrary => 'Library';
+
+  @override
+  String get uploadDirectory => 'Directory';
+
+  @override
+  String uploadDirectoryFree(String free, String node) {
+    return '$free vrij · $node';
+  }
+
+  @override
+  String get uploadDirectoryNotWritable => 'Niet schrijfbaar voor de server';
+
+  @override
+  String get uploadNoDirectories =>
+      'Deze server heeft geen library-directory om naar te uploaden';
+
+  @override
+  String get uploadTargetParent => 'In map (optioneel)';
+
+  @override
+  String get uploadTargetParentHint =>
+      'Bijvoorbeeld de artiestmap waar een album onder hoort. Leeg = de root van de directory.';
+
+  @override
+  String get uploadPickFolder => 'Map kiezen…';
+
+  @override
+  String uploadPickedFolder(String name, int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bestanden',
+      one: '1 bestand',
+    );
+    return '$name · $_temp0 · $size';
+  }
+
+  @override
+  String get uploadKeepFolder => 'Als één map uploaden';
+
+  @override
+  String get uploadKeepFolderSubtitle =>
+      'Uit: de mappen erin komen rechtstreeks in het doel, voor een map vol artiesten of series';
+
+  @override
+  String get uploadFolderName => 'Mapnaam op de server';
+
+  @override
+  String get uploadOverwrite => 'Bestaande bestanden overschrijven';
+
+  @override
+  String get uploadOverwriteSubtitle =>
+      'Vervangen bestanden worden opnieuw geanalyseerd; wie er nu een afspeelt wordt onderbroken';
+
+  @override
+  String get uploadPreviewTitle => 'Preview';
+
+  @override
+  String uploadPreviewSummary(int files, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      files,
+      locale: localeName,
+      other: '$files bestanden',
+      one: '1 bestand',
+    );
+    return '$_temp0 te uploaden · $size';
+  }
+
+  @override
+  String uploadRootLevel(String name, String level) {
+    return '$name — herkend als $level';
+  }
+
+  @override
+  String uploadRootLevelNone(String name) {
+    return '$name — niet herkend als library-map';
+  }
+
+  @override
+  String get uploadStatusRecognised => 'Herkend';
+
+  @override
+  String get uploadStatusIgnored => 'Genegeerd';
+
+  @override
+  String get uploadStatusExists => 'Bestaat al';
+
+  @override
+  String get uploadStatusWillOverwrite => 'Wordt overschreven';
+
+  @override
+  String get uploadStatusBusy => 'Wordt elders geüpload';
+
+  @override
+  String get uploadStatusInvalid => 'Ongeldige naam';
+
+  @override
+  String get uploadStatusDuplicate => 'Dubbel';
+
+  @override
+  String get uploadIgnoredUnsupported =>
+      'Geen bestand dat deze library gebruikt';
+
+  @override
+  String uploadIgnoredFolder(String folder) {
+    return 'De scan kijkt niet in \"$folder\"';
+  }
+
+  @override
+  String get uploadShowOnlyProblems =>
+      'Alleen bestanden tonen die niet geüpload worden';
+
+  @override
+  String get uploadStart => 'Upload starten';
+
+  @override
+  String get uploadNothingToUpload =>
+      'Geen van deze bestanden zou door de library opgepikt worden';
+
+  @override
+  String uploadProgress(String sent, String total) {
+    return '$sent van $total';
+  }
+
+  @override
+  String get uploadResume => 'Doorgaan';
+
+  @override
+  String get uploadCancelUpload => 'Upload annuleren';
+
+  @override
+  String get uploadCancelConfirm =>
+      'Deze upload annuleren? Bestanden die al compleet zijn blijven in de library; de rest wordt van de server verwijderd.';
+
+  @override
+  String uploadRetryFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count mislukte bestanden opnieuw proberen',
+      one: '1 mislukt bestand opnieuw proberen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get uploadFinished =>
+      'Upload klaar. De bestanden worden aan de library toegevoegd.';
+
+  @override
+  String uploadFinishedWithFailures(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Klaar, $count bestanden mislukt',
+      one: 'Klaar, 1 bestand mislukt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get uploadAnother => 'Iets anders uploaden';
+
+  @override
+  String get uploadUnfinishedTitle => 'Een upload is niet afgerond';
+
+  @override
+  String get uploadUnfinishedBody =>
+      'Kies dezelfde map opnieuw om verder te gaan waar hij gebleven was.';
+
+  @override
+  String get uploadPhaseQueued => 'Wacht';
+
+  @override
+  String get uploadPhaseCompleting => 'Afronden…';
+
+  @override
+  String get uploadPhaseDone => 'Klaar';
+
+  @override
+  String get uploadPhaseSkipped => 'Overgeslagen, bestaat al';
+
+  @override
+  String get uploadPhaseFailed => 'Mislukt';
 }

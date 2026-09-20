@@ -2604,5 +2604,264 @@
     "placeholders": {
       "title": {"type": "String"}
     }
+  },
+  "uploadMedia": "Upload media",
+  "@uploadMedia": {
+    "description": "Admin media upload page"
+  },
+  "uploadMediaSubtitle": "Add shows, albums or books to a library",
+  "@uploadMediaSubtitle": {
+    "description": "Admin media upload page"
+  },
+  "uploadIntro": "Pick where the media goes and the folder to upload. Before anything is sent you see how the library will recognise every file.",
+  "@uploadIntro": {
+    "description": "Admin media upload page"
+  },
+  "uploadNotSupportedHere": "Uploading is not available on this device yet. Use the desktop app or the web player.",
+  "@uploadNotSupportedHere": {
+    "description": "Admin media upload page"
+  },
+  "uploadLibrary": "Library",
+  "@uploadLibrary": {
+    "description": "Admin media upload page"
+  },
+  "uploadDirectory": "Directory",
+  "@uploadDirectory": {
+    "description": "Admin media upload page"
+  },
+  "uploadDirectoryFree": "{free} free · {node}",
+  "@uploadDirectoryFree": {
+    "description": "Admin media upload page",
+    "placeholders": {
+      "free": {
+        "type": "String"
+      },
+      "node": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadDirectoryNotWritable": "Not writable for the server",
+  "@uploadDirectoryNotWritable": {
+    "description": "Admin media upload page"
+  },
+  "uploadNoDirectories": "This server has no library directory to upload to",
+  "@uploadNoDirectories": {
+    "description": "Admin media upload page"
+  },
+  "uploadTargetParent": "Inside folder (optional)",
+  "@uploadTargetParent": {
+    "description": "Admin media upload page"
+  },
+  "uploadTargetParentHint": "For example the artist folder an album belongs under. Empty = the root of the directory.",
+  "@uploadTargetParentHint": {
+    "description": "Admin media upload page"
+  },
+  "uploadPickFolder": "Choose folder…",
+  "@uploadPickFolder": {
+    "description": "Admin media upload page"
+  },
+  "uploadPickedFolder": "{name} · {count, plural, =1{1 file} other{{count} files}} · {size}",
+  "@uploadPickedFolder": {
+    "description": "Admin media upload page",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadKeepFolder": "Upload as one folder",
+  "@uploadKeepFolder": {
+    "description": "Admin media upload page"
+  },
+  "uploadKeepFolderSubtitle": "Off: the folders inside it land directly in the target, for a folder full of artists or shows",
+  "@uploadKeepFolderSubtitle": {
+    "description": "Admin media upload page"
+  },
+  "uploadFolderName": "Folder name on the server",
+  "@uploadFolderName": {
+    "description": "Admin media upload page"
+  },
+  "uploadOverwrite": "Overwrite existing files",
+  "@uploadOverwrite": {
+    "description": "Admin media upload page"
+  },
+  "uploadOverwriteSubtitle": "Replaced files are analysed again; someone playing one right now is interrupted",
+  "@uploadOverwriteSubtitle": {
+    "description": "Admin media upload page"
+  },
+  "uploadPreviewTitle": "Preview",
+  "@uploadPreviewTitle": {
+    "description": "Admin media upload page"
+  },
+  "uploadPreviewSummary": "{files, plural, =1{1 file} other{{files} files}} to upload · {size}",
+  "@uploadPreviewSummary": {
+    "description": "Admin media upload page",
+    "placeholders": {
+      "files": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadRootLevel": "{name} — seen as {level}",
+  "@uploadRootLevel": {
+    "description": "Admin media upload page",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadRootLevelNone": "{name} — not recognised as a library folder",
+  "@uploadRootLevelNone": {
+    "description": "Admin media upload page",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadStatusRecognised": "Recognised",
+  "@uploadStatusRecognised": {
+    "description": "Admin media upload page"
+  },
+  "uploadStatusIgnored": "Ignored",
+  "@uploadStatusIgnored": {
+    "description": "Admin media upload page"
+  },
+  "uploadStatusExists": "Already there",
+  "@uploadStatusExists": {
+    "description": "Admin media upload page"
+  },
+  "uploadStatusWillOverwrite": "Will be overwritten",
+  "@uploadStatusWillOverwrite": {
+    "description": "Admin media upload page"
+  },
+  "uploadStatusBusy": "Being uploaded elsewhere",
+  "@uploadStatusBusy": {
+    "description": "Admin media upload page"
+  },
+  "uploadStatusInvalid": "Invalid name",
+  "@uploadStatusInvalid": {
+    "description": "Admin media upload page"
+  },
+  "uploadStatusDuplicate": "Duplicate",
+  "@uploadStatusDuplicate": {
+    "description": "Admin media upload page"
+  },
+  "uploadIgnoredUnsupported": "Not a file this library uses",
+  "@uploadIgnoredUnsupported": {
+    "description": "Admin media upload page"
+  },
+  "uploadIgnoredFolder": "The scan does not look inside \"{folder}\"",
+  "@uploadIgnoredFolder": {
+    "description": "Admin media upload page",
+    "placeholders": {
+      "folder": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadShowOnlyProblems": "Only show files that will not be uploaded",
+  "@uploadShowOnlyProblems": {
+    "description": "Admin media upload page"
+  },
+  "uploadStart": "Start upload",
+  "@uploadStart": {
+    "description": "Admin media upload page"
+  },
+  "uploadNothingToUpload": "None of these files would be picked up by the library",
+  "@uploadNothingToUpload": {
+    "description": "Admin media upload page"
+  },
+  "uploadProgress": "{sent} of {total}",
+  "@uploadProgress": {
+    "description": "Admin media upload page",
+    "placeholders": {
+      "sent": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadResume": "Continue",
+  "@uploadResume": {
+    "description": "Admin media upload page"
+  },
+  "uploadCancelUpload": "Cancel upload",
+  "@uploadCancelUpload": {
+    "description": "Admin media upload page"
+  },
+  "uploadCancelConfirm": "Cancel this upload? Files that are already complete stay in the library; the rest is removed from the server.",
+  "@uploadCancelConfirm": {
+    "description": "Admin media upload page"
+  },
+  "uploadRetryFailed": "{count, plural, =1{Retry 1 failed file} other{Retry {count} failed files}}",
+  "@uploadRetryFailed": {
+    "description": "Admin media upload page",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "uploadFinished": "Upload finished. The files are being added to the library.",
+  "@uploadFinished": {
+    "description": "Admin media upload page"
+  },
+  "uploadFinishedWithFailures": "{count, plural, =1{Finished, 1 file failed} other{Finished, {count} files failed}}",
+  "@uploadFinishedWithFailures": {
+    "description": "Admin media upload page",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "uploadAnother": "Upload something else",
+  "@uploadAnother": {
+    "description": "Admin media upload page"
+  },
+  "uploadUnfinishedTitle": "An upload was not finished",
+  "@uploadUnfinishedTitle": {
+    "description": "Admin media upload page"
+  },
+  "uploadUnfinishedBody": "Choose the same folder again to continue where it stopped.",
+  "@uploadUnfinishedBody": {
+    "description": "Admin media upload page"
+  },
+  "uploadPhaseQueued": "Waiting",
+  "@uploadPhaseQueued": {
+    "description": "Admin media upload page"
+  },
+  "uploadPhaseCompleting": "Finishing…",
+  "@uploadPhaseCompleting": {
+    "description": "Admin media upload page"
+  },
+  "uploadPhaseDone": "Done",
+  "@uploadPhaseDone": {
+    "description": "Admin media upload page"
+  },
+  "uploadPhaseSkipped": "Skipped, already there",
+  "@uploadPhaseSkipped": {
+    "description": "Admin media upload page"
+  },
+  "uploadPhaseFailed": "Failed",
+  "@uploadPhaseFailed": {
+    "description": "Admin media upload page"
   }
 }

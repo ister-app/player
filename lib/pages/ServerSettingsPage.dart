@@ -10,6 +10,7 @@ import '../components/SaveLogTile.dart';
 import '../components/SettingsSection.dart';
 import '../components/TvModeTile.dart';
 import '../utils/AppVersion.dart';
+import '../utils/upload/UploadSource.dart';
 import '../l10n/app_localizations.dart';
 
 /// The settings hub, grouped by scope: what follows you across devices, what
@@ -156,6 +157,20 @@ class ServerSettingsPage extends StatelessWidget {
                     onTap: () =>
                         AutoRouter.of(context).push(AdminLibrariesRoute()),
                   ),
+                  // Hidden where no folder can be picked (a platform without a source
+                  // implementation): an entry that can only say "not here" is just noise.
+                  if (uploadSourceSupported) ...[
+                    const Divider(height: 1, indent: 56),
+                    ListTile(
+                      key: const ValueKey('settings-tile-upload'),
+                      leading: const Icon(Icons.upload_outlined),
+                      title: Text(loc.uploadMedia),
+                      subtitle: Text(loc.uploadMediaSubtitle),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () =>
+                          AutoRouter.of(context).push(AdminUploadRoute()),
+                    ),
+                  ],
                 ],
               ),
             ),
