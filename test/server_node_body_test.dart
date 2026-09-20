@@ -77,6 +77,7 @@ void main() {
           $library: 'Series',
           totalBytes: 4e12,
           freeBytes: 1e12,
+          writable: true,
         ),
         Fragment$fragmentNodeInfo$directories(
           name: 'node-a-cache-directory',
@@ -84,6 +85,7 @@ void main() {
           type: 'CACHE',
           totalBytes: 100e9,
           freeBytes: 5e9,
+          writable: false,
         ),
         Fragment$fragmentNodeInfo$directories(
           name: 'disk2',
@@ -105,7 +107,8 @@ void main() {
     expect(find.text('4.0 GB'), findsOneWidget);
     expect(find.text('Series · /media/disk1'), findsOneWidget);
     expect(find.text('1.0 TB free of 4.0 TB'), findsOneWidget);
-    expect(find.text('Cache · /cache'), findsOneWidget);
+    // a definite "no" is labelled; writable and unknown (disk2, an older node) are not
+    expect(find.text('Cache · /cache · Read-only'), findsOneWidget);
     expect(find.text('5.0 GB free of 100 GB'), findsOneWidget);
     expect(find.text('Not mounted'), findsOneWidget);
     // The nearly-full cache disk is drawn in the error colour.

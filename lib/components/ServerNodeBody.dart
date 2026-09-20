@@ -196,6 +196,8 @@ class ServerNodeBody extends StatelessWidget {
             [
               if (isCache) loc.nodeCacheDisk else if (directory.$library != null) directory.$library!,
               directory.path,
+              // only a definite "no": null is an S3 directory or a node that does not report it
+              if (directory.writable == false) loc.nodeReadOnly,
             ].join(' · '),
             style: theme.textTheme.bodySmall?.copyWith(color: muted),
             maxLines: 1,

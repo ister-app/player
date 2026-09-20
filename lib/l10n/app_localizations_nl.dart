@@ -2708,4 +2708,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get uploadPhaseFailed => 'Mislukt';
+
+  @override
+  String get nodeReadOnly => 'Alleen-lezen';
 }

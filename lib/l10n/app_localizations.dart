@@ -4507,6 +4507,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed'**
   String get uploadPhaseFailed;
+
+  /// Marks a disk on the node page the server cannot write to (so it takes no uploads)
+  ///
+  /// In en, this message translates to:
+  /// **'Read-only'**
+  String get nodeReadOnly;
 }
 
 class _AppLocalizationsDelegate

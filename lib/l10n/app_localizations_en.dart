@@ -2695,4 +2695,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get uploadPhaseFailed => 'Failed';
+
+  @override
+  String get nodeReadOnly => 'Read-only';
 }

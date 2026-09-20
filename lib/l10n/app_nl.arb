@@ -852,5 +852,6 @@
   "uploadPhaseCompleting": "Afronden…",
   "uploadPhaseDone": "Klaar",
   "uploadPhaseSkipped": "Overgeslagen, bestaat al",
-  "uploadPhaseFailed": "Mislukt"
+  "uploadPhaseFailed": "Mislukt",
+  "nodeReadOnly": "Alleen-lezen"
 }

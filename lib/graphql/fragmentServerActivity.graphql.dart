@@ -1251,6 +1251,13 @@ const fragmentDefinitionfragmentNodeInfo = FragmentDefinitionNode(
               selectionSet: null,
             ),
             FieldNode(
+              name: NameNode(value: 'writable'),
+              alias: null,
+              arguments: [],
+              directives: [],
+              selectionSet: null,
+            ),
+            FieldNode(
               name: NameNode(value: '__typename'),
               alias: null,
               arguments: [],
@@ -1320,6 +1327,7 @@ class Fragment$fragmentNodeInfo$directories {
     this.$library,
     this.totalBytes,
     this.freeBytes,
+    this.writable,
     this.$__typename = 'NodeDirectory',
   });
 
@@ -1332,6 +1340,7 @@ class Fragment$fragmentNodeInfo$directories {
     final l$$library = json['library'];
     final l$totalBytes = json['totalBytes'];
     final l$freeBytes = json['freeBytes'];
+    final l$writable = json['writable'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentNodeInfo$directories(
       name: (l$name as String),
@@ -1340,6 +1349,7 @@ class Fragment$fragmentNodeInfo$directories {
       $library: (l$$library as String?),
       totalBytes: (l$totalBytes as num?)?.toDouble(),
       freeBytes: (l$freeBytes as num?)?.toDouble(),
+      writable: (l$writable as bool?),
       $__typename: (l$$__typename as String),
     );
   }
@@ -1355,6 +1365,8 @@ class Fragment$fragmentNodeInfo$directories {
   final double? totalBytes;
 
   final double? freeBytes;
+
+  final bool? writable;
 
   final String $__typename;
 
@@ -1372,6 +1384,8 @@ class Fragment$fragmentNodeInfo$directories {
     _resultData['totalBytes'] = l$totalBytes;
     final l$freeBytes = freeBytes;
     _resultData['freeBytes'] = l$freeBytes;
+    final l$writable = writable;
+    _resultData['writable'] = l$writable;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -1385,6 +1399,7 @@ class Fragment$fragmentNodeInfo$directories {
     final l$$library = $library;
     final l$totalBytes = totalBytes;
     final l$freeBytes = freeBytes;
+    final l$writable = writable;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$name,
@@ -1393,6 +1408,7 @@ class Fragment$fragmentNodeInfo$directories {
       l$$library,
       l$totalBytes,
       l$freeBytes,
+      l$writable,
       l$$__typename,
     ]);
   }
@@ -1436,6 +1452,11 @@ class Fragment$fragmentNodeInfo$directories {
     if (l$freeBytes != lOther$freeBytes) {
       return false;
     }
+    final l$writable = writable;
+    final lOther$writable = other.writable;
+    if (l$writable != lOther$writable) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -1470,6 +1491,7 @@ abstract class CopyWith$Fragment$fragmentNodeInfo$directories<TRes> {
     String? $library,
     double? totalBytes,
     double? freeBytes,
+    bool? writable,
     String? $__typename,
   });
 }
@@ -1494,6 +1516,7 @@ class _CopyWithImpl$Fragment$fragmentNodeInfo$directories<TRes>
     Object? $library = _undefined,
     Object? totalBytes = _undefined,
     Object? freeBytes = _undefined,
+    Object? writable = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentNodeInfo$directories(
@@ -1513,6 +1536,9 @@ class _CopyWithImpl$Fragment$fragmentNodeInfo$directories<TRes>
       freeBytes: freeBytes == _undefined
           ? _instance.freeBytes
           : (freeBytes as double?),
+      writable: writable == _undefined
+          ? _instance.writable
+          : (writable as bool?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -1533,6 +1559,7 @@ class _CopyWithStubImpl$Fragment$fragmentNodeInfo$directories<TRes>
     String? $library,
     double? totalBytes,
     double? freeBytes,
+    bool? writable,
     String? $__typename,
   }) => _res;
 }

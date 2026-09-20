@@ -37,6 +37,7 @@ fragment fragmentNodeInfo on NodeInfo {
         library
         totalBytes
         freeBytes
+        writable
     }
     helperDisks {
         name
