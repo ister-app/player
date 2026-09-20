@@ -52,6 +52,14 @@ Cached Android TV (leanback) detection. The UI branches on it for focus highligh
 
 `EpubResourceClient`, `EpubPackage`, `ChapterContent`, `EpubLocator`, `ReadingSyncService`, `ReadAloudController`, `SmilDocument`, plus `ReaderPage` and the widgets in `lib/components/reader/`. Detailed in [chapter 6](06-epub-reader.md). The comic reader has a parallel stack in `lib/utils/comic/`.
 
+## Admin upload stack — `lib/utils/upload/`
+
+`UploadApi` is the REST client for the server's `/library-upload/**` endpoints. Unlike every other REST call in the player it authenticates with the login's **bearer token** (`LoginManager.getToken`), not a stream token: the server refuses stream tokens for writing into a library. Only GET and POST are used, because the web build calls a node cross-origin and the server's CORS allows nothing else. The directory listing goes to the server itself; preview, session and chunks go to the chosen directory's `nodeUrl`, since a chunk is written where it arrives.
+
+`UploadSource` abstracts the picked folder behind a conditional import: `upload_source_io.dart` (desktop, `file_picker` + `dart:io`), `upload_source_web.dart` (`<input webkitdirectory>` through `package:web`, reading `File.slice` per chunk) and a stub. Files are only ever read a range at a time. Android and iOS go through `upload_source_native.dart` and the `app.ister.player/upload_source` platform channel (`UploadSourceChannel` in `android/.../UploadSourceChannel.kt` and in `ios/Runner/AppDelegate.swift`): a picked tree there is a storage-access-framework URI or a security-scoped folder that `dart:io` may not list or read, so the native side lists it and hands out byte ranges (1 MiB per call, to keep channel messages small). While a runner is active the page holds a `ScreenWakelock` token; there is deliberately no foreground service — a suspended upload resumes.
+
+`UploadRunner` (a `ChangeNotifier`) moves the bytes: a few files in parallel, each walking its chunk grid and sending what the server does not have — by `receivedBytes` for local directories, by part number for S3. It retries transport errors, 5xx and 429 with backoff, follows the server's offset on a 409, and keeps each file's progress on the item so that pause → start never resends a chunk. `AdminUploadPage` remembers the running session per server in `SharedPreferencesAsync`, so a restart can continue once the same folder is picked again (matched on relative path and size).
+
 ## AppMessenger — `lib/utils/AppMessenger.dart`
 
 `showAppSnackBar` for context-less singletons such as `MediaPlayerHandler`. It is a no-op when no messenger is mounted, making it safe during headless audio-service startup.

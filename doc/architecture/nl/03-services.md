@@ -52,6 +52,14 @@ Gecachete Android TV-detectie (leanback). De UI vertakt erop voor focus-highligh
 
 `EpubResourceClient`, `EpubPackage`, `ChapterContent`, `EpubLocator`, `ReadingSyncService`, `ReadAloudController`, `SmilDocument`, plus `ReaderPage` en de widgets in `lib/components/reader/`. Uitgewerkt in [hoofdstuk 6](06-epub-reader.md). De striplezer heeft een parallelle stack in `lib/utils/comic/`.
 
+## Admin-uploadstack — `lib/utils/upload/`
+
+`UploadApi` is de REST-client voor de `/library-upload/**`-endpoints van de server. Anders dan elke andere REST-aanroep in de player authenticeert hij met het **bearer-token** van de login (`LoginManager.getToken`), niet met een stream-token: de server weigert stream-tokens voor schrijven in een library. Er wordt alleen GET en POST gebruikt, omdat de web-build een node cross-origin aanroept en de CORS van de server niets anders toestaat. De directory-lijst gaat naar de server zelf; preview, sessie en chunks gaan naar de `nodeUrl` van de gekozen directory, want een chunk wordt geschreven waar hij aankomt.
+
+`UploadSource` abstraheert de gekozen map achter een conditional import: `upload_source_io.dart` (desktop, `file_picker` + `dart:io`), `upload_source_web.dart` (`<input webkitdirectory>` via `package:web`, met `File.slice` per chunk) en een stub. Bestanden worden altijd per bereik gelezen. Android en iOS lopen via `upload_source_native.dart` en het platformkanaal `app.ister.player/upload_source` (`UploadSourceChannel` in `android/.../UploadSourceChannel.kt` en in `ios/Runner/AppDelegate.swift`): een gekozen mapboom is daar een storage-access-framework-URI of een security-scoped map die `dart:io` niet mag opsommen of lezen, dus de native kant somt hem op en deelt byte-bereiken uit (1 MiB per aanroep, om kanaalberichten klein te houden). Zolang een runner actief is houdt de pagina een `ScreenWakelock`-token vast; er is bewust geen foreground-service — een stilgezette upload hervat.
+
+`UploadRunner` (een `ChangeNotifier`) verplaatst de bytes: een paar bestanden parallel, die elk hun chunk-raster aflopen en sturen wat de server nog niet heeft — op `receivedBytes` voor lokale directories, op partnummer voor S3. Hij herhaalt transportfouten, 5xx en 429 met backoff, volgt bij een 409 de offset van de server, en houdt de voortgang per bestand op het item bij zodat pauze → start nooit een chunk opnieuw stuurt. `AdminUploadPage` onthoudt de lopende sessie per server in `SharedPreferencesAsync`, zodat je na een herstart verder kunt zodra dezelfde map opnieuw gekozen is (gematcht op relatief pad en grootte).
+
 ## AppMessenger — `lib/utils/AppMessenger.dart`
 
 `showAppSnackBar` voor context-loze singletons zoals `MediaPlayerHandler`. Een no-op wanneer er geen messenger gemount is, en daarmee veilig tijdens headless audio-service-opstart.

@@ -33,6 +33,20 @@ Admins always see every library, regardless of these switches.
 
 ![Library visibility toggles](../images/en/admin-libraries.png)
 
+## Uploading media
+
+**Upload media** (Settings → Server) adds media to a library straight from the player: a whole show, an album for an artist that is already there, or a folder full of artists. It works in the desktop apps, the web player and on Android and iOS. On a phone or tablet the screen stays on while an upload runs; if the app is put away and suspended anyway, the upload simply continues the next time you open the page.
+
+1. Pick the **library** and the **directory** (disk) it should land on. Each directory shows its free space; one the server cannot write to is greyed out.
+2. Optionally fill in **Inside folder** — the existing folder the upload belongs under, such as the artist for an album. Leave it empty to upload into the root of the directory.
+3. **Choose folder…** and pick the folder on your computer. With **Upload as one folder** on, it keeps its name on the server (which you can edit, for instance to add the `(2019)` a show folder needs); switched off, the folders *inside* it land directly in the target — the way to upload a folder full of artists or shows.
+4. Read the **preview**. The server tells you, per file, how the library will recognise it (show, season and episode; artist, album and track; …), and at which level it sees the top folder. A file marked **Ignored** would not be picked up where it is going and is not uploaded; **Already there** is skipped unless you switch on **Overwrite existing files**.
+5. **Start upload.** Files go up in chunks, so a dropped connection costs little: the upload retries and continues by itself. You can **pause** and continue, and **cancel** removes what is unfinished from the server (files that are already complete stay in the library).
+
+![The upload page: library, directory and folder to upload](../images/en/admin-upload.png)
+
+Every finished file is added to the library right away; there is no need to scan afterwards. If the app is closed mid-upload, the page offers to continue the next time you open it — choose the same folder again and it picks up where it stopped.
+
 ## Podcasts
 
 Managing which podcasts the server carries is an admin task. In a podcast library, **Add podcast** subscribes the server to a new feed, and **Unsubscribe** on a podcast's page removes it. Ordinary users can browse, download and play episodes, but never see these controls.

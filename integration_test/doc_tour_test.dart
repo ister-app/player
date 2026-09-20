@@ -306,6 +306,9 @@ void main() {
         'admin-user-access'
       ),
       (AdminLibrariesRoute(), 'admin-libraries'),
+      // Against a server that predates uploads this shows the empty state; the
+      // stop still has to exist, the user guide references its image.
+      (AdminUploadRoute(), 'admin-upload'),
     ];
     for (final (route, name) in adminStops) {
       await pushRoute(tester, route);

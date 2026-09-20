@@ -33,6 +33,20 @@ Beheerders zien altijd alle bibliotheken, ongeacht deze schakelaars.
 
 ![Schakelaars voor bibliotheek-zichtbaarheid](../images/nl/admin-libraries.png)
 
+## Media uploaden
+
+Met **Media uploaden** (Instellingen → Server) voeg je rechtstreeks vanuit de player media aan een bibliotheek toe: een hele serie, een album bij een artiest die er al staat, of een map vol artiesten. Het werkt in de desktop-apps, de webplayer en op Android en iOS. Op een telefoon of tablet blijft het scherm aan zolang een upload loopt; wordt de app toch weggelegd en stilgezet, dan gaat de upload gewoon verder zodra je de pagina weer opent.
+
+1. Kies de **library** en de **directory** (schijf) waar het terecht moet komen. Bij elke directory staat de vrije ruimte; een directory waar de server niet kan schrijven is uitgegrijsd.
+2. Vul eventueel **In map** in — de bestaande map waar de upload onder hoort, zoals de artiest bij een album. Laat het leeg om in de root van de directory te uploaden.
+3. **Map kiezen…** en kies de map op je computer. Met **Als één map uploaden** aan houdt hij zijn naam op de server (die je kunt aanpassen, bijvoorbeeld om de `(2019)` toe te voegen die een seriemap nodig heeft); staat het uit, dan komen de mappen *erin* rechtstreeks in het doel — zo upload je een map vol artiesten of series.
+4. Lees de **preview**. De server vertelt per bestand hoe de bibliotheek het gaat herkennen (serie, seizoen en aflevering; artiest, album en track; …) en op welk niveau hij de hoofdmap ziet. Een bestand met **Genegeerd** zou op die plek niet opgepikt worden en wordt niet geüpload; **Bestaat al** wordt overgeslagen, tenzij je **Bestaande bestanden overschrijven** aanzet.
+5. **Upload starten.** Bestanden gaan in chunks omhoog, dus een weggevallen verbinding kost weinig: de upload probeert het opnieuw en gaat vanzelf verder. Je kunt **pauzeren** en doorgaan, en **annuleren** verwijdert wat niet af is van de server (bestanden die al compleet zijn blijven in de bibliotheek).
+
+![De uploadpagina: library, directory en de map om te uploaden](../images/nl/admin-upload.png)
+
+Elk voltooid bestand wordt meteen aan de bibliotheek toegevoegd; scannen achteraf is niet nodig. Wordt de app midden in een upload gesloten, dan biedt de pagina de volgende keer aan om verder te gaan — kies dezelfde map opnieuw en hij gaat door waar hij gebleven was.
+
 ## Podcasts
 
 Beheren welke podcasts de server bevat is een beheertaak. In een podcastbibliotheek abonneert **Podcast toevoegen** de server op een nieuwe feed, en **Abonnement opzeggen** op de pagina van een podcast verwijdert hem. Gewone gebruikers kunnen afleveringen bekijken, downloaden en afspelen, maar zien deze knoppen nooit.
