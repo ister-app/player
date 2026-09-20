@@ -2490,4 +2490,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String videoLoadRetrying(int attempt) {
     return 'Still not playing — trying again (attempt $attempt)…';
   }
+
+  @override
+  String queueItemRemoved(String title) {
+    return 'Removed ‘$title’ from the queue';
+  }
 }

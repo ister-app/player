@@ -565,9 +565,17 @@ class _RemotePlayerController
   Future<void> applyMove(String movedId, String? afterId) =>
       PlayQueueService().movePlayQueueItem(_client, playQueueId, movedId, afterId);
 
+  /// Applies the mutation's own answer: the undoable removal un-hides the
+  /// entry once this returns, which must not be before the queue lost it (the
+  /// QUEUE_CHANGED refresh comes a round-trip later).
   @override
-  Future<void> applyRemove(String queueItemId) =>
-      PlayQueueService().removePlayQueueItem(_client, playQueueId, queueItemId);
+  Future<void> applyRemove(String queueItemId) async {
+    final updated = await PlayQueueService()
+        .removePlayQueueItem(_client, playQueueId, queueItemId);
+    if (_disposed || updated == null) return;
+    _playQueue = updated;
+    _localItems = null;
+  }
 
   // ── Display helpers ──────────────────────────────────────────────────────
 

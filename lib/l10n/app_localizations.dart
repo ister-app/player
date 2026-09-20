@@ -4207,6 +4207,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Still not playing — trying again (attempt {attempt})…'**
   String videoLoadRetrying(int attempt);
+
+  /// Notice in the player after a queue entry was swiped away, shown next to the undo action
+  ///
+  /// In en, this message translates to:
+  /// **'Removed ‘{title}’ from the queue'**
+  String queueItemRemoved(String title);
 }
 
 class _AppLocalizationsDelegate

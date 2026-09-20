@@ -166,6 +166,12 @@ void main() {
 
     await controller.removeEntry(controller.entryFor('b'));
 
+    // Off the list at once, but undoable: nothing reached the server yet
+    // (test/queue_undo_removal_test.dart covers the window itself).
+    expect(controller.upNext.map((e) => e.id), ['entry-c']);
+    expect(controller.removals, isEmpty);
+
+    await controller.flushPendingRemoval();
     expect(controller.removals, ['b']);
     expect(controller.queueItems, ['a', 'c']);
   });
@@ -183,10 +189,10 @@ void main() {
       'order', () async {
     final controller = _EventDrivenController(['a', 'b', 'c'], 0);
 
-    await controller.removeEntry(controller.entryFor('b'));
+    await controller.moveUpNext(0, 2);
 
     // Clearing here would flash the stale queue until the refresh lands.
-    expect(controller.queueItems, ['a', 'c']);
+    expect(controller.queueItems, ['a', 'c', 'b']);
     expect(controller.optimisticCleared, isFalse);
   });
 }

@@ -2597,5 +2597,12 @@
     "placeholders": {
       "attempt": {"type": "int"}
     }
+  },
+  "queueItemRemoved": "Removed ‘{title}’ from the queue",
+  "@queueItemRemoved": {
+    "description": "Notice in the player after a queue entry was swiped away, shown next to the undo action",
+    "placeholders": {
+      "title": {"type": "String"}
+    }
   }
 }

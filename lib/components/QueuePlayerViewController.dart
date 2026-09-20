@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:player/components/PlayerView.dart';
 
 /// A [PlayerViewController] backed by a play queue, whatever the item type is.
@@ -62,8 +64,17 @@ abstract class QueuePlayerViewController<T> extends PlayerViewController {
     if (index >= items.length) index = items.length - 1;
     final previous =
         index > 0 ? items.sublist(0, index).reversed.toList() : <T>[];
-    final upNext =
+    var upNext =
         index >= 0 && index + 1 < items.length ? items.sublist(index + 1) : <T>[];
+    // An entry whose removal can still be undone (or is on its way to the
+    // server) is off the list already. Filtered here rather than through the
+    // optimistic queue: that one is a snapshot, which a queue refresh inside
+    // the undo window would silently throw away.
+    if (_hiddenEntryIds.isNotEmpty) {
+      upNext = upNext
+          .where((item) => !_hiddenEntryIds.contains(entryFor(item).id))
+          .toList();
+    }
     return (previous: previous, upNext: upNext);
   }
 
@@ -79,6 +90,9 @@ abstract class QueuePlayerViewController<T> extends PlayerViewController {
   Future<void> moveUpNext(int oldIndex, int newIndex) async {
     if (newIndex > oldIndex) newIndex -= 1;
     if (newIndex == oldIndex) return;
+    // The indices are those of the list on screen, which lacks a removal
+    // that is still undoable; settle it so they mean the same to the server.
+    await flushPendingRemoval();
 
     final reordered = List<T>.of(sliceQueue().upNext);
     final moved = reordered.removeAt(oldIndex);
@@ -100,19 +114,89 @@ abstract class QueuePlayerViewController<T> extends PlayerViewController {
     notifyListeners();
   }
 
+  /// How long a removed entry can be brought back. There is no server-side
+  /// "put it back where it was", so the removal itself waits this long: the
+  /// entry only leaves the list on screen, and the mutation goes out when the
+  /// window closes (or sooner — see [flushPendingRemoval]).
+  static const Duration undoWindow = Duration(seconds: 5);
+
+  ({T item, PlayerQueueEntry entry, String? currentAtRemoval})? _pending;
+  Timer? _pendingTimer;
+  final Set<String> _hiddenEntryIds = {};
+
+  @override
+  PlayerQueueEntry? get pendingRemoval => _pending?.entry;
+
   @override
   Future<void> removeEntry(PlayerQueueEntry entry) async {
-    final items = queueItems;
     final target =
-        items.where((item) => entryFor(item).id == entry.id).firstOrNull;
+        queueItems.where((item) => entryFor(item).id == entry.id).firstOrNull;
     if (target == null) return;
+    // One undoable removal at a time, like the snackbar it is modelled on:
+    // the one before is settled. Hidden *synchronously* though — a dismissed
+    // Dismissible must be out of the tree by the next frame.
+    final earlier = _takePending();
+    _hiddenEntryIds.add(entry.id);
+    _pending =
+        (item: target, entry: entry, currentAtRemoval: currentQueueItemId);
+    _pendingTimer = Timer(undoWindow, flushPendingRemoval);
+    notifyListeners();
+    if (earlier != null) await _commitRemoval(earlier);
+  }
 
-    setOptimisticQueue(
-        items.where((item) => entryFor(item).id != entry.id).toList());
+  ({T item, PlayerQueueEntry entry, String? currentAtRemoval})? _takePending() {
+    final pending = _pending;
+    _pendingTimer?.cancel();
+    _pending = null;
+    return pending;
+  }
+
+  Future<void> _commitRemoval(
+      ({T item, PlayerQueueEntry entry, String? currentAtRemoval})
+          pending) async {
+    // Stays hidden while the mutation is in flight; after that the queue
+    // itself says whether it is gone (a refused removal shows up again).
+    await applyRemove(queueItemIdOf(pending.item));
+    _hiddenEntryIds.remove(pending.entry.id);
+    if (!disposed) notifyListeners();
+  }
+
+  @override
+  void undoRemove() {
+    final pending = _takePending();
+    if (pending == null) return;
+    _hiddenEntryIds.remove(pending.entry.id);
     notifyListeners();
-    await applyRemove(queueItemIdOf(target));
-    if (disposed || !clearsOptimisticQueue) return;
-    setOptimisticQueue(null);
-    notifyListeners();
+  }
+
+  /// Sends the removal that is still undoable, if any. Everything that
+  /// addresses the queue by position calls this first: the list on screen is
+  /// one entry short of the real queue until then.
+  @override
+  Future<void> flushPendingRemoval() async {
+    final pending = _takePending();
+    if (pending == null) return;
+    if (!disposed) notifyListeners();
+    await _commitRemoval(pending);
+  }
+
+  /// Playback moving on closes the undo window early: the next item up could
+  /// be the very one being removed.
+  @override
+  void notifyListeners() {
+    final pending = _pending;
+    if (pending != null && pending.currentAtRemoval != currentQueueItemId) {
+      unawaited(flushPendingRemoval());
+      return;
+    }
+    super.notifyListeners();
+  }
+
+  /// Closing the player is not an undo.
+  @override
+  void dispose() {
+    final pending = _takePending();
+    if (pending != null) unawaited(applyRemove(queueItemIdOf(pending.item)));
+    super.dispose();
   }
 }

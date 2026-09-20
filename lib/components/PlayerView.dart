@@ -156,6 +156,15 @@ abstract class PlayerViewController extends ChangeNotifier {
   Future<void> moveUpNext(int oldIndex, int newIndex);
   Future<void> removeEntry(PlayerQueueEntry entry);
 
+  /// The entry [removeEntry] took off the list but has not sent to the server
+  /// yet; the view offers an undo while this is set.
+  PlayerQueueEntry? get pendingRemoval => null;
+  void undoRemove() {}
+
+  /// Settles [pendingRemoval] now. Implementations call it before anything
+  /// that addresses the queue by index.
+  Future<void> flushPendingRemoval() async {}
+
   @override
   void dispose() {
     positionTicker.dispose();
@@ -175,6 +184,9 @@ class PlayerView extends StatefulWidget {
     required this.onDismissed,
     this.initialSlideValue = 0.0,
   });
+
+  static const Key undoRemovalBarKey = Key('player-undo-removal');
+  static const Key undoRemovalButtonKey = Key('player-undo-removal-button');
 
   final PlayerViewController controller;
 
@@ -535,6 +547,14 @@ class _PlayerViewState extends State<PlayerView>
                           ? _buildLandscape(context, artUri, constraints, loading)
                           : _buildPortrait(context, artUri, constraints, loading);
                     },
+                  ),
+                ),
+                // Not a SnackBar: this overlay is a transparent route on the
+                // root router, and the messenger's scaffold is the one below.
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: SafeArea(
+                    child: _UndoRemovalBar(controller: widget.controller),
                   ),
                 ),
               ],
@@ -1598,4 +1618,56 @@ class _SheetDragPhysics extends ClampingScrollPhysics {
       owner._consumeSheetDrag(position, offset, height)
           ? 0.0
           : super.applyPhysicsToUserOffset(position, offset);
+}
+
+/// The few seconds in which a swiped-away queue entry can be brought back
+/// ([PlayerViewController.pendingRemoval]).
+class _UndoRemovalBar extends StatelessWidget {
+  const _UndoRemovalBar({required this.controller});
+
+  final PlayerViewController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final entry = controller.pendingRemoval;
+    final loc = AppLocalizations.of(context);
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 180),
+      child: entry == null || loc == null
+          ? const SizedBox.shrink()
+          : Padding(
+              key: ValueKey(entry.id),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: Material(
+                  key: PlayerView.undoRemovalBarKey,
+                  color: const Color(0xFF2B2B31),
+                  elevation: 6,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 4),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            loc.queueItemRemoved(entry.title),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        TextButton(
+                          key: PlayerView.undoRemovalButtonKey,
+                          onPressed: controller.undoRemove,
+                          child: Text(loc.undo),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+    );
+  }
 }

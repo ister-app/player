@@ -802,5 +802,6 @@
   "videoLoadSlow": "Dit duurt langer dan normaal. De server maakt de video mogelijk nog klaar — even geduld.",
   "videoLoadRetrying": "Speelt nog niet — nieuwe poging ({attempt})…",
   "videoLoadFailedTitle": "Deze video kon niet worden afgespeeld",
-  "videoLoadFailedBody": "De server heeft de video niet geleverd. Controleer de verbinding en probeer het opnieuw."
+  "videoLoadFailedBody": "De server heeft de video niet geleverd. Controleer de verbinding en probeer het opnieuw.",
+  "queueItemRemoved": "‘{title}’ uit de wachtrij verwijderd"
 }

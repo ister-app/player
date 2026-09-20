@@ -366,6 +366,11 @@ class _LocalPlayerController extends QueuePlayerViewController<MediaItem> {
       _handler.skipToQueueItem(currentIndex - 1 - index);
 
   @override
-  void tapUpNext(int index) =>
-      _handler.skipToQueueItem(currentIndex + 1 + index);
+  void tapUpNext(int index) {
+    // By item, not by offset: the list on screen can be one entry short of
+    // the handler's queue while a removal is still undoable.
+    final item = sliceQueue().upNext[index];
+    final target = _handler.queue.value.indexWhere((q) => q.id == item.id);
+    if (target != -1) _handler.skipToQueueItem(target);
+  }
 }

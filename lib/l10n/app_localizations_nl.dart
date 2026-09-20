@@ -2501,4 +2501,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String videoLoadRetrying(int attempt) {
     return 'Speelt nog niet — nieuwe poging ($attempt)…';
   }
+
+  @override
+  String queueItemRemoved(String title) {
+    return '‘$title’ uit de wachtrij verwijderd';
+  }
 }
