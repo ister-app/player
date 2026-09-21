@@ -14,6 +14,7 @@ import '../components/DevicePickerSheet.dart';
 import '../components/SourceAttribution.dart';
 import '../components/CastRow.dart';
 import '../components/MediaMetaLine.dart';
+import '../components/ArtworkImage.dart';
 import '../components/IsterPlayer.dart';
 import '../components/VideoCoverView.dart';
 import '../components/VideoVersionPicker.dart';
@@ -29,8 +30,29 @@ import '../utils/ImageUtil.dart';
 import '../utils/MediaPlayerHandler.dart';
 import '../utils/MetadataUtil.dart';
 import '../utils/ServerTaskRunner.dart';
+import '../utils/StreamTokenService.dart';
 import '../utils/PermissionsService.dart';
 import '../utils/VideoAutoStart.dart';
+
+/// The page is one centred column on a wide window: a backdrop stretched
+/// over 1900 px was a 4:1 strip of it, with left-aligned text under it and a
+/// cast row that centred itself at yet another width.
+const double _kMaxContentWidth = 1200;
+const double _kPosterWidth = 200;
+
+/// Below this the details keep the full width; the poster would squeeze the
+/// description into a ribbon.
+const double _kPosterMinLayoutWidth = 720;
+
+/// Height of the video surface for a page [width] wide: 16:9, so the backdrop
+/// (and the video) shows whole, but never more than 60 % of the window —
+/// the title and the play state stay in sight on a low, wide window.
+double videoSurfaceHeight(double width, double windowHeight) {
+  final natural = width * 9 / 16;
+  final cap = windowHeight * 0.6;
+  final height = natural > cap ? cap : natural;
+  return height < 200 ? 200 : height;
+}
 
 @RoutePage()
 class MoviePage extends StatefulWidget {
@@ -44,6 +66,8 @@ class MoviePage extends StatefulWidget {
   final String serverName;
   final String movieId;
   final String? playQueueId;
+
+  static const Key posterKey = Key('movie-page-poster');
 
   @override
   _MoviePageState createState() => _MoviePageState();
@@ -212,18 +236,65 @@ class _MoviePageState extends State<MoviePage> {
               ],
             ),
             body: SingleChildScrollView(
-              child: _buildContent(
-                loadComplete,
-                movie,
-                title,
-                MetadataUtil.getDescription(movie?.metadata) ?? '',
-                context,
+              // One column for the whole page: the video, the details and
+              // the cast share their left and right edge instead of each
+              // picking a width of its own on a wide window.
+              child: Center(
+                child: ConstrainedBox(
+                  constraints:
+                      const BoxConstraints(maxWidth: _kMaxContentWidth),
+                  child: _buildContent(
+                    loadComplete,
+                    movie,
+                    title,
+                    MetadataUtil.getDescription(movie?.metadata) ?? '',
+                    context,
+                  ),
+                ),
               ),
             ),
           );
         }
       },
     );
+  }
+
+  /// The details with the poster beside them once there is room for both; a
+  /// phone keeps the single column (the backdrop above already is the art).
+  Widget _withPoster(
+      BuildContext context, Fragment$fragmentMovie? movie, Widget details) {
+    final cover = ImageUtil.getImageByType(movie?.images, ImageTypes.cover);
+    final url = cover == null
+        ? null
+        : ImageUtil.buildUrl(cover,
+            token: StreamTokenService.getToken(widget.serverName));
+    return LayoutBuilder(builder: (context, constraints) {
+      if (url == null || constraints.maxWidth < _kPosterMinLayoutWidth) {
+        return Padding(padding: const EdgeInsets.all(10), child: details);
+      }
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(10, 16, 10, 10),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.all(Radius.circular(8)),
+            child: SizedBox(
+              key: MoviePage.posterKey,
+              width: _kPosterWidth,
+              child: AspectRatio(
+                aspectRatio: 2 / 3,
+                child: ArtworkImage(
+                  url: url,
+                  logicalWidth: _kPosterWidth,
+                  errorBuilder: (context) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 20),
+          Expanded(child: details),
+        ]),
+      );
+    });
   }
 
   Widget _buildContent(bool loadComplete, Fragment$fragmentMovie? movie,
@@ -243,7 +314,8 @@ class _MoviePageState extends State<MoviePage> {
                 color: _playQueueStarted
                     ? Colors.black
                     : Theme.of(context).colorScheme.surfaceContainerHighest),
-            height: constraints.maxWidth < 800 ? 300 : 500,
+            height: videoSurfaceHeight(
+                constraints.maxWidth, MediaQuery.sizeOf(context).height),
             // Once started the surface stays mounted; before that the cover
             // with the play button (no button without a playable file).
             child: _playQueueStarted
@@ -265,10 +337,10 @@ class _MoviePageState extends State<MoviePage> {
         pickedId: _pickedFileId,
         onPicked: (id) => setState(() => _pickedFileId = id),
       ),
-      Container(
-          padding: const EdgeInsets.all(10),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      _withPoster(
+          context,
+          movie,
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(
               children: [
                 Expanded(
@@ -495,6 +567,7 @@ class _MoviePageState extends State<MoviePage> {
                   skeleton: skeleton),
             ),
           ])),
+      const SizedBox(height: 8),
       PagedCastRow(serverName: widget.serverName, movieId: widget.movieId),
     ]);
   }

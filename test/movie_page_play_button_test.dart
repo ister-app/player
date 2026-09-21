@@ -169,6 +169,29 @@ void main() {
     expect(handler.playQueue, isNull);
   });
 
+  test('the video surface is 16:9, capped to the window and never tiny', () {
+    expect(videoSurfaceHeight(1200, 2000), 675);
+    // A low, wide window: the title has to stay in sight.
+    expect(videoSurfaceHeight(1200, 1000), 600);
+    expect(videoSurfaceHeight(320, 800), 200);
+  });
+
+  testWidgets('a wide window keeps the page in one centred column',
+      (tester) async {
+    tester.view.physicalSize = const Size(2000, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(page());
+    await settle(tester);
+
+    final cover = tester.getRect(find.byType(VideoCoverView));
+    expect(cover.width, 1200);
+    expect(cover.center.dx, 1000);
+    expect(cover.height, 600);
+    // No cover art in this fixture: the details keep the full width.
+    expect(find.byKey(MoviePage.posterKey), findsNothing);
+  });
+
   testWidgets('a cached revalidation does not flash the skeleton back',
       (tester) async {
     // One client, so the second mount reads the warm cache. `cacheAndNetwork`
