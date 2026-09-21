@@ -20,23 +20,26 @@ void main() {
 
     trace('looking up the movie with two media files');
     final movies = await gqlRaw('{ movies(size: 50) { content { id name '
-        'mediaFile { id mediaFileStreams { codecType height } } } } }');
+        'mediaFile { id size durationInMilliseconds } } } }');
     final movie = (movies['movies']['content'] as List).firstWhere(
       (m) => ((m['mediaFile'] as List?) ?? []).length > 1,
       orElse: () => fail('no movie with several media files — the testdata '
           'pin predates create_movie_version_fixture'),
     );
     final movieId = movie['id'] as String;
-    int heightOf(dynamic file) => ((file['mediaFileStreams'] as List?) ?? [])
-        .where((s) => s['codecType'] == 'VIDEO')
-        .map<int>((s) => s['height'] as int)
-        .fold(0, (a, b) => a > b ? a : b);
+    // The app's rule (MediaVersions.pickDefault): the highest bitrate, size
+    // over running time — not the most pixels.
+    double bitrateOf(dynamic file) {
+      final ms = (file['durationInMilliseconds'] as num?) ?? 0;
+      return ms <= 0 ? 0 : (file['size'] as num) * 8000 / ms;
+    }
+
     final files = List.of(movie['mediaFile'] as List)
-      ..sort((a, b) => heightOf(b).compareTo(heightOf(a)));
+      ..sort((a, b) => bitrateOf(b).compareTo(bitrateOf(a)));
     final bestId = files.first['id'] as String;
     final otherId = files.last['id'] as String;
-    expect(heightOf(files.first), greaterThan(heightOf(files.last)),
-        reason: 'the fixture versions must differ in resolution');
+    expect(bitrateOf(files.first), greaterThan(bitrateOf(files.last)),
+        reason: 'the fixture versions must differ in bitrate');
 
     trace('opening ${movie['name']}');
     await pushRoute(tester, MovieRoute(movieId: movieId));
@@ -54,7 +57,7 @@ void main() {
       description: 'playback of the default version to start',
     );
     expect(handler.currentMediaFileId.value, bestId,
-        reason: 'the default is the highest resolution, not the first listed');
+        reason: 'the default is the highest bitrate, not the first listed');
     expect(handler.currentMediaUrl, contains('/hls/$bestId/'));
 
     // Far enough in that "same position" is distinguishable from a restart.

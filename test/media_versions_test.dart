@@ -50,9 +50,28 @@ void main() {
       expect(MediaVersions.resolve(null), isNull);
     });
 
-    test('the highest resolution wins, whatever the list order', () {
+    test('the highest bitrate wins, whatever the list order', () {
       expect(MediaVersions.pickDefault([hd, uhd]), uhd);
       expect(MediaVersions.pickDefault([uhd, hd]), uhd);
+    });
+
+    test('a DVD rip beats a starved 1080p web encode: bitrate, not pixels', () {
+      final web = _file('web', size: 2.5e9, durationMs: 3637000, ext: 'mp4');
+      final dvd = _file('dvd',
+          width: 720,
+          height: 480,
+          codec: 'mpeg2video',
+          size: 3.4e9,
+          durationMs: 3637000);
+      expect(MediaVersions.pickDefault([web, dvd]), dvd);
+    });
+
+    test('bitrate is size over running time, not size', () {
+      final longCut = _file('long', size: 9e9, durationMs: 14400000);
+      expect(MediaVersions.pickDefault([longCut, hd]), hd);
+      // Not analysed yet: no bitrate, so it loses from a file that has one.
+      final unknown = _file('new', size: 90e9, durationMs: null);
+      expect(MediaVersions.pickDefault([unknown, hd]), hd);
     });
 
     test('a downloaded file wins over a better one on the server', () {
@@ -119,7 +138,7 @@ void main() {
   group('labelsFor', () {
     test('resolution, codec and size', () {
       expect(MediaVersions.labelsFor([uhd, hd]),
-          ['4K · HEVC · 58 GB', '1080p · H.264 · 8.0 GB']);
+          ['4K · HEVC · 58 GB · 64 Mbps', '1080p · H.264 · 8.0 GB · 8.9 Mbps']);
     });
 
     test('a scope film in a 4K frame still reads as 4K', () {
@@ -131,16 +150,16 @@ void main() {
     test('another cut shows its running time', () {
       final extended = _file('x', durationMs: 9000000);
       expect(MediaVersions.labelsFor([hd, extended]),
-          ['1080p · H.264 · 8.0 GB · 2:00', '1080p · H.264 · 8.0 GB · 2:30']);
+          ['1080p · H.264 · 8.0 GB · 8.9 Mbps · 2:00', '1080p · H.264 · 8.0 GB · 7.1 Mbps · 2:30']);
     });
 
     test('equal labels get the container, and a number as the last resort',
         () {
       expect(MediaVersions.labelsFor([_file('a'), _file('b', ext: 'mp4')]),
-          ['1080p · H.264 · 8.0 GB · MKV', '1080p · H.264 · 8.0 GB · MP4']);
+          ['1080p · H.264 · 8.0 GB · 8.9 Mbps · MKV', '1080p · H.264 · 8.0 GB · 8.9 Mbps · MP4']);
       expect(MediaVersions.labelsFor([_file('a'), _file('b')]), [
-        '1080p · H.264 · 8.0 GB · MKV (1)',
-        '1080p · H.264 · 8.0 GB · MKV (2)'
+        '1080p · H.264 · 8.0 GB · 8.9 Mbps · MKV (1)',
+        '1080p · H.264 · 8.0 GB · 8.9 Mbps · MKV (2)'
       ]);
     });
   });

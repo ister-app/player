@@ -39,8 +39,11 @@ class MediaVersions {
   ///  2. within [maxHeight], when set and anything fits;
   ///  3. with direct play on, a codec this platform decodes ([canDecode])
   ///     before one that has to be transcoded anyway;
-  ///  4. the highest resolution, then the biggest file (bitrate), then the
-  ///     lowest id — so the answer never depends on the order of the list.
+  ///  4. the highest bitrate ([bitrateOf]) — not the most pixels: an
+  ///     upscaled or starved 1080p web encode looks worse than the DVD it was
+  ///     made from, and the pixel count says nothing about that. Then the
+  ///     highest resolution, the biggest file and the lowest id — so the
+  ///     answer never depends on the order of the list.
   static Fragment$fragmentMediaFiles? pickDefault(
     List<Fragment$fragmentMediaFiles> files, {
     bool Function(Fragment$fragmentMediaFiles file)? isLocal,
@@ -70,6 +73,8 @@ class MediaVersions {
     }
     final sorted = List.of(candidates)
       ..sort((a, b) {
+        final byBitrate = bitrateOf(b).compareTo(bitrateOf(a));
+        if (byBitrate != 0) return byBitrate;
         final byHeight = heightOf(b).compareTo(heightOf(a));
         if (byHeight != 0) return byHeight;
         final bySize = b.size.compareTo(a.size);
@@ -89,6 +94,28 @@ class MediaVersions {
   /// analysed yet.
   static int heightOf(Fragment$fragmentMediaFiles file) =>
       _videoStream(file)?.height ?? 0;
+
+  /// Overall bits per second of the file (size over running time); 0 for a
+  /// file that was not analysed yet, which therefore loses from one that was.
+  /// The server stores no per-stream bitrate, and for a video file the
+  /// picture is nearly all of it anyway.
+  static int bitrateOf(Fragment$fragmentMediaFiles file) {
+    final ms = file.durationInMilliseconds ?? 0;
+    if (ms <= 0 || file.size <= 0) return 0;
+    return (file.size * 8000 / ms).round();
+  }
+
+  /// "5.4 Mbps"; null when unknown.
+  static String? bitrateLabel(Fragment$fragmentMediaFiles file) {
+    final bps = bitrateOf(file);
+    if (bps <= 0) return null;
+    final mbps = bps / 1e6;
+    return mbps >= 10
+        ? '${mbps.round()} Mbps'
+        : mbps >= 1
+            ? '${mbps.toStringAsFixed(1)} Mbps'
+            : '${(bps / 1e3).round()} kbps';
+  }
 
   static String? videoCodecOf(Fragment$fragmentMediaFiles file) =>
       _videoStream(file)?.codecName.toLowerCase();
@@ -158,7 +185,7 @@ class MediaVersions {
         : '$minutes min';
   }
 
-  /// One label per file, in [files] order: "4K · HEVC · 58 GB". Whatever is
+  /// One label per file, in [files] order: "4K · HEVC · 58 GB · 64 Mbps". Whatever is
   /// the same for all of them and tells nothing apart is still shown (it is
   /// what the user is choosing between); what *does* differ and is not in the
   /// base label yet — the running time of another cut, the container — is
@@ -170,6 +197,7 @@ class MediaVersions {
         ?resolutionLabel(f),
         if (codec != null) _codecNames[codec] ?? codec.toUpperCase(),
         if (f.size > 0) _size(f.size),
+        ?bitrateLabel(f),
       ].join(' · ');
     }
 
