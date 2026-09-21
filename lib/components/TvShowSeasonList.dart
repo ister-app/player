@@ -128,12 +128,34 @@ class TvShowSeasonList extends StatelessWidget {
     return progress / duration;
   }
 
+  /// How long an episode runs, in whole minutes: what the file on disk says
+  /// before what the metadata provider says — most shows carry no per-episode
+  /// runtime at all, and a provider's "45" is the slot, not the episode. For
+  /// an episode that is one part of a combined file, its own part; null when
+  /// nothing is known (not analysed yet, no metadata).
+  static int? runtimeMinutes({
+    Iterable<num?>? partMs,
+    Iterable<num?>? fileMs,
+    int? metadataMinutes,
+  }) {
+    num? firstKnown(Iterable<num?>? values) =>
+        values?.where((ms) => ms != null && ms > 0).firstOrNull;
+    final ms = firstKnown(partMs) ?? firstKnown(fileMs);
+    if (ms == null) return metadataMinutes;
+    final minutes = (ms / 60000).round();
+    return minutes < 1 ? 1 : minutes;
+  }
+
   /// "45m • 2024-04-01" — runtime and air date, whichever is available.
   static String? _metaLine(
       BuildContext context, Query$seasonById$seasonById$episodes episode) {
+    final minutes = runtimeMinutes(
+      partMs: episode.mediaFileParts?.map((p) => p.durationInMilliseconds),
+      fileMs: episode.mediaFile?.map((f) => f.durationInMilliseconds),
+      metadataMinutes: episode.runtime,
+    );
     final parts = [
-      if (episode.runtime != null)
-        MediaMetaLine.formatRuntime(context, episode.runtime!),
+      if (minutes != null) MediaMetaLine.formatRuntime(context, minutes),
       if ((MetadataUtil.getReleased(episode.metadata) ?? '').isNotEmpty)
         MetadataUtil.getReleased(episode.metadata)!,
     ];
