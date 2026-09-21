@@ -1,5 +1,53 @@
 # Changelog
 
+## player v2.10.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.10.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(player): share the playing version with the server, followers and other devices ([`1917603`](https://github.com/ister-app/player/commit/1917603))
+- feat(player): pick and switch between versions of a video ([`2a7913f`](https://github.com/ister-app/player/commit/2a7913f))
+- feat(status): mark read-only disks on the node page ([`649b9e9`](https://github.com/ister-app/player/commit/649b9e9))
+- feat(upload): native folder source for android and ios ([`3863b2e`](https://github.com/ister-app/player/commit/3863b2e))
+- feat(upload): admin upload page ([`a95ebf1`](https://github.com/ister-app/player/commit/a95ebf1))
+- feat(upload): upload client, folder sources and transfer runner ([`c824b7e`](https://github.com/ister-app/player/commit/c824b7e))
+- feat(player): undo for removing a queue entry ([`3826b55`](https://github.com/ister-app/player/commit/3826b55))
+- feat(player): hide the mouse cursor with the video controls ([`db9bbeb`](https://github.com/ister-app/player/commit/db9bbeb))
+- feat(player): show the loading step and a retryable failure on the video surface ([`0377245`](https://github.com/ister-app/player/commit/0377245))
+- feat(player): show Blu-ray and DVD picture subtitles ([`8248cff`](https://github.com/ister-app/player/commit/8248cff))
+
+### Fixes
+
+- fix(web): keep the video visible when the next episode starts in fullscreen ([`8340c2a`](https://github.com/ister-app/player/commit/8340c2a))
+- fix(player): tell same-named audio tracks apart and keep the chosen one across a re-open ([`fc95e79`](https://github.com/ister-app/player/commit/fc95e79))
+- fix: drop the media notification when playback stops ([`971942d`](https://github.com/ister-app/player/commit/971942d))
+- fix(web): stop playback for real in the browser ([`04ae253`](https://github.com/ister-app/player/commit/04ae253))
+
+### Other
+
+- ci(release): resolve a snapshot server pin by commit, not by version number ([`19380b7`](https://github.com/ister-app/player/commit/19380b7))
+- test(e2e): a movie with two versions — default, switch and the server's record ([`7b0f3cb`](https://github.com/ister-app/player/commit/7b0f3cb))
+- docs: admin upload (en+nl) ([`9e8637a`](https://github.com/ister-app/player/commit/9e8637a))
+- perf(web): let the browser cache artwork across page loads ([`2ca43b2`](https://github.com/ister-app/player/commit/2ca43b2))
+- build(flatpak): move to the 26.08 freedesktop runtime ([`9b609dc`](https://github.com/ister-app/player/commit/9b609dc))
+- build(flatpak): refresh the bundled module versions ([`e46f553`](https://github.com/ister-app/player/commit/e46f553))
+- build: pin Flutter 3.47.5 and refresh dependencies ([`0d3d54f`](https://github.com/ister-app/player/commit/0d3d54f))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.10.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.9.0...v2.10.0
+
 ## player v2.9.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
