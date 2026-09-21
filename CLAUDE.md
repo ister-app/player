@@ -100,8 +100,11 @@ output and a GL-less player free-runs to EOF instantly.
 reads it. The release gate refuses to release when the pins are soft (a moving branch ref — a
 `vX.Y.Z` tag or a full 40-char commit sha both pass, since a chart's e2e fixtures often depend on
 an unreleased player and the two repos would otherwise deadlock) or when the pinned server
-version — stripped of `-SNAPSHOT` — was never released; the release commit strips `-SNAPSHOT` from
-the pins.
+version has no release. A `-snapshot` pin is resolved by content, not by its number
+(`ci/resolve-server-release.sh`): the oldest server release that contains the commit the snapshot
+image was built from — `4.2.2-snapshot` became `5.0.0`, and guessing from the version failed the
+nightly on every server major bump. The release commit writes that resolved version into the
+pins, and the `docs` job re-runs the schema preflight against it.
 
 ## The media_kit fork and the libmpv builds
 

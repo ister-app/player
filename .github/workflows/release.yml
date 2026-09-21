@@ -78,9 +78,9 @@ jobs:
 
       # A release must be replayable: the e2e pins have to be hard (a chart release tag or a
       # full chart commit sha, a testdata commit) and the server version they resolve to must
-      # exist as a *release* image — a -SNAPSHOT tag is mutable and is stripped first. If the
-      # stripped version was never released, this fails loudly: release the server first, then
-      # the player.
+      # exist as a *release* image — a -SNAPSHOT tag is mutable, so it is resolved to the
+      # server release that contains the commit it was built from. If no release does, this
+      # fails loudly: release the server first, then the player.
       #
       # A commit sha is accepted, not just a vX.Y.Z tag: the chart's own e2e fixtures often
       # depend on an unreleased player, so the two repos would otherwise deadlock — neither
@@ -89,6 +89,8 @@ jobs:
       - name: Validate the e2e pins
         id: pins
         if: steps.check.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           source ci/e2e-pins.env
 
@@ -105,33 +107,10 @@ jobs:
             [ -n "$server_tag" ] || { echo "::error::could not read appVersion from chart $CHART_REF"; exit 1; }
           fi
 
-          release_tag="${server_tag%-SNAPSHOT}"
-          release_tag="${release_tag%-snapshot}"
-
-          # A -snapshot pin predicts the next server version as a patch bump, but a feat
-          # commit turns the actual release into a minor bump (2.4.1-snapshot → 2.5.0), so
-          # the predicted patch may never exist. Fall back to the closest newer release
-          # within the same major; a major bump is a breaking change and still fails loudly.
-          if ! docker manifest inspect "ghcr.io/ister-app/server:$release_tag" >/dev/null 2>&1; then
-            major="${release_tag%%.*}"
-            token=$(curl -fsS "https://ghcr.io/token?scope=repository:ister-app/server:pull" | jq -r .token)
-            candidate=$(curl -fsS -H "Authorization: Bearer $token" \
-                "https://ghcr.io/v2/ister-app/server/tags/list?n=1000" \
-              | jq -r '.tags[]' \
-              | grep -P "^${major}\.[0-9]+\.[0-9]+$" \
-              | sort -V \
-              | awk -v pin="$release_tag" 'BEGIN { split(pin, p, ".") }
-                  { split($0, v, "."); if (v[2]+0 > p[2]+0 || (v[2]+0 == p[2]+0 && v[3]+0 > p[3]+0)) { print; exit } }')
-            if [ -n "$candidate" ]; then
-              echo "::warning::pinned server version $release_tag was never released; falling back to $candidate"
-              release_tag="$candidate"
-            fi
-          fi
-
-          for image in ghcr.io/ister-app/server ghcr.io/ister-app/migrations; do
-            docker manifest inspect "$image:$release_tag" >/dev/null 2>&1 \
-              || { echo "::error::$image:$release_tag does not exist — the pinned server version ($server_tag) has no release and no newer release in the same major exists. Release the server first, then bump the pins."; exit 1; }
-          done
+          # By content, not by version number: a -snapshot pin resolves to the oldest server
+          # release that contains the commit the snapshot image was built from, whatever
+          # that release ended up being called (see ci/resolve-server-release.sh).
+          release_tag=$(ci/resolve-server-release.sh "$server_tag")
 
           echo "server_release_tag=$release_tag" >> "$GITHUB_OUTPUT"
           # Only a non-empty pin gets rewritten in the release commit; an empty pin is
@@ -758,6 +737,14 @@ jobs:
           sleep 5
           curl -fsS http://localhost:8080/api/.well-known/ister
 
+      # The e2e ran against the pin as written; this is the first time the *resolved*
+      # release is up. It contains the snapshot's commit but may carry server commits
+      # that landed after the last e2e run, so check the player's operations still fit.
+      - name: Schema preflight (player operations vs the resolved server release)
+        if: steps.chart-e2e.outputs.supported == 'true'
+        working-directory: player
+        run: ci/schema-preflight.sh
+
       - name: Scan the libraries (the tour needs indexed media)
         if: steps.chart-e2e.outputs.supported == 'true'
         working-directory: chart
@@ -895,8 +882,8 @@ jobs:
           version: ${{ needs.gate.outputs.version }}
           build: ${{ needs.gate.outputs.build }}
 
-      # The gate proved a server release exists for the pin (the stripped version, or its
-      # same-major fallback), so the release commit pins that real version — main never
+      # The gate proved a server release exists for the pin (the version itself, or the
+      # release a -snapshot tag's commit ended up in), so the release commit pins that real version — main never
       # releases while pointing at a mutable -SNAPSHOT tag or a version that was never
       # released. A no-op when the pin was empty (chart-managed) or already clean.
       - name: Pin the released server version
