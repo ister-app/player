@@ -6,6 +6,7 @@ import 'package:player/graphql/trackPlaybackHistory.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 
 import '../l10n/app_localizations.dart';
+import 'AppModalSheet.dart';
 import '../utils/ClientManager.dart';
 import '../utils/LoggerService.dart';
 import '../utils/MetadataUtil.dart';
@@ -167,10 +168,10 @@ Future<void> _show(
   required PlaybackHistorySource source,
   VoidCallback? onChanged,
 }) {
-  return showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
-    isScrollControlled: true,
+  // Root navigator: opened from a page in the server shell, the nearest
+  // navigator only fills the content area and the sheet lands off-centre.
+  return showAppSheet<void>(
+    context,
     builder: (context) => PlaybackHistorySheetBody(
       serverName: serverName,
       source: source,
