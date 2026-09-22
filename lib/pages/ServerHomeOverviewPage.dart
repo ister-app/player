@@ -22,14 +22,22 @@ class _ServerHomeOverviewPageState extends State<ServerHomeOverviewPage> {
   @override
   void initState() {
     super.initState();
-    // Reset so a value left over from a previously open server's home page
-    // doesn't select the wrong tab here. Post-frame: the shell above listens
-    // via ValueListenableBuilder, and notifying it while this page mounts
-    // mid-build throws "markNeedsBuild called during build". Mirror the tab
-    // the router actually activated (a deep link may land on /library) —
-    // blindly writing 0 would yank such a deep link back to the home tab.
+    // Reconcile the shell's bar with the tabs. ServerHomePage already reset the
+    // notifier to home for this server, so a different value here is a tab the
+    // user picked before the tabs had mounted — the bar is up a frame earlier —
+    // and it wins, unless the URL itself chose a tab (a deep link to /library).
+    // Post-frame: the shell above listens via ValueListenableBuilder, and
+    // notifying it while this page mounts mid-build throws "markNeedsBuild
+    // called during build".
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      tabNavigationNotifier.value = _tabsRouter?.activeIndex ?? ServerTab.home;
+      final router = _tabsRouter;
+      if (!mounted || router == null) return;
+      final picked = tabNavigationNotifier.value;
+      if (router.activeIndex == ServerTab.home && picked != ServerTab.home) {
+        router.setActiveIndex(picked);
+      } else {
+        tabNavigationNotifier.value = router.activeIndex;
+      }
     });
     tabNavigationNotifier.addListener(_onExternalTabChange);
   }
@@ -68,8 +76,11 @@ class _ServerHomeOverviewPageState extends State<ServerHomeOverviewPage> {
         // notifier feedback loop.
         if (tabNavigationNotifier.value != tabIndex) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted && tabNavigationNotifier.value != tabIndex) {
-              tabNavigationNotifier.value = tabIndex;
+            // Compare against the router's index now, not the one this build
+            // saw: the mount reconciliation above may have moved it meanwhile.
+            final active = _tabsRouter?.activeIndex;
+            if (mounted && active != null && tabNavigationNotifier.value != active) {
+              tabNavigationNotifier.value = active;
             }
           });
         }

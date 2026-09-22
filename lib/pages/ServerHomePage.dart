@@ -138,6 +138,17 @@ class _ServerHomePageState extends State<ServerHomePage> {
   void initState() {
     super.initState();
     _wellKnownFuture = WellKnownService.fetch(widget.serverName);
+    _resetTabForNewServer();
+  }
+
+  /// A server opens on its home tab, whatever tab the previous one was left on.
+  /// Done here rather than when the tabs mount: the shell's bar can be tapped a
+  /// frame before they do, and that tap must survive. Post-frame, because the
+  /// previous shell may still be listening mid-build.
+  void _resetTabForNewServer() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) tabNavigationNotifier.value = ServerTab.home;
+    });
   }
 
   @override
@@ -149,6 +160,7 @@ class _ServerHomePageState extends State<ServerHomePage> {
     // server never runs LoginManager.initIfNotExists and lands on a login page
     // whose login button silently does nothing.
     if (oldWidget.serverName != widget.serverName) {
+      _resetTabForNewServer();
       _wellKnownFuture = WellKnownService.fetch(widget.serverName);
       _initFuture = null;
       _tokenFuture = null;
