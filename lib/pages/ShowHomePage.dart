@@ -549,7 +549,8 @@ class _ShowHomePageState extends State<ShowHomePage> {
             actions: [
               IconButton(
                 icon: const Icon(Icons.search),
-                onPressed: () => AutoRouter.of(context).push(
+                // Switches to the search tab, scoped to this library.
+                onPressed: () => context.router.navigate(
                   SearchRoute(libraryId: _selectedLibraryId),
                 ),
               ),

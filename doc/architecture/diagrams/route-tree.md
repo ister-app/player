@@ -9,6 +9,7 @@ flowchart TD
 
     overview["'' ServerHomeOverviewRoute (initial)"]
     home["home ServerHomeContentRoute"]
+    search["search SearchRoute"]
     library["library ShowHomeRoute"]
     settings["settings ServerSettingsRoute"]
 
@@ -21,7 +22,6 @@ flowchart TD
     showOv["overview (initial)"]
     episode["episodes/:episodeId ShowEpisodeRoute"]
 
-    search["search SearchRoute"]
     movie["movies/:movieId MovieRoute"]
     album["albums/:albumId AlbumRoute"]
     book["books/:bookId BookRoute"]
@@ -36,6 +36,7 @@ flowchart TD
     root --- server
     server --> overview
     overview --> home
+    overview --> search
     overview --> library
     overview --> settings
     server --> setLang
@@ -45,7 +46,6 @@ flowchart TD
     server --> show
     show --> showOv
     show --> episode
-    server --> search
     server --> movie
     server --> album
     server --> book

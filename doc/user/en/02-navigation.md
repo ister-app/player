@@ -1,16 +1,17 @@
 ---
-description: Find your way around the Ister app with the Home, Library and Settings tabs, and switch between multiple self-hosted media servers.
+description: Find your way around the Ister app with the Home, Search, Library and Settings tabs, and switch between multiple self-hosted media servers.
 ---
 
 # Navigation
 
 Once you're inside a server, everything is three taps away at most. This chapter shows you where things live.
 
-## The three tabs
+## The four tabs
 
-Every server has three main areas:
+Every server has four main areas:
 
 - **Home** — recently played items and highlights from your libraries.
+- **Search** — find anything on the server, across every library or in just one.
 - **Library** — everything on the server, browsable and sortable.
 - **Settings** — your playback and sharing preferences, downloads on this device, server info and, for admins, the management screens.
 

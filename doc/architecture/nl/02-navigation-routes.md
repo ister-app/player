@@ -18,6 +18,7 @@ Ook beschikbaar als [mermaid-diagram](../diagrams/route-tree.md).
 ├── ''                                   ServerHomeOverviewRoute (initial)
 │   ├── '' → redirect naar 'home'
 │   ├── home                             ServerHomeContentRoute
+│   ├── search                           SearchRoute
 │   ├── library                          ShowHomeRoute
 │   └── settings                         ServerSettingsRoute
 ├── settings/languages                   ServerSettingsLanguageRoute   [guard]
@@ -28,7 +29,6 @@ Ook beschikbaar als [mermaid-diagram](../diagrams/route-tree.md).
 ├── shows/:showId                        ShowOverviewRoute             [guard]
 │   ├── overview                         ShowOverviewContentRoute (initial)
 │   └── episodes/:episodeId              ShowEpisodeRoute
-├── search                               SearchRoute                   [guard]
 ├── movies/:movieId                      MovieRoute                    [guard]
 ├── albums/:albumId                      AlbumRoute                    [guard]
 ├── books/:bookId                        BookRoute                     [guard]

@@ -101,6 +101,7 @@ class AppRouter extends RootStackRouter {
               children: [
                 RedirectRoute(path: '', redirectTo: 'home'),
                 AutoRoute(path: 'home', page: ServerHomeContentRoute.page),
+                AutoRoute(path: 'search', page: SearchRoute.page),
                 AutoRoute(path: 'library', page: ShowHomeRoute.page),
                 AutoRoute(path: 'settings', page: ServerSettingsRoute.page),
               ]
@@ -128,7 +129,6 @@ class AppRouter extends RootStackRouter {
               AutoRoute(path: 'episodes/:episodeId', page: ShowEpisodeRoute.page),
             ]
           ),
-          AutoRoute(path: 'search', page: SearchRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'list', page: MediaListRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'playlists', page: PlaylistListRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'playlists/:playlistId', page: PlaylistRoute.page, guards: [_deepLinkGuard]),

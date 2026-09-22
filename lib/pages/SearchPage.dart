@@ -3,13 +3,15 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:player/components/ArtworkImage.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/graphql/libraries.graphql.dart';
 import 'package:player/graphql/search.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
-import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:player/utils/MetadataUtil.dart';
+import 'package:player/utils/PlatformService.dart';
 import 'package:player/utils/SearchService.dart';
 import 'package:player/utils/StreamTokenService.dart';
 
@@ -27,7 +29,8 @@ class SearchPage extends StatefulWidget {
 
   final String serverName;
 
-  /// When set, results are limited to a single library.
+  /// The library the search opens scoped to (the library page's search
+  /// button passes its own); absent means every library.
   final String? libraryId;
 
   /// The search term from the URL, so a search is bookmarkable; kept in sync
@@ -49,43 +52,56 @@ class _SearchPageState extends State<SearchPage> {
   List<Query$search$search> _results = const [];
   bool _loading = false;
 
-  /// When true, ignore [SearchPage.libraryId] and search across all libraries.
-  bool _allLibraries = false;
-
   /// The library the query is scoped to — null means every library.
-  String? get _effectiveLibraryId => _allLibraries ? null : widget.libraryId;
+  String? _libraryId;
 
   @override
   void initState() {
     super.initState();
+    _libraryId = widget.libraryId;
     final seed = widget.query?.trim();
     if (seed != null && seed.isNotEmpty) {
       _controller.text = seed;
       _loading = true;
       _runSearch(seed);
     }
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _focusNode.requestFocus());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _focusField());
+  }
+
+  /// Puts the cursor in the field — except on TV, where that would pop the
+  /// on-screen keyboard before the D-pad has reached anything.
+  void _focusField() {
+    if (!mounted || PlatformService.isTvModeSync) return;
+    _focusNode.requestFocus();
   }
 
   @override
   void didUpdateWidget(covariant SearchPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Browser back/forward between ?q= states arrives as an in-place update.
-    // Our own _reflectUrl round-trip comes back equal to the field → no-op.
+    // Browser back/forward between ?q=/?libraryId= states arrives as an
+    // in-place update, and so does the library page's search button (its
+    // library, no term: a fresh search there). Our own _reflectUrl round-trip
+    // comes back equal to the state → no-op.
+    final scopeChanged = widget.libraryId != oldWidget.libraryId &&
+        widget.libraryId != _libraryId;
     final incoming = widget.query?.trim() ?? '';
-    if (widget.query != oldWidget.query && incoming != _controller.text.trim()) {
-      _debounce?.cancel();
-      _controller.text = incoming;
+    final termChanged =
+        widget.query != oldWidget.query && incoming != _controller.text.trim();
+    if (!scopeChanged && !termChanged) return;
+    _debounce?.cancel();
+    _controller.text = incoming;
+    setState(() {
+      _libraryId = widget.libraryId;
       if (incoming.isEmpty) {
-        setState(() {
-          _results = const [];
-          _loading = false;
-        });
+        _results = const [];
+        _loading = false;
       } else {
-        setState(() => _loading = true);
-        _runSearch(incoming);
+        _loading = true;
       }
+    });
+    if (incoming.isNotEmpty) _runSearch(incoming);
+    if (scopeChanged) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _focusField());
     }
   }
 
@@ -97,7 +113,7 @@ class _SearchPageState extends State<SearchPage> {
     final router = context.router;
     router.markUrlStateForReplace();
     router.navigate(SearchRoute(
-      libraryId: widget.libraryId,
+      libraryId: _libraryId,
       query: term.trim().isEmpty ? null : term.trim(),
     ));
   }
@@ -133,7 +149,7 @@ class _SearchPageState extends State<SearchPage> {
     final results = await SearchService().search(
       client,
       term,
-      libraryId: _effectiveLibraryId,
+      libraryId: _libraryId,
       size: 50,
     );
     if (!mounted || requestId != _requestId) return;
@@ -145,83 +161,85 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: MediaPlayerHandler.instance.musicPlayerOpen,
-      builder: (context, musicPlayerOpen, child) => PopScope(
-        canPop: !musicPlayerOpen,
-        child: child!,
-      ),
-      child: Scaffold(
-        appBar: AppBar(
-          title: TextField(
-            controller: _controller,
-            focusNode: _focusNode,
-            textInputAction: TextInputAction.search,
-            onChanged: _onChanged,
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              hintText: AppLocalizations.of(context)!.search,
-            ),
+    return Scaffold(
+      appBar: AppBar(
+        title: TextField(
+          controller: _controller,
+          focusNode: _focusNode,
+          textInputAction: TextInputAction.search,
+          onChanged: _onChanged,
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            hintText: AppLocalizations.of(context)!.search,
           ),
-          actions: [
-            if (_controller.text.isNotEmpty)
-              IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: () {
-                  _controller.clear();
-                  _onChanged('');
-                  _focusNode.requestFocus();
-                },
-              ),
-          ],
         ),
-        body: Column(
-          children: [
-            // Only offer the scope switch when the search was opened inside a
-            // specific library; a search opened without one is already global.
-            if (widget.libraryId != null) _scopeSelector(context),
-            Expanded(child: _buildBody(context)),
-          ],
-        ),
+        actions: [
+          if (_controller.text.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.clear),
+              onPressed: () {
+                _controller.clear();
+                _onChanged('');
+                _focusNode.requestFocus();
+              },
+            ),
+        ],
+      ),
+      body: Column(
+        children: [
+          _scopeSelector(context),
+          Expanded(child: _buildBody(context)),
+        ],
       ),
     );
   }
 
+  /// "All libraries" plus one chip per library; the search starts on all.
   Widget _scopeSelector(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-      child: Center(
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: SegmentedButton<bool>(
-            showSelectedIcon: false,
-            segments: [
-              ButtonSegment(
-                value: false,
-                label: Text(loc.searchThisLibrary),
-                icon: const Icon(Icons.folder_outlined),
-              ),
-              ButtonSegment(
-                value: true,
-                label: Text(loc.searchAllLibraries),
-                icon: const Icon(Icons.travel_explore),
-              ),
-            ],
-            selected: {_allLibraries},
-            onSelectionChanged: (selection) =>
-                _setAllLibraries(selection.first),
-          ),
-        ),
+    return Query(
+      options: QueryOptions(
+        document: documentNodeQuerylibraries,
+        fetchPolicy: FetchPolicy.cacheAndNetwork,
       ),
+      builder: (result, {refetch, fetchMore}) {
+        final libraries = result.data == null
+            ? const <Query$libraries$libraries>[]
+            : (Query$libraries.fromJson(result.data!).libraries ??
+                const <Query$libraries$libraries>[]);
+        Widget chip(Key key, String label, String? libraryId) => Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ChoiceChip(
+                key: key,
+                label: Text(label),
+                selected: _libraryId == libraryId,
+                onSelected: (_) => _setLibrary(libraryId),
+              ),
+            );
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.fromLTRB(12, 8, 4, 4),
+          child: Row(
+            children: [
+              chip(const ValueKey('search-scope-all'), loc.searchAllLibraries,
+                  null),
+              for (final library in libraries)
+                chip(ValueKey('search-scope-${library.id}'), library.name,
+                    library.id),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  void _setAllLibraries(bool value) {
-    if (value == _allLibraries) return;
-    setState(() => _allLibraries = value);
-    // Re-run the current query against the new scope.
+  /// Scopes the search to [libraryId] (null = every library) and re-runs the
+  /// current term there.
+  void _setLibrary(String? libraryId) {
+    if (libraryId == _libraryId) return;
+    setState(() => _libraryId = libraryId);
     final term = _controller.text.trim();
+    _reflectUrl(term);
     if (term.isNotEmpty) {
       setState(() => _loading = true);
       _runSearch(term);

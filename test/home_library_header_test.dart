@@ -115,7 +115,7 @@ void main() {
     expect(pendingLibrarySelection.value?.serverName, _server);
     expect(pendingLibrarySelection.value?.libraryId, 'movie-lib-1');
     expect(pendingLibrarySelection.value?.libraryType, Enum$LibraryType.MOVIE);
-    expect(tabNavigationNotifier.value, 1);
+    expect(tabNavigationNotifier.value, ServerTab.library);
   });
 
   testWidgets(

@@ -15,7 +15,7 @@ De bibliotheek opent in een van twee weergaven, wisselbaar met de knoppen bovena
 
 ## Het bibliotheekraster
 
-De weergave Bladeren toont je media als een raster van covers. Sorteer met de sorteerknop onder de weergaveknoppen op titel, op recent toegevoegd of op releasejaar — je keuze wordt per bibliotheek bewaard, dus elke bibliotheek onthoudt hoe je hem het liefst ziet. Scrol om meer te laden; lange lijsten vullen zich vanzelf aan. Met het zoekpictogram beperk je een zoekopdracht tot deze bibliotheek, en met **Shuffle afspelen** start je de hele bibliotheek in willekeurige volgorde.
+De weergave Bladeren toont je media als een raster van covers. Sorteer met de sorteerknop onder de weergaveknoppen op titel, op recent toegevoegd of op releasejaar — je keuze wordt per bibliotheek bewaard, dus elke bibliotheek onthoudt hoe je hem het liefst ziet. Scrol om meer te laden; lange lijsten vullen zich vanzelf aan. Het zoekpictogram springt naar het tabblad **Zoeken**, met deze bibliotheek al gekozen, en met **Shuffle afspelen** start je de hele bibliotheek in willekeurige volgorde.
 
 ![Het bibliotheekraster](../images/nl/library.png)
 
@@ -58,6 +58,8 @@ Bijna alles wat je kunt openen kun je beoordelen: films, series, afleveringen, a
 ## Zoeken
 
 Zoeken kijkt overal tegelijk — films, series, afleveringen, personen, albums en nummers — en zet de beste treffers bovenaan, van welke soort ze ook zijn. Meestal de snelste route naar wat dan ook.
+
+Zoeken heeft een eigen tabblad. Het zoekt eerst in **Alle bibliotheken**; met de chips onder het zoekveld beperk je het tot één bibliotheek, en je zoekopdracht draait daar meteen opnieuw.
 
 ![Zoekresultaten over alle mediasoorten heen](../images/nl/search.png)
 

@@ -1220,12 +1220,6 @@ abstract class AppLocalizations {
   /// **'In description'**
   String get searchInDescription;
 
-  /// Toggle option to limit search to the current library
-  ///
-  /// In en, this message translates to:
-  /// **'This library'**
-  String get searchThisLibrary;
-
   /// Toggle option to search across every library
   ///
   /// In en, this message translates to:

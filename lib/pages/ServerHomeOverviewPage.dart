@@ -29,7 +29,7 @@ class _ServerHomeOverviewPageState extends State<ServerHomeOverviewPage> {
     // the router actually activated (a deep link may land on /library) —
     // blindly writing 0 would yank such a deep link back to the home tab.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      tabNavigationNotifier.value = _tabsRouter?.activeIndex ?? 0;
+      tabNavigationNotifier.value = _tabsRouter?.activeIndex ?? ServerTab.home;
     });
     tabNavigationNotifier.addListener(_onExternalTabChange);
   }
@@ -49,6 +49,7 @@ class _ServerHomeOverviewPageState extends State<ServerHomeOverviewPage> {
     return AutoTabsRouter(
       routes: [
         ServerHomeContentRoute(),
+        SearchRoute(),
         ShowHomeRoute(),
         ServerSettingsRoute(),
       ],

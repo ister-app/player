@@ -685,9 +685,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchInDescription => 'In description';
 
   @override
-  String get searchThisLibrary => 'This library';
-
-  @override
   String get searchAllLibraries => 'All libraries';
 
   @override

@@ -687,9 +687,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get searchInDescription => 'In beschrijving';
 
   @override
-  String get searchThisLibrary => 'Deze bibliotheek';
-
-  @override
   String get searchAllLibraries => 'Alle bibliotheken';
 
   @override

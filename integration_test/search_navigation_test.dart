@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:player/pages/ShowEpisodePage.dart';
-import 'package:player/routes/AppRouter.gr.dart';
 
 import 'support/harness.dart';
 
@@ -23,7 +22,10 @@ void main() {
       (tester) async {
     await bootApp(tester);
     await enterServerShell(tester);
-    await pushRoute(tester, SearchRoute());
+    // Search is a main tab of the server shell.
+    trace('open the search tab');
+    await tester.tap(find.byKey(const ValueKey('tab-search')).first,
+        warnIfMissed: false);
     await pumpUntilFound(tester, find.byType(TextField));
     // The fixture library has the show "Dragonfly"; its episodes rank in the
     // results too.

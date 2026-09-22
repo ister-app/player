@@ -15,7 +15,7 @@ The library opens in one of two views, switchable with the buttons at the top:
 
 ## The library grid
 
-The Browse view shows your media as a grid of covers. Use the sort button under the view switch to order by title, by what was recently added, or by release year — your choice is saved per library, so each one remembers how you like to see it. Scroll to load more; long lists fill in as you go. The search icon narrows a search to just this library, and **Shuffle play** starts the whole library in random order.
+The Browse view shows your media as a grid of covers. Use the sort button under the view switch to order by title, by what was recently added, or by release year — your choice is saved per library, so each one remembers how you like to see it. Scroll to load more; long lists fill in as you go. The search icon jumps to the **Search** tab with this library already picked, and **Shuffle play** starts the whole library in random order.
 
 ![The library grid](../images/en/library.png)
 
@@ -58,6 +58,8 @@ Almost everything you can open can be rated: movies, shows, episodes, albums, in
 ## Search
 
 Search looks across everything at once — movies, shows, episodes, people, albums and tracks — and ranks the best matches at the top, whatever kind they are. It's usually the fastest way to get anywhere.
+
+Search has its own tab. It starts out searching **All libraries**; the chips under the search field narrow it to a single library, and your search runs again there right away.
 
 ![Search results across all media kinds](../images/en/search.png)
 

@@ -245,7 +245,8 @@ void main() {
     final movies = await gqlRaw('{ movies(size: 1) { content { id name } } }');
     final movie = (movies['movies']['content'] as List).first;
     final movieName = movie['name'] as String;
-    await pushRoute(tester, SearchRoute());
+    await tester.tap(find.byKey(const ValueKey('tab-search')).first,
+        warnIfMissed: false);
     await pumpUntilFound(tester, find.byType(TextField));
     await tester.enterText(find.byType(TextField).first,
         movieName.substring(0, movieName.length < 4 ? movieName.length : 4));
@@ -253,7 +254,6 @@ void main() {
     // screenshot, so just give the debounced search time to render results.
     await tester.pump(const Duration(seconds: 8));
     await shot(tester, 'search');
-    await pop(tester);
 
     // Settings tab and its sub-pages.
     await tester.tap(find.byIcon(Icons.settings).first, warnIfMissed: false);

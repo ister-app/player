@@ -209,11 +209,17 @@ class _ServerHomePageState extends State<ServerHomePage> {
 
     final railDestinations = <NavigationRailDestination>[
       NavigationRailDestination(icon: const Icon(Icons.home), label: Text(loc.home)),
+      NavigationRailDestination(
+          icon: const Icon(Icons.search, key: ValueKey('tab-search')),
+          label: Text(loc.search)),
       NavigationRailDestination(icon: const Icon(Icons.book), label: Text(loc.library)),
       NavigationRailDestination(icon: const Icon(Icons.settings), label: Text(loc.settings)),
     ];
     final barDestinations = <NavigationDestination>[
       NavigationDestination(icon: const Icon(Icons.home), label: loc.home),
+      NavigationDestination(
+          icon: const Icon(Icons.search, key: ValueKey('tab-search')),
+          label: loc.search),
       NavigationDestination(icon: const Icon(Icons.book), label: loc.library),
       NavigationDestination(icon: const Icon(Icons.settings), label: loc.settings),
     ];

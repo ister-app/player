@@ -1,16 +1,17 @@
 ---
-description: Vind je weg in de Ister-app met de tabbladen Home, Bibliotheek en Instellingen, en wissel moeiteloos tussen meerdere zelfgehoste mediaservers.
+description: Vind je weg in de Ister-app met de tabbladen Home, Zoeken, Bibliotheek en Instellingen, en wissel moeiteloos tussen meerdere zelfgehoste mediaservers.
 ---
 
 # Navigatie
 
 Eenmaal binnen op een server is alles hooguit drie tikken weg. Dit hoofdstuk laat zien waar alles zit.
 
-## De drie tabbladen
+## De vier tabbladen
 
-Elke server heeft drie hoofdonderdelen:
+Elke server heeft vier hoofdonderdelen:
 
 - **Home** — recent afgespeelde items en uitgelicht materiaal uit je bibliotheken.
+- **Zoeken** — vind alles op de server, in alle bibliotheken tegelijk of in één.
 - **Bibliotheek** — alles op de server, te doorbladeren en te sorteren.
 - **Instellingen** — je afspeel- en deelvoorkeuren, downloads op dit apparaat, serverinformatie en, voor beheerders, de beheerschermen.
 

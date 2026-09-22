@@ -255,7 +255,7 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                                   libraryId: library.id,
                                   libraryType: library.type,
                                 );
-                            tabNavigationNotifier.value = 1;
+                            tabNavigationNotifier.value = ServerTab.library;
                           },
                         ),
                         SizedBox(
