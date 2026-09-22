@@ -1,5 +1,34 @@
 # Changelog
 
+## player v2.11.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.11.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(player): tidy the movie page on a wide window ([`4207870`](https://github.com/ister-app/player/commit/4207870))
+- feat(player): show how long an episode runs in the season list ([`76977ae`](https://github.com/ister-app/player/commit/76977ae))
+- feat(player): choose version, audio and subtitles from a bottom sheet ([`c886ceb`](https://github.com/ister-app/player/commit/c886ceb))
+- feat(player): pick the default video version by bitrate, not by pixels ([`d1398c9`](https://github.com/ister-app/player/commit/d1398c9))
+
+### Fixes
+
+- fix(player): open the playback history sheet from the bottom of the window ([`9852197`](https://github.com/ister-app/player/commit/9852197))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.11.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.10.0...v2.11.0
+
 ## player v2.10.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
