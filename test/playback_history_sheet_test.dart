@@ -37,6 +37,7 @@ Map<String, dynamic> _trackEntry(String id, String updatedAt,
       'updatedAt': updatedAt,
       'track': {
         '__typename': 'Track',
+        'artists': <dynamic>[],
         'id': 'track-$id',
         'number': number,
         'metadata': [

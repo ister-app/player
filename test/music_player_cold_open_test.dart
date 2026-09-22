@@ -73,6 +73,7 @@ void _installPlayingTrack(MediaPlayerHandler handler) {
       discNumber: 1,
       artist: Fragment$fragmentPlayQueue$playQueueItems$track$artist(
           id: 'artist-1', name: 'The Artist'),
+      artists: const [],
       album: Fragment$fragmentPlayQueue$playQueueItems$track$album(
           id: 'album-1', name: 'The Album'),
     ),

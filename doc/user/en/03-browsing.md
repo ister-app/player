@@ -31,7 +31,7 @@ Movies get a detail page with the poster, description, duration and a play butto
 
 ## Music
 
-Albums list their tracks in order. Play a single track, the whole album, or add to the queue — more on queues in [Playback](04-playback.md).
+Albums list their tracks in order. Play a single track, the whole album, or add to the queue — more on queues in [Playback](04-playback.md). A track sung by more than one artist names all of them, and each one's own page lists that track too.
 
 ![An album page with its track list](../images/en/album.png)
 

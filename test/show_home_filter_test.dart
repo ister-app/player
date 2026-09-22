@@ -44,6 +44,7 @@ Map<String, dynamic> _metadata(String id, String title) => {
 
 Map<String, dynamic> _track(String id, String title) => {
       '__typename': 'Track',
+      'artists': <dynamic>[],
       'id': id,
       'number': 1,
       'discNumber': 1,

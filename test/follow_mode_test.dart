@@ -43,6 +43,7 @@ Fragment$fragmentPlayQueue$playQueueItems _trackItem(String id, double position,
         discNumber: 1,
         artist: Fragment$fragmentPlayQueue$playQueueItems$track$artist(
             id: 'artist-1', name: 'The Artist'),
+        artists: const [],
         album: Fragment$fragmentPlayQueue$playQueueItems$track$album(
             id: 'album-1', name: 'The Album'),
         mediaFile: [_mediaFile('mf-$id')],

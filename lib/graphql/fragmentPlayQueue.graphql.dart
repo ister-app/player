@@ -583,6 +583,68 @@ const fragmentDefinitionfragmentPlayQueue = FragmentDefinitionNode(
                     ),
                   ),
                   FieldNode(
+                    name: NameNode(value: 'artists'),
+                    alias: null,
+                    arguments: [],
+                    directives: [],
+                    selectionSet: SelectionSetNode(
+                      selections: [
+                        FieldNode(
+                          name: NameNode(value: 'type'),
+                          alias: null,
+                          arguments: [],
+                          directives: [],
+                          selectionSet: null,
+                        ),
+                        FieldNode(
+                          name: NameNode(value: 'position'),
+                          alias: null,
+                          arguments: [],
+                          directives: [],
+                          selectionSet: null,
+                        ),
+                        FieldNode(
+                          name: NameNode(value: 'person'),
+                          alias: null,
+                          arguments: [],
+                          directives: [],
+                          selectionSet: SelectionSetNode(
+                            selections: [
+                              FieldNode(
+                                name: NameNode(value: 'id'),
+                                alias: null,
+                                arguments: [],
+                                directives: [],
+                                selectionSet: null,
+                              ),
+                              FieldNode(
+                                name: NameNode(value: 'name'),
+                                alias: null,
+                                arguments: [],
+                                directives: [],
+                                selectionSet: null,
+                              ),
+                              FieldNode(
+                                name: NameNode(value: '__typename'),
+                                alias: null,
+                                arguments: [],
+                                directives: [],
+                                selectionSet: null,
+                              ),
+                            ],
+                          ),
+                        ),
+                        FieldNode(
+                          name: NameNode(value: '__typename'),
+                          alias: null,
+                          arguments: [],
+                          directives: [],
+                          selectionSet: null,
+                        ),
+                      ],
+                    ),
+                  ),
+                  FieldNode(
                     name: NameNode(value: 'album'),
                     alias: null,
                     arguments: [],
@@ -1447,6 +1509,7 @@ class Fragment$fragmentPlayQueue$playQueueItems$track {
     required this.number,
     required this.discNumber,
     required this.artist,
+    required this.artists,
     required this.album,
     this.metadata,
     this.mediaFile,
@@ -1461,6 +1524,7 @@ class Fragment$fragmentPlayQueue$playQueueItems$track {
     final l$number = json['number'];
     final l$discNumber = json['discNumber'];
     final l$artist = json['artist'];
+    final l$artists = json['artists'];
     final l$album = json['album'];
     final l$metadata = json['metadata'];
     final l$mediaFile = json['mediaFile'];
@@ -1473,6 +1537,14 @@ class Fragment$fragmentPlayQueue$playQueueItems$track {
       artist: Fragment$fragmentPlayQueue$playQueueItems$track$artist.fromJson(
         (l$artist as Map<String, dynamic>),
       ),
+      artists: (l$artists as List<dynamic>)
+          .map(
+            (e) =>
+                Fragment$fragmentPlayQueue$playQueueItems$track$artists.fromJson(
+                  (e as Map<String, dynamic>),
+                ),
+          )
+          .toList(),
       album: Fragment$fragmentPlayQueue$playQueueItems$track$album.fromJson(
         (l$album as Map<String, dynamic>),
       ),
@@ -1502,6 +1574,8 @@ class Fragment$fragmentPlayQueue$playQueueItems$track {
 
   final Fragment$fragmentPlayQueue$playQueueItems$track$artist artist;
 
+  final List<Fragment$fragmentPlayQueue$playQueueItems$track$artists> artists;
+
   final Fragment$fragmentPlayQueue$playQueueItems$track$album album;
 
   final List<Fragment$fragmentMetadata>? metadata;
@@ -1522,6 +1596,8 @@ class Fragment$fragmentPlayQueue$playQueueItems$track {
     _resultData['discNumber'] = l$discNumber;
     final l$artist = artist;
     _resultData['artist'] = l$artist.toJson();
+    final l$artists = artists;
+    _resultData['artists'] = l$artists.map((e) => e.toJson()).toList();
     final l$album = album;
     _resultData['album'] = l$album.toJson();
     final l$metadata = metadata;
@@ -1541,6 +1617,7 @@ class Fragment$fragmentPlayQueue$playQueueItems$track {
     final l$number = number;
     final l$discNumber = discNumber;
     final l$artist = artist;
+    final l$artists = artists;
     final l$album = album;
     final l$metadata = metadata;
     final l$mediaFile = mediaFile;
@@ -1551,6 +1628,7 @@ class Fragment$fragmentPlayQueue$playQueueItems$track {
       l$number,
       l$discNumber,
       l$artist,
+      Object.hashAll(l$artists.map((v) => v)),
       l$album,
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$mediaFile == null ? null : Object.hashAll(l$mediaFile.map((v) => v)),
@@ -1587,6 +1665,18 @@ class Fragment$fragmentPlayQueue$playQueueItems$track {
     final lOther$artist = other.artist;
     if (l$artist != lOther$artist) {
       return false;
+    }
+    final l$artists = artists;
+    final lOther$artists = other.artists;
+    if (l$artists.length != lOther$artists.length) {
+      return false;
+    }
+    for (int i = 0; i < l$artists.length; i++) {
+      final l$artists$entry = l$artists[i];
+      final lOther$artists$entry = lOther$artists[i];
+      if (l$artists$entry != lOther$artists$entry) {
+        return false;
+      }
     }
     final l$album = album;
     final lOther$album = other.album;
@@ -1663,6 +1753,7 @@ abstract class CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track<TRes> {
     int? number,
     int? discNumber,
     Fragment$fragmentPlayQueue$playQueueItems$track$artist? artist,
+    List<Fragment$fragmentPlayQueue$playQueueItems$track$artists>? artists,
     Fragment$fragmentPlayQueue$playQueueItems$track$album? album,
     List<Fragment$fragmentMetadata>? metadata,
     List<Fragment$fragmentMediaFiles>? mediaFile,
@@ -1671,6 +1762,16 @@ abstract class CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track<TRes> {
   });
   CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artist<TRes>
   get artist;
+  TRes artists(
+    Iterable<Fragment$fragmentPlayQueue$playQueueItems$track$artists> Function(
+      Iterable<
+        CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists<
+          Fragment$fragmentPlayQueue$playQueueItems$track$artists
+        >
+      >,
+    )
+    _fn,
+  );
   CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$album<TRes>
   get album;
   TRes metadata(
@@ -1707,6 +1808,7 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$track<TRes>
     Object? number = _undefined,
     Object? discNumber = _undefined,
     Object? artist = _undefined,
+    Object? artists = _undefined,
     Object? album = _undefined,
     Object? metadata = _undefined,
     Object? mediaFile = _undefined,
@@ -1724,6 +1826,12 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$track<TRes>
       artist: artist == _undefined || artist == null
           ? _instance.artist
           : (artist as Fragment$fragmentPlayQueue$playQueueItems$track$artist),
+      artists: artists == _undefined || artists == null
+          ? _instance.artists
+          : (artists
+                as List<
+                  Fragment$fragmentPlayQueue$playQueueItems$track$artists
+                >),
       album: album == _undefined || album == null
           ? _instance.album
           : (album as Fragment$fragmentPlayQueue$playQueueItems$track$album),
@@ -1748,6 +1856,26 @@ class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$track<TRes>
       (e) => call(artist: e),
     );
   }
+
+  TRes artists(
+    Iterable<Fragment$fragmentPlayQueue$playQueueItems$track$artists> Function(
+      Iterable<
+        CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists<
+          Fragment$fragmentPlayQueue$playQueueItems$track$artists
+        >
+      >,
+    )
+    _fn,
+  ) => call(
+    artists: _fn(
+      _instance.artists.map(
+        (e) => CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists(
+          e,
+          (i) => i,
+        ),
+      ),
+    ).toList(),
+  );
 
   CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$album<TRes>
   get album {
@@ -1798,6 +1926,7 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$track<TRes>
     int? number,
     int? discNumber,
     Fragment$fragmentPlayQueue$playQueueItems$track$artist? artist,
+    List<Fragment$fragmentPlayQueue$playQueueItems$track$artists>? artists,
     Fragment$fragmentPlayQueue$playQueueItems$track$album? album,
     List<Fragment$fragmentMetadata>? metadata,
     List<Fragment$fragmentMediaFiles>? mediaFile,
@@ -1810,6 +1939,8 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$track<TRes>
       CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artist.stub(
         _res,
       );
+
+  artists(_fn) => _res;
 
   CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$album<TRes>
   get album =>
@@ -1958,6 +2089,363 @@ class _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$track$artist<
     implements
         CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artist<TRes> {
   _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$track$artist(
+    this._res,
+  );
+
+  TRes _res;
+
+  call({String? id, String? name, String? $__typename}) => _res;
+}
+
+class Fragment$fragmentPlayQueue$playQueueItems$track$artists {
+  Fragment$fragmentPlayQueue$playQueueItems$track$artists({
+    required this.type,
+    required this.position,
+    required this.person,
+    this.$__typename = 'TrackCredit',
+  });
+
+  factory Fragment$fragmentPlayQueue$playQueueItems$track$artists.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final l$type = json['type'];
+    final l$position = json['position'];
+    final l$person = json['person'];
+    final l$$__typename = json['__typename'];
+    return Fragment$fragmentPlayQueue$playQueueItems$track$artists(
+      type: fromJson$Enum$TrackCreditType((l$type as String)),
+      position: (l$position as int),
+      person:
+          Fragment$fragmentPlayQueue$playQueueItems$track$artists$person.fromJson(
+            (l$person as Map<String, dynamic>),
+          ),
+      $__typename: (l$$__typename as String),
+    );
+  }
+
+  final Enum$TrackCreditType type;
+
+  final int position;
+
+  final Fragment$fragmentPlayQueue$playQueueItems$track$artists$person person;
+
+  final String $__typename;
+
+  Map<String, dynamic> toJson() {
+    final _resultData = <String, dynamic>{};
+    final l$type = type;
+    _resultData['type'] = toJson$Enum$TrackCreditType(l$type);
+    final l$position = position;
+    _resultData['position'] = l$position;
+    final l$person = person;
+    _resultData['person'] = l$person.toJson();
+    final l$$__typename = $__typename;
+    _resultData['__typename'] = l$$__typename;
+    return _resultData;
+  }
+
+  @override
+  int get hashCode {
+    final l$type = type;
+    final l$position = position;
+    final l$person = person;
+    final l$$__typename = $__typename;
+    return Object.hashAll([l$type, l$position, l$person, l$$__typename]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Fragment$fragmentPlayQueue$playQueueItems$track$artists ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$type = type;
+    final lOther$type = other.type;
+    if (l$type != lOther$type) {
+      return false;
+    }
+    final l$position = position;
+    final lOther$position = other.position;
+    if (l$position != lOther$position) {
+      return false;
+    }
+    final l$person = person;
+    final lOther$person = other.person;
+    if (l$person != lOther$person) {
+      return false;
+    }
+    final l$$__typename = $__typename;
+    final lOther$$__typename = other.$__typename;
+    if (l$$__typename != lOther$$__typename) {
+      return false;
+    }
+    return true;
+  }
+}
+
+extension UtilityExtension$Fragment$fragmentPlayQueue$playQueueItems$track$artists
+    on Fragment$fragmentPlayQueue$playQueueItems$track$artists {
+  CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists<
+    Fragment$fragmentPlayQueue$playQueueItems$track$artists
+  >
+  get copyWith =>
+      CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists(
+        this,
+        (i) => i,
+      );
+}
+
+abstract class CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists<
+  TRes
+> {
+  factory CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists(
+    Fragment$fragmentPlayQueue$playQueueItems$track$artists instance,
+    TRes Function(Fragment$fragmentPlayQueue$playQueueItems$track$artists) then,
+  ) = _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$track$artists;
+
+  factory CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists.stub(
+    TRes res,
+  ) = _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$track$artists;
+
+  TRes call({
+    Enum$TrackCreditType? type,
+    int? position,
+    Fragment$fragmentPlayQueue$playQueueItems$track$artists$person? person,
+    String? $__typename,
+  });
+  CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person<TRes>
+  get person;
+}
+
+class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$track$artists<
+  TRes
+>
+    implements
+        CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists<TRes> {
+  _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$track$artists(
+    this._instance,
+    this._then,
+  );
+
+  final Fragment$fragmentPlayQueue$playQueueItems$track$artists _instance;
+
+  final TRes Function(Fragment$fragmentPlayQueue$playQueueItems$track$artists)
+  _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? type = _undefined,
+    Object? position = _undefined,
+    Object? person = _undefined,
+    Object? $__typename = _undefined,
+  }) => _then(
+    Fragment$fragmentPlayQueue$playQueueItems$track$artists(
+      type: type == _undefined || type == null
+          ? _instance.type
+          : (type as Enum$TrackCreditType),
+      position: position == _undefined || position == null
+          ? _instance.position
+          : (position as int),
+      person: person == _undefined || person == null
+          ? _instance.person
+          : (person
+                as Fragment$fragmentPlayQueue$playQueueItems$track$artists$person),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
+
+  CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person<TRes>
+  get person {
+    final local$person = _instance.person;
+    return CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person(
+      local$person,
+      (e) => call(person: e),
+    );
+  }
+}
+
+class _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$track$artists<
+  TRes
+>
+    implements
+        CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists<TRes> {
+  _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$track$artists(
+    this._res,
+  );
+
+  TRes _res;
+
+  call({
+    Enum$TrackCreditType? type,
+    int? position,
+    Fragment$fragmentPlayQueue$playQueueItems$track$artists$person? person,
+    String? $__typename,
+  }) => _res;
+
+  CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person<TRes>
+  get person =>
+      CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person.stub(
+        _res,
+      );
+}
+
+class Fragment$fragmentPlayQueue$playQueueItems$track$artists$person {
+  Fragment$fragmentPlayQueue$playQueueItems$track$artists$person({
+    required this.id,
+    required this.name,
+    this.$__typename = 'Person',
+  });
+
+  factory Fragment$fragmentPlayQueue$playQueueItems$track$artists$person.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final l$id = json['id'];
+    final l$name = json['name'];
+    final l$$__typename = json['__typename'];
+    return Fragment$fragmentPlayQueue$playQueueItems$track$artists$person(
+      id: (l$id as String),
+      name: (l$name as String),
+      $__typename: (l$$__typename as String),
+    );
+  }
+
+  final String id;
+
+  final String name;
+
+  final String $__typename;
+
+  Map<String, dynamic> toJson() {
+    final _resultData = <String, dynamic>{};
+    final l$id = id;
+    _resultData['id'] = l$id;
+    final l$name = name;
+    _resultData['name'] = l$name;
+    final l$$__typename = $__typename;
+    _resultData['__typename'] = l$$__typename;
+    return _resultData;
+  }
+
+  @override
+  int get hashCode {
+    final l$id = id;
+    final l$name = name;
+    final l$$__typename = $__typename;
+    return Object.hashAll([l$id, l$name, l$$__typename]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other
+            is! Fragment$fragmentPlayQueue$playQueueItems$track$artists$person ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$id = id;
+    final lOther$id = other.id;
+    if (l$id != lOther$id) {
+      return false;
+    }
+    final l$name = name;
+    final lOther$name = other.name;
+    if (l$name != lOther$name) {
+      return false;
+    }
+    final l$$__typename = $__typename;
+    final lOther$$__typename = other.$__typename;
+    if (l$$__typename != lOther$$__typename) {
+      return false;
+    }
+    return true;
+  }
+}
+
+extension UtilityExtension$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person
+    on Fragment$fragmentPlayQueue$playQueueItems$track$artists$person {
+  CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person<
+    Fragment$fragmentPlayQueue$playQueueItems$track$artists$person
+  >
+  get copyWith =>
+      CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person(
+        this,
+        (i) => i,
+      );
+}
+
+abstract class CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person<
+  TRes
+> {
+  factory CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person(
+    Fragment$fragmentPlayQueue$playQueueItems$track$artists$person instance,
+    TRes Function(
+      Fragment$fragmentPlayQueue$playQueueItems$track$artists$person,
+    )
+    then,
+  ) = _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person;
+
+  factory CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person.stub(
+    TRes res,
+  ) = _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person;
+
+  TRes call({String? id, String? name, String? $__typename});
+}
+
+class _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person<
+  TRes
+>
+    implements
+        CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person<
+          TRes
+        > {
+  _CopyWithImpl$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person(
+    this._instance,
+    this._then,
+  );
+
+  final Fragment$fragmentPlayQueue$playQueueItems$track$artists$person
+  _instance;
+
+  final TRes Function(
+    Fragment$fragmentPlayQueue$playQueueItems$track$artists$person,
+  )
+  _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? id = _undefined,
+    Object? name = _undefined,
+    Object? $__typename = _undefined,
+  }) => _then(
+    Fragment$fragmentPlayQueue$playQueueItems$track$artists$person(
+      id: id == _undefined || id == null ? _instance.id : (id as String),
+      name: name == _undefined || name == null
+          ? _instance.name
+          : (name as String),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
+}
+
+class _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person<
+  TRes
+>
+    implements
+        CopyWith$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person<
+          TRes
+        > {
+  _CopyWithStubImpl$Fragment$fragmentPlayQueue$playQueueItems$track$artists$person(
     this._res,
   );
 

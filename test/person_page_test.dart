@@ -169,6 +169,7 @@ Map<String, dynamic> _trackList(String field,
 
 Map<String, dynamic> _playedTrack(int n) => {
       '__typename': 'Track',
+      'artists': <dynamic>[],
       'id': 'track-$n',
       'number': n,
       'discNumber': 1,

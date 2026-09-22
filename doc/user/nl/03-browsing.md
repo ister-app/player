@@ -31,7 +31,7 @@ Films hebben een detailpagina met poster, beschrijving, speelduur en een afspeel
 
 ## Muziek
 
-Albums tonen hun nummers op volgorde. Speel één nummer, het hele album, of zet iets in de wachtrij — meer over wachtrijen in [Afspelen](04-playback.md).
+Albums tonen hun nummers op volgorde. Bij een nummer met meerdere artiesten staan ze er allemaal bij, en het nummer staat ook op de pagina van elk van hen. Speel één nummer, het hele album, of zet iets in de wachtrij — meer over wachtrijen in [Afspelen](04-playback.md).
 
 ![Een albumpagina met de tracklijst](../images/nl/album.png)
 

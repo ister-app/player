@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'TrackArtists.dart';
 import 'dart:io';
 import 'dart:ui' show Rect;
 
@@ -1226,7 +1227,9 @@ class MediaPlayerHandler extends BaseAudioHandler
                   .toString(),
               title: MetadataUtil.getTitle(e.track?.metadata) ??
                   '${e.track?.number ?? ''}',
-              artist: e.track?.artist.name ?? '',
+              artist: e.track == null
+                  ? ''
+                  : trackArtistsLabel(e.track!.artists.map((c) => (position: c.position, name: c.person.name)), e.track!.artist.name),
               album: e.track?.album.name ?? newAlbum.name,
               duration: Duration(
                   milliseconds:

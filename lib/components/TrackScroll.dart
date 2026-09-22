@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart' show AutoRouter;
+import '../utils/TrackArtists.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/schema.graphql.dart';
@@ -185,7 +186,7 @@ class TrackScroll extends StatelessWidget {
                 placeholderIcon: Icons.music_note,
                 squareThumb: true,
                 title: MetadataUtil.getTitle(track.metadata) ?? '',
-                subtitle: '${track.artist.name} • ${track.album.name}',
+                subtitle: '${trackArtistsLabel(track.artists.map((c) => (position: c.position, name: c.person.name)), track.artist.name)} • ${track.album.name}',
                 trailing: MenuAnchor(
                   controller: menuController,
                   menuChildren: _menuItems(context, track),
@@ -234,7 +235,7 @@ class TrackScroll extends StatelessWidget {
                     child: CarouselItemView(
                       serverName: serverName,
                       title: MetadataUtil.getTitle(track.metadata) ?? '',
-                      subTitle: track.artist.name,
+                      subTitle: trackArtistsLabel(track.artists.map((c) => (position: c.position, name: c.person.name)), track.artist.name),
                       imageUrl: ImageUtil.buildUrl(
                         img,
                         token: StreamTokenService.getToken(serverName),

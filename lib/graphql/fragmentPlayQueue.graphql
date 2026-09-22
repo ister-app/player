@@ -21,6 +21,7 @@ fragment fragmentPlayQueue on PlayQueue {
         track {
             id number discNumber
             artist { id name }
+            artists { type position person { id name } }
             album { id name images { ...fragmentImages } }
             metadata { ...fragmentMetadata }
             mediaFile { ...fragmentMediaFiles }

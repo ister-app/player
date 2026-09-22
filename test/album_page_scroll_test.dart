@@ -75,6 +75,32 @@ Map<String, dynamic> _album(
         for (var n = 1; n <= _trackCount; n++)
           {
             '__typename': 'Track',
+            // A guest track is a duet: the album artist plus the guest, the
+            // shape the server returns for a split "A & B" tag.
+            'artists': n == guestTrack
+                ? [
+                    {
+                      '__typename': 'TrackCredit',
+                      'type': 'PRIMARY',
+                      'position': 0,
+                      'person': {
+                        '__typename': 'Person',
+                        'id': 'artist-2',
+                        'name': 'Guest Star'
+                      },
+                    },
+                    {
+                      '__typename': 'TrackCredit',
+                      'type': 'FEATURED',
+                      'position': 1,
+                      'person': {
+                        '__typename': 'Person',
+                        'id': 'artist-1',
+                        'name': 'The Band'
+                      },
+                    },
+                  ]
+                : <dynamic>[],
             'id': 'track-$n',
             'number': discs > 1 ? (n - 1) % 20 + 1 : n,
             'discNumber': discs > 1 ? (n - 1) ~/ 20 + 1 : 1,
@@ -336,9 +362,10 @@ void main() {
           of: find.text('Track 2'),
           matching: find.byType(ListTile),
         ),
-        matching: find.text('Guest Star'),
+        matching: find.text('Guest Star, The Band'),
       ),
       findsOneWidget,
+      reason: 'every credited artist is named, not just the primary one',
     );
     // …while rows matching the album artist stay without the noise line (the
     // one "The Band" on the page is the hero header's album-artist subtitle).

@@ -47,6 +47,7 @@ Map<String, dynamic> _album(String id, String name) => {
 
 Map<String, dynamic> _track(String id, String title) => {
       '__typename': 'Track',
+      'artists': <dynamic>[],
       'id': id,
       'number': 1,
       'discNumber': 1,

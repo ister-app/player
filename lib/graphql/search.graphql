@@ -42,6 +42,7 @@ query search($term: String!, $size: Int, $libraryId: ID) {
             number
             discNumber
             artist { id name }
+            artists { type position person { id name } }
             album { id name images { ...fragmentImages } }
             metadata { ...fragmentMetadata }
         }

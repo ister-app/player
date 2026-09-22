@@ -5,6 +5,8 @@ import 'fragmentTrack.graphql.dart';
 
 import 'package:gql/ast.dart';
 
+import 'schema.graphql.dart';
+
 class Variables$Query$topPlayedTracksByArtist {
   factory Variables$Query$topPlayedTracksByArtist({String? id}) =>
       Variables$Query$topPlayedTracksByArtist._({if (id != null) r'id': id});
@@ -566,6 +568,7 @@ class Query$topPlayedTracksByArtist$personById$topPlayedTracks
     required this.number,
     required this.discNumber,
     required this.artist,
+    required this.artists,
     this.metadata,
     this.mediaFile,
     this.rating,
@@ -581,6 +584,7 @@ class Query$topPlayedTracksByArtist$personById$topPlayedTracks
     final l$number = json['number'];
     final l$discNumber = json['discNumber'];
     final l$artist = json['artist'];
+    final l$artists = json['artists'];
     final l$metadata = json['metadata'];
     final l$mediaFile = json['mediaFile'];
     final l$rating = json['rating'];
@@ -595,6 +599,14 @@ class Query$topPlayedTracksByArtist$personById$topPlayedTracks
           Query$topPlayedTracksByArtist$personById$topPlayedTracks$artist.fromJson(
             (l$artist as Map<String, dynamic>),
           ),
+      artists: (l$artists as List<dynamic>)
+          .map(
+            (e) =>
+                Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists.fromJson(
+                  (e as Map<String, dynamic>),
+                ),
+          )
+          .toList(),
       metadata: (l$metadata as List<dynamic>?)
           ?.map(
             (e) =>
@@ -624,6 +636,9 @@ class Query$topPlayedTracksByArtist$personById$topPlayedTracks
 
   final Query$topPlayedTracksByArtist$personById$topPlayedTracks$artist artist;
 
+  final List<Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists>
+  artists;
+
   final List<Fragment$fragmentMetadata>? metadata;
 
   final List<
@@ -649,6 +664,8 @@ class Query$topPlayedTracksByArtist$personById$topPlayedTracks
     _resultData['discNumber'] = l$discNumber;
     final l$artist = artist;
     _resultData['artist'] = l$artist.toJson();
+    final l$artists = artists;
+    _resultData['artists'] = l$artists.map((e) => e.toJson()).toList();
     final l$metadata = metadata;
     _resultData['metadata'] = l$metadata?.map((e) => e.toJson()).toList();
     final l$mediaFile = mediaFile;
@@ -670,6 +687,7 @@ class Query$topPlayedTracksByArtist$personById$topPlayedTracks
     final l$number = number;
     final l$discNumber = discNumber;
     final l$artist = artist;
+    final l$artists = artists;
     final l$metadata = metadata;
     final l$mediaFile = mediaFile;
     final l$rating = rating;
@@ -681,6 +699,7 @@ class Query$topPlayedTracksByArtist$personById$topPlayedTracks
       l$number,
       l$discNumber,
       l$artist,
+      Object.hashAll(l$artists.map((v) => v)),
       l$metadata == null ? null : Object.hashAll(l$metadata.map((v) => v)),
       l$mediaFile == null ? null : Object.hashAll(l$mediaFile.map((v) => v)),
       l$rating,
@@ -718,6 +737,18 @@ class Query$topPlayedTracksByArtist$personById$topPlayedTracks
     final lOther$artist = other.artist;
     if (l$artist != lOther$artist) {
       return false;
+    }
+    final l$artists = artists;
+    final lOther$artists = other.artists;
+    if (l$artists.length != lOther$artists.length) {
+      return false;
+    }
+    for (int i = 0; i < l$artists.length; i++) {
+      final l$artists$entry = l$artists[i];
+      final lOther$artists$entry = lOther$artists[i];
+      if (l$artists$entry != lOther$artists$entry) {
+        return false;
+      }
     }
     final l$metadata = metadata;
     final lOther$metadata = other.metadata;
@@ -805,6 +836,8 @@ abstract class CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks
     int? number,
     int? discNumber,
     Query$topPlayedTracksByArtist$personById$topPlayedTracks$artist? artist,
+    List<Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists>?
+    artists,
     List<Fragment$fragmentMetadata>? metadata,
     List<Query$topPlayedTracksByArtist$personById$topPlayedTracks$mediaFile>?
     mediaFile,
@@ -815,6 +848,17 @@ abstract class CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks
   });
   CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artist<TRes>
   get artist;
+  TRes artists(
+    Iterable<Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists>
+    Function(
+      Iterable<
+        CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists<
+          Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists
+        >
+      >,
+    )
+    _fn,
+  );
   TRes metadata(
     Iterable<Fragment$fragmentMetadata>? Function(
       Iterable<CopyWith$Fragment$fragmentMetadata<Fragment$fragmentMetadata>>?,
@@ -861,6 +905,7 @@ class _CopyWithImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks<
     Object? number = _undefined,
     Object? discNumber = _undefined,
     Object? artist = _undefined,
+    Object? artists = _undefined,
     Object? metadata = _undefined,
     Object? mediaFile = _undefined,
     Object? rating = _undefined,
@@ -880,6 +925,12 @@ class _CopyWithImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks<
           ? _instance.artist
           : (artist
                 as Query$topPlayedTracksByArtist$personById$topPlayedTracks$artist),
+      artists: artists == _undefined || artists == null
+          ? _instance.artists
+          : (artists
+                as List<
+                  Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists
+                >),
       metadata: metadata == _undefined
           ? _instance.metadata
           : (metadata as List<Fragment$fragmentMetadata>?),
@@ -910,6 +961,28 @@ class _CopyWithImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks<
       (e) => call(artist: e),
     );
   }
+
+  TRes artists(
+    Iterable<Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists>
+    Function(
+      Iterable<
+        CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists<
+          Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists
+        >
+      >,
+    )
+    _fn,
+  ) => call(
+    artists: _fn(
+      _instance.artists.map(
+        (e) =>
+            CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists(
+              e,
+              (i) => i,
+            ),
+      ),
+    ).toList(),
+  );
 
   TRes metadata(
     Iterable<Fragment$fragmentMetadata>? Function(
@@ -972,6 +1045,8 @@ class _CopyWithStubImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks
     int? number,
     int? discNumber,
     Query$topPlayedTracksByArtist$personById$topPlayedTracks$artist? artist,
+    List<Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists>?
+    artists,
     List<Fragment$fragmentMetadata>? metadata,
     List<Query$topPlayedTracksByArtist$personById$topPlayedTracks$mediaFile>?
     mediaFile,
@@ -986,6 +1061,8 @@ class _CopyWithStubImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks
       CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artist.stub(
         _res,
       );
+
+  artists(_fn) => _res;
 
   metadata(_fn) => _res;
 
@@ -1147,6 +1224,386 @@ class _CopyWithStubImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks
           TRes
         > {
   _CopyWithStubImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artist(
+    this._res,
+  );
+
+  TRes _res;
+
+  call({String? id, String? name, String? $__typename}) => _res;
+}
+
+class Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists
+    implements Fragment$fragmentTrack$artists {
+  Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists({
+    required this.type,
+    required this.position,
+    required this.person,
+    this.$__typename = 'TrackCredit',
+  });
+
+  factory Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final l$type = json['type'];
+    final l$position = json['position'];
+    final l$person = json['person'];
+    final l$$__typename = json['__typename'];
+    return Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists(
+      type: fromJson$Enum$TrackCreditType((l$type as String)),
+      position: (l$position as int),
+      person:
+          Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person.fromJson(
+            (l$person as Map<String, dynamic>),
+          ),
+      $__typename: (l$$__typename as String),
+    );
+  }
+
+  final Enum$TrackCreditType type;
+
+  final int position;
+
+  final Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person
+  person;
+
+  final String $__typename;
+
+  Map<String, dynamic> toJson() {
+    final _resultData = <String, dynamic>{};
+    final l$type = type;
+    _resultData['type'] = toJson$Enum$TrackCreditType(l$type);
+    final l$position = position;
+    _resultData['position'] = l$position;
+    final l$person = person;
+    _resultData['person'] = l$person.toJson();
+    final l$$__typename = $__typename;
+    _resultData['__typename'] = l$$__typename;
+    return _resultData;
+  }
+
+  @override
+  int get hashCode {
+    final l$type = type;
+    final l$position = position;
+    final l$person = person;
+    final l$$__typename = $__typename;
+    return Object.hashAll([l$type, l$position, l$person, l$$__typename]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other
+            is! Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$type = type;
+    final lOther$type = other.type;
+    if (l$type != lOther$type) {
+      return false;
+    }
+    final l$position = position;
+    final lOther$position = other.position;
+    if (l$position != lOther$position) {
+      return false;
+    }
+    final l$person = person;
+    final lOther$person = other.person;
+    if (l$person != lOther$person) {
+      return false;
+    }
+    final l$$__typename = $__typename;
+    final lOther$$__typename = other.$__typename;
+    if (l$$__typename != lOther$$__typename) {
+      return false;
+    }
+    return true;
+  }
+}
+
+extension UtilityExtension$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists
+    on Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists {
+  CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists<
+    Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists
+  >
+  get copyWith =>
+      CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists(
+        this,
+        (i) => i,
+      );
+}
+
+abstract class CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists<
+  TRes
+> {
+  factory CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists(
+    Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists instance,
+    TRes Function(
+      Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists,
+    )
+    then,
+  ) = _CopyWithImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists;
+
+  factory CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists.stub(
+    TRes res,
+  ) = _CopyWithStubImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists;
+
+  TRes call({
+    Enum$TrackCreditType? type,
+    int? position,
+    Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person?
+    person,
+    String? $__typename,
+  });
+  CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person<
+    TRes
+  >
+  get person;
+}
+
+class _CopyWithImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists<
+  TRes
+>
+    implements
+        CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists<
+          TRes
+        > {
+  _CopyWithImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists(
+    this._instance,
+    this._then,
+  );
+
+  final Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists
+  _instance;
+
+  final TRes Function(
+    Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists,
+  )
+  _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? type = _undefined,
+    Object? position = _undefined,
+    Object? person = _undefined,
+    Object? $__typename = _undefined,
+  }) => _then(
+    Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists(
+      type: type == _undefined || type == null
+          ? _instance.type
+          : (type as Enum$TrackCreditType),
+      position: position == _undefined || position == null
+          ? _instance.position
+          : (position as int),
+      person: person == _undefined || person == null
+          ? _instance.person
+          : (person
+                as Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
+
+  CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person<
+    TRes
+  >
+  get person {
+    final local$person = _instance.person;
+    return CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person(
+      local$person,
+      (e) => call(person: e),
+    );
+  }
+}
+
+class _CopyWithStubImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists<
+  TRes
+>
+    implements
+        CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists<
+          TRes
+        > {
+  _CopyWithStubImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists(
+    this._res,
+  );
+
+  TRes _res;
+
+  call({
+    Enum$TrackCreditType? type,
+    int? position,
+    Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person?
+    person,
+    String? $__typename,
+  }) => _res;
+
+  CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person<
+    TRes
+  >
+  get person =>
+      CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person.stub(
+        _res,
+      );
+}
+
+class Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person
+    implements Fragment$fragmentTrack$artists$person {
+  Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person({
+    required this.id,
+    required this.name,
+    this.$__typename = 'Person',
+  });
+
+  factory Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final l$id = json['id'];
+    final l$name = json['name'];
+    final l$$__typename = json['__typename'];
+    return Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person(
+      id: (l$id as String),
+      name: (l$name as String),
+      $__typename: (l$$__typename as String),
+    );
+  }
+
+  final String id;
+
+  final String name;
+
+  final String $__typename;
+
+  Map<String, dynamic> toJson() {
+    final _resultData = <String, dynamic>{};
+    final l$id = id;
+    _resultData['id'] = l$id;
+    final l$name = name;
+    _resultData['name'] = l$name;
+    final l$$__typename = $__typename;
+    _resultData['__typename'] = l$$__typename;
+    return _resultData;
+  }
+
+  @override
+  int get hashCode {
+    final l$id = id;
+    final l$name = name;
+    final l$$__typename = $__typename;
+    return Object.hashAll([l$id, l$name, l$$__typename]);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other
+            is! Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person ||
+        runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$id = id;
+    final lOther$id = other.id;
+    if (l$id != lOther$id) {
+      return false;
+    }
+    final l$name = name;
+    final lOther$name = other.name;
+    if (l$name != lOther$name) {
+      return false;
+    }
+    final l$$__typename = $__typename;
+    final lOther$$__typename = other.$__typename;
+    if (l$$__typename != lOther$$__typename) {
+      return false;
+    }
+    return true;
+  }
+}
+
+extension UtilityExtension$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person
+    on Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person {
+  CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person<
+    Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person
+  >
+  get copyWith =>
+      CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person(
+        this,
+        (i) => i,
+      );
+}
+
+abstract class CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person<
+  TRes
+> {
+  factory CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person(
+    Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person
+    instance,
+    TRes Function(
+      Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person,
+    )
+    then,
+  ) = _CopyWithImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person;
+
+  factory CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person.stub(
+    TRes res,
+  ) = _CopyWithStubImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person;
+
+  TRes call({String? id, String? name, String? $__typename});
+}
+
+class _CopyWithImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person<
+  TRes
+>
+    implements
+        CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person<
+          TRes
+        > {
+  _CopyWithImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person(
+    this._instance,
+    this._then,
+  );
+
+  final Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person
+  _instance;
+
+  final TRes Function(
+    Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person,
+  )
+  _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? id = _undefined,
+    Object? name = _undefined,
+    Object? $__typename = _undefined,
+  }) => _then(
+    Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person(
+      id: id == _undefined || id == null ? _instance.id : (id as String),
+      name: name == _undefined || name == null
+          ? _instance.name
+          : (name as String),
+      $__typename: $__typename == _undefined || $__typename == null
+          ? _instance.$__typename
+          : ($__typename as String),
+    ),
+  );
+}
+
+class _CopyWithStubImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person<
+  TRes
+>
+    implements
+        CopyWith$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person<
+          TRes
+        > {
+  _CopyWithStubImpl$Query$topPlayedTracksByArtist$personById$topPlayedTracks$artists$person(
     this._res,
   );
 

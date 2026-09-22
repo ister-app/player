@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:player/utils/TrackArtists.dart';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -583,7 +584,7 @@ class _SearchPageState extends State<SearchPage> {
       return _ResultView(
         title: MetadataUtil.getTitle(item.metadata) ?? '${item.number}',
         typeLabel: loc.typeTrack,
-        subtitle: item.artist.name,
+        subtitle: trackArtistsLabel(item.artists.map((c) => (position: c.position, name: c.person.name)), item.artist.name),
         description: MetadataUtil.getDescription(item.metadata),
         icon: Icons.music_note,
         images: item.album.images,

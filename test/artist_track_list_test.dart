@@ -43,6 +43,7 @@ Map<String, dynamic> _track(int number, String title,
         {int? playCount, String? lastPlayedAt, int? rating, String? dateAdded}) =>
     {
       '__typename': 'Track',
+      'artists': <dynamic>[],
       'id': 'track-$number',
       'number': number,
       'discNumber': 1,

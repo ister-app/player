@@ -63,6 +63,7 @@ Map<String, dynamic> _trackItem(String id, String title) => {
       'podcastEpisode': null,
       'track': {
         '__typename': 'Track',
+        'artists': <dynamic>[],
         'id': 'track-$id',
         'number': 1,
         'discNumber': 1,
@@ -96,6 +97,7 @@ Map<String, dynamic> _trackItem(String id, String title) => {
 /// renders the live filter result with the same paged widgets the library uses.
 Map<String, dynamic> _browseTrack(String id, String title) => {
       '__typename': 'Track',
+      'artists': <dynamic>[],
       'id': id,
       'number': 1,
       'discNumber': 1,

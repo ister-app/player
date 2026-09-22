@@ -60,6 +60,7 @@ void main() {
       _item({
         'track': {
           '__typename': 'Track',
+          'artists': <dynamic>[],
           'id': 'track-1',
           'number': 3,
           'discNumber': 1,
@@ -85,6 +86,46 @@ void main() {
     expect(display.duration, const Duration(minutes: 4));
     expect(display.mediaType, IsterMediaTypes.track);
     expect(display.portraitArtwork, isFalse);
+  });
+
+  test('a duet names both singers', () {
+    final display = QueueItemDisplay.of(
+      _item({
+        'track': {
+          '__typename': 'Track',
+          'artists': [
+            {
+              '__typename': 'TrackCredit',
+              'type': 'PRIMARY',
+              'position': 0,
+              'person': {'__typename': 'Person', 'id': 'p1', 'name': 'Victoria Justice'},
+            },
+            {
+              '__typename': 'TrackCredit',
+              'type': 'FEATURED',
+              'position': 1,
+              'person': {'__typename': 'Person', 'id': 'p2', 'name': 'Elizabeth Gillies'},
+            },
+          ],
+          'id': 'track-2',
+          'number': 2,
+          'discNumber': 1,
+          'rating': null,
+          'artist': {'__typename': 'Person', 'id': 'p1', 'name': 'Victoria Justice'},
+          'album': {
+            '__typename': 'Album',
+            'id': 'a2',
+            'name': 'VICTORIOUS 2.0',
+            'images': [_image('img-album')],
+          },
+          'metadata': [_metadata('Take A Hint')],
+          'mediaFile': [_mediaFile(180000)],
+        },
+      }),
+      token: 'tok',
+    );
+
+    expect(display.artist, 'Victoria Justice, Elizabeth Gillies');
   });
 
   test('a chapter is titled and covered by its book, in portrait', () {

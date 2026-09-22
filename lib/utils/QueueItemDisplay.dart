@@ -1,4 +1,5 @@
 import 'package:player/dto/IsterMediaItem.dart';
+import 'TrackArtists.dart';
 import 'package:player/dto/IsterMediaService.dart';
 import 'package:player/graphql/fragmentImages.graphql.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
@@ -58,7 +59,7 @@ class QueueItemDisplay {
       final t = item.track!;
       return QueueItemDisplay(
         title: MetadataUtil.getTitle(t.metadata) ?? '${t.number}',
-        artist: t.artist.name,
+        artist: trackArtistsLabel(t.artists.map((c) => (position: c.position, name: c.person.name)), t.artist.name),
         album: t.album.name,
         artUrl: artFor(t.album.images, ImageTypes.cover),
         duration: _durationOf(t.mediaFile?.firstOrNull?.durationInMilliseconds),

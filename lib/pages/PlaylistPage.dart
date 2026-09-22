@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:player/utils/TrackArtists.dart';
 import 'package:flutter/material.dart';
 import 'package:player/graphql/fragmentPlaylistItem.graphql.dart';
 import 'package:player/graphql/playlists.graphql.dart';
@@ -206,7 +207,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
     if (track != null) {
       return _ItemRow(
         title: MetadataUtil.getTitle(track.metadata) ?? '',
-        subtitle: '${track.artist.name} • ${track.album.name}',
+        subtitle: '${trackArtistsLabel(track.artists.map((c) => (position: c.position, name: c.person.name)), track.artist.name)} • ${track.album.name}',
         mediaId: track.id,
         image: ImageUtil.getImageByType(track.album.images, ImageTypes.cover),
         icon: Icons.music_note,

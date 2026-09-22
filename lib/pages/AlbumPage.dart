@@ -1,4 +1,5 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:player/utils/TrackArtists.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -645,11 +646,15 @@ class _AlbumPageState extends State<AlbumPage> {
     final accentColor = _accent ?? Theme.of(context).colorScheme.primary;
     // Repeating the album artist under every row is noise; only per-track
     // artists (compilations, features) earn the subtitle line.
-    final showArtist = album == null || track.artist.id != album.artist.id;
+    final artistLine =
+        trackArtistsLabel(track.artists.map((c) => (position: c.position, name: c.person.name)), track.artist.name);
+    final showArtist = album == null ||
+        track.artist.id != album.artist.id ||
+        artistLine != album.artist.name;
     final subtitleChildren = <Widget>[
       if (showArtist)
         Text(
-          track.artist.name,
+          artistLine,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: mutedColor,
               ),
