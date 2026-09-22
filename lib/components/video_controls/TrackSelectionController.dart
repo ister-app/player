@@ -175,6 +175,7 @@ class TrackSelectionController extends ChangeNotifier {
 
   static String audioLabel(AudioTrack t, AppLocalizations loc) {
     if (t == AudioTrack.auto()) return loc.trackAuto;
+    if (t == AudioTrack.no()) return loc.trackNone;
     return _trackLabel(t.title, t.language, t.id, loc);
   }
 

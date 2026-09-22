@@ -3578,6 +3578,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   @visibleForTesting
   static AudioTrack restoredAudioTrack(
       List<AudioTrack> tracks, AudioTrack selected) {
+    if (selected.id == 'no') return AudioTrack.no();
     if (selected.language == null) return AudioTrack.auto();
     final sameLanguage =
         tracks.where((t) => t.language == selected.language).toList();
@@ -3598,7 +3599,8 @@ class MediaPlayerHandler extends BaseAudioHandler
         final forcedAudio = _forcedAudio;
         _forcedAudio = null;
         if (forcedAudio != null && forcedAudio.id != 'auto') {
-          // Restore the audio track the user had selected before the reload.
+          // Restore the audio track the user had selected before the reload
+          // ("no audio" included).
           final match = restoredAudioTrack(tracks.audio, forcedAudio);
           debugPrint('[TRACKS_HANDLER] restoring forced audio: ${match.id}');
           _selectedAudioLanguage = match.language;

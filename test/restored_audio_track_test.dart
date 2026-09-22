@@ -43,4 +43,9 @@ void main() {
     expect(restore(tracks, const AudioTrack('1', 'Stereo', null)),
         AudioTrack.auto());
   });
+
+  test('"no audio" stays off across a re-open', () {
+    const tracks = [AudioTrack('1', 'Stereo', 'eng')];
+    expect(restore(tracks, AudioTrack.no()), AudioTrack.no());
+  });
 }

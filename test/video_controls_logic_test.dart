@@ -239,6 +239,8 @@ void main() {
           'Main – English');
       expect(TrackSelectionController.audioLabel(AudioTrack.auto(), loc),
           loc.trackAuto);
+      expect(TrackSelectionController.audioLabel(AudioTrack.no(), loc),
+          loc.trackNone);
       expect(
           TrackSelectionController.subtitleLabel(
               const SubtitleTrack('2', null, 'nld'), loc),
