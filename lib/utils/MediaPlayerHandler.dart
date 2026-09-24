@@ -77,6 +77,15 @@ class MediaPlayerHandler extends BaseAudioHandler
         // packets) — the default 'error' hides the signals needed to diagnose
         // playback trouble on devices in the field.
         logLevel: MPVLogLevel.warn,
+        // The AVAudioSession belongs to audio_session (music(): playback, not
+        // mixable). Left to mpv, its audiounit output re-sets the category
+        // with MixWithOthers every time it starts — after our own configure in
+        // _onPlayingChanged, and again on every track change — and deactivates
+        // the session when it stops. A mixable session never becomes the iOS
+        // "now playing" app: sound, but no lock screen or Control Center
+        // controls. Needs the audiounit-skip-session-management patch in
+        // libmpv-darwin-build.
+        iosManageAudioSession: false,
       ),
     );
     // debugPrint, not LoggerService: the logger's DevelopmentFilter drops
@@ -3422,10 +3431,12 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (playing) {
       _loadRetries = 0;
       final session = await AudioSession.instance;
-      // Re-assert the playback category before activating: mpv's audiounit
-      // output configures the AVAudioSession itself, and a session that ends
-      // up outside category `playback` never becomes the iOS "now playing"
-      // app — audio keeps working but lock screen and CarPlay show nothing.
+      // mpv leaves the AVAudioSession alone (iosManageAudioSession: false),
+      // so activating it is our job. Re-assert the category too: the
+      // read-aloud player does let mpv manage the session and may have left
+      // it mixable, and a mixable session never becomes the iOS "now
+      // playing" app — audio keeps working but lock screen and CarPlay show
+      // nothing.
       await session.configure(const AudioSessionConfiguration.music());
       await session.setActive(true);
     }

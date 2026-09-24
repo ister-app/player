@@ -150,6 +150,12 @@ Platform notes that bit before:
   its **stub** sources and you get an app with sound and a black picture. The `build-ios` job
   asserts `Mpv.framework` is actually in the bundle for exactly this reason. There is
   deliberately no `ios/Podfile`; Flutter generates one only if some plugin lacks an SPM manifest.
+- **iOS "now playing"** needs a non-mixable `AVAudioSession`. mpv's audiounit output sets
+  `MixWithOthers` itself every time it starts, and deactivates the session when it stops. So
+  `MediaPlayerHandler`'s `Player` passes `iosManageAudioSession: false`, which maps to the
+  `audiounit-skip-session-management` patch in `libmpv-darwin-build`, and `audio_session` owns the
+  session. Without that flag the audio plays but there are no lock screen/Control Center controls.
+  The About page's iOS audio debug section shows the effective category and options.
 - ffmpeg ≥ 7 calls `psa_crypto_init()` on every TLS connection, so any libmpv built against
   mbedtls **must** enable `MBEDTLS_THREADING_C`, or the app aborts on a double free the moment
   several HLS connections open at once.
