@@ -3430,15 +3430,25 @@ class MediaPlayerHandler extends BaseAudioHandler
     // avoids that. Focus is only released on an explicit stop().
     if (playing) {
       _loadRetries = 0;
-      final session = await AudioSession.instance;
-      // mpv leaves the AVAudioSession alone (iosManageAudioSession: false),
-      // so activating it is our job. Re-assert the category too: the
-      // read-aloud player does let mpv manage the session and may have left
-      // it mixable, and a mixable session never becomes the iOS "now
-      // playing" app — audio keeps working but lock screen and CarPlay show
-      // nothing.
-      await session.configure(const AudioSessionConfiguration.music());
-      await session.setActive(true);
+      try {
+        final session = await AudioSession.instance;
+        // mpv leaves the AVAudioSession alone (iosManageAudioSession: false),
+        // so activating it is our job. Re-assert the category too: the
+        // read-aloud player does let mpv manage the session and may have left
+        // it mixable, and a mixable session never becomes the iOS "now
+        // playing" app — audio keeps working but lock screen and CarPlay show
+        // nothing.
+        await session.configure(const AudioSessionConfiguration.music());
+        await session.setActive(true);
+      } catch (e) {
+        // Never let a session failure skip the state publish below. iOS
+        // refuses a non-mixable category/activation from the background
+        // while another app holds the output (OSStatus 560557684, '!int',
+        // "cannot interrupt others"); the audio still plays, but with the
+        // throw here the playback state was never republished and the lock
+        // screen kept showing the previous track — or nothing at all.
+        LoggerService().logger.w('Audio session activation failed: $e');
+      }
     }
     updatePlaybackState();
   }
