@@ -45,12 +45,22 @@ void main() {
     if (screenshotDir == null || screenshotDir.isEmpty) return;
     final file = File('$screenshotDir/$docLocale/$name.png');
     await file.parent.create(recursive: true);
-    // The window is titled "player" (linux/runner/my_application.cc); fall
+    // The window is titled "Ister player" (linux/my_application.cc); fall
     // back to the whole display, which under Xvfb is the app anyway.
-    var result =
-        await Process.run('import', ['-window', 'player', file.path]);
+    //
+    // Never let `import` run without a deadline: a `-window` name that matches
+    // nothing is not an error to ImageMagick — it falls into *interactive*
+    // window selection, grabs the X server and waits for a mouse click that
+    // never comes. With the server grabbed every other X client freezes,
+    // including the app's GTK loop that pumps this isolate, so the tour hung
+    // silently until the job timeout (release 2026-09-23..26: "player" had
+    // matched GDK's invisible leader window, whose WM_NAME is the program
+    // name, until main.cc renamed that to app.ister.Player).
+    Future<ProcessResult> capture(String window) => Process.run(
+        'timeout', ['-k', '5s', '30s', 'import', '-window', window, file.path]);
+    var result = await capture('Ister player');
     if (result.exitCode != 0 || !file.existsSync() || file.lengthSync() == 0) {
-      result = await Process.run('import', ['-window', 'root', file.path]);
+      result = await capture('root');
     }
     if (result.exitCode != 0) {
       fail('screenshot $name failed: ${result.stderr}');
