@@ -165,6 +165,9 @@ class DownloadStore {
     return next;
   }
 
+  /// Resolves once every manifest write queued so far has landed.
+  Future<void> flush() => _writeChain;
+
   /// Bytes used by the files under an item directory.
   static Future<int> dirSize(Directory dir) async {
     if (!await dir.exists()) return 0;

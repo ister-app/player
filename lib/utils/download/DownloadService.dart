@@ -409,6 +409,17 @@ class DownloadService {
     unawaited(_pump());
   }
 
+  /// Resolves once nothing is pumping or running and every manifest write
+  /// has landed — a test's tearDown must not delete the root under a run
+  /// that is still persisting its result.
+  @visibleForTesting
+  Future<void> settle() async {
+    while (_pumping || _running.isNotEmpty) {
+      await Future.delayed(const Duration(milliseconds: 10));
+    }
+    await store.flush();
+  }
+
   /// Records that the local copy was played (cache eviction order).
   Future<void> touch(String server, String mediaFileId) async {
     final siblings = _siblings(server, mediaFileId).toList();

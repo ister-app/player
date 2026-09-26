@@ -127,6 +127,11 @@ void main() {
 
   tearDown(() async {
     ClientManager.testClientBuilder = null;
+    // A test may return as soon as an entry reads complete in memory, while
+    // its run is still writing the manifest (temp file + rename) and pumping.
+    final active = DownloadService.instance;
+    await active.pauseAll();
+    await active.settle();
     await root.delete(recursive: true);
   });
 
