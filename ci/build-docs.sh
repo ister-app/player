@@ -48,7 +48,20 @@ echo "=== capturing screenshots"
 for locale in en nl; do
   rm -rf "$images_dir/$locale"
 done
-tour="flutter test integration_test/doc_tour_test.dart -d linux \
+# `flutter test -d linux` prints the app's output only once the test finishes,
+# so a tour that dies mid-way (a failed wait never completes the test — see
+# CLAUDE.md) used to sit silent until the release job's 60-minute timeout
+# cancelled it. The harness also appends every trace() step, uncaught
+# FlutterError and watchdog report to $E2E_TRACE_FILE: tail it live, and give
+# the tour a deadline of its own (it takes ~10 minutes for both locales).
+if [ -z "${E2E_TRACE_FILE:-}" ]; then
+  export E2E_TRACE_FILE="$(mktemp --suffix=.doc-tour.trace)"
+fi
+: > "$E2E_TRACE_FILE"
+tail -n +1 -F "$E2E_TRACE_FILE" 2>/dev/null &
+trace_tailer=$!
+trap 'kill "$trace_tailer" 2>/dev/null || true' EXIT
+tour="timeout -k 30s ${DOC_TOUR_TIMEOUT:-25m} flutter test integration_test/doc_tour_test.dart -d linux \
   --dart-define=ISTER_TEST_MODE=true"
 if [ -n "${DOC_DISPLAY:-}" ]; then
   DISPLAY="$DOC_DISPLAY" $tour
@@ -106,7 +119,7 @@ inject_last_update() {
 # The injection edits a copy (which also carries the screenshots captured
 # above), keeping the working tree clean.
 build_dir="$(mktemp -d)"
-trap 'rm -rf "$build_dir"' EXIT
+trap 'rm -rf "$build_dir"; kill "$trace_tailer" 2>/dev/null || true' EXIT
 cp -r doc "$build_dir/doc"
 
 echo "=== injecting last_update frontmatter"
