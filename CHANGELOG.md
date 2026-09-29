@@ -1,5 +1,45 @@
 # Changelog
 
+## player v2.12.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.12.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(player): name every artist credited on a track, not just the primary ([`ce214a1`](https://github.com/ister-app/player/commit/ce214a1))
+- feat(player): make search its own main tab with a library filter ([`92b3a43`](https://github.com/ister-app/player/commit/92b3a43))
+
+### Fixes
+
+- fix(docs): capture the tour by window title with a timeout ([`04077d1`](https://github.com/ister-app/player/commit/04077d1))
+- fix(ios): keep publishing playback state when the audio session refuses ([`dbd8ddc`](https://github.com/ister-app/player/commit/dbd8ddc))
+- fix(ios): let audio_session own the audio session so now playing shows ([`eb23c12`](https://github.com/ister-app/player/commit/eb23c12))
+- fix(linux): announce app.ister.Player as the Wayland app_id ([`2b02848`](https://github.com/ister-app/player/commit/2b02848))
+- fix(player): mute web playback when the audio track is set to none ([`d5a2ec7`](https://github.com/ister-app/player/commit/d5a2ec7))
+- fix(player): keep "no audio" off and label it as such ([`77b70b4`](https://github.com/ister-app/player/commit/77b70b4))
+- fix(player): keep a tab tapped before the server's tabs have mounted ([`e12fc23`](https://github.com/ister-app/player/commit/e12fc23))
+
+### Other
+
+- build(docker): bump nginx-unprivileged to 1.31.6-alpine ([`98e6edf`](https://github.com/ister-app/player/commit/98e6edf))
+- ci(flatpak): build in the freedesktop-26.08 container ([`4f11b23`](https://github.com/ister-app/player/commit/4f11b23))
+- ci(docs): tail the tour trace live and give the tour its own deadline ([`82dc00b`](https://github.com/ister-app/player/commit/82dc00b))
+- test(downloads): let a run finish persisting before tearDown deletes its root ([`1a8c4cd`](https://github.com/ister-app/player/commit/1a8c4cd))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.12.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.11.0...v2.12.0
+
 ## player v2.11.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
