@@ -14,7 +14,7 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
-  auto_route: ^11.0.0
+  auto_route: ">=11.0.0 <11.2.0" # 11.2.0 moved to material_ui, which flutter/material (stable 3.47) does not provide yet
   oidc: ^4.0.0
   oidc_default_store: ^1.1.0
   graphql_flutter: ^5.1.2
