@@ -2179,6 +2179,17 @@ class AppLocalizationsNl extends AppLocalizations {
       'De app kan deze server niet bereiken. Controleer je netwerkverbinding, of open wat je eerder hebt gedownload.';
 
   @override
+  String get noAccessTitle => 'Geen toegang op deze server';
+
+  @override
+  String noAccessDescription(Object server) {
+    return 'Je account is ingelogd, maar heeft geen toegang tot $server. Vraag de beheerder om de rol \'user\' en log daarna opnieuw in.';
+  }
+
+  @override
+  String get loginAgain => 'Uitloggen en opnieuw inloggen';
+
+  @override
   String connectingTo(Object server) {
     return 'Verbinden met $server…';
   }

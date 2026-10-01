@@ -2271,6 +2271,21 @@
   "@serverUnreachableBody": {
     "description": "Explanation on the server-unreachable screen"
   },
+  "noAccessTitle": "No access on this server",
+  "@noAccessTitle": {
+    "description": "Heading when the user is signed in but the server refuses to serve the account (missing user role)"
+  },
+  "noAccessDescription": "Your account is signed in, but it has no access to {server}. Ask the administrator for the 'user' role, then sign in again.",
+  "@noAccessDescription": {
+    "description": "Body text under noAccessTitle",
+    "placeholders": {
+      "server": {}
+    }
+  },
+  "loginAgain": "Sign out and sign in again",
+  "@loginAgain": {
+    "description": "Button on the no-access screen: forget the session and go to the login screen"
+  },
   "connectingTo": "Connecting to {server}…",
   "@connectingTo": {
     "description": "Progress text while the stream token is being fetched",

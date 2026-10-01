@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -76,5 +77,146 @@ void main() {
         [for (var i = 0; i < 4; i++) StreamTokenService.ensureToken(_server)]);
     expect(mutations, 2);
     expect(tokens.toSet(), {'tok-2'});
+  });
+
+  failureClassificationTests();
+}
+
+/// A GraphQLClient whose MockClient answers `createStreamToken` with [body]
+/// and [status], counting the calls in [calls].
+GraphQLClient _answering(List<int> calls, String body, int status) =>
+    GraphQLClient(
+      cache: GraphQLCache(),
+      link: HttpLink('https://api.example/graphql',
+          httpClient: MockClient((req) async {
+        calls.add(status);
+        return http.Response(body, status,
+            headers: {'content-type': 'application/json'});
+      })),
+    );
+
+String _gqlError(String message, String classification) => json.encode({
+      'errors': [
+        {
+          'message': message,
+          'extensions': {'classification': classification}
+        }
+      ],
+      'data': null,
+    });
+
+void failureClassificationTests() {
+  group('classifyFailure', () {
+    OperationException gql(String message, [String? classification]) =>
+        OperationException(graphqlErrors: [
+          GraphQLError(
+              message: message,
+              extensions:
+                  classification == null ? null : {'classification': classification})
+        ]);
+    OperationException http_(int status) => OperationException(
+        linkException: HttpLinkServerException(
+            response: http.Response('{}', status),
+            parsedResponse: const Response(response: {}),
+            statusCode: status));
+
+    test('HTTP 401 on the link: the bearer itself was rejected', () {
+      expect(StreamTokenService.classifyFailure(http_(401)),
+          StreamTokenFailure.unauthenticated);
+    });
+    test('HTTP 403 on the link', () {
+      expect(StreamTokenService.classifyFailure(http_(403)),
+          StreamTokenFailure.forbidden);
+    });
+    test('Spring GraphQL denial for an anonymous request', () {
+      expect(StreamTokenService.classifyFailure(gql('Unauthorized', 'UNAUTHORIZED')),
+          StreamTokenFailure.unauthenticated);
+    });
+    test('Spring GraphQL denial for a user without the role', () {
+      expect(StreamTokenService.classifyFailure(gql('Forbidden', 'FORBIDDEN')),
+          StreamTokenFailure.forbidden);
+      expect(StreamTokenService.classifyFailure(gql('Access Denied')),
+          StreamTokenFailure.forbidden);
+    });
+    test('anything else is a transient failure', () {
+      expect(StreamTokenService.classifyFailure(http_(503)),
+          StreamTokenFailure.other);
+      expect(StreamTokenService.classifyFailure(gql('Internal error', 'INTERNAL_ERROR')),
+          StreamTokenFailure.other);
+      expect(
+          StreamTokenService.classifyFailure(OperationException(
+              linkException: const ServerException(originalException: 'x'))),
+          StreamTokenFailure.other);
+      expect(StreamTokenService.classifyFailure(null), StreamTokenFailure.other);
+    });
+  });
+
+  group('retry policy', () {
+    final calls = <int>[];
+    setUp(() {
+      calls.clear();
+      ClientManager.clients.clear();
+      StreamTokenService.resetForTest();
+    });
+    tearDown(() {
+      StreamTokenService.resetForTest();
+      ClientManager.testClientBuilder = null;
+      ClientManager.clients.clear();
+    });
+
+    test('a rejected bearer is recorded and not retried on a timer', () {
+      fakeAsync((async) {
+        ClientManager.testClientBuilder =
+            (_) => _answering(calls, '{"error":"Unauthorized"}', 401);
+        String? token;
+        StreamTokenService.ensureToken(_server).then((t) => token = t);
+        async.flushMicrotasks();
+        expect(token, isNull);
+        expect(StreamTokenService.failureFor(_server),
+            StreamTokenFailure.unauthenticated);
+        async.elapse(const Duration(minutes: 5));
+        expect(calls.length, 1, reason: 'no retry timer for a dead session');
+      });
+    });
+
+    test('a forbidden user is polled slowly, not every few seconds', () {
+      fakeAsync((async) {
+        ClientManager.testClientBuilder =
+            (_) => _answering(calls, _gqlError('Forbidden', 'FORBIDDEN'), 200);
+        StreamTokenService.ensureToken(_server);
+        async.flushMicrotasks();
+        expect(StreamTokenService.failureFor(_server),
+            StreamTokenFailure.forbidden);
+        async.elapse(const Duration(seconds: 30));
+        expect(calls.length, 1);
+        async.elapse(const Duration(seconds: 31));
+        expect(calls.length, 2, reason: 'retried after a minute');
+      });
+    });
+
+    test('a server error keeps the quick retry', () {
+      fakeAsync((async) {
+        ClientManager.testClientBuilder =
+            (_) => _answering(calls, '{"error":"boom"}', 500);
+        StreamTokenService.ensureToken(_server);
+        async.flushMicrotasks();
+        expect(StreamTokenService.failureFor(_server), StreamTokenFailure.other);
+        async.elapse(const Duration(seconds: 6));
+        expect(calls.length, 2);
+      });
+    });
+
+    test('invalidateToken clears the recorded failure', () {
+      fakeAsync((async) {
+        ClientManager.testClientBuilder =
+            (_) => _answering(calls, _gqlError('Forbidden', 'FORBIDDEN'), 200);
+        StreamTokenService.ensureToken(_server);
+        async.flushMicrotasks();
+        StreamTokenService.invalidateToken(_server);
+        expect(StreamTokenService.failureFor(_server), StreamTokenFailure.none);
+        async.elapse(const Duration(minutes: 2));
+        expect(calls.length, 1, reason: 'invalidation cancelled the retry');
+      });
+    });
   });
 }

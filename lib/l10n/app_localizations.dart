@@ -3656,6 +3656,24 @@ abstract class AppLocalizations {
   /// **'The app could not reach this server. Check your network connection, or open what you downloaded earlier.'**
   String get serverUnreachableBody;
 
+  /// Heading when the user is signed in but the server refuses to serve the account (missing user role)
+  ///
+  /// In en, this message translates to:
+  /// **'No access on this server'**
+  String get noAccessTitle;
+
+  /// Body text under noAccessTitle
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is signed in, but it has no access to {server}. Ask the administrator for the \'user\' role, then sign in again.'**
+  String noAccessDescription(Object server);
+
+  /// Button on the no-access screen: forget the session and go to the login screen
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out and sign in again'**
+  String get loginAgain;
+
   /// Progress text while the stream token is being fetched
   ///
   /// In en, this message translates to:

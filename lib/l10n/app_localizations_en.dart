@@ -2169,6 +2169,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'The app could not reach this server. Check your network connection, or open what you downloaded earlier.';
 
   @override
+  String get noAccessTitle => 'No access on this server';
+
+  @override
+  String noAccessDescription(Object server) {
+    return 'Your account is signed in, but it has no access to $server. Ask the administrator for the \'user\' role, then sign in again.';
+  }
+
+  @override
+  String get loginAgain => 'Sign out and sign in again';
+
+  @override
   String connectingTo(Object server) {
     return 'Connecting to $server…';
   }

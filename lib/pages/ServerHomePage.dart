@@ -8,6 +8,7 @@ import 'package:player/utils/WellKnownService.dart';
 
 import '../components/LoginView.dart';
 import '../components/MiniPlayer.dart';
+import '../components/NoAccessView.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/DeviceCommandService.dart';
 import '../utils/DeviceService.dart';
@@ -97,6 +98,25 @@ class _ServerHomePageState extends State<ServerHomePage> {
     await LoginManager.startLogin(serverUrl);
   }
 
+  /// Guards [_scheduleLogout] against firing once per rebuild while the
+  /// sign-out is still in flight.
+  bool _logoutPending = false;
+
+  /// Signs out after the current frame (it is called from build), once.
+  void _scheduleLogout() {
+    if (_logoutPending) return;
+    _logoutPending = true;
+    _tokenFuture = null;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      LoginManager.logout(widget.serverName);
+    });
+  }
+
+  void _switchServer(BuildContext context) {
+    ClientManager.instance.lastClientUsed = null;
+    AutoRouter.of(context).replace(HomeRoute());
+  }
+
   /// Android TV has no usable in-app browser or keyboard, so it signs in
   /// with the device-code flow (QR + code on another device) instead of the
   /// authorization-code flow everything else uses.
@@ -164,6 +184,7 @@ class _ServerHomePageState extends State<ServerHomePage> {
       _wellKnownFuture = WellKnownService.fetch(widget.serverName);
       _initFuture = null;
       _tokenFuture = null;
+      _logoutPending = false;
       _restoreFuture = null;
       _deviceInitFuture = null;
       _deviceAuthResponse = null;
@@ -435,13 +456,39 @@ class _ServerHomePageState extends State<ServerHomePage> {
                     // before the token lands renders tokenless (401) URLs that
                     // nothing would rebuild. Wait for it instead; a failed fetch
                     // retries and bumps tokenRevision.
-                    return ValueListenableBuilder<int>(
-                      valueListenable: StreamTokenService.tokenRevision,
-                      builder: (context, _, __) {
+                    return ListenableBuilder(
+                      listenable: Listenable.merge([
+                        StreamTokenService.tokenRevision,
+                        StreamTokenService.lastFailure,
+                      ]),
+                      builder: (context, _) {
                         if (StreamTokenService.getToken(widget.serverName) ==
                             null) {
-                          // The token fetch retries forever while the server
-                          // is unreachable; downloads stay reachable meanwhile.
+                          final failure = StreamTokenService.failureFor(
+                              widget.serverName);
+                          if (failure == StreamTokenFailure.unauthenticated) {
+                            // The server rejects our bearer (or we have
+                            // none): the OIDC session is dead. Sign out so
+                            // the user stream flips this builder to
+                            // LoginView; the spinner below covers the frame
+                            // in between.
+                            _scheduleLogout();
+                          } else if (failure == StreamTokenFailure.forbidden) {
+                            return Scaffold(
+                              appBar: AppBar(
+                                leading: _backToServers(context),
+                                title: Text(info.name),
+                              ),
+                              body: NoAccessView(
+                                info: info,
+                                onLogout: _scheduleLogout,
+                                onSwitchServer: () =>
+                                    _switchServer(context),
+                              ),
+                            );
+                          }
+                          // The token fetch retries while the server is
+                          // unreachable; downloads stay reachable meanwhile.
                           return Scaffold(
                             appBar: AppBar(
                               leading: _backToServers(context),
@@ -491,6 +538,12 @@ class _ServerHomePageState extends State<ServerHomePage> {
                       },
                     );
                   } else {
+                    // Re-arm the token fetch for the next login: without this
+                    // the `??=` latch above would never fetch again after a
+                    // sign-out, and the page would wait on a retry timer that
+                    // no longer exists.
+                    _tokenFuture = null;
+                    _logoutPending = false;
                     return Scaffold(
                       appBar: AppBar(
                         leading: _backToServers(context),
@@ -500,10 +553,7 @@ class _ServerHomePageState extends State<ServerHomePage> {
                         info: info,
                         deviceAuthResponse: _deviceAuthResponse,
                         onLogin: _login,
-                        onSwitchServer: () {
-                          ClientManager.instance.lastClientUsed = null;
-                          AutoRouter.of(context).replace(HomeRoute());
-                        },
+                        onSwitchServer: () => _switchServer(context),
                       ),
                     );
                   }

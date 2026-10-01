@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:oidc/oidc.dart';
 import 'package:oidc_default_store/oidc_default_store.dart';
 import 'package:player/utils/LoggerService.dart';
+import 'package:player/utils/RefreshFailureClassifier.dart';
+import 'package:player/utils/StreamTokenService.dart';
 import 'package:player/utils/WellKnownService.dart';
 
 import 'ClientManager.dart';
@@ -24,8 +26,21 @@ class LoginManager {
 
   static bool get _testTokenActive => _testMode && testTokenProvider != null;
 
+  /// Widget-test seam: forces [isLoggedIn] without an OIDC manager, so a
+  /// test can reach the logged-in branch of ServerHomePage. Only read while
+  /// test clients are installed, so it is inert in production.
+  @visibleForTesting
+  static bool? loggedInOverride;
+
+  /// Widget-test seam: observes [logout] when there is no manager to forget.
+  @visibleForTesting
+  static void Function(String serverUrl)? logoutHook;
+
   static bool isLoggedIn(String serverUrl) {
     if (_testTokenActive) return true;
+    if (ClientManager.usesTestClients && loggedInOverride != null) {
+      return loggedInOverride!;
+    }
     return managers[serverUrl]?.currentUser != null;
   }
 
@@ -179,12 +194,27 @@ class LoginManager {
     _initFutures.remove(serverUrl);
     _refreshFutures.remove(serverUrl);
     final manager = managers.remove(serverUrl);
-    if (manager != null) {
-      try {
-        await manager.forgetUser();
-      } catch (e) {
-        LoggerService().logger.w('forgetUser failed for $serverUrl: $e');
-      }
+    if (manager != null) await _forgetQuietly(serverUrl, manager);
+  }
+
+  /// Signs out of [serverUrl] but keeps the manager, so the login page can
+  /// start a fresh flow right away. Also drops the stream token: the server
+  /// side of the session is gone with it. `forgetUser` makes `userChanges()`
+  /// emit null, which is what flips ServerHomePage to its LoginView.
+  static Future<void> logout(String serverUrl) async {
+    _refreshFutures.remove(serverUrl);
+    StreamTokenService.invalidateToken(serverUrl);
+    logoutHook?.call(serverUrl);
+    final manager = managers[serverUrl];
+    if (manager != null) await _forgetQuietly(serverUrl, manager);
+  }
+
+  static Future<void> _forgetQuietly(
+      String serverUrl, OidcUserManager manager) async {
+    try {
+      await manager.forgetUser();
+    } catch (e) {
+      LoggerService().logger.w('forgetUser failed for $serverUrl: $e');
     }
   }
 
@@ -213,7 +243,20 @@ class LoginManager {
       try {
         await refresh;
       } catch (e) {
-        LoggerService().logger.e('Token refresh mislukt voor $serverUrl: $e');
+        if (isTerminalRefreshError(e)) {
+          // The issuer rejected the grant itself (revoked session, rotated
+          // refresh token reused): no retry can bring this session back, and
+          // keeping it would leave the UI "logged in" while every request
+          // goes out without a token. Drop it so LoginView appears.
+          LoggerService()
+              .logger
+              .w('Refresh token for $serverUrl is dead, dropping session: $e');
+          await logout(serverUrl);
+          return null;
+        }
+        // Transient (network, issuer 5xx): keep the session, the next
+        // request tries again.
+        LoggerService().logger.e('Token refresh failed for $serverUrl: $e');
       }
     }
 
