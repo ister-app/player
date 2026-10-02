@@ -1,5 +1,27 @@
 # Changelog
 
+## player v2.12.1
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.12.1` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Fixes
+
+- fix(auth): sign out dead sessions and show a no-access state ([`5671699`](https://github.com/ister-app/player/commit/5671699))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.12.1
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.12.0...v2.12.1
+
 ## player v2.12.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
