@@ -291,7 +291,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get autoSkipIntroDescription =>
-      'Spring zonder vragen voorbij gedetecteerde intro\'s';
+      'Spring voorbij gedetecteerde intro\'s wanneer je doorkijkt naar de volgende aflevering';
 
   @override
   String get skipIntro => 'Intro overslaan';

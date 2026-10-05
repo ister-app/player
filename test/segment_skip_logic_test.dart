@@ -146,38 +146,38 @@ void main() {
       expect(
           SegmentOverlayButtons.visibilityFor(
               posMs: 25000, intro: intro, outro: outro, hasNext: true),
-          (skipIntro: true, nextEpisode: false, countdown: null));
+          (skipIntro: true, nextEpisode: false, countdown: null, nextCountdown: null));
       expect(
           SegmentOverlayButtons.visibilityFor(
               posMs: 24999, intro: intro, outro: outro, hasNext: true),
-          (skipIntro: false, nextEpisode: false, countdown: null));
+          (skipIntro: false, nextEpisode: false, countdown: null, nextCountdown: null));
       expect(
           SegmentOverlayButtons.visibilityFor(
               posMs: 30000, intro: intro, outro: outro, hasNext: true),
-          (skipIntro: true, nextEpisode: false, countdown: null));
+          (skipIntro: true, nextEpisode: false, countdown: null, nextCountdown: null));
       expect(
           SegmentOverlayButtons.visibilityFor(
               posMs: 88999, intro: intro, outro: outro, hasNext: true),
-          (skipIntro: true, nextEpisode: false, countdown: null));
+          (skipIntro: true, nextEpisode: false, countdown: null, nextCountdown: null));
       expect(
           SegmentOverlayButtons.visibilityFor(
               posMs: 89000, intro: intro, outro: outro, hasNext: true),
-          (skipIntro: false, nextEpisode: false, countdown: null));
+          (skipIntro: false, nextEpisode: false, countdown: null, nextCountdown: null));
     });
 
     test('next episode shows from the outro start, only with a next item', () {
       expect(
           SegmentOverlayButtons.visibilityFor(
               posMs: 2300000, intro: intro, outro: outro, hasNext: true),
-          (skipIntro: false, nextEpisode: true, countdown: null));
+          (skipIntro: false, nextEpisode: true, countdown: null, nextCountdown: null));
       expect(
           SegmentOverlayButtons.visibilityFor(
               posMs: 2300000, intro: intro, outro: outro, hasNext: false),
-          (skipIntro: false, nextEpisode: false, countdown: null));
+          (skipIntro: false, nextEpisode: false, countdown: null, nextCountdown: null));
       expect(
           SegmentOverlayButtons.visibilityFor(
               posMs: 1000000, intro: intro, outro: outro, hasNext: true),
-          (skipIntro: false, nextEpisode: false, countdown: null));
+          (skipIntro: false, nextEpisode: false, countdown: null, nextCountdown: null));
     });
 
     test('an armed auto-skip counts down in whole seconds', () {
@@ -221,11 +221,31 @@ void main() {
           isNull);
     });
 
+    test('the credits count down to the automatic next episode', () {
+      final early = SegmentOverlayButtons.visibilityFor(
+          posMs: 2300000,
+          intro: intro,
+          outro: outro,
+          hasNext: true,
+          autoNextAtMs: 2310000);
+      expect(early.nextEpisode, isTrue);
+      expect(early.nextCountdown, 10);
+      // Deep into the credits (resumed or seeked there) nothing counts down.
+      final late = SegmentOverlayButtons.visibilityFor(
+          posMs: 2310000,
+          intro: intro,
+          outro: outro,
+          hasNext: true,
+          autoNextAtMs: 2310000);
+      expect(late.nextEpisode, isTrue);
+      expect(late.nextCountdown, isNull);
+    });
+
     test('nothing without segments', () {
       expect(
           SegmentOverlayButtons.visibilityFor(
               posMs: 45000, intro: null, outro: null, hasNext: true),
-          (skipIntro: false, nextEpisode: false, countdown: null));
+          (skipIntro: false, nextEpisode: false, countdown: null, nextCountdown: null));
     });
   });
 }

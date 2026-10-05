@@ -347,7 +347,7 @@
   "@autoSkipIntro": {
     "description": "Label for the auto-skip-intro toggle"
   },
-  "autoSkipIntroDescription": "Jump past detected intros without asking",
+  "autoSkipIntroDescription": "Jump past detected intros when you carry on with the next episode",
   "@autoSkipIntroDescription": {
     "description": "Subtitle for the auto-skip-intro toggle"
   },

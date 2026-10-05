@@ -289,7 +289,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get autoSkipIntroDescription =>
-      'Jump past detected intros without asking';
+      'Jump past detected intros when you carry on with the next episode';
 
   @override
   String get skipIntro => 'Skip intro';

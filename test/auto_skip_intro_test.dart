@@ -111,6 +111,24 @@ void main() {
           reason: 'outside the skippable window nothing may fire');
     });
 
+    test('only skips when the episode continues the previous one', () {
+      handler.resetAutoSkipState(autoSkipIntro: true, continued: false);
+      expect(handler.autoSkipIntroDeadlineMs, isNull);
+      handler.maybeAutoSkipIntro(const Duration(seconds: 45));
+      expect(handler.introAutoSkipped, isFalse);
+
+      handler.resetAutoSkipState(autoSkipIntro: true);
+      expect(handler.autoSkipIntroDeadlineMs, 35000);
+    });
+
+    test('cancelling leaves the intro alone for this item', () {
+      handler.resetAutoSkipState(autoSkipIntro: true);
+      handler.cancelAutoSkipIntro();
+      expect(handler.autoSkipIntroDeadlineMs, isNull);
+      handler.maybeAutoSkipIntro(const Duration(seconds: 45));
+      expect(handler.autoSkipIntroDeadlineMs, isNull);
+    });
+
     test('does nothing with the preference off', () {
       handler.maybeAutoSkipIntro(const Duration(seconds: 45));
       expect(handler.introAutoSkipped, isFalse);
@@ -121,6 +139,39 @@ void main() {
       handler.resetAutoSkipState(autoSkipIntro: true);
       handler.maybeAutoSkipIntro(const Duration(seconds: 45));
       expect(handler.introAutoSkipped, isFalse);
+    });
+  });
+
+  group('maybeAutoNextAtOutro', () {
+    test('arms only from inside the countdown window', () {
+      expect(handler.autoNextDeadlineMs,
+          2300000 + MediaPlayerHandler.autoNextDelayMs);
+
+      // Landing deep in the credits never arms it.
+      handler.maybeAutoNextAtOutro(const Duration(milliseconds: 2350000));
+      expect(handler.autoNextArmed, isFalse);
+
+      handler.maybeAutoNextAtOutro(const Duration(milliseconds: 2303000));
+      expect(handler.autoNextArmed, isTrue);
+      // Seeking back out of the credits disarms it again.
+      handler.maybeAutoNextAtOutro(const Duration(milliseconds: 2000000));
+      expect(handler.autoNextArmed, isFalse);
+    });
+
+    test('cancelling calls it off for this episode', () {
+      handler.maybeAutoNextAtOutro(const Duration(milliseconds: 2303000));
+      handler.cancelAutoNext();
+      expect(handler.autoNextArmed, isFalse);
+      expect(handler.autoNextDeadlineMs, isNull);
+      handler.maybeAutoNextAtOutro(const Duration(milliseconds: 2305000));
+      expect(handler.autoNextArmed, isFalse);
+    });
+
+    test('never on the last item', () {
+      handler.queue.add(const [MediaItem(id: 'item-1', title: 'Episode 1')]);
+      expect(handler.autoNextDeadlineMs, isNull);
+      handler.maybeAutoNextAtOutro(const Duration(milliseconds: 2303000));
+      expect(handler.autoNextArmed, isFalse);
     });
   });
 
@@ -171,6 +222,112 @@ void main() {
       await tester.pump();
       await tester.pump();
       expect(find.text('Skip intro'), findsOneWidget);
+      await positions.close();
+    });
+
+    testWidgets('revealing the controls stops the countdown', (tester) async {
+      handler.resetAutoSkipState(autoSkipIntro: true);
+      final positions = StreamController<Duration>.broadcast();
+      Widget overlay({required bool controlsVisible}) =>
+          _app(SegmentOverlayButtons(
+              controlsVisible: controlsVisible,
+              positionStream: positions.stream));
+
+      await tester.pumpWidget(overlay(controlsVisible: false));
+      positions.add(const Duration(milliseconds: 31000));
+      await tester.pump();
+      expect(find.text('Skip intro (4)'), findsOneWidget);
+
+      await tester.pumpWidget(overlay(controlsVisible: true));
+      await tester.pump();
+      // The button stays for a manual skip; nothing fires on its own any more.
+      expect(find.text('Skip intro'), findsOneWidget);
+      expect(handler.autoSkipIntroDeadlineMs, isNull);
+      handler.maybeAutoSkipIntro(const Duration(seconds: 45));
+      expect(handler.introAutoSkipped, isTrue,
+          reason: 'the latch is what keeps the auto-skip quiet');
+      await positions.close();
+    });
+
+    testWidgets('chrome that was already up leaves the countdown running',
+        (tester) async {
+      handler.resetAutoSkipState(autoSkipIntro: true);
+      final positions = StreamController<Duration>.broadcast();
+      await tester.pumpWidget(
+          _app(SegmentOverlayButtons(positionStream: positions.stream)));
+      positions.add(const Duration(milliseconds: 31000));
+      await tester.pump();
+      expect(find.text('Skip intro (4)'), findsOneWidget);
+      expect(handler.autoSkipIntroDeadlineMs, 35000);
+      await positions.close();
+    });
+
+    testWidgets('a counted-down prompt stays up until the skip has landed',
+        (tester) async {
+      handler.resetAutoSkipState(autoSkipIntro: true);
+      final positions = StreamController<Duration>.broadcast();
+      await tester.pumpWidget(_app(SegmentOverlayButtons(
+          controlsVisible: false, positionStream: positions.stream)));
+      double opacity() =>
+          tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity)).opacity;
+
+      positions.add(const Duration(milliseconds: 25000));
+      await tester.pump();
+      expect(find.text('Skip intro (10)'), findsOneWidget);
+      await tester.pump(SegmentOverlayButtons.promptGrace);
+
+      // Past the deadline, the seek still in flight: no blinking out.
+      handler.maybeAutoSkipIntro(const Duration(milliseconds: 36000));
+      positions.add(const Duration(milliseconds: 36000));
+      await tester.pump();
+      await tester.pump();
+      expect(opacity(), 1);
+      await positions.close();
+    });
+
+    testWidgets('retires with the chrome after its first seconds',
+        (tester) async {
+      final positions = StreamController<Duration>.broadcast();
+      Widget overlay({required bool controlsVisible}) =>
+          _app(SegmentOverlayButtons(
+              controlsVisible: controlsVisible,
+              positionStream: positions.stream));
+      double opacity() =>
+          tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity)).opacity;
+
+      await tester.pumpWidget(overlay(controlsVisible: false));
+      positions.add(const Duration(seconds: 45));
+      await tester.pump();
+      expect(opacity(), 1, reason: 'a fresh prompt shows without the chrome');
+
+      await tester.pump(SegmentOverlayButtons.promptGrace);
+      await tester.pump();
+      expect(opacity(), 0);
+
+      // Revealing the controls brings it back.
+      await tester.pumpWidget(overlay(controlsVisible: true));
+      expect(opacity(), 1);
+      await positions.close();
+    });
+
+    testWidgets('revealing the controls stops the next-episode countdown',
+        (tester) async {
+      final positions = StreamController<Duration>.broadcast();
+      Widget overlay({required bool controlsVisible}) =>
+          _app(SegmentOverlayButtons(
+              controlsVisible: controlsVisible,
+              positionStream: positions.stream));
+
+      await tester.pumpWidget(overlay(controlsVisible: false));
+      positions.add(const Duration(milliseconds: 2302000));
+      await tester.pump();
+      expect(find.text('Next episode'), findsOneWidget);
+      expect(handler.autoNextDeadlineMs, isNotNull);
+
+      await tester.pumpWidget(overlay(controlsVisible: true));
+      await tester.pump();
+      expect(find.text('Next episode'), findsOneWidget);
+      expect(handler.autoNextDeadlineMs, isNull);
       await positions.close();
     });
 

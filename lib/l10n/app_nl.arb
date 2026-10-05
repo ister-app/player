@@ -80,7 +80,7 @@
   "directPlay": "Direct afspelen",
   "directPlayDescription": "Origineel bestand streamen zonder transcodering",
   "autoSkipIntro": "Intro's automatisch overslaan",
-  "autoSkipIntroDescription": "Spring zonder vragen voorbij gedetecteerde intro's",
+  "autoSkipIntroDescription": "Spring voorbij gedetecteerde intro's wanneer je doorkijkt naar de volgende aflevering",
   "skipIntro": "Intro overslaan",
   "skipIntroCountdown": "Intro overslaan ({seconds})",
   "nextEpisode": "Volgende aflevering",

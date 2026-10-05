@@ -106,7 +106,9 @@ void main() {
     await pumpUntilFound(tester, overlayButton,
         timeout: const Duration(minutes: 1));
 
-    await tester.tap(overlayButton);
+    // Invoked rather than tapped: once its first seconds are over the prompt
+    // retires with the (hidden) chrome and no longer takes pointer events.
+    tester.widget<FilledButton>(overlayButton).onPressed!();
     await pumpUntil(
       tester,
       () => player.state.position.inMilliseconds >= introEndMs - 8000,
@@ -123,8 +125,11 @@ void main() {
     );
 
     // Seek into the credits: the next-episode prompt appears (not tapped —
-    // opening a second HLS stream is out of scope for this test).
-    await handler.seek(Duration(milliseconds: outroStartMs + 3000));
+    // opening a second HLS stream is out of scope for this test). Deep enough
+    // that the automatic-next countdown, which only arms in the credits' first
+    // seconds, stays out of it as well.
+    await handler.seek(Duration(
+        milliseconds: outroStartMs + MediaPlayerHandler.autoNextDelayMs + 5000));
     await pumpUntilFound(tester, overlayButton,
         timeout: const Duration(minutes: 1));
 

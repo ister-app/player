@@ -444,13 +444,14 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
         BitmapSubtitleOverlay(state: widget.state),
         overlay,
         // Outside the auto-hiding overlay on purpose: the skip-intro /
-        // next-episode prompt must stay visible while the chrome is hidden.
-        // Sits above the seek bar; on TV it is only reachable while the
-        // controls are revealed (descendantsAreFocusable gates the D-pad).
+        // next-episode prompt comes up on its own while the chrome is hidden,
+        // and only retires with it after a moment. Sits above the seek bar;
+        // on TV it is only reachable while the controls are revealed
+        // (descendantsAreFocusable gates the D-pad).
         Positioned(
           right: 24,
           bottom: fullscreen && touch ? 110 : 84,
-          child: const SegmentOverlayButtons(),
+          child: SegmentOverlayButtons(controlsVisible: _visible),
         ),
         _bufferingIndicator(),
         // On top of everything: its retry button must win over the centre

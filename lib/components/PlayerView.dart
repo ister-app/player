@@ -136,8 +136,12 @@ abstract class PlayerViewController extends ChangeNotifier {
   /// server-detected segments. Surfaces that know the playing episode's
   /// segments (remote control, local video sessions) override this; the
   /// default keeps pure-music surfaces untouched.
-  SegmentActions get segmentActions =>
-      (skipIntro: false, nextEpisode: false, countdown: null);
+  SegmentActions get segmentActions => (
+        skipIntro: false,
+        nextEpisode: false,
+        countdown: null,
+        nextCountdown: null,
+      );
 
   /// Seek past the detected intro; only invoked while
   /// [segmentActions].skipIntro is true.

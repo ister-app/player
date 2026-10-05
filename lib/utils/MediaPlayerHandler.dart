@@ -868,6 +868,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     album = null;
     currentTrackId = null;
     _currentMediaType = IsterMediaTypes.episode;
+    _continuedIntoMediaId = null;
     serverName = newServerName;
     graphQLClient = client;
 
@@ -2902,6 +2903,10 @@ class MediaPlayerHandler extends BaseAudioHandler
     _syncGeneration++;
     _resetVideoStreamReady();
     final generation = _syncGeneration;
+    // Moving on from an episode to the item right after it is "continuing to
+    // watch" — the only case the intro auto-skip acts on.
+    final continues = _currentMediaType == IsterMediaTypes.episode &&
+        playbackState.value.queueIndex == index - 1;
     // Publish the target index immediately so a second next/previous tap
     // during the awaits below doesn't act on the stale index.
     playbackState.add(playbackState.value.copyWith(queueIndex: index));
@@ -2959,6 +2964,7 @@ class MediaPlayerHandler extends BaseAudioHandler
           PlayQueueService.getCurrentPlayQueueItem(playQueue);
       _currentMediaType = mediaItemId.isterMediaType;
       mediaItem.add(queue.value[index]);
+      _continuedIntoMediaId = continues ? queue.value[index].id : null;
       if (playQueue != null) {
         // Optimistic: the server still has the previous item as current until
         // the sync below lands, so subscribers that refetch must skip this one.
@@ -3857,6 +3863,7 @@ class MediaPlayerHandler extends BaseAudioHandler
 
       _maybeAdvancePastEpisodeBoundary(pos);
       maybeAutoSkipIntro(pos);
+      maybeAutoNextAtOutro(pos);
 
       await _syncProgress(pos);
     });
@@ -3869,15 +3876,30 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   /// Item id an auto-skip already fired for: one skip per item, so seeking
   /// back into the intro shows only the button instead of force-skipping again.
+  /// Also set when the viewer called it off ([cancelAutoSkipIntro]).
   String? _autoSkippedForMediaId;
 
+  /// Item id that was reached by moving on from the episode before it. The
+  /// intro auto-skip only acts on those — the first episode of a sitting
+  /// plays its intro, as the big streaming services do.
+  String? _continuedIntoMediaId;
+
+  /// Whether the playing item directly continues the previous episode.
+  bool get _continuedFromPreviousEpisode =>
+      _continuedIntoMediaId != null &&
+      _continuedIntoMediaId == mediaItem.value?.id;
+
   @visibleForTesting
-  void resetAutoSkipState({bool autoSkipIntro = false}) {
+  void resetAutoSkipState(
+      {bool autoSkipIntro = false, bool continued = true}) {
     _autoSkipIntro = autoSkipIntro;
     // Marking the pref fresh for the current item keeps the async refresh from
     // overwriting the value a test just installed.
     _autoSkipPrefForMediaId = mediaItem.value?.id;
     _autoSkippedForMediaId = null;
+    _continuedIntoMediaId = continued ? mediaItem.value?.id : null;
+    _autoNextArmedForMediaId = null;
+    _autoNextCancelledForMediaId = null;
   }
 
   /// Whether the auto-skip already fired for the current item.
@@ -3903,6 +3925,7 @@ class MediaPlayerHandler extends BaseAudioHandler
           .catchError((_) {}));
     }
     if (!_autoSkipIntro) return;
+    if (!_continuedFromPreviousEpisode) return;
     if (_autoSkippedForMediaId == mediaId) return;
     final target = autoSkipIntroTarget(
         posMs: pos.inMilliseconds, intro: currentIntroBounds);
@@ -3932,18 +3955,104 @@ class MediaPlayerHandler extends BaseAudioHandler
   }
 
   /// Absolute file time an armed auto-skip will fire at, or null when no
-  /// auto-skip is pending for the playing item (preference off, already
-  /// skipped, following someone else's session, no detected intro, or an intro
-  /// too short for the countdown to beat the micro-seek guard). Drives the
-  /// countdown the skip button shows.
+  /// auto-skip is pending for the playing item (preference off, not continued
+  /// from the previous episode, already skipped or declined, following someone
+  /// else's session, no detected intro, or an intro too short for the
+  /// countdown to beat the micro-seek guard). Drives the countdown the skip
+  /// button shows.
   int? get autoSkipIntroDeadlineMs {
     if (!_autoSkipIntro || _followMode) return null;
+    if (!_continuedFromPreviousEpisode) return null;
     if (introAutoSkipped) return null;
     final intro = currentIntroBounds;
     if (intro == null) return null;
     final deadline = intro.startMs + autoSkipIntroDelayMs;
     if (deadline >= intro.endMs - 3000) return null;
     return deadline;
+  }
+
+  /// The viewer is at the controls while the auto-skip counts down: call it
+  /// off for this item. The skip button stays for a manual skip.
+  void cancelAutoSkipIntro() {
+    _autoSkippedForMediaId = mediaItem.value?.id;
+  }
+
+  /// How long the credits run before playback moves on to the next episode;
+  /// the next-episode button counts this down on screen.
+  static const int autoNextDelayMs = 10000;
+
+  /// Item id whose auto-next countdown is running: armed only by playback
+  /// *observed* inside the countdown window, so the jump is always announced —
+  /// resuming or seeking deep into the credits never yanks the episode away.
+  String? _autoNextArmedForMediaId;
+
+  /// Item id the viewer called the auto-next off for ([cancelAutoNext]).
+  String? _autoNextCancelledForMediaId;
+
+  /// Absolute file time the playing episode moves on to the next one, or null
+  /// when it won't on its own (no detected credits or credits shorter than
+  /// the countdown, nothing to continue with, repeat-one, declined by the
+  /// viewer, or following someone else's session).
+  int? get autoNextDeadlineMs {
+    if (_followMode) return null;
+    final mediaId = mediaItem.value?.id;
+    if (mediaId == null || _autoNextCancelledForMediaId == mediaId) return null;
+    if (_repeatMode == AudioServiceRepeatMode.one) return null;
+    final index = playbackState.value.queueIndex;
+    if (index == null) return null;
+    if (index + 1 >= queue.value.length &&
+        _repeatMode != AudioServiceRepeatMode.all) {
+      return null;
+    }
+    final outro = currentOutroBounds;
+    if (outro == null) return null;
+    final deadline = outro.startMs + autoNextDelayMs;
+    if (deadline >= outro.endMs) return null;
+    return deadline;
+  }
+
+  /// Whether the auto-next countdown is running for the current item.
+  @visibleForTesting
+  bool get autoNextArmed =>
+      _autoNextArmedForMediaId != null &&
+      _autoNextArmedForMediaId == mediaItem.value?.id;
+
+  /// Moves on to the next episode once the credits have run for
+  /// [autoNextDelayMs], unless the viewer called it off.
+  @visibleForTesting
+  void maybeAutoNextAtOutro(Duration pos) {
+    if (!_player.state.playing && !ClientManager.usesTestClients) return;
+    final mediaId = mediaItem.value?.id;
+    final deadline = autoNextDeadlineMs;
+    final outro = currentOutroBounds;
+    if (mediaId == null || deadline == null || outro == null) {
+      _autoNextArmedForMediaId = null;
+      return;
+    }
+    final posMs = pos.inMilliseconds;
+    if (posMs < outro.startMs) {
+      _autoNextArmedForMediaId = null;
+      return;
+    }
+    if (posMs < deadline) {
+      _autoNextArmedForMediaId = mediaId;
+      return;
+    }
+    if (_autoNextArmedForMediaId != mediaId) return;
+    _autoNextArmedForMediaId = null;
+    // One advance per item, and not on top of the completion listener's.
+    _autoNextCancelledForMediaId = mediaId;
+    _lastAutoAdvance = DateTime.now();
+    LoggerService().logger.d(
+        '[SEGMENT] Credits ran for $autoNextDelayMs ms — next episode');
+    advanceAfterItemEnd();
+  }
+
+  /// The viewer is at the controls while the auto-next counts down: call it
+  /// off for this item. The next-episode button stays for a manual move.
+  void cancelAutoNext() {
+    _autoNextCancelledForMediaId = mediaItem.value?.id;
+    _autoNextArmedForMediaId = null;
   }
 
   /// An episode inside a multi-episode file "ends" at its slice boundary,

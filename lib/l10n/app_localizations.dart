@@ -587,7 +587,7 @@ abstract class AppLocalizations {
   /// Subtitle for the auto-skip-intro toggle
   ///
   /// In en, this message translates to:
-  /// **'Jump past detected intros without asking'**
+  /// **'Jump past detected intros when you carry on with the next episode'**
   String get autoSkipIntroDescription;
 
   /// Overlay button shown during a detected intro
