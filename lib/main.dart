@@ -261,7 +261,11 @@ class _MainState extends State<Main> {
     // errors and every subscription silently freezes. Resume is exactly when
     // that state becomes user-visible, so force a reconnect cycle here — the
     // socket client re-registers all live subscriptions on the new connection.
-    _lifecycleListener = AppLifecycleListener(onResume: () {
+    _lifecycleListener = AppLifecycleListener(onStateChange: (state) {
+      // The exported log otherwise cannot tell "the app was asleep" from
+      // "nothing happened" — which is what a failed resume hinges on.
+      LoggerService().logger.i('App lifecycle: ${state.name}');
+    }, onResume: () {
       ClientManager.resetWebSockets();
       // Opening the app also heals a media notification that lost its metadata
       // when the system recreated the audio service underneath us.

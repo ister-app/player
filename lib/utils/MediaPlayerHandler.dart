@@ -62,6 +62,7 @@ import 'ImageUtil.dart';
 import 'MetadataUtil.dart';
 import 'PlayQueueService.dart';
 import 'SleepTimerService.dart';
+import 'MpvLogThrottle.dart';
 import 'VideoLoadState.dart';
 
 class MediaPlayerHandler extends BaseAudioHandler
@@ -88,11 +89,15 @@ class MediaPlayerHandler extends BaseAudioHandler
         iosManageAudioSession: false,
       ),
     );
-    // debugPrint, not LoggerService: the logger's DevelopmentFilter drops
-    // everything in release builds, and these lines exist precisely to be
-    // readable in logcat on a deployed device.
+    // debugPrint keeps every line readable in logcat on a deployed device;
+    // the exported app log gets them too, throttled (mpv repeats itself under
+    // trouble and that log is a small rotating file) and with the stream
+    // token mpv quotes in URLs taken out.
     _player.stream.log.listen((e) {
       debugPrint('[mpv][${e.level}] ${e.prefix}: ${e.text}');
+      final line = _mpvLogThrottle.admit(VideoLoadState.redact(
+          '[mpv][${e.level}] ${e.prefix}: ${e.text.trimRight()}'));
+      if (line != null) LoggerService().logger.w(line);
     });
 
     _videoController = VideoController(
@@ -115,6 +120,12 @@ class MediaPlayerHandler extends BaseAudioHandler
     // Set up listeners once – they survive for the lifetime of the singleton
     if (!_listenersAdded) {
       _player.stream.playing.listen(_onPlayingChanged);
+      _player.stream.playing
+          .distinct()
+          .listen((playing) => _logPlayback('playing=$playing'));
+      _player.stream.buffering
+          .distinct()
+          .listen((buffering) => _logPlayback('buffering=$buffering'));
       // Raw stream, not _onPlayingChanged: that one is also called with a
       // literal `true` right after an open, inside the not-loaded window.
       _player.stream.playing.listen((_) => _observeStreamReady());
@@ -2066,9 +2077,24 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
   }
 
+  final MpvLogThrottle _mpvLogThrottle = MpvLogThrottle();
+
+  /// One line in the exported log per transport command and player state
+  /// transition. A resume that goes nowhere left no trace at all before:
+  /// whether play() was reached, and what mpv did with it, has to be readable
+  /// from a log the user exports afterwards.
+  void _logPlayback(String event) {
+    final state = _player.state;
+    LoggerService().logger.d('[PLAYBACK] $event '
+        'pos=${state.position} dur=${state.duration} '
+        'playing=${state.playing} buffering=${state.buffering} '
+        'intendsToPlay=$_intendsToPlay');
+  }
+
   // ── AudioService overrides ─────────────────────────────────────────────
   @override
   Future<void> play() async {
+    _logPlayback('play()');
     // Following device: transport goes over the command bus (the echo plays
     // this device, the same command plays the leader) so everyone stays in
     // step. _applyingRemoteSync marks the echo/state application itself.
@@ -2106,6 +2132,7 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   @override
   Future<void> pause() {
+    _logPlayback('pause()');
     if (_followMode && !_applyingRemoteSync) {
       return _sendFollowCommand(Enum$PlaybackCommandType.PAUSE);
     }
@@ -2129,6 +2156,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// focus. The notification/mini player stay up so play() can pick the
   /// session back up (sleep timer, unplayable-item fallback).
   Future<void> suspendPlayback() async {
+    _logPlayback('suspendPlayback()');
     // Suspending a following device only affects *this* device: leave follow
     // mode (deregistering at the server) without touching the leader's session.
     await stopFollowing();
@@ -2157,6 +2185,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// the whole session end; a follower stays silent — its stop only
   /// disconnects this device ([endPlaybackLocally] deregisters it).
   Future<void> stopPlayback() async {
+    _logPlayback('stopPlayback()');
     final client = graphQLClient;
     final pq = playQueue;
     if (!_followMode && client != null && pq != null) {
@@ -2329,6 +2358,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// files. This replaces the old behaviour of re-opening the whole stream on
   /// every backward seek, which showed as a jarring reload while scrubbing.
   Future<void> seekAware(Duration position) async {
+    _logPlayback('seek($position)');
     final sub = _player.state.track.subtitle;
     final hasActiveSub = sub.id != 'no' && sub.id != 'auto';
     final url = _currentMediaUrl;
@@ -5079,6 +5109,8 @@ class MediaPlayerHandler extends BaseAudioHandler
     await session.configure(const AudioSessionConfiguration.music());
     // Handle audio interruptions.
     session.interruptionEventStream.listen((event) {
+      _logPlayback('audio interruption begin=${event.begin} '
+          'type=${event.type.name} interrupted=$_interrupted');
       if (event.begin) {
         if (_player.state.playing) {
           pause();
@@ -5100,6 +5132,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     });
     // Handle unplugged headphones.
     session.becomingNoisyEventStream.listen((_) {
+      _logPlayback('becoming noisy');
       if (_player.state.playing) pause();
     });
   }
