@@ -284,7 +284,7 @@ jobs:
       - name: Install dependencies from Apt
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg zip curl git unzip xz-utils libglu1-mesa clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libmpv-dev mpv libsecret-1-0 libsecret-1-dev libjsoncpp26 libjsoncpp-dev xvfb dbus-x11 pulseaudio gdb imagemagick x11-utils
+          sudo apt-get install -y ffmpeg zip curl git unzip xz-utils libglu1-mesa clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libmpv-dev mpv libsecret-1-0 libsecret-1-dev libjsoncpp26 libjsoncpp-dev xvfb dbus-x11 pulseaudio pipewire gdb imagemagick x11-utils
 
       - uses: azure/setup-helm@v5
 
@@ -342,6 +342,11 @@ jobs:
           # ("Unable to start the app on the device"). PulseAudio provides a null sink —
           # without any audio output mpv has no clock for audio-only media, so audiobook and
           # podcast positions stay at zero forever (video carries its own clock).
+          # A PipeWire daemon runs next to it, not for sound (ISTER_MPV_AO=pulse): mpv ≥ 0.41
+          # enumerates every ao driver for the audio-device-list media_kit observes, and
+          # ao_pipewire's list_devs against a *missing* daemon leaves pw_thread_loop_stop()
+          # joining a thread that never exits — the mpv core then sits in that join from the
+          # second audio init on (ubuntu-26.04, movie_versions/subtitle_seek hang dumps).
           # "No tests were found." after a ✅ group is the desktop runner losing the final
           # result event when the app exits right after the last test (the reporter prints
           # ✅ on "no errors seen", the engine never records the pass). Every test in the
@@ -364,6 +369,7 @@ jobs:
           # artifact.
           xvfb-run -a dbus-run-session -- bash -c '
             pulseaudio --start --exit-idle-time=-1 || true
+            pipewire >/dev/null 2>&1 &
             hang_dir="$RUNNER_TEMP/e2e-hang"
             mkdir -p "$hang_dir"
             hang_dump() {

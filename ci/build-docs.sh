@@ -68,8 +68,11 @@ if [ -n "${DOC_DISPLAY:-}" ]; then
 elif command -v xvfb-run >/dev/null 2>&1; then
   # PulseAudio's null sink gives mpv an audio clock — without it, music and
   # movie positions never advance (same trick as the integration-e2e job).
+  # PipeWire only has to *exist* for mpv's audio-device enumeration (see the
+  # e2e job in workflow.yml); without a daemon the second audio init hangs.
   xvfb-run -a -s '-screen 0 1280x720x24' dbus-run-session -- bash -c \
-    "pulseaudio --start --exit-idle-time=-1 >/dev/null 2>&1 || true; $tour"
+    "pulseaudio --start --exit-idle-time=-1 >/dev/null 2>&1 || true;
+     command -v pipewire >/dev/null && pipewire >/dev/null 2>&1 & $tour"
 else
   $tour
 fi
