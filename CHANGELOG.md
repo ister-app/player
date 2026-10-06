@@ -1,5 +1,35 @@
 # Changelog
 
+## player v2.13.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.13.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(player): count down to the next episode and let the controls call a skip off ([`37d27fc`](https://github.com/ister-app/player/commit/37d27fc))
+- feat(logging): record playback transport and mpv warnings in the exported log ([`a4e05db`](https://github.com/ister-app/player/commit/a4e05db))
+
+### Other
+
+- ci: run a PipeWire daemon next to PulseAudio in the headless e2e and docs runs ([`21a6083`](https://github.com/ister-app/player/commit/21a6083))
+- ci: pin mpv's audio output to pulse for the headless e2e and docs runs ([`9ffbd7d`](https://github.com/ister-app/player/commit/9ffbd7d))
+- ci: move the Linux jobs to ubuntu-26.04 ahead of the ubuntu-latest migration ([`77d70d1`](https://github.com/ister-app/player/commit/77d70d1))
+- build: pin Flutter 3.47.6 and refresh dependencies ([`032128e`](https://github.com/ister-app/player/commit/032128e))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.13.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.12.1...v2.13.0
+
 ## player v2.12.1
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
