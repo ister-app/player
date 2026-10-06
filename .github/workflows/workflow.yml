@@ -413,7 +413,7 @@ jobs:
               tailer=$!
               ( sleep 600; hang_dump "$t" ) &
               dumper=$!
-              timeout -k 30s 12m flutter test "$t" -d linux --dart-define=ISTER_TEST_MODE=true 2>&1 | tee "$log"
+              timeout -k 30s 12m flutter test "$t" -d linux --dart-define=ISTER_TEST_MODE=true --dart-define=ISTER_MPV_AO=pulse 2>&1 | tee "$log"
               code=${PIPESTATUS[0]}
               pkill -P "$dumper" 2>/dev/null; kill "$dumper" 2>/dev/null; wait "$dumper" 2>/dev/null
               sleep 1; kill "$tailer" 2>/dev/null; wait "$tailer" 2>/dev/null

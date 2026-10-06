@@ -66,6 +66,10 @@ HLS, audiobook/podcast playback, epub reading with progress sync, read-aloud. Th
 (`integration_test/support/harness.dart`) mints a client-credentials JWT at the mock issuer and
 installs it via `LoginManager.testTokenProvider` — a seam that is only consulted when built with
 `--dart-define=ISTER_TEST_MODE=true`, because the interactive OIDC flow cannot run headless.
+The CI and docs runs also pass `--dart-define=ISTER_MPV_AO=pulse` (`MpvAudioOutput.dart`): the
+ubuntu-26.04 runners ship mpv 0.41, which autoprobes `pipewire` first, and with only a PulseAudio
+daemon the second `open` in a process wedges the mpv core (main isolate stuck in
+`mpv_get_property_string`); pinning the ao to the daemon that runs avoids it.
 Navigate with `enterServerShell`/`pushRoute` (typed routes), never `pushPath`: a server identifier
 containing a path (`localhost:8080/api`) breaks URL-based deep links. Call `trace('…')` at every
 stop of a test: `flutter test -d linux` prints the app's output (stderr included) only once the

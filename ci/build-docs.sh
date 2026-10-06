@@ -62,7 +62,7 @@ tail -n +1 -F "$E2E_TRACE_FILE" 2>/dev/null &
 trace_tailer=$!
 trap 'kill "$trace_tailer" 2>/dev/null || true' EXIT
 tour="timeout -k 30s ${DOC_TOUR_TIMEOUT:-25m} flutter test integration_test/doc_tour_test.dart -d linux \
-  --dart-define=ISTER_TEST_MODE=true"
+  --dart-define=ISTER_TEST_MODE=true --dart-define=ISTER_MPV_AO=pulse"
 if [ -n "${DOC_DISPLAY:-}" ]; then
   DISPLAY="$DOC_DISPLAY" $tour
 elif command -v xvfb-run >/dev/null 2>&1; then

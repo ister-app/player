@@ -6,6 +6,7 @@ import 'package:player/utils/epub/ReaderBookController.dart';
 import 'package:player/utils/epub/SmilDocument.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
+import 'package:player/utils/MpvAudioOutput.dart';
 
 /// EPUB 3 media-overlay (read-aloud) playback, ported from the web reader's
 /// `overlay` object.
@@ -82,6 +83,7 @@ class ReadAloudController extends ChangeNotifier {
   Player _ensurePlayer() {
     if (_player != null) return _player!;
     final player = Player();
+    unawaited(applyMpvAudioOutput(player));
     _positionSubscription =
         player.stream.position.listen(_onPositionChanged);
     _completedSubscription = player.stream.completed.listen((completed) {

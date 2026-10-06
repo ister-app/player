@@ -62,6 +62,7 @@ import 'ImageUtil.dart';
 import 'MetadataUtil.dart';
 import 'PlayQueueService.dart';
 import 'SleepTimerService.dart';
+import 'MpvAudioOutput.dart';
 import 'MpvLogThrottle.dart';
 import 'VideoLoadState.dart';
 
@@ -192,6 +193,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       // that keeps the pipeline saturated for seconds (a visible slideshow
       // until it catches up). Dropping at the decoder as well skips the
       // expensive part of the pipeline and recovers within a few frames.
+      await applyMpvAudioOutput(_player);
       await native.setProperty('framedrop', 'decoder+vo');
       // media_kit turns on cache-on-disk but sets no demuxer-cache-dir; on
       // Android mpv has no user cache dir to fall back to, so every demuxer
