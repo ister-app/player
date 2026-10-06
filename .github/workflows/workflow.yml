@@ -17,7 +17,7 @@ jobs:
   commit-lint:
     name: Commit messages
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
         with:
@@ -41,7 +41,7 @@ jobs:
     # Skip the commit release.yml pushes: it is version bookkeeping, already built green as the
     # commit it was cut from, and rebuilding it would only race the release's own image.
     if: ${{ github.event_name == 'pull_request' || !startsWith(github.event.head_commit.message, 'chore(release):') }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     steps:
       - uses: actions/checkout@v7
@@ -77,7 +77,7 @@ jobs:
         run: sudo apt install -y libmpv-dev mpv
 
       - name: Install libsecret # for OIDC
-        run: sudo apt install -y libsecret-1-0 libsecret-1-dev libjsoncpp25 libjsoncpp-dev
+        run: sudo apt install -y libsecret-1-0 libsecret-1-dev libjsoncpp26 libjsoncpp-dev
 
       - name: Install Flutter
         # Running "flutter doctor" will download Flutter's dependencies
@@ -212,7 +212,7 @@ jobs:
   integration-e2e:
     name: Integration tests on kind
     if: ${{ github.event_name == 'pull_request' || !startsWith(github.event.head_commit.message, 'chore(release):') }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 50
     # Deliberately NOT continue-on-error: it hid red e2e runs for days (a green run
     # said nothing about this job), and the schema preflight below now removes the
@@ -284,7 +284,7 @@ jobs:
       - name: Install dependencies from Apt
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg zip curl git unzip xz-utils libglu1-mesa clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libmpv-dev mpv libsecret-1-0 libsecret-1-dev libjsoncpp25 libjsoncpp-dev xvfb dbus-x11 pulseaudio gdb imagemagick x11-utils
+          sudo apt-get install -y ffmpeg zip curl git unzip xz-utils libglu1-mesa clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libmpv-dev mpv libsecret-1-0 libsecret-1-dev libjsoncpp26 libjsoncpp-dev xvfb dbus-x11 pulseaudio gdb imagemagick x11-utils
 
       - uses: azure/setup-helm@v5
 
@@ -478,7 +478,7 @@ jobs:
 
   flatpak:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     container:
       # Keep this tag on the manifest's runtime-version, so the SDK comes with
       # the image instead of being fetched from flathub at build time.
@@ -502,7 +502,7 @@ jobs:
 
   docker:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
