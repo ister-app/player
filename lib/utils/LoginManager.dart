@@ -235,10 +235,14 @@ class LoginManager {
       // their own refresh (fatal with refresh-token rotation).
       final refresh = _refreshFutures.putIfAbsent(
         serverUrl,
-        () => manager
-            .refreshToken()
-            .then((_) {})
-            .whenComplete(() => _refreshFutures.remove(serverUrl)),
+        () => manager.refreshToken().then((_) {}).whenComplete(() {
+          // Block body on purpose: `Map.remove` returns the removed value, and
+          // a `whenComplete` callback that returns a Future makes the chain
+          // wait for it — here the very future being built, which then waited
+          // on itself and never completed. Every caller that hit the
+          // about-to-expire minute hung forever (the season-upload stall).
+          _refreshFutures.remove(serverUrl);
+        }),
       );
       try {
         await refresh;
