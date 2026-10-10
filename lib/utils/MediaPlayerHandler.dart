@@ -683,10 +683,13 @@ class MediaPlayerHandler extends BaseAudioHandler
     String newServerName, {
     // The version picked on the page, for an episode with several files.
     String? mediaFileId,
+    // Explicit start position; wins over a remembered stop and the watch
+    // status (a replay from the start passes 0).
+    int? startTimeMs,
   }) =>
       _guardVideoStart(() => _startPlayQueue(
           client, playQueueId, newEpisode, newServerName,
-          mediaFileId: mediaFileId));
+          mediaFileId: mediaFileId, startTimeMs: startTimeMs));
 
   /// The pages fire a video start without awaiting it, so an exception on the
   /// way to [_openMedia] (the server unreachable for the play queue, a token
@@ -839,6 +842,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     Fragment$fragmentEpisode newEpisode,
     String newServerName, {
     String? mediaFileId,
+    int? startTimeMs,
   }) async {
     // A not-yet-analyzed episode has no media file to open; bail out before
     // touching the queue instead of crashing on mediaFile!.first below.
@@ -881,9 +885,10 @@ class MediaPlayerHandler extends BaseAudioHandler
       final file = await _pickMediaFile(newServerName, newEpisode.mediaFile,
           choiceKey: _choiceKeyForEpisode(newEpisode.id),
           preferredId: mediaFileId);
-      final startMs =
-          _takeStoppedResumeMs(newServerName, episodeId: newEpisode.id) ??
-              _episodeStartMs(file);
+      // Always consumed: a remembered stop only survives until the next start.
+      final stoppedMs =
+          _takeStoppedResumeMs(newServerName, episodeId: newEpisode.id);
+      final startMs = startTimeMs ?? stoppedMs ?? _episodeStartMs(file);
       await _silenceForQueueSwitch();
       final playQueueObject = await _playQueueService.getOrCreatePlayQueue(
         client,
@@ -1085,10 +1090,11 @@ class MediaPlayerHandler extends BaseAudioHandler
     Fragment$fragmentMovie newMovie,
     String newServerName, {
     String? mediaFileId,
+    int? startTimeMs,
   }) =>
       _guardVideoStart(() => _startPlayQueueForMovie(
           client, playQueueId, newMovie, newServerName,
-          mediaFileId: mediaFileId));
+          mediaFileId: mediaFileId, startTimeMs: startTimeMs));
 
   Future<void> _startPlayQueueForMovie(
     GraphQLClient client,
@@ -1096,6 +1102,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     Fragment$fragmentMovie newMovie,
     String newServerName, {
     String? mediaFileId,
+    int? startTimeMs,
   }) async {
     // Same not-ready rule as startPlayQueue: no media file, nothing to open.
     if (newMovie.mediaFile?.firstOrNull == null) {
@@ -1129,9 +1136,9 @@ class MediaPlayerHandler extends BaseAudioHandler
       // Same rule as startPlayQueue: an own stop of this movie resumes there.
       final file = await _pickMediaFile(newServerName, newMovie.mediaFile,
           choiceKey: _choiceKeyForMovie(newMovie.id), preferredId: mediaFileId);
-      final startMs =
-          _takeStoppedResumeMs(newServerName, movieId: newMovie.id) ??
-              _movieStartTimeMs;
+      final stoppedMs =
+          _takeStoppedResumeMs(newServerName, movieId: newMovie.id);
+      final startMs = startTimeMs ?? stoppedMs ?? _movieStartTimeMs;
       await _silenceForQueueSwitch();
       final playQueueObject = await _playQueueService.getOrCreatePlayQueueForMovie(
         client,
@@ -2189,19 +2196,25 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// disconnects this device ([endPlaybackLocally] deregisters it).
   Future<void> stopPlayback() async {
     _logPlayback('stopPlayback()');
+    await _publishStop();
+    await endPlaybackLocally(keepVideoPage: true);
+  }
+
+  /// Publishes STOP for the live session, if this device owns one. Shared by
+  /// the user's stop and the queue playing out: both end the session for
+  /// every listening-along device and remote control.
+  Future<void> _publishStop() async {
     final client = graphQLClient;
     final pq = playQueue;
-    if (!_followMode && client != null && pq != null) {
-      try {
-        await _playQueueService.sendPlaybackCommand(
-            client, pq.id, Enum$PlaybackCommandType.STOP);
-      } catch (e) {
-        // The session dies through the heartbeat ending regardless; a lost
-        // STOP only means followers coast until the server expires it.
-        LoggerService().logger.w('Publishing STOP failed: $e');
-      }
+    if (_followMode || client == null || pq == null) return;
+    try {
+      await _playQueueService.sendPlaybackCommand(
+          client, pq.id, Enum$PlaybackCommandType.STOP);
+    } catch (e) {
+      // The session dies through the heartbeat ending regardless; a lost
+      // STOP only means followers coast until the server expires it.
+      LoggerService().logger.w('Publishing STOP failed: $e');
     }
-    await endPlaybackLocally(keepVideoPage: true);
   }
 
   /// Hands the live queue off to [targetDeviceId]: pause (flushes progress),
@@ -2250,8 +2263,14 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// stays open (showing its cover + play button again) instead of being
   /// closed, and the stop position is remembered so that play button resumes
   /// there. See [lastPlaybackCloseKeepsPage].
+  ///
+  /// [notifyClose] bumps [closePlaybackRequest] at the end; pass false when
+  /// the surfaces must stay where they are (a queue that played out shows its
+  /// ended state on them instead of closing).
   Future<void> endPlaybackLocally(
-      {bool flushProgress = true, bool keepVideoPage = false}) async {
+      {bool flushProgress = true,
+      bool keepVideoPage = false,
+      bool notifyClose = true}) async {
     // Same test seam as play()/pause(): under flutter test there is no mpv, so
     // the player's own position stays at zero and the published state is the
     // only position there is.
@@ -2333,6 +2352,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         LoggerService().logger.w('Releasing audio focus on teardown failed: $e');
       }
     }
+    if (!notifyClose) return;
     lastPlaybackCloseKeepsPage = keepVideoPage;
     closePlaybackRequest.value++;
   }
