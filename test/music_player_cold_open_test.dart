@@ -6,11 +6,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:player/components/PlayerView.dart';
+import 'package:player/components/QueueEndedBanner.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
+import 'package:player/utils/QueueEnd.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
@@ -138,6 +140,56 @@ void main() {
 
     expect(find.text('server list'), findsOneWidget);
     expect(find.byType(PlayerView), findsNothing);
+  });
+
+  testWidgets('a /player open right after the queue played out stays open',
+      (tester) async {
+    // Nothing is loaded any more, but the player has an ended state to show.
+    final item = Fragment$fragmentPlayQueue$playQueueItems(
+      accessible: true,
+      id: 'pq-item-1',
+      position: 0,
+      track: Fragment$fragmentPlayQueue$playQueueItems$track(
+        id: 'track-1',
+        number: 1,
+        discNumber: 1,
+        artist: Fragment$fragmentPlayQueue$playQueueItems$track$artist(
+            id: 'artist-1', name: 'The Artist'),
+        artists: const [],
+        album: Fragment$fragmentPlayQueue$playQueueItems$track$album(
+            id: 'album-1', name: 'The Album'),
+      ),
+    );
+    handler.queueEnded.value = QueueEndedInfo(
+      serverName: 'test-server',
+      client: null,
+      playQueue: Fragment$fragmentPlayQueue(
+        id: 'pq-1',
+        currentItemId: item.id,
+        progressInMilliseconds: 0,
+        shuffle: false,
+        sourceExhausted: true,
+        controlAllowedUserIds: const [],
+        playQueueItems: [item],
+      ),
+      lastItem: item,
+      lastMediaItem: const MediaItem(
+          id: 'test-server;track;pq-item-1', title: 'The Last Song'),
+    );
+    addTearDown(() => handler.queueEnded.value = null);
+    final router = _TestRouter();
+    await tester.pumpWidget(_app(router));
+    await tester.pumpAndSettle();
+
+    router.push(const MusicPlayerRoute());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump(const Duration(milliseconds: 600));
+
+    expect(find.byType(PlayerView, skipOffstage: false), findsOneWidget);
+    expect(find.byKey(QueueEndedBanner.bannerKey, skipOffstage: false),
+        findsOneWidget);
+    expect(find.text('server list'), findsNothing);
   });
 
   testWidgets(

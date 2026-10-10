@@ -14,7 +14,9 @@ import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/routes/AppRouter.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
+import 'package:player/components/QueueEndedBanner.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
+import 'package:player/utils/QueueEnd.dart';
 
 /// Full-screen player for local playback: a [PlayerView] driven by
 /// [MediaPlayerHandler], pushed as a transparent overlay route.
@@ -43,10 +45,13 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
       // A fresh in-app play (openMusicPlayerRequest) also lands here before the
       // queue round-trip fills mediaItem — mediaLoading distinguishes it from a
       // genuinely idle cold open.
+      // A queue that just played out has nothing loaded either, but the
+      // player shows its ended state (play again, what next) — stay.
       final handler = MediaPlayerHandler.instance;
       if (!handler.mediaLoading.value &&
           handler.mediaItem.valueOrNull == null &&
-          handler.queue.value.isEmpty) {
+          handler.queue.value.isEmpty &&
+          handler.queueEnded.value == null) {
         final lastServer = ClientManager.instance.lastClientUsed;
         context.router.replaceAll([
           if (lastServer != null)
@@ -103,6 +108,7 @@ class _LocalPlayerController extends QueuePlayerViewController<MediaItem> {
       }),
     ]);
     handler.mediaLoading.addListener(notifyListeners);
+    handler.queueEnded.addListener(notifyListeners);
   }
 
   final List<StreamSubscription> _subscriptions = [];
@@ -124,7 +130,27 @@ class _LocalPlayerController extends QueuePlayerViewController<MediaItem> {
       s.cancel();
     }
     _handler.mediaLoading.removeListener(notifyListeners);
+    _handler.queueEnded.removeListener(notifyListeners);
     super.dispose();
+  }
+
+  /// What just played out, while the player shows its ended state.
+  QueueEndedInfo? get _ended => _handler.queueEnded.value;
+
+  // Nothing is loaded in the ended state: the transport is inert, the
+  // banner carries the actions.
+  @override
+  bool get enabled => _ended == null;
+
+  @override
+  Widget? buildBanner(BuildContext context) {
+    final ended = _ended;
+    if (ended == null) return null;
+    return QueueEndedBanner(
+      info: ended,
+      onPlayAgain: () => unawaited(_handler.replayEndedQueue()),
+      onDismiss: _handler.dismissQueueEnd,
+    );
   }
 
   // Local playback = the owner watching their own session, so per-session sharing is editable here.
@@ -147,7 +173,10 @@ class _LocalPlayerController extends QueuePlayerViewController<MediaItem> {
   @override
   bool get loading => _handler.mediaLoading.value;
 
-  MediaItem? get _item => _handler.mediaItem.valueOrNull;
+  /// The playing item — or, once the queue played out, the item that ended,
+  /// so the player keeps showing what finished instead of going blank.
+  MediaItem? get _item =>
+      _handler.mediaItem.valueOrNull ?? _ended?.lastMediaItem;
 
   /// Resolve targets from the current play-queue item (mixed queues like a
   /// library shuffle can span albums), falling back to the handler's source
@@ -155,22 +184,22 @@ class _LocalPlayerController extends QueuePlayerViewController<MediaItem> {
   /// is paired with the handler's server.
   @override
   ({String serverName, PageRouteInfo route})? get artistRoute {
-    final srv = _handler.serverName;
+    final srv = _handler.serverName ?? _ended?.serverName;
     if (srv == null) return null;
-    final item = _handler.currentPlayQueueItem;
+    final item = _handler.currentPlayQueueItem ?? _ended?.lastItem;
     final personId = item?.track?.artist.id ??
         item?.chapter?.author.id ??
-        _handler.album?.artist.id;
+        (_handler.album ?? _ended?.album)?.artist.id;
     if (personId == null) return null;
     return (serverName: srv, route: PersonRoute(personId: personId));
   }
 
   @override
   ({String serverName, PageRouteInfo route})? get albumRoute {
-    final srv = _handler.serverName;
+    final srv = _handler.serverName ?? _ended?.serverName;
     if (srv == null) return null;
-    final item = _handler.currentPlayQueueItem;
-    final albumId = item?.track?.album.id ?? _handler.album?.id;
+    final item = _handler.currentPlayQueueItem ?? _ended?.lastItem;
+    final albumId = item?.track?.album.id ?? (_handler.album ?? _ended?.album)?.id;
     if (albumId != null) {
       return (serverName: srv, route: AlbumRoute(albumId: albumId));
     }
