@@ -109,6 +109,10 @@ class OfflineProgressStore {
 
   static void resetForTest() => _instance = null;
 
+  /// Swaps in a store on a temp directory, so handler tests that record
+  /// offline progress never touch path_provider.
+  static void useForTest(OfflineProgressStore store) => _instance = store;
+
   static const _fileName = 'offline_progress.json';
   final DownloadStore _store;
   final Map<String, Map<String, OfflineProgressEntry>> _cache = {};

@@ -60,6 +60,12 @@ class _IsterPlayerState extends State<IsterPlayer> {
 
   @override
   void dispose() {
+    // Navigating away from a video that played out drops its ended state:
+    // there is nothing left to show it on, and the next page must not find
+    // a stale "watch again" waiting.
+    if (_handler.queueEnded.value?.isVideo == true) {
+      _handler.queueEnded.value = null;
+    }
     if (_videoPageOpenCounted) {
       // Post-frame for the same reason: the listening mini player may be
       // rebuilding (or unmounting) in the same locked-tree phase.

@@ -25,6 +25,7 @@ import 'package:player/utils/LoginManager.dart';
 import 'package:player/utils/LanguageService.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/PlaybackPreferences.dart';
+import 'package:player/utils/QueueEnd.dart';
 import 'package:player/utils/ResilientSubscription.dart';
 import 'package:player/utils/QueueItemDisplay.dart';
 import 'package:player/utils/StreamTokenService.dart';
@@ -294,6 +295,13 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// and the video page/fullscreen. The mini player disappears on its own
   /// because [mediaItem] goes null.
   final ValueNotifier<int> closePlaybackRequest = ValueNotifier(0);
+
+  /// Set by [finishQueue] when the queue played out: what just ended, kept
+  /// after playback itself is torn down so the surfaces that showed it (the
+  /// video page, the music player, the mini player) can show an ended state
+  /// with "play again" and suggestions instead of closing or going blank.
+  /// Cleared by every start path and by [dismissQueueEnd].
+  final ValueNotifier<QueueEndedInfo?> queueEnded = ValueNotifier(null);
 
   /// Whether the teardown that last bumped [closePlaybackRequest] was the
   /// user's own stop (stop button, mini-player swipe-down, notification stop)
@@ -854,6 +862,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     // page merely re-opens the followed queue itself (the follower's video
     // surface goes through this same entry point).
     if (followMode && playQueue?.id != playQueueId) await stopFollowing();
+    queueEnded.value = null;
     _intendsToPlay = true;
     _loadRetries = 0;
     _startHeartbeat();
@@ -1111,6 +1120,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
     // Same follow-mode rule as startPlayQueue: only a *different* queue ends it.
     if (followMode && playQueue?.id != playQueueId) await stopFollowing();
+    queueEnded.value = null;
     _intendsToPlay = true;
     _loadRetries = 0;
     _startHeartbeat();
@@ -1208,6 +1218,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   ) async {
     // Same follow-mode rule as startPlayQueue: only a *different* queue ends it.
     if (followMode && playQueue?.id != playQueueId) await stopFollowing();
+    queueEnded.value = null;
     _intendsToPlay = true;
     _loadRetries = 0;
     _startHeartbeat();
@@ -1505,6 +1516,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       {String? startMediaId, int? startTimeMs}) async {
     // Same follow-mode rule as startPlayQueue: only a *different* queue ends it.
     if (followMode && playQueue?.id != pq.id) await stopFollowing();
+    queueEnded.value = null;
     _intendsToPlay = true;
     _loadRetries = 0;
     _startHeartbeat();
@@ -1563,6 +1575,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       String srv, Fragment$fragmentPlayQueue pq,
       {String? startItemId, int? startTimeMs, bool openPlayer = true}) async {
     if (followMode) await stopFollowing();
+    queueEnded.value = null;
     _intendsToPlay = true;
     _loadRetries = 0;
     _syncGeneration++;
@@ -1629,6 +1642,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (pq == null) return;
     // Something started playing during the fetch — its state wins.
     if (playQueue != null) return;
+    queueEnded.value = null;
 
     final current = PlayQueueService.getCurrentPlayQueueItem(pq) ??
         PlayQueueService.sortedItems(pq).firstOrNull;
@@ -2110,6 +2124,12 @@ class MediaPlayerHandler extends BaseAudioHandler
     // step. _applyingRemoteSync marks the echo/state application itself.
     if (_followMode && !_applyingRemoteSync) {
       await _sendFollowCommand(Enum$PlaybackCommandType.PLAY);
+      return;
+    }
+    // Play on a queue that just played out means "again": the notification,
+    // MPRIS, a headset button and the mini player's play all land here.
+    if (playQueue == null && queueEnded.value != null) {
+      await replayEndedQueue();
       return;
     }
     // A play command with nothing loaded (e.g. the car's resume button right
@@ -4276,8 +4296,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       if (item != null && srv != null) {
         // A slice of a multi-episode file ends at its part boundary, not at
         // the end of the file.
-        final endMs = _partBoundsOf(item.episode)?.endMs ??
-            _player.state.duration.inMilliseconds;
+        final endMs = _currentItemEndMs(item.episode);
         await OfflineProgressStore.instance.record(srv, item,
             positionMs: pos.inMilliseconds,
             durationMs: endMs,
@@ -4579,6 +4598,7 @@ class MediaPlayerHandler extends BaseAudioHandler
           client, playQueueId, deviceId, false));
       return Enum$FollowResult.NOT_FOUND;
     }
+    queueEnded.value = null;
 
     // Tear down a previous follow first. Deregister its queue unless it is the
     // same one — the registration above just re-armed that.
@@ -5175,13 +5195,115 @@ class MediaPlayerHandler extends BaseAudioHandler
       skipToNext();
       return;
     }
-    // The queue is exhausted. For video, a paused player on its last frame is
-    // a dead surface — end playback so the mini player closes the video page.
-    // Audio keeps the item loaded so the notification/mini player can resume
-    // or replay it.
-    if (episode != null || movie != null) {
-      unawaited(endPlaybackLocally());
+    unawaited(finishQueue());
+  }
+
+  /// The queue played out: end playback for good — the session, the
+  /// heartbeat, the loaded stream and the notification all go — but keep a
+  /// snapshot of what ended in [queueEnded], so the surfaces stay where they
+  /// are and show an ended state (play again, what to play next) instead of
+  /// closing (video) or sitting paused on a dead last frame with a session
+  /// that never expires (audio).
+  Future<void> finishQueue() async {
+    if (_followMode) return;
+    final snapshot = _snapshotQueueEnd();
+    if (snapshot == null) return;
+    _logPlayback('finishQueue() kind=${snapshot.kind}');
+    // The STOP below echoes back on the command bus; this device must not
+    // run the follower teardown for its own stop.
+    _stopCommandSubscription();
+    // One last write at the *end* position: mpv's own position after EOF is
+    // whatever keep-open left it at, and a write short of the end would undo
+    // the watched/finished mark. For a slice of a multi-episode file the end
+    // is the part boundary.
+    final endMs = _currentItemEndMs(episode);
+    final endPos = ClientManager.usesTestClients
+        ? playbackState.value.position
+        : (endMs > 0 ? Duration(milliseconds: endMs) : _player.state.position);
+    unawaited(_syncProgress(endPos,
+        force: true, playState: Enum$PlayState.PAUSED));
+    // Followers and remote controls see the session end now, not when the
+    // server expires it a minute later.
+    await _publishStop();
+    // Published before the media item goes null, so a surface that listens to
+    // both never renders a blank in between.
+    queueEnded.value = snapshot;
+    await endPlaybackLocally(flushProgress: false, notifyClose: false);
+  }
+
+  /// Where the current item ends, in ms: the part boundary for a slice of a
+  /// multi-episode file, else the stream's duration, else (when mpv has not
+  /// reported one, or under test) the analysed duration of the media file.
+  int _currentItemEndMs(Fragment$fragmentEpisode? ep) {
+    final part = _partBoundsOf(ep)?.endMs;
+    if (part != null) return part;
+    final reported = _player.state.duration.inMilliseconds;
+    if (reported > 0) return reported;
+    return currentMediaFile?.durationInMilliseconds ?? 0;
+  }
+
+  QueueEndedInfo? _snapshotQueueEnd() {
+    final srv = serverName;
+    final pq = playQueue;
+    final last = currentPlayQueueItem ??
+        PlayQueueService.getCurrentPlayQueueItem(pq);
+    final media = mediaItem.valueOrNull;
+    if (srv == null || pq == null || last == null || media == null) return null;
+    return QueueEndedInfo(
+      serverName: srv,
+      client: isLocalQueue ? null : graphQLClient,
+      playQueue: pq,
+      lastItem: last,
+      lastMediaItem: media,
+      episode: episode,
+      movie: movie,
+      album: album,
+    );
+  }
+
+  /// Leaves the ended state: the video page falls back to its cover + play
+  /// button (and fullscreen closes), the music player slides away. Marked as
+  /// the user's own close, so the page is never popped.
+  void dismissQueueEnd() {
+    if (queueEnded.value == null) return;
+    queueEnded.value = null;
+    lastPlaybackCloseKeepsPage = true;
+    closePlaybackRequest.value++;
+  }
+
+  /// Plays the ended queue again from its first item, on the same server
+  /// queue (so the history stays on one queue). Video replays the item that
+  /// ended — an episode queue is the whole show, and "watch again" means this
+  /// episode, not season one. Audio replays the whole queue: an album from
+  /// track one, a book from chapter one.
+  Future<void> replayEndedQueue() async {
+    final end = queueEnded.value;
+    if (end == null) return;
+    _logPlayback('replayEndedQueue() kind=${end.kind}');
+    final srv = end.serverName;
+    final client = end.client;
+    final episode = end.episode;
+    final movie = end.movie;
+    if (episode != null && client != null) {
+      await startPlayQueue(client, end.playQueue.id, episode, srv,
+          startTimeMs: 0);
+      return;
     }
+    if (movie != null && client != null) {
+      await startPlayQueueForMovie(client, end.playQueue.id, movie, srv,
+          startTimeMs: 0);
+      return;
+    }
+    final first = PlayQueueService.sortedItems(end.playQueue).firstOrNull;
+    if (first == null) return;
+    if (client == null) {
+      await startLocalPlayQueue(srv, end.playQueue,
+          startItemId: first.id, startTimeMs: 0, openPlayer: false);
+      return;
+    }
+    await _startFromPlayQueue(
+        client, end.playQueue.copyWith(currentItemId: first.id), srv,
+        startTimeMs: 0);
   }
 
   /// An episode played out: let its show's "keep the next episodes
