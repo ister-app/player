@@ -325,6 +325,36 @@ void main() {
     expect(handler.currentPlayQueueItem?.id, 'item-1');
   });
 
+  test('play after dismissing the ended state restores the queue from the top',
+      () async {
+    // The server's copy of the queue after it played out: two tracks, the
+    // last one current, at its end.
+    final played = _queue(
+      items: [_trackItem('item-1', 1), _trackItem('item-2', 2)],
+      sourceType: Enum$PlayQueueSourceType.ALBUM,
+    ).copyWith(currentItemId: 'item-2', progressInMilliseconds: 180000);
+    final operations = useQueue(played);
+    await handler.startFromServerQueue(
+        ClientManager.getClientForUrl(_server).value, played, _server);
+    handler.mediaItem.add(_queueMediaItem('item-2', 'Track Two'));
+    handler.advanceAfterItemEnd();
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    handler.dismissQueueEnd();
+    expect(handler.queueEnded.value, isNull);
+    expect(handler.playQueue, isNull);
+    operations.clear();
+
+    // The Android notification lingers after a stop; its play lands here.
+    await handler.play();
+
+    expect(operations, contains('getPlayQueue:pq-1'),
+        reason: 'the last music queue is restored again after a teardown');
+    expect(handler.playQueue?.id, 'pq-1');
+    expect(handler.playQueue?.currentItemId, 'item-1',
+        reason: 'a played-out queue restarts from the top');
+    expect(handler.currentPlayQueueItem?.id, 'item-1');
+  });
+
   test('a queue built from downloads ends offline, marked finished',
       () async {
     final root = await Directory.systemTemp.createTemp('queue-end');

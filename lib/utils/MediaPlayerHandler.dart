@@ -1644,8 +1644,19 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (playQueue != null) return;
     queueEnded.value = null;
 
-    final current = PlayQueueService.getCurrentPlayQueueItem(pq) ??
-        PlayQueueService.sortedItems(pq).firstOrNull;
+    final items = PlayQueueService.sortedItems(pq);
+    var current = PlayQueueService.getCurrentPlayQueueItem(pq) ?? items.firstOrNull;
+    var startMs = pq.progressInMilliseconds;
+    // A queue that played out (its last item, at the end) restarts from the
+    // top: "play" on it means the whole thing again, not the last track.
+    final playedOut = current != null &&
+        items.isNotEmpty &&
+        current.id == items.last.id &&
+        _playedToEnd(startMs, current.track?.mediaFile);
+    if (playedOut) {
+      current = items.first;
+      startMs = 0;
+    }
     final track = current?.track;
     final mf = await _pickMediaFile(srv, track?.mediaFile);
     if (current == null || track == null || mf == null) {
@@ -1658,7 +1669,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     graphQLClient = client;
     _syncGeneration++;
     playQueue =
-        pq.currentItemId == null ? pq.copyWith(currentItemId: current.id) : pq;
+        pq.currentItemId == current.id ? pq : pq.copyWith(currentItemId: current.id);
     currentPlayQueueItem = current;
     currentTrackId = track.id;
     episode = null;
@@ -1673,9 +1684,7 @@ class MediaPlayerHandler extends BaseAudioHandler
 
     // A track that already played to (almost) the end restarts at zero, like
     // the long-form resume rule.
-    final duration = mf.durationInMilliseconds;
-    var startMs = pq.progressInMilliseconds;
-    if (duration != null && startMs >= duration - 5000) startMs = 0;
+    if (_playedToEnd(startMs, [mf])) startMs = 0;
 
     await _openMedia(
       serverName: srv,
@@ -1685,6 +1694,14 @@ class MediaPlayerHandler extends BaseAudioHandler
       autoPlay: false,
     );
     updatePlaybackState();
+  }
+
+  /// Whether [positionMs] is within the closing seconds of the (first) file
+  /// in [files] — the same 5 s rule the finished/watched marks use.
+  static bool _playedToEnd(
+      int positionMs, List<Fragment$fragmentMediaFiles>? files) {
+    final duration = files?.firstOrNull?.durationInMilliseconds;
+    return duration != null && duration > 0 && positionMs >= duration - 5000;
   }
 
   /// [restoreLastMusicQueue] for the headless Android Auto paths: looks up
@@ -2133,9 +2150,16 @@ class MediaPlayerHandler extends BaseAudioHandler
       return;
     }
     // A play command with nothing loaded (e.g. the car's resume button right
-    // after connecting, before any browse): restore the last queue first so
-    // "play" continues the last music instead of doing nothing.
-    if (playQueue == null) await _restoreLastMusicQueueOnce();
+    // after connecting, before any browse, or the Android notification that
+    // lingers after a stop): restore the last queue first so "play" continues
+    // the last music instead of doing nothing. With nothing to restore there
+    // is nothing to play either — mpv would only report a bogus "playing".
+    if (playQueue == null &&
+        !await _restoreLastMusicQueueOnce() &&
+        mediaItem.valueOrNull == null) {
+      _logPlayback('play(): nothing loaded and nothing to restore');
+      return;
+    }
     _intendsToPlay = true;
     unawaited(_ensureFreshArtToken());
     // A play command is what restarts a system-destroyed AudioService (the
@@ -2333,6 +2357,11 @@ class MediaPlayerHandler extends BaseAudioHandler
     currentMediaFileId.value = null;
     // In-flight progress responses must not resurrect the queue we clear below.
     _syncGeneration++;
+    // The once-per-process restore guard has done its job for the queue that
+    // just went away; a play with nothing loaded after this (the Android
+    // notification lingers after a stop, a headset button) must be able to
+    // bring the last music queue back again.
+    _autoRestoreFuture = null;
     // stop(), not pause(): pausing leaves the HLS load (and the video texture)
     // alive, which is exactly what this method exists to get rid of.
     if (!ClientManager.usesTestClients) await _player.stop();
@@ -5311,6 +5340,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// the user's own close, so the page is never popped.
   void dismissQueueEnd() {
     if (queueEnded.value == null) return;
+    _logPlayback('dismissQueueEnd()');
     queueEnded.value = null;
     lastPlaybackCloseKeepsPage = true;
     closePlaybackRequest.value++;
