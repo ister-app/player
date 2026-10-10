@@ -4330,6 +4330,11 @@ class MediaPlayerHandler extends BaseAudioHandler
     // reinstate a queue that was replaced in the meantime.
     if (beat != null && generation == _syncGeneration) {
       if (beat.id != playQueue?.id) return;
+      // The source ran dry since the queue was fetched: remember it, so the
+      // end of the queue needs no extra round-trip to be sure.
+      if (beat.sourceExhausted != playQueue?.sourceExhausted) {
+        playQueue = playQueue?.copyWith(sourceExhausted: beat.sourceExhausted);
+      }
       // Sources with sourceExhausted == false grow server-side as playback
       // advances. The heartbeat only carries item ids (parsing the full queue
       // every beat is a visible hitch on low-end TVs); fetch the full queue
@@ -5187,15 +5192,55 @@ class MediaPlayerHandler extends BaseAudioHandler
       _repeatCurrent();
       return;
     }
+    if (_hasNextOrWraps()) {
+      skipToNext();
+      return;
+    }
+    unawaited(_finishQueueUnlessItGrows());
+  }
+
+  bool _hasNextOrWraps() {
     final index = playbackState.value.queueIndex;
     final hasNext = index != null && index + 1 < queue.value.length;
     final wrapsAround =
         _repeatMode == AudioServiceRepeatMode.all && queue.value.isNotEmpty;
-    if (hasNext || wrapsAround) {
-      skipToNext();
-      return;
+    return hasNext || wrapsAround;
+  }
+
+  /// Guards against a second end trigger (the near-end stall watchdog, the
+  /// slice boundary) re-entering while the reload below is in flight.
+  bool _finishingQueue = false;
+
+  /// The last *visible* item ended. A source that still grows server-side
+  /// (`sourceExhausted == false`: a show, a library, an artist, a filter) may
+  /// have appended items the ~10s heartbeat has not picked up yet — fetch the
+  /// queue once more and carry on if it did, and only call it the end when
+  /// the server really has nothing more.
+  Future<void> _finishQueueUnlessItGrows() async {
+    if (_finishingQueue || _followMode) return;
+    _finishingQueue = true;
+    try {
+      final pq = playQueue;
+      final generation = _syncGeneration;
+      if (pq != null &&
+          !pq.sourceExhausted &&
+          !isLocalQueue &&
+          graphQLClient != null) {
+        await _reloadPlayQueueFromServer();
+        // Something else started (or a skip happened) during the fetch — its
+        // state wins; there is nothing to finish any more.
+        if (generation != _syncGeneration || playQueue?.id != pq.id) return;
+        if (_hasNextOrWraps()) {
+          LoggerService().logger.d(
+              '[QUEUE] Source grew at the end of the visible queue — continuing');
+          await skipToNext();
+          return;
+        }
+      }
+      await finishQueue();
+    } finally {
+      _finishingQueue = false;
     }
-    unawaited(finishQueue());
   }
 
   /// The queue played out: end playback for good — the session, the
