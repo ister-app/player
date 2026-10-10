@@ -18,6 +18,7 @@ import 'BitmapSubtitleOverlay.dart';
 import 'TrackMenuButton.dart';
 import 'TrackSelectionController.dart';
 import 'VideoControlButtons.dart';
+import 'VideoEndedOverlay.dart';
 import 'VideoGestureLayer.dart';
 import 'VideoSeekBar.dart';
 
@@ -60,6 +61,11 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
   bool _menuOpen = false;
   bool _seekDragging = false;
 
+  /// The queue played out on this surface: the end screen is up, the chrome
+  /// stays revealed under it (its stop/watch-together top bar still applies)
+  /// and, on TV, its buttons stay reachable without a revealing key press.
+  bool get _ended => _handler.queueEnded.value?.isVideo == true;
+
   Player get _player => widget.state.widget.controller.player;
 
   bool get _isTv => PlatformService.isTvModeSync;
@@ -79,6 +85,7 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
   @override
   void initState() {
     super.initState();
+    _handler.queueEnded.addListener(_onQueueEnded);
     _playingSub = _player.stream.playing.listen((playing) {
       // Pausing keeps the controls up (the user is clearly interacting);
       // resuming restarts the hide countdown.
@@ -110,6 +117,7 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
 
   @override
   void dispose() {
+    _handler.queueEnded.removeListener(_onQueueEnded);
     // Only clear our own registration — a newer video page may already have
     // replaced it.
     if (TvInputCommands.videoControlsInterceptor == _gamepadIntercept) {
@@ -131,7 +139,17 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
   }
 
   bool get _mayHide =>
-      _player.state.playing && !_menuOpen && !_seekDragging;
+      _player.state.playing && !_menuOpen && !_seekDragging && !_ended;
+
+  void _onQueueEnded() {
+    if (!mounted) return;
+    if (_ended) {
+      _hideTimer?.cancel();
+      _show();
+    } else {
+      setState(() {});
+    }
+  }
 
   void _hide() {
     setState(() => _visible = false);
@@ -457,6 +475,9 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
         // On top of everything: its retry button must win over the centre
         // transport and the gesture layer.
         const VideoLoadFailedPanel(),
+        // The queue played out: the end screen covers the dead surface and
+        // the transport; only the top bar's scrim shows through its sides.
+        const VideoEndedOverlay(),
       ],
     );
 
@@ -500,7 +521,7 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
         child: Focus(
           focusNode: _tvRootNode,
           onKeyEvent: _onTvKeyEvent,
-          descendantsAreFocusable: _visible,
+          descendantsAreFocusable: _visible || _ended,
           child: result,
         ),
       );

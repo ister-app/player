@@ -305,6 +305,35 @@ class AppLocalizationsNl extends AppLocalizations {
   String get nextEpisode => 'Volgende aflevering';
 
   @override
+  String get queueEndedTitle => 'Afgelopen';
+
+  @override
+  String get watchAgain => 'Opnieuw kijken';
+
+  @override
+  String get playAgain => 'Opnieuw afspelen';
+
+  @override
+  String get backToShow => 'Terug naar de serie';
+
+  @override
+  String get backToLibrary => 'Terug naar de bibliotheek';
+
+  @override
+  String get youMightAlsoLike => 'Misschien ook iets voor jou';
+
+  @override
+  String moreFromArtist(String artist) {
+    return 'Meer van $artist';
+  }
+
+  @override
+  String get nextInSeries => 'Volgende in de reeks';
+
+  @override
+  String get nextUnplayedEpisode => 'Volgende onbeluisterde aflevering';
+
+  @override
   String get switchServer => 'Wissel van server';
 
   @override

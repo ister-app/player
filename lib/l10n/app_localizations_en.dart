@@ -303,6 +303,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nextEpisode => 'Next episode';
 
   @override
+  String get queueEndedTitle => 'Finished';
+
+  @override
+  String get watchAgain => 'Watch again';
+
+  @override
+  String get playAgain => 'Play again';
+
+  @override
+  String get backToShow => 'Back to the show';
+
+  @override
+  String get backToLibrary => 'Back to the library';
+
+  @override
+  String get youMightAlsoLike => 'You might also like';
+
+  @override
+  String moreFromArtist(String artist) {
+    return 'More from $artist';
+  }
+
+  @override
+  String get nextInSeries => 'Next in the series';
+
+  @override
+  String get nextUnplayedEpisode => 'Next unplayed episode';
+
+  @override
   String get switchServer => 'Switch server';
 
   @override

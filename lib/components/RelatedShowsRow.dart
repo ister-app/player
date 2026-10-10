@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/relatedShows.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
+import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MetadataUtil.dart';
@@ -33,8 +34,10 @@ const int kRelatedPlaceholderCount = 6;
 const int kRelatedShowsPageLimit = 60;
 
 /// The section header above every related-shows strip.
-Widget _relatedHeader(BuildContext context, {VoidCallback? onTap}) => RowHeader(
-  label: AppLocalizations.of(context)!.relatedShows,
+Widget _relatedHeader(BuildContext context,
+        {VoidCallback? onTap, String? label}) =>
+    RowHeader(
+  label: label ?? AppLocalizations.of(context)!.relatedShows,
   style: Theme.of(context).textTheme.titleMedium,
   padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
   trailingColon: false,
@@ -117,11 +120,24 @@ class RelatedShowsRow extends StatelessWidget {
     required this.showId,
     this.limit = 12,
     this.scrollDirection = Axis.horizontal,
+    this.header,
+    this.onShowTap,
   });
 
   final String serverName;
   final String showId;
   final int limit;
+
+  /// Replaces the "Related shows" header text (the video end screen says
+  /// "You might also like"). With a custom header the header is not a link
+  /// to the full grid: that page lives on the server shell's router, which
+  /// the surfaces using this are not on.
+  final String? header;
+
+  /// What a tapped tile does instead of pushing the show's overview on the
+  /// current router — for hosts on the root navigator (fullscreen video),
+  /// where that push would land on the wrong router.
+  final void Function(String showId)? onShowTap;
 
   /// [Axis.horizontal] is the strip with its tappable header;
   /// [Axis.vertical] is the full grid ([RelatedShowsPage]'s body, headerless —
@@ -130,6 +146,18 @@ class RelatedShowsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The page routes sit under the server shell's GraphQLProvider; the
+    // fullscreen video route does not — bring the server's client along.
+    if (context.findAncestorWidgetOfExactType<GraphQLProvider>() == null) {
+      return GraphQLProvider(
+        client: ClientManager.getClientForUrl(serverName),
+        child: Builder(builder: _build),
+      );
+    }
+    return _build(context);
+  }
+
+  Widget _build(BuildContext context) {
     return Query(
       options: QueryOptions(
         document: documentNodeQueryrelatedShows,
@@ -157,8 +185,8 @@ class RelatedShowsRow extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        Widget tile(int index) =>
-            _RelatedTile(serverName: serverName, show: shows[index]);
+        Widget tile(int index) => _RelatedTile(
+            serverName: serverName, show: shows[index], onTap: onShowTap);
 
         if (asGrid) {
           return LayoutBuilder(
@@ -178,8 +206,11 @@ class RelatedShowsRow extends StatelessWidget {
         return _relatedShell(context, [
           _relatedHeader(
             context,
-            onTap: () =>
-                AutoRouter.of(context).push(RelatedShowsRoute(showId: showId)),
+            label: header,
+            onTap: header != null
+                ? null
+                : () => AutoRouter.of(context)
+                    .push(RelatedShowsRoute(showId: showId)),
           ),
           SizedBox(
             height: _kRelatedRowHeight(context),
@@ -222,10 +253,12 @@ class _RelatedShowsGridSkeleton extends StatelessWidget {
 
 /// One related show, in the strip as well as in the grid.
 class _RelatedTile extends StatelessWidget {
-  const _RelatedTile({required this.serverName, required this.show});
+  const _RelatedTile(
+      {required this.serverName, required this.show, this.onTap});
 
   final String serverName;
   final Query$relatedShows$showById$related show;
+  final void Function(String showId)? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -240,8 +273,14 @@ class _RelatedTile extends StatelessWidget {
       ),
       blurHash: image?.blurHash,
       placeholderIcon: Icons.tv,
-      onTap: () =>
-          AutoRouter.of(context).push(ShowOverviewRoute(showId: show.id)),
+      onTap: () {
+        final onTap = this.onTap;
+        if (onTap != null) {
+          onTap(show.id);
+        } else {
+          AutoRouter.of(context).push(ShowOverviewRoute(showId: show.id));
+        }
+      },
     );
   }
 }

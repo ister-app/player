@@ -608,6 +608,60 @@ abstract class AppLocalizations {
   /// **'Next episode'**
   String get nextEpisode;
 
+  /// Heading of the ended state shown when a play queue has played out
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get queueEndedTitle;
+
+  /// Button on the video ended state: replay the episode/movie from the start
+  ///
+  /// In en, this message translates to:
+  /// **'Watch again'**
+  String get watchAgain;
+
+  /// Button on the audio ended state: replay the album/book/podcast queue from the start
+  ///
+  /// In en, this message translates to:
+  /// **'Play again'**
+  String get playAgain;
+
+  /// Button on the video ended state of an episode: leave the ended state, the page shows its cover again
+  ///
+  /// In en, this message translates to:
+  /// **'Back to the show'**
+  String get backToShow;
+
+  /// Button on the video ended state of a movie: leave the ended state, the page shows its cover again
+  ///
+  /// In en, this message translates to:
+  /// **'Back to the library'**
+  String get backToLibrary;
+
+  /// Header above the suggestions on the ended state
+  ///
+  /// In en, this message translates to:
+  /// **'You might also like'**
+  String get youMightAlsoLike;
+
+  /// Header above other albums by the artist whose album just finished
+  ///
+  /// In en, this message translates to:
+  /// **'More from {artist}'**
+  String moreFromArtist(String artist);
+
+  /// Header above the next book of the series the finished audiobook belongs to
+  ///
+  /// In en, this message translates to:
+  /// **'Next in the series'**
+  String get nextInSeries;
+
+  /// Header above the next unplayed episode of the podcast that just finished
+  ///
+  /// In en, this message translates to:
+  /// **'Next unplayed episode'**
+  String get nextUnplayedEpisode;
+
   /// Menu item to navigate back to the server list
   ///
   /// In en, this message translates to:

@@ -8,6 +8,7 @@ import '../utils/OrientationService.dart';
 import '../utils/PlatformService.dart';
 import 'TvFocusable.dart';
 import 'VideoCoverView.dart';
+import 'video_controls/VideoEndedOverlay.dart';
 import 'WatchTogetherButton.dart';
 import 'video_controls/IsterVideoControls.dart';
 
@@ -223,6 +224,9 @@ class _IsterVideoControlsState extends State<_IsterVideoControls> {
             // The failure, without its retry: the whole surface is the tap
             // target here, and fullscreen carries the button.
             const VideoLoadFailedPanel(showRetry: false),
+            // The queue played out: the title only — the tap (play) replays
+            // and re-enters fullscreen, where the buttons are.
+            const VideoEndedOverlay(showActions: false),
             // In the corner, clear of the loading status in the centre.
             Align(
               alignment: Alignment.bottomRight,

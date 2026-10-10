@@ -368,6 +368,47 @@
   "@nextEpisode": {
     "description": "Overlay button shown during the closing credits"
   },
+  "queueEndedTitle": "Finished",
+  "@queueEndedTitle": {
+    "description": "Heading of the ended state shown when a play queue has played out"
+  },
+  "watchAgain": "Watch again",
+  "@watchAgain": {
+    "description": "Button on the video ended state: replay the episode/movie from the start"
+  },
+  "playAgain": "Play again",
+  "@playAgain": {
+    "description": "Button on the audio ended state: replay the album/book/podcast queue from the start"
+  },
+  "backToShow": "Back to the show",
+  "@backToShow": {
+    "description": "Button on the video ended state of an episode: leave the ended state, the page shows its cover again"
+  },
+  "backToLibrary": "Back to the library",
+  "@backToLibrary": {
+    "description": "Button on the video ended state of a movie: leave the ended state, the page shows its cover again"
+  },
+  "youMightAlsoLike": "You might also like",
+  "@youMightAlsoLike": {
+    "description": "Header above the suggestions on the ended state"
+  },
+  "moreFromArtist": "More from {artist}",
+  "@moreFromArtist": {
+    "description": "Header above other albums by the artist whose album just finished",
+    "placeholders": {
+      "artist": {
+        "type": "String"
+      }
+    }
+  },
+  "nextInSeries": "Next in the series",
+  "@nextInSeries": {
+    "description": "Header above the next book of the series the finished audiobook belongs to"
+  },
+  "nextUnplayedEpisode": "Next unplayed episode",
+  "@nextUnplayedEpisode": {
+    "description": "Header above the next unplayed episode of the podcast that just finished"
+  },
   "switchServer": "Switch server",
   "@switchServer": {
     "description": "Menu item to navigate back to the server list"
