@@ -14,6 +14,7 @@ import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/routes/AppRouter.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/ClientManager.dart';
+import 'package:player/components/QueueEndSuggestionsRow.dart';
 import 'package:player/components/QueueEndedBanner.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 import 'package:player/utils/QueueEnd.dart';
@@ -150,6 +151,7 @@ class _LocalPlayerController extends QueuePlayerViewController<MediaItem> {
       info: ended,
       onPlayAgain: () => unawaited(_handler.replayEndedQueue()),
       onDismiss: _handler.dismissQueueEnd,
+      suggestions: QueueEndSuggestionsRow(info: ended),
     );
   }
 
