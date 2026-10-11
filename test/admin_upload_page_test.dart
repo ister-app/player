@@ -88,6 +88,8 @@ void main() {
           200);
     }
     if (path.endsWith('/chunk')) {
+      // a chunk takes time: the page gets frames in between, so the progress detail is visible
+      await Future<void>.delayed(const Duration(milliseconds: 120));
       chunkBytes += request.bodyBytes.length;
       return http.Response(json({'fileId': 'f1', 'receivedBytes': chunkBytes, 'status': 'UPLOADING'}), 200);
     }
@@ -147,9 +149,16 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('upload-start')));
     // the transfer runs on its own futures; pump until the page reports the end of it
     final finished = find.text('Upload finished. The files are being added to the library.');
+    final details = <String>{};
     for (var i = 0; i < 100 && finished.evaluate().isEmpty; i++) {
       await tester.pump(const Duration(milliseconds: 50));
+      final detail = find.byKey(const ValueKey('upload-progress-detail'));
+      if (detail.evaluate().isNotEmpty) details.add(tester.widget<Text>(detail).data!);
     }
+    // percentage, file count and the time-left estimate (or its placeholder) while it runs
+    expect(details, isNotEmpty);
+    expect(details, everyElement(matches(RegExp(r'^\d+% · \d of 1 files done · (estimating time left…|.*left.*)'))));
+    expect(details.any((d) => d.startsWith('80%')), isTrue, reason: 'the first 16 of 20 bytes landed: $details');
 
     expect(chunkBytes, 20);
     expect(calls.where((c) => c.endsWith('/chunk')).length, 2, reason: '20 bytes in chunks of 16');

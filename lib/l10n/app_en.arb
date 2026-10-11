@@ -2850,6 +2850,49 @@
       }
     }
   },
+  "uploadSpeed": "{speed}/s",
+  "@uploadSpeed": {
+    "description": "Admin media upload page: current upload speed, e.g. '74 MB/s'",
+    "placeholders": {"speed": {"type": "String"}}
+  },
+  "uploadTimeLeft": "about {time} left",
+  "@uploadTimeLeft": {
+    "description": "Admin media upload page: estimated time left, e.g. 'about 4 min left'",
+    "placeholders": {"time": {"type": "String"}}
+  },
+  "uploadTimeLeftUnknown": "estimating time left…",
+  "@uploadTimeLeftUnknown": {
+    "description": "Admin media upload page: shown until the speed is known"
+  },
+  "uploadElapsed": "{time} so far",
+  "@uploadElapsed": {
+    "description": "Admin media upload page: time spent uploading, pauses excluded",
+    "placeholders": {"time": {"type": "String"}}
+  },
+  "uploadFilesDone": "{done} of {total} files done",
+  "@uploadFilesDone": {
+    "description": "Admin media upload page",
+    "placeholders": {"done": {"type": "int"}, "total": {"type": "int"}}
+  },
+  "uploadPaused": "Paused",
+  "@uploadPaused": {
+    "description": "Admin media upload page: the upload is paused"
+  },
+  "durationHoursMinutes": "{hours} h {minutes} min",
+  "@durationHoursMinutes": {
+    "description": "Compact duration, e.g. '2 h 5 min'",
+    "placeholders": {"hours": {"type": "int"}, "minutes": {"type": "int"}}
+  },
+  "durationMinutes": "{minutes} min",
+  "@durationMinutes": {
+    "description": "Compact duration, e.g. '4 min'",
+    "placeholders": {"minutes": {"type": "int"}}
+  },
+  "durationSeconds": "{seconds} s",
+  "@durationSeconds": {
+    "description": "Compact duration, e.g. '40 s'",
+    "placeholders": {"seconds": {"type": "int"}}
+  },
   "uploadResume": "Continue",
   "@uploadResume": {
     "description": "Admin media upload page"

@@ -4490,6 +4490,60 @@ abstract class AppLocalizations {
   /// **'{sent} of {total}'**
   String uploadProgress(String sent, String total);
 
+  /// Admin media upload page: current upload speed, e.g. '74 MB/s'
+  ///
+  /// In en, this message translates to:
+  /// **'{speed}/s'**
+  String uploadSpeed(String speed);
+
+  /// Admin media upload page: estimated time left, e.g. 'about 4 min left'
+  ///
+  /// In en, this message translates to:
+  /// **'about {time} left'**
+  String uploadTimeLeft(String time);
+
+  /// Admin media upload page: shown until the speed is known
+  ///
+  /// In en, this message translates to:
+  /// **'estimating time left…'**
+  String get uploadTimeLeftUnknown;
+
+  /// Admin media upload page: time spent uploading, pauses excluded
+  ///
+  /// In en, this message translates to:
+  /// **'{time} so far'**
+  String uploadElapsed(String time);
+
+  /// Admin media upload page
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} files done'**
+  String uploadFilesDone(int done, int total);
+
+  /// Admin media upload page: the upload is paused
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get uploadPaused;
+
+  /// Compact duration, e.g. '2 h 5 min'
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} h {minutes} min'**
+  String durationHoursMinutes(int hours, int minutes);
+
+  /// Compact duration, e.g. '4 min'
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String durationMinutes(int minutes);
+
+  /// Compact duration, e.g. '40 s'
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds} s'**
+  String durationSeconds(int seconds);
+
   /// Admin media upload page
   ///
   /// In en, this message translates to:

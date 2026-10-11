@@ -13,6 +13,7 @@ import '../utils/WellKnownService.dart';
 import '../utils/upload/UploadApi.dart';
 import '../utils/upload/UploadModels.dart';
 import '../utils/upload/UploadRunner.dart';
+import '../utils/upload/UploadThroughput.dart';
 import '../utils/upload/UploadSource.dart';
 import 'DownloadsPage.dart' show formatBytes;
 
@@ -66,6 +67,11 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
   UploadRunner? _runner;
   bool _starting = false;
 
+  /// Speed and time left of [_runner]; ticked once a second while it runs so a
+  /// stall shows as a falling speed instead of a frozen number.
+  UploadThroughput? _throughput;
+  Timer? _ticker;
+
   /// Held while bytes are moving: a phone that dims and suspends the app stops
   /// the upload. Nothing is lost then — it resumes — but it should not happen
   /// merely because nobody touched the screen.
@@ -85,6 +91,7 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
   @override
   void dispose() {
     _previewDebounce?.cancel();
+    _ticker?.cancel();
     _runner?.removeListener(_onRunnerChanged);
     _runner?.pause();
     _wakelock?.release();
@@ -244,9 +251,17 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
     )..addListener(_onRunnerChanged);
     setState(() {
       _runner = runner;
+      _throughput = UploadThroughput();
       _unfinished = null;
     });
     runner.start();
+  }
+
+  void _tick() {
+    final runner = _runner;
+    if (!mounted || runner == null) return;
+    _throughput?.sample(runner.sentBytes, DateTime.now());
+    setState(() {});
   }
 
   void _onRunnerChanged() {
@@ -255,9 +270,14 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
     if (runner != null && runner.isFinished && runner.failedCount == 0) _forget();
     if (runner != null && runner.isRunning) {
       _wakelock ??= ScreenWakelock.acquire();
+      _throughput?.sample(runner.sentBytes, DateTime.now());
+      _ticker ??= Timer.periodic(const Duration(seconds: 1), (_) => _tick());
     } else {
       _wakelock?.release();
       _wakelock = null;
+      _throughput?.pause(DateTime.now());
+      _ticker?.cancel();
+      _ticker = null;
     }
     setState(() {});
   }
@@ -308,8 +328,11 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
 
   void _reset() {
     _runner?.removeListener(_onRunnerChanged);
+    _ticker?.cancel();
+    _ticker = null;
     setState(() {
       _runner = null;
+      _throughput = null;
       _folder = null;
       _preview = null;
       _rootName.clear();
@@ -572,6 +595,14 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
                 key: const ValueKey('upload-progress-label'),
                 style: theme.textTheme.titleMedium,
               ),
+              if (!finished) ...[
+                const SizedBox(height: 4),
+                Text(
+                  _progressDetail(loc, runner),
+                  key: const ValueKey('upload-progress-detail'),
+                  style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+              ],
               const SizedBox(height: 12),
               LinearProgressIndicator(value: total == 0 ? 1 : runner.sentBytes / total),
               const SizedBox(height: 12),
@@ -601,11 +632,43 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
     );
   }
 
+  /// "31% · 3 of 11 files done · 74 MB/s · about 4 min left · 2 min so far",
+  /// or the percentage and "Paused" while the runner is not moving.
+  String _progressDetail(AppLocalizations loc, UploadRunner runner) {
+    final total = runner.totalBytes;
+    final sent = runner.sentBytes;
+    final done = runner.items.where((i) => !i.isOpen && i.phase != UploadItemPhase.completing).length;
+    final parts = <String>[
+      '${total == 0 ? 100 : (sent * 100 ~/ total)}%',
+      loc.uploadFilesDone(done, runner.items.length),
+    ];
+    final throughput = _throughput;
+    if (!runner.isRunning) {
+      parts.add(loc.uploadPaused);
+    } else if (throughput != null) {
+      final now = DateTime.now();
+      final speed = throughput.bytesPerSecond;
+      final left = throughput.remaining(total, sent);
+      if (speed != null) parts.add(loc.uploadSpeed(formatBytes(speed.round())));
+      parts.add(left == null ? loc.uploadTimeLeftUnknown : loc.uploadTimeLeft(_formatDuration(loc, left)));
+      final elapsed = throughput.elapsed(now);
+      if (elapsed >= const Duration(seconds: 10)) parts.add(loc.uploadElapsed(_formatDuration(loc, elapsed)));
+    }
+    return parts.join(' · ');
+  }
+
+  static String _formatDuration(AppLocalizations loc, Duration d) {
+    if (d.inHours >= 1) return loc.durationHoursMinutes(d.inHours, d.inMinutes % 60);
+    if (d.inMinutes >= 1) return loc.durationMinutes(d.inMinutes);
+    return loc.durationSeconds(d.inSeconds);
+  }
+
   Widget _itemTile(AppLocalizations loc, ThemeData theme, UploadItem item) {
     final size = item.state.size;
     final subtitle = switch (item.phase) {
       UploadItemPhase.queued => loc.uploadPhaseQueued,
-      UploadItemPhase.uploading => loc.uploadProgress(formatBytes(item.sentBytes), formatBytes(size)),
+      UploadItemPhase.uploading =>
+        '${loc.uploadProgress(formatBytes(item.sentBytes), formatBytes(size))} · ${size == 0 ? 100 : item.sentBytes * 100 ~/ size}%',
       UploadItemPhase.completing => loc.uploadPhaseCompleting,
       UploadItemPhase.done => loc.uploadPhaseDone,
       UploadItemPhase.skipped => loc.uploadPhaseSkipped,

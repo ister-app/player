@@ -2686,6 +2686,47 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
+  String uploadSpeed(String speed) {
+    return '$speed/s';
+  }
+
+  @override
+  String uploadTimeLeft(String time) {
+    return 'nog ongeveer $time';
+  }
+
+  @override
+  String get uploadTimeLeftUnknown => 'resterende tijd bepalen…';
+
+  @override
+  String uploadElapsed(String time) {
+    return '$time bezig';
+  }
+
+  @override
+  String uploadFilesDone(int done, int total) {
+    return '$done van $total bestanden klaar';
+  }
+
+  @override
+  String get uploadPaused => 'Gepauzeerd';
+
+  @override
+  String durationHoursMinutes(int hours, int minutes) {
+    return '$hours u $minutes min';
+  }
+
+  @override
+  String durationMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String durationSeconds(int seconds) {
+    return '$seconds s';
+  }
+
+  @override
   String get uploadResume => 'Doorgaan';
 
   @override
