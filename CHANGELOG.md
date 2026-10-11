@@ -1,5 +1,42 @@
 # Changelog
 
+## player v2.14.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.14.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(upload): speed, time left and elapsed on the upload page ([`010aab6`](https://github.com/ister-app/player/commit/010aab6))
+- feat(music): suggest what to play next when an album, audiobook or podcast ends ([`f286a3c`](https://github.com/ister-app/player/commit/f286a3c))
+- feat(music): ended state in the player and the mini player ([`fde9db3`](https://github.com/ister-app/player/commit/fde9db3))
+- feat(video): end screen with watch again and related shows ([`276613a`](https://github.com/ister-app/player/commit/276613a))
+- feat(player): keep a queue-ended snapshot instead of tearing the surfaces down ([`0ed0acc`](https://github.com/ister-app/player/commit/0ed0acc))
+
+### Fixes
+
+- fix(auth): stop getToken hanging forever in the minute before token expiry ([`56198b8`](https://github.com/ister-app/player/commit/56198b8))
+- fix(player): let play with nothing loaded restore the last queue after a stop ([`615f17d`](https://github.com/ister-app/player/commit/615f17d))
+- fix(player): reload a growing queue before calling its last item the end ([`f2adbb7`](https://github.com/ister-app/player/commit/f2adbb7))
+
+### Other
+
+- refactor(player): share the STOP publish between stopPlayback and the queue end ([`eb37642`](https://github.com/ister-app/player/commit/eb37642))
+- build: refresh dependencies (flutter 3.47.7, oidc 5, dbus 0.8, fork re-pins) ([`46bf375`](https://github.com/ister-app/player/commit/46bf375))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.14.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.13.0...v2.14.0
+
 ## player v2.13.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
