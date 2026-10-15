@@ -46,7 +46,7 @@ class AutoNextRunResult {
 /// only ever removes what it added itself — a manually downloaded episode is
 /// never deleted by this.
 class AutoNextService {
-  AutoNextService({DownloadService? downloads}) : _downloads = downloads;
+  AutoNextService({this._downloads});
 
   static AutoNextService instance = AutoNextService();
 

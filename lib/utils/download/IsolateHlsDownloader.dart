@@ -4,7 +4,6 @@ import 'dart:isolate';
 
 import 'package:player/graphql/fragmentMediafiles.graphql.dart';
 import 'package:player/utils/StreamTokenService.dart';
-import 'package:player/utils/download/DownloadHttp.dart';
 import 'package:player/utils/download/DownloadModels.dart';
 import 'package:player/utils/download/HlsDownloader.dart';
 

@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 
 // The File in flutter_cache_manager's interface is package:file's, not dart:io's.
 // ignore: depend_on_referenced_packages

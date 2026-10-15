@@ -16,17 +16,13 @@ import 'package:player/utils/LoggerService.dart';
 /// server that rejects the operation outright isn't hammered.
 class ResilientSubscription {
   ResilientSubscription({
-    required GraphQLClient client,
-    required DocumentNode document,
-    Map<String, dynamic>? variables,
-    required void Function(QueryResult result) onData,
-    required void Function(Object error) onFailure,
+    required this._client,
+    required this._document,
+    this._variables,
+    required this._onData,
+    required this._onFailure,
     this.retryDelay = const Duration(seconds: 5),
-  })  : _client = client,
-        _document = document,
-        _variables = variables,
-        _onData = onData,
-        _onFailure = onFailure {
+  }) {
     _connect();
   }
 

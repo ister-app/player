@@ -350,7 +350,7 @@ class _ListenTogetherSheetState extends State<_ListenTogetherSheet> {
     final loc = AppLocalizations.of(context)!;
     return ValueListenableBuilder<bool>(
       valueListenable: _handler.followModeNotifier,
-      builder: (context, _, __) => StreamBuilder<Object?>(
+      builder: (context, _, _) => StreamBuilder<Object?>(
         // The wording (watch/listen) follows the live queue's current item, so
         // the sheet rebuilds when the session switches between music and video.
         stream: _handler.mediaItem,

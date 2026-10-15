@@ -92,26 +92,31 @@ class _DownloadSettingsPageState extends State<DownloadSettingsPage> {
                       ),
                       // The choices are sentences, so they get their own rows
                       // instead of a trailing dropdown.
-                      for (final entry in <DownloadNetworkPolicy, String>{
-                        DownloadNetworkPolicy.any: loc.downloadNetworkPolicyAny,
-                        DownloadNetworkPolicy.automaticUnmeteredOnly:
-                            loc.downloadNetworkPolicyAutomatic,
-                        DownloadNetworkPolicy.allUnmeteredOnly:
-                            loc.downloadNetworkPolicyAll,
-                      }.entries)
-                        RadioListTile<DownloadNetworkPolicy>(
-                          value: entry.key,
-                          groupValue: _networkPolicy,
-                          contentPadding:
-                              const EdgeInsets.only(left: 56, right: 16),
-                          title: Text(entry.value),
-                          onChanged: (v) {
-                            if (v == null) return;
-                            DownloadPreferences.setNetworkPolicy(v);
-                            setState(() => _networkPolicy = v);
-                            DownloadService.instance.pump();
-                          },
-                        ),
+                      RadioGroup<DownloadNetworkPolicy>(
+                        groupValue: _networkPolicy,
+                        onChanged: (v) {
+                          if (v == null) return;
+                          DownloadPreferences.setNetworkPolicy(v);
+                          setState(() => _networkPolicy = v);
+                          DownloadService.instance.pump();
+                        },
+                        child: Column(children: [
+                          for (final entry in <DownloadNetworkPolicy, String>{
+                            DownloadNetworkPolicy.any:
+                                loc.downloadNetworkPolicyAny,
+                            DownloadNetworkPolicy.automaticUnmeteredOnly:
+                                loc.downloadNetworkPolicyAutomatic,
+                            DownloadNetworkPolicy.allUnmeteredOnly:
+                                loc.downloadNetworkPolicyAll,
+                          }.entries)
+                            RadioListTile<DownloadNetworkPolicy>(
+                              value: entry.key,
+                              contentPadding:
+                                  const EdgeInsets.only(left: 56, right: 16),
+                              title: Text(entry.value),
+                            ),
+                        ]),
+                      ),
                       const Divider(height: 1, indent: 56),
                       ListTile(
                         leading: const Icon(Icons.high_quality_outlined),

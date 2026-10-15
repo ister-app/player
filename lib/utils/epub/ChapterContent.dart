@@ -32,8 +32,7 @@ class ChapterBlock {
 }
 
 class ChapterContent {
-  ChapterContent({required this.blocks, required Map<String, int> idToBlock})
-      : _idToBlock = idToBlock;
+  ChapterContent({required this.blocks, required this._idToBlock});
 
   final List<ChapterBlock> blocks;
   final Map<String, int> _idToBlock;

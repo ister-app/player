@@ -457,8 +457,11 @@ class _PlayerViewState extends State<PlayerView>
       physics: const NeverScrollableScrollPhysics(),
       buildDefaultDragHandles: false,
       itemCount: upNext.length,
-      onReorder: (oldIndex, newIndex) =>
-          widget.controller.moveUpNext(oldIndex, newIndex),
+      // The controller keeps the classic onReorder contract (newIndex not
+      // yet adjusted for the removal), which its tests pin; undo the
+      // adjustment onReorderItem already applied.
+      onReorderItem: (from, to) =>
+          widget.controller.moveUpNext(from, to > from ? to + 1 : to),
       itemBuilder: (context, i) => _dismissible(
         upNext[i],
         _QueueItem(
@@ -757,7 +760,7 @@ class _PlayerViewState extends State<PlayerView>
             child: Column(
               children: [
                 _buildHeader(),
-                if (banner != null) banner,
+                ?banner,
                 // The cover takes whatever is left once the text, seek bar,
                 // transport and bottom bar have claimed their height — sizing
                 // it from a fixed reserve instead pushed the bottom bar off

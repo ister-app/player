@@ -33,11 +33,11 @@ class DownloadWakelock {
     if (!supported || _controller != null) return;
     _controller = DownloadForegroundController(
       service: service ?? DownloadService.instance,
-      start: (_, __) async {
+      start: (_, _) async {
         _token ??= ScreenWakelock.acquire();
         return true;
       },
-      update: (_, __) async {},
+      update: (_, _) async {},
       stop: () async {
         _token?.release();
         _token = null;

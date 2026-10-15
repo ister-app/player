@@ -11,10 +11,8 @@ import 'BitmapSubtitles.dart';
 /// files a download mirrored.
 class BitmapSubtitleLoader {
   BitmapSubtitleLoader.remote(
-      {required String baseUrl, required String? Function() token, http.Client? client})
-      : _baseUrl = baseUrl,
-        _token = token,
-        _localDir = null,
+      {required String this._baseUrl, required String? Function() this._token, http.Client? client})
+      : _localDir = null,
         _client = client ?? http.Client();
 
   BitmapSubtitleLoader.local(String dir)

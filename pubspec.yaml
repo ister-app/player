@@ -60,7 +60,7 @@ dependencies:
   file_picker: ^13.0.0
   web: ^1.1.1 # folder picker of the admin upload on web (webkitdirectory)
   gamepads: ^0.1.11 # Native controller input for the desktop TV mode
-
+  file: ^7.0.0 # NotificationArtCache writes through a FileSystem (MemoryFileSystem in tests)
 dependency_overrides:
   # wakelock_plus >=1.8.1 and connectivity_plus >=7.3.2 (via nm 0.6) moved to
   # dbus ^0.8.0; audio_service_mpris 1.0.0-beta.2 still declares ^0.7.12. dbus
@@ -125,8 +125,6 @@ dev_dependencies:
   # integration_test/support/harness.dart's hang watchdog reads the main
   # isolate's stack through the VM service when a test stops making progress.
   vm_service: ^15.0.0
-  # test/artwork_rebroadcast_test.dart serves artwork from a MemoryFileSystem.
-  file: ^7.0.0
   # Imported directly by tests (platform-interface fakes) and by
   # tool/bench_rebroadcast.dart; declared so the analyzer's
   # depend_on_referenced_packages stays quiet.

@@ -97,14 +97,13 @@ class DownloadService {
     EpubDownloader? epubDownloader,
     ComicDownloader? comicDownloader,
     Future<bool> Function()? isUnmetered,
-    Stream<void>? connectivityChanges,
+    this._connectivityChanges,
     DateTime Function()? now,
   })  : store = store ?? DownloadStore(),
         downloader = downloader ?? IsolateHlsDownloader(),
         epubDownloader = epubDownloader ?? EpubDownloader(),
         comicDownloader = comicDownloader ?? ComicDownloader(),
         _isUnmetered = isUnmetered ?? NetworkPolicy.isUnmetered,
-        _connectivityChanges = connectivityChanges,
         _now = now ?? DateTime.now;
 
   static DownloadService _instance = DownloadService();

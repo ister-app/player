@@ -51,7 +51,7 @@ class ShowEpisodePage extends StatefulWidget {
   final String? playQueueId;
 
   @override
-  _ShowEpisodePageState createState() => _ShowEpisodePageState();
+  State<ShowEpisodePage> createState() => _ShowEpisodePageState();
 }
 
 class _ShowEpisodePageState extends State<ShowEpisodePage> {

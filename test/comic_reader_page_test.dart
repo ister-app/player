@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -178,7 +177,7 @@ void main() {
   setUp(() {
     SharedPreferencesAsyncPlatform.instance =
         InMemorySharedPreferencesAsync.empty();
-    CbzPageSource.providerFactory = (_, __) => MemoryImage(_pixel);
+    CbzPageSource.providerFactory = (_, _) => MemoryImage(_pixel);
   });
 
   tearDown(() {
@@ -187,7 +186,7 @@ void main() {
 
   testWidgets('a page that has not decoded shows a skeleton, not black',
       (tester) async {
-    CbzPageSource.providerFactory = (_, __) => _NeverDecodesImage();
+    CbzPageSource.providerFactory = (_, _) => _NeverDecodesImage();
     await http.runWithClient(() async {
       await tester.pumpWidget(_app());
       // Not pumpAndSettle: the skeleton shimmer never settles.
@@ -532,7 +531,7 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
     await ComicPreferences.setRightToLeft('series-1', false);
-    CbzPageSource.providerFactory = (_, __) => _NeverDecodesImage();
+    CbzPageSource.providerFactory = (_, _) => _NeverDecodesImage();
 
     await http.runWithClient(() async {
       await tester.pumpWidget(_app());

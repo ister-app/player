@@ -123,9 +123,7 @@ MusicCachePlan planMusicCache({
 /// planner after plays, on settings changes, at start and periodically, and
 /// turns the plan into removals and (unpinned) download requests.
 class MusicCacheService {
-  MusicCacheService({DownloadService? downloads, PlayHistoryStore? history})
-      : _downloads = downloads,
-        _history = history;
+  MusicCacheService({this._downloads, this._history});
 
   static MusicCacheService instance = MusicCacheService();
 
@@ -177,7 +175,7 @@ class MusicCacheService {
         maxTracks: settings.maxTracks,
         maxBytes: settings.maxBytes,
         protectedMediaFileIds: {
-          if (playingMediaFileId != null) playingMediaFileId,
+          ?playingMediaFileId,
         },
       );
       for (final e in plan.toEvict) {

@@ -21,7 +21,7 @@ class OfflineDownloadsButton extends StatelessWidget {
       future: service.ensureStarted().then((_) => service.store.load(serverName)),
       builder: (context, _) => ValueListenableBuilder<int>(
         valueListenable: service.revision,
-        builder: (context, __, ___) {
+        builder: (context, _, _) {
           final any = service.entriesFor(serverName).any((e) => e.isComplete);
           if (!any) return const SizedBox.shrink();
           return OutlinedButton.icon(

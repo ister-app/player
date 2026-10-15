@@ -149,19 +149,21 @@ class _PlaylistCreateSheetState extends State<_PlaylistCreateSheet> {
             ),
             if (_smartKind != null) ...[
               const SizedBox(height: 8),
-              RadioListTile<bool>(
-                value: false,
+              RadioGroup<bool>(
                 groupValue: _smart,
                 onChanged: (value) => setState(() => _smart = value!),
-                title: Text(loc.manualPlaylist),
-                subtitle: Text(loc.manualPlaylistDescription),
-              ),
-              RadioListTile<bool>(
-                value: true,
-                groupValue: _smart,
-                onChanged: (value) => setState(() => _smart = value!),
-                title: Text(loc.smartPlaylist),
-                subtitle: Text(loc.smartPlaylistDescription),
+                child: Column(children: [
+                  RadioListTile<bool>(
+                    value: false,
+                    title: Text(loc.manualPlaylist),
+                    subtitle: Text(loc.manualPlaylistDescription),
+                  ),
+                  RadioListTile<bool>(
+                    value: true,
+                    title: Text(loc.smartPlaylist),
+                    subtitle: Text(loc.smartPlaylistDescription),
+                  ),
+                ]),
               ),
             ],
             const SizedBox(height: 8),

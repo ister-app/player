@@ -266,8 +266,9 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                                   serverName: widget.serverName,
                                   libraryId: library.id,
                                   onRefetch: (r) {
-                                    if (r != null)
+                                    if (r != null) {
                                       _refetchSlides[library.id] = r;
+                                    }
                                   },
                                 )
                               : library.type == Enum$LibraryType.MUSIC
@@ -275,8 +276,9 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                                   serverName: widget.serverName,
                                   libraryId: library.id,
                                   onRefetch: (r) {
-                                    if (r != null)
+                                    if (r != null) {
                                       _refetchSlides[library.id] = r;
+                                    }
                                   },
                                 )
                               : library.type == Enum$LibraryType.BOOK
@@ -284,8 +286,9 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                                   serverName: widget.serverName,
                                   libraryId: library.id,
                                   onRefetch: (r) {
-                                    if (r != null)
+                                    if (r != null) {
                                       _refetchSlides[library.id] = r;
+                                    }
                                   },
                                 )
                               : library.type == Enum$LibraryType.PODCAST
@@ -293,8 +296,9 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                                   serverName: widget.serverName,
                                   libraryId: library.id,
                                   onRefetch: (r) {
-                                    if (r != null)
+                                    if (r != null) {
                                       _refetchSlides[library.id] = r;
+                                    }
                                   },
                                 )
                               : library.type == Enum$LibraryType.COMIC
@@ -302,16 +306,18 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                                   serverName: widget.serverName,
                                   libraryId: library.id,
                                   onRefetch: (r) {
-                                    if (r != null)
+                                    if (r != null) {
                                       _refetchSlides[library.id] = r;
+                                    }
                                   },
                                 )
                               : MovieSlide(
                                   serverName: widget.serverName,
                                   libraryId: library.id,
                                   onRefetch: (r) {
-                                    if (r != null)
+                                    if (r != null) {
                                       _refetchSlides[library.id] = r;
+                                    }
                                   },
                                 ),
                         ),

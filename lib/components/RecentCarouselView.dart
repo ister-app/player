@@ -44,7 +44,7 @@ class RecentCarouselView extends StatefulWidget {
   });
 
   @override
-  _RecentCarouselViewState createState() => _RecentCarouselViewState();
+  State<RecentCarouselView> createState() => _RecentCarouselViewState();
 }
 
 class _RecentCarouselViewState extends State<RecentCarouselView> {

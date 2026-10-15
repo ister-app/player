@@ -70,7 +70,7 @@ class MoviePage extends StatefulWidget {
   static const Key posterKey = Key('movie-page-poster');
 
   @override
-  _MoviePageState createState() => _MoviePageState();
+  State<MoviePage> createState() => _MoviePageState();
 }
 
 class _MoviePageState extends State<MoviePage> {

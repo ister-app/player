@@ -189,9 +189,10 @@ class _PodcastPageState extends State<PodcastPage> {
     if (podcast == null) return;
     // The State's own context, not the menu item's: that one is deactivated
     // the moment the menu closes, so the dialog would never open.
-    final n = await showDownloadNextDialog(context,
-        defaultCount:
-            await DownloadPreferences.getDefaultNextCount(widget.serverName));
+    final defaultCount =
+        await DownloadPreferences.getDefaultNextCount(widget.serverName);
+    if (!mounted) return;
+    final n = await showDownloadNextDialog(context, defaultCount: defaultCount);
     if (n == null || n <= 0 || !mounted) return;
     bool candidate(Fragment$fragmentPodcastEpisode e) =>
         e.downloaded &&
@@ -466,8 +467,8 @@ class _PodcastPageState extends State<PodcastPage> {
     final status = episode.watchStatus?.firstOrNull;
     final mutedColor = Theme.of(context).colorScheme.onSurfaceVariant;
     final subtitleParts = [
-      if (publishedAt != null) publishedAt,
-      if (durationText != null) durationText,
+      ?publishedAt,
+      ?durationText,
     ];
 
     return ListTile(

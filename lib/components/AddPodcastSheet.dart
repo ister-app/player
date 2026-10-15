@@ -154,7 +154,7 @@ class _AddPodcastSheetState extends State<_AddPodcastSheet> {
                               cacheWidth:
                                   (44 * MediaQuery.devicePixelRatioOf(context))
                                       .round(),
-                              errorBuilder: (_, __, ___) =>
+                              errorBuilder: (_, _, _) =>
                                   const Icon(Icons.podcasts)),
                         ),
                   title: Text(result.name ?? result.feedUrl),

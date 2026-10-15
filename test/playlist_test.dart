@@ -49,7 +49,7 @@ Map<String, dynamic> _playlist(
               'groups': <dynamic>[],
             }
           : null,
-      if (items != null) 'items': items,
+      'items': ?items,
     };
 
 Map<String, dynamic> _trackItem(String id, String title) => {

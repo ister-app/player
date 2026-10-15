@@ -269,7 +269,7 @@ class _SearchPageState extends State<SearchPage> {
         child: ListView.separated(
           padding: const EdgeInsets.symmetric(vertical: 8),
           itemCount: _results.length,
-          separatorBuilder: (_, __) =>
+          separatorBuilder: (_, _) =>
               const Divider(height: 1, indent: 16, endIndent: 16),
           itemBuilder: (context, index) =>
               _resultRow(context, _describe(context, _results[index]), tokens),

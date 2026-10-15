@@ -30,7 +30,7 @@ class BookProgressApi {
     }
     return Uri.parse('${apiBase(serverName)}$path').replace(queryParameters: {
       ...?query,
-      if (token != null) 'token': token,
+      'token': ?token,
     });
   }
 }

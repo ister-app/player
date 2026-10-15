@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart';

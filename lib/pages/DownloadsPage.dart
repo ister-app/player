@@ -158,7 +158,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
           ? const Center(child: CircularProgressIndicator())
           : ValueListenableBuilder<int>(
               valueListenable: service.revision,
-              builder: (context, _, __) {
+              builder: (context, _, _) {
                 final entries = service.entriesFor(widget.serverName);
                 if (entries.isEmpty) return _empty(context);
                 // Automatically cached music sits under one "Music cache"
@@ -365,7 +365,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
       if (resumable)
         loc.downloadResumeAt(
             DurationUtil.format(Duration(milliseconds: progress.positionMs))),
-      if (status != null) status,
+      ?status,
     ];
     return TvFocusable(
       onTap: e.isComplete
@@ -437,7 +437,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
       if (e.mediaOverlays) loc.readAloudEdition,
       if (e.pageCount != null && e.format != BookFormat.epub) '${e.pageCount} p.',
       if (e.bytes > 0) formatBytes(e.bytes),
-      if (status != null) status,
+      ?status,
     ];
     return TvFocusable(
       onTap: e.isComplete ? () => _read(context, e) : null,

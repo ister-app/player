@@ -64,7 +64,7 @@ class NetworkPolicy {
       } catch (_) {
         finish();
       }
-    }, (_, __) => finish());
+    }, (_, _) => finish());
     return done.future;
   }
 
@@ -86,7 +86,7 @@ class NetworkPolicy {
           sub = Connectivity()
               .onConnectivityChanged
               .listen((_) => controller.add(null), onError: (_) {});
-        }, (_, __) {});
+        }, (_, _) {});
       },
       onCancel: () async {
         await sub?.cancel();

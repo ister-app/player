@@ -35,7 +35,7 @@ class ServerNodeBody extends StatelessWidget {
     final loc = AppLocalizations.of(context)!;
     final facts = event?.nodeInfo;
     final groups = ServerActivityPresentation.groupActivity(
-        loc, [if (event != null) event!], transcodes);
+        loc, [?event], transcodes);
 
     return ListView(
       padding: const EdgeInsets.all(16.0),

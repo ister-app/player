@@ -117,8 +117,8 @@ class DownloadForegroundController {
       _pendingUpdate?.cancel();
       _pendingUpdate = null;
       _sendUpdate();
-    } else if (_pendingUpdate == null) {
-      _pendingUpdate = Timer(throttle - since, () {
+    } else {
+      _pendingUpdate ??= Timer(throttle - since, () {
         _pendingUpdate = null;
         if (_active) _sendUpdate();
       });

@@ -8,7 +8,6 @@ import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MetadataUtil.dart';
 import 'package:player/utils/StreamTokenService.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 
 import 'BrowseListRow.dart';
 import 'CarouselItemView.dart';

@@ -562,15 +562,15 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
     );
   }
 
-  Widget _albumTile(album) =>
+  Widget _albumTile(dynamic album) =>
       AlbumCarouselTile(serverName: widget.serverName, album: album);
 
-  Widget _bookTile(book) =>
+  Widget _bookTile(dynamic book) =>
       BookCarouselTile(serverName: widget.serverName, book: book);
 
-  Widget _seriesTile(series) =>
+  Widget _seriesTile(dynamic series) =>
       SeriesCarouselTile(serverName: widget.serverName, series: series);
 
-  Widget _podcastTile(podcast) =>
+  Widget _podcastTile(dynamic podcast) =>
       PodcastCarouselTile(serverName: widget.serverName, podcast: podcast);
 }

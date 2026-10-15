@@ -220,7 +220,7 @@ class _ComicReaderPageState extends State<ComicReaderPage>
           ? switch (manifest.format) {
               'CBZ' ||
               'PDF' =>
-                LocalCbzPageSource(dir: localDir!, manifest: manifest),
+                LocalCbzPageSource(dir: localDir, manifest: manifest),
               _ => null,
             }
           : switch (manifest.format) {
@@ -387,7 +387,7 @@ class _ComicReaderPageState extends State<ComicReaderPage>
       if (wide && _widePages.add(pageIndex) && mounted && _doublePageLayout) {
         _updateSpreadsForWidePage();
       }
-    }, onError: (_, __) => stream.removeListener(listener));
+    }, onError: (_, _) => stream.removeListener(listener));
     stream.addListener(listener);
   }
 
@@ -431,7 +431,7 @@ class _ComicReaderPageState extends State<ComicReaderPage>
       if (index < 0 || index >= _spreads.length) continue;
       for (final page in _spreads[index]) {
         unawaited(precacheImage(_resized(page, _spreads[index].length), context,
-            onError: (_, __) {}));
+            onError: (_, _) {}));
         _probeAspect(page);
       }
     }
@@ -625,7 +625,7 @@ class _ComicReaderPageState extends State<ComicReaderPage>
                         child: Image(
                           image: source.thumbnail(index),
                           fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => const Center(
+                          errorBuilder: (_, _, _) => const Center(
                               child: Icon(Icons.broken_image,
                                   color: Colors.white38)),
                           frameBuilder: (context, child, frame,
@@ -888,7 +888,7 @@ class _SpreadViewState extends State<_SpreadView> {
         image: provider,
         fit: BoxFit.contain,
         gaplessPlayback: true,
-        errorBuilder: (_, __, ___) => const Center(
+        errorBuilder: (_, _, _) => const Center(
             child: Icon(Icons.broken_image, color: Colors.white38, size: 48)),
         // A page that has not decoded yet paints nothing, which on the
         // reader's black backdrop looked like a hung app. The skeleton also
@@ -926,7 +926,7 @@ class _SpreadViewState extends State<_SpreadView> {
                   image: provider,
                   fit: BoxFit.fitWidth,
                   gaplessPlayback: true,
-                  errorBuilder: (_, __, ___) => const SizedBox(
+                  errorBuilder: (_, _, _) => const SizedBox(
                       height: 200,
                       child: Icon(Icons.broken_image,
                           color: Colors.white38, size: 48)),

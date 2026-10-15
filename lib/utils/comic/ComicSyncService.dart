@@ -19,9 +19,8 @@ class ComicSyncService {
     required this.bookId,
     required this.mediaFileId,
     http.Client? httpClient,
-    ReadingProgressOutbox? outbox,
-  })  : _http = httpClient ?? http.Client(),
-        _outbox = outbox;
+    this._outbox,
+  })  : _http = httpClient ?? http.Client();
 
   final String serverName;
   final String bookId;

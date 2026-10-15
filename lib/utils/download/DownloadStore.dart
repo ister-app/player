@@ -14,7 +14,7 @@ import 'package:player/utils/download/DownloadModels.dart';
 /// progress update can never interleave with a removal. Entries are kept in
 /// memory after the first load; [DownloadService] owns the mutations.
 class DownloadStore {
-  DownloadStore({Directory? rootOverride}) : _rootOverride = rootOverride;
+  DownloadStore({this._rootOverride});
 
   final Directory? _rootOverride;
   Directory? _root;

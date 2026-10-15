@@ -156,7 +156,7 @@ class ClientManager {
           // is omitted entirely when no token can be had.
           final token = await LoginManager.getToken(url) ??
               await LoginManager.waitForToken(url);
-          return {if (token != null) 'Authorization': token};
+          return {'Authorization': ?token};
         },
       ),
     );

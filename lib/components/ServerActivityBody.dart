@@ -64,7 +64,7 @@ class ServerActivityBody extends StatelessWidget {
       children: [
         if (liveFeedBroken) const LiveFeedBanner(),
         if (intro != null) SettingsIntro(intro!),
-        if (header != null) header!,
+        ?header,
         if (idle)
           _idleHero(context, loc)
         else ...[
@@ -103,7 +103,7 @@ class ServerActivityBody extends StatelessWidget {
             for (final failure in failures)
               _FailureTile(failure: failure, now: now)
           ]),
-        if (footer != null) footer!,
+        ?footer,
       ],
     );
   }

@@ -44,7 +44,7 @@ class ComicResourceClient {
     return '$_base/comic/$mediaFileId/page/$index'
         '${_query({
           if (width != null) 'width': '$width',
-          if (token != null) 'token': token,
+          'token': ?token,
         })}';
   }
 
@@ -63,7 +63,7 @@ class ComicResourceClient {
     } catch (_) {
       token = null;
     }
-    return Uri.parse('$_base$path${_query({if (token != null) 'token': token})}');
+    return Uri.parse('$_base$path${_query({'token': ?token})}');
   }
 
   static String _query(Map<String, String> params) => params.isEmpty

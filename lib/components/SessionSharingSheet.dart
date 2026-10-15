@@ -87,29 +87,31 @@ class _SessionSharingSheetState extends State<SessionSharingSheet> {
               child: Text(loc.sessionSharingTitle,
                   style: Theme.of(context).textTheme.titleMedium),
             ),
-            RadioListTile<Enum$RemoteControlScope?>(
-              value: null,
+            RadioGroup<Enum$RemoteControlScope?>(
               groupValue: _scope,
-              onChanged: _saving ? null : _selectScope,
-              title: Text(loc.sessionSharingUseDefault),
-            ),
-            RadioListTile<Enum$RemoteControlScope?>(
-              value: Enum$RemoteControlScope.PRIVATE,
-              groupValue: _scope,
-              onChanged: _saving ? null : _selectScope,
-              title: Text(loc.sharingScopePrivate),
-            ),
-            RadioListTile<Enum$RemoteControlScope?>(
-              value: Enum$RemoteControlScope.EVERYONE,
-              groupValue: _scope,
-              onChanged: _saving ? null : _selectScope,
-              title: Text(loc.sharingScopeEveryone),
-            ),
-            RadioListTile<Enum$RemoteControlScope?>(
-              value: Enum$RemoteControlScope.ALLOWLIST,
-              groupValue: _scope,
-              onChanged: _saving ? null : _selectScope,
-              title: Text(loc.sharingScopeAllowlist),
+              onChanged: _selectScope,
+              child: Column(children: [
+                RadioListTile<Enum$RemoteControlScope?>(
+                  value: null,
+                  enabled: !_saving,
+                  title: Text(loc.sessionSharingUseDefault),
+                ),
+                RadioListTile<Enum$RemoteControlScope?>(
+                  value: Enum$RemoteControlScope.PRIVATE,
+                  enabled: !_saving,
+                  title: Text(loc.sharingScopePrivate),
+                ),
+                RadioListTile<Enum$RemoteControlScope?>(
+                  value: Enum$RemoteControlScope.EVERYONE,
+                  enabled: !_saving,
+                  title: Text(loc.sharingScopeEveryone),
+                ),
+                RadioListTile<Enum$RemoteControlScope?>(
+                  value: Enum$RemoteControlScope.ALLOWLIST,
+                  enabled: !_saving,
+                  title: Text(loc.sharingScopeAllowlist),
+                ),
+              ]),
             ),
             if (_scope == Enum$RemoteControlScope.ALLOWLIST)
               Flexible(child: _allowlist(loc)),

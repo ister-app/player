@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:player/components/CarouselItemView.dart';
 import 'package:player/components/MediaGrid.dart';

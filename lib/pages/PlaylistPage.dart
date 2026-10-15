@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:player/utils/TrackArtists.dart';
 import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/fragmentPlaylistItem.graphql.dart';
 import 'package:player/graphql/playlists.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
@@ -44,7 +45,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
   Query$playlistById$playlistById? _playlist;
   bool _loaded = false;
 
-  get _client => ClientManager.getClientForUrl(widget.serverName).value;
+  GraphQLClient get _client => ClientManager.getClientForUrl(widget.serverName).value;
 
   @override
   void initState() {
@@ -183,7 +184,6 @@ class _PlaylistPageState extends State<PlaylistPage> {
   Future<void> _onReorder(int oldIndex, int newIndex) async {
     final playlist = _playlist;
     if (playlist == null) return;
-    if (newIndex > oldIndex) newIndex--;
     if (newIndex == oldIndex) return;
     final items = List.of(playlist.items);
     final moving = items.removeAt(oldIndex);
@@ -306,7 +306,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
                   ),
                 ),
               ],
-              builder: (_, MenuController controller, __) => IconButton(
+              builder: (_, MenuController controller, _) => IconButton(
                 icon: const Icon(Icons.more_vert),
                 onPressed: () =>
                     controller.isOpen ? controller.close() : controller.open(),
@@ -377,7 +377,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
       buildDefaultDragHandles: false,
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: items.length,
-      onReorder: _onReorder,
+      onReorderItem: _onReorder,
       itemBuilder: (context, index) {
         final item = items[index];
         final row = _itemRow(item);

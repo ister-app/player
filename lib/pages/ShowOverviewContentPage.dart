@@ -365,9 +365,10 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
   Future<void> _downloadNextUnwatched(DownloadActionScope scope) async {
     // The State's own context, not the menu item's: that one is deactivated
     // the moment the menu closes, so the dialog would never open.
-    final n = await showDownloadNextDialog(context,
-        defaultCount:
-            await DownloadPreferences.getDefaultNextCount(widget.serverName));
+    final defaultCount =
+        await DownloadPreferences.getDefaultNextCount(widget.serverName);
+    if (!mounted) return;
+    final n = await showDownloadNextDialog(context, defaultCount: defaultCount);
     if (n == null || n <= 0 || !mounted) return;
     await enqueueDownloads(scope, widget.serverName, (client) async {
       final (title, episodes, seasonNumbers) = await _loadShowEpisodeList(client);

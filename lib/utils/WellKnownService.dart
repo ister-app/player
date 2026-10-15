@@ -38,9 +38,9 @@ class WellKnownService {
   static final Map<String, WellKnownInfo> _cache = {};
   static SharedPreferencesAsync _prefs = SharedPreferencesAsync();
 
-  static String _nameKey(String id) => '${_prefix}${id}_name';
-  static String _oidcKey(String id) => '${_prefix}${id}_oidcUrl';
-  static String _urlKey(String id) => '${_prefix}${id}_serverUrl';
+  static String _nameKey(String id) => '$_prefix${id}_name';
+  static String _oidcKey(String id) => '$_prefix${id}_oidcUrl';
+  static String _urlKey(String id) => '$_prefix${id}_serverUrl';
 
   /// Returns cached in-memory info synchronously. Used by [ClientManager].
   static WellKnownInfo? getCached(String serverIdentifier) {

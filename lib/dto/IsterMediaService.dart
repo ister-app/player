@@ -352,8 +352,8 @@ class IsterMediaService {
           'size': cap < pageSize ? cap : pageSize,
           'sorting': sorting,
           'sortingOrder': sortingOrder,
-          if (libraryId != null) 'libraryId': libraryId,
-          if (artistId != null) 'artistId': artistId,
+          'libraryId': ?libraryId,
+          'artistId': ?artistId,
         },
       ));
       if (result.hasException || result.data == null) {

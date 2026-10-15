@@ -66,8 +66,8 @@ Map<String, dynamic> _track(int number, String title,
         {'__typename': 'MediaFile', 'durationInMilliseconds': 215000}
       ],
       'rating': rating,
-      if (playCount != null) 'playCount': playCount,
-      if (lastPlayedAt != null) 'lastPlayedAt': lastPlayedAt,
+      'playCount': ?playCount,
+      'lastPlayedAt': ?lastPlayedAt,
       // Always present: the recently-added document selects it, and a
       // missing selected field fails the whole query in the cache write.
       'dateAdded': dateAdded,

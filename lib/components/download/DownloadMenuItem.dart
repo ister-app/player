@@ -151,7 +151,7 @@ class DownloadMenuItem extends StatelessWidget {
     final scope = DownloadActionScope.of(context);
     return ValueListenableBuilder<int>(
       valueListenable: DownloadService.instance.revision,
-      builder: (context, _, __) {
+      builder: (context, _, _) {
         final entry =
             DownloadService.instance.entryFor(action.serverName, action.key);
         final (icon, text) = downloadActionPresentation(loc, entry);
@@ -189,7 +189,7 @@ class DownloadStatusIcon extends StatelessWidget {
     final key = DownloadEntry.keyFor(kind, mediaId);
     return ValueListenableBuilder<int>(
       valueListenable: service.revision,
-      builder: (context, _, __) {
+      builder: (context, _, _) {
         final entry = service.entryFor(serverName, key);
         if (entry == null) return const SizedBox.shrink();
         final color = Theme.of(context).colorScheme.primary;
@@ -205,7 +205,7 @@ class DownloadStatusIcon extends StatelessWidget {
           case DownloadStatus.downloading:
             return ValueListenableBuilder<DownloadProgress?>(
               valueListenable: service.progressOf(serverName, key),
-              builder: (context, p, __) => SizedBox(
+              builder: (context, p, _) => SizedBox(
                 width: size,
                 height: size,
                 child: CircularProgressIndicator(
