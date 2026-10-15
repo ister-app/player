@@ -754,10 +754,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     // page merely re-opens the followed queue itself (the follower's video
     // surface goes through this same entry point).
     if (followMode && playQueue?.id != playQueueId) await stopFollowing();
-    queueEnded.value = null;
-    _intendsToPlay = true;
-    _stall.clearRetries();
-    _sync.startHeartbeat();
+    _beginQueueStart();
     final shouldRefresh = _takeForcedQueueRefresh() ||
         episode == null ||
         episode!.id != newEpisode.id ||
@@ -985,10 +982,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
     // Same follow-mode rule as startPlayQueue: only a *different* queue ends it.
     if (followMode && playQueue?.id != playQueueId) await stopFollowing();
-    queueEnded.value = null;
-    _intendsToPlay = true;
-    _stall.clearRetries();
-    _sync.startHeartbeat();
+    _beginQueueStart();
     final shouldRefresh = _takeForcedQueueRefresh() ||
         movie == null ||
         movie!.id != newMovie.id ||
@@ -1063,10 +1057,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   ) async {
     // Same follow-mode rule as startPlayQueue: only a *different* queue ends it.
     if (followMode && playQueue?.id != playQueueId) await stopFollowing();
-    queueEnded.value = null;
-    _intendsToPlay = true;
-    _stall.clearRetries();
-    _sync.startHeartbeat();
+    _beginQueueStart();
     final shouldRefresh = album == null ||
         album!.id != newAlbum.id ||
         serverName != newServerName ||
@@ -1325,10 +1316,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       {String? startMediaId, int? startTimeMs}) async {
     // Same follow-mode rule as startPlayQueue: only a *different* queue ends it.
     if (followMode && playQueue?.id != pq.id) await stopFollowing();
-    queueEnded.value = null;
-    _intendsToPlay = true;
-    _stall.clearRetries();
-    _sync.startHeartbeat();
+    _beginQueueStart();
     _sync.bump();
     _resetVideoStreamReady();
     serverName = srv;
@@ -1385,9 +1373,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       String srv, Fragment$fragmentPlayQueue pq,
       {String? startItemId, int? startTimeMs, bool openPlayer = true}) async {
     if (followMode) await stopFollowing();
-    queueEnded.value = null;
-    _intendsToPlay = true;
-    _stall.clearRetries();
+    _beginQueueStart(heartbeat: false);
     _sync.bump();
     _resetVideoStreamReady();
     serverName = srv;
@@ -1554,11 +1540,24 @@ class MediaPlayerHandler extends BaseAudioHandler
     return restored;
   }
 
+  /// The prologue every queue start shares: a finished queue is no longer
+  /// finished, playback is meant to run, the load watchdog starts fresh and
+  /// (for a server queue) the session heartbeat runs. A downloaded queue has
+  /// no client to report to.
+  void _beginQueueStart({bool heartbeat = true}) {
+    queueEnded.value = null;
+    _intendsToPlay = true;
+    _stall.clearRetries();
+    if (heartbeat) _sync.startHeartbeat();
+  }
+
   /// Opens the media for [item], flipping the typed handler state (episode /
-  /// movie / track) to match. Mirrors the per-type open in [skipToQueueItem].
-  /// [startTimeMs] overrides the per-type resume position (follow mode opens
-  /// at the leading device's position, whatever the item type).
-  Future<void> _openQueueItem(
+  /// movie / track) to match; the one place a queue item becomes an open
+  /// stream, for queue starts and skips alike. [startTimeMs] overrides the
+  /// per-type resume position (follow mode opens at the leading device's
+  /// position, whatever the item type). Returns false when the item has no
+  /// file to open.
+  Future<bool> _openQueueItem(
       Fragment$fragmentPlayQueue$playQueueItems item, String srv,
       {int? startTimeMs, bool autoPlay = true}) async {
     currentPlayQueueItem = item;
@@ -1568,10 +1567,12 @@ class MediaPlayerHandler extends BaseAudioHandler
       currentTrackId = t.id;
       episode = null;
       movie = null;
-      album = null;
+      // The album stays when the track is one of its own (an album queue
+      // skipping within itself); any other source drops it.
+      if (album?.id != t.album.id) album = null;
       _currentMediaType = IsterMediaTypes.track;
       final mf = await _pickMediaFile(srv, t.mediaFile);
-      if (mf == null) return;
+      if (mf == null) return false;
       await _openMedia(
         serverName: srv,
         mediaFile: mf,
@@ -1589,7 +1590,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       currentTrackId = null;
       _currentMediaType = IsterMediaTypes.track;
       final mf = await _pickMediaFile(srv, item.chapter?.mediaFile);
-      if (mf == null) return;
+      if (mf == null) return false;
       await _openMedia(
         serverName: srv,
         mediaFile: mf,
@@ -1606,7 +1607,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       currentTrackId = null;
       _currentMediaType = IsterMediaTypes.track;
       final mf = await _pickMediaFile(srv, item.podcastEpisode?.mediaFile);
-      if (mf == null) return;
+      if (mf == null) return false;
       await _openMedia(
         serverName: srv,
         mediaFile: mf,
@@ -1623,7 +1624,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       _currentMediaType = IsterMediaTypes.movie;
       final mf = await _pickMediaFile(srv, item.movie?.mediaFile,
           choiceKey: _choiceKeyForMovie(item.movie!.id));
-      if (mf == null) return;
+      if (mf == null) return false;
       await _openMedia(
         serverName: srv,
         mediaFile: mf,
@@ -1639,7 +1640,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       _currentMediaType = IsterMediaTypes.episode;
       final mf = await _pickMediaFile(srv, item.episode?.mediaFile,
           choiceKey: _choiceKeyForEpisode(item.episode?.id));
-      if (mf == null) return;
+      if (mf == null) return false;
       // An episode inside a multi-episode file never starts before its own
       // slice: a null/0 start (fresh queue, end-of-queue pre-arm) would open
       // the previous episode's footage.
@@ -1658,6 +1659,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       );
     }
     _rememberLastMusicQueue();
+    return true;
   }
 
   @visibleForTesting
@@ -1891,16 +1893,25 @@ class MediaPlayerHandler extends BaseAudioHandler
   }
 
   // ── AudioService overrides ─────────────────────────────────────────────
+
+  /// On a following device a transport tap is a remote-control action: the
+  /// command goes over the bus and everyone — this device included, via the
+  /// command echo — executes it, so the session stays in step. Returns true
+  /// when the tap was forwarded and the caller must not act locally; false
+  /// when not following, or while the echo/leader state itself is being
+  /// applied ([_applyingRemoteSync]).
+  Future<bool> _forwardedToLeader(Enum$PlaybackCommandType command,
+      {Duration? position, String? playQueueItemId}) async {
+    if (!_followMode || _applyingRemoteSync) return false;
+    await _follow.sendCommand(command,
+        position: position, playQueueItemId: playQueueItemId);
+    return true;
+  }
+
   @override
   Future<void> play() async {
     _logPlayback('play()');
-    // Following device: transport goes over the command bus (the echo plays
-    // this device, the same command plays the leader) so everyone stays in
-    // step. _applyingRemoteSync marks the echo/state application itself.
-    if (_followMode && !_applyingRemoteSync) {
-      await _follow.sendCommand(Enum$PlaybackCommandType.PLAY);
-      return;
-    }
+    if (await _forwardedToLeader(Enum$PlaybackCommandType.PLAY)) return;
     // Play on a queue that just played out means "again": the notification,
     // MPRIS, a headset button and the mini player's play all land here.
     if (playQueue == null && queueEnded.value != null) {
@@ -1943,11 +1954,9 @@ class MediaPlayerHandler extends BaseAudioHandler
   }
 
   @override
-  Future<void> pause() {
+  Future<void> pause() async {
     _logPlayback('pause()');
-    if (_followMode && !_applyingRemoteSync) {
-      return _follow.sendCommand(Enum$PlaybackCommandType.PAUSE);
-    }
+    if (await _forwardedToLeader(Enum$PlaybackCommandType.PAUSE)) return;
     _intendsToPlay = false;
     // playState is passed explicitly: _player.state.playing is still true here
     // (pause() below hasn't taken effect), so deriving it would report PLAYING.
@@ -2157,12 +2166,12 @@ class MediaPlayerHandler extends BaseAudioHandler
   }
 
   @override
-  Future<void> seek(Duration position) {
-    if (_followMode && !_applyingRemoteSync) {
-      return _follow.sendCommand(Enum$PlaybackCommandType.SEEK,
-          position: position);
+  Future<void> seek(Duration position) async {
+    if (await _forwardedToLeader(Enum$PlaybackCommandType.SEEK,
+        position: position)) {
+      return;
     }
-    return seekAware(position);
+    await seekAware(position);
   }
 
   /// Seek with subtitle/HLS awareness.
@@ -2249,10 +2258,7 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   @override
   Future<void> skipToNext() async {
-    if (_followMode && !_applyingRemoteSync) {
-      await _follow.sendCommand(Enum$PlaybackCommandType.NEXT);
-      return;
-    }
+    if (await _forwardedToLeader(Enum$PlaybackCommandType.NEXT)) return;
     final q = queue.value;
     // Unknown index means we cannot know what "next" is — do nothing instead
     // of jumping to an arbitrary item.
@@ -2270,10 +2276,7 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   @override
   Future<void> skipToPrevious() async {
-    if (_followMode && !_applyingRemoteSync) {
-      await _follow.sendCommand(Enum$PlaybackCommandType.PREVIOUS);
-      return;
-    }
+    if (await _forwardedToLeader(Enum$PlaybackCommandType.PREVIOUS)) return;
     final index = playbackState.value.queueIndex;
     if (index == null) return;
     final prev = index - 1;
@@ -2506,12 +2509,8 @@ class MediaPlayerHandler extends BaseAudioHandler
   @override
   Future<void> skipToQueueItem(int index) async {
     if (index < 0 || index >= queue.value.length) return;
-    // A user-initiated skip on a following device is a remote-control action:
-    // everyone (including this device, via the command echo) executes it.
-    if (_followMode && !_applyingRemoteSync) {
-      final itemId = MediaItemId.byStringId(queue.value[index].id).id;
-      await _follow.sendCommand(Enum$PlaybackCommandType.SKIP_TO_ITEM,
-          playQueueItemId: itemId);
+    if (await _forwardedToLeader(Enum$PlaybackCommandType.SKIP_TO_ITEM,
+        playQueueItemId: MediaItemId.byStringId(queue.value[index].id).id)) {
       return;
     }
     _intendsToPlay = true;
@@ -2589,90 +2588,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       }
 
 
-      if (queueItem.track != null) {
-        final track = queueItem.track!;
-        currentTrackId = track.id;
-        episode = null;
-        movie = null;
-        _currentMediaType = IsterMediaTypes.track;
-        final mediaFile = await _pickMediaFile(mediaItemId.serverName, track.mediaFile);
-        if (mediaFile == null) return;
-        await _openMedia(
-          serverName: mediaItemId.serverName,
-          mediaFile: mediaFile,
-          startTimeInMilliseconds: 0,
-          mediaType: IsterMediaTypes.track,
-        );
-      } else if (queueItem.chapter != null) {
-        // Audiobook chapter: same audio-only handling as a track.
-        episode = null;
-        movie = null;
-        album = null;
-        currentTrackId = null;
-        _currentMediaType = IsterMediaTypes.track;
-        final mediaFile =
-            await _pickMediaFile(mediaItemId.serverName, queueItem.chapter?.mediaFile);
-        if (mediaFile == null) return;
-        await _openMedia(
-          serverName: mediaItemId.serverName,
-          mediaFile: mediaFile,
-          startTimeInMilliseconds: _resumeMs(queueItem.chapter?.watchStatus),
-          mediaType: IsterMediaTypes.track,
-        );
-      } else if (queueItem.podcastEpisode != null) {
-        // Podcast episode: same audio-only handling as a track.
-        episode = null;
-        movie = null;
-        album = null;
-        currentTrackId = null;
-        _currentMediaType = IsterMediaTypes.track;
-        final mediaFile = await _pickMediaFile(
-            mediaItemId.serverName, queueItem.podcastEpisode?.mediaFile);
-        if (mediaFile == null) return;
-        await _openMedia(
-          serverName: mediaItemId.serverName,
-          mediaFile: mediaFile,
-          startTimeInMilliseconds: _resumeMs(queueItem.podcastEpisode?.watchStatus),
-          mediaType: IsterMediaTypes.track,
-        );
-      } else if (queueItem.movie != null) {
-        movie = queueItem.movie;
-        episode = null;
-        album = null;
-        currentTrackId = null;
-        _currentMediaType = IsterMediaTypes.movie;
-        final mediaFile = await _pickMediaFile(
-            mediaItemId.serverName, queueItem.movie?.mediaFile,
-            choiceKey: _choiceKeyForMovie(queueItem.movie!.id));
-        if (mediaFile == null) return;
-        await _openMedia(
-          serverName: mediaItemId.serverName,
-          mediaFile: mediaFile,
-          startTimeInMilliseconds: 0,
-          mediaType: IsterMediaTypes.movie,
-        );
-      } else {
-        episode = queueItem.episode;
-        movie = null;
-        album = null;
-        currentTrackId = null;
-        _currentMediaType = IsterMediaTypes.episode;
-        final mediaFile = await _pickMediaFile(
-            mediaItemId.serverName, queueItem.episode?.mediaFile,
-            choiceKey: _choiceKeyForEpisode(queueItem.episode?.id));
-        if (mediaFile == null) return;
-        // An episode inside a multi-episode file starts at its own slice.
-        final partStart = episodePartBounds(queueItem.episode,
-                    mediaFileId: mediaFile.id)
-                ?.startMs ??
-            0;
-        await _openMedia(
-          serverName: mediaItemId.serverName,
-          mediaFile: mediaFile,
-          startTimeInMilliseconds: partStart,
-          mediaType: IsterMediaTypes.episode,
-        );
-      }
+      if (!await _openQueueItem(queueItem, mediaItemId.serverName)) return;
 
       // A leader-driven switch (never a heartbeat — same-item emissions don't
       // reach this method) keeps the follower's screen on the right surface:
@@ -2687,12 +2603,6 @@ class MediaPlayerHandler extends BaseAudioHandler
       }
 
       _onPlayingChanged(true);
-      final track = queueItem.track;
-      if (track != null) {
-        _browser.rememberLastPlayed(mediaItemId.serverName, track.album.id, track.id);
-        _sync.armPlayHistory(mediaItemId.serverName, queueItem);
-      }
-      _rememberLastMusicQueue();
 
       // A follower never reports to updatePlayQueue — the leading device is
       // the only progress writer for this queue.
