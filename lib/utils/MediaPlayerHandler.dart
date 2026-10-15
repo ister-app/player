@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'TrackArtists.dart';
 import 'dart:io';
 import 'dart:ui' show Rect;
 
@@ -27,7 +26,6 @@ import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/PlaybackPreferences.dart';
 import 'package:player/utils/QueueEnd.dart';
 import 'package:player/utils/ResilientSubscription.dart';
-import 'package:player/utils/QueueItemDisplay.dart';
 import 'package:player/utils/StreamTokenService.dart';
 import 'package:player/utils/download/AutoNextService.dart';
 import 'package:player/utils/download/DownloadService.dart';
@@ -45,7 +43,6 @@ import 'package:player/utils/WellKnownService.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../graphql/fragmentAlbum.graphql.dart';
-import '../graphql/fragmentImages.graphql.dart';
 import '../graphql/fragmentEpisode.graphql.dart';
 import '../graphql/fragmentMediafiles.graphql.dart';
 import '../graphql/fragmentMovie.graphql.dart';
@@ -57,13 +54,12 @@ import '../graphql/nowPlayingSubscription.graphql.dart';
 import '../graphql/playbackCommandsSubscription.graphql.dart';
 import '../graphql/schema.graphql.dart';
 import 'FollowSyncDecision.dart';
-import 'ImageTypes.dart';
-import 'ArtworkSizing.dart';
 import 'ImageUtil.dart';
-import 'MetadataUtil.dart';
 import 'PlayQueueService.dart';
 import 'SleepTimerService.dart';
 import 'playback/MpvSetup.dart';
+import 'playback/QueueMediaItems.dart';
+import 'playback/QueueMediaItems.dart' as playback;
 import 'MpvLogThrottle.dart';
 import 'VideoLoadState.dart';
 
@@ -811,36 +807,9 @@ class MediaPlayerHandler extends BaseAudioHandler
 
       queueTitle.add("Now Playing");
 
-      queue.add(playQueueObject?.playQueueItems?.map(
-            (e) {
-              Uri? imgUri;
-              if (e.episode?.images != null && serverName != null) {
-                final imageByType = ImageUtil.getImageByType(
-                  e.episode!.images,
-                  ImageTypes.background,
-                );
-                imgUri = imageByType != null
-                    ? Uri.tryParse(_publishedArtUrl(imageByType, newServerName) ?? '')
-                    : null;
-              }
-
-              // For an episode inside a multi-episode file the item lasts its
-              // own slice, not the double-length file.
-              final part = episodePartBounds(e.episode);
-              return MediaItem(
-                id: MediaItemId(newServerName, IsterMediaTypes.episode, e.id).toString(),
-                title: MetadataUtil.getTitle(e.episode?.metadata) ?? "unknown",
-                artist: "ister",
-                duration: Duration(
-                    milliseconds: part != null
-                        ? part.endMs - part.startMs
-                        : e.episode?.mediaFile?.firstOrNull?.durationInMilliseconds ??
-                          0),
-                artUri: imgUri,
-              );
-            },
-          ).toList() ??
-          []);
+      queue.add(playQueueObject == null
+          ? const []
+          : buildQueueMediaItems(playQueueObject, newServerName));
 
       playQueue = playQueueObject;
       _ensureCommandSubscription();
@@ -1061,29 +1030,9 @@ class MediaPlayerHandler extends BaseAudioHandler
 
       queueTitle.add("Now Playing");
 
-      queue.add(playQueueObject?.playQueueItems?.map((e) {
-            Uri? imgUri;
-            if (e.movie?.images != null && serverName != null) {
-              final imageByType = ImageUtil.getImageByType(
-                e.movie!.images,
-                ImageTypes.background,
-              );
-              imgUri = imageByType != null
-                  ? Uri.tryParse(_publishedArtUrl(imageByType, newServerName) ?? '')
-                  : null;
-            }
-            return MediaItem(
-              id: MediaItemId(newServerName, IsterMediaTypes.movie, e.id).toString(),
-              title: e.movie?.name ?? newMovie.name,
-              artist: "ister",
-              duration: Duration(
-                  milliseconds:
-                      e.movie?.mediaFile?.firstOrNull?.durationInMilliseconds ??
-                          0),
-              artUri: imgUri,
-            );
-          }).toList() ??
-          []);
+      queue.add(playQueueObject == null
+          ? const []
+          : buildQueueMediaItems(playQueueObject, newServerName));
 
       playQueue = playQueueObject;
       _ensureCommandSubscription();
@@ -1154,34 +1103,9 @@ class MediaPlayerHandler extends BaseAudioHandler
 
       queueTitle.add("Now Playing");
 
-      queue.add(playQueueObject?.playQueueItems?.map((e) {
-            Uri? imgUri;
-            if (e.track?.album.images != null && serverName != null) {
-              final imageByType = ImageUtil.getImageByType(
-                e.track!.album.images,
-                ImageTypes.cover,
-              );
-              imgUri = imageByType != null
-                  ? Uri.tryParse(_publishedArtUrl(imageByType, newServerName) ?? '')
-                  : null;
-            }
-            return MediaItem(
-              id: MediaItemId(newServerName, IsterMediaTypes.track, e.id)
-                  .toString(),
-              title: MetadataUtil.getTitle(e.track?.metadata) ??
-                  '${e.track?.number ?? ''}',
-              artist: e.track == null
-                  ? ''
-                  : trackArtistsLabel(e.track!.artists.map((c) => (position: c.position, name: c.person.name)), e.track!.artist.name),
-              album: e.track?.album.name ?? newAlbum.name,
-              duration: Duration(
-                  milliseconds:
-                      e.track?.mediaFile?.firstOrNull?.durationInMilliseconds ??
-                          0),
-              artUri: imgUri,
-            );
-          }).toList() ??
-          []);
+      queue.add(playQueueObject == null
+          ? const []
+          : buildQueueMediaItems(playQueueObject, newServerName));
 
       playQueue = playQueueObject;
       _ensureCommandSubscription();
@@ -1453,7 +1377,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     _ensureCommandSubscription();
 
     queueTitle.add("Now Playing");
-    queue.add(_buildQueueItems(playQueue!, srv));
+    queue.add(buildQueueMediaItems(playQueue!, srv));
     currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
     await _openQueueItem(current, srv, startTimeMs: startTimeMs);
@@ -1504,7 +1428,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         ? pq
         : pq.copyWith(currentItemId: current.id);
     queueTitle.add("Now Playing");
-    queue.add(_buildQueueItems(playQueue!, srv));
+    queue.add(buildQueueMediaItems(playQueue!, srv));
     currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
     await _openQueueItem(current, srv, startTimeMs: startTimeMs);
@@ -1582,7 +1506,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     // to remote-control. play() arms it along with the heartbeat.
 
     queueTitle.add("Now Playing");
-    queue.add(_buildQueueItems(playQueue!, srv));
+    queue.add(buildQueueMediaItems(playQueue!, srv));
 
     // A track that already played to (almost) the end restarts at zero, like
     // the long-form resume rule.
@@ -1918,36 +1842,10 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
   }
 
-  /// The artwork url published on a [MediaItem].
-  ///
-  /// Capped at a bucket rather than the stored original because this url is
-  /// not only what the in-app player shows: audio_service downloads it for the
-  /// Android notification, the lock screen and CarPlay, where a 3840x2160
-  /// episode still was being fetched to fill an icon. The in-app surfaces
-  /// re-size it per surface through [ArtworkImage] anyway.
-  static String? _publishedArtUrl(Fragment$fragmentImages image, String serverName) =>
-      ArtworkSizing.sizedUrl(
-          ImageUtil.buildUrl(image, token: StreamTokenService.getToken(serverName)),
-          _publishedArtworkWidth);
-
-  /// Wide enough for a tablet lock screen and a car head unit.
-  static const int _publishedArtworkWidth = 640;
-
-  /// Replaces the stream token embedded in [item]'s artUri with [token].
-  /// Returns [item] unchanged when there is no artwork or the token already
-  /// matches. Static and pure so it can be unit-tested without a [Player].
-  static MediaItem restampArtToken(MediaItem item, String token) {
-    final art = item.artUri;
-    if (art == null ||
-        art.scheme == 'file' ||
-        art.queryParameters['token'] == token) {
-      return item;
-    }
-    return item.copyWith(
-      artUri: art.replace(
-          queryParameters: {...art.queryParameters, 'token': token}),
-    );
-  }
+  /// Replaces the stream token embedded in [item]'s artUri with [token]; see
+  /// [restampArtToken] in QueueMediaItems.dart (kept here for its tests).
+  static MediaItem restampArtToken(MediaItem item, String token) =>
+      playback.restampArtToken(item, token);
 
   /// Re-publishes queue and current item with the current stream token in
   /// their artUris. The artUri is built once at queue construction, but
@@ -1960,26 +1858,15 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// notification artwork audio_service fetches from this uri goes through
   /// NotificationArtCache, which does the same.
   void _refreshArtworkTokens() {
-    MediaItem restamp(MediaItem item) {
-      final String serverName;
-      try {
-        serverName = MediaItemId.byStringId(item.id).serverName;
-      } catch (_) {
-        return item;
-      }
-      final token = StreamTokenService.getToken(serverName);
-      return token == null ? item : restampArtToken(item, token);
-    }
-
     final items = queue.valueOrNull ?? const [];
-    final restamped = items.map(restamp).toList();
+    final restamped = items.map(restampArtForItemServer).toList();
     if (Iterable.generate(items.length)
         .any((i) => !identical(items[i], restamped[i]))) {
       queue.add(restamped);
     }
     final current = mediaItem.valueOrNull;
     if (current != null) {
-      final fresh = restamp(current);
+      final fresh = restampArtForItemServer(current);
       if (!identical(fresh, current)) mediaItem.add(fresh);
     }
   }
@@ -3161,31 +3048,10 @@ class MediaPlayerHandler extends BaseAudioHandler
     final pq = playQueue;
     final srv = serverName;
     if (pq == null || srv == null) return;
-    queue.add(_buildQueueItems(pq, srv));
+    queue.add(buildQueueMediaItems(pq, srv));
     currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
     updatePlaybackState();
     PlayQueueService().playQueueChanged(pq);
-  }
-
-  /// Builds the [MediaItem] list for [pq] in playback order. What each item
-  /// looks like is [QueueItemDisplay]'s job — shared with the remote control,
-  /// which renders the same queues without playing them.
-  List<MediaItem> _buildQueueItems(Fragment$fragmentPlayQueue pq, String srv) {
-    final token = StreamTokenService.getToken(srv);
-    return PlayQueueService.sortedItems(pq).map((e) {
-      final display = QueueItemDisplay.of(e, token: token);
-      return MediaItem(
-        id: MediaItemId(srv, display.mediaType, e.id).toString(),
-        title: display.title,
-        artist: display.artist,
-        album: display.album,
-        duration: display.duration,
-        artUri: display.artUrl == null ? null : Uri.tryParse(display.artUrl!),
-        // Book covers are portrait — flag it so the player shows the cover in
-        // its true 2:3 aspect ratio instead of cropping it square.
-        extras: display.portraitArtwork ? const {'portraitArtwork': true} : null,
-      );
-    }).toList();
   }
 
   final BehaviorSubject<List<MediaItem>> _recentSubject =
@@ -3357,7 +3223,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       final id =
           MediaItemId(last.serverName, IsterMediaTypes.track, currentId)
               .toString();
-      return _buildQueueItems(pq, last.serverName)
+      return buildQueueMediaItems(pq, last.serverName)
           .where((m) => m.id == id)
           .firstOrNull;
     } catch (e) {
@@ -4557,7 +4423,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
     queueTitle.add("Now Playing");
-    queue.add(_buildQueueItems(playQueue!, srv));
+    queue.add(buildQueueMediaItems(playQueue!, srv));
     _ensureCommandSubscription();
     _startFollowHeartbeat(deviceId);
     _ensureFollowNowPlayingSubscription();

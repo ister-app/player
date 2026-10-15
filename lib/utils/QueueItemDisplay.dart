@@ -3,6 +3,8 @@ import 'TrackArtists.dart';
 import 'package:player/dto/IsterMediaService.dart';
 import 'package:player/graphql/fragmentImages.graphql.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
+import 'package:player/utils/ArtworkSizing.dart';
+import 'package:player/utils/EpisodeParts.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MetadataUtil.dart';
@@ -47,13 +49,19 @@ class QueueItemDisplay {
 
   /// Derives the display of [item]. [token] is the server's stream token, which
   /// the image endpoints require; pass null to build unauthenticated URLs.
+  /// [artworkWidth] asks the server for a resized artwork (an
+  /// [ArtworkSizing] bucket) — for surfaces that cannot size per layout, such
+  /// as the media notification; null keeps the original.
   static QueueItemDisplay of(
     Fragment$fragmentPlayQueue$playQueueItems item, {
     String? token,
+    int? artworkWidth,
   }) {
     String? artFor(List<Fragment$fragmentImages>? images, ImageTypes type) =>
-        ImageUtil.buildUrl(ImageUtil.getImageByType(images, type),
-            token: token);
+        ArtworkSizing.sizedUrl(
+            ImageUtil.buildUrl(ImageUtil.getImageByType(images, type),
+                token: token),
+            artworkWidth);
 
     if (item.track != null) {
       final t = item.track!;
@@ -103,12 +111,17 @@ class QueueItemDisplay {
       );
     }
     final ep = item.episode;
+    // An episode inside a multi-episode file lasts its own slice, not the
+    // double-length file.
+    final part = EpisodeParts.bounds(ep);
     return QueueItemDisplay(
       title: MetadataUtil.getTitle(ep?.metadata) ?? 'unknown',
       artist: 'ister',
       album: null,
       artUrl: ep == null ? null : artFor(ep.images, ImageTypes.background),
-      duration: _durationOf(ep?.mediaFile?.firstOrNull?.durationInMilliseconds),
+      duration: part != null
+          ? Duration(milliseconds: part.endMs - part.startMs)
+          : _durationOf(ep?.mediaFile?.firstOrNull?.durationInMilliseconds),
       mediaType: IsterMediaTypes.episode,
     );
   }
