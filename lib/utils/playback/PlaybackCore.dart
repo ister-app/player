@@ -5,7 +5,10 @@
 // of the handler itself, so every dependency between them is named here and
 // grep-able. Grow it per collaborator; a collaborator that needs a large
 // slice of it is cut at the wrong seam.
+import 'dart:ui' show Rect;
+
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:player/dto/MediaItemId.dart';
@@ -15,6 +18,7 @@ import 'package:player/graphql/fragmentMovie.graphql.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/utils/PlayQueueService.dart';
+import 'package:player/utils/subtitles/BitmapSubtitles.dart';
 
 abstract class PlaybackCore {
   /// The one media_kit player. Not real under test ([playerIsMocked]).
@@ -57,6 +61,23 @@ abstract class PlaybackCore {
 
   /// Re-fetches the active queue from the server and adopts it.
   Future<void> reloadPlayQueueFromServer();
+
+  /// Bumped on every stream open; an async step that outlives its open
+  /// compares against it and bails out.
+  int get openGeneration;
+
+  /// The video file that is open (null for audio), and its stream rows.
+  Fragment$fragmentMediaFiles? get currentVideoFile;
+  List<Fragment$fragmentMediaFiles$mediaFileStreams?> get currentVideoFileStreams;
+
+  /// Bitmap (PGS/VobSub) subtitle tracks of the open video the overlay can
+  /// draw, the one it draws, and the selection that turns mpv's own off.
+  List<BitmapSubtitleTrack> get currentBitmapSubtitleTracks;
+  ValueNotifier<BitmapSubtitleTrack?> get bitmapSubtitle;
+  Future<void> selectBitmapSubtitle(BitmapSubtitleTrack track);
+
+  /// The crop applied to the open video, as fractions of the frame.
+  ValueNotifier<Rect?> get appliedVideoCrop;
 
   /// The published current item (audio_service's mediaItem), or null.
   MediaItem? get currentMediaItem;

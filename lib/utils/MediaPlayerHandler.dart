@@ -17,10 +17,8 @@ import 'package:player/utils/ClockSyncService.dart';
 import 'package:player/utils/DevicePreferences.dart';
 import 'package:player/utils/DeviceService.dart';
 import 'package:player/utils/SyncPreferences.dart';
-import 'package:player/utils/LanguagePreferences.dart';
 import 'package:player/utils/LastMusicQueuePreferences.dart';
 import 'package:player/utils/LoginManager.dart';
-import 'package:player/utils/LanguageService.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/PlaybackPreferences.dart';
 import 'package:player/utils/QueueEnd.dart';
@@ -32,10 +30,8 @@ import 'package:player/utils/EpisodeParts.dart';
 import 'package:player/utils/MediaVersions.dart';
 import 'package:player/utils/download/LocalPlayQueue.dart';
 import 'package:player/utils/download/OfflineProgressStore.dart';
-import 'package:player/utils/download/SubtitleStreams.dart';
 import 'package:player/utils/subtitles/BitmapSubtitles.dart';
 import 'package:player/utils/subtitles/BitmapSubtitleLoader.dart';
-import 'package:player/utils/VideoCrop.dart';
 
 import '../graphql/fragmentAlbum.graphql.dart';
 import '../graphql/fragmentEpisode.graphql.dart';
@@ -57,6 +53,8 @@ import 'playback/PlaybackCore.dart';
 import 'playback/ProgressSync.dart';
 import 'playback/QueueMediaItems.dart';
 import 'playback/QueueMediaItems.dart' as playback;
+import 'playback/MediaUrls.dart' as playback;
+import 'playback/TrackPreferences.dart';
 import 'MpvLogThrottle.dart';
 import 'VideoLoadState.dart';
 
@@ -134,7 +132,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         }
       });
       _listenToBuffering();
-      _listenToTracks();
+      _tracks.listen();
       _listenToPosition();
       _listenToCompletion();
       _listenToErrors();
@@ -381,6 +379,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// server analyzed them. The track menu uses this to explain that a file
   /// *has* subtitles when the HLS stream offers none (image-based subs the
   /// server can't convert are dropped from the master playlist).
+  @override
   List<Fragment$fragmentMediaFiles$mediaFileStreams?> get currentVideoFileStreams =>
       _currentVideoFile?.mediaFileStreams ?? const [];
 
@@ -498,6 +497,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// The picture-based subtitle streams (PGS/VobSub) of the current video.
   /// Neither mpv nor hls.js knows them: the server leaves them out of the
   /// stream and serves them as sprite sheets for `BitmapSubtitleOverlay`.
+  @override
   List<BitmapSubtitleTrack> get currentBitmapSubtitleTracks {
     final tracks = BitmapSubtitleTrack.of(currentVideoFileStreams);
     final url = _currentMediaUrl;
@@ -519,10 +519,12 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// The black-bar crop mpv is applying, as fractions of the source frame, or
   /// null. The bitmap subtitle overlay needs it: its cue coordinates refer to
   /// the uncropped frame.
+  @override
   final ValueNotifier<Rect?> appliedVideoCrop = ValueNotifier(null);
 
   /// The bitmap subtitle track the overlay should draw, or null. Selecting
   /// one and selecting a player subtitle track are mutually exclusive.
+  @override
   final ValueNotifier<BitmapSubtitleTrack?> bitmapSubtitle =
       ValueNotifier(null);
 
@@ -545,6 +547,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   }
 
   /// Shows [track] in the overlay and turns the player's own subtitles off.
+  @override
   Future<void> selectBitmapSubtitle(BitmapSubtitleTrack track) async {
     bitmapSubtitle.value = track;
     if (!ClientManager.usesTestClients) {
@@ -568,8 +571,6 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   // Track selection state for reload-based switching
   String? _currentMediaUrl;
-  SubtitleTrack? _forcedSubtitle;
-  AudioTrack? _forcedAudio;
   // The position (ms) at which the current stream was opened. Used by the
   // stall watchdog to re-open a hung stream at its resume point instead of 0.
   int _streamOpenPositionMs = 0;
@@ -728,8 +729,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
     final resume = _intendsToPlay;
     await _silenceForQueueSwitch();
-    _forcedAudio = null;
-    _forcedSubtitle = null;
+    _tracks.clearForced();
     bitmapSubtitle.value = null;
     _loadRetries = 0;
     await _openMedia(
@@ -1676,8 +1676,7 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   /// True for media opened from the local download mirror (an absolute path
   /// or file URI) rather than a tokenized server URL.
-  static bool isLocalMediaUrl(String url) =>
-      url.startsWith('/') || url.startsWith('file:');
+  static bool isLocalMediaUrl(String url) => playback.isLocalMediaUrl(url);
 
   /// The URL [_openMedia] gets for [mf]: the local download when one is
   /// complete on this device, else the server's HLS master with the user's
@@ -1752,19 +1751,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     );
 
     try {
-      _audioPreferenceApplied = false;
-      _subtitlePreferenceApplied = false;
-      _selectedAudioLanguage = null;
-      // A re-open of the same file (stall watchdog, token re-stamp) keeps the
-      // bitmap subtitle the viewer is looking at; a different file starts over.
-      final keptBitmap = bitmapSubtitle.value;
-      if (keptBitmap != null &&
-          currentBitmapSubtitleTracks.contains(keptBitmap)) {
-        _bitmapPreferenceApplied = true;
-      } else {
-        bitmapSubtitle.value = null;
-        _bitmapPreferenceApplied = false;
-      }
+      _tracks.resetForOpen();
       // Under flutter test (mock GraphQL clients) there is no real mpv event
       // loop, so the player calls below would never complete; skip them and
       // still publish the mediaItem/queue state the tests assert on.
@@ -1802,13 +1789,13 @@ class MediaPlayerHandler extends BaseAudioHandler
         }
         // HLS can deliver the real track list without a `tracks` event; make
         // sure preferences/forced tracks still get applied then.
-        _armLateTracksReread();
+        _tracks.armLateTracksReread();
         // Native video gets its subtitles as external whole-file SRTs; the
         // stream carries no usable subtitle renditions (see
         // ImageUtil.subtitleFormat).
-        unawaited(_loadExternalSubtitleTracks(serverName, mediaType));
+        unawaited(_tracks.loadExternalSubtitleTracks(serverName, mediaType));
         // Remove server-detected baked-in black bars at render time.
-        unawaited(_applyServerDetectedCrop(mediaType));
+        unawaited(_tracks.applyServerDetectedCrop(mediaType));
       }
       final currentItemId = playQueue?.currentItemId;
       final found = currentItemId != null
@@ -2156,13 +2143,8 @@ class MediaPlayerHandler extends BaseAudioHandler
     serverName = null;
     graphQLClient = null;
     _currentMediaUrl = null;
-    _forcedAudio = null;
-    _forcedSubtitle = null;
-    _audioPreferenceApplied = false;
-    _subtitlePreferenceApplied = false;
-    _bitmapPreferenceApplied = false;
+    _tracks.clear();
     bitmapSubtitle.value = null;
-    _selectedAudioLanguage = null;
     _streamOpenPositionMs = 0;
     _mediaOpenedAt = null;
     _loadErrorSeen = false;
@@ -2217,11 +2199,9 @@ class MediaPlayerHandler extends BaseAudioHandler
 
     final beforeOpenPosition = position.inMilliseconds < _streamOpenPositionMs;
     if (!kIsWeb && beforeOpenPosition && url != null && serverName != null) {
-      _forcedSubtitle = hasActiveSub ? sub : SubtitleTrack.no();
-      _forcedAudio = _player.state.track.audio;
-      _audioPreferenceApplied = false;
-      _subtitlePreferenceApplied = false;
-      _selectedAudioLanguage = null;
+      _tracks.carryOverForReopen(
+          audio: _player.state.track.audio,
+          subtitle: hasActiveSub ? sub : SubtitleTrack.no());
       // A re-open right after scrubbing must not count toward the watchdog's
       // failed-load retries for this item.
       _loadRetries = 0;
@@ -2242,7 +2222,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       // Same test seam as play()/pause(): raw seeks never complete under test.
       await _player.seek(position);
       if (!kIsWeb && isBackward && hasActiveSub) {
-        unawaited(_refreshSubtitleDecoder(sub.id));
+        unawaited(_tracks.refreshSubtitleDecoder(sub.id));
       }
     }
   }
@@ -2260,210 +2240,6 @@ class MediaPlayerHandler extends BaseAudioHandler
           .timeout(timeout);
     } catch (_) {
       // Timed out or the stream closed — fall through and seek anyway.
-    }
-  }
-
-  /// Kicks mpv's subtitle decoder after a backward seek by cycling `sid`
-  /// off/on, which drops and re-selects the subtitle substream at the current
-  /// position. Waits for the seek to settle first (buffering=false is the
-  /// observable edge; media_kit does not expose mpv's `seeking` property).
-  Future<void> _refreshSubtitleDecoder(String sid) async {
-    final platform = _player.platform;
-    if (platform is! NativePlayer) return;
-    final generation = _openGeneration;
-    try {
-      if (_player.state.buffering) {
-        await _player.stream.buffering
-            .firstWhere((b) => !b)
-            .timeout(const Duration(seconds: 3));
-      }
-    } catch (_) {
-      // Still buffering after 3s — refresh anyway; worst case it's a no-op.
-    }
-    // A queue skip or teardown may have replaced the stream while waiting.
-    if (_openGeneration != generation || _currentMediaUrl == null) return;
-    try {
-      // Dynamic dispatch: see applyMpvNetworkOptions (MpvSetup.dart).
-      final dynamic native = platform;
-      await native.setProperty('sid', 'no');
-      await native.setProperty('sid', sid);
-    } catch (e) {
-      LoggerService().logger.w('Subtitle decoder refresh failed: $e');
-    }
-  }
-
-  /// Side-loads the current video's subtitles as external whole-file SRT
-  /// tracks (mpv `sub-add`). In-manifest HLS subtitles are deliberately not
-  /// used on native: ffmpeg's HLS demuxer re-delivers segment cues on every
-  /// refetch/reconnect and libass stacks the duplicates on screen. A single
-  /// SRT file is fetched once, demuxed natively, and survives seeks in both
-  /// directions. Must be re-run after every open — a fresh demuxer forgets
-  /// external tracks.
-  Future<void> _loadExternalSubtitleTracks(
-      String serverName, IsterMediaTypes mediaType) async {
-    if (kIsWeb) return;
-    if (mediaType != IsterMediaTypes.movie &&
-        mediaType != IsterMediaTypes.episode) {
-      return;
-    }
-    final platform = _player.platform;
-    if (platform is! NativePlayer) return;
-    // The file that is open — its stream ids name the SRTs on the server.
-    final mediaFile = _currentVideoFile;
-    final streams = mediaFile?.mediaFileStreams;
-    if (mediaFile == null || streams == null || streams.isEmpty) return;
-    final generation = _openGeneration;
-    final urlAtOpen = _currentMediaUrl;
-    final local = urlAtOpen != null && isLocalMediaUrl(urlAtOpen);
-    final token = local ? null : StreamTokenService.getToken(serverName);
-    if (!local && token == null) return;
-    final nodeUrl = mediaFile.directory.servingNode.url;
-
-    // Local playback side-loads the mirrored SRT files; online the server's.
-    final sideloadable = SubtitleStreams.sideloadable(streams);
-    final localFiles = local
-        ? Map.fromEntries(DownloadService.instance
-            .localSubtitleFiles(serverName, mediaFile.id)
-            .map((e) => MapEntry(e.$1, e.$2)))
-        : const <String, String>{};
-    final tracks = local
-        ? sideloadable.where((s) => localFiles.containsKey(s.id)).toList()
-        : sideloadable;
-    if (tracks.isEmpty) return;
-
-    // Dynamic dispatch: see applyMpvNetworkOptions (MpvSetup.dart).
-    final dynamic native = platform;
-    try {
-      // The server bakes a +1480ms shift into its SRTs (SUBTITLE_OFFSET_MS,
-      // compensating the browser timeline that starts at 0 while the TS
-      // timeline starts at the muxer delay). mpv aligns external subs against
-      // the un-rebased TS timeline, which already carries that delay — so
-      // without this correction every cue shows ~1.5s late.
-      await native.setProperty('sub-delay', '-1.48');
-    } catch (e) {
-      LoggerService().logger.w('setting sub-delay failed: $e');
-    }
-    // Hold the subtitle preference until every SRT is in: mpv fires a
-    // `tracks` event per sub-add, and applying on the first one picked the
-    // best match among a single (English) track — the Dutch one still to
-    // come never got a look-in (Seinfeld on Android, 2026-09).
-    _externalSubtitlesLoadingFor = generation;
-    try {
-      var n = 0;
-      for (final s in tracks) {
-        // A queue skip or re-open may have replaced the stream while adding.
-        if (_openGeneration != generation || _currentMediaUrl == null) return;
-        n++;
-        final url = local
-            ? localFiles[s.id]!
-            : '$nodeUrl/hls/${mediaFile.id}/sub_${s.id}.srt?token=$token';
-        final title = (s.title?.isNotEmpty ?? false)
-            ? s.title!
-            : (s.language?.isNotEmpty ?? false)
-                ? s.language!
-                : 'Subtitle $n';
-        final lang = (s.language?.isNotEmpty ?? false) ? s.language! : 'und';
-        try {
-          // 'auto' loads without selecting; the language preference / forced
-          // restore in _applyTrackPreferences picks the track afterwards.
-          await native.command(['sub-add', url, 'auto', title, lang]);
-        } catch (e) {
-          LoggerService().logger.w('sub-add failed for $title: $e');
-        }
-      }
-    } finally {
-      if (_externalSubtitlesLoadingFor == generation) {
-        _externalSubtitlesLoadingFor = null;
-        if (_openGeneration == generation && !_subtitlePreferenceApplied) {
-          unawaited(_applyTrackPreferences(_player.state.tracks));
-        }
-      }
-    }
-  }
-
-  /// Applies the server-detected baked-in black-bar crop (mpv `video-crop`)
-  /// for the current video item, scaled to the actually-decoded dimensions —
-  /// the playing HLS variant may be downscaled. Clears the crop for items
-  /// without one: the property is player-global and would leak to the next
-  /// stream. Native only; the server cannot crop the direct-play variant.
-  Future<void> _applyServerDetectedCrop(IsterMediaTypes mediaType) async {
-    if (kIsWeb) return;
-    final platform = _player.platform;
-    if (platform is! NativePlayer) return;
-    // Dynamic dispatch: see applyMpvNetworkOptions (MpvSetup.dart).
-    final dynamic native = platform;
-    try {
-      final isVideo = mediaType == IsterMediaTypes.movie ||
-          mediaType == IsterMediaTypes.episode;
-      final video = isVideo
-          ? currentVideoFileStreams
-              .where((s) =>
-                  s != null && s.codecType == 'VIDEO' && (s.width) > 0)
-              .firstOrNull
-          : null;
-      if (video == null || video.cropWidth == null) {
-        await native.setProperty('video-crop', '');
-        appliedVideoCrop.value = null;
-        return;
-      }
-      final generation = _openGeneration;
-      // The crop must be expressed in the decoded stream's *coded* pixels —
-      // mpv applies video-crop to the source rectangle before anamorphic
-      // stretch, and silently ignores a rect that falls outside it. A
-      // transcoded HLS variant may be downscaled, so wait briefly for mpv to
-      // report the coded size (videoParams.w/h; the fork does not observe
-      // bare width/height), then fall back to the source dimensions — exact
-      // for direct play.
-      final decoded = await _waitForDecodedVideoSize();
-      final actualW = decoded?.$1 ?? video.width;
-      final actualH = decoded?.$2 ?? video.height;
-      // A queue skip or re-open may have replaced the stream while waiting.
-      if (_openGeneration != generation || _currentMediaUrl == null) return;
-      final crop = mpvCropString(
-        srcW: video.width,
-        srcH: video.height,
-        cropX: video.cropX,
-        cropY: video.cropY,
-        cropW: video.cropWidth,
-        cropH: video.cropHeight,
-        actualW: actualW,
-        actualH: actualH,
-      );
-      await native.setProperty('video-crop', crop ?? '');
-      appliedVideoCrop.value = crop == null
-          ? null
-          : Rect.fromLTWH(
-              video.cropX! / video.width,
-              video.cropY! / video.height,
-              video.cropWidth! / video.width,
-              video.cropHeight! / video.height);
-    } catch (e) {
-      LoggerService().logger.w('applying video crop failed: $e');
-    }
-  }
-
-  /// The decoded video's *coded* dimensions from mpv's videoParams (w/h).
-  /// Not dw/dh or the render rect: those are aspect-corrected display sizes,
-  /// and for an anamorphic stream (SAR ≠ 1 — the HLS transcoder's scale
-  /// filter preserves DAR by adjusting SAR) a crop scaled to them can exceed
-  /// the coded frame, which mpv silently ignores. Null when mpv doesn't
-  /// report within the timeout (e.g. video decode hasn't started).
-  Future<(int, int)?> _waitForDecodedVideoSize(
-      {Duration timeout = const Duration(seconds: 10)}) async {
-    final params = _player.state.videoParams;
-    if ((params.w ?? 0) > 0 && (params.h ?? 0) > 0) {
-      return (params.w!, params.h!);
-    }
-    final completer = Completer<(int, int)?>();
-    final sub = _player.stream.videoParams.listen((p) {
-      if ((p.w ?? 0) > 0 && (p.h ?? 0) > 0 && !completer.isCompleted) {
-        completer.complete((p.w!, p.h!));
-      }
-    });
-    try {
-      return await completer.future.timeout(timeout, onTimeout: () => null);
-    } finally {
-      await sub.cancel();
     }
   }
 
@@ -3054,6 +2830,40 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// [ProgressSync].
   late final ProgressSync _sync = ProgressSync(this);
 
+  /// Audio/subtitle track selection, external SRTs and the server-detected
+  /// crop; see [TrackPreferences].
+  late final TrackPreferences _tracks = TrackPreferences(this);
+
+  // The selection rules, kept here for their tests.
+  @visibleForTesting
+  static AudioTrack restoredAudioTrack(
+          List<AudioTrack> tracks, AudioTrack selected) =>
+      TrackPreferences.restoredAudioTrack(tracks, selected);
+
+  @visibleForTesting
+  static T? preferredTrack<T>(List<T> available, List<String> preferences) =>
+      TrackPreferences.preferredTrack<T>(available, preferences);
+
+  @visibleForTesting
+  static bool suppressesSubtitle({
+    required bool hideSubtitlesMatchingAudio,
+    required String? subtitleLanguage,
+    required String? audioLanguage,
+  }) =>
+      TrackPreferences.suppressesSubtitle(
+          hideSubtitlesMatchingAudio: hideSubtitlesMatchingAudio,
+          subtitleLanguage: subtitleLanguage,
+          audioLanguage: audioLanguage);
+
+  @visibleForTesting
+  static String? predictedAudioLanguage({
+    required List<String?> audioStreamLanguages,
+    required List<String> preferences,
+  }) =>
+      TrackPreferences.predictedAudioLanguage(
+          audioStreamLanguages: audioStreamLanguages,
+          preferences: preferences);
+
   /// See [ProgressSync.mergeServerPlayQueue] (kept here for its tests).
   static Fragment$fragmentPlayQueue? mergeServerPlayQueue(
     Fragment$fragmentPlayQueue? current,
@@ -3087,6 +2897,12 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   @override
   Enum$RepeatMode get repeatModeApi => repeatModeToApi(_repeatMode);
+
+  @override
+  int get openGeneration => _openGeneration;
+
+  @override
+  Fragment$fragmentMediaFiles? get currentVideoFile => _currentVideoFile;
 
   // ── Listener wiring ───────────────────────────────────────────────────
   Future<void> _onPlayingChanged(bool playing) async {
@@ -3238,179 +3054,6 @@ class MediaPlayerHandler extends BaseAudioHandler
     );
   }
 
-  void _listenToTracks() {
-    _player.stream.tracks.listen(_applyTrackPreferences);
-  }
-
-  /// One-shot re-read for streams whose real track list arrives without a
-  /// `tracks` event (HLS on Linux does this): without it the forced/preferred
-  /// track silently never gets applied. Mirrors the same 800ms re-read in
-  /// TrackSelectionController.
-  Timer? _lateTracksTimer;
-
-  void _armLateTracksReread() {
-    _lateTracksTimer?.cancel();
-    if (kIsWeb) return;
-    _lateTracksTimer = Timer(const Duration(milliseconds: 800), () {
-      if (!_audioPreferenceApplied || !_subtitlePreferenceApplied) {
-        unawaited(_applyTrackPreferences(_player.state.tracks));
-      }
-    });
-  }
-
-  /// The track in a re-opened stream that is the one the user had [selected].
-  ///
-  /// Language alone is not enough: a DVD rip carries the main mix and the
-  /// commentary as two English tracks, and matching on language put the viewer
-  /// back on the main mix after every re-open (a seek to before the stream-open
-  /// position, a watchdog retry). The same stream re-opened lists its tracks in
-  /// the same order, so the id settles it when title and language still agree;
-  /// after that the title (the server numbers same-named renditions), and only
-  /// then the language.
-  @visibleForTesting
-  static AudioTrack restoredAudioTrack(
-      List<AudioTrack> tracks, AudioTrack selected) {
-    if (selected.id == 'no') return AudioTrack.no();
-    if (selected.language == null) return AudioTrack.auto();
-    final sameLanguage =
-        tracks.where((t) => t.language == selected.language).toList();
-    final sameTitle =
-        sameLanguage.where((t) => t.title == selected.title).toList();
-    return sameTitle.where((t) => t.id == selected.id).firstOrNull ??
-        sameTitle.firstOrNull ??
-        sameLanguage.firstOrNull ??
-        AudioTrack.auto();
-  }
-
-  Future<void> _applyTrackPreferences(Tracks tracks) async {
-      debugPrint('[TRACKS_HANDLER] audioApplied=$_audioPreferenceApplied subApplied=$_subtitlePreferenceApplied | audio=${tracks.audio.map((t) => t.id).join(",")} sub=${tracks.subtitle.map((t) => t.id).join(",")}');
-
-      if (!_audioPreferenceApplied &&
-          tracks.audio.any((t) => t.id != 'auto' && t.id != 'no')) {
-        _audioPreferenceApplied = true;
-        final forcedAudio = _forcedAudio;
-        _forcedAudio = null;
-        if (forcedAudio != null && forcedAudio.id != 'auto') {
-          // Restore the audio track the user had selected before the reload
-          // ("no audio" included).
-          final match = restoredAudioTrack(tracks.audio, forcedAudio);
-          debugPrint('[TRACKS_HANDLER] restoring forced audio: ${match.id}');
-          _selectedAudioLanguage = match.language;
-          await _player.setAudioTrack(match);
-        } else {
-          debugPrint('[TRACKS_HANDLER] applying audio preference');
-          await LanguageService().ensureLoaded();
-          final chosen = preferredTrack<AudioTrack>(
-            tracks.audio,
-            await LanguagePreferences.getSpokenLanguages(serverName: serverName),
-          );
-          // Null when nothing matched: mpv then picks the file's default and we
-          // do not know its language yet, which the subtitle rule allows for.
-          _selectedAudioLanguage = chosen?.language;
-          await _player.setAudioTrack(chosen ?? AudioTrack.auto());
-        }
-        debugPrint('[TRACKS_HANDLER] audio applied: ${_player.state.track.audio.id}');
-        // A file whose only subtitles are pictures never reaches the subtitle
-        // block below (the player reports no subtitle track at all).
-        if (SubtitleStreams.sideloadable(currentVideoFileStreams).isEmpty) {
-          await _applyBitmapSubtitlePreference(_selectedAudioLanguage);
-        }
-      }
-
-      if (!_subtitlePreferenceApplied &&
-          _externalSubtitlesLoadingFor != _openGeneration &&
-          tracks.subtitle.any((t) => t.id != 'auto' && t.id != 'no')) {
-        _subtitlePreferenceApplied = true;
-        final forcedSubtitle = _forcedSubtitle;
-        _forcedSubtitle = null;
-        if (bitmapSubtitle.value != null) {
-          // The overlay is showing a bitmap track (kept across a re-open).
-          await _player.setSubtitleTrack(SubtitleTrack.no());
-        } else if (forcedSubtitle != null) {
-          if (forcedSubtitle.id == 'no') {
-            debugPrint('[TRACKS_HANDLER] restoring forced subtitle: no');
-            await _player.setSubtitleTrack(SubtitleTrack.no());
-          } else {
-            // Match by language since track IDs can change after a reload.
-            final match = tracks.subtitle.firstWhere(
-              (t) => t.language != null && t.language == forcedSubtitle.language,
-              orElse: () => SubtitleTrack.no(),
-            );
-            debugPrint('[TRACKS_HANDLER] restoring forced subtitle: ${match.id}');
-            await _player.setSubtitleTrack(match);
-          }
-        } else {
-          debugPrint('[TRACKS_HANDLER] applying subtitle preference');
-          await LanguageService().ensureLoaded();
-          final chosen = preferredTrack<SubtitleTrack>(
-            tracks.subtitle,
-            await LanguagePreferences.getSubtitleLanguages(serverName: serverName),
-          );
-          // The audio block usually ran first, but the side-loaded external
-          // SRTs (sub-add right after open) can beat the HLS audio track list
-          // — the player then doesn't know the audio language yet and the
-          // suppression rule below would lose the race. A pending forced
-          // restore or the server's stream metadata predicts what the audio
-          // language is going to be.
-          final audioLanguage = _selectedAudioLanguage ??
-              _player.state.track.audio.language ??
-              _forcedAudio?.language ??
-              predictedAudioLanguage(
-                audioStreamLanguages: [
-                  for (final s in currentVideoFileStreams)
-                    if (s != null && s.codecType == 'AUDIO') s.language,
-                ],
-                preferences: await LanguagePreferences.getSpokenLanguages(
-                    serverName: serverName),
-              );
-          final suppressed = suppressesSubtitle(
-            hideSubtitlesMatchingAudio:
-                await PlaybackPreferences.getHideSubtitlesMatchingAudio(
-                    serverName: serverName),
-            subtitleLanguage: chosen?.language,
-            audioLanguage: audioLanguage,
-          );
-          if (suppressed) {
-            debugPrint('[TRACKS_HANDLER] subtitle ${chosen?.language} matches '
-                'audio $audioLanguage: leaving subtitles off');
-          }
-          await _player.setSubtitleTrack(
-              chosen == null || suppressed ? SubtitleTrack.no() : chosen);
-          // No text track in a preferred language: a picture-based one may be.
-          if (chosen == null) {
-            await _applyBitmapSubtitlePreference(audioLanguage);
-          }
-        }
-        debugPrint('[TRACKS_HANDLER] subtitle applied: ${_player.state.track.subtitle.id}');
-    }
-  }
-
-  /// Picks a bitmap subtitle track by the same language rules as a text
-  /// track. Text wins when both exist in a preferred language: it is lighter
-  /// and the platform renders it natively.
-  Future<void> _applyBitmapSubtitlePreference(String? audioLanguage) async {
-    if (_bitmapPreferenceApplied) return;
-    _bitmapPreferenceApplied = true;
-    final tracks = currentBitmapSubtitleTracks;
-    if (tracks.isEmpty) return;
-    await LanguageService().ensureLoaded();
-    final chosen = preferredTrack<BitmapSubtitleTrack>(
-      tracks,
-      await LanguagePreferences.getSubtitleLanguages(serverName: serverName),
-    );
-    if (chosen == null) return;
-    final suppressed = suppressesSubtitle(
-      hideSubtitlesMatchingAudio:
-          await PlaybackPreferences.getHideSubtitlesMatchingAudio(
-              serverName: serverName),
-      subtitleLanguage: chosen.language,
-      audioLanguage: audioLanguage ?? _player.state.track.audio.language,
-    );
-    debugPrint('[TRACKS_HANDLER] bitmap subtitle ${chosen.language} '
-        '${suppressed ? "suppressed" : "applied"}');
-    if (!suppressed) await selectBitmapSubtitle(chosen);
-  }
-
   /// Escape hatch: revert to the old reload-based subtitle switching if the
   /// in-place switch below turns out not to stick on some platform. With a
   /// large read-ahead (320 MB) a plain setSubtitleTrack only affects segments
@@ -3434,11 +3077,8 @@ class MediaPlayerHandler extends BaseAudioHandler
 
     // ignore: dead_code
     if (_reopenOnSubtitleSwitch) {
-      _forcedSubtitle = track;
-      _forcedAudio = _player.state.track.audio;
-      _audioPreferenceApplied = false;
-      _subtitlePreferenceApplied = false;
-      _selectedAudioLanguage = null;
+      _tracks.carryOverForReopen(
+          audio: _player.state.track.audio, subtitle: track);
       await _openMedia(
         serverName: serverName!,
         mediaUrl: _restampToken(url),
@@ -3453,7 +3093,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       await _player.seek(_player.state.position);
     }
     if (track.id != 'no' && track.id != 'auto') {
-      unawaited(_refreshSubtitleDecoder(track.id));
+      unawaited(_tracks.refreshSubtitleDecoder(track.id));
     }
   }
 
@@ -4358,10 +3998,10 @@ class MediaPlayerHandler extends BaseAudioHandler
     // enabled subtitles back off. Only carry over a selection that was actually
     // made: a load that hung before any track arrived has nothing to preserve,
     // and recording SubtitleTrack.no() there would force subtitles off for good.
-    if (_audioPreferenceApplied) _forcedAudio = _player.state.track.audio;
-    if (_subtitlePreferenceApplied) {
-      _forcedSubtitle = _player.state.track.subtitle;
-    }
+    _tracks.carryOverForReopen(
+        audio: _tracks.audioApplied ? _player.state.track.audio : null,
+        subtitle:
+            _tracks.subtitleApplied ? _player.state.track.subtitle : null);
     _openMedia(
       serverName: serverName!,
       mediaUrl: _restampToken(url),
@@ -4738,23 +4378,6 @@ class MediaPlayerHandler extends BaseAudioHandler
   // ── Helper methods (track selection) ───────────────────────────────────
   bool _listenersAdded = false;
   bool _interrupted = false;
-  bool _audioPreferenceApplied = false;
-  bool _subtitlePreferenceApplied = false;
-  bool _bitmapPreferenceApplied = false;
-
-  /// The open ([_openGeneration]) whose external SRTs are still being
-  /// side-loaded; the subtitle preference waits for the full list (see
-  /// _loadExternalSubtitleTracks). Not the url: a token re-stamp rewrites it.
-  int? _externalSubtitlesLoadingFor;
-
-  /// Language of the audio track that was actually selected for the open media,
-  /// so the subtitle rule can compare against it.
-  ///
-  /// A field rather than a local: HLS delivers the audio list before the
-  /// side-loaded subtitles, so the two blocks of [_applyTrackPreferences]
-  /// usually run in different invocations. Null means "not known" — either
-  /// nothing has been applied yet, or the audio fell back to mpv's default.
-  String? _selectedAudioLanguage;
   DateTime? _mediaOpenedAt;
 
   // Stall-watchdog state: tracks real forward progress so we can detect a
@@ -4777,75 +4400,6 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// The first track whose language matches a preference, or null when none of
   /// the preferences is available.
   ///
-  /// Pure and synchronous so the selection rules can be unit-tested without a
-  /// player: [LanguageService.lookup] answers from the table `main.dart` loads
-  /// before the first frame. Matching goes through [LanguageData.toCodeList] —
-  /// mpv reports the bare container code (`eng`, `nld`) while a preference is
-  /// stored as an ISO 639-3 id, so raw string equality would miss.
-  @visibleForTesting
-  static T? preferredTrack<T>(List<T> available, List<String> preferences) {
-    for (final lang in preferences) {
-      final data = LanguageService().lookup(lang);
-      if (data == null) continue;
-
-      final codes = data.toCodeList();
-      for (final track in available) {
-        if (codes.contains(_trackLanguage(track))) return track;
-      }
-    }
-    return null;
-  }
-
-  /// Whether the subtitle track that would be selected should be dropped
-  /// because it is the language already coming out of the speakers.
-  ///
-  /// Deliberately does *not* fall through to the next preference: the point is
-  /// "I understand what I hear, show me nothing", not "show me my second
-  /// choice". A subtitle language explicitly ranked above the spoken one still
-  /// wins, because [preferredTrack] picked that one first.
-  @visibleForTesting
-  static bool suppressesSubtitle({
-    required bool hideSubtitlesMatchingAudio,
-    required String? subtitleLanguage,
-    required String? audioLanguage,
-  }) {
-    if (!hideSubtitlesMatchingAudio) return false;
-    return LanguageService().sameLanguage(subtitleLanguage, audioLanguage);
-  }
-
-  /// The audio language playback is going to end up with, predicted from the
-  /// server's stream metadata — for when the subtitle decision runs before mpv
-  /// has delivered its audio track list. A preference match predicts the
-  /// track [preferredTrack] will select; without one mpv plays the file's
-  /// default track, which can only be pinned down when every audio stream in
-  /// the file carries the same known language. Null means "cannot tell", and
-  /// the suppression rule already treats an unknown audio language as
-  /// never-matching.
-  @visibleForTesting
-  static String? predictedAudioLanguage({
-    required List<String?> audioStreamLanguages,
-    required List<String> preferences,
-  }) {
-    var i = 0;
-    final tracks = [
-      for (final lang in audioStreamLanguages) AudioTrack('${i++}', null, lang),
-    ];
-    final preferred = preferredTrack<AudioTrack>(tracks, preferences);
-    if (preferred != null) return preferred.language;
-    final known = audioStreamLanguages.nonNulls.toSet();
-    if (known.length == 1 && !audioStreamLanguages.contains(null)) {
-      return known.single;
-    }
-    return null;
-  }
-
-  static String? _trackLanguage<T>(T track) {
-    if (track is BitmapSubtitleTrack) return track.language;
-    if (track is SubtitleTrack) return track.language;
-    if (track is AudioTrack) return track.language;
-    return null;
-  }
-
 // @override
 // ValueStream<Map<String, dynamic>> subscribeToChildren(String parentMediaId) {
 //   print(parentMediaId);
