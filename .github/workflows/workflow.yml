@@ -37,6 +37,27 @@ jobs:
           fi
           echo "all commit subjects follow the convention"
 
+  analyze:
+    # Static analysis as its own cheap job: it fails within minutes, does not hold up the
+    # artifact builds, and (through release.yml's gate on a green run) still blocks the
+    # nightly release. --fatal-infos: the tree is clean, keep it that way.
+    if: ${{ github.event_name == 'pull_request' || !startsWith(github.event.head_commit.message, 'chore(release):') }}
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+      - name: Cache pub dependencies
+        uses: actions/cache@v6
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+      - run: flutter pub get
+      - run: flutter analyze --fatal-infos
+
   build:
     # Skip the commit release.yml pushes: it is version bookkeeping, already built green as the
     # commit it was cut from, and rebuilding it would only race the release's own image.
