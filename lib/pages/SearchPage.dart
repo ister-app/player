@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:player/utils/TrackArtists.dart';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:player/components/ArtworkImage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/libraries.graphql.dart';

@@ -1,5 +1,5 @@
 import 'package:audio_service/audio_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
 
 /// Play/pause toggle shared by the mini player and the full music player.

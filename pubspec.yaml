@@ -14,7 +14,12 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
-  auto_route: ">=11.0.0 <11.2.0" # 11.2.0 moved to material_ui, which flutter/material (stable 3.47) does not provide yet
+  auto_route: ^11.2.0
+  # The app builds on the standalone Material/Cupertino packages (what auto_route
+  # >=11.2 renders with); packages still on flutter/material are served through
+  # MaterialUiCompatibilityBridge in main.dart.
+  material_ui: ^1.6.0
+  cupertino_ui: ^1.1.2
   oidc: ^5.0.0
   oidc_default_store: ^2.0.0
   graphql_flutter: ^5.1.2

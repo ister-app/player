@@ -1,7 +1,7 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:player/utils/TrackArtists.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/albumById.graphql.dart';
 import 'package:player/graphql/refreshAlbum.graphql.dart';

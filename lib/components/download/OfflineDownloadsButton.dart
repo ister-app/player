@@ -1,6 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/download/DownloadService.dart';

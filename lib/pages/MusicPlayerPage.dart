@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:player/components/PlayPauseButton.dart';
 import 'package:player/components/PlayerView.dart';
 import 'package:player/components/QueuePlayerViewController.dart';

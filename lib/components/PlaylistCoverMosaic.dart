@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:player/components/ArtworkImage.dart';
 import 'package:player/graphql/fragmentImages.graphql.dart';
 

@@ -1,5 +1,5 @@
 import 'package:auto_route/auto_route.dart' show AutoRouter;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:player/utils/EpisodeParts.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/episodesQuery.graphql.dart';

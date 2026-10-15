@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:player/components/DevicePickerSheet.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/PermissionsService.dart';

@@ -1,7 +1,6 @@
 import 'package:audio_service/audio_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:player/utils/subtitles/BitmapSubtitles.dart';
 import 'package:media_kit/media_kit.dart';
@@ -15,9 +14,7 @@ import 'package:player/utils/MediaPlayerHandler.dart';
 Widget _app(Widget home) => MaterialApp(
       localizationsDelegates: const [
         AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
       ],
       supportedLocales: const [Locale('en')],
       home: Scaffold(body: home),

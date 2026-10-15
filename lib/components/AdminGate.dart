@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:player/utils/PermissionsService.dart';
 
 /// Shows [child] only when the current user is an admin on [serverName].

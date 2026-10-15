@@ -3,7 +3,7 @@
 // from the search page failed silently — the row rippled but nothing opened.
 // Rows are found by their locale-independent ValueKey ('search-<kind>-<id>'),
 // so the test runs the same under any system language.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:player/pages/ShowEpisodePage.dart';

@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:player/components/ArtworkImage.dart';
 import 'package:skeletonizer/skeletonizer.dart';

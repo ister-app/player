@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/pages/SleepTimerSettingsPage.dart';
@@ -14,9 +13,7 @@ import 'package:shared_preferences_platform_interface/shared_preferences_async_p
 Widget _app() => const MaterialApp(
       localizationsDelegates: [
         AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
       ],
       supportedLocales: [Locale('en')],
       home: SleepTimerSettingsPage(),

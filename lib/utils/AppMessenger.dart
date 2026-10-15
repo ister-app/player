@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Global messenger key so non-widget singletons (e.g. [MediaPlayerHandler])
 /// can surface user-facing snackbars without holding a [BuildContext]. Wired

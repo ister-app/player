@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:player/components/ServerNodeBody.dart';
 import 'package:player/graphql/fragmentServerActivity.graphql.dart';
@@ -12,9 +11,7 @@ final _now = DateTime.utc(2026, 9, 6, 12, 0, 0);
 Widget _app(Widget body) => MaterialApp(
       localizationsDelegates: const [
         AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
       ],
       supportedLocales: const [Locale('en')],
       home: Scaffold(body: body),

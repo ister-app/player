@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The app's confirmation dialog: cancel as a plain text button, the
 /// destructive action as a filled button. Returns true only on an explicit

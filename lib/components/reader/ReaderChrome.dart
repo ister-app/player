@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// One overlay bar of a fullscreen reader (top app bar or bottom controls),
 /// laid over the content in a [Stack] instead of occupying a Scaffold slot, so

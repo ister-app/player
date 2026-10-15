@@ -14,7 +14,7 @@ import 'dart:async' as _i48;
 
 import 'package:auto_route/auto_route.dart' as _i45;
 import 'package:flutter/foundation.dart' as _i50;
-import 'package:flutter/material.dart' as _i46;
+import 'package:material_ui/material_ui.dart' as _i46;
 import 'package:player/pages/AddServerPage.dart' as _i1;
 import 'package:player/pages/AdminLibrariesPage.dart' as _i2;
 import 'package:player/pages/AdminUploadPage.dart' as _i3;

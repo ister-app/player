@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/utils/GraphQLCacheStore.dart';
 import 'package:player/utils/LoginManager.dart';

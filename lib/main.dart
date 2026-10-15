@@ -2,13 +2,12 @@ import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/scheduler.dart' show SchedulerBinding;
-import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'utils/url_strategy_stub.dart'
     if (dart.library.html) 'utils/url_strategy_web.dart';
 import 'utils/mpris_stub.dart' if (dart.library.io) 'utils/mpris_linux.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:auto_route/auto_route.dart';
@@ -313,13 +312,20 @@ class _MainState extends State<Main> {
       // scrollable while unvisited items remain, so below-the-fold content
       // (e.g. the season list on the show page) isn't shadowed by the mini
       // player bar.
-      builder: PlatformService.isTvModeSync
-          // The back-key handler makes Escape/GoBack/BrowserBack pop the
-          // current route (Steam Input maps the gamepad's B to Escape; Android
-          // TV's back arrives as a system pop and never gets here). It goes
-          // through the delegate so the music-player overlay still dismisses
-          // with its slide-down animation.
-          ? (context, child) => TvBackKeyHandler(
+      // The app renders with material_ui, but several packages (the media_kit
+      // fork's video widget, graphql_flutter, audio_service, ...) still build
+      // flutter/material widgets, which look up the *legacy* Theme and
+      // MaterialLocalizations types. The bridge republishes ours under those
+      // types; without it they assert "No MaterialLocalizations found".
+      // ignore: deprecated_member_use -- deprecated by design (a migration aid), needed until those packages move.
+      builder: (context, child) => MaterialUiCompatibilityBridge(
+        child: PlatformService.isTvModeSync
+            // The back-key handler makes Escape/GoBack/BrowserBack pop the
+            // current route (Steam Input maps the gamepad's B to Escape;
+            // Android TV's back arrives as a system pop and never gets here).
+            // It goes through the delegate so the music-player overlay still
+            // dismisses with its slide-down animation.
+            ? TvBackKeyHandler(
                 onBack: () => unawaited(_appRouter.delegate().popRoute()),
                 child: FocusTraversalGroup(
                   policy: TvDirectionalFocusPolicy(),
@@ -330,12 +336,11 @@ class _MainState extends State<Main> {
                   ),
                 ),
               )
-          : null,
+            : child ?? const SizedBox.shrink(),
+      ),
       localizationsDelegates: [
         AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
       ],
       supportedLocales: [
         Locale('en'), // English

@@ -3,8 +3,7 @@ import 'dart:convert';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:file/file.dart' as f;
 import 'package:file/memory.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -138,9 +137,7 @@ Widget _app(ValueNotifier<GraphQLClient> client) => GraphQLProvider(
   child: const MaterialApp(
     localizationsDelegates: [
       AppLocalizations.delegate,
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
+      ...GlobalMaterialLocalizations.delegates,
     ],
     supportedLocales: [Locale('en')],
     home: Scaffold(body: RelatedShowsRow(serverName: 'srv', showId: 'main')),

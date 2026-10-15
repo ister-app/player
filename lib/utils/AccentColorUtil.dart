@@ -1,7 +1,7 @@
 
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:player/utils/ArtworkSizing.dart';
 import 'package:player/utils/ImageCacheConfig.dart';
 import 'package:player/utils/ImageUtil.dart';
