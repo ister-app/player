@@ -68,7 +68,8 @@ abstract class PlaybackCore {
 
   /// The video file that is open (null for audio), and its stream rows.
   Fragment$fragmentMediaFiles? get currentVideoFile;
-  List<Fragment$fragmentMediaFiles$mediaFileStreams?> get currentVideoFileStreams;
+  List<Fragment$fragmentMediaFiles$mediaFileStreams?>
+  get currentVideoFileStreams;
 
   /// Bitmap (PGS/VobSub) subtitle tracks of the open video the overlay can
   /// draw, the one it draws, and the selection that turns mpv's own off.
@@ -78,6 +79,24 @@ abstract class PlaybackCore {
 
   /// The crop applied to the open video, as fractions of the frame.
   ValueNotifier<Rect?> get appliedVideoCrop;
+
+  /// Whether playback is supposed to be running — a deliberate pause clears
+  /// it, a hung load does not.
+  bool get intendsToPlay;
+
+  /// The position (ms) the current stream was opened at; resumed content
+  /// opens mid-stream, so "never advanced" is measured from here.
+  int get streamOpenPositionMs;
+
+  /// Re-opens the current stream at its open position, keeping the tracks
+  /// the user selected.
+  Future<void> reopenCurrentStream();
+
+  /// The current item's load failed for good: skip past it (or stop).
+  Future<void> skipFailedLoad();
+
+  /// The current item ended: advance the queue (or finish it).
+  void advanceAfterItemEnd();
 
   /// The published current item (audio_service's mediaItem), or null.
   MediaItem? get currentMediaItem;

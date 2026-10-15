@@ -54,6 +54,7 @@ import 'playback/ProgressSync.dart';
 import 'playback/QueueMediaItems.dart';
 import 'playback/QueueMediaItems.dart' as playback;
 import 'playback/MediaUrls.dart' as playback;
+import 'playback/StallWatchdog.dart';
 import 'playback/TrackPreferences.dart';
 import 'MpvLogThrottle.dart';
 import 'VideoLoadState.dart';
@@ -138,7 +139,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       _listenToErrors();
       _listenToSession();
       applyMpvNetworkOptions(_player);
-      _startStallWatchdog();
+      _stall.start();
       StreamTokenService.tokenVersion.addListener(_refreshArtworkTokens);
       SleepTimerService.instance.onExpire = suspendPlayback;
       _listenersAdded = true;
@@ -636,7 +637,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       return;
     }
     _intendsToPlay = true;
-    _loadRetries = 0;
+    _stall.clearRetries();
     _sync.startHeartbeat();
     _resetVideoStreamReady();
     await _openMedia(
@@ -731,7 +732,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     await _silenceForQueueSwitch();
     _tracks.clearForced();
     bitmapSubtitle.value = null;
-    _loadRetries = 0;
+    _stall.clearRetries();
     await _openMedia(
       serverName: srv,
       mediaFile: target,
@@ -762,7 +763,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (followMode && playQueue?.id != playQueueId) await stopFollowing();
     queueEnded.value = null;
     _intendsToPlay = true;
-    _loadRetries = 0;
+    _stall.clearRetries();
     _sync.startHeartbeat();
     final shouldRefresh = _takeForcedQueueRefresh() ||
         episode == null ||
@@ -849,7 +850,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     _sync.bump();
     _resetVideoStreamReady();
     _currentMediaUrl = null;
-    _mediaOpenedAt = null;
+    _stall.silence();
     currentMediaFile = null;
     currentMediaFileId.value = null;
     // Under flutter test there is no real mpv event loop and player calls
@@ -993,7 +994,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (followMode && playQueue?.id != playQueueId) await stopFollowing();
     queueEnded.value = null;
     _intendsToPlay = true;
-    _loadRetries = 0;
+    _stall.clearRetries();
     _sync.startHeartbeat();
     final shouldRefresh = _takeForcedQueueRefresh() ||
         movie == null ||
@@ -1071,7 +1072,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (followMode && playQueue?.id != playQueueId) await stopFollowing();
     queueEnded.value = null;
     _intendsToPlay = true;
-    _loadRetries = 0;
+    _stall.clearRetries();
     _sync.startHeartbeat();
     final shouldRefresh = album == null ||
         album!.id != newAlbum.id ||
@@ -1333,7 +1334,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (followMode && playQueue?.id != pq.id) await stopFollowing();
     queueEnded.value = null;
     _intendsToPlay = true;
-    _loadRetries = 0;
+    _stall.clearRetries();
     _sync.startHeartbeat();
     _sync.bump();
     _resetVideoStreamReady();
@@ -1393,7 +1394,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (followMode) await stopFollowing();
     queueEnded.value = null;
     _intendsToPlay = true;
-    _loadRetries = 0;
+    _stall.clearRetries();
     _sync.bump();
     _resetVideoStreamReady();
     serverName = srv;
@@ -1731,18 +1732,14 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
     if (!videoStreamReady.value) {
       videoLoad.value = VideoLoadState.opened(videoLoad.value, DateTime.now(),
-          attempt: _loadRetries);
+          attempt: _stall.retries);
     }
     // No mpv under flutter test: nothing would ever report the stream ready.
     if (ClientManager.usesTestClients) _markVideoStreamReady();
     _currentMediaUrl = mediaUrl;
     lastStartTimeMs = startTimeInMilliseconds;
     _streamOpenPositionMs = startTimeInMilliseconds ?? 0;
-    _mediaOpenedAt = DateTime.now();
-    // Reset stall tracking for the newly opened stream.
-    _loadErrorSeen = false;
-    _lastObservedPosition = Duration(milliseconds: startTimeInMilliseconds ?? 0);
-    _lastPositionAdvance = DateTime.now();
+    _stall.noteOpened(startTimeInMilliseconds ?? 0);
     LoggerService().logger.d('openmedia: $serverName$mediaUrl');
     final start = Duration(milliseconds: startTimeInMilliseconds ?? 0);
     final media = Media(
@@ -2146,9 +2143,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     _tracks.clear();
     bitmapSubtitle.value = null;
     _streamOpenPositionMs = 0;
-    _mediaOpenedAt = null;
-    _loadErrorSeen = false;
-    _loadRetries = 0;
+    _stall.reset();
     _sync.reset();
 
     queue.add(const []);
@@ -2204,7 +2199,7 @@ class MediaPlayerHandler extends BaseAudioHandler
           subtitle: hasActiveSub ? sub : SubtitleTrack.no());
       // A re-open right after scrubbing must not count toward the watchdog's
       // failed-load retries for this item.
-      _loadRetries = 0;
+      _stall.clearRetries();
       await _openMedia(
         serverName: serverName!,
         mediaUrl: _restampToken(url),
@@ -2527,7 +2522,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       return;
     }
     _intendsToPlay = true;
-    _loadRetries = 0;
+    _stall.clearRetries();
     _sync.startHeartbeat();
     _sync.bump();
     _resetVideoStreamReady();
@@ -2834,6 +2829,10 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// crop; see [TrackPreferences].
   late final TrackPreferences _tracks = TrackPreferences(this);
 
+  /// Re-opens hung loads, skips failed ones and advances past near-end
+  /// stalls; see [StallWatchdog].
+  late final StallWatchdog _stall = StallWatchdog(this);
+
   // The selection rules, kept here for their tests.
   @visibleForTesting
   static AudioTrack restoredAudioTrack(
@@ -2902,6 +2901,34 @@ class MediaPlayerHandler extends BaseAudioHandler
   int get openGeneration => _openGeneration;
 
   @override
+  bool get intendsToPlay => _intendsToPlay;
+
+  @override
+  int get streamOpenPositionMs => _streamOpenPositionMs;
+
+  @override
+  Future<void> reopenCurrentStream() async {
+    final url = _currentMediaUrl;
+    if (url == null || serverName == null) return;
+    // _openMedia resets the applied-preference flags, so without this the
+    // re-open re-runs the language preferences and throws away whatever the
+    // user picked from the track menu — including, now, turning their manually
+    // enabled subtitles back off. Only carry over a selection that was actually
+    // made: a load that hung before any track arrived has nothing to preserve,
+    // and recording SubtitleTrack.no() there would force subtitles off for good.
+    _tracks.carryOverForReopen(
+        audio: _tracks.audioApplied ? _player.state.track.audio : null,
+        subtitle:
+            _tracks.subtitleApplied ? _player.state.track.subtitle : null);
+    await _openMedia(
+      serverName: serverName!,
+      mediaUrl: _restampToken(url),
+      startTimeInMilliseconds: _streamOpenPositionMs,
+      mediaType: _currentMediaType,
+    );
+  }
+
+  @override
   Fragment$fragmentMediaFiles? get currentVideoFile => _currentVideoFile;
 
   // ── Listener wiring ───────────────────────────────────────────────────
@@ -2913,7 +2940,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     // the app is reopened. Holding focus continuously across track transitions
     // avoids that. Focus is only released on an explicit stop().
     if (playing) {
-      _loadRetries = 0;
+      _stall.clearRetries();
       try {
         final session = await AudioSession.instance;
         // mpv leaves the AVAudioSession alone (iosManageAudioSession: false),
@@ -3011,7 +3038,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// (~3s, 1 retry) instead of sitting through its full 12s×5 regime.
   void _listenToErrors() {
     _player.stream.error.listen((message) {
-      final openedAt = _mediaOpenedAt;
+      final openedAt = _stall.openedAt;
       if (!_intendsToPlay || openedAt == null) return;
       final openPosition = Duration(milliseconds: _streamOpenPositionMs);
       final advanced =
@@ -3025,7 +3052,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       // shrank the watchdog's retry budget to one for a stream that was
       // loading fine — fatal for a slow cold remux start.
       if (!advanced && !message.contains('Could not open codec')) {
-        _loadErrorSeen = true;
+        _stall.noteLoadError();
         final load = videoLoad.value;
         if (load != null && !load.failed) {
           videoLoad.value =
@@ -3099,12 +3126,7 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   void _listenToPosition() {
     _player.stream.position.listen((pos) async {
-      // Track real forward progress so the stall watchdog can tell the
-      // difference between "still playing" and "frozen near the end".
-      if ((pos - _lastObservedPosition).inMilliseconds.abs() > 250) {
-        _lastObservedPosition = pos;
-        _lastPositionAdvance = DateTime.now();
-      }
+      _stall.notePosition(pos);
       _observeStreamReady();
       _sync.recordPlayHistoryIfDue(pos);
 
@@ -3290,7 +3312,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     _autoNextArmedForMediaId = null;
     // One advance per item, and not on top of the completion listener's.
     _autoNextCancelledForMediaId = mediaId;
-    _lastAutoAdvance = DateTime.now();
+    _stall.markAutoAdvance();
     LoggerService().logger.d(
         '[SEGMENT] Credits ran for $autoNextDelayMs ms — next episode');
     advanceAfterItemEnd();
@@ -3315,12 +3337,8 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (part == null) return;
     if (pos.inMilliseconds < part.endMs) return;
     // Debounce against the completion listener / stall watchdog.
-    final last = _lastAutoAdvance;
-    if (last != null &&
-        DateTime.now().difference(last) < const Duration(seconds: 8)) {
-      return;
-    }
-    _lastAutoAdvance = DateTime.now();
+    if (_stall.recentlyAutoAdvanced) return;
+    _stall.markAutoAdvance();
     LoggerService().logger.d(
         '[BOUNDARY] Passed multi-episode slice end (${part.endMs} ms) — advancing');
     advanceAfterItemEnd();
@@ -3549,7 +3567,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     _followMode = true;
     followModeNotifier.value = true;
     _intendsToPlay = true;
-    _loadRetries = 0;
+    _stall.clearRetries();
     serverName = srv;
     graphQLClient = client;
 
@@ -3924,160 +3942,42 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
   }
 
-  /// Watchdog for streams that stall just before the end without ever firing
-  /// `completed`. This is common with transcoded/HLS audio on Android: the
-  /// final segment that signals EOF never arrives (especially while the app is
-  /// backgrounded and Doze throttles the network), so mpv sits buffering near
-  /// the end and `skipToNext()` is never reached. When we detect that playback
-  /// is supposed to be running but the position has frozen within a few seconds
-  /// of the end, we advance manually.
-  void _startStallWatchdog() {
-    _stallWatchdog?.cancel();
-    _stallWatchdog = Timer.periodic(const Duration(seconds: 2), (_) {
-      // Nothing can stall when we don't intend to be playing — skip the work so
-      // the timer doesn't poke the player every 2s for the app's whole life.
-      if (!_intendsToPlay) return;
-      _maybeRecoverStalledLoad();
-      _maybeAutoAdvanceOnStall();
-    });
-  }
-
-  /// Recovers a stream that was opened but never started playing — typically a
-  /// background HLS load that stalled because Android throttled the network at
-  /// the moment of a track change. Without this the next track only starts once
-  /// the app is reopened. We re-open the same stream a bounded number of times;
-  /// the mpv reconnect options handle softer drops, this handles a full hang.
-  void _maybeRecoverStalledLoad() {
-    if (!_intendsToPlay) return;
-    // A skip is already in flight for a failed load — don't re-open the old
-    // (failing) stream in the window before the next item takes over.
-    if (_handlingFailedLoad) return;
-    if (_player.state.playing) return;
-    final openedAt = _mediaOpenedAt;
-    if (openedAt == null) return;
-    // Give a normal background load plenty of time before intervening — but
-    // fail fast when mpv already reported a load error (e.g. a 404/denied
-    // stream): those never recover, only the retry-then-skip path helps.
-    final stallThreshold = _loadErrorSeen
-        ? const Duration(seconds: 3)
-        : const Duration(seconds: 12);
-    if (DateTime.now().difference(openedAt) < stallThreshold) {
-      return;
-    }
-    // A stream with known duration that isn't buffering did load — it is
-    // paused by something outside pause() (which would have cleared
-    // _intendsToPlay), e.g. mpv itself or a platform interruption — not hung.
-    if (!_player.state.buffering && _player.state.duration > Duration.zero) {
-      return;
-    }
-    // Only a stream that essentially never advanced past its open position
-    // counts as a failed load. (Resumed content opens mid-stream, so compare
-    // against the open position rather than 0.)
-    final openPosition = Duration(milliseconds: _streamOpenPositionMs);
-    if (_player.state.position - openPosition > const Duration(seconds: 1)) {
-      return;
-    }
-    final url = _currentMediaUrl;
-    if (url == null || serverName == null) return;
-    // Re-opening the same stream never got it playing — the load has
-    // definitively failed (commonly a server-side transcode that emits a valid
-    // manifest but never delivers segments). Skip the item and tell the user
-    // instead of buffering forever. A hard player error needs only one retry.
-    final maxRetries = _loadErrorSeen ? 1 : 5;
-    if (_loadRetries >= maxRetries) {
-      _loadRetries = 0;
-      unawaited(_skipFailedLoad());
-      return;
-    }
-    _loadRetries++;
-    LoggerService().logger.w(
-        '[LOADSTALL] Stream not playing 12s+ after open — re-opening (retry $_loadRetries)');
-    // _openMedia clears the applied-preference flags, so without this the
-    // re-open re-runs the language preferences and throws away whatever the
-    // user picked from the track menu — including, now, turning their manually
-    // enabled subtitles back off. Only carry over a selection that was actually
-    // made: a load that hung before any track arrived has nothing to preserve,
-    // and recording SubtitleTrack.no() there would force subtitles off for good.
-    _tracks.carryOverForReopen(
-        audio: _tracks.audioApplied ? _player.state.track.audio : null,
-        subtitle:
-            _tracks.subtitleApplied ? _player.state.track.subtitle : null);
-    _openMedia(
-      serverName: serverName!,
-      mediaUrl: _restampToken(url),
-      startTimeInMilliseconds: _streamOpenPositionMs,
-      mediaType: _currentMediaType,
-    );
-  }
-
-  /// Called when a stream never started playing after the bounded re-opens in
-  /// [_maybeRecoverStalledLoad] — the load has failed for good. Skips to the
+  /// Called by [StallWatchdog] when a stream never started playing after its
+  /// bounded re-opens — the load has failed for good. Skips to the
   /// next playable queue item and tells the user why, or stops when nothing
   /// playable remains. The item's media file exists (this isn't the
   /// not-yet-analysed case), so [_nextPlayableIndex] simply advances past it.
-  Future<void> _skipFailedLoad() async {
-    if (_handlingFailedLoad) return;
-    _handlingFailedLoad = true;
-    try {
-      final index = playbackState.value.queueIndex;
-      final title = mediaItem.valueOrNull?.title ??
-          (index != null && index >= 0 && index < queue.value.length
-              ? queue.value[index].title
-              : '');
-      LoggerService()
-          .logger
-          .w('[LOADSTALL] Load failed after retries — skipping ‘$title’');
-      // A follower may not skip the shared queue; go silent on this item and
-      // wait for the leader to move on (a 404 here usually means this user's
-      // library access was revoked mid-queue).
-      if (_followMode) {
-        final itemId = currentPlayQueueItem?.id;
-        if (itemId != null) _announceFollowItemUnavailable(itemId);
-        return;
-      }
-      showAppSnackBar(IsterMediaService.loc.skippedTrackPlaybackFailed(title));
-      final nextPlayable =
-          index == null ? -1 : _nextPlayableIndex(index + 1);
-      if (nextPlayable != -1) {
-        await skipToQueueItem(nextPlayable);
-      } else {
-        // Nothing takes over: without this the surface kept its spinner over
-        // a stream that was never going to play.
-        _markVideoLoadFailed();
-        await suspendPlayback();
-      }
-    } finally {
-      _handlingFailedLoad = false;
-    }
-  }
-
-  void _maybeAutoAdvanceOnStall() {
-    // A follower never advances on its own; the leader's item change arrives
-    // over the now-playing fan-out.
-    if (_followMode) return;
-    if (!_player.state.playing) return;
-    final dur = _player.state.duration;
-    final pos = _player.state.position;
-    if (dur <= Duration.zero) return;
-
-    // Only act near the very end — a mid-track buffering hiccup should recover
-    // on its own, not skip the track.
-    if (dur - pos > const Duration(seconds: 3)) return;
-
-    final stalledFor = DateTime.now().difference(_lastPositionAdvance);
-    if (stalledFor < const Duration(seconds: 4)) return;
-
-    // Debounce against a real `completed` event firing around the same time.
-    final last = _lastAutoAdvance;
-    if (last != null &&
-        DateTime.now().difference(last) < const Duration(seconds: 8)) {
+  @override
+  Future<void> skipFailedLoad() async {
+    final index = playbackState.value.queueIndex;
+    final title = mediaItem.valueOrNull?.title ??
+        (index != null && index >= 0 && index < queue.value.length
+            ? queue.value[index].title
+            : '');
+    LoggerService()
+        .logger
+        .w('[LOADSTALL] Load failed after retries — skipping ‘$title’');
+    // A follower may not skip the shared queue; go silent on this item and
+    // wait for the leader to move on (a 404 here usually means this user's
+    // library access was revoked mid-queue).
+    if (_followMode) {
+      final itemId = currentPlayQueueItem?.id;
+      if (itemId != null) _announceFollowItemUnavailable(itemId);
       return;
     }
-    _lastAutoAdvance = DateTime.now();
-    LoggerService().logger.w(
-        '[STALL] Near-end stall detected (remaining=${dur - pos}, stalledFor=$stalledFor) — advancing to next');
-    advanceAfterItemEnd();
+    showAppSnackBar(IsterMediaService.loc.skippedTrackPlaybackFailed(title));
+    final nextPlayable =
+        index == null ? -1 : _nextPlayableIndex(index + 1);
+    if (nextPlayable != -1) {
+      await skipToQueueItem(nextPlayable);
+    } else {
+      // Nothing takes over: without this the surface kept its spinner over
+      // a stream that was never going to play.
+      _markVideoLoadFailed();
+      await suspendPlayback();
+    }
   }
+
 
   void _listenToCompletion() {
     _player.stream.completed.listen((completed) {
@@ -4087,7 +3987,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       if (completed && playQueue != null) {
         final pos = _player.state.position;
         final dur = _player.state.duration;
-        final openedAt = _mediaOpenedAt;
+        final openedAt = _stall.openedAt;
         final msSinceOpen = openedAt != null
             ? DateTime.now().difference(openedAt).inMilliseconds
             : null;
@@ -4110,7 +4010,7 @@ class MediaPlayerHandler extends BaseAudioHandler
           return;
         }
         // Mark so the stall watchdog doesn't double-advance.
-        _lastAutoAdvance = DateTime.now();
+        _stall.markAutoAdvance();
         advanceAfterItemEnd();
       }
     });
@@ -4120,6 +4020,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// just ran out — then playback suspends and the queue parks on the next
   /// item instead.
   @visibleForTesting
+  @override
   void advanceAfterItemEnd() {
     _scheduleAutoNextForFinishedEpisode();
     if (SleepTimerService.instance.notifyItemFinished()) {
@@ -4378,24 +4279,9 @@ class MediaPlayerHandler extends BaseAudioHandler
   // ── Helper methods (track selection) ───────────────────────────────────
   bool _listenersAdded = false;
   bool _interrupted = false;
-  DateTime? _mediaOpenedAt;
-
-  // Stall-watchdog state: tracks real forward progress so we can detect a
-  // stream that froze near the end without firing `completed`.
-  Timer? _stallWatchdog;
-  Duration _lastObservedPosition = Duration.zero;
-  DateTime _lastPositionAdvance = DateTime.now();
-  DateTime? _lastAutoAdvance;
-  // Guards the skip-on-failed-load path so the watchdog doesn't re-open the
-  // failing stream while the skip to the next item is still in flight.
-  bool _handlingFailedLoad = false;
   // Whether playback is supposed to be running. Lets the load watchdog tell a
   // failed background load apart from a deliberate pause.
   bool _intendsToPlay = false;
-  int _loadRetries = 0;
-  // Set by the player error stream while the current load never advanced;
-  // switches the load watchdog to its fast-fail regime (3s, 1 retry).
-  bool _loadErrorSeen = false;
 
   /// The first track whose language matches a preference, or null when none of
   /// the preferences is available.

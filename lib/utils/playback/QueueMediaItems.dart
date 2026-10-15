@@ -19,11 +19,16 @@ const int publishedArtworkWidth = 640;
 /// looks like is [QueueItemDisplay]'s job — shared with the remote control,
 /// which renders the same queues without playing them.
 List<MediaItem> buildQueueMediaItems(
-    Fragment$fragmentPlayQueue pq, String serverName) {
+  Fragment$fragmentPlayQueue pq,
+  String serverName,
+) {
   final token = StreamTokenService.getToken(serverName);
   return PlayQueueService.sortedItems(pq).map((e) {
-    final display = QueueItemDisplay.of(e,
-        token: token, artworkWidth: publishedArtworkWidth);
+    final display = QueueItemDisplay.of(
+      e,
+      token: token,
+      artworkWidth: publishedArtworkWidth,
+    );
     return MediaItem(
       id: MediaItemId(serverName, display.mediaType, e.id).toString(),
       title: display.title,
@@ -50,7 +55,8 @@ MediaItem restampArtToken(MediaItem item, String token) {
   }
   return item.copyWith(
     artUri: art.replace(
-        queryParameters: {...art.queryParameters, 'token': token}),
+      queryParameters: {...art.queryParameters, 'token': token},
+    ),
   );
 }
 
