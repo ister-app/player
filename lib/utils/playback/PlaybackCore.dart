@@ -6,13 +6,57 @@
 // grep-able. Grow it per collaborator; a collaborator that needs a large
 // slice of it is cut at the wrong seam.
 import 'package:audio_service/audio_service.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:player/dto/MediaItemId.dart';
+import 'package:player/graphql/fragmentEpisode.graphql.dart';
+import 'package:player/graphql/fragmentMediafiles.graphql.dart';
+import 'package:player/graphql/fragmentMovie.graphql.dart';
 import 'package:player/graphql/fragmentPlayQueue.graphql.dart';
+import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/utils/PlayQueueService.dart';
 
 abstract class PlaybackCore {
-  /// The loaded play queue, or null while nothing is loaded.
+  /// The one media_kit player. Not real under test ([playerIsMocked]).
+  Player get player;
+
+  /// The loaded play queue, or null while nothing is loaded. Collaborators
+  /// may replace it with a merged server response.
   Fragment$fragmentPlayQueue? get playQueue;
+  set playQueue(Fragment$fragmentPlayQueue? value);
+
+  Fragment$fragmentPlayQueue$playQueueItems? get currentPlayQueueItem;
+
+  /// The server the loaded queue belongs to, and its client.
+  String? get serverName;
+  GraphQLClient? get graphQLClient;
+
+  /// The typed current item, by kind; chapters and podcast episodes set none
+  /// of these (only [currentPlayQueueItem]).
+  Fragment$fragmentEpisode? get episode;
+  Fragment$fragmentMovie? get movie;
+  String? get currentTrackId;
+  Fragment$fragmentMediaFiles? get currentMediaFile;
+
+  /// The stream url mpv has open, or null between items (a queue switch in
+  /// flight, or nothing opened yet).
+  String? get currentMediaUrl;
+
+  /// A downloaded queue (`local:` id): no client, progress goes offline.
+  bool get isLocalQueue;
+
+  /// The repeat mode as the server API spells it.
+  Enum$RepeatMode get repeatModeApi;
+
+  /// Where the current item ends in its file's timeline (a slice of a
+  /// multi-episode file ends at its part boundary).
+  int currentItemEndMs(Fragment$fragmentEpisode? ep);
+
+  /// Keeps the remote-control command subscription on the active queue.
+  void ensureCommandSubscription();
+
+  /// Re-fetches the active queue from the server and adopts it.
+  Future<void> reloadPlayQueueFromServer();
 
   /// The published current item (audio_service's mediaItem), or null.
   MediaItem? get currentMediaItem;

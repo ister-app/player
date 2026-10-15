@@ -31,8 +31,6 @@ import 'package:player/utils/download/DownloadService.dart';
 import 'package:player/utils/EpisodeParts.dart';
 import 'package:player/utils/MediaVersions.dart';
 import 'package:player/utils/download/LocalPlayQueue.dart';
-import 'package:player/utils/download/MusicCacheService.dart';
-import 'package:player/utils/download/PlayHistoryStore.dart';
 import 'package:player/utils/download/OfflineProgressStore.dart';
 import 'package:player/utils/download/SubtitleStreams.dart';
 import 'package:player/utils/subtitles/BitmapSubtitles.dart';
@@ -45,7 +43,6 @@ import '../graphql/fragmentMediafiles.graphql.dart';
 import '../graphql/fragmentMovie.graphql.dart';
 import '../graphql/fragmentWatchStatus.graphql.dart';
 import '../graphql/fragmentPlayQueue.graphql.dart';
-import '../graphql/updatePlayQueueHeartbeat.graphql.dart';
 import '../graphql/fragmentServerActivity.graphql.dart';
 import '../graphql/nowPlayingSubscription.graphql.dart';
 import '../graphql/playbackCommandsSubscription.graphql.dart';
@@ -57,6 +54,7 @@ import 'SleepTimerService.dart';
 import 'playback/AndroidAutoBrowser.dart';
 import 'playback/MpvSetup.dart';
 import 'playback/PlaybackCore.dart';
+import 'playback/ProgressSync.dart';
 import 'playback/QueueMediaItems.dart';
 import 'playback/QueueMediaItems.dart' as playback;
 import 'MpvLogThrottle.dart';
@@ -158,6 +156,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   late final VideoController _videoController;
   late final PlayQueueService _playQueueService;
 
+  @override
   Player get player => _player;
 
   /// Playback position sampled to whole seconds. The raw `player.stream.position`
@@ -373,7 +372,9 @@ class MediaPlayerHandler extends BaseAudioHandler
   AudioServiceRepeatMode _repeatMode = AudioServiceRepeatMode.none;
   AudioServiceRepeatMode get repeatMode => _repeatMode;
 
+  @override
   Fragment$fragmentEpisode? episode;
+  @override
   Fragment$fragmentMovie? movie;
 
   /// Subtitle-relevant streams of the current video item's media file, as the
@@ -390,6 +391,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// to a file, so everything reads them through here; each taking its own
   /// `mediaFile.first` is how one file's subtitles landed on another's stream.
   /// Set by [_openMedia], cleared when a queue switch silences the player.
+  @override
   Fragment$fragmentMediaFiles? currentMediaFile;
 
   /// [currentMediaFile]'s id, for the UI (the version menu's check mark).
@@ -550,14 +552,18 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
   }
   Fragment$fragmentAlbum? album;
+  @override
   String? currentTrackId;
   // The kind of media currently loaded. Replaces the old parallel
   // _isMovie/_isTrack booleans so the type can never become inconsistent.
   IsterMediaTypes _currentMediaType = IsterMediaTypes.episode;
+  @override
   Fragment$fragmentPlayQueue$playQueueItems? currentPlayQueueItem;
   @override
   Fragment$fragmentPlayQueue? playQueue;
+  @override
   String? serverName;
+  @override
   GraphQLClient? graphQLClient;
 
   // Track selection state for reload-based switching
@@ -567,13 +573,6 @@ class MediaPlayerHandler extends BaseAudioHandler
   // The position (ms) at which the current stream was opened. Used by the
   // stall watchdog to re-open a hung stream at its resume point instead of 0.
   int _streamOpenPositionMs = 0;
-  // Bumped whenever the current item or queue changes; in-flight progress
-  // responses from before the bump are dropped instead of applied.
-  int _syncGeneration = 0;
-  // Trace every progress update/heartbeat in the integration suite: a watch
-  // status that never appears server-side is otherwise undebuggable from the
-  // CI logs (successful syncs are silent). Inert in production builds.
-  static const bool _traceProgressSync = bool.fromEnvironment('ISTER_TEST_MODE');
   // Remote-control ("party mode"): commands for the active queue arrive over
   // this subscription and are executed as if the user tapped the controls.
   ResilientSubscription? _commandSubscription;
@@ -637,7 +636,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
     _intendsToPlay = true;
     _loadRetries = 0;
-    _startHeartbeat();
+    _sync.startHeartbeat();
     _resetVideoStreamReady();
     await _openMedia(
       serverName: srv,
@@ -725,7 +724,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (leaderPositionMs == null &&
         from != null &&
         MediaVersions.sameTimeline(from, target)) {
-      await _syncProgress(_player.state.position, force: true);
+      await _sync.syncProgress(_player.state.position, force: true);
     }
     final resume = _intendsToPlay;
     await _silenceForQueueSwitch();
@@ -764,7 +763,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     queueEnded.value = null;
     _intendsToPlay = true;
     _loadRetries = 0;
-    _startHeartbeat();
+    _sync.startHeartbeat();
     final shouldRefresh = _takeForcedQueueRefresh() ||
         episode == null ||
         episode!.id != newEpisode.id ||
@@ -813,7 +812,7 @@ class MediaPlayerHandler extends BaseAudioHandler
           : buildQueueMediaItems(playQueueObject, newServerName));
 
       playQueue = playQueueObject;
-      _ensureCommandSubscription();
+      ensureCommandSubscription();
       currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
       final open = await _fileForFetchedQueue(
@@ -847,7 +846,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// e.g. reverting a fully-watched episode to the watchdog's re-open position —
   /// before [_openMedia] installs the new stream.
   Future<void> _silenceForQueueSwitch() async {
-    _syncGeneration++;
+    _sync.bump();
     _resetVideoStreamReady();
     _currentMediaUrl = null;
     _mediaOpenedAt = null;
@@ -995,7 +994,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     queueEnded.value = null;
     _intendsToPlay = true;
     _loadRetries = 0;
-    _startHeartbeat();
+    _sync.startHeartbeat();
     final shouldRefresh = _takeForcedQueueRefresh() ||
         movie == null ||
         movie!.id != newMovie.id ||
@@ -1036,7 +1035,7 @@ class MediaPlayerHandler extends BaseAudioHandler
           : buildQueueMediaItems(playQueueObject, newServerName));
 
       playQueue = playQueueObject;
-      _ensureCommandSubscription();
+      ensureCommandSubscription();
       currentPlayQueueItem = PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
       final open = await _fileForFetchedQueue(
@@ -1073,7 +1072,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     queueEnded.value = null;
     _intendsToPlay = true;
     _loadRetries = 0;
-    _startHeartbeat();
+    _sync.startHeartbeat();
     final shouldRefresh = album == null ||
         album!.id != newAlbum.id ||
         serverName != newServerName ||
@@ -1109,7 +1108,7 @@ class MediaPlayerHandler extends BaseAudioHandler
           : buildQueueMediaItems(playQueueObject, newServerName));
 
       playQueue = playQueueObject;
-      _ensureCommandSubscription();
+      ensureCommandSubscription();
       currentPlayQueueItem =
           PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
@@ -1135,7 +1134,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
     updatePlaybackState();
     _browser.rememberLastPlayed(newServerName, newAlbum.id, trackId);
-    _armPlayHistory(
+    _sync.armPlayHistory(
         newServerName,
         playQueue?.playQueueItems
             ?.where((e) => e.track?.id == trackId)
@@ -1335,8 +1334,8 @@ class MediaPlayerHandler extends BaseAudioHandler
     queueEnded.value = null;
     _intendsToPlay = true;
     _loadRetries = 0;
-    _startHeartbeat();
-    _syncGeneration++;
+    _sync.startHeartbeat();
+    _sync.bump();
     _resetVideoStreamReady();
     serverName = srv;
     graphQLClient = client;
@@ -1364,7 +1363,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     playQueue = pq.currentItemId == current.id
         ? pq
         : pq.copyWith(currentItemId: current.id);
-    _ensureCommandSubscription();
+    ensureCommandSubscription();
 
     queueTitle.add("Now Playing");
     queue.add(buildQueueMediaItems(playQueue!, srv));
@@ -1383,6 +1382,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// Whether the current queue lives only on this device (played from the
   /// download mirror while the server is unreachable): no client, no
   /// heartbeat, progress goes to [OfflineProgressStore].
+  @override
   bool get isLocalQueue => LocalPlayQueue.isLocal(playQueue?.id);
 
   /// Starts a queue built from downloads ([LocalPlayQueue.build]): the same
@@ -1394,7 +1394,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     queueEnded.value = null;
     _intendsToPlay = true;
     _loadRetries = 0;
-    _syncGeneration++;
+    _sync.bump();
     _resetVideoStreamReady();
     serverName = srv;
     graphQLClient = null;
@@ -1483,7 +1483,7 @@ class MediaPlayerHandler extends BaseAudioHandler
 
     serverName = srv;
     graphQLClient = client;
-    _syncGeneration++;
+    _sync.bump();
     playQueue =
         pq.currentItemId == current.id ? pq : pq.copyWith(currentItemId: current.id);
     currentPlayQueueItem = current;
@@ -1586,7 +1586,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         autoPlay: autoPlay,
       );
       _browser.rememberLastPlayed(srv, t.album.id, t.id);
-      _armPlayHistory(srv, item);
+      _sync.armPlayHistory(srv, item);
     } else if (item.chapter != null) {
       // Audiobook chapters behave exactly like tracks: audio-only HLS.
       episode = null;
@@ -1667,6 +1667,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   }
 
   @visibleForTesting
+  @override
   String? get currentMediaUrl => _currentMediaUrl;
 
   /// The start position handed to the last [_openMedia] (tests).
@@ -1949,8 +1950,8 @@ class MediaPlayerHandler extends BaseAudioHandler
     // Resuming after stop() (or a paused restore) must restart the heartbeat
     // and the remote-command subscription those paths left down.
     if (playQueue != null) {
-      _startHeartbeat();
-      _ensureCommandSubscription();
+      _sync.startHeartbeat();
+      ensureCommandSubscription();
     }
     // Under flutter test there is no real mpv event loop and player calls
     // never complete — same seam as _openMedia / _silenceForQueueSwitch.
@@ -1959,7 +1960,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         : _player.play();
     // Tell the server we resumed right away. playState is passed explicitly
     // because _player.state.playing hasn't flipped to true yet at this point.
-    unawaited(_syncProgress(_player.state.position,
+    unawaited(_sync.syncProgress(_player.state.position,
         force: true, playState: Enum$PlayState.PLAYING));
     return result;
   }
@@ -1973,7 +1974,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     _intendsToPlay = false;
     // playState is passed explicitly: _player.state.playing is still true here
     // (pause() below hasn't taken effect), so deriving it would report PLAYING.
-    unawaited(_syncProgress(_player.state.position,
+    unawaited(_sync.syncProgress(_player.state.position,
         force: true, playState: Enum$PlayState.PAUSED));
     // Same test seam as play(): the real pause never completes under test.
     return ClientManager.usesTestClients ? Future.value() : _player.pause();
@@ -1998,10 +1999,10 @@ class MediaPlayerHandler extends BaseAudioHandler
     // There is no explicit stop mutation: ending the heartbeat is the stop
     // signal. The final flush below records the resume position; the server
     // expires the session 60s after this last update.
-    _stopHeartbeat();
+    _sync.stopHeartbeat();
     // A stopped session can no longer be remote-controlled.
     _stopCommandSubscription();
-    unawaited(_syncProgress(_player.state.position,
+    unawaited(_sync.syncProgress(_player.state.position,
         force: true, playState: Enum$PlayState.PAUSED));
     SleepTimerService.instance.notifyPlaybackStopped();
     // Same test seam as play()/pause(): the real calls never complete under
@@ -2103,10 +2104,10 @@ class MediaPlayerHandler extends BaseAudioHandler
         : _player.state.position;
     await stopFollowing();
     _intendsToPlay = false;
-    _stopHeartbeat();
+    _sync.stopHeartbeat();
     _stopCommandSubscription();
     if (flushProgress) {
-      unawaited(_syncProgress(_player.state.position,
+      unawaited(_sync.syncProgress(_player.state.position,
           force: true, playState: Enum$PlayState.PAUSED));
     }
     SleepTimerService.instance.notifyPlaybackStopped();
@@ -2136,7 +2137,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     currentMediaFile = null;
     currentMediaFileId.value = null;
     // In-flight progress responses must not resurrect the queue we clear below.
-    _syncGeneration++;
+    _sync.bump();
     // The once-per-process restore guard has done its job for the queue that
     // just went away; a play with nothing loaded after this (the Android
     // notification lingers after a stop, a headset button) must be able to
@@ -2166,8 +2167,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     _mediaOpenedAt = null;
     _loadErrorSeen = false;
     _loadRetries = 0;
-    _lastProgress = null;
-    _lastSyncSentAt = null;
+    _sync.reset();
 
     queue.add(const []);
     mediaItem.add(null);
@@ -2527,7 +2527,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     playbackState.add(playbackState.value.copyWith(repeatMode: repeatMode));
     // The mode rides along on the next heartbeat, but a remote control would
     // then show the old state for up to ~10s; a forced sync closes that gap.
-    unawaited(_syncProgress(_player.state.position, force: true));
+    unawaited(_sync.syncProgress(_player.state.position, force: true));
   }
 
   /// The wire form of an audio_service repeat mode; the session relays it so
@@ -2752,10 +2752,10 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
     _intendsToPlay = true;
     _loadRetries = 0;
-    _startHeartbeat();
-    _syncGeneration++;
+    _sync.startHeartbeat();
+    _sync.bump();
     _resetVideoStreamReady();
-    final generation = _syncGeneration;
+    final generation = _sync.generation;
     // Moving on from an episode to the item right after it is "continuing to
     // watch" — the only case the intro auto-skip acts on.
     final continues = _currentMediaType == IsterMediaTypes.episode &&
@@ -2926,7 +2926,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       final track = queueItem.track;
       if (track != null) {
         _browser.rememberLastPlayed(mediaItemId.serverName, track.album.id, track.id);
-        _armPlayHistory(mediaItemId.serverName, queueItem);
+        _sync.armPlayHistory(mediaItemId.serverName, queueItem);
       }
       _rememberLastMusicQueue();
 
@@ -2937,7 +2937,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       // Sync the new current item to the server. The local state above is
       // already final; the response only refreshes progress data, and is
       // dropped when another skip happened in the meantime.
-      final playQueueObject = await _sendProgressUpdate(
+      final playQueueObject = await _sync.sendProgressUpdate(
         ClientManager.getClientForUrl(mediaItemId.serverName).value,
         playQueue!.id,
         mediaItemId.id,
@@ -2947,8 +2947,8 @@ class MediaPlayerHandler extends BaseAudioHandler
         Duration(milliseconds: _partBoundsOf(queueItem.episode)?.startMs ?? 0),
       );
       if (playQueueObject != null &&
-          generation == _syncGeneration &&
-          _applyServerPlayQueue(playQueueObject)) {
+          generation == _sync.generation &&
+          _sync.applyServerPlayQueue(playQueueObject)) {
         currentPlayQueueItem =
             PlayQueueService.getCurrentPlayQueueItem(playQueue);
         PlayQueueService().playQueueChanged(playQueue!);
@@ -2980,7 +2980,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       afterPlayQueueItemId: afterId,
     );
     if (updated == null) return false;
-    _applyServerPlayQueue(updated);
+    _sync.applyServerPlayQueue(updated);
     _refreshQueueFromPlayQueue();
     return true;
   }
@@ -2998,7 +2998,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     final updated =
         await _playQueueService.addPlayQueueAlbum(client, pq.id, albumId);
     if (updated == null) return false;
-    _applyServerPlayQueue(updated);
+    _sync.applyServerPlayQueue(updated);
     _refreshQueueFromPlayQueue();
     return true;
   }
@@ -3015,7 +3015,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     final updated =
         await _playQueueService.removePlayQueueItem(client, pq.id, playQueueItemId);
     if (updated == null) return;
-    _applyServerPlayQueue(updated);
+    _sync.applyServerPlayQueue(updated);
     _refreshQueueFromPlayQueue();
   }
 
@@ -3031,7 +3031,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     final updated = await _playQueueService.movePlayQueueItem(
         client, pq.id, playQueueItemId, afterPlayQueueItemId);
     if (updated == null) return;
-    _applyServerPlayQueue(updated);
+    _sync.applyServerPlayQueue(updated);
     _refreshQueueFromPlayQueue();
   }
 
@@ -3049,6 +3049,17 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   /// Android Auto / media-browser surface; see [AndroidAutoBrowser].
   late final AndroidAutoBrowser _browser = AndroidAutoBrowser(this);
+
+  /// Progress reporting, the session heartbeat and the play history; see
+  /// [ProgressSync].
+  late final ProgressSync _sync = ProgressSync(this);
+
+  /// See [ProgressSync.mergeServerPlayQueue] (kept here for its tests).
+  static Fragment$fragmentPlayQueue? mergeServerPlayQueue(
+    Fragment$fragmentPlayQueue? current,
+    Fragment$fragmentPlayQueue response,
+  ) =>
+      ProgressSync.mergeServerPlayQueue(current, response);
 
   @override
   Future<List<MediaItem>> getChildren(String parentMediaId,
@@ -3073,6 +3084,9 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   @override
   bool get playerIsMocked => ClientManager.usesTestClients;
+
+  @override
+  Enum$RepeatMode get repeatModeApi => repeatModeToApi(_repeatMode);
 
   // ── Listener wiring ───────────────────────────────────────────────────
   Future<void> _onPlayingChanged(bool playing) async {
@@ -3443,31 +3457,6 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
   }
 
-  /// The track whose play is not yet counted in the local history: it is
-  /// recorded once 30s (or half of it) played, so skipping through an album
-  /// does not fill the music cache with tracks nobody listened to.
-  (String, Fragment$fragmentPlayQueue$playQueueItems)? _pendingHistory;
-
-  void _armPlayHistory(String srv, Fragment$fragmentPlayQueue$playQueueItems? item) {
-    _pendingHistory = item?.track == null ? null : (srv, item!);
-  }
-
-  void _recordPlayHistoryIfDue(Duration pos) {
-    final pending = _pendingHistory;
-    if (pending == null || kIsWeb) return;
-    final duration = _player.state.duration;
-    final due = pos >= const Duration(seconds: 30) ||
-        (duration > Duration.zero && pos >= duration ~/ 2);
-    if (!due) return;
-    _pendingHistory = null;
-    final (srv, item) = pending;
-    unawaited(PlayHistoryStore.instance.record(srv, item).then((_) {
-      MusicCacheService.instance.schedule(srv);
-    }).catchError((e) {
-      LoggerService().logger.w('play history record failed: $e');
-    }));
-  }
-
   void _listenToPosition() {
     _player.stream.position.listen((pos) async {
       // Track real forward progress so the stall watchdog can tell the
@@ -3477,13 +3466,13 @@ class MediaPlayerHandler extends BaseAudioHandler
         _lastPositionAdvance = DateTime.now();
       }
       _observeStreamReady();
-      _recordPlayHistoryIfDue(pos);
+      _sync.recordPlayHistoryIfDue(pos);
 
       _maybeAdvancePastEpisodeBoundary(pos);
       maybeAutoSkipIntro(pos);
       maybeAutoNextAtOutro(pos);
 
-      await _syncProgress(pos);
+      await _sync.syncProgress(pos);
     });
   }
 
@@ -3697,282 +3686,12 @@ class MediaPlayerHandler extends BaseAudioHandler
     advanceAfterItemEnd();
   }
 
-  // Progress updates are sent strictly one at a time, in submission order.
-  // Concurrent requests can be processed by the server out of order, letting
-  // an in-flight update for the previous track overwrite the currentItemId a
-  // skip just set.
-  Future<void> _progressChain = Future.value();
-
-  /// The stream settings media URLs are built with, so the server can
-  /// prefetch the next queue item in the same format.
-  Future<Input$StreamSettingsInput> _currentStreamSettings() async {
-    final directPlay = kIsWeb ? false : await PlaybackPreferences.getDirectPlay(serverName: serverName);
-    final transcode = kIsWeb ? true : await PlaybackPreferences.getTranscode(serverName: serverName);
-    return Input$StreamSettingsInput(
-      direct: directPlay,
-      transcode: transcode,
-      subtitleFormat: fromJson$Enum$SubtitleFormat(ImageUtil.subtitleFormat),
-      // Which version of the item this is: the server's watched boundary and
-      // session duration, followers and a device taking over all go by it.
-      mediaFileId: currentMediaFile?.id,
-    );
-  }
-
-  Future<Fragment$fragmentPlayQueue?> _sendProgressUpdate(
-    GraphQLClient client,
-    String playQueueId,
-    String playQueueItemId,
-    Duration position, {
-    Enum$PlayState? playState,
-  }) {
-    // When [playState] is null it is read inside the chained closure so it
-    // reflects the state at the moment the request is actually sent, not when
-    // it was queued. It comes from the player itself (not _intendsToPlay)
-    // because the in-video controls can pause without going through pause().
-    // play()/pause()/stop() pass it explicitly because the player state hasn't
-    // flipped yet when they fire the update.
-    final send = _progressChain.then((_) async {
-      // Tight-sync anchor: sample the position and server clock at the moment
-      // the request actually goes out. The device's own output latency is
-      // subtracted so the anchor describes what listeners *hear*, not what the
-      // decoder reports. Omitted (nulls) until the clock has been measured;
-      // followers then fall back to the coarse sync.
-      final anchor = _timelineAnchor();
-      final effectiveState = playState ??
-          (_player.state.playing
-              ? Enum$PlayState.PLAYING
-              : Enum$PlayState.PAUSED);
-      if (_traceProgressSync) {
-        LoggerService().logger.d(
-            '[PROGRESS] update ${position.inMilliseconds}ms state=${effectiveState.name} item=$playQueueItemId');
-      }
-      final result = await _playQueueService.updateProgress(
-          client, playQueueId, playQueueItemId, position,
-          streamSettings: await _currentStreamSettings(),
-          playState: effectiveState,
-          deviceId: await DevicePreferences.getDeviceId(),
-          anchorPositionMs: anchor?.positionMs,
-          anchorServerTimeMs: anchor?.serverTimeMs,
-          repeatMode: repeatModeToApi(_repeatMode));
-      if (_traceProgressSync) {
-        LoggerService().logger.d('[PROGRESS] update ack=${result != null}');
-      }
-      return result;
-    });
-    _progressChain = send.then((_) {}, onError: (_) {});
-    return send;
-  }
-
-  /// The slim heartbeat twin of [_sendProgressUpdate]: same request chain (a
-  /// beat must not overtake an in-flight full update), minimal response.
-  Future<Mutation$updatePlayQueueHeartbeat$updatePlayQueue?>
-      _sendProgressHeartbeat(
-    GraphQLClient client,
-    String playQueueId,
-    String playQueueItemId,
-    Duration position, {
-    Enum$PlayState? playState,
-  }) {
-    final send = _progressChain.then((_) async {
-      final anchor = _timelineAnchor();
-      final effectiveState = playState ??
-          (_player.state.playing
-              ? Enum$PlayState.PLAYING
-              : Enum$PlayState.PAUSED);
-      if (_traceProgressSync) {
-        LoggerService().logger.d(
-            '[PROGRESS] heartbeat ${position.inMilliseconds}ms state=${effectiveState.name} item=$playQueueItemId');
-      }
-      final result = await _playQueueService.updateProgressHeartbeat(
-          client, playQueueId, playQueueItemId, position,
-          streamSettings: await _currentStreamSettings(),
-          playState: effectiveState,
-          deviceId: await DevicePreferences.getDeviceId(),
-          anchorPositionMs: anchor?.positionMs,
-          anchorServerTimeMs: anchor?.serverTimeMs,
-          repeatMode: repeatModeToApi(_repeatMode));
-      if (_traceProgressSync) {
-        LoggerService().logger.d('[PROGRESS] heartbeat ack=${result != null}');
-      }
-      return result;
-    });
-    _progressChain = send.then((_) {}, onError: (_) {});
-    return send;
-  }
-
-  /// The tight-sync anchor for the currently playing stream, or null when the
-  /// server clock hasn't been measured (yet) or nothing is open.
-  ({int positionMs, double serverTimeMs})? _timelineAnchor() {
-    final srv = serverName;
-    if (srv == null || _currentMediaUrl == null) return null;
-    final serverNow = ClockSyncService.instance.serverNowMs(srv);
-    if (serverNow == null) return null;
-    final positionMs = _player.state.position.inMilliseconds -
-        SyncPreferences.outputLatencyMs.value;
-    return (positionMs: positionMs < 0 ? 0 : positionMs, serverTimeMs: serverNow);
-  }
-
-  /// Replaces [playQueue] with a server response while keeping the locally
-  /// tracked current item. Returns whether the response was applied — a
-  /// response for a queue other than the active one is dropped.
-  bool _applyServerPlayQueue(Fragment$fragmentPlayQueue response) {
-    final merged = mergeServerPlayQueue(playQueue, response);
-    if (merged == null) return false;
-    playQueue = merged;
-    return true;
-  }
-
-  /// Merges a server play-queue [response] into [current], keeping the locally
-  /// tracked current item — the client is authoritative for what is playing;
-  /// a response can still carry a stale currentItemId (e.g. a progress update
-  /// for the previous track processed server-side around a skip).
-  ///
-  /// Returns null when [response] belongs to a different queue than [current]:
-  /// the generation counter alone can't catch this, because starting a new
-  /// queue bumps the generation *before* the createPlayQueue round-trip — a
-  /// progress update for the old queue sent during that window carries the new
-  /// generation, and its late response would otherwise reinstate the old queue.
-  static Fragment$fragmentPlayQueue? mergeServerPlayQueue(
-    Fragment$fragmentPlayQueue? current,
-    Fragment$fragmentPlayQueue response,
-  ) {
-    if (current == null || response.id != current.id) return null;
-    final localCurrentItemId = current.currentItemId;
-    return localCurrentItemId != null
-        ? response.copyWith(currentItemId: localCurrentItemId)
-        : response;
-  }
-
-  /// Syncs the playback position of the current item to the server. Throttled
-  /// to ~10s of position delta unless [force] is set (pause/stop flush the
-  /// final position so resume points don't lag behind).
-  Future<void> _syncProgress(Duration pos,
-      {bool force = false, Enum$PlayState? playState}) async {
-    // A following device never reports progress: updatePlayQueue is
-    // owner-only, and two reporters on one queue would fight over the
-    // session. The server writes this user's watch status instead.
-    if (_followMode) return;
-    // No stream is open — a queue switch is in flight (see
-    // _silenceForQueueSwitch) or nothing was ever opened. Any position event
-    // arriving now belongs to the silenced previous stream; syncing it would
-    // overwrite that item's progress with a bogus position.
-    if (_currentMediaUrl == null) return;
-    if (!force &&
-        _lastProgress != null &&
-        (pos - _lastProgress!).inMilliseconds.abs() <= 10 * 1000) {
-      return;
-    }
-    _lastProgress = pos;
-
-    final client = graphQLClient;
-    final pq = playQueue;
-    if (pq == null) return;
-    if (isLocalQueue) {
-      final item = currentPlayQueueItem;
-      final srv = serverName;
-      if (item != null && srv != null) {
-        // A slice of a multi-episode file ends at its part boundary, not at
-        // the end of the file.
-        final endMs = _currentItemEndMs(item.episode);
-        await OfflineProgressStore.instance.record(srv, item,
-            positionMs: pos.inMilliseconds,
-            durationMs: endMs,
-            finished: endMs > 0 && pos.inMilliseconds >= endMs - 5000);
-      }
-      return;
-    }
-    if (client == null) return;
-
-    // The current queue item is the item id; chapters and podcast episodes have
-    // no typed handler field to reconstruct it from (episode/movie/track are all
-    // null for them), so they would never sync at all if we went by media type.
-    String? itemId = currentPlayQueueItem?.id;
-    if (itemId == null) {
-      if (episode != null) {
-        itemId = _playQueueService.getPlayQueueItemId(pq, episode!.id);
-      } else if (movie != null) {
-        itemId = _playQueueService.getMoviePlayQueueItemId(pq, movie!.id);
-      } else if (currentTrackId != null) {
-        itemId = _playQueueService.getTrackPlayQueueItemId(pq, currentTrackId!);
-      }
-    }
-    if (itemId == null) return;
-
-    final generation = _syncGeneration;
-    _lastSyncSentAt = DateTime.now();
-    final beat =
-        await _sendProgressHeartbeat(client, pq.id, itemId, pos, playState: playState);
-    // Drop the response if the queue or current item changed while this
-    // request was in flight — a slow response must not revert a skip or
-    // reinstate a queue that was replaced in the meantime.
-    if (beat != null && generation == _syncGeneration) {
-      if (beat.id != playQueue?.id) return;
-      // The source ran dry since the queue was fetched: remember it, so the
-      // end of the queue needs no extra round-trip to be sure.
-      if (beat.sourceExhausted != playQueue?.sourceExhausted) {
-        playQueue = playQueue?.copyWith(sourceExhausted: beat.sourceExhausted);
-      }
-      // Sources with sourceExhausted == false grow server-side as playback
-      // advances. The heartbeat only carries item ids (parsing the full queue
-      // every beat is a visible hitch on low-end TVs); fetch the full queue
-      // once when the server reports a different item set.
-      final localCount = playQueue?.playQueueItems?.length ?? 0;
-      final serverCount = beat.playQueueItems?.length ?? 0;
-      if (serverCount != localCount) {
-        await _reloadPlayQueueFromServer();
-      }
-    }
-  }
-
-  /// The server treats updatePlayQueue as the playback heartbeat: a session
-  /// with no update for 60s counts as stopped. While playing, the position
-  /// stream drives ~10s updates; while paused the position stops advancing,
-  /// so this wall-clock timer keeps the session alive with PAUSED updates.
-  /// The 10s gate keeps it silent whenever position-driven syncs already
-  /// went out recently, so nothing is sent twice.
-  ///
-  /// When the queue plays out without an explicit stop() the heartbeat keeps
-  /// reporting PAUSED and the session stays visible server-side; only stop()
-  /// (or the app dying) lets the server expire the session.
-  void _startHeartbeat() {
-    // Every start/resume path funnels through here (track auto-advance does
-    // not), so this is where the automatic sleep timer gets a chance to arm.
-    unawaited(SleepTimerService.instance.notifyPlaybackStarted());
-    // A follower has its own heartbeat (followPlayQueue); the session
-    // heartbeat below would try to report progress it must not send.
-    if (_followMode) return;
-    // Arm the tight-sync anchor: once the server clock is measured (and the
-    // output-latency preference loaded), every progress update carries one.
-    final srv = serverName;
-    if (srv != null && !ClientManager.usesTestClients) {
-      unawaited(SyncPreferences.ensureLoaded());
-      unawaited(ClockSyncService.instance.ensureSynced(srv));
-    }
-    _heartbeat?.cancel();
-    _heartbeat = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (playQueue == null || graphQLClient == null) return;
-      // Safety net: any path that (re)activated a queue without explicitly
-      // subscribing still becomes remote-controllable within one tick.
-      _ensureCommandSubscription();
-      final last = _lastSyncSentAt;
-      if (last != null &&
-          DateTime.now().difference(last) < const Duration(seconds: 10)) {
-        return;
-      }
-      unawaited(_syncProgress(_player.state.position, force: true));
-    });
-  }
-
-  void _stopHeartbeat() {
-    _heartbeat?.cancel();
-    _heartbeat = null;
-  }
-
   // ── Remote control ("party mode") ────────────────────────────────────────
 
   /// Subscribes to remote-control commands for the active queue. Idempotent:
   /// only (re)subscribes when the queue id changed since the last call.
-  void _ensureCommandSubscription() {
+  @override
+  void ensureCommandSubscription() {
     final pq = playQueue;
     final client = graphQLClient;
     if (pq == null || client == null) return;
@@ -4038,7 +3757,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         final itemId = command.playQueueItemId;
         if (itemId != null) await _skipToItemId(itemId);
       case Enum$PlaybackCommandType.QUEUE_CHANGED:
-        await _reloadPlayQueueFromServer();
+        await reloadPlayQueueFromServer();
       case Enum$PlaybackCommandType.SET_REPEAT:
         final mode = command.repeatMode;
         if (mode != null) await setRepeatMode(repeatModeFromApi(mode));
@@ -4204,7 +3923,7 @@ class MediaPlayerHandler extends BaseAudioHandler
 
     queueTitle.add("Now Playing");
     queue.add(buildQueueMediaItems(playQueue!, srv));
-    _ensureCommandSubscription();
+    ensureCommandSubscription();
     _startFollowHeartbeat(deviceId);
     _ensureFollowNowPlayingSubscription();
     unawaited(SyncPreferences.ensureLoaded());
@@ -4532,7 +4251,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         (m) => MediaItemId.byStringId(m.id).id == playQueueItemId);
     var index = indexOf();
     if (index == -1) {
-      await _reloadPlayQueueFromServer();
+      await reloadPlayQueueFromServer();
       index = indexOf();
     }
     if (index != -1) await skipToQueueItem(index);
@@ -4542,19 +4261,20 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// possibly another user — edited it) and rebuilds the visible queue. When
   /// the locally playing item was removed remotely, the server has already
   /// picked a new current item; adopt it and open it.
-  Future<void> _reloadPlayQueueFromServer() async {
+  @override
+  Future<void> reloadPlayQueueFromServer() async {
     final pq = playQueue;
     final client = graphQLClient;
     if (pq == null || client == null) return;
-    final generation = _syncGeneration;
+    final generation = _sync.generation;
     final fresh = await _playQueueService.getPlayQueue(client, pq.id);
     // Drop the response when a skip happened while the fetch was in flight.
-    if (fresh == null || generation != _syncGeneration) return;
+    if (fresh == null || generation != _sync.generation) return;
 
     final localItemStillExists = fresh.playQueueItems
             ?.any((e) => e.id == playQueue?.currentItemId) ??
         false;
-    if (!_applyServerPlayQueue(fresh)) return;
+    if (!_sync.applyServerPlayQueue(fresh)) return;
     if (!localItemStillExists) {
       playQueue = playQueue?.copyWith(currentItemId: fresh.currentItemId);
     }
@@ -4799,15 +4519,15 @@ class MediaPlayerHandler extends BaseAudioHandler
     _finishingQueue = true;
     try {
       final pq = playQueue;
-      final generation = _syncGeneration;
+      final generation = _sync.generation;
       if (pq != null &&
           !pq.sourceExhausted &&
           !isLocalQueue &&
           graphQLClient != null) {
-        await _reloadPlayQueueFromServer();
+        await reloadPlayQueueFromServer();
         // Something else started (or a skip happened) during the fetch — its
         // state wins; there is nothing to finish any more.
-        if (generation != _syncGeneration || playQueue?.id != pq.id) return;
+        if (generation != _sync.generation || playQueue?.id != pq.id) return;
         if (_hasNextOrWraps()) {
           LoggerService().logger.d(
               '[QUEUE] Source grew at the end of the visible queue — continuing');
@@ -4839,11 +4559,11 @@ class MediaPlayerHandler extends BaseAudioHandler
     // whatever keep-open left it at, and a write short of the end would undo
     // the watched/finished mark. For a slice of a multi-episode file the end
     // is the part boundary.
-    final endMs = _currentItemEndMs(episode);
+    final endMs = currentItemEndMs(episode);
     final endPos = ClientManager.usesTestClients
         ? playbackState.value.position
         : (endMs > 0 ? Duration(milliseconds: endMs) : _player.state.position);
-    unawaited(_syncProgress(endPos,
+    unawaited(_sync.syncProgress(endPos,
         force: true, playState: Enum$PlayState.PAUSED));
     // Followers and remote controls see the session end now, not when the
     // server expires it a minute later.
@@ -4857,7 +4577,8 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// Where the current item ends, in ms: the part boundary for a slice of a
   /// multi-episode file, else the stream's duration, else (when mpv has not
   /// reported one, or under test) the analysed duration of the media file.
-  int _currentItemEndMs(Fragment$fragmentEpisode? ep) {
+  @override
+  int currentItemEndMs(Fragment$fragmentEpisode? ep) {
     final part = _partBoundsOf(ep)?.endMs;
     if (part != null) return part;
     final reported = _player.state.duration.inMilliseconds;
@@ -4976,7 +4697,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     await _openQueueItem(item, srv, startTimeMs: 0, autoPlay: false);
     // One last write so the server's queue resumes from the next item too —
     // the heartbeat is already down, so this is the state that sticks.
-    unawaited(_syncProgress(Duration.zero,
+    unawaited(_sync.syncProgress(Duration.zero,
         force: true, playState: Enum$PlayState.PAUSED));
     updatePlaybackState();
   }
@@ -5015,7 +4736,6 @@ class MediaPlayerHandler extends BaseAudioHandler
   }
 
   // ── Helper methods (track selection) ───────────────────────────────────
-  Duration? _lastProgress;
   bool _listenersAdded = false;
   bool _interrupted = false;
   bool _audioPreferenceApplied = false;
@@ -5036,12 +4756,6 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// nothing has been applied yet, or the audio fell back to mpv's default.
   String? _selectedAudioLanguage;
   DateTime? _mediaOpenedAt;
-
-  // Playback-heartbeat state: keeps the server-side session alive (also while
-  // paused); _lastSyncSentAt tracks the last actual send so the heartbeat
-  // stays quiet while position-driven syncs are flowing.
-  Timer? _heartbeat;
-  DateTime? _lastSyncSentAt;
 
   // Stall-watchdog state: tracks real forward progress so we can detect a
   // stream that froze near the end without firing `completed`.
