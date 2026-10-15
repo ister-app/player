@@ -3992,8 +3992,9 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (_autoSkipPrefForMediaId != mediaId) {
       _autoSkipPrefForMediaId = mediaId;
       unawaited(PlaybackPreferences.getAutoSkipIntro(serverName: serverName)
-          .then((value) => _autoSkipIntro = value)
-          .catchError((_) {}));
+          .then((value) {
+        _autoSkipIntro = value;
+      }, onError: (_) {}));
     }
     if (!_autoSkipIntro) return;
     if (!_continuedFromPreviousEpisode) return;
