@@ -13,10 +13,8 @@ import 'package:player/utils/AppMessenger.dart';
 import 'package:player/dto/MediaItemId.dart';
 import 'package:flutter/foundation.dart';
 import 'package:player/utils/ClientManager.dart';
-import 'package:player/utils/ClockSyncService.dart';
 import 'package:player/utils/DevicePreferences.dart';
 import 'package:player/utils/DeviceService.dart';
-import 'package:player/utils/SyncPreferences.dart';
 import 'package:player/utils/LastMusicQueuePreferences.dart';
 import 'package:player/utils/LoginManager.dart';
 import 'package:player/utils/LoggerService.dart';
@@ -40,10 +38,8 @@ import '../graphql/fragmentMovie.graphql.dart';
 import '../graphql/fragmentWatchStatus.graphql.dart';
 import '../graphql/fragmentPlayQueue.graphql.dart';
 import '../graphql/fragmentServerActivity.graphql.dart';
-import '../graphql/nowPlayingSubscription.graphql.dart';
 import '../graphql/playbackCommandsSubscription.graphql.dart';
 import '../graphql/schema.graphql.dart';
-import 'FollowSyncDecision.dart';
 import 'ImageUtil.dart';
 import 'PlayQueueService.dart';
 import 'SleepTimerService.dart';
@@ -54,6 +50,7 @@ import 'playback/ProgressSync.dart';
 import 'playback/QueueMediaItems.dart';
 import 'playback/QueueMediaItems.dart' as playback;
 import 'playback/MediaUrls.dart' as playback;
+import 'playback/FollowSession.dart';
 import 'playback/StallWatchdog.dart';
 import 'playback/TrackPreferences.dart';
 import 'MpvLogThrottle.dart';
@@ -461,12 +458,6 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// is no identity for this: [_restampToken] rewrites it in place.
   int _openGeneration = 0;
 
-  /// The file the leader of the followed session plays (its now-playing
-  /// session reports it). A follower opens the same one: two versions of a
-  /// film need not share a timeline, and the leader's position is all a
-  /// follower has to go by.
-  String? _leaderMediaFileId;
-
   /// The file to open for an item with [files], in order: an explicit
   /// [preferredId], the session's pick for [choiceKey], the leader's file
   /// while following, the file the queue was last played with (a handoff, or
@@ -483,7 +474,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       // queue's file of *another* item can never leak into this one.
       preferredId: preferredId ??
           (choiceKey == null ? null : _sessionFileChoice[choiceKey]) ??
-          (_followMode ? _leaderMediaFileId : null) ??
+          (_followMode ? _follow.leaderMediaFileId : null) ??
           playQueue?.currentMediaFileId,
       isLocal: kIsWeb
           ? null
@@ -653,7 +644,8 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// Whether the leader plays a version of the current item that this device
   /// has but is not playing. An id this item does not have (no access to that
   /// library, an older leader) keeps what plays.
-  bool _shouldFollowLeaderFile(String? leaderFileId) =>
+  @override
+  bool shouldFollowLeaderFile(String? leaderFileId) =>
       leaderFileId != null &&
       leaderFileId != _currentVideoFile?.id &&
       currentVideoVersions.any((f) => f.id == leaderFileId);
@@ -681,9 +673,10 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// are serialised: a second one waits for the first, so there is never more
   /// than one open in flight (the server has two interactive file slots).
   Future<void> switchMediaFile(String mediaFileId, {bool fromStart = false}) =>
-      _queueVersionSwitch(mediaFileId, fromStart: fromStart);
+      queueVersionSwitch(mediaFileId, fromStart: fromStart);
 
-  Future<void> _queueVersionSwitch(String mediaFileId,
+  @override
+  Future<void> queueVersionSwitch(String mediaFileId,
       {bool fromStart = false, int? leaderPositionMs}) {
     final previous = _versionSwitch ?? Future<void>.value();
     final next = previous.catchError((_) {}).then((_) => _switchMediaFile(
@@ -1905,7 +1898,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     // this device, the same command plays the leader) so everyone stays in
     // step. _applyingRemoteSync marks the echo/state application itself.
     if (_followMode && !_applyingRemoteSync) {
-      await _sendFollowCommand(Enum$PlaybackCommandType.PLAY);
+      await _follow.sendCommand(Enum$PlaybackCommandType.PLAY);
       return;
     }
     // Play on a queue that just played out means "again": the notification,
@@ -1953,7 +1946,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   Future<void> pause() {
     _logPlayback('pause()');
     if (_followMode && !_applyingRemoteSync) {
-      return _sendFollowCommand(Enum$PlaybackCommandType.PAUSE);
+      return _follow.sendCommand(Enum$PlaybackCommandType.PAUSE);
     }
     _intendsToPlay = false;
     // playState is passed explicitly: _player.state.playing is still true here
@@ -2166,7 +2159,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   @override
   Future<void> seek(Duration position) {
     if (_followMode && !_applyingRemoteSync) {
-      return _sendFollowCommand(Enum$PlaybackCommandType.SEEK,
+      return _follow.sendCommand(Enum$PlaybackCommandType.SEEK,
           position: position);
     }
     return seekAware(position);
@@ -2257,7 +2250,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   @override
   Future<void> skipToNext() async {
     if (_followMode && !_applyingRemoteSync) {
-      await _sendFollowCommand(Enum$PlaybackCommandType.NEXT);
+      await _follow.sendCommand(Enum$PlaybackCommandType.NEXT);
       return;
     }
     final q = queue.value;
@@ -2278,7 +2271,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   @override
   Future<void> skipToPrevious() async {
     if (_followMode && !_applyingRemoteSync) {
-      await _sendFollowCommand(Enum$PlaybackCommandType.PREVIOUS);
+      await _follow.sendCommand(Enum$PlaybackCommandType.PREVIOUS);
       return;
     }
     final index = playbackState.value.queueIndex;
@@ -2517,7 +2510,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     // everyone (including this device, via the command echo) executes it.
     if (_followMode && !_applyingRemoteSync) {
       final itemId = MediaItemId.byStringId(queue.value[index].id).id;
-      await _sendFollowCommand(Enum$PlaybackCommandType.SKIP_TO_ITEM,
+      await _follow.sendCommand(Enum$PlaybackCommandType.SKIP_TO_ITEM,
           playQueueItemId: itemId);
       return;
     }
@@ -2833,6 +2826,10 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// stalls; see [StallWatchdog].
   late final StallWatchdog _stall = StallWatchdog(this);
 
+  /// Listening along with another device's session: its heartbeat, the
+  /// now-playing subscription and the tight-sync loop; see [FollowSession].
+  late final FollowSession _follow = FollowSession(this);
+
   // The selection rules, kept here for their tests.
   @visibleForTesting
   static AudioTrack restoredAudioTrack(
@@ -2902,6 +2899,13 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   @override
   bool get intendsToPlay => _intendsToPlay;
+  @override
+  set intendsToPlay(bool value) => _intendsToPlay = value;
+
+  @override
+  bool get applyingRemoteSync => _applyingRemoteSync;
+  @override
+  set applyingRemoteSync(bool value) => _applyingRemoteSync = value;
 
   @override
   int get streamOpenPositionMs => _streamOpenPositionMs;
@@ -3413,7 +3417,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         if (ms != null) await seek(Duration(milliseconds: ms));
       case Enum$PlaybackCommandType.SKIP_TO_ITEM:
         final itemId = command.playQueueItemId;
-        if (itemId != null) await _skipToItemId(itemId);
+        if (itemId != null) await skipToItemId(itemId);
       case Enum$PlaybackCommandType.QUEUE_CHANGED:
         await reloadPlayQueueFromServer();
       case Enum$PlaybackCommandType.SET_REPEAT:
@@ -3515,21 +3519,6 @@ class MediaPlayerHandler extends BaseAudioHandler
   bool isOwnLiveQueue(String srv, String playQueueId) =>
       !_followMode && serverName == srv && playQueue?.id == playQueueId;
 
-  Timer? _followHeartbeat;
-  ResilientSubscription? _followNowPlayingSubscription;
-  // Tight sync ("same room"): the leader's latest timeline anchor and the
-  // 500ms discipline loop steering this device towards it with setRate.
-  Timer? _followSyncTimer;
-  ({
-    int positionMs,
-    double serverTimeMs,
-    Enum$PlayState playState,
-    String? itemId
-  })? _followAnchor;
-  double _followAppliedRate = 1.0;
-  // Serializes application of nowPlaying emissions; a next emission arrives
-  // within seconds, so a dropped one is never missed for long.
-  bool _followSyncBusy = false;
   // Set while a bus command or nowPlaying state is being applied locally: the
   // transport overrides then run their normal local path instead of sending
   // a command (which would echo forever).
@@ -3582,15 +3571,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     queueTitle.add("Now Playing");
     queue.add(buildQueueMediaItems(playQueue!, srv));
     ensureCommandSubscription();
-    _startFollowHeartbeat(deviceId);
-    _ensureFollowNowPlayingSubscription();
-    unawaited(SyncPreferences.ensureLoaded());
-    if (!ClientManager.usesTestClients) {
-      unawaited(ClockSyncService.instance.ensureSynced(srv));
-      _followSyncTimer?.cancel();
-      _followSyncTimer = Timer.periodic(
-          const Duration(milliseconds: 500), (_) => unawaited(_followSyncTick()));
-    }
+    _follow.arm(deviceId);
 
     if (current != null && current.track != null) {
       // Music opens the full player, like every other music start path.
@@ -3627,6 +3608,7 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// [endPlaybackLocally]) — for the paths where the shared media is *gone*
   /// (the leader stopped, the owner kicked us, the user left the session)
   /// rather than the ones that immediately start something else here.
+  @override
   Future<void> stopFollowing(
       {bool notifyServer = true, bool teardown = false}) async {
     if (!_followMode) {
@@ -3638,15 +3620,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     _followMode = false;
     followModeNotifier.value = false;
     _intendsToPlay = false;
-    _followHeartbeat?.cancel();
-    _followHeartbeat = null;
-    _followSyncTimer?.cancel();
-    _followSyncTimer = null;
-    _followAnchor = null;
-    _leaderMediaFileId = null;
-    await _resetFollowRate();
-    _followNowPlayingSubscription?.dispose();
-    _followNowPlayingSubscription = null;
+    await _follow.teardown();
     _stopCommandSubscription();
     final client = graphQLClient;
     final pq = playQueue;
@@ -3665,187 +3639,12 @@ class MediaPlayerHandler extends BaseAudioHandler
     if (teardown) await endPlaybackLocally(flushProgress: false);
   }
 
-  /// The follow registration doubles as a heartbeat (~20s; the server expires
-  /// it after 60s). A NOT_FOUND answer means the followed session ended while
-  /// we were listening — leave follow mode with a toast. A null answer is a
-  /// transient network failure: keep going, the next tick retries.
-  void _startFollowHeartbeat(String deviceId) {
-    _followHeartbeat?.cancel();
-    _followHeartbeat = Timer.periodic(const Duration(seconds: 20), (_) async {
-      final client = graphQLClient;
-      final pq = playQueue;
-      if (!_followMode || client == null || pq == null) return;
-      final result = await _playQueueService.followPlayQueue(
-          client, pq.id, deviceId, true);
-      if (_followMode && result == Enum$FollowResult.NOT_FOUND) {
-        showAppSnackBar(IsterMediaService.loc.followLeaderStopped);
-        await stopFollowing(notifyServer: false, teardown: true);
-      }
-    });
-  }
-
-  /// One tick of the tight-sync discipline loop (every 500ms while following):
-  /// extrapolates the leader's position from its anchor and the shared server
-  /// clock, then applies [decideFollowSync] — seek for large errors, a ≤2%
-  /// rate nudge for moderate ones, rate 1.0 once locked. Falls back to doing
-  /// nothing (and a neutral rate) whenever tight sync is off, the anchor is
-  /// missing/stale, the items differ, or either side is paused.
-  Future<void> _followSyncTick() async {
-    if (!_followMode || ClientManager.usesTestClients) return;
-    final srv = serverName;
-    final anchor = _followAnchor;
-    if (srv == null) return;
-    if (!SyncPreferences.tightSyncEnabled.value || anchor == null) {
-      await _resetFollowRate();
-      return;
-    }
-    // Keeps the offset fresh; a no-op within its refresh interval.
-    unawaited(ClockSyncService.instance.ensureSynced(srv));
-    final sameItem =
-        anchor.itemId != null && anchor.itemId == currentPlayQueueItem?.id;
-    if (!sameItem ||
-        anchor.playState != Enum$PlayState.PLAYING ||
-        !_player.state.playing ||
-        _player.state.duration <= Duration.zero) {
-      await _resetFollowRate();
-      return;
-    }
-    final serverNow = ClockSyncService.instance.serverNowMs(srv);
-    if (serverNow == null) return;
-    final targetMs = anchor.positionMs +
-        (serverNow - anchor.serverTimeMs) +
-        SyncPreferences.outputLatencyMs.value;
-    final errorMs = _player.state.position.inMilliseconds - targetMs;
-    final action =
-        decideFollowSync(errorMs: errorMs, currentRate: _followAppliedRate);
-    switch (action.type) {
-      case FollowSyncActionType.seek:
-        await _resetFollowRate();
-        // Aim slightly past the target: the seek itself takes a beat, and on
-        // HLS it lands on a segment boundary; the rate loop trims the rest.
-        await _player.seek(Duration(milliseconds: targetMs.round() + 100));
-      case FollowSyncActionType.rate:
-        _followAppliedRate = action.rate;
-        await _player.setRate(action.rate);
-      case FollowSyncActionType.none:
-        break;
-    }
-  }
-
-  /// mpv's speed is a player-level property that survives stream loads, so a
-  /// non-neutral rate must be reset explicitly whenever steering stops.
-  Future<void> _resetFollowRate() async {
-    if (_followAppliedRate == 1.0) return;
-    _followAppliedRate = 1.0;
-    if (!ClientManager.usesTestClients) await _player.setRate(1.0);
-  }
-
-  /// Follows the leading device through the now-playing fan-out: it is the
-  /// source of truth for what the leader does *locally* (its play/pause/skip
-  /// don't travel over the command bus). Item changes, play state and coarse
-  /// position corrections all come from here; the command bus only provides
-  /// lower latency when someone explicitly remote-controls the session.
-  void _ensureFollowNowPlayingSubscription() {
-    _followNowPlayingSubscription?.dispose();
-    final client = graphQLClient;
-    if (client == null) return;
-    _followNowPlayingSubscription = ResilientSubscription(
-      client: client,
-      document: documentNodeSubscriptionnowPlaying,
-      variables: const {},
-      onData: (result) {
-        final sessions =
-            Subscription$nowPlaying.fromJson(result.data!).nowPlaying;
-        unawaited(_onFollowNowPlaying(sessions));
-      },
-      // The sink replays the latest list on reconnect, so a dropped
-      // subscription self-heals with fresh state.
-      onFailure: (_) {},
-    );
-  }
-
-  Future<void> _onFollowNowPlaying(
-      List<Fragment$fragmentPlaybackSession> sessions) async {
-    if (!_followMode || _followSyncBusy) return;
-    final pqId = playQueue?.id;
-    if (pqId == null) return;
-    final session =
-        sessions.where((s) => s.playQueueId == pqId).firstOrNull;
-    if (session == null) {
-      // The list is always complete: an emission without our session means
-      // the leader stopped (or timed out server-side). The media is gone from
-      // this device with it: tear playback down rather than leaving a paused
-      // stream (and a mini player) behind.
-      showAppSnackBar(IsterMediaService.loc.followLeaderStopped);
-      await stopFollowing(notifyServer: false, teardown: true);
-      return;
-    }
-    // Tight-sync anchor for the discipline loop; null when the leader doesn't
-    // report one (older client, or its clock is not measured yet).
-    final anchorPosition = session.anchorPositionMs;
-    final anchorServerTime = session.anchorServerTimeMs;
-    _followAnchor = anchorPosition != null && anchorServerTime != null
-        ? (
-            positionMs: anchorPosition,
-            serverTimeMs: anchorServerTime,
-            playState: session.playState,
-            itemId: session.playQueueItemId,
-          )
-        : null;
-    // Before the item switch below, so its open already picks this file.
-    _leaderMediaFileId = session.mediaFileId;
-    _followSyncBusy = true;
-    _applyingRemoteSync = true;
-    try {
-      final itemId = session.playQueueItemId;
-      if (itemId != null && itemId != currentPlayQueueItem?.id) {
-        await _skipToItemId(itemId);
-      } else if (_shouldFollowLeaderFile(session.mediaFileId)) {
-        // Same item, another version: the leader switched.
-        await _queueVersionSwitch(session.mediaFileId!,
-            leaderPositionMs: session.progressInMilliseconds);
-      }
-      final leaderPlaying = session.playState == Enum$PlayState.PLAYING;
-      if (!ClientManager.usesTestClients) {
-        if (leaderPlaying && !_player.state.playing) {
-          await play();
-        } else if (!leaderPlaying && _player.state.playing) {
-          await pause();
-        }
-      } else {
-        _intendsToPlay = leaderPlaying;
-      }
-      // Coarse position correction, only within the same item and once the
-      // stream is actually loaded. The leader reports every ~10s; small skews
-      // are left alone (an HLS seek is more disruptive than a 2s offset).
-      // With tight sync active and an anchor available the discipline loop
-      // owns the position — the coarse seek would fight its rate steering.
-      final tightSyncActive =
-          SyncPreferences.tightSyncEnabled.value && _followAnchor != null;
-      if (!tightSyncActive &&
-          itemId != null &&
-          itemId == currentPlayQueueItem?.id &&
-          !ClientManager.usesTestClients &&
-          _player.state.duration > Duration.zero) {
-        final leaderPos =
-            Duration(milliseconds: session.progressInMilliseconds);
-        if ((_player.state.position - leaderPos).abs() >
-            const Duration(seconds: 3)) {
-          await seek(leaderPos);
-        }
-      }
-    } finally {
-      _applyingRemoteSync = false;
-      _followSyncBusy = false;
-    }
-  }
-
   /// Test seam: applies a now-playing emission as if it arrived over the
   /// follow subscription (the real one needs a live websocket).
   @visibleForTesting
   Future<void> debugApplyFollowNowPlaying(
           List<Fragment$fragmentPlaybackSession> sessions) =>
-      _onFollowNowPlaying(sessions);
+      _follow.applyNowPlaying(sessions);
 
   /// Test seam: handles a remote-control command as if it arrived over the
   /// command subscription (the real one needs a live websocket).
@@ -3862,7 +3661,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     double serverTimeMs,
     Enum$PlayState playState,
     String? itemId
-  })? get debugFollowAnchor => _followAnchor;
+  })? get debugFollowAnchor => _follow.anchor;
 
   /// A followed item this user's library access cannot stream: keep the queue
   /// index in step with the leader but stay silent until the leader moves on.
@@ -3883,28 +3682,11 @@ class MediaPlayerHandler extends BaseAudioHandler
     unawaited(_silenceForQueueSwitch());
   }
 
-  /// Sends a transport action as a remote-control command instead of acting
-  /// locally — in follow mode every participant (including this device, via
-  /// the command echo) executes the command, which keeps everyone in step.
-  Future<void> _sendFollowCommand(Enum$PlaybackCommandType command,
-      {Duration? position, String? playQueueItemId}) async {
-    final client = graphQLClient;
-    final pq = playQueue;
-    if (client == null || pq == null) return;
-    final ok = await _playQueueService.sendPlaybackCommand(client, pq.id, command,
-        position: position, playQueueItemId: playQueueItemId);
-    // false = the server refused (no control permission on this session);
-    // without feedback the tapped control appears simply broken. null is a
-    // transport error and stays silent, like before.
-    if (ok == false) {
-      showAppSnackBar(IsterMediaService.loc.followControlDenied);
-    }
-  }
-
   /// Skips to the queue item with [playQueueItemId]. The item may sit outside
   /// the materialized window the queue was last fetched with — refetch once
   /// and retry before giving up.
-  Future<void> _skipToItemId(String playQueueItemId) async {
+  @override
+  Future<void> skipToItemId(String playQueueItemId) async {
     int indexOf() => queue.value.indexWhere(
         (m) => MediaItemId.byStringId(m.id).id == playQueueItemId);
     var index = indexOf();
@@ -3938,7 +3720,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     }
     _refreshQueueFromPlayQueue();
     if (!localItemStillExists && fresh.currentItemId != null) {
-      await _skipToItemId(fresh.currentItemId!);
+      await skipToItemId(fresh.currentItemId!);
     }
   }
 

@@ -81,8 +81,30 @@ abstract class PlaybackCore {
   ValueNotifier<Rect?> get appliedVideoCrop;
 
   /// Whether playback is supposed to be running — a deliberate pause clears
-  /// it, a hung load does not.
+  /// it, a hung load does not. A follower mirrors the leader's state into it.
   bool get intendsToPlay;
+  set intendsToPlay(bool value);
+
+  /// Set while a remote command or the leader's state is being applied
+  /// locally: the transport methods then act instead of sending a command.
+  bool get applyingRemoteSync;
+  set applyingRemoteSync(bool value);
+
+  Future<void> pause();
+  Future<void> seek(Duration position);
+
+  /// Skips to the queue item with that id, refetching the queue once when it
+  /// sits outside the materialized window.
+  Future<void> skipToItemId(String playQueueItemId);
+
+  /// Whether the leader's file is one this device should switch to.
+  bool shouldFollowLeaderFile(String? leaderFileId);
+
+  /// Switches the current item to another of its files (a version).
+  Future<void> queueVersionSwitch(String mediaFileId, {int? leaderPositionMs});
+
+  /// Leaves follow mode; [teardown] also ends playback on this device.
+  Future<void> stopFollowing({bool notifyServer, bool teardown});
 
   /// The position (ms) the current stream was opened at; resumed content
   /// opens mid-stream, so "never advanced" is measured from here.
