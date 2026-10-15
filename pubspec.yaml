@@ -127,6 +127,13 @@ dev_dependencies:
   vm_service: ^15.0.0
   # test/artwork_rebroadcast_test.dart serves artwork from a MemoryFileSystem.
   file: ^7.0.0
+  # Imported directly by tests (platform-interface fakes) and by
+  # tool/bench_rebroadcast.dart; declared so the analyzer's
+  # depend_on_referenced_packages stays quiet.
+  shared_preferences_platform_interface: ^2.4.1
+  connectivity_plus_platform_interface: ^2.0.1
+  fake_async: ^1.3.0
+  graphql: ^5.2.0
 
 flutter:
   generate: true

@@ -1,10 +1,9 @@
 // Temporary benchmark: cost of a normalized-cache write + rebroadcast with
 // several watched queries alive, using the app's real generated documents.
 // Run: dart run tool/bench_rebroadcast.dart
+// ignore_for_file: avoid_print
 import 'dart:async';
 
-import 'package:gql_exec/gql_exec.dart';
-import 'package:gql_link/gql_link.dart';
 import 'package:graphql/client.dart';
 import 'package:player/graphql/showsRecentAdded.graphql.dart';
 
