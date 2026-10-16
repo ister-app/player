@@ -1,5 +1,42 @@
 # Changelog
 
+## player v2.14.1
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.14.1` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Fixes
+
+- fix(player): auto-skip preference read no longer swallows a typed catchError ([`fac5c5d`](https://github.com/ister-app/player/commit/fac5c5d))
+
+### Other
+
+- refactor(player): one per-kind opener, one queue-start prologue, one follow guard ([`f1bcc55`](https://github.com/ister-app/player/commit/f1bcc55))
+- refactor(player): extract the follow-session machinery into FollowSession ([`73facd0`](https://github.com/ister-app/player/commit/73facd0))
+- refactor(player): extract the stall watchdog into playback/StallWatchdog.dart ([`2d7a946`](https://github.com/ister-app/player/commit/2d7a946))
+- refactor(player): extract track selection, external subtitles and crop into TrackPreferences ([`86e9814`](https://github.com/ister-app/player/commit/86e9814))
+- refactor(player): extract progress sync, heartbeat and play history into ProgressSync ([`4ef00a8`](https://github.com/ister-app/player/commit/4ef00a8))
+- refactor(player): extract the Android Auto browser behind a PlaybackCore seam ([`bb6fe3f`](https://github.com/ister-app/player/commit/bb6fe3f))
+- refactor(player): one MediaItem builder for every queue start ([`7a7d9db`](https://github.com/ister-app/player/commit/7a7d9db))
+- refactor(player): extract the mpv process setup into playback/MpvSetup.dart ([`8ea5517`](https://github.com/ister-app/player/commit/8ea5517))
+- refactor(ui): migrate to material_ui and cupertino_ui, unpin auto_route ([`804f9cb`](https://github.com/ister-app/player/commit/804f9cb))
+- ci: gate on flutter analyze ([`2fba9f8`](https://github.com/ister-app/player/commit/2fba9f8))
+- refactor: resolve the remaining analyzer findings ([`e6ea0b8`](https://github.com/ister-app/player/commit/e6ea0b8))
+- build(analyzer): exclude generated code and declare directly imported dev packages ([`2b6d7de`](https://github.com/ister-app/player/commit/2b6d7de))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.14.1
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.14.0...v2.14.1
+
 ## player v2.14.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
