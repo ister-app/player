@@ -1,0 +1,6 @@
+query gamePlatforms {
+    gamePlatforms {
+        platform folderNames entryExtensions companionExtensions
+        launcher { kind retroArchCore }
+    }
+}

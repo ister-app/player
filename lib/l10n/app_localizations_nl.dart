@@ -2820,4 +2820,328 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get videoVersionOtherCutRestart =>
       'Deze versie heeft een andere lengte en begint daarom bij het begin.';
+
+  @override
+  String get games => 'Games';
+
+  @override
+  String get gameFormRom => 'ROM';
+
+  @override
+  String get gameFormPs3Folder => 'PS3-game';
+
+  @override
+  String get gameFormPcZip => 'Windows-game';
+
+  @override
+  String get gameFormLinuxInstaller => 'Linux-installer';
+
+  @override
+  String get gameFormLinuxPortable => 'Linux-game';
+
+  @override
+  String get gameFormSteam => 'Steam-game';
+
+  @override
+  String gameSizeOnServer(String size) {
+    return '$size op de server';
+  }
+
+  @override
+  String gameFileCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bestanden',
+      one: '1 bestand',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String gamePlayTime(String time) {
+    return 'Speeltijd: $time';
+  }
+
+  @override
+  String get gamePlayTimeUnderMinute => 'minder dan een minuut';
+
+  @override
+  String gamePlayTimeMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String gamePlayTimeHours(int hours, int minutes) {
+    return '$hours u $minutes min';
+  }
+
+  @override
+  String gameLastPlayed(String date) {
+    return 'Laatst gespeeld $date';
+  }
+
+  @override
+  String get gameNeverPlayed => 'Nog niet gespeeld';
+
+  @override
+  String get gameSaves => 'Savegames';
+
+  @override
+  String get gameNoSaves =>
+      'Nog geen saves op de server. Speel één keer; bij afsluiten wordt de save geüpload.';
+
+  @override
+  String gameSaveVersion(int version) {
+    return 'Versie $version';
+  }
+
+  @override
+  String gameSaveFrom(String device, String date) {
+    return '$device · $date';
+  }
+
+  @override
+  String get gameSaveRestore => 'Terugzetten';
+
+  @override
+  String get gameSaveDelete => 'Verwijderen';
+
+  @override
+  String gameSaveRestored(int version) {
+    return 'Teruggezet als versie $version';
+  }
+
+  @override
+  String get gameSaveDeleted => 'Save verwijderd';
+
+  @override
+  String get gameSaveActionFailed => 'Save bijwerken is niet gelukt';
+
+  @override
+  String get gameAchievements => 'Prestaties';
+
+  @override
+  String gameAchievementsProgress(int unlocked, int total) {
+    return '$unlocked van $total behaald';
+  }
+
+  @override
+  String get gameAchievementHidden => 'Verborgen prestatie';
+
+  @override
+  String get gameAchievementsNone =>
+      'Prestaties verschijnen hier na een speelsessie in de desktop-app.';
+
+  @override
+  String get gameSavePaths => 'Save-locaties';
+
+  @override
+  String get gameSavePathSourceAdmin => 'Ingesteld door een beheerder';
+
+  @override
+  String get gameSavePathSourceManifest => 'Uit het Ludusavi-manifest';
+
+  @override
+  String get gameSavePathSourceNone =>
+      'Onbekend: saves worden voor deze game pas gesynchroniseerd als een beheerder de locaties instelt.';
+
+  @override
+  String get gameSteamCloudNote =>
+      'Deze game synchroniseert zijn saves ook via Steam Cloud.';
+
+  @override
+  String get gameSteamOwnershipNote =>
+      'Steam-games starten via Steam en moeten in je eigen Steam-account zitten.';
+
+  @override
+  String get gameDesktopOnly =>
+      'Games speel je vanuit de desktop-app op Linux of Windows.';
+
+  @override
+  String gameLauncherRetroArch(String core) {
+    return 'RetroArch ($core)';
+  }
+
+  @override
+  String get gameLauncherRpcs3 => 'RPCS3';
+
+  @override
+  String get gameLauncherNative => 'Start direct';
+
+  @override
+  String get gameLauncherSteam => 'Steam';
+
+  @override
+  String get gameNoDescription => 'Geen beschrijving beschikbaar.';
+
+  @override
+  String get gamePlay => 'Spelen';
+
+  @override
+  String get gameRunning => 'Game draait…';
+
+  @override
+  String get gameFinishedPlaying => 'Ik ben klaar met spelen';
+
+  @override
+  String gameInstall(String size) {
+    return 'Installeren ($size)';
+  }
+
+  @override
+  String get gameInstallIntoSteam => 'In Steam installeren';
+
+  @override
+  String get gameUninstall => 'Van dit apparaat verwijderen';
+
+  @override
+  String get gameUninstallConfirm =>
+      'De gamebestanden op dit apparaat worden verwijderd. Je saves blijven op de server staan.';
+
+  @override
+  String get gameExtracting => 'Uitpakken…';
+
+  @override
+  String gameDownloadingProgress(
+    String done,
+    String total,
+    int filesDone,
+    int filesTotal,
+  ) {
+    return '$done van $total · $filesDone van $filesTotal bestanden';
+  }
+
+  @override
+  String gameInstallFailed(String error) {
+    return 'Installeren mislukt: $error';
+  }
+
+  @override
+  String gameLaunchFailed(String error) {
+    return 'Game starten is niet gelukt: $error';
+  }
+
+  @override
+  String gameEmulatorMissing(String name) {
+    return '$name is niet gevonden op deze computer. Installeer het, of kies de locatie bij Instellingen › Games.';
+  }
+
+  @override
+  String gameCoreMissing(String core) {
+    return 'RetroArch heeft geen \"$core\"-core. Voeg die toe via RetroArch › Online Updater › Core Downloader.';
+  }
+
+  @override
+  String get gameEntryMissing =>
+      'De gamebestanden zijn onvolledig; verwijder de game en installeer opnieuw.';
+
+  @override
+  String get gamePs3FirmwareMissing =>
+      'RPCS3 heeft nog geen PS3-firmware. Installeer die eerst in RPCS3 (File › Install Firmware).';
+
+  @override
+  String get gameSteamLaunched =>
+      'Steam start de game. Druk daarna op \"Ik ben klaar met spelen\" om je saves te synchroniseren.';
+
+  @override
+  String get gameSteamRestartHint =>
+      'Geïnstalleerd. Herstart Steam als de game nog niet als geïnstalleerd verschijnt; Steam controleert de bestanden bij de eerste start.';
+
+  @override
+  String get gamePickSteamLibrary => 'Kies de Steam-bibliotheekmap';
+
+  @override
+  String gameSessionLength(String time) {
+    return '$time gespeeld';
+  }
+
+  @override
+  String gameSaveUploaded(int version) {
+    return 'Save geüpload als versie $version';
+  }
+
+  @override
+  String gameNewAchievements(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count nieuwe prestaties',
+      one: '1 nieuwe prestatie',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get gameSaveConflictTitle => 'Nieuwere save op de server';
+
+  @override
+  String gameSaveConflictBody(int version, String device, String date) {
+    return 'Versie $version is door $device geüpload ($date) nadat dit apparaat voor het laatst synchroniseerde, en je lokale save is ook gewijzigd. Met welke wil je spelen?';
+  }
+
+  @override
+  String get gameSaveConflictKeepLocal => 'Mijn save houden';
+
+  @override
+  String get gameSaveConflictUseServer => 'Die van de server';
+
+  @override
+  String get gameSettings => 'Games';
+
+  @override
+  String get gameSettingsSubtitle =>
+      'Installatiemap, emulators, save-synchronisatie';
+
+  @override
+  String get gameSettingsStorage => 'Opslag';
+
+  @override
+  String get gameSettingsRoot => 'Gamesmap';
+
+  @override
+  String get gameSettingsResetDefault => 'Standaard';
+
+  @override
+  String get gameSettingsEmulators => 'Emulators en launchers';
+
+  @override
+  String get gameSettingsEmulatorsHint =>
+      'Automatisch gevonden op deze computer; kies een programma als de detectie het mist.';
+
+  @override
+  String get gameSettingsRedetect => 'Opnieuw zoeken';
+
+  @override
+  String get gameSettingsNotFound => 'Niet gevonden';
+
+  @override
+  String gameSettingsDetected(String command) {
+    return 'Gevonden: $command';
+  }
+
+  @override
+  String gameSettingsManual(String command) {
+    return 'Gekozen: $command';
+  }
+
+  @override
+  String get gameSettingsPickExecutable => 'Kies programma';
+
+  @override
+  String get gameSettingsSync => 'Synchronisatie';
+
+  @override
+  String get gameSettingsSaveSync => 'Savegames synchroniseren';
+
+  @override
+  String get gameSettingsSaveSyncSubtitle =>
+      'Haal de nieuwste save op vóór het spelen en upload de jouwe erna.';
+
+  @override
+  String get gameSettingsAchievementSync => 'Prestaties melden';
+
+  @override
+  String get gameSettingsAchievementSyncSubtitle =>
+      'Lees PS3-trofeeën en Steam-prestaties van deze computer uit na een sessie.';
 }

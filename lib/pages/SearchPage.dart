@@ -12,6 +12,7 @@ import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
 import 'package:player/utils/MetadataUtil.dart';
+import 'package:player/utils/games/GameLabels.dart';
 import 'package:player/utils/PlatformService.dart';
 import 'package:player/utils/SearchService.dart';
 import 'package:player/utils/StreamTokenService.dart';
@@ -592,6 +593,19 @@ class _SearchPageState extends State<SearchPage> {
         onTap: () => AutoRouter.of(context)
             .push(AlbumRoute(albumId: item.album.id, trackId: item.id)),
         rowKey: ValueKey('search-track-${item.id}'),
+      );
+    }
+    if (item is Query$search$search$$Game) {
+      return _ResultView(
+        title: item.title,
+        typeLabel: GameLabels.platform(item.platform),
+        subtitle: item.releaseYear > 0 ? '${item.releaseYear}' : null,
+        description: MetadataUtil.getDescription(item.metadata),
+        icon: Icons.sports_esports,
+        images: item.images,
+        imageType: ImageTypes.cover,
+        onTap: () => AutoRouter.of(context).push(GameRoute(gameId: item.id)),
+        rowKey: ValueKey('search-game-${item.id}'),
       );
     }
     return const _ResultView(

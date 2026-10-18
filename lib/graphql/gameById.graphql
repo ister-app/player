@@ -1,0 +1,14 @@
+query gameById($id: ID) {
+    gameById(id: $id) {
+        ...fragmentGame
+        savePaths { path os }
+        savePathSource
+        savePathOverride { path os }
+        library { id name }
+        saves { id version sizeBytes sha256 deviceName note createdAt }
+        achievements {
+            total unlocked
+            list { id source externalId name description grade hidden unlockedAt icon { ...fragmentImages } }
+        }
+    }
+}

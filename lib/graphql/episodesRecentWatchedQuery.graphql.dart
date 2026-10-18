@@ -1,4 +1,5 @@
 import 'fragmentBookProgress.graphql.dart';
+import 'fragmentGame.graphql.dart';
 import 'fragmentImages.graphql.dart';
 import 'fragmentMetadata.graphql.dart';
 
@@ -1377,6 +1378,27 @@ const documentNodeQueryrecentlyWatched = DocumentNode(
                   ),
                 ),
                 FieldNode(
+                  name: NameNode(value: 'game'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: SelectionSetNode(
+                    selections: [
+                      FragmentSpreadNode(
+                        name: NameNode(value: 'fragmentGame'),
+                        directives: [],
+                      ),
+                      FieldNode(
+                        name: NameNode(value: '__typename'),
+                        alias: null,
+                        arguments: [],
+                        directives: [],
+                        selectionSet: null,
+                      ),
+                    ],
+                  ),
+                ),
+                FieldNode(
                   name: NameNode(value: '__typename'),
                   alias: null,
                   arguments: [],
@@ -1399,6 +1421,7 @@ const documentNodeQueryrecentlyWatched = DocumentNode(
     fragmentDefinitionfragmentMetadata,
     fragmentDefinitionfragmentImages,
     fragmentDefinitionfragmentBookProgress,
+    fragmentDefinitionfragmentGame,
   ],
 );
 
@@ -1410,6 +1433,7 @@ class Query$recentlyWatched$recentlyWatched {
     this.chapter,
     this.book,
     this.podcastEpisode,
+    this.game,
     this.$__typename = 'RecentlyWatched',
   });
 
@@ -1422,6 +1446,7 @@ class Query$recentlyWatched$recentlyWatched {
     final l$chapter = json['chapter'];
     final l$book = json['book'];
     final l$podcastEpisode = json['podcastEpisode'];
+    final l$game = json['game'];
     final l$$__typename = json['__typename'];
     return Query$recentlyWatched$recentlyWatched(
       type: fromJson$Enum$MediaType((l$type as String)),
@@ -1450,6 +1475,9 @@ class Query$recentlyWatched$recentlyWatched {
           : Query$recentlyWatched$recentlyWatched$podcastEpisode.fromJson(
               (l$podcastEpisode as Map<String, dynamic>),
             ),
+      game: l$game == null
+          ? null
+          : Fragment$fragmentGame.fromJson((l$game as Map<String, dynamic>)),
       $__typename: (l$$__typename as String),
     );
   }
@@ -1465,6 +1493,8 @@ class Query$recentlyWatched$recentlyWatched {
   final Query$recentlyWatched$recentlyWatched$book? book;
 
   final Query$recentlyWatched$recentlyWatched$podcastEpisode? podcastEpisode;
+
+  final Fragment$fragmentGame? game;
 
   final String $__typename;
 
@@ -1482,6 +1512,8 @@ class Query$recentlyWatched$recentlyWatched {
     _resultData['book'] = l$book?.toJson();
     final l$podcastEpisode = podcastEpisode;
     _resultData['podcastEpisode'] = l$podcastEpisode?.toJson();
+    final l$game = game;
+    _resultData['game'] = l$game?.toJson();
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -1495,6 +1527,7 @@ class Query$recentlyWatched$recentlyWatched {
     final l$chapter = chapter;
     final l$book = book;
     final l$podcastEpisode = podcastEpisode;
+    final l$game = game;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$type,
@@ -1503,6 +1536,7 @@ class Query$recentlyWatched$recentlyWatched {
       l$chapter,
       l$book,
       l$podcastEpisode,
+      l$game,
       l$$__typename,
     ]);
   }
@@ -1546,6 +1580,11 @@ class Query$recentlyWatched$recentlyWatched {
     if (l$podcastEpisode != lOther$podcastEpisode) {
       return false;
     }
+    final l$game = game;
+    final lOther$game = other.game;
+    if (l$game != lOther$game) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -1580,6 +1619,7 @@ abstract class CopyWith$Query$recentlyWatched$recentlyWatched<TRes> {
     Query$recentlyWatched$recentlyWatched$chapter? chapter,
     Query$recentlyWatched$recentlyWatched$book? book,
     Query$recentlyWatched$recentlyWatched$podcastEpisode? podcastEpisode,
+    Fragment$fragmentGame? game,
     String? $__typename,
   });
   CopyWith$Query$recentlyWatched$recentlyWatched$episode<TRes> get episode;
@@ -1588,6 +1628,7 @@ abstract class CopyWith$Query$recentlyWatched$recentlyWatched<TRes> {
   CopyWith$Query$recentlyWatched$recentlyWatched$book<TRes> get book;
   CopyWith$Query$recentlyWatched$recentlyWatched$podcastEpisode<TRes>
   get podcastEpisode;
+  CopyWith$Fragment$fragmentGame<TRes> get game;
 }
 
 class _CopyWithImpl$Query$recentlyWatched$recentlyWatched<TRes>
@@ -1610,6 +1651,7 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched<TRes>
     Object? chapter = _undefined,
     Object? book = _undefined,
     Object? podcastEpisode = _undefined,
+    Object? game = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Query$recentlyWatched$recentlyWatched(
@@ -1632,6 +1674,9 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched<TRes>
           ? _instance.podcastEpisode
           : (podcastEpisode
                 as Query$recentlyWatched$recentlyWatched$podcastEpisode?),
+      game: game == _undefined
+          ? _instance.game
+          : (game as Fragment$fragmentGame?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -1698,6 +1743,13 @@ class _CopyWithImpl$Query$recentlyWatched$recentlyWatched<TRes>
             (e) => call(podcastEpisode: e),
           );
   }
+
+  CopyWith$Fragment$fragmentGame<TRes> get game {
+    final local$game = _instance.game;
+    return local$game == null
+        ? CopyWith$Fragment$fragmentGame.stub(_then(_instance))
+        : CopyWith$Fragment$fragmentGame(local$game, (e) => call(game: e));
+  }
 }
 
 class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched<TRes>
@@ -1713,6 +1765,7 @@ class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched<TRes>
     Query$recentlyWatched$recentlyWatched$chapter? chapter,
     Query$recentlyWatched$recentlyWatched$book? book,
     Query$recentlyWatched$recentlyWatched$podcastEpisode? podcastEpisode,
+    Fragment$fragmentGame? game,
     String? $__typename,
   }) => _res;
 
@@ -1731,6 +1784,9 @@ class _CopyWithStubImpl$Query$recentlyWatched$recentlyWatched<TRes>
   CopyWith$Query$recentlyWatched$recentlyWatched$podcastEpisode<TRes>
   get podcastEpisode =>
       CopyWith$Query$recentlyWatched$recentlyWatched$podcastEpisode.stub(_res);
+
+  CopyWith$Fragment$fragmentGame<TRes> get game =>
+      CopyWith$Fragment$fragmentGame.stub(_res);
 }
 
 class Query$recentlyWatched$recentlyWatched$episode {

@@ -1,0 +1,8 @@
+fragment fragmentGame on Game {
+    id name title releaseYear platform form entryPath titleId steamAppId steamInstallDir steamCloud
+    sizeBytes fileCount
+    launcher { kind retroArchCore }
+    images { ...fragmentImages }
+    metadata { ...fragmentMetadata }
+    rating lastPlayed playTimeMs
+}

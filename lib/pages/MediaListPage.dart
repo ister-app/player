@@ -30,6 +30,7 @@ import '../components/PodcastCarouselTile.dart';
 import '../components/PodcastScroll.dart';
 import '../components/RecentCarouselView.dart';
 import '../components/SeriesCarouselTile.dart';
+import '../components/GameScroll.dart';
 import '../components/SeriesScroll.dart';
 import '../components/TvShowScroll.dart';
 import '../l10n/app_localizations.dart';
@@ -173,6 +174,13 @@ class MediaListPage extends StatelessWidget {
         );
       case Enum$LibraryType.COMIC:
         return SeriesScroll(
+          serverName: serverName,
+          libraryId: libraryId,
+          sorting: Enum$SortingEnum.DATE_CREATED,
+          sortingOrder: Enum$SortingOrder.DESCENDING,
+        );
+      case Enum$LibraryType.GAME:
+        return GameScroll(
           serverName: serverName,
           libraryId: libraryId,
           sorting: Enum$SortingEnum.DATE_CREATED,

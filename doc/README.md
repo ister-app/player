@@ -4,10 +4,10 @@ This directory holds the documentation for the Ister media player app.
 
 ## Contents
 
-- `user/en/` — the end-user guide in English (9 chapters, from installation to platform notes)
+- `user/en/` — the end-user guide in English (10 chapters, from installation to games)
 - `user/nl/` — de gebruikershandleiding in het Nederlands (same chapters, translated/adapted)
 - `user/images/` — screenshots referenced by the guide, per locale (`en/`, `nl/`). **Generated at build time, never committed.**
-- `architecture/en/` and `architecture/nl/` — developer-facing architecture documentation (layers, routes, services, playback pipeline, GraphQL codegen, epub reader)
+- `architecture/en/` and `architecture/nl/` — developer-facing architecture documentation (layers, routes, services, playback pipeline, GraphQL codegen, epub reader, games)
 - `architecture/diagrams/` — hand-authored mermaid diagrams (committed; no screenshots involved)
 
 ## Building the docs zip locally

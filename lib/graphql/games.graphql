@@ -1,0 +1,6 @@
+query games($page: Int, $size: Int, $sorting: SortingEnum, $sortingOrder: SortingOrder, $libraryId: ID, $platform: GamePlatform) {
+    games(page: $page, size: $size, sorting: $sorting, sortingOrder: $sortingOrder, libraryId: $libraryId, platform: $platform) {
+        content { ...fragmentGame }
+        totalPages totalElements number size
+    }
+}

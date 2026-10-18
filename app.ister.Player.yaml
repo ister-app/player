@@ -16,6 +16,10 @@ finish-args:
   - --own-name=org.mpris.MediaPlayer2.Ister
   - --talk-name=ca.desrt.dconf
   - --talk-name=org.freedesktop.secrets
+  # Games: launch emulators / games installed on the host (flatpak-spawn --host) and
+  # keep the game installs where those emulators can read them (~/Games/Ister).
+  - --talk-name=org.freedesktop.Flatpak
+  - --filesystem=~/Games:create
   - --filesystem=xdg-run/pipewire-0:ro
 #  - --system-talk-name=org.freedesktop.DBus
 #  - --talk-name=org.freedesktop.DBus

@@ -33,6 +33,7 @@ The same widget tree serves touch, D-pad and web; platform differences are handl
 4. [Playback pipeline](04-playback-pipeline.md) — play queues, `MediaPlayerHandler`, progress sync
 5. [GraphQL and code generation](05-graphql-codegen.md) — codegen workflow and query patterns
 6. [Epub reader](06-epub-reader.md) — the native reader stack, sync and read-aloud
+7. [Games](07-games.md) — installing, launching and syncing games on the desktop
 
 ## Diagrams
 

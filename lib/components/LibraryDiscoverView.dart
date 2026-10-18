@@ -33,6 +33,7 @@ import 'PodcastCarouselTile.dart';
 import 'PodcastSlide.dart';
 import 'RecentCarouselView.dart';
 import 'SeriesCarouselTile.dart';
+import 'GameSlide.dart';
 import 'SeriesSlide.dart';
 import 'TvShowSlide.dart';
 
@@ -158,6 +159,11 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
           serverName: widget.serverName,
           libraryId: widget.libraryId,
         );
+      case Enum$LibraryType.GAME:
+        return GameSlide(
+          serverName: widget.serverName,
+          libraryId: widget.libraryId,
+        );
       case Enum$LibraryType.PODCAST:
         return PodcastSlide(
           serverName: widget.serverName,
@@ -192,7 +198,8 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
   /// absent against an older server without the playlists query. COMIC
   /// libraries cannot have playlists, so the query is skipped there.
   Widget _playlistsRow(BuildContext context) {
-    if (widget.libraryType == Enum$LibraryType.COMIC) {
+    if (widget.libraryType == Enum$LibraryType.COMIC ||
+        widget.libraryType == Enum$LibraryType.GAME) {
       return const SizedBox.shrink();
     }
     final loc = AppLocalizations.of(context)!;
@@ -277,6 +284,10 @@ class _LibraryDiscoverViewState extends State<LibraryDiscoverView> {
   }
 
   Widget _rankedRowsQuery(BuildContext context) {
+    // Games have no play-count or rating top lists on the server (yet).
+    if (widget.libraryType == Enum$LibraryType.GAME) {
+      return const SizedBox.shrink();
+    }
     return Query(
       options: QueryOptions(
         document: _rankedDocument,

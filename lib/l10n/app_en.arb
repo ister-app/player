@@ -3001,5 +3001,410 @@
   "videoVersionOtherCutRestart": "This version has a different length, so it starts from the beginning.",
   "@videoVersionOtherCutRestart": {
     "description": "Snackbar when a picked version is another cut than the one the resume position was recorded in"
+  },
+  "games": "Games",
+  "@games": {
+    "description": "Library type label and section title for game libraries"
+  },
+  "gameFormRom": "ROM",
+  "@gameFormRom": {
+    "description": "Game form chip: an emulator ROM file"
+  },
+  "gameFormPs3Folder": "PS3 game",
+  "@gameFormPs3Folder": {
+    "description": "Game form chip: a PS3 game folder played with RPCS3"
+  },
+  "gameFormPcZip": "Windows game",
+  "@gameFormPcZip": {
+    "description": "Game form chip: a portable Windows game archive"
+  },
+  "gameFormLinuxInstaller": "Linux installer",
+  "@gameFormLinuxInstaller": {
+    "description": "Game form chip: a GOG-style Linux installer"
+  },
+  "gameFormLinuxPortable": "Linux game",
+  "@gameFormLinuxPortable": {
+    "description": "Game form chip: a portable Linux game archive"
+  },
+  "gameFormSteam": "Steam game",
+  "@gameFormSteam": {
+    "description": "Game form chip: an installed Steam game restored into Steam"
+  },
+  "gameSizeOnServer": "{size} on the server",
+  "@gameSizeOnServer": {
+    "description": "Game page: the size of the game's files",
+    "placeholders": {
+      "size": {"type": "String"}
+    }
+  },
+  "gameFileCount": "{count, plural, =1{1 file} other{{count} files}}",
+  "@gameFileCount": {
+    "description": "Game page: number of files in the game",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "gamePlayTime": "Play time: {time}",
+  "@gamePlayTime": {
+    "description": "Game page: accumulated play time of the user",
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "gamePlayTimeUnderMinute": "under a minute",
+  "@gamePlayTimeUnderMinute": {
+    "description": "Play time of less than one minute"
+  },
+  "gamePlayTimeMinutes": "{minutes} min",
+  "@gamePlayTimeMinutes": {
+    "description": "Play time in minutes",
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "gamePlayTimeHours": "{hours} h {minutes} min",
+  "@gamePlayTimeHours": {
+    "description": "Play time in hours and minutes",
+    "placeholders": {
+      "hours": {"type": "int"},
+      "minutes": {"type": "int"}
+    }
+  },
+  "gameLastPlayed": "Last played {date}",
+  "@gameLastPlayed": {
+    "description": "Game page: when the user last played",
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "gameNeverPlayed": "Not played yet",
+  "@gameNeverPlayed": {
+    "description": "Game page: the user never played this game"
+  },
+  "gameSaves": "Save games",
+  "@gameSaves": {
+    "description": "Game page: section with the user's save snapshots"
+  },
+  "gameNoSaves": "No saves on the server yet. Play once and the save is uploaded when you quit.",
+  "@gameNoSaves": {
+    "description": "Game page: empty state of the saves section"
+  },
+  "gameSaveVersion": "Version {version}",
+  "@gameSaveVersion": {
+    "description": "Save list: version number of a snapshot",
+    "placeholders": {
+      "version": {"type": "int"}
+    }
+  },
+  "gameSaveFrom": "{device} · {date}",
+  "@gameSaveFrom": {
+    "description": "Save list: which device uploaded a snapshot and when",
+    "placeholders": {
+      "device": {"type": "String"},
+      "date": {"type": "String"}
+    }
+  },
+  "gameSaveRestore": "Restore",
+  "@gameSaveRestore": {
+    "description": "Save list: make an older snapshot the current one"
+  },
+  "gameSaveDelete": "Delete",
+  "@gameSaveDelete": {
+    "description": "Save list: delete a snapshot"
+  },
+  "gameSaveRestored": "Restored as version {version}",
+  "@gameSaveRestored": {
+    "description": "Snackbar after restoring a save",
+    "placeholders": {
+      "version": {"type": "int"}
+    }
+  },
+  "gameSaveDeleted": "Save deleted",
+  "@gameSaveDeleted": {
+    "description": "Snackbar after deleting a save"
+  },
+  "gameSaveActionFailed": "Could not update the save",
+  "@gameSaveActionFailed": {
+    "description": "Snackbar when a save action fails"
+  },
+  "gameAchievements": "Achievements",
+  "@gameAchievements": {
+    "description": "Game page: section with trophies/achievements"
+  },
+  "gameAchievementsProgress": "{unlocked} of {total} unlocked",
+  "@gameAchievementsProgress": {
+    "description": "Game page: achievement progress",
+    "placeholders": {
+      "unlocked": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "gameAchievementHidden": "Hidden achievement",
+  "@gameAchievementHidden": {
+    "description": "Name shown for a hidden, locked achievement"
+  },
+  "gameAchievementsNone": "Achievements appear here after a play session on the desktop app.",
+  "@gameAchievementsNone": {
+    "description": "Game page: empty state of the achievements section"
+  },
+  "gameSavePaths": "Save locations",
+  "@gameSavePaths": {
+    "description": "Game page: where the game keeps its saves on a PC"
+  },
+  "gameSavePathSourceAdmin": "Set by an administrator",
+  "@gameSavePathSourceAdmin": {
+    "description": "Save locations came from the admin override"
+  },
+  "gameSavePathSourceManifest": "From the Ludusavi manifest",
+  "@gameSavePathSourceManifest": {
+    "description": "Save locations came from the community manifest"
+  },
+  "gameSavePathSourceNone": "Unknown: saves are not synced for this game until an administrator sets the locations.",
+  "@gameSavePathSourceNone": {
+    "description": "No save locations are known for a PC game"
+  },
+  "gameSteamCloudNote": "This game also syncs its saves through Steam Cloud.",
+  "@gameSteamCloudNote": {
+    "description": "Warning that Steam Cloud syncs the same saves"
+  },
+  "gameSteamOwnershipNote": "Steam games start through Steam and must be owned by your Steam account.",
+  "@gameSteamOwnershipNote": {
+    "description": "Note on the game page of a Steam game"
+  },
+  "gameDesktopOnly": "Games are played from the desktop app on Linux or Windows.",
+  "@gameDesktopOnly": {
+    "description": "Game page on a platform that cannot launch games"
+  },
+  "gameLauncherRetroArch": "RetroArch ({core})",
+  "@gameLauncherRetroArch": {
+    "description": "Launcher chip: RetroArch with a libretro core",
+    "placeholders": {
+      "core": {"type": "String"}
+    }
+  },
+  "gameLauncherRpcs3": "RPCS3",
+  "@gameLauncherRpcs3": {
+    "description": "Launcher chip: the PS3 emulator"
+  },
+  "gameLauncherNative": "Runs directly",
+  "@gameLauncherNative": {
+    "description": "Launcher chip: a native PC game"
+  },
+  "gameLauncherSteam": "Steam",
+  "@gameLauncherSteam": {
+    "description": "Launcher chip: started through Steam"
+  },
+  "gameNoDescription": "No description available.",
+  "@gameNoDescription": {
+    "description": "Game page when the game has no metadata description"
+  },
+  "gamePlay": "Play",
+  "@gamePlay": {
+    "description": "Game page: start the game"
+  },
+  "gameRunning": "Game is running…",
+  "@gameRunning": {
+    "description": "Game page: the game process is running"
+  },
+  "gameFinishedPlaying": "I finished playing",
+  "@gameFinishedPlaying": {
+    "description": "Game page: ends a Steam session (the app cannot see Steam's process) and syncs saves"
+  },
+  "gameInstall": "Install ({size})",
+  "@gameInstall": {
+    "description": "Game page: download the game to this device",
+    "placeholders": {
+      "size": {"type": "String"}
+    }
+  },
+  "gameInstallIntoSteam": "Install into Steam",
+  "@gameInstallIntoSteam": {
+    "description": "Game page: restore a Steam game into a local Steam library"
+  },
+  "gameUninstall": "Remove from this device",
+  "@gameUninstall": {
+    "description": "Game page: delete the local install"
+  },
+  "gameUninstallConfirm": "The game files on this device are deleted. Your saves stay on the server.",
+  "@gameUninstallConfirm": {
+    "description": "Confirmation body for removing a local install"
+  },
+  "gameExtracting": "Unpacking…",
+  "@gameExtracting": {
+    "description": "Install progress: archives are being extracted"
+  },
+  "gameDownloadingProgress": "{done} of {total} · {filesDone} of {filesTotal} files",
+  "@gameDownloadingProgress": {
+    "description": "Install progress line",
+    "placeholders": {
+      "done": {"type": "String"},
+      "total": {"type": "String"},
+      "filesDone": {"type": "int"},
+      "filesTotal": {"type": "int"}
+    }
+  },
+  "gameInstallFailed": "Install failed: {error}",
+  "@gameInstallFailed": {
+    "description": "Install error line",
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "gameLaunchFailed": "Could not start the game: {error}",
+  "@gameLaunchFailed": {
+    "description": "Launch error line",
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "gameEmulatorMissing": "{name} was not found on this computer. Install it, or pick its location in Settings › Games.",
+  "@gameEmulatorMissing": {
+    "description": "Launch problem: emulator not installed",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "gameCoreMissing": "RetroArch has no \"{core}\" core installed. Add it through RetroArch's Online Updater › Core Downloader.",
+  "@gameCoreMissing": {
+    "description": "Launch problem: libretro core missing",
+    "placeholders": {
+      "core": {"type": "String"}
+    }
+  },
+  "gameEntryMissing": "The game's files are incomplete; remove and install it again.",
+  "@gameEntryMissing": {
+    "description": "Launch problem: entry file missing"
+  },
+  "gamePs3FirmwareMissing": "RPCS3 has no PS3 firmware installed yet. Install it in RPCS3 (File › Install Firmware) first.",
+  "@gamePs3FirmwareMissing": {
+    "description": "Launch problem: RPCS3 firmware missing"
+  },
+  "gameSteamLaunched": "Steam is starting the game. Press \"I finished playing\" afterwards to sync your saves.",
+  "@gameSteamLaunched": {
+    "description": "Message after a Steam launch"
+  },
+  "gameSteamRestartHint": "Installed. Restart Steam if the game does not show up as installed yet; Steam verifies the files on first start.",
+  "@gameSteamRestartHint": {
+    "description": "Message after restoring a Steam game"
+  },
+  "gamePickSteamLibrary": "Choose the Steam library folder",
+  "@gamePickSteamLibrary": {
+    "description": "Dialog title for picking a Steam library"
+  },
+  "gameSessionLength": "Played {time}",
+  "@gameSessionLength": {
+    "description": "Session summary: duration",
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "gameSaveUploaded": "Save uploaded as version {version}",
+  "@gameSaveUploaded": {
+    "description": "Session summary: the save snapshot version",
+    "placeholders": {
+      "version": {"type": "int"}
+    }
+  },
+  "gameNewAchievements": "{count, plural, =1{1 new achievement} other{{count} new achievements}}",
+  "@gameNewAchievements": {
+    "description": "Session summary: achievements unlocked",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "gameSaveConflictTitle": "Newer save on the server",
+  "@gameSaveConflictTitle": {
+    "description": "Dialog title for a save conflict"
+  },
+  "gameSaveConflictBody": "Version {version} was uploaded by {device} ({date}) after this device last synced, and your local save changed too. Which one do you want to play with?",
+  "@gameSaveConflictBody": {
+    "description": "Dialog body for a save conflict",
+    "placeholders": {
+      "version": {"type": "int"},
+      "device": {"type": "String"},
+      "date": {"type": "String"}
+    }
+  },
+  "gameSaveConflictKeepLocal": "Keep mine",
+  "@gameSaveConflictKeepLocal": {
+    "description": "Conflict choice: upload the local save as the new head"
+  },
+  "gameSaveConflictUseServer": "Use the server's",
+  "@gameSaveConflictUseServer": {
+    "description": "Conflict choice: download the server head"
+  },
+  "gameSettings": "Games",
+  "@gameSettings": {
+    "description": "Settings entry: game installs, emulators and sync"
+  },
+  "gameSettingsSubtitle": "Install folder, emulators, save sync",
+  "@gameSettingsSubtitle": {
+    "description": "Settings entry subtitle"
+  },
+  "gameSettingsStorage": "Storage",
+  "@gameSettingsStorage": {
+    "description": "Game settings section"
+  },
+  "gameSettingsRoot": "Games folder",
+  "@gameSettingsRoot": {
+    "description": "Game settings: where games are installed"
+  },
+  "gameSettingsResetDefault": "Default",
+  "@gameSettingsResetDefault": {
+    "description": "Button: back to the default value"
+  },
+  "gameSettingsEmulators": "Emulators and launchers",
+  "@gameSettingsEmulators": {
+    "description": "Game settings section"
+  },
+  "gameSettingsEmulatorsHint": "Found automatically on this computer; pick an executable when detection misses it.",
+  "@gameSettingsEmulatorsHint": {
+    "description": "Game settings section hint"
+  },
+  "gameSettingsRedetect": "Detect again",
+  "@gameSettingsRedetect": {
+    "description": "Game settings: re-run emulator detection"
+  },
+  "gameSettingsNotFound": "Not found",
+  "@gameSettingsNotFound": {
+    "description": "Emulator tile: nothing detected"
+  },
+  "gameSettingsDetected": "Detected: {command}",
+  "@gameSettingsDetected": {
+    "description": "Emulator tile: detected command",
+    "placeholders": {
+      "command": {"type": "String"}
+    }
+  },
+  "gameSettingsManual": "Chosen: {command}",
+  "@gameSettingsManual": {
+    "description": "Emulator tile: user override",
+    "placeholders": {
+      "command": {"type": "String"}
+    }
+  },
+  "gameSettingsPickExecutable": "Choose executable",
+  "@gameSettingsPickExecutable": {
+    "description": "Emulator tile: pick a binary"
+  },
+  "gameSettingsSync": "Synchronisation",
+  "@gameSettingsSync": {
+    "description": "Game settings section"
+  },
+  "gameSettingsSaveSync": "Sync save games",
+  "@gameSettingsSaveSync": {
+    "description": "Switch: upload/download saves around a session"
+  },
+  "gameSettingsSaveSyncSubtitle": "Download the latest save before playing and upload yours afterwards.",
+  "@gameSettingsSaveSyncSubtitle": {
+    "description": "Switch subtitle"
+  },
+  "gameSettingsAchievementSync": "Report achievements",
+  "@gameSettingsAchievementSync": {
+    "description": "Switch: read trophies/achievements after a session"
+  },
+  "gameSettingsAchievementSyncSubtitle": "Read PS3 trophies and Steam achievements from this computer after a session.",
+  "@gameSettingsAchievementSyncSubtitle": {
+    "description": "Switch subtitle"
   }
 }

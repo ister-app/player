@@ -10,6 +10,7 @@ import '../components/SaveLogTile.dart';
 import '../components/SettingsSection.dart';
 import '../components/TvModeTile.dart';
 import '../utils/AppVersion.dart';
+import '../utils/games/GamePlatformSupport.dart';
 import '../utils/upload/UploadSource.dart';
 import '../l10n/app_localizations.dart';
 
@@ -62,6 +63,15 @@ class ServerSettingsPage extends StatelessWidget {
                   onTap: () =>
                       AutoRouter.of(context)
                           .push(ServerSettingsPlaybackRoute()),
+                ),
+              if (kGamesSupported)
+                ListTile(
+                  key: const ValueKey('settings-tile-games'),
+                  leading: const Icon(Icons.sports_esports_outlined),
+                  title: Text(loc.gameSettings),
+                  subtitle: Text(loc.gameSettingsSubtitle),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => AutoRouter.of(context).push(GameSettingsRoute()),
                 ),
             ],
           ),

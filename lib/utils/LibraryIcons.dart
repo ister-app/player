@@ -17,6 +17,8 @@ IconData libraryTypeIcon(Enum$LibraryType type) {
       return Icons.podcasts;
     case Enum$LibraryType.COMIC:
       return Icons.collections_bookmark;
+    case Enum$LibraryType.GAME:
+      return Icons.sports_esports;
     default:
       return Icons.video_library;
   }

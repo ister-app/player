@@ -103,3 +103,4 @@ The **About & data sources** page credits the external sources — such as metad
 - How these settings affect the player: [Playback](04-playback.md)
 - Managing users and libraries (admins): [Administration](09-admin.md)
 - Platform-specific notes: [Platforms](08-platforms.md)
+- Playing games from a game library: [Games](10-games.md)

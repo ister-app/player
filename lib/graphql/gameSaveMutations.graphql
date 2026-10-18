@@ -1,0 +1,15 @@
+mutation restoreGameSave($gameId: ID!, $version: Int!) {
+    restoreGameSave(gameId: $gameId, version: $version) { id version sizeBytes sha256 deviceName note createdAt }
+}
+
+mutation deleteGameSave($gameId: ID!, $version: Int!) {
+    deleteGameSave(gameId: $gameId, version: $version)
+}
+
+mutation updateGameSavePaths($gameId: ID!, $savePaths: [String!]!) {
+    updateGameSavePaths(gameId: $gameId, savePaths: $savePaths) {
+        id savePathSource
+        savePaths { path os }
+        savePathOverride { path os }
+    }
+}

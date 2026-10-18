@@ -54,5 +54,6 @@ query recentlyWatched($libraryId: ID) {
             watchStatus { id playQueueItemId progressInMilliseconds watched }
             mediaFile { id durationInMilliseconds }
         }
+        game { ...fragmentGame }
     }
 }

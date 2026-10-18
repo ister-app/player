@@ -86,26 +86,40 @@ class DownloadHttp {
   }
 
   /// Streams a response into [target] via a `.part` file; returns its size.
+  ///
+  /// With [resume] a `.part` left behind by an earlier attempt is continued
+  /// through an HTTP Range request instead of being thrown away — for the
+  /// multi-gigabyte files of a game install. A server that answers 200 to the
+  /// range (no Range support, or a changed file) restarts the file from zero.
   Future<int> getToFile(String serverName, String url, File target,
       DownloadCancelToken cancel,
       {required Duration timeout,
       int? maxAttemptsOverride,
-      Duration? bodyTimeoutOverride}) async {
-    final response = await send(serverName, url, cancel,
-        timeout: timeout, maxAttemptsOverride: maxAttemptsOverride);
+      Duration? bodyTimeoutOverride,
+      bool resume = false}) async {
     await target.parent.create(recursive: true);
     final part = File('${target.path}.part');
-    final sink = part.openWrite();
+    var offset = 0;
+    if (resume && await part.exists()) {
+      offset = await part.length();
+    }
+    final response = await send(serverName, url, cancel,
+        timeout: timeout,
+        maxAttemptsOverride: maxAttemptsOverride,
+        rangeStart: offset > 0 ? offset : null);
+    final append = offset > 0 && response.statusCode == 206;
+    final sink = part.openWrite(mode: append ? FileMode.append : FileMode.write);
     try {
       await response.stream
           .pipe(sink)
           .timeout(bodyTimeoutOverride ?? bodyTimeout);
     } on FileSystemException catch (e) {
-      await tryDelete(part);
+      if (!resume) await tryDelete(part);
       throw DownloadFailure('write failed: ${e.message}',
           noSpace: e.osError?.errorCode == 28);
     } catch (e) {
-      await tryDelete(part);
+      // A resumable part stays for the next attempt; the rest start over.
+      if (!resume) await tryDelete(part);
       rethrow;
     }
     await part.rename(target.path);
@@ -114,9 +128,12 @@ class DownloadHttp {
 
   /// GET with retry/backoff for transient failures and one token refresh on
   /// an auth rejection. Throws [DownloadFailure] for permanent errors.
+  ///
+  /// [rangeStart] asks for the bytes from that offset on (`Range: bytes=N-`);
+  /// the response is then 206, or 200 when the server ignored the range.
   Future<http.StreamedResponse> send(
       String serverName, String url, DownloadCancelToken cancel,
-      {required Duration timeout, int? maxAttemptsOverride}) async {
+      {required Duration timeout, int? maxAttemptsOverride, int? rangeStart}) async {
     final attempts = maxAttemptsOverride ?? maxAttempts;
     var authRetried = false;
     for (var attempt = 0;; attempt++) {
@@ -127,7 +144,11 @@ class DownloadHttp {
       final generation = _authGeneration;
       try {
         final uri = await tokenized(serverName, url);
-        response = await _http.send(http.Request('GET', uri)).timeout(timeout);
+        final request = http.Request('GET', uri);
+        if (rangeStart != null && rangeStart > 0) {
+          request.headers['Range'] = 'bytes=$rangeStart-';
+        }
+        response = await _http.send(request).timeout(timeout);
       } on TimeoutException catch (e) {
         transient = e;
       } on http.ClientException catch (e) {
@@ -139,7 +160,7 @@ class DownloadHttp {
       }
       if (response != null) {
         final code = response.statusCode;
-        if (code == 200) return response;
+        if (code == 200 || (code == 206 && rangeStart != null)) return response;
         await _drain(response);
         if ((code == 401 || code == 403) && generation != _authGeneration) {
           // Another request already dropped this token; retry with whatever

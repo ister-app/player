@@ -2891,6 +2891,7 @@ enum Enum$LibraryType {
   BOOK,
   PODCAST,
   COMIC,
+  GAME,
   $unknown;
 
   factory Enum$LibraryType.fromJson(String value) =>
@@ -2913,6 +2914,8 @@ String toJson$Enum$LibraryType(Enum$LibraryType e) {
       return r'PODCAST';
     case Enum$LibraryType.COMIC:
       return r'COMIC';
+    case Enum$LibraryType.GAME:
+      return r'GAME';
     case Enum$LibraryType.$unknown:
       return r'$unknown';
   }
@@ -2932,6 +2935,8 @@ Enum$LibraryType fromJson$Enum$LibraryType(String value) {
       return Enum$LibraryType.PODCAST;
     case r'COMIC':
       return Enum$LibraryType.COMIC;
+    case r'GAME':
+      return Enum$LibraryType.GAME;
     default:
       return Enum$LibraryType.$unknown;
   }
@@ -2945,6 +2950,7 @@ enum Enum$MediaType {
   BOOK,
   PODCAST_EPISODE,
   COMIC,
+  GAME,
   $unknown;
 
   factory Enum$MediaType.fromJson(String value) =>
@@ -2969,6 +2975,8 @@ String toJson$Enum$MediaType(Enum$MediaType e) {
       return r'PODCAST_EPISODE';
     case Enum$MediaType.COMIC:
       return r'COMIC';
+    case Enum$MediaType.GAME:
+      return r'GAME';
     case Enum$MediaType.$unknown:
       return r'$unknown';
   }
@@ -2990,6 +2998,8 @@ Enum$MediaType fromJson$Enum$MediaType(String value) {
       return Enum$MediaType.PODCAST_EPISODE;
     case r'COMIC':
       return Enum$MediaType.COMIC;
+    case r'GAME':
+      return Enum$MediaType.GAME;
     default:
       return Enum$MediaType.$unknown;
   }
@@ -3003,6 +3013,7 @@ enum Enum$RatingMediaType {
   TRACK,
   BOOK,
   PODCAST,
+  GAME,
   $unknown;
 
   factory Enum$RatingMediaType.fromJson(String value) =>
@@ -3027,6 +3038,8 @@ String toJson$Enum$RatingMediaType(Enum$RatingMediaType e) {
       return r'BOOK';
     case Enum$RatingMediaType.PODCAST:
       return r'PODCAST';
+    case Enum$RatingMediaType.GAME:
+      return r'GAME';
     case Enum$RatingMediaType.$unknown:
       return r'$unknown';
   }
@@ -3048,6 +3061,8 @@ Enum$RatingMediaType fromJson$Enum$RatingMediaType(String value) {
       return Enum$RatingMediaType.BOOK;
     case r'PODCAST':
       return Enum$RatingMediaType.PODCAST;
+    case r'GAME':
+      return Enum$RatingMediaType.GAME;
     default:
       return Enum$RatingMediaType.$unknown;
   }
@@ -3433,6 +3448,242 @@ Enum$BookProgressMode fromJson$Enum$BookProgressMode(String value) {
   }
 }
 
+enum Enum$GamePlatform {
+  NES,
+  SNES,
+  N64,
+  GB,
+  GBC,
+  GBA,
+  NDS,
+  PSX,
+  PS2,
+  GC,
+  WII,
+  PS3,
+  PC,
+  LINUX,
+  STEAM,
+  $unknown;
+
+  factory Enum$GamePlatform.fromJson(String value) =>
+      fromJson$Enum$GamePlatform(value);
+
+  String toJson() => toJson$Enum$GamePlatform(this);
+}
+
+String toJson$Enum$GamePlatform(Enum$GamePlatform e) {
+  switch (e) {
+    case Enum$GamePlatform.NES:
+      return r'NES';
+    case Enum$GamePlatform.SNES:
+      return r'SNES';
+    case Enum$GamePlatform.N64:
+      return r'N64';
+    case Enum$GamePlatform.GB:
+      return r'GB';
+    case Enum$GamePlatform.GBC:
+      return r'GBC';
+    case Enum$GamePlatform.GBA:
+      return r'GBA';
+    case Enum$GamePlatform.NDS:
+      return r'NDS';
+    case Enum$GamePlatform.PSX:
+      return r'PSX';
+    case Enum$GamePlatform.PS2:
+      return r'PS2';
+    case Enum$GamePlatform.GC:
+      return r'GC';
+    case Enum$GamePlatform.WII:
+      return r'WII';
+    case Enum$GamePlatform.PS3:
+      return r'PS3';
+    case Enum$GamePlatform.PC:
+      return r'PC';
+    case Enum$GamePlatform.LINUX:
+      return r'LINUX';
+    case Enum$GamePlatform.STEAM:
+      return r'STEAM';
+    case Enum$GamePlatform.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$GamePlatform fromJson$Enum$GamePlatform(String value) {
+  switch (value) {
+    case r'NES':
+      return Enum$GamePlatform.NES;
+    case r'SNES':
+      return Enum$GamePlatform.SNES;
+    case r'N64':
+      return Enum$GamePlatform.N64;
+    case r'GB':
+      return Enum$GamePlatform.GB;
+    case r'GBC':
+      return Enum$GamePlatform.GBC;
+    case r'GBA':
+      return Enum$GamePlatform.GBA;
+    case r'NDS':
+      return Enum$GamePlatform.NDS;
+    case r'PSX':
+      return Enum$GamePlatform.PSX;
+    case r'PS2':
+      return Enum$GamePlatform.PS2;
+    case r'GC':
+      return Enum$GamePlatform.GC;
+    case r'WII':
+      return Enum$GamePlatform.WII;
+    case r'PS3':
+      return Enum$GamePlatform.PS3;
+    case r'PC':
+      return Enum$GamePlatform.PC;
+    case r'LINUX':
+      return Enum$GamePlatform.LINUX;
+    case r'STEAM':
+      return Enum$GamePlatform.STEAM;
+    default:
+      return Enum$GamePlatform.$unknown;
+  }
+}
+
+enum Enum$GameForm {
+  ROM,
+  PS3_FOLDER,
+  PC_PORTABLE_ZIP,
+  PC_LINUX_INSTALLER,
+  PC_LINUX_PORTABLE,
+  STEAM,
+  $unknown;
+
+  factory Enum$GameForm.fromJson(String value) => fromJson$Enum$GameForm(value);
+
+  String toJson() => toJson$Enum$GameForm(this);
+}
+
+String toJson$Enum$GameForm(Enum$GameForm e) {
+  switch (e) {
+    case Enum$GameForm.ROM:
+      return r'ROM';
+    case Enum$GameForm.PS3_FOLDER:
+      return r'PS3_FOLDER';
+    case Enum$GameForm.PC_PORTABLE_ZIP:
+      return r'PC_PORTABLE_ZIP';
+    case Enum$GameForm.PC_LINUX_INSTALLER:
+      return r'PC_LINUX_INSTALLER';
+    case Enum$GameForm.PC_LINUX_PORTABLE:
+      return r'PC_LINUX_PORTABLE';
+    case Enum$GameForm.STEAM:
+      return r'STEAM';
+    case Enum$GameForm.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$GameForm fromJson$Enum$GameForm(String value) {
+  switch (value) {
+    case r'ROM':
+      return Enum$GameForm.ROM;
+    case r'PS3_FOLDER':
+      return Enum$GameForm.PS3_FOLDER;
+    case r'PC_PORTABLE_ZIP':
+      return Enum$GameForm.PC_PORTABLE_ZIP;
+    case r'PC_LINUX_INSTALLER':
+      return Enum$GameForm.PC_LINUX_INSTALLER;
+    case r'PC_LINUX_PORTABLE':
+      return Enum$GameForm.PC_LINUX_PORTABLE;
+    case r'STEAM':
+      return Enum$GameForm.STEAM;
+    default:
+      return Enum$GameForm.$unknown;
+  }
+}
+
+enum Enum$GameLauncherKind {
+  RETROARCH,
+  RPCS3,
+  NATIVE_WINDOWS,
+  NATIVE_LINUX,
+  STEAM,
+  $unknown;
+
+  factory Enum$GameLauncherKind.fromJson(String value) =>
+      fromJson$Enum$GameLauncherKind(value);
+
+  String toJson() => toJson$Enum$GameLauncherKind(this);
+}
+
+String toJson$Enum$GameLauncherKind(Enum$GameLauncherKind e) {
+  switch (e) {
+    case Enum$GameLauncherKind.RETROARCH:
+      return r'RETROARCH';
+    case Enum$GameLauncherKind.RPCS3:
+      return r'RPCS3';
+    case Enum$GameLauncherKind.NATIVE_WINDOWS:
+      return r'NATIVE_WINDOWS';
+    case Enum$GameLauncherKind.NATIVE_LINUX:
+      return r'NATIVE_LINUX';
+    case Enum$GameLauncherKind.STEAM:
+      return r'STEAM';
+    case Enum$GameLauncherKind.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$GameLauncherKind fromJson$Enum$GameLauncherKind(String value) {
+  switch (value) {
+    case r'RETROARCH':
+      return Enum$GameLauncherKind.RETROARCH;
+    case r'RPCS3':
+      return Enum$GameLauncherKind.RPCS3;
+    case r'NATIVE_WINDOWS':
+      return Enum$GameLauncherKind.NATIVE_WINDOWS;
+    case r'NATIVE_LINUX':
+      return Enum$GameLauncherKind.NATIVE_LINUX;
+    case r'STEAM':
+      return Enum$GameLauncherKind.STEAM;
+    default:
+      return Enum$GameLauncherKind.$unknown;
+  }
+}
+
+enum Enum$GameAchievementSource {
+  PS3_TROPHY,
+  STEAM,
+  RETROACHIEVEMENTS,
+  $unknown;
+
+  factory Enum$GameAchievementSource.fromJson(String value) =>
+      fromJson$Enum$GameAchievementSource(value);
+
+  String toJson() => toJson$Enum$GameAchievementSource(this);
+}
+
+String toJson$Enum$GameAchievementSource(Enum$GameAchievementSource e) {
+  switch (e) {
+    case Enum$GameAchievementSource.PS3_TROPHY:
+      return r'PS3_TROPHY';
+    case Enum$GameAchievementSource.STEAM:
+      return r'STEAM';
+    case Enum$GameAchievementSource.RETROACHIEVEMENTS:
+      return r'RETROACHIEVEMENTS';
+    case Enum$GameAchievementSource.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$GameAchievementSource fromJson$Enum$GameAchievementSource(String value) {
+  switch (value) {
+    case r'PS3_TROPHY':
+      return Enum$GameAchievementSource.PS3_TROPHY;
+    case r'STEAM':
+      return Enum$GameAchievementSource.STEAM;
+    case r'RETROACHIEVEMENTS':
+      return Enum$GameAchievementSource.RETROACHIEVEMENTS;
+    default:
+      return Enum$GameAchievementSource.$unknown;
+  }
+}
+
 enum Enum$__TypeKind {
   SCALAR,
   OBJECT,
@@ -3624,5 +3875,6 @@ const possibleTypesMap = <String, Set<String>>{
     'Track',
     'Book',
     'Podcast',
+    'Game',
   },
 };

@@ -103,3 +103,4 @@ De pagina **Over & bronvermelding** vermeldt de externe bronnen — zoals levera
 - Wat deze instellingen doen in de speler: [Afspelen](04-playback.md)
 - Gebruikers en bibliotheken beheren (beheerders): [Beheer](09-admin.md)
 - Platformspecifieke bijzonderheden: [Platforms](08-platforms.md)
+- Games spelen uit een gamebibliotheek: [Games](10-games.md)

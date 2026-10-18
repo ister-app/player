@@ -4687,6 +4687,503 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This version has a different length, so it starts from the beginning.'**
   String get videoVersionOtherCutRestart;
+
+  /// Library type label and section title for game libraries
+  ///
+  /// In en, this message translates to:
+  /// **'Games'**
+  String get games;
+
+  /// Game form chip: an emulator ROM file
+  ///
+  /// In en, this message translates to:
+  /// **'ROM'**
+  String get gameFormRom;
+
+  /// Game form chip: a PS3 game folder played with RPCS3
+  ///
+  /// In en, this message translates to:
+  /// **'PS3 game'**
+  String get gameFormPs3Folder;
+
+  /// Game form chip: a portable Windows game archive
+  ///
+  /// In en, this message translates to:
+  /// **'Windows game'**
+  String get gameFormPcZip;
+
+  /// Game form chip: a GOG-style Linux installer
+  ///
+  /// In en, this message translates to:
+  /// **'Linux installer'**
+  String get gameFormLinuxInstaller;
+
+  /// Game form chip: a portable Linux game archive
+  ///
+  /// In en, this message translates to:
+  /// **'Linux game'**
+  String get gameFormLinuxPortable;
+
+  /// Game form chip: an installed Steam game restored into Steam
+  ///
+  /// In en, this message translates to:
+  /// **'Steam game'**
+  String get gameFormSteam;
+
+  /// Game page: the size of the game's files
+  ///
+  /// In en, this message translates to:
+  /// **'{size} on the server'**
+  String gameSizeOnServer(String size);
+
+  /// Game page: number of files in the game
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 file} other{{count} files}}'**
+  String gameFileCount(int count);
+
+  /// Game page: accumulated play time of the user
+  ///
+  /// In en, this message translates to:
+  /// **'Play time: {time}'**
+  String gamePlayTime(String time);
+
+  /// Play time of less than one minute
+  ///
+  /// In en, this message translates to:
+  /// **'under a minute'**
+  String get gamePlayTimeUnderMinute;
+
+  /// Play time in minutes
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String gamePlayTimeMinutes(int minutes);
+
+  /// Play time in hours and minutes
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} h {minutes} min'**
+  String gamePlayTimeHours(int hours, int minutes);
+
+  /// Game page: when the user last played
+  ///
+  /// In en, this message translates to:
+  /// **'Last played {date}'**
+  String gameLastPlayed(String date);
+
+  /// Game page: the user never played this game
+  ///
+  /// In en, this message translates to:
+  /// **'Not played yet'**
+  String get gameNeverPlayed;
+
+  /// Game page: section with the user's save snapshots
+  ///
+  /// In en, this message translates to:
+  /// **'Save games'**
+  String get gameSaves;
+
+  /// Game page: empty state of the saves section
+  ///
+  /// In en, this message translates to:
+  /// **'No saves on the server yet. Play once and the save is uploaded when you quit.'**
+  String get gameNoSaves;
+
+  /// Save list: version number of a snapshot
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String gameSaveVersion(int version);
+
+  /// Save list: which device uploaded a snapshot and when
+  ///
+  /// In en, this message translates to:
+  /// **'{device} · {date}'**
+  String gameSaveFrom(String device, String date);
+
+  /// Save list: make an older snapshot the current one
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get gameSaveRestore;
+
+  /// Save list: delete a snapshot
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get gameSaveDelete;
+
+  /// Snackbar after restoring a save
+  ///
+  /// In en, this message translates to:
+  /// **'Restored as version {version}'**
+  String gameSaveRestored(int version);
+
+  /// Snackbar after deleting a save
+  ///
+  /// In en, this message translates to:
+  /// **'Save deleted'**
+  String get gameSaveDeleted;
+
+  /// Snackbar when a save action fails
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update the save'**
+  String get gameSaveActionFailed;
+
+  /// Game page: section with trophies/achievements
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get gameAchievements;
+
+  /// Game page: achievement progress
+  ///
+  /// In en, this message translates to:
+  /// **'{unlocked} of {total} unlocked'**
+  String gameAchievementsProgress(int unlocked, int total);
+
+  /// Name shown for a hidden, locked achievement
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden achievement'**
+  String get gameAchievementHidden;
+
+  /// Game page: empty state of the achievements section
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements appear here after a play session on the desktop app.'**
+  String get gameAchievementsNone;
+
+  /// Game page: where the game keeps its saves on a PC
+  ///
+  /// In en, this message translates to:
+  /// **'Save locations'**
+  String get gameSavePaths;
+
+  /// Save locations came from the admin override
+  ///
+  /// In en, this message translates to:
+  /// **'Set by an administrator'**
+  String get gameSavePathSourceAdmin;
+
+  /// Save locations came from the community manifest
+  ///
+  /// In en, this message translates to:
+  /// **'From the Ludusavi manifest'**
+  String get gameSavePathSourceManifest;
+
+  /// No save locations are known for a PC game
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown: saves are not synced for this game until an administrator sets the locations.'**
+  String get gameSavePathSourceNone;
+
+  /// Warning that Steam Cloud syncs the same saves
+  ///
+  /// In en, this message translates to:
+  /// **'This game also syncs its saves through Steam Cloud.'**
+  String get gameSteamCloudNote;
+
+  /// Note on the game page of a Steam game
+  ///
+  /// In en, this message translates to:
+  /// **'Steam games start through Steam and must be owned by your Steam account.'**
+  String get gameSteamOwnershipNote;
+
+  /// Game page on a platform that cannot launch games
+  ///
+  /// In en, this message translates to:
+  /// **'Games are played from the desktop app on Linux or Windows.'**
+  String get gameDesktopOnly;
+
+  /// Launcher chip: RetroArch with a libretro core
+  ///
+  /// In en, this message translates to:
+  /// **'RetroArch ({core})'**
+  String gameLauncherRetroArch(String core);
+
+  /// Launcher chip: the PS3 emulator
+  ///
+  /// In en, this message translates to:
+  /// **'RPCS3'**
+  String get gameLauncherRpcs3;
+
+  /// Launcher chip: a native PC game
+  ///
+  /// In en, this message translates to:
+  /// **'Runs directly'**
+  String get gameLauncherNative;
+
+  /// Launcher chip: started through Steam
+  ///
+  /// In en, this message translates to:
+  /// **'Steam'**
+  String get gameLauncherSteam;
+
+  /// Game page when the game has no metadata description
+  ///
+  /// In en, this message translates to:
+  /// **'No description available.'**
+  String get gameNoDescription;
+
+  /// Game page: start the game
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get gamePlay;
+
+  /// Game page: the game process is running
+  ///
+  /// In en, this message translates to:
+  /// **'Game is running…'**
+  String get gameRunning;
+
+  /// Game page: ends a Steam session (the app cannot see Steam's process) and syncs saves
+  ///
+  /// In en, this message translates to:
+  /// **'I finished playing'**
+  String get gameFinishedPlaying;
+
+  /// Game page: download the game to this device
+  ///
+  /// In en, this message translates to:
+  /// **'Install ({size})'**
+  String gameInstall(String size);
+
+  /// Game page: restore a Steam game into a local Steam library
+  ///
+  /// In en, this message translates to:
+  /// **'Install into Steam'**
+  String get gameInstallIntoSteam;
+
+  /// Game page: delete the local install
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from this device'**
+  String get gameUninstall;
+
+  /// Confirmation body for removing a local install
+  ///
+  /// In en, this message translates to:
+  /// **'The game files on this device are deleted. Your saves stay on the server.'**
+  String get gameUninstallConfirm;
+
+  /// Install progress: archives are being extracted
+  ///
+  /// In en, this message translates to:
+  /// **'Unpacking…'**
+  String get gameExtracting;
+
+  /// Install progress line
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} · {filesDone} of {filesTotal} files'**
+  String gameDownloadingProgress(
+    String done,
+    String total,
+    int filesDone,
+    int filesTotal,
+  );
+
+  /// Install error line
+  ///
+  /// In en, this message translates to:
+  /// **'Install failed: {error}'**
+  String gameInstallFailed(String error);
+
+  /// Launch error line
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start the game: {error}'**
+  String gameLaunchFailed(String error);
+
+  /// Launch problem: emulator not installed
+  ///
+  /// In en, this message translates to:
+  /// **'{name} was not found on this computer. Install it, or pick its location in Settings › Games.'**
+  String gameEmulatorMissing(String name);
+
+  /// Launch problem: libretro core missing
+  ///
+  /// In en, this message translates to:
+  /// **'RetroArch has no \"{core}\" core installed. Add it through RetroArch\'s Online Updater › Core Downloader.'**
+  String gameCoreMissing(String core);
+
+  /// Launch problem: entry file missing
+  ///
+  /// In en, this message translates to:
+  /// **'The game\'s files are incomplete; remove and install it again.'**
+  String get gameEntryMissing;
+
+  /// Launch problem: RPCS3 firmware missing
+  ///
+  /// In en, this message translates to:
+  /// **'RPCS3 has no PS3 firmware installed yet. Install it in RPCS3 (File › Install Firmware) first.'**
+  String get gamePs3FirmwareMissing;
+
+  /// Message after a Steam launch
+  ///
+  /// In en, this message translates to:
+  /// **'Steam is starting the game. Press \"I finished playing\" afterwards to sync your saves.'**
+  String get gameSteamLaunched;
+
+  /// Message after restoring a Steam game
+  ///
+  /// In en, this message translates to:
+  /// **'Installed. Restart Steam if the game does not show up as installed yet; Steam verifies the files on first start.'**
+  String get gameSteamRestartHint;
+
+  /// Dialog title for picking a Steam library
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the Steam library folder'**
+  String get gamePickSteamLibrary;
+
+  /// Session summary: duration
+  ///
+  /// In en, this message translates to:
+  /// **'Played {time}'**
+  String gameSessionLength(String time);
+
+  /// Session summary: the save snapshot version
+  ///
+  /// In en, this message translates to:
+  /// **'Save uploaded as version {version}'**
+  String gameSaveUploaded(int version);
+
+  /// Session summary: achievements unlocked
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 new achievement} other{{count} new achievements}}'**
+  String gameNewAchievements(int count);
+
+  /// Dialog title for a save conflict
+  ///
+  /// In en, this message translates to:
+  /// **'Newer save on the server'**
+  String get gameSaveConflictTitle;
+
+  /// Dialog body for a save conflict
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} was uploaded by {device} ({date}) after this device last synced, and your local save changed too. Which one do you want to play with?'**
+  String gameSaveConflictBody(int version, String device, String date);
+
+  /// Conflict choice: upload the local save as the new head
+  ///
+  /// In en, this message translates to:
+  /// **'Keep mine'**
+  String get gameSaveConflictKeepLocal;
+
+  /// Conflict choice: download the server head
+  ///
+  /// In en, this message translates to:
+  /// **'Use the server\'s'**
+  String get gameSaveConflictUseServer;
+
+  /// Settings entry: game installs, emulators and sync
+  ///
+  /// In en, this message translates to:
+  /// **'Games'**
+  String get gameSettings;
+
+  /// Settings entry subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Install folder, emulators, save sync'**
+  String get gameSettingsSubtitle;
+
+  /// Game settings section
+  ///
+  /// In en, this message translates to:
+  /// **'Storage'**
+  String get gameSettingsStorage;
+
+  /// Game settings: where games are installed
+  ///
+  /// In en, this message translates to:
+  /// **'Games folder'**
+  String get gameSettingsRoot;
+
+  /// Button: back to the default value
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get gameSettingsResetDefault;
+
+  /// Game settings section
+  ///
+  /// In en, this message translates to:
+  /// **'Emulators and launchers'**
+  String get gameSettingsEmulators;
+
+  /// Game settings section hint
+  ///
+  /// In en, this message translates to:
+  /// **'Found automatically on this computer; pick an executable when detection misses it.'**
+  String get gameSettingsEmulatorsHint;
+
+  /// Game settings: re-run emulator detection
+  ///
+  /// In en, this message translates to:
+  /// **'Detect again'**
+  String get gameSettingsRedetect;
+
+  /// Emulator tile: nothing detected
+  ///
+  /// In en, this message translates to:
+  /// **'Not found'**
+  String get gameSettingsNotFound;
+
+  /// Emulator tile: detected command
+  ///
+  /// In en, this message translates to:
+  /// **'Detected: {command}'**
+  String gameSettingsDetected(String command);
+
+  /// Emulator tile: user override
+  ///
+  /// In en, this message translates to:
+  /// **'Chosen: {command}'**
+  String gameSettingsManual(String command);
+
+  /// Emulator tile: pick a binary
+  ///
+  /// In en, this message translates to:
+  /// **'Choose executable'**
+  String get gameSettingsPickExecutable;
+
+  /// Game settings section
+  ///
+  /// In en, this message translates to:
+  /// **'Synchronisation'**
+  String get gameSettingsSync;
+
+  /// Switch: upload/download saves around a session
+  ///
+  /// In en, this message translates to:
+  /// **'Sync save games'**
+  String get gameSettingsSaveSync;
+
+  /// Switch subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Download the latest save before playing and upload yours afterwards.'**
+  String get gameSettingsSaveSyncSubtitle;
+
+  /// Switch: read trophies/achievements after a session
+  ///
+  /// In en, this message translates to:
+  /// **'Report achievements'**
+  String get gameSettingsAchievementSync;
+
+  /// Switch subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Read PS3 trophies and Steam achievements from this computer after a session.'**
+  String get gameSettingsAchievementSyncSubtitle;
 }
 
 class _AppLocalizationsDelegate

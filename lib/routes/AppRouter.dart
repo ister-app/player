@@ -122,6 +122,7 @@ class AppRouter extends RootStackRouter {
           AutoRoute(path: 'settings/users/:userId', page: AdminUserAccessRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/libraries', page: AdminLibrariesRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/upload', page: AdminUploadRoute.page, guards: [_deepLinkGuard]),
+          AutoRoute(path: 'settings/games', page: GameSettingsRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'shows/:showId', page: ShowOverviewRoute.page,
             guards: [_deepLinkGuard],
             children: [
@@ -140,6 +141,7 @@ class AppRouter extends RootStackRouter {
           AutoRoute(path: 'books/:bookId/read/:mediaFileId', page: ReaderRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'books/:bookId/comic/:mediaFileId', page: ComicReaderRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'series/:seriesId', page: SeriesRoute.page, guards: [_deepLinkGuard]),
+          AutoRoute(path: 'games/:gameId', page: GameRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'podcasts/:podcastId', page: PodcastRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'persons/:personId', page: PersonRoute.page, guards: [_deepLinkGuard]),
         ]

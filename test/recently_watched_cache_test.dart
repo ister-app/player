@@ -35,6 +35,7 @@ void main() {
           'chapter': null,
           'book': null,
           'podcastEpisode': null,
+          'game': null,
         }
       ],
     });

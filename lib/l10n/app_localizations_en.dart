@@ -2807,4 +2807,327 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get videoVersionOtherCutRestart =>
       'This version has a different length, so it starts from the beginning.';
+
+  @override
+  String get games => 'Games';
+
+  @override
+  String get gameFormRom => 'ROM';
+
+  @override
+  String get gameFormPs3Folder => 'PS3 game';
+
+  @override
+  String get gameFormPcZip => 'Windows game';
+
+  @override
+  String get gameFormLinuxInstaller => 'Linux installer';
+
+  @override
+  String get gameFormLinuxPortable => 'Linux game';
+
+  @override
+  String get gameFormSteam => 'Steam game';
+
+  @override
+  String gameSizeOnServer(String size) {
+    return '$size on the server';
+  }
+
+  @override
+  String gameFileCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files',
+      one: '1 file',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String gamePlayTime(String time) {
+    return 'Play time: $time';
+  }
+
+  @override
+  String get gamePlayTimeUnderMinute => 'under a minute';
+
+  @override
+  String gamePlayTimeMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String gamePlayTimeHours(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String gameLastPlayed(String date) {
+    return 'Last played $date';
+  }
+
+  @override
+  String get gameNeverPlayed => 'Not played yet';
+
+  @override
+  String get gameSaves => 'Save games';
+
+  @override
+  String get gameNoSaves =>
+      'No saves on the server yet. Play once and the save is uploaded when you quit.';
+
+  @override
+  String gameSaveVersion(int version) {
+    return 'Version $version';
+  }
+
+  @override
+  String gameSaveFrom(String device, String date) {
+    return '$device · $date';
+  }
+
+  @override
+  String get gameSaveRestore => 'Restore';
+
+  @override
+  String get gameSaveDelete => 'Delete';
+
+  @override
+  String gameSaveRestored(int version) {
+    return 'Restored as version $version';
+  }
+
+  @override
+  String get gameSaveDeleted => 'Save deleted';
+
+  @override
+  String get gameSaveActionFailed => 'Could not update the save';
+
+  @override
+  String get gameAchievements => 'Achievements';
+
+  @override
+  String gameAchievementsProgress(int unlocked, int total) {
+    return '$unlocked of $total unlocked';
+  }
+
+  @override
+  String get gameAchievementHidden => 'Hidden achievement';
+
+  @override
+  String get gameAchievementsNone =>
+      'Achievements appear here after a play session on the desktop app.';
+
+  @override
+  String get gameSavePaths => 'Save locations';
+
+  @override
+  String get gameSavePathSourceAdmin => 'Set by an administrator';
+
+  @override
+  String get gameSavePathSourceManifest => 'From the Ludusavi manifest';
+
+  @override
+  String get gameSavePathSourceNone =>
+      'Unknown: saves are not synced for this game until an administrator sets the locations.';
+
+  @override
+  String get gameSteamCloudNote =>
+      'This game also syncs its saves through Steam Cloud.';
+
+  @override
+  String get gameSteamOwnershipNote =>
+      'Steam games start through Steam and must be owned by your Steam account.';
+
+  @override
+  String get gameDesktopOnly =>
+      'Games are played from the desktop app on Linux or Windows.';
+
+  @override
+  String gameLauncherRetroArch(String core) {
+    return 'RetroArch ($core)';
+  }
+
+  @override
+  String get gameLauncherRpcs3 => 'RPCS3';
+
+  @override
+  String get gameLauncherNative => 'Runs directly';
+
+  @override
+  String get gameLauncherSteam => 'Steam';
+
+  @override
+  String get gameNoDescription => 'No description available.';
+
+  @override
+  String get gamePlay => 'Play';
+
+  @override
+  String get gameRunning => 'Game is running…';
+
+  @override
+  String get gameFinishedPlaying => 'I finished playing';
+
+  @override
+  String gameInstall(String size) {
+    return 'Install ($size)';
+  }
+
+  @override
+  String get gameInstallIntoSteam => 'Install into Steam';
+
+  @override
+  String get gameUninstall => 'Remove from this device';
+
+  @override
+  String get gameUninstallConfirm =>
+      'The game files on this device are deleted. Your saves stay on the server.';
+
+  @override
+  String get gameExtracting => 'Unpacking…';
+
+  @override
+  String gameDownloadingProgress(
+    String done,
+    String total,
+    int filesDone,
+    int filesTotal,
+  ) {
+    return '$done of $total · $filesDone of $filesTotal files';
+  }
+
+  @override
+  String gameInstallFailed(String error) {
+    return 'Install failed: $error';
+  }
+
+  @override
+  String gameLaunchFailed(String error) {
+    return 'Could not start the game: $error';
+  }
+
+  @override
+  String gameEmulatorMissing(String name) {
+    return '$name was not found on this computer. Install it, or pick its location in Settings › Games.';
+  }
+
+  @override
+  String gameCoreMissing(String core) {
+    return 'RetroArch has no \"$core\" core installed. Add it through RetroArch\'s Online Updater › Core Downloader.';
+  }
+
+  @override
+  String get gameEntryMissing =>
+      'The game\'s files are incomplete; remove and install it again.';
+
+  @override
+  String get gamePs3FirmwareMissing =>
+      'RPCS3 has no PS3 firmware installed yet. Install it in RPCS3 (File › Install Firmware) first.';
+
+  @override
+  String get gameSteamLaunched =>
+      'Steam is starting the game. Press \"I finished playing\" afterwards to sync your saves.';
+
+  @override
+  String get gameSteamRestartHint =>
+      'Installed. Restart Steam if the game does not show up as installed yet; Steam verifies the files on first start.';
+
+  @override
+  String get gamePickSteamLibrary => 'Choose the Steam library folder';
+
+  @override
+  String gameSessionLength(String time) {
+    return 'Played $time';
+  }
+
+  @override
+  String gameSaveUploaded(int version) {
+    return 'Save uploaded as version $version';
+  }
+
+  @override
+  String gameNewAchievements(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new achievements',
+      one: '1 new achievement',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get gameSaveConflictTitle => 'Newer save on the server';
+
+  @override
+  String gameSaveConflictBody(int version, String device, String date) {
+    return 'Version $version was uploaded by $device ($date) after this device last synced, and your local save changed too. Which one do you want to play with?';
+  }
+
+  @override
+  String get gameSaveConflictKeepLocal => 'Keep mine';
+
+  @override
+  String get gameSaveConflictUseServer => 'Use the server\'s';
+
+  @override
+  String get gameSettings => 'Games';
+
+  @override
+  String get gameSettingsSubtitle => 'Install folder, emulators, save sync';
+
+  @override
+  String get gameSettingsStorage => 'Storage';
+
+  @override
+  String get gameSettingsRoot => 'Games folder';
+
+  @override
+  String get gameSettingsResetDefault => 'Default';
+
+  @override
+  String get gameSettingsEmulators => 'Emulators and launchers';
+
+  @override
+  String get gameSettingsEmulatorsHint =>
+      'Found automatically on this computer; pick an executable when detection misses it.';
+
+  @override
+  String get gameSettingsRedetect => 'Detect again';
+
+  @override
+  String get gameSettingsNotFound => 'Not found';
+
+  @override
+  String gameSettingsDetected(String command) {
+    return 'Detected: $command';
+  }
+
+  @override
+  String gameSettingsManual(String command) {
+    return 'Chosen: $command';
+  }
+
+  @override
+  String get gameSettingsPickExecutable => 'Choose executable';
+
+  @override
+  String get gameSettingsSync => 'Synchronisation';
+
+  @override
+  String get gameSettingsSaveSync => 'Sync save games';
+
+  @override
+  String get gameSettingsSaveSyncSubtitle =>
+      'Download the latest save before playing and upload yours afterwards.';
+
+  @override
+  String get gameSettingsAchievementSync => 'Report achievements';
+
+  @override
+  String get gameSettingsAchievementSyncSubtitle =>
+      'Read PS3 trophies and Steam achievements from this computer after a session.';
 }

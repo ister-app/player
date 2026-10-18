@@ -10,6 +10,7 @@ import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/utils/BookProgressUtil.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
+import 'package:player/utils/games/GameLabels.dart';
 import 'package:player/utils/MetadataUtil.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -185,7 +186,8 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
             final bool portraitCover =
                 item.type == Enum$MediaType.BOOK ||
                 item.type == Enum$MediaType.CHAPTER ||
-                item.type == Enum$MediaType.COMIC;
+                item.type == Enum$MediaType.COMIC ||
+                item.type == Enum$MediaType.GAME;
             // Square, like the tiles in the podcast library carousel.
             final bool squareCover =
                 item.type == Enum$MediaType.PODCAST_EPISODE;
@@ -390,6 +392,25 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
             ? readingProgress.clamp(0.0, 1.0)
             : chapterProgress,
         fallbackListening: listening,
+      );
+    } else if (item.type == Enum$MediaType.GAME && item.game != null) {
+      // A recently played game: straight to its page, where play resumes.
+      final game = item.game!;
+      final images = game.images
+          ?.map((e) => Fragment$fragmentImages.fromJson(e.toJson()))
+          .toList();
+      final cover = ImageUtil.getImageByType(images, ImageTypes.cover);
+      return CarouselItemView(
+        serverName: widget.serverName,
+        title: game.title,
+        subTitle: GameLabels.platform(game.platform),
+        imageUrl: ImageUtil.buildUrl(
+          cover,
+          token: StreamTokenService.getToken(widget.serverName),
+        ),
+        blurHash: cover?.blurHash,
+        placeholderIcon: Icons.sports_esports,
+        onTap: () => AutoRouter.of(context).push(GameRoute(gameId: game.id)),
       );
     } else if (item.type == Enum$MediaType.COMIC && item.book != null) {
       // One entry per comic series, pointing at the next unfinished volume.

@@ -15,6 +15,7 @@ Map<String, dynamic> _comicEntry() => {
       'movie': null,
       'chapter': null,
       'podcastEpisode': null,
+      'game': null,
       'book': {
         '__typename': 'Book',
         'id': 'book-2',

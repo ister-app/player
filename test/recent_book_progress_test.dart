@@ -47,6 +47,7 @@ Map<String, dynamic> _bookEntry({Map<String, dynamic>? progress}) => {
       'episode': null,
       'movie': null,
       'podcastEpisode': null,
+      'game': null,
       'chapter': _chapter(),
       'book': {
         '__typename': 'Book',

@@ -33,6 +33,7 @@ Dezelfde widget-tree bedient touch, D-pad en web; platformverschillen worden op 
 4. [Afspeelpijplijn](04-playback-pipeline.md) — play queues, `MediaPlayerHandler`, voortgangssync
 5. [GraphQL en codegeneratie](05-graphql-codegen.md) — codegen-workflow en querypatronen
 6. [Epub-lezer](06-epub-reader.md) — de native leesstack, sync en voorlezen
+7. [Games](07-games.md) — games installeren, starten en synchroniseren op de desktop
 
 ## Diagrammen
 

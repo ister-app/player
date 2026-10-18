@@ -1,0 +1,3 @@
+mutation recordGamePlayed($gameId: ID!, $durationMs: Int!) {
+    recordGamePlayed(gameId: $gameId, durationMs: $durationMs) { id progressInMilliseconds updatedAt }
+}

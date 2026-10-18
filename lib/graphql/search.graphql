@@ -46,5 +46,14 @@ query search($term: String!, $size: Int, $libraryId: ID) {
             album { id name images { ...fragmentImages } }
             metadata { ...fragmentMetadata }
         }
+        ... on Game {
+            id
+            name
+            title
+            releaseYear
+            platform
+            images { ...fragmentImages }
+            metadata { ...fragmentMetadata }
+        }
     }
 }
