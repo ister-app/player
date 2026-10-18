@@ -244,6 +244,11 @@ class _GamePageState extends State<GamePage> {
           avatar: const Icon(Icons.history, size: 18),
           label: Text(lastPlayed),
         ),
+        if (game.updatedAt != null)
+          Chip(
+            avatar: const Icon(Icons.update, size: 18),
+            label: Text(loc.gameUpdatedOn(_formatDate(game.updatedAt!))),
+          ),
       ],
     );
   }
@@ -497,6 +502,22 @@ class _GamePageState extends State<GamePage> {
 
   Future<void> _deleteSave(Query$gameById$gameById game, int version) async {
     final loc = AppLocalizations.of(context)!;
+    final save = game.saves.where((s) => s.version == version).firstOrNull;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(loc.gameSaveDelete),
+        content: Text(loc.gameSaveDeleteConfirm(version, save?.deviceName ?? '—', _formatDate(save?.createdAt ?? ''))),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(loc.cancel)),
+          FilledButton(
+              key: const ValueKey('game-save-delete-confirm'),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(loc.gameSaveDelete)),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
     setState(() => _saveBusy = true);
     try {
       final client = GraphQLProvider.of(context).value;

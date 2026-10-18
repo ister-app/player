@@ -77,7 +77,8 @@ class _GameSettingsPageState extends State<GameSettingsPage> {
                       key: const ValueKey('game-settings-root'),
                       leading: const Icon(Icons.folder_outlined),
                       title: Text(loc.gameSettingsRoot),
-                      subtitle: Text(_gamesRoot ?? ''),
+                      subtitle: Text('${_gamesRoot ?? ''}\n${loc.gameSettingsRootChangedHint}'),
+                      isThreeLine: true,
                       trailing: Wrap(children: [
                         if (_gamesRoot != _defaultRoot)
                           TextButton(onPressed: () => unawaited(_setRoot(null)), child: Text(loc.gameSettingsResetDefault)),
@@ -171,6 +172,9 @@ class _GameSettingsPageState extends State<GameSettingsPage> {
 
   Future<void> _setRoot(String? path) async {
     await GameSettings.setGamesRoot(path);
+    // The installs under the old folder are not under the new one.
+    _service.store.invalidate();
+    _service.revision.value++;
     await _load();
   }
 

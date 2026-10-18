@@ -15,6 +15,29 @@ class SaveSnapshot {
 
   static const manifestName = 'snapshot.json';
 
+  /// When any file in the slots last changed; null when the slots are empty.
+  /// Hidden files are skipped the way [pack] skips them.
+  static Future<DateTime?> newestModified(List<SaveSlot> slots) async {
+    DateTime? newest;
+    void consider(DateTime at) {
+      if (newest == null || at.isAfter(newest!)) newest = at;
+    }
+
+    for (final slot in slots) {
+      final type = FileSystemEntity.typeSync(slot.path, followLinks: false);
+      if (type == FileSystemEntityType.file) {
+        consider(await File(slot.path).lastModified());
+      } else if (type == FileSystemEntityType.directory) {
+        await for (final entity in Directory(slot.path).list(recursive: true, followLinks: false)) {
+          if (entity is! File) continue;
+          if (entity.uri.pathSegments.any((s) => s.startsWith('.'))) continue;
+          consider(await entity.lastModified());
+        }
+      }
+    }
+    return newest;
+  }
+
   /// Zips the slots into [target]; returns the sha-256 (hex) or null when the
   /// slots hold no files at all (nothing to upload).
   static Future<String?> pack(List<SaveSlot> slots, File target) async {

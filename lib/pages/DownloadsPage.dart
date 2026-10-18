@@ -7,6 +7,7 @@ import 'package:player/components/SettingsSection.dart';
 import 'package:player/components/TvFocusable.dart';
 import 'package:player/components/download/AutoNextDialog.dart';
 import 'package:player/components/download/DownloadMenuItem.dart';
+import 'package:player/components/games/GameInstallsSection.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/DurationUtil.dart';
@@ -20,6 +21,9 @@ import 'package:player/utils/download/DownloadWakelock.dart';
 import 'package:player/utils/download/LocalPlayQueue.dart';
 import 'package:player/utils/download/OfflineProgressStore.dart';
 import 'package:player/utils/download/OfflineSyncService.dart';
+import 'package:player/utils/games/GameInstallStore.dart';
+import 'package:player/utils/games/GameLibraryService.dart';
+import 'package:player/utils/games/GamePlatformSupport.dart';
 
 String formatBytes(int bytes) {
   const units = ['B', 'kB', 'MB', 'GB', 'TB'];
@@ -85,6 +89,10 @@ class _DownloadsPageState extends State<DownloadsPage> {
     await service.ensureStarted();
     await service.store.load(widget.serverName);
     await OfflineProgressStore.instance.load(widget.serverName);
+    if (kGamesSupported) {
+      await GameLibraryService.instance.ensureStarted();
+      await GameLibraryService.instance.store.load(widget.serverName);
+    }
     await _loadFollows();
     if (mounted) setState(() => _ready = true);
     // Opening this page is a good moment to catch up on episodes watched
@@ -156,11 +164,15 @@ class _DownloadsPageState extends State<DownloadsPage> {
       ),
       body: !_ready
           ? const Center(child: CircularProgressIndicator())
-          : ValueListenableBuilder<int>(
-              valueListenable: service.revision,
-              builder: (context, _, _) {
+          : ListenableBuilder(
+              listenable: Listenable.merge([
+                service.revision,
+                if (kGamesSupported) GameLibraryService.instance.revision,
+              ]),
+              builder: (context, _) {
                 final entries = service.entriesFor(widget.serverName);
-                if (entries.isEmpty) return _empty(context);
+                final installs = _gameInstalls();
+                if (entries.isEmpty && installs.isEmpty) return _empty(context);
                 // Automatically cached music sits under one "Music cache"
                 // entry (albums, then tracks); everything else is its own group.
                 final cached = entries
@@ -174,10 +186,16 @@ class _DownloadsPageState extends State<DownloadsPage> {
                     SettingsIntro(loc.downloadsIntro),
                     _foregroundOnlyBanner(context),
                     _networkBanner(context),
-                    _summary(context, entries),
+                    _summary(context, entries, installs),
                     const SizedBox(height: 8),
                     if (cached.isNotEmpty) _cacheTile(context, cached),
                     for (final g in groups) _groupTile(context, g),
+                    if (installs.isNotEmpty)
+                      GameInstallsSection(
+                        serverName: widget.serverName,
+                        installs: installs,
+                        inShell: widget.inShell,
+                      ),
                   ],
                 );
               },
@@ -235,16 +253,25 @@ class _DownloadsPageState extends State<DownloadsPage> {
     );
   }
 
-  Widget _summary(BuildContext context, List<DownloadEntry> entries) {
+  /// The game installs of this server, when games can be played here.
+  List<GameInstall> _gameInstalls() {
+    if (!kGamesSupported) return const [];
+    return [
+      for (final (server, install) in GameLibraryService.instance.store.all())
+        if (server == widget.serverName) install
+    ];
+  }
+
+  Widget _summary(BuildContext context, List<DownloadEntry> entries, List<GameInstall> installs) {
     final loc = AppLocalizations.of(context)!;
-    final total = sumUniqueBytes(entries);
-    final active = entries.where((e) => e.isActive).length;
+    final total = sumUniqueBytes(entries) + GameInstallsSection.bytesOf(installs);
+    final active = entries.where((e) => e.isActive).length + installs.where((i) => i.isActive).length;
     return Card(
       child: ListTile(
         leading: const Icon(Icons.storage_outlined),
         title: Text(loc.storageUsed(formatBytes(total))),
         subtitle: Text([
-          loc.downloadItemsCount(entries.length),
+          loc.downloadItemsCount(entries.length + installs.length),
           if (active > 0) '${loc.downloadStatusDownloading}: $active',
         ].join(' · ')),
       ),

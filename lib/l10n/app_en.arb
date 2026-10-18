@@ -3406,5 +3406,333 @@
   "gameSettingsAchievementSyncSubtitle": "Read PS3 trophies and Steam achievements from this computer after a session.",
   "@gameSettingsAchievementSyncSubtitle": {
     "description": "Switch subtitle"
+  },
+  "gameInstallCancelled": "Install cancelled. The downloaded part is kept; Install continues where it stopped.",
+  "@gameInstallCancelled": {
+      "description": "After the user cancels a game install"
+  },
+  "gameInstallRetry": "Try again",
+  "@gameInstallRetry": {
+      "description": "Button on a failed install"
+  },
+  "gameRemovePartial": "Remove downloaded files",
+  "@gameRemovePartial": {
+      "description": "Button: delete a half-finished install"
+  },
+  "gameUninstallConfirmSteam": "The game is forgotten here. Steam keeps the files; remove it in Steam to free the space.",
+  "@gameUninstallConfirmSteam": {
+      "description": "Confirmation body for forgetting a Steam install"
+  },
+  "gameUninstalled": "Removed from this device",
+  "@gameUninstalled": {
+      "description": "Snackbar after a local install was deleted"
+  },
+  "gameUninstallFailed": "Could not remove the game: {error}",
+  "@gameUninstallFailed": {
+      "description": "Snackbar when deleting a local install failed",
+      "placeholders": {
+          "error": {
+              "type": "String"
+          }
+      }
+  },
+  "gameUninstallWhilePlaying": "Finish the running session first.",
+  "@gameUninstallWhilePlaying": {
+      "description": "Why a game cannot be removed right now"
+  },
+  "gameSaveDeleteConfirm": "Delete save version {version} from {device} ({date})? This cannot be undone.",
+  "@gameSaveDeleteConfirm": {
+      "description": "Confirmation before deleting a save version on the server",
+      "placeholders": {
+          "version": {
+              "type": "int"
+          },
+          "device": {
+              "type": "String"
+          },
+          "date": {
+              "type": "String"
+          }
+      }
+  },
+  "gameOpenSettings": "Open game settings",
+  "@gameOpenSettings": {
+      "description": "Button next to a missing-emulator message"
+  },
+  "gameErrorNoSpace": "Not enough free space in the games folder.",
+  "@gameErrorNoSpace": {
+      "description": "Install error"
+  },
+  "gameErrorUnreachable": "The server could not be reached. The install continues when you try again.",
+  "@gameErrorUnreachable": {
+      "description": "Install error"
+  },
+  "gameErrorGone": "This game is no longer on the server.",
+  "@gameErrorGone": {
+      "description": "Install error"
+  },
+  "gamePhasePreparingSaves": "Fetching your latest save…",
+  "@gamePhasePreparingSaves": {
+      "description": "Play step"
+  },
+  "gamePhaseLaunching": "Starting…",
+  "@gamePhaseLaunching": {
+      "description": "Play step"
+  },
+  "gamePhaseRunning": "Playing",
+  "@gamePhaseRunning": {
+      "description": "Play step"
+  },
+  "gamePhaseUploadingSaves": "Uploading your save…",
+  "@gamePhaseUploadingSaves": {
+      "description": "Play step"
+  },
+  "gamePhaseReadingAchievements": "Reading achievements…",
+  "@gamePhaseReadingAchievements": {
+      "description": "Play step"
+  },
+  "gamePhaseRecording": "Recording play time…",
+  "@gamePhaseRecording": {
+      "description": "Play step"
+  },
+  "gamePhaseDone": "Done",
+  "@gamePhaseDone": {
+      "description": "Play step"
+  },
+  "gameInstallQueued": "Waiting to download ({position} in line)",
+  "@gameInstallQueued": {
+      "description": "Install state while another game installs first",
+      "placeholders": {
+          "position": {
+              "type": "int"
+          }
+      }
+  },
+  "gameInstallPause": "Pause",
+  "@gameInstallPause": {
+      "description": "Button"
+  },
+  "gameInstallResume": "Resume",
+  "@gameInstallResume": {
+      "description": "Button"
+  },
+  "gameInstallPaused": "Paused · {done} of {total}",
+  "@gameInstallPaused": {
+      "description": "Install state",
+      "placeholders": {
+          "done": {
+              "type": "String"
+          },
+          "total": {
+              "type": "String"
+          }
+      }
+  },
+  "gameDownloadingDetail": "{done} of {total} · {filesDone} of {filesTotal} files · {speed}/s · {left}",
+  "@gameDownloadingDetail": {
+      "description": "Install progress line with speed and time left",
+      "placeholders": {
+          "done": {
+              "type": "String"
+          },
+          "total": {
+              "type": "String"
+          },
+          "filesDone": {
+              "type": "int"
+          },
+          "filesTotal": {
+              "type": "int"
+          },
+          "speed": {
+              "type": "String"
+          },
+          "left": {
+              "type": "String"
+          }
+      }
+  },
+  "gameTimeLeft": "about {time} left",
+  "@gameTimeLeft": {
+      "description": "Install progress: estimated time left",
+      "placeholders": {
+          "time": {
+              "type": "String"
+          }
+      }
+  },
+  "gameTimeLeftUnknown": "estimating time left…",
+  "@gameTimeLeftUnknown": {
+      "description": "Install progress before the speed is known"
+  },
+  "gameExtractingNoCancel": "Unpacking… (this step cannot be interrupted)",
+  "@gameExtractingNoCancel": {
+      "description": "Install state"
+  },
+  "gameInstallsStorage": "Games on this device: {size}",
+  "@gameInstallsStorage": {
+      "description": "Downloads page: header of the games section",
+      "placeholders": {
+          "size": {
+              "type": "String"
+          }
+      }
+  },
+  "gameInstallStatusInstalled": "Installed",
+  "@gameInstallStatusInstalled": {
+      "description": "Downloads page: game install state"
+  },
+  "gameInstallStatusCancelled": "Cancelled, {done} kept",
+  "@gameInstallStatusCancelled": {
+      "description": "Downloads page: game install state",
+      "placeholders": {
+          "done": {
+              "type": "String"
+          }
+      }
+  },
+  "gameInstallStatusUnpacking": "Unpacking",
+  "@gameInstallStatusUnpacking": {
+      "description": "Downloads page: game install state"
+  },
+  "gameOpenPage": "Open game",
+  "@gameOpenPage": {
+      "description": "Menu item: go to the game's page"
+  },
+  "gameSettingsRootChangedHint": "Changing the folder hides the games installed under the previous one; move them by hand or install them again.",
+  "@gameSettingsRootChangedHint": {
+      "description": "Settings hint under the games folder"
+  },
+  "gameUpdateAvailable": "Update available ({size})",
+  "@gameUpdateAvailable": {
+      "description": "Game state when the server has a newer version",
+      "placeholders": {
+          "size": {
+              "type": "String"
+          }
+      }
+  },
+  "gameUpdate": "Update",
+  "@gameUpdate": {
+      "description": "Button"
+  },
+  "gameUpdateSteam": "Steam keeps this game up to date.",
+  "@gameUpdateSteam": {
+      "description": "Note on a Steam game"
+  },
+  "gameUpdatedOn": "Updated {date}",
+  "@gameUpdatedOn": {
+      "description": "Fact chip: when the game's files last changed on the server",
+      "placeholders": {
+          "date": {
+              "type": "String"
+          }
+      }
+  },
+  "gameSessionUnsynced": "A session started {date} was not synced yet.",
+  "@gameSessionUnsynced": {
+      "description": "Card after a restart with a session still open",
+      "placeholders": {
+          "date": {
+              "type": "String"
+          }
+      }
+  },
+  "gameSessionSyncNow": "Sync now",
+  "@gameSessionSyncNow": {
+      "description": "Button"
+  },
+  "gameSessionDiscard": "Discard",
+  "@gameSessionDiscard": {
+      "description": "Button: forget an unsynced session"
+  },
+  "gameSaveConflictServer": "On the server",
+  "@gameSaveConflictServer": {
+      "description": "Conflict dialog: option title"
+  },
+  "gameSaveConflictLocal": "On this computer",
+  "@gameSaveConflictLocal": {
+      "description": "Conflict dialog: option title"
+  },
+  "gameSaveConflictServerLine": "Version {version} · {device} · {date}",
+  "@gameSaveConflictServerLine": {
+      "description": "Conflict dialog: server side",
+      "placeholders": {
+          "version": {
+              "type": "int"
+          },
+          "device": {
+              "type": "String"
+          },
+          "date": {
+              "type": "String"
+          }
+      }
+  },
+  "gameSaveConflictLocalLine": "Changed after version {version} · last change {date}",
+  "@gameSaveConflictLocalLine": {
+      "description": "Conflict dialog: local side",
+      "placeholders": {
+          "version": {
+              "type": "int"
+          },
+          "date": {
+              "type": "String"
+          }
+      }
+  },
+  "gameSaveConflictLocalLineUnknown": "Changed after version {version}",
+  "@gameSaveConflictLocalLineUnknown": {
+      "description": "Conflict dialog: local side when the change time is unknown",
+      "placeholders": {
+          "version": {
+              "type": "int"
+          }
+      }
+  },
+  "gameSaveConflictHistoryNote": "The other version stays in the server's history.",
+  "@gameSaveConflictHistoryNote": {
+      "description": "Conflict dialog: note"
+  },
+  "gameContinue": "Continue",
+  "@gameContinue": {
+      "description": "Button"
+  },
+  "gameSaveUnchanged": "Save unchanged, nothing uploaded",
+  "@gameSaveUnchanged": {
+      "description": "Session summary line"
+  },
+  "gameSessionRetrySync": "Retry sync",
+  "@gameSessionRetrySync": {
+      "description": "Button on a session summary with errors"
+  },
+  "gameSessionDoneSnack": "Played {time}",
+  "@gameSessionDoneSnack": {
+      "description": "Snackbar after a session",
+      "placeholders": {
+          "time": {
+              "type": "String"
+          }
+      }
+  },
+  "gameSessionDoneSnackSaved": "Played {time} · save uploaded as version {version}",
+  "@gameSessionDoneSnackSaved": {
+      "description": "Snackbar after a session with a save upload",
+      "placeholders": {
+          "time": {
+              "type": "String"
+          },
+          "version": {
+              "type": "int"
+          }
+      }
+  },
+  "gameSteamLibraryPickerHint": "The game is restored into this library's steamapps folder.",
+  "@gameSteamLibraryPickerHint": {
+      "description": "Steam library picker: hint"
+  },
+  "gameSessionSummary": "Last session",
+  "@gameSessionSummary": {
+      "description": "Session summary card title"
   }
 }

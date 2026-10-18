@@ -3144,4 +3144,209 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get gameSettingsAchievementSyncSubtitle =>
       'Lees PS3-trofeeën en Steam-prestaties van deze computer uit na een sessie.';
+
+  @override
+  String get gameInstallCancelled =>
+      'Installatie geannuleerd. Het gedownloade deel blijft bewaard; Installeren gaat verder waar het stopte.';
+
+  @override
+  String get gameInstallRetry => 'Opnieuw proberen';
+
+  @override
+  String get gameRemovePartial => 'Gedownloade bestanden verwijderen';
+
+  @override
+  String get gameUninstallConfirmSteam =>
+      'De game wordt hier vergeten. Steam houdt de bestanden; verwijder hem in Steam om ruimte vrij te maken.';
+
+  @override
+  String get gameUninstalled => 'Verwijderd van dit apparaat';
+
+  @override
+  String gameUninstallFailed(String error) {
+    return 'Kon de game niet verwijderen: $error';
+  }
+
+  @override
+  String get gameUninstallWhilePlaying => 'Rond eerst de lopende sessie af.';
+
+  @override
+  String gameSaveDeleteConfirm(int version, String device, String date) {
+    return 'Save versie $version van $device ($date) verwijderen? Dit kan niet ongedaan worden gemaakt.';
+  }
+
+  @override
+  String get gameOpenSettings => 'Game-instellingen openen';
+
+  @override
+  String get gameErrorNoSpace => 'Niet genoeg vrije ruimte in de gamesmap.';
+
+  @override
+  String get gameErrorUnreachable =>
+      'De server is niet bereikbaar. De installatie gaat verder als je het opnieuw probeert.';
+
+  @override
+  String get gameErrorGone => 'Deze game staat niet meer op de server.';
+
+  @override
+  String get gamePhasePreparingSaves => 'Je nieuwste save ophalen…';
+
+  @override
+  String get gamePhaseLaunching => 'Starten…';
+
+  @override
+  String get gamePhaseRunning => 'Spelen';
+
+  @override
+  String get gamePhaseUploadingSaves => 'Je save uploaden…';
+
+  @override
+  String get gamePhaseReadingAchievements => 'Prestaties lezen…';
+
+  @override
+  String get gamePhaseRecording => 'Speeltijd vastleggen…';
+
+  @override
+  String get gamePhaseDone => 'Klaar';
+
+  @override
+  String gameInstallQueued(int position) {
+    return 'Wacht op downloaden ($position in de rij)';
+  }
+
+  @override
+  String get gameInstallPause => 'Pauzeren';
+
+  @override
+  String get gameInstallResume => 'Hervatten';
+
+  @override
+  String gameInstallPaused(String done, String total) {
+    return 'Gepauzeerd · $done van $total';
+  }
+
+  @override
+  String gameDownloadingDetail(
+    String done,
+    String total,
+    int filesDone,
+    int filesTotal,
+    String speed,
+    String left,
+  ) {
+    return '$done van $total · $filesDone van $filesTotal bestanden · $speed/s · $left';
+  }
+
+  @override
+  String gameTimeLeft(String time) {
+    return 'nog ongeveer $time';
+  }
+
+  @override
+  String get gameTimeLeftUnknown => 'resterende tijd schatten…';
+
+  @override
+  String get gameExtractingNoCancel =>
+      'Uitpakken… (deze stap kan niet onderbroken worden)';
+
+  @override
+  String gameInstallsStorage(String size) {
+    return 'Games op dit apparaat: $size';
+  }
+
+  @override
+  String get gameInstallStatusInstalled => 'Geïnstalleerd';
+
+  @override
+  String gameInstallStatusCancelled(String done) {
+    return 'Geannuleerd, $done bewaard';
+  }
+
+  @override
+  String get gameInstallStatusUnpacking => 'Uitpakken';
+
+  @override
+  String get gameOpenPage => 'Game openen';
+
+  @override
+  String get gameSettingsRootChangedHint =>
+      'Een andere map verbergt de games die in de vorige staan; verplaats ze handmatig of installeer ze opnieuw.';
+
+  @override
+  String gameUpdateAvailable(String size) {
+    return 'Update beschikbaar ($size)';
+  }
+
+  @override
+  String get gameUpdate => 'Bijwerken';
+
+  @override
+  String get gameUpdateSteam => 'Steam houdt deze game zelf bij.';
+
+  @override
+  String gameUpdatedOn(String date) {
+    return 'Bijgewerkt $date';
+  }
+
+  @override
+  String gameSessionUnsynced(String date) {
+    return 'Een sessie gestart op $date is nog niet gesynchroniseerd.';
+  }
+
+  @override
+  String get gameSessionSyncNow => 'Nu synchroniseren';
+
+  @override
+  String get gameSessionDiscard => 'Negeren';
+
+  @override
+  String get gameSaveConflictServer => 'Op de server';
+
+  @override
+  String get gameSaveConflictLocal => 'Op deze computer';
+
+  @override
+  String gameSaveConflictServerLine(int version, String device, String date) {
+    return 'Versie $version · $device · $date';
+  }
+
+  @override
+  String gameSaveConflictLocalLine(int version, String date) {
+    return 'Gewijzigd na versie $version · laatste wijziging $date';
+  }
+
+  @override
+  String gameSaveConflictLocalLineUnknown(int version) {
+    return 'Gewijzigd na versie $version';
+  }
+
+  @override
+  String get gameSaveConflictHistoryNote =>
+      'De andere versie blijft in de geschiedenis op de server.';
+
+  @override
+  String get gameContinue => 'Doorgaan';
+
+  @override
+  String get gameSaveUnchanged => 'Save ongewijzigd, niets geüpload';
+
+  @override
+  String get gameSessionRetrySync => 'Synchronisatie opnieuw';
+
+  @override
+  String gameSessionDoneSnack(String time) {
+    return 'Gespeeld: $time';
+  }
+
+  @override
+  String gameSessionDoneSnackSaved(String time, int version) {
+    return 'Gespeeld: $time · save geüpload als versie $version';
+  }
+
+  @override
+  String get gameSteamLibraryPickerHint =>
+      'De game wordt teruggezet in de map steamapps van deze bibliotheek.';
+
+  @override
+  String get gameSessionSummary => 'Laatste sessie';
 }

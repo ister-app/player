@@ -3130,4 +3130,209 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get gameSettingsAchievementSyncSubtitle =>
       'Read PS3 trophies and Steam achievements from this computer after a session.';
+
+  @override
+  String get gameInstallCancelled =>
+      'Install cancelled. The downloaded part is kept; Install continues where it stopped.';
+
+  @override
+  String get gameInstallRetry => 'Try again';
+
+  @override
+  String get gameRemovePartial => 'Remove downloaded files';
+
+  @override
+  String get gameUninstallConfirmSteam =>
+      'The game is forgotten here. Steam keeps the files; remove it in Steam to free the space.';
+
+  @override
+  String get gameUninstalled => 'Removed from this device';
+
+  @override
+  String gameUninstallFailed(String error) {
+    return 'Could not remove the game: $error';
+  }
+
+  @override
+  String get gameUninstallWhilePlaying => 'Finish the running session first.';
+
+  @override
+  String gameSaveDeleteConfirm(int version, String device, String date) {
+    return 'Delete save version $version from $device ($date)? This cannot be undone.';
+  }
+
+  @override
+  String get gameOpenSettings => 'Open game settings';
+
+  @override
+  String get gameErrorNoSpace => 'Not enough free space in the games folder.';
+
+  @override
+  String get gameErrorUnreachable =>
+      'The server could not be reached. The install continues when you try again.';
+
+  @override
+  String get gameErrorGone => 'This game is no longer on the server.';
+
+  @override
+  String get gamePhasePreparingSaves => 'Fetching your latest save…';
+
+  @override
+  String get gamePhaseLaunching => 'Starting…';
+
+  @override
+  String get gamePhaseRunning => 'Playing';
+
+  @override
+  String get gamePhaseUploadingSaves => 'Uploading your save…';
+
+  @override
+  String get gamePhaseReadingAchievements => 'Reading achievements…';
+
+  @override
+  String get gamePhaseRecording => 'Recording play time…';
+
+  @override
+  String get gamePhaseDone => 'Done';
+
+  @override
+  String gameInstallQueued(int position) {
+    return 'Waiting to download ($position in line)';
+  }
+
+  @override
+  String get gameInstallPause => 'Pause';
+
+  @override
+  String get gameInstallResume => 'Resume';
+
+  @override
+  String gameInstallPaused(String done, String total) {
+    return 'Paused · $done of $total';
+  }
+
+  @override
+  String gameDownloadingDetail(
+    String done,
+    String total,
+    int filesDone,
+    int filesTotal,
+    String speed,
+    String left,
+  ) {
+    return '$done of $total · $filesDone of $filesTotal files · $speed/s · $left';
+  }
+
+  @override
+  String gameTimeLeft(String time) {
+    return 'about $time left';
+  }
+
+  @override
+  String get gameTimeLeftUnknown => 'estimating time left…';
+
+  @override
+  String get gameExtractingNoCancel =>
+      'Unpacking… (this step cannot be interrupted)';
+
+  @override
+  String gameInstallsStorage(String size) {
+    return 'Games on this device: $size';
+  }
+
+  @override
+  String get gameInstallStatusInstalled => 'Installed';
+
+  @override
+  String gameInstallStatusCancelled(String done) {
+    return 'Cancelled, $done kept';
+  }
+
+  @override
+  String get gameInstallStatusUnpacking => 'Unpacking';
+
+  @override
+  String get gameOpenPage => 'Open game';
+
+  @override
+  String get gameSettingsRootChangedHint =>
+      'Changing the folder hides the games installed under the previous one; move them by hand or install them again.';
+
+  @override
+  String gameUpdateAvailable(String size) {
+    return 'Update available ($size)';
+  }
+
+  @override
+  String get gameUpdate => 'Update';
+
+  @override
+  String get gameUpdateSteam => 'Steam keeps this game up to date.';
+
+  @override
+  String gameUpdatedOn(String date) {
+    return 'Updated $date';
+  }
+
+  @override
+  String gameSessionUnsynced(String date) {
+    return 'A session started $date was not synced yet.';
+  }
+
+  @override
+  String get gameSessionSyncNow => 'Sync now';
+
+  @override
+  String get gameSessionDiscard => 'Discard';
+
+  @override
+  String get gameSaveConflictServer => 'On the server';
+
+  @override
+  String get gameSaveConflictLocal => 'On this computer';
+
+  @override
+  String gameSaveConflictServerLine(int version, String device, String date) {
+    return 'Version $version · $device · $date';
+  }
+
+  @override
+  String gameSaveConflictLocalLine(int version, String date) {
+    return 'Changed after version $version · last change $date';
+  }
+
+  @override
+  String gameSaveConflictLocalLineUnknown(int version) {
+    return 'Changed after version $version';
+  }
+
+  @override
+  String get gameSaveConflictHistoryNote =>
+      'The other version stays in the server\'s history.';
+
+  @override
+  String get gameContinue => 'Continue';
+
+  @override
+  String get gameSaveUnchanged => 'Save unchanged, nothing uploaded';
+
+  @override
+  String get gameSessionRetrySync => 'Retry sync';
+
+  @override
+  String gameSessionDoneSnack(String time) {
+    return 'Played $time';
+  }
+
+  @override
+  String gameSessionDoneSnackSaved(String time, int version) {
+    return 'Played $time · save uploaded as version $version';
+  }
+
+  @override
+  String get gameSteamLibraryPickerHint =>
+      'The game is restored into this library\'s steamapps folder.';
+
+  @override
+  String get gameSessionSummary => 'Last session';
 }

@@ -91,12 +91,17 @@ class DownloadHttp {
   /// through an HTTP Range request instead of being thrown away — for the
   /// multi-gigabyte files of a game install. A server that answers 200 to the
   /// range (no Range support, or a changed file) restarts the file from zero.
+  ///
+  /// [onProgress] gets the bytes of the file written so far (a resumed part
+  /// starts at its offset) after every chunk, so a caller can show movement
+  /// inside one large file; cancellation is checked per chunk too.
   Future<int> getToFile(String serverName, String url, File target,
       DownloadCancelToken cancel,
       {required Duration timeout,
       int? maxAttemptsOverride,
       Duration? bodyTimeoutOverride,
-      bool resume = false}) async {
+      bool resume = false,
+      void Function(int bytesWritten)? onProgress}) async {
     await target.parent.create(recursive: true);
     final part = File('${target.path}.part');
     var offset = 0;
@@ -109,10 +114,29 @@ class DownloadHttp {
         rangeStart: offset > 0 ? offset : null);
     final append = offset > 0 && response.statusCode == 206;
     final sink = part.openWrite(mode: append ? FileMode.append : FileMode.write);
+    var written = append ? offset : 0;
+    onProgress?.call(written);
     try {
-      await response.stream
-          .pipe(sink)
-          .timeout(bodyTimeoutOverride ?? bodyTimeout);
+      if (onProgress == null) {
+        await response.stream
+            .pipe(sink)
+            .timeout(bodyTimeoutOverride ?? bodyTimeout);
+      } else {
+        // Per-chunk accounting; the timeout guards every gap between chunks
+        // the way `pipe().timeout()` guards the whole body.
+        try {
+          await for (final chunk in response.stream
+              .timeout(bodyTimeoutOverride ?? bodyTimeout)) {
+            checkCancel(cancel);
+            sink.add(chunk);
+            written += chunk.length;
+            onProgress(written);
+          }
+          await sink.flush();
+        } finally {
+          await sink.close();
+        }
+      }
     } on FileSystemException catch (e) {
       if (!resume) await tryDelete(part);
       throw DownloadFailure('write failed: ${e.message}',

@@ -5184,6 +5184,331 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Read PS3 trophies and Steam achievements from this computer after a session.'**
   String get gameSettingsAchievementSyncSubtitle;
+
+  /// After the user cancels a game install
+  ///
+  /// In en, this message translates to:
+  /// **'Install cancelled. The downloaded part is kept; Install continues where it stopped.'**
+  String get gameInstallCancelled;
+
+  /// Button on a failed install
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get gameInstallRetry;
+
+  /// Button: delete a half-finished install
+  ///
+  /// In en, this message translates to:
+  /// **'Remove downloaded files'**
+  String get gameRemovePartial;
+
+  /// Confirmation body for forgetting a Steam install
+  ///
+  /// In en, this message translates to:
+  /// **'The game is forgotten here. Steam keeps the files; remove it in Steam to free the space.'**
+  String get gameUninstallConfirmSteam;
+
+  /// Snackbar after a local install was deleted
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from this device'**
+  String get gameUninstalled;
+
+  /// Snackbar when deleting a local install failed
+  ///
+  /// In en, this message translates to:
+  /// **'Could not remove the game: {error}'**
+  String gameUninstallFailed(String error);
+
+  /// Why a game cannot be removed right now
+  ///
+  /// In en, this message translates to:
+  /// **'Finish the running session first.'**
+  String get gameUninstallWhilePlaying;
+
+  /// Confirmation before deleting a save version on the server
+  ///
+  /// In en, this message translates to:
+  /// **'Delete save version {version} from {device} ({date})? This cannot be undone.'**
+  String gameSaveDeleteConfirm(int version, String device, String date);
+
+  /// Button next to a missing-emulator message
+  ///
+  /// In en, this message translates to:
+  /// **'Open game settings'**
+  String get gameOpenSettings;
+
+  /// Install error
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough free space in the games folder.'**
+  String get gameErrorNoSpace;
+
+  /// Install error
+  ///
+  /// In en, this message translates to:
+  /// **'The server could not be reached. The install continues when you try again.'**
+  String get gameErrorUnreachable;
+
+  /// Install error
+  ///
+  /// In en, this message translates to:
+  /// **'This game is no longer on the server.'**
+  String get gameErrorGone;
+
+  /// Play step
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching your latest save…'**
+  String get gamePhasePreparingSaves;
+
+  /// Play step
+  ///
+  /// In en, this message translates to:
+  /// **'Starting…'**
+  String get gamePhaseLaunching;
+
+  /// Play step
+  ///
+  /// In en, this message translates to:
+  /// **'Playing'**
+  String get gamePhaseRunning;
+
+  /// Play step
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading your save…'**
+  String get gamePhaseUploadingSaves;
+
+  /// Play step
+  ///
+  /// In en, this message translates to:
+  /// **'Reading achievements…'**
+  String get gamePhaseReadingAchievements;
+
+  /// Play step
+  ///
+  /// In en, this message translates to:
+  /// **'Recording play time…'**
+  String get gamePhaseRecording;
+
+  /// Play step
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get gamePhaseDone;
+
+  /// Install state while another game installs first
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to download ({position} in line)'**
+  String gameInstallQueued(int position);
+
+  /// Button
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get gameInstallPause;
+
+  /// Button
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get gameInstallResume;
+
+  /// Install state
+  ///
+  /// In en, this message translates to:
+  /// **'Paused · {done} of {total}'**
+  String gameInstallPaused(String done, String total);
+
+  /// Install progress line with speed and time left
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} · {filesDone} of {filesTotal} files · {speed}/s · {left}'**
+  String gameDownloadingDetail(
+    String done,
+    String total,
+    int filesDone,
+    int filesTotal,
+    String speed,
+    String left,
+  );
+
+  /// Install progress: estimated time left
+  ///
+  /// In en, this message translates to:
+  /// **'about {time} left'**
+  String gameTimeLeft(String time);
+
+  /// Install progress before the speed is known
+  ///
+  /// In en, this message translates to:
+  /// **'estimating time left…'**
+  String get gameTimeLeftUnknown;
+
+  /// Install state
+  ///
+  /// In en, this message translates to:
+  /// **'Unpacking… (this step cannot be interrupted)'**
+  String get gameExtractingNoCancel;
+
+  /// Downloads page: header of the games section
+  ///
+  /// In en, this message translates to:
+  /// **'Games on this device: {size}'**
+  String gameInstallsStorage(String size);
+
+  /// Downloads page: game install state
+  ///
+  /// In en, this message translates to:
+  /// **'Installed'**
+  String get gameInstallStatusInstalled;
+
+  /// Downloads page: game install state
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled, {done} kept'**
+  String gameInstallStatusCancelled(String done);
+
+  /// Downloads page: game install state
+  ///
+  /// In en, this message translates to:
+  /// **'Unpacking'**
+  String get gameInstallStatusUnpacking;
+
+  /// Menu item: go to the game's page
+  ///
+  /// In en, this message translates to:
+  /// **'Open game'**
+  String get gameOpenPage;
+
+  /// Settings hint under the games folder
+  ///
+  /// In en, this message translates to:
+  /// **'Changing the folder hides the games installed under the previous one; move them by hand or install them again.'**
+  String get gameSettingsRootChangedHint;
+
+  /// Game state when the server has a newer version
+  ///
+  /// In en, this message translates to:
+  /// **'Update available ({size})'**
+  String gameUpdateAvailable(String size);
+
+  /// Button
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get gameUpdate;
+
+  /// Note on a Steam game
+  ///
+  /// In en, this message translates to:
+  /// **'Steam keeps this game up to date.'**
+  String get gameUpdateSteam;
+
+  /// Fact chip: when the game's files last changed on the server
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {date}'**
+  String gameUpdatedOn(String date);
+
+  /// Card after a restart with a session still open
+  ///
+  /// In en, this message translates to:
+  /// **'A session started {date} was not synced yet.'**
+  String gameSessionUnsynced(String date);
+
+  /// Button
+  ///
+  /// In en, this message translates to:
+  /// **'Sync now'**
+  String get gameSessionSyncNow;
+
+  /// Button: forget an unsynced session
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get gameSessionDiscard;
+
+  /// Conflict dialog: option title
+  ///
+  /// In en, this message translates to:
+  /// **'On the server'**
+  String get gameSaveConflictServer;
+
+  /// Conflict dialog: option title
+  ///
+  /// In en, this message translates to:
+  /// **'On this computer'**
+  String get gameSaveConflictLocal;
+
+  /// Conflict dialog: server side
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} · {device} · {date}'**
+  String gameSaveConflictServerLine(int version, String device, String date);
+
+  /// Conflict dialog: local side
+  ///
+  /// In en, this message translates to:
+  /// **'Changed after version {version} · last change {date}'**
+  String gameSaveConflictLocalLine(int version, String date);
+
+  /// Conflict dialog: local side when the change time is unknown
+  ///
+  /// In en, this message translates to:
+  /// **'Changed after version {version}'**
+  String gameSaveConflictLocalLineUnknown(int version);
+
+  /// Conflict dialog: note
+  ///
+  /// In en, this message translates to:
+  /// **'The other version stays in the server\'s history.'**
+  String get gameSaveConflictHistoryNote;
+
+  /// Button
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get gameContinue;
+
+  /// Session summary line
+  ///
+  /// In en, this message translates to:
+  /// **'Save unchanged, nothing uploaded'**
+  String get gameSaveUnchanged;
+
+  /// Button on a session summary with errors
+  ///
+  /// In en, this message translates to:
+  /// **'Retry sync'**
+  String get gameSessionRetrySync;
+
+  /// Snackbar after a session
+  ///
+  /// In en, this message translates to:
+  /// **'Played {time}'**
+  String gameSessionDoneSnack(String time);
+
+  /// Snackbar after a session with a save upload
+  ///
+  /// In en, this message translates to:
+  /// **'Played {time} · save uploaded as version {version}'**
+  String gameSessionDoneSnackSaved(String time, int version);
+
+  /// Steam library picker: hint
+  ///
+  /// In en, this message translates to:
+  /// **'The game is restored into this library\'s steamapps folder.'**
+  String get gameSteamLibraryPickerHint;
+
+  /// Session summary card title
+  ///
+  /// In en, this message translates to:
+  /// **'Last session'**
+  String get gameSessionSummary;
 }
 
 class _AppLocalizationsDelegate

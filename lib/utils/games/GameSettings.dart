@@ -14,7 +14,6 @@ class GameSettings {
   static const _kGamesRoot = 'games.root';
   static const _kEmulatorPath = 'games.emulator.'; // + kind
   static const _kCoreOverride = 'games.retroarch.core.'; // + platform
-  static const _kSteamLibrary = 'games.steam.library';
   static const _kSaveSync = 'games.save_sync';
   static const _kAchievementSync = 'games.achievement_sync';
 
@@ -54,18 +53,10 @@ class GameSettings {
       ? _prefs.remove('$_kEmulatorPath$kind')
       : _prefs.setString('$_kEmulatorPath$kind', path);
 
-  /// A libretro core name overriding the server's default for a platform.
+  /// A libretro core name overriding the server's default for a platform
+  /// (no UI yet; set by hand in the preferences for a core the server does
+  /// not know).
   static Future<String?> coreOverride(String platform) => _prefs.getString('$_kCoreOverride$platform');
-
-  static Future<void> setCoreOverride(String platform, String? core) => core == null || core.isEmpty
-      ? _prefs.remove('$_kCoreOverride$platform')
-      : _prefs.setString('$_kCoreOverride$platform', core);
-
-  /// The Steam library folder Steam games are restored into.
-  static Future<String?> steamLibrary() => _prefs.getString(_kSteamLibrary);
-
-  static Future<void> setSteamLibrary(String? path) =>
-      path == null || path.isEmpty ? _prefs.remove(_kSteamLibrary) : _prefs.setString(_kSteamLibrary, path);
 
   static Future<bool> saveSyncEnabled() async => (await _prefs.getBool(_kSaveSync)) ?? true;
 

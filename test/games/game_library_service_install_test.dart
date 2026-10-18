@@ -1,0 +1,399 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:player/utils/download/DownloadHttp.dart';
+import 'package:player/utils/download/DownloadStore.dart';
+import 'package:player/utils/games/GameApi.dart';
+import 'package:player/utils/games/GameInstallStore.dart';
+import 'package:player/utils/games/GameLibraryService.dart';
+import 'package:player/utils/games/launch/GameProcessRunner.dart';
+import 'package:player/utils/games/steam/SteamLibraryLocator.dart';
+import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
+
+import 'support/game_fixture.dart';
+
+/// Pretends to run the game: returns at once with exit code 0.
+class FakeRunner extends GameProcessRunner {
+  FakeRunner() : super(isFlatpak: () => false);
+  int runs = 0;
+
+  @override
+  Future<GameProcessResult> run(String command, List<String> arguments,
+      {String? workingDirectory, Map<String, String>? environment, Duration? timeout}) async {
+    runs++;
+    return const GameProcessResult(exitCode: 0, duration: Duration(minutes: 3), stderrTail: '');
+  }
+}
+
+const server = 'https://srv.example';
+final slug = DownloadStore.slug(server);
+
+void main() {
+  late Directory tmp;
+  late FakeGameServer fake;
+
+  setUp(() async {
+    tmp = await Directory.systemTemp.createTemp('ister-game-install-');
+    fake = FakeGameServer();
+  });
+
+  tearDown(() async {
+    await tmp.delete(recursive: true);
+  });
+
+  late FakeRunner runner;
+  final recorded = <(String, Duration)>[];
+  var recordFails = false;
+
+  setUp(() {
+    SharedPreferencesAsyncPlatform.instance = InMemorySharedPreferencesAsync.empty();
+    runner = FakeRunner();
+    recorded.clear();
+    recordFails = false;
+  });
+
+  GameLibraryService service({GameInstallStore? store}) => GameLibraryService.forTest(
+        runner: runner,
+        steam: SteamLibraryLocator(environment: {'HOME': tmp.path}),
+        recordPlayed: (server, id, duration) async {
+          if (recordFails) throw Exception('offline');
+          recorded.add((id, duration));
+        },
+        store: store ?? GameInstallStore(tmp),
+        http: DownloadHttp(
+          httpClient: fake.client,
+          tokenProvider: (_) async => 'tok',
+          onAuthFailure: (_) {},
+          backoff: (_) => Duration.zero,
+          maxAttempts: 2,
+        ),
+        apiFactory: (name) => GameApi(name, httpClient: fake.client, bearer: (_) async => 'bearer'),
+        servers: () async => [server],
+        deviceName: 'test-box',
+      );
+
+  Future<void> until(bool Function() condition, {Duration timeout = const Duration(seconds: 10)}) async {
+    final end = DateTime.now().add(timeout);
+    while (!condition()) {
+      if (DateTime.now().isAfter(end)) fail('condition not met in time');
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+    }
+  }
+
+  test('installs every file, reports bytes inside a file, keeps the manifest', () async {
+    fake.games['g1'] = [FakeGameFile('rom.cue', 10, entry: true, chunk: 10), FakeGameFile('rom.bin', 3000, chunk: 500)];
+    fake.versions['g1'] = 'v1';
+    final s = service();
+    final seen = <int>[];
+    s.progressOf('g1').addListener(() {
+      final p = s.progressOf('g1').value;
+      if (p != null && p.status == GameInstallStatus.downloading) seen.add(p.doneBytes);
+    });
+
+    final install = await s.installAndWait(server, gameFixture());
+
+    expect(install.status, GameInstallStatus.installed);
+    expect(install.installedVersion, 'v1');
+    expect(install.title, 'Test Game');
+    expect(File('${install.filesDir.path}/rom.bin').lengthSync(), 3000);
+    expect(File('${install.filesDir.path}/rom.cue').lengthSync(), 10);
+    expect((await s.store.readManifest(install))!.version, 'v1');
+    // Progress moved in steps smaller than a whole file.
+    expect(seen.where((b) => b > 0 && b < 3000), isNotEmpty);
+    expect(s.runningCount.value, 0);
+    expect(s.revision.value, greaterThan(0));
+  });
+
+  test('pause keeps the part file, resume continues with a Range request', () async {
+    final big = FakeGameFile('rom.bin', 3000, chunk: 500)..gate = Completer<void>();
+    fake.games['g1'] = [big];
+    final s = service();
+    await s.install(server, gameFixture());
+    // The first chunk landed; the stream now waits on the gate.
+    await until(() => (s.progressOf('g1').value?.doneBytes ?? 0) >= 500);
+
+    await s.pause(server, 'g1');
+    big.gate!.complete();
+    await until(() => s.runningCount.value == 0);
+
+    final paused = (await s.store.get(server, 'g1'))!;
+    expect(paused.status, GameInstallStatus.paused);
+    expect(paused.isResumable, isTrue);
+    final part = File('${paused.filesDir.path}/rom.bin.part');
+    expect(part.existsSync(), isTrue);
+    final kept = part.lengthSync();
+    expect(kept, greaterThan(0));
+    expect(kept, lessThan(3000));
+
+    big.gate = null;
+    fake.requests.clear();
+    await s.resume(server, 'g1');
+    final done = await s.installAndWait(server, gameFixture());
+    expect(done.status, GameInstallStatus.installed);
+    expect(File('${done.filesDir.path}/rom.bin').lengthSync(), 3000);
+    final ranged = fake.requests.where((r) => r.headers['Range'] != null).toList();
+    expect(ranged, isNotEmpty, reason: 'the second attempt continued the part file');
+    expect(ranged.first.headers['Range'], 'bytes=$kept-');
+    // The restored bytes are the original ones, not a re-download from zero.
+    expect(File('${done.filesDir.path}/rom.bin').readAsBytesSync(), big.bytes);
+  });
+
+  test('cancel stops with the files kept; installing again resumes', () async {
+    final big = FakeGameFile('rom.bin', 3000, chunk: 500)..gate = Completer<void>();
+    fake.games['g1'] = [big];
+    final s = service();
+    await s.install(server, gameFixture());
+    await until(() => (s.progressOf('g1').value?.doneBytes ?? 0) >= 500);
+    await s.cancel(server, 'g1');
+    big.gate!.complete();
+    await until(() => s.runningCount.value == 0);
+    final cancelled = (await s.store.get(server, 'g1'))!;
+    expect(cancelled.status, GameInstallStatus.cancelled);
+    expect(cancelled.error, isNull);
+    expect(File('${cancelled.filesDir.path}/rom.bin.part').existsSync(), isTrue);
+
+    big.gate = null;
+    final done = await s.installAndWait(server, gameFixture());
+    expect(done.status, GameInstallStatus.installed);
+  });
+
+  test('one game installs at a time; the next waits in the queue with its position', () async {
+    final first = FakeGameFile('a.bin', 1000, chunk: 500)..gate = Completer<void>();
+    fake.games['g1'] = [first];
+    fake.games['g2'] = [FakeGameFile('b.bin', 100, chunk: 100)];
+    final s = service();
+    await s.install(server, gameFixture(id: 'g1'));
+    await s.install(server, gameFixture(id: 'g2', title: 'Second'));
+    await until(() => s.progressOf('g1').value?.status == GameInstallStatus.downloading);
+
+    expect(s.progressOf('g2').value?.status, GameInstallStatus.queued);
+    expect(s.progressOf('g2').value?.queuePosition, 1);
+    expect(s.runningCount.value, 1);
+    expect(fake.requests.where((r) => r.url.path.contains('/game/g2/')), isEmpty);
+
+    first.gate!.complete();
+    await s.installAndWait(server, gameFixture(id: 'g2'));
+    expect((await s.store.get(server, 'g1'))!.status, GameInstallStatus.installed);
+    expect((await s.store.get(server, 'g2'))!.status, GameInstallStatus.installed);
+  });
+
+  test('a game that is gone from the server fails with a persisted, translatable error', () async {
+    fake.games['g1'] = [FakeGameFile('a.bin', 10)];
+    fake.manifestStatus['g1'] = 404;
+    final s = service();
+    final failed = await s.installAndWait(server, gameFixture());
+    expect(failed.status, GameInstallStatus.failed);
+    expect(failed.error, 'gone');
+    // Persisted: a fresh store reads the same.
+    expect((await GameInstallStore(tmp).get(server, 'g1'))!.error, 'gone');
+
+    fake.manifestStatus.remove('g1');
+    await s.retry(server, 'g1');
+    expect((await s.installAndWait(server, gameFixture())).status, GameInstallStatus.installed);
+  });
+
+  test('an install left downloading by an earlier run continues on start', () async {
+    fake.games['g1'] = [FakeGameFile('a.bin', 1500, chunk: 500)];
+    // What the previous run left behind: the record plus half a part file.
+    final dir = Directory('${tmp.path}/$slug/g1/files')..createSync(recursive: true);
+    File('${dir.path}/a.bin.part').writeAsBytesSync(FakeGameFile('a.bin', 1500).bytes.sublist(0, 700));
+    final earlier = GameInstallStore(tmp);
+    await earlier.put(
+        server,
+        GameInstall(
+            gameId: 'g1',
+            form: 'ROM',
+            platform: 'PSX',
+            dir: '${tmp.path}/$slug/g1',
+            status: GameInstallStatus.downloading,
+            title: 'Left behind',
+            totalBytes: 1500,
+            filesTotal: 1));
+    await earlier.put(
+        server,
+        GameInstall(
+            gameId: 'g2', form: 'ROM', platform: 'PSX', dir: '${tmp.path}/$slug/g2', status: GameInstallStatus.paused));
+
+    final s = service();
+    await s.ensureStarted();
+    await until(() => s.progressOf('g1').value?.status == GameInstallStatus.installed);
+    expect(File('${dir.path}/a.bin').lengthSync(), 1500);
+    expect(fake.requests.where((r) => r.headers['Range'] == 'bytes=700-'), isNotEmpty);
+    // The paused one waits for the user.
+    expect((await s.store.get(server, 'g2'))!.status, GameInstallStatus.paused);
+    expect(s.progressOf('g2').value?.status, GameInstallStatus.paused);
+  });
+
+  test('a newer server version marks the install and the update fetches only what changed', () async {
+    final a = FakeGameFile('a.bin', 100, chunk: 100, lastModified: 't1');
+    final b = FakeGameFile('b.bin', 200, chunk: 200, lastModified: 't1');
+    fake.games['g1'] = [a, b];
+    fake.versions['g1'] = 'v1';
+    final s = service();
+    await s.installAndWait(server, gameFixture(version: 'v1'));
+
+    await s.checkForUpdate(server, 'g1', version: 'v1', sizeBytes: 300);
+    expect((await s.store.get(server, 'g1'))!.status, GameInstallStatus.installed);
+
+    // b changed on the server (same size, new modification time), c is new, a is gone.
+    final b2 = FakeGameFile('b.bin', 200, chunk: 200, lastModified: 't2');
+    final c = FakeGameFile('c.bin', 50, chunk: 50, lastModified: 't2');
+    fake.games['g1'] = [b2, c];
+    fake.versions['g1'] = 'v2';
+    await s.checkForUpdate(server, 'g1', version: 'v2', sizeBytes: 250);
+    final flagged = (await s.store.get(server, 'g1'))!;
+    expect(flagged.status, GameInstallStatus.updateAvailable);
+    expect(flagged.availableVersion, 'v2');
+    expect(flagged.isInstalled, isTrue, reason: 'still playable while an update waits');
+
+    fake.requests.clear();
+    await s.update(server, 'g1');
+    final updated = await s.installAndWait(server, gameFixture());
+    expect(updated.status, GameInstallStatus.installed);
+    expect(updated.installedVersion, 'v2');
+    expect(updated.availableVersion, isNull);
+    final fetched = fake.requests.where((r) => r.url.path.contains('/file/')).map((r) => r.url.pathSegments.last).toList();
+    expect(fetched, containsAll(['b.bin', 'c.bin']));
+    expect(fetched, isNot(contains('a.bin')));
+    expect(File('${updated.filesDir.path}/a.bin').existsSync(), isFalse);
+    expect(File('${updated.filesDir.path}/c.bin').lengthSync(), 50);
+  });
+
+  test('uninstall removes the files in any state but not during a session', () async {
+    fake.games['g1'] = [FakeGameFile('a.bin', 10)];
+    final s = service();
+    final install = await s.installAndWait(server, gameFixture());
+    expect(Directory(install.dir).existsSync(), isTrue);
+    await s.uninstall(server, 'g1');
+    expect(Directory(install.dir).existsSync(), isFalse);
+    expect(await s.store.get(server, 'g1'), isNull);
+    expect(s.progressOf('g1').value, isNull);
+
+    // A half install can go too.
+    final big = FakeGameFile('a.bin', 3000, chunk: 500)..gate = Completer<void>();
+    fake.games['g1'] = [big];
+    await s.install(server, gameFixture());
+    await until(() => (s.progressOf('g1').value?.doneBytes ?? 0) >= 500);
+    await s.pause(server, 'g1');
+    big.gate!.complete();
+    await until(() => s.runningCount.value == 0);
+    await s.uninstall(server, 'g1');
+    expect(await s.store.get(server, 'g1'), isNull);
+  });
+
+  test('the install record is JSON a reader of the old format still understands', () async {
+    fake.games['g1'] = [FakeGameFile('a.bin', 10)];
+    final s = service();
+    await s.installAndWait(server, gameFixture());
+    final json = jsonDecode(File('${tmp.path}/$slug/installs.json').readAsStringSync()) as Map;
+    final record = (json['installs'] as List).single as Map;
+    expect(record['status'], 'installed');
+    expect(record['gameId'], 'g1');
+  });
+
+  group('play loop', () {
+    Future<GameInstall> installedNative(GameLibraryService s) async {
+      final dir = '${tmp.path}/$slug/g1';
+      File('$dir/files/game.sh').createSync(recursive: true);
+      final install = GameInstall(
+          gameId: 'g1',
+          form: 'PC_LINUX_PORTABLE',
+          platform: 'LINUX',
+          dir: dir,
+          status: GameInstallStatus.installed,
+          entryPath: 'game.sh',
+          totalBytes: 1,
+          filesTotal: 1);
+      await s.store.put(server, install);
+      return install;
+    }
+
+    test('launch walks the phases, records the play time and closes the session', () async {
+      final s = service();
+      await installedNative(s);
+      final game = gameFixture(form: 'PC_LINUX_PORTABLE', platform: 'LINUX');
+      final phases = <GamePlayPhase>[];
+      s.phaseOf('g1').addListener(() => phases.add(s.phaseOf('g1').value));
+
+      final prepared = await s.prepare(server, game);
+      expect(prepared.conflict, isNull);
+      final result = (await s.launch(server, game, prepared.plan))!;
+
+      expect(runner.runs, 1);
+      expect(result.duration, const Duration(minutes: 3));
+      expect(result.hasErrors, isFalse);
+      expect(recorded, [('g1', const Duration(minutes: 3))]);
+      expect(phases, containsAllInOrder([
+        GamePlayPhase.preparingSaves,
+        GamePlayPhase.launching,
+        GamePlayPhase.running,
+        GamePlayPhase.recording,
+        GamePlayPhase.idle,
+      ]));
+      expect(s.sessionOf('g1').value, isNull);
+      expect((await s.store.get(server, 'g1'))!.hasOpenSession, isFalse);
+      expect(s.lastResultOf('g1').value, same(result));
+    });
+
+    test('a session whose server steps failed stays open until retry sync succeeds', () async {
+      final s = service();
+      await installedNative(s);
+      final game = gameFixture(form: 'PC_LINUX_PORTABLE', platform: 'LINUX');
+      recordFails = true;
+      final prepared = await s.prepare(server, game);
+      final result = (await s.launch(server, game, prepared.plan))!;
+      expect(result.hasErrors, isTrue);
+      expect(s.sessionOf('g1').value, isNotNull, reason: 'kept for a retry');
+      expect((await s.store.get(server, 'g1'))!.hasOpenSession, isTrue);
+
+      recordFails = false;
+      final retried = await s.retrySync(server, game);
+      expect(retried.hasErrors, isFalse);
+      expect(recorded.length, 1);
+      expect(s.sessionOf('g1').value, isNull);
+    });
+
+    test('a session left open by an earlier run is restored and can be finished or discarded', () async {
+      final s = service();
+      final install = await installedNative(s);
+      install
+        ..sessionStartedAt = DateTime(2026, 1, 1, 12)
+        ..sessionDetached = true;
+      await s.store.put(server, install);
+      final game = gameFixture(form: 'PC_LINUX_PORTABLE', platform: 'LINUX');
+
+      final session = (await s.restoreSession(server, game))!;
+      expect(session.restored, isTrue);
+      expect(session.startedAt, DateTime(2026, 1, 1, 12));
+      expect(s.phaseOf('g1').value, GamePlayPhase.running);
+
+      await s.discardSession(server, 'g1');
+      expect(s.sessionOf('g1').value, isNull);
+      expect(s.phaseOf('g1').value, GamePlayPhase.idle);
+      expect((await s.store.get(server, 'g1'))!.hasOpenSession, isFalse);
+      expect(recorded, isEmpty);
+
+      // Restored again and finished: the play time is recorded.
+      install.sessionStartedAt = DateTime.now().subtract(const Duration(minutes: 10));
+      await s.store.put(server, install);
+      await s.restoreSession(server, game);
+      final result = await s.finishDetached(server, game);
+      expect(result.hasErrors, isFalse);
+      expect(recorded.single.$2.inMinutes, greaterThanOrEqualTo(9));
+      expect((await s.store.get(server, 'g1'))!.hasOpenSession, isFalse);
+    });
+
+    test('uninstall is refused while a session is open', () async {
+      final s = service();
+      await installedNative(s);
+      final game = gameFixture(form: 'PC_LINUX_PORTABLE', platform: 'LINUX');
+      recordFails = true;
+      final prepared = await s.prepare(server, game);
+      await s.launch(server, game, prepared.plan);
+      expect(() => s.uninstall(server, 'g1'), throwsStateError);
+    });
+  });
+}

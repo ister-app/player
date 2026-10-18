@@ -33,6 +33,8 @@ import 'l10n/app_localizations.dart';
 import 'utils/download/DownloadForegroundService.dart';
 import 'utils/download/DownloadWakelock.dart';
 import 'utils/download/DownloadService.dart';
+import 'utils/games/GameLibraryService.dart';
+import 'utils/games/GamePlatformSupport.dart';
 import 'utils/download/MusicCacheService.dart';
 
 Future<void> main() async {
@@ -150,6 +152,9 @@ Future<void> main() async {
   unawaited(DownloadForegroundService.install());
   // iOS has no foreground service; the best it can do is keep the screen on.
   unawaited(DownloadWakelock.install());
+  // Game installs form their own queue; an install the previous run left
+  // half-way continues now (desktop only, where games can be played).
+  if (kGamesSupported) unawaited(GameLibraryService.instance.ensureStarted());
   unawaited(DownloadService.instance.ensureStarted().then((_) {
     MusicCacheService.instance.ensurePeriodic();
     for (final server in DownloadService.instance.store.loadedServers) {

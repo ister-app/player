@@ -3,9 +3,31 @@ import 'dart:io';
 
 import 'package:player/utils/download/DownloadStore.dart' show DownloadStore;
 
+import 'GameApi.dart';
 import 'GameSettings.dart';
 
-enum GameInstallStatus { downloading, extracting, installed, failed }
+/// Where a local install is in its life. The transitions live in
+/// `GameInstallState.dart`; this is the persisted value.
+enum GameInstallStatus {
+  /// Waiting for its turn (one game installs at a time).
+  queued,
+  downloading,
+
+  /// Stopped by the user; the downloaded files stay and `resume` continues.
+  paused,
+  extracting,
+  installed,
+
+  /// Stopped by an error; `retry` continues where it got to.
+  failed,
+
+  /// Stopped by the user before it finished; the files stay for a later
+  /// install, `remove` throws them away.
+  cancelled,
+
+  /// Installed, and the server has a newer version of the files.
+  updateAvailable,
+}
 
 /// What this device knows about one installed (or installing) game.
 class GameInstall {
@@ -15,11 +37,15 @@ class GameInstall {
     required this.platform,
     required this.dir,
     required this.status,
+    this.title,
     this.totalBytes = 0,
     this.doneBytes = 0,
     this.filesTotal = 0,
     this.filesDone = 0,
     this.manifestEtag,
+    this.installedVersion,
+    this.availableVersion,
+    this.availableBytes,
     this.entryPath,
     this.titleId,
     this.steamAppId,
@@ -29,6 +55,9 @@ class GameInstall {
     this.lastSaveSha,
     this.linuxInstalled = false,
     this.error,
+    this.queuedAt,
+    this.sessionStartedAt,
+    this.sessionDetached = false,
   });
 
   final String gameId;
@@ -39,11 +68,22 @@ class GameInstall {
   /// Steam library instead and keep only their bookkeeping here.
   final String dir;
   GameInstallStatus status;
+
+  /// The game's title as it was when the install started, for lists that
+  /// have no GraphQL game at hand (the downloads page).
+  String? title;
   int totalBytes;
   int doneBytes;
   int filesTotal;
   int filesDone;
   String? manifestEtag;
+
+  /// The manifest `version` the local files were installed from, and the
+  /// newer one the server reported since (with the bytes an update fetches).
+  /// Both null against a server that reports no version.
+  String? installedVersion;
+  String? availableVersion;
+  int? availableBytes;
   String? entryPath;
   String? titleId;
   int? steamAppId;
@@ -58,11 +98,33 @@ class GameInstall {
   bool linuxInstalled;
   String? error;
 
+  /// When the install was asked for; the queue runs in this order.
+  DateTime? queuedAt;
+
+  /// A play session that has not been wrapped up yet (saves pushed, play
+  /// time recorded). Survives an app restart so the session can still be
+  /// finished; [sessionDetached] is a Steam launch the app cannot await.
+  DateTime? sessionStartedAt;
+  bool sessionDetached;
+
   Directory get filesDir => Directory('$dir/files');
   Directory get savesDir => Directory('$dir/saves');
   Directory get tmpDir => Directory('$dir/tmp');
 
-  bool get isInstalled => status == GameInstallStatus.installed;
+  bool get isInstalled => status == GameInstallStatus.installed || status == GameInstallStatus.updateAvailable;
+
+  /// Being worked on (or about to be): shown with a progress bar.
+  bool get isActive =>
+      status == GameInstallStatus.queued || status == GameInstallStatus.downloading || status == GameInstallStatus.extracting;
+
+  /// Stopped half-way with its files kept: offer to continue.
+  bool get isResumable =>
+      status == GameInstallStatus.paused || status == GameInstallStatus.failed || status == GameInstallStatus.cancelled;
+
+  bool get hasOpenSession => sessionStartedAt != null;
+
+  /// What the install occupies on disk, as far as the bookkeeping knows.
+  int get bytesOnDisk => isInstalled ? totalBytes : doneBytes;
 
   Map<String, dynamic> toJson() => {
         'gameId': gameId,
@@ -70,11 +132,15 @@ class GameInstall {
         'platform': platform,
         'dir': dir,
         'status': status.name,
+        'title': title,
         'totalBytes': totalBytes,
         'doneBytes': doneBytes,
         'filesTotal': filesTotal,
         'filesDone': filesDone,
         'manifestEtag': manifestEtag,
+        'installedVersion': installedVersion,
+        'availableVersion': availableVersion,
+        'availableBytes': availableBytes,
         'entryPath': entryPath,
         'titleId': titleId,
         'steamAppId': steamAppId,
@@ -84,6 +150,9 @@ class GameInstall {
         'lastSaveSha': lastSaveSha,
         'linuxInstalled': linuxInstalled,
         'error': error,
+        'queuedAt': queuedAt?.toIso8601String(),
+        'sessionStartedAt': sessionStartedAt?.toIso8601String(),
+        'sessionDetached': sessionDetached,
       };
 
   factory GameInstall.fromJson(Map<String, dynamic> json) => GameInstall(
@@ -93,11 +162,15 @@ class GameInstall {
         dir: json['dir'] as String,
         status: GameInstallStatus.values.firstWhere((s) => s.name == json['status'],
             orElse: () => GameInstallStatus.failed),
+        title: json['title'] as String?,
         totalBytes: (json['totalBytes'] as num?)?.toInt() ?? 0,
         doneBytes: (json['doneBytes'] as num?)?.toInt() ?? 0,
         filesTotal: (json['filesTotal'] as num?)?.toInt() ?? 0,
         filesDone: (json['filesDone'] as num?)?.toInt() ?? 0,
         manifestEtag: json['manifestEtag'] as String?,
+        installedVersion: json['installedVersion'] as String?,
+        availableVersion: json['availableVersion'] as String?,
+        availableBytes: (json['availableBytes'] as num?)?.toInt(),
         entryPath: json['entryPath'] as String?,
         titleId: json['titleId'] as String?,
         steamAppId: (json['steamAppId'] as num?)?.toInt(),
@@ -107,6 +180,9 @@ class GameInstall {
         lastSaveSha: json['lastSaveSha'] as String?,
         linuxInstalled: json['linuxInstalled'] == true,
         error: json['error'] as String?,
+        queuedAt: DateTime.tryParse(json['queuedAt']?.toString() ?? ''),
+        sessionStartedAt: DateTime.tryParse(json['sessionStartedAt']?.toString() ?? ''),
+        sessionDetached: json['sessionDetached'] == true,
       );
 }
 
@@ -114,9 +190,13 @@ class GameInstall {
 /// (`<gamesRoot>/<server-slug>/installs.json`). Kept small and rewritten
 /// atomically; the game files themselves are the truth for "is it there".
 class GameInstallStore {
-  GameInstallStore([this._rootOverride]);
+  GameInstallStore([Directory? root, this.inMemory = false]) : _rootOverride = root;
 
   final Directory? _rootOverride;
+
+  /// Skip the disk entirely (widget tests: real file I/O never completes
+  /// under the test binding's fake clock).
+  final bool inMemory;
   final Map<String, Map<String, GameInstall>> _byServer = {};
 
   Future<Directory> root() async => _rootOverride ?? await GameSettings.gamesRoot();
@@ -126,10 +206,18 @@ class GameInstallStore {
 
   Future<File> _manifest(String serverName) async => File('${(await serverDir(serverName)).path}/installs.json');
 
+  /// The servers whose installs are loaded (after [load]/[loadAll]).
+  Iterable<String> get loadedServers => _byServer.keys;
+
+  /// Forget everything read so far — after the games folder moved, the
+  /// installs under the old folder are not the ones under the new one.
+  void invalidate() => _byServer.clear();
+
   Future<Map<String, GameInstall>> load(String serverName) async {
     final cached = _byServer[serverName];
     if (cached != null) return cached;
     final map = <String, GameInstall>{};
+    if (inMemory) return _byServer[serverName] = map;
     final file = await _manifest(serverName);
     if (await file.exists()) {
       try {
@@ -147,6 +235,18 @@ class GameInstallStore {
     return _byServer[serverName] = map;
   }
 
+  Future<void> loadAll(Iterable<String> servers) async {
+    for (final server in servers) {
+      await load(server);
+    }
+  }
+
+  /// Every loaded install, newest request first.
+  List<(String server, GameInstall install)> all() => [
+        for (final entry in _byServer.entries)
+          for (final install in entry.value.values) (entry.key, install)
+      ];
+
   Future<GameInstall?> get(String serverName, String gameId) async => (await load(serverName))[gameId];
 
   Future<void> put(String serverName, GameInstall install) async {
@@ -159,7 +259,18 @@ class GameInstallStore {
     await _save(serverName);
   }
 
-  Future<void> _save(String serverName) async {
+  /// Writes are chained per store: two installs persisting at once would
+  /// otherwise race on the same `.part` file.
+  Future<void> _writing = Future.value();
+
+  Future<void> _save(String serverName) {
+    if (inMemory) return Future.value();
+    final next = _writing.then((_) => _write(serverName));
+    _writing = next.catchError((_) {});
+    return next;
+  }
+
+  Future<void> _write(String serverName) async {
     final file = await _manifest(serverName);
     await file.parent.create(recursive: true);
     final tmp = File('${file.path}.part');
@@ -171,4 +282,28 @@ class GameInstallStore {
 
   Future<Directory> gameDir(String serverName, String gameId) async =>
       Directory('${(await serverDir(serverName)).path}/$gameId');
+
+  // ---- the manifest the files were installed from --------------------------
+
+  File manifestFile(GameInstall install) => File('${install.dir}/manifest.json');
+
+  /// Keeps the server's manifest next to the files, so an update can be
+  /// reduced to the files that changed since.
+  Future<void> writeManifest(GameInstall install, GameManifest manifest) async {
+    final file = manifestFile(install);
+    await file.parent.create(recursive: true);
+    final tmp = File('${file.path}.part');
+    await tmp.writeAsString(jsonEncode(manifest.toJson()), flush: true);
+    await tmp.rename(file.path);
+  }
+
+  Future<GameManifest?> readManifest(GameInstall install) async {
+    final file = manifestFile(install);
+    if (!await file.exists()) return null;
+    try {
+      return GameManifest.fromJson((jsonDecode(await file.readAsString()) as Map).cast<String, dynamic>());
+    } catch (_) {
+      return null;
+    }
+  }
 }

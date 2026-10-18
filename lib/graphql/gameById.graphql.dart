@@ -259,6 +259,27 @@ const documentNodeQuerygameById = DocumentNode(
                   directives: [],
                 ),
                 FieldNode(
+                  name: NameNode(value: 'version'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'steamBuildId'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
+                  name: NameNode(value: 'updatedAt'),
+                  alias: null,
+                  arguments: [],
+                  directives: [],
+                  selectionSet: null,
+                ),
+                FieldNode(
                   name: NameNode(value: 'savePaths'),
                   alias: null,
                   arguments: [],
@@ -597,6 +618,9 @@ class Query$gameById$gameById implements Fragment$fragmentGame {
     this.lastPlayed,
     required this.playTimeMs,
     this.$__typename = 'Game',
+    this.version,
+    this.steamBuildId,
+    this.updatedAt,
     required this.savePaths,
     required this.savePathSource,
     required this.savePathOverride,
@@ -626,6 +650,9 @@ class Query$gameById$gameById implements Fragment$fragmentGame {
     final l$lastPlayed = json['lastPlayed'];
     final l$playTimeMs = json['playTimeMs'];
     final l$$__typename = json['__typename'];
+    final l$version = json['version'];
+    final l$steamBuildId = json['steamBuildId'];
+    final l$updatedAt = json['updatedAt'];
     final l$savePaths = json['savePaths'];
     final l$savePathSource = json['savePathSource'];
     final l$savePathOverride = json['savePathOverride'];
@@ -665,6 +692,9 @@ class Query$gameById$gameById implements Fragment$fragmentGame {
       lastPlayed: (l$lastPlayed as String?),
       playTimeMs: (l$playTimeMs as num).toDouble(),
       $__typename: (l$$__typename as String),
+      version: (l$version as String?),
+      steamBuildId: (l$steamBuildId as String?),
+      updatedAt: (l$updatedAt as String?),
       savePaths: (l$savePaths as List<dynamic>)
           .map(
             (e) => Query$gameById$gameById$savePaths.fromJson(
@@ -736,6 +766,12 @@ class Query$gameById$gameById implements Fragment$fragmentGame {
 
   final String $__typename;
 
+  final String? version;
+
+  final String? steamBuildId;
+
+  final String? updatedAt;
+
   final List<Query$gameById$gameById$savePaths> savePaths;
 
   final String savePathSource;
@@ -790,6 +826,12 @@ class Query$gameById$gameById implements Fragment$fragmentGame {
     _resultData['playTimeMs'] = l$playTimeMs;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
+    final l$version = version;
+    _resultData['version'] = l$version;
+    final l$steamBuildId = steamBuildId;
+    _resultData['steamBuildId'] = l$steamBuildId;
+    final l$updatedAt = updatedAt;
+    _resultData['updatedAt'] = l$updatedAt;
     final l$savePaths = savePaths;
     _resultData['savePaths'] = l$savePaths.map((e) => e.toJson()).toList();
     final l$savePathSource = savePathSource;
@@ -829,6 +871,9 @@ class Query$gameById$gameById implements Fragment$fragmentGame {
     final l$lastPlayed = lastPlayed;
     final l$playTimeMs = playTimeMs;
     final l$$__typename = $__typename;
+    final l$version = version;
+    final l$steamBuildId = steamBuildId;
+    final l$updatedAt = updatedAt;
     final l$savePaths = savePaths;
     final l$savePathSource = savePathSource;
     final l$savePathOverride = savePathOverride;
@@ -856,6 +901,9 @@ class Query$gameById$gameById implements Fragment$fragmentGame {
       l$lastPlayed,
       l$playTimeMs,
       l$$__typename,
+      l$version,
+      l$steamBuildId,
+      l$updatedAt,
       Object.hashAll(l$savePaths.map((v) => v)),
       l$savePathSource,
       Object.hashAll(l$savePathOverride.map((v) => v)),
@@ -995,6 +1043,21 @@ class Query$gameById$gameById implements Fragment$fragmentGame {
     if (l$$__typename != lOther$$__typename) {
       return false;
     }
+    final l$version = version;
+    final lOther$version = other.version;
+    if (l$version != lOther$version) {
+      return false;
+    }
+    final l$steamBuildId = steamBuildId;
+    final lOther$steamBuildId = other.steamBuildId;
+    if (l$steamBuildId != lOther$steamBuildId) {
+      return false;
+    }
+    final l$updatedAt = updatedAt;
+    final lOther$updatedAt = other.updatedAt;
+    if (l$updatedAt != lOther$updatedAt) {
+      return false;
+    }
     final l$savePaths = savePaths;
     final lOther$savePaths = other.savePaths;
     if (l$savePaths.length != lOther$savePaths.length) {
@@ -1085,6 +1148,9 @@ abstract class CopyWith$Query$gameById$gameById<TRes> {
     String? lastPlayed,
     double? playTimeMs,
     String? $__typename,
+    String? version,
+    String? steamBuildId,
+    String? updatedAt,
     List<Query$gameById$gameById$savePaths>? savePaths,
     String? savePathSource,
     List<Query$gameById$gameById$savePathOverride>? savePathOverride,
@@ -1168,6 +1234,9 @@ class _CopyWithImpl$Query$gameById$gameById<TRes>
     Object? lastPlayed = _undefined,
     Object? playTimeMs = _undefined,
     Object? $__typename = _undefined,
+    Object? version = _undefined,
+    Object? steamBuildId = _undefined,
+    Object? updatedAt = _undefined,
     Object? savePaths = _undefined,
     Object? savePathSource = _undefined,
     Object? savePathOverride = _undefined,
@@ -1230,6 +1299,13 @@ class _CopyWithImpl$Query$gameById$gameById<TRes>
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
+      version: version == _undefined ? _instance.version : (version as String?),
+      steamBuildId: steamBuildId == _undefined
+          ? _instance.steamBuildId
+          : (steamBuildId as String?),
+      updatedAt: updatedAt == _undefined
+          ? _instance.updatedAt
+          : (updatedAt as String?),
       savePaths: savePaths == _undefined || savePaths == null
           ? _instance.savePaths
           : (savePaths as List<Query$gameById$gameById$savePaths>),
@@ -1380,6 +1456,9 @@ class _CopyWithStubImpl$Query$gameById$gameById<TRes>
     String? lastPlayed,
     double? playTimeMs,
     String? $__typename,
+    String? version,
+    String? steamBuildId,
+    String? updatedAt,
     List<Query$gameById$gameById$savePaths>? savePaths,
     String? savePathSource,
     List<Query$gameById$gameById$savePathOverride>? savePathOverride,

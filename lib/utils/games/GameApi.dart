@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -7,16 +8,22 @@ import 'package:player/utils/WellKnownService.dart';
 
 /// One file of a game as the server lists it (`GET /game/{id}/manifest`).
 class GameManifestFile {
-  const GameManifestFile({required this.path, required this.size, required this.entry});
+  const GameManifestFile({required this.path, required this.size, required this.entry, this.lastModified});
   final String path;
   final int size;
   final bool entry;
+
+  /// ISO instant as the server sent it; part of what tells an update apart.
+  final String? lastModified;
 
   factory GameManifestFile.fromJson(Map<String, dynamic> json) => GameManifestFile(
         path: json['path'] as String,
         size: (json['size'] as num).toInt(),
         entry: json['entry'] == true,
+        lastModified: json['lastModified']?.toString(),
       );
+
+  Map<String, dynamic> toJson() => {'path': path, 'size': size, 'entry': entry, 'lastModified': ?lastModified};
 }
 
 class GameManifest {
@@ -31,6 +38,8 @@ class GameManifest {
     required this.totalBytes,
     required this.files,
     required this.etag,
+    this.version,
+    this.updatedAt,
   });
   final String gameId;
   final String platform;
@@ -42,6 +51,12 @@ class GameManifest {
   final int totalBytes;
   final List<GameManifestFile> files;
   final String? etag;
+
+  /// The server's version of the file set (Steam build id, or a digest of
+  /// the listing); null from a server that predates it. Two manifests with
+  /// different versions differ in at least one file.
+  final String? version;
+  final String? updatedAt;
 
   factory GameManifest.fromJson(Map<String, dynamic> json, {String? etag}) => GameManifest(
         gameId: json['gameId'] as String,
@@ -55,8 +70,25 @@ class GameManifest {
         files: [
           for (final f in json['files'] as List) GameManifestFile.fromJson((f as Map).cast<String, dynamic>())
         ],
-        etag: etag,
+        etag: etag ?? json['etag'] as String?,
+        version: json['version']?.toString(),
+        updatedAt: json['updatedAt']?.toString(),
       );
+
+  Map<String, dynamic> toJson() => {
+        'gameId': gameId,
+        'platform': platform,
+        'form': form,
+        'entryPath': entryPath,
+        'titleId': titleId,
+        'steamAppId': steamAppId,
+        'steamInstallDir': steamInstallDir,
+        'totalBytes': totalBytes,
+        'files': [for (final f in files) f.toJson()],
+        'etag': etag,
+        'version': version,
+        'updatedAt': updatedAt,
+      };
 }
 
 /// A save snapshot on the server.
@@ -237,6 +269,3 @@ class GameApi {
     throw GameApiException(response.statusCode, response.body.isEmpty ? response.reasonPhrase ?? '' : response.body);
   }
 }
-
-// `unawaited` without importing dart:async in callers.
-void unawaited(Future<void> future) {}

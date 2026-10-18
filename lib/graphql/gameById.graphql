@@ -1,6 +1,7 @@
 query gameById($id: ID) {
     gameById(id: $id) {
         ...fragmentGame
+        version steamBuildId updatedAt
         savePaths { path os }
         savePathSource
         savePathOverride { path os }

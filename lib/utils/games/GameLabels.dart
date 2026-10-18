@@ -1,6 +1,8 @@
 import 'package:player/graphql/schema.graphql.dart';
+import 'package:player/utils/download/DownloadHttp.dart';
 
 import '../../l10n/app_localizations.dart';
+import 'GameApi.dart';
 
 /// Display names for the game enums. Platform names are product names and the
 /// same in every language; the forms are described through the localizations.
@@ -44,6 +46,10 @@ class GameLabels {
     }
   }
 
+  /// [platform] by its enum name as the install store keeps it.
+  static String platformName(String name) =>
+      platform(Enum$GamePlatform.values.firstWhere((p) => p.name == name, orElse: () => Enum$GamePlatform.$unknown));
+
   static String form(AppLocalizations loc, Enum$GameForm form) {
     switch (form) {
       case Enum$GameForm.ROM:
@@ -82,5 +88,39 @@ class GameLabels {
     if (minutes < 1) return loc.gamePlayTimeUnderMinute;
     if (minutes < 60) return loc.gamePlayTimeMinutes(minutes);
     return loc.gamePlayTimeHours(minutes ~/ 60, minutes % 60);
+  }
+
+  /// "2 h 15 min" / "12 min" / "40 s" for estimates and elapsed times.
+  static String duration(AppLocalizations loc, Duration d) {
+    if (d.inHours >= 1) return loc.durationHoursMinutes(d.inHours, d.inMinutes % 60);
+    if (d.inMinutes >= 1) return loc.durationMinutes(d.inMinutes);
+    return loc.durationSeconds(d.inSeconds);
+  }
+
+  /// "2026-10-18 14:05" in local time, for save versions and sessions.
+  static String dateTime(DateTime? at) {
+    if (at == null) return '';
+    final date = at.toLocal();
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${date.year}-${two(date.month)}-${two(date.day)} ${two(date.hour)}:${two(date.minute)}';
+  }
+
+  /// A user-facing line for an install error: the short keys the service
+  /// records (`no-space`, `unreachable`, `gone`) and the exceptions that
+  /// surface directly get their own wording; anything else is shown as is.
+  static String installError(AppLocalizations loc, Object error) {
+    final key = switch (error) {
+      DownloadFailure(noSpace: true) => 'no-space',
+      DownloadFailure(transient: true) => 'unreachable',
+      GameApiException(statusCode: 404) => 'gone',
+      GameApiException(isTransient: true) => 'unreachable',
+      _ => error.toString(),
+    };
+    return switch (key) {
+      'no-space' => loc.gameErrorNoSpace,
+      'unreachable' => loc.gameErrorUnreachable,
+      'gone' => loc.gameErrorGone,
+      _ => loc.gameInstallFailed(key),
+    };
   }
 }
