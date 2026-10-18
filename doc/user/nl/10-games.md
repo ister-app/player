@@ -13,20 +13,43 @@ op je computer, in een emulator of als zichzelf — de server bewaart de bestand
 
 Open een game en druk op **Installeren**. De bestanden worden naar de gamesmap van deze computer
 gedownload (`~/Games/Ister` op Linux, `%LOCALAPPDATA%\Ister\Games` op Windows; aan te passen onder
-*Instellingen › Games*). Een onderbroken download gaat verder waar hij stopte. Archieven
-(Windows-zips, Linux-tarbestanden) worden na de download uitgepakt; **Van dit apparaat
-verwijderen** haalt alles weer weg, je saves blijven op de server.
+*Instellingen › Games*). Tijdens het downloaden toont de pagina hoe ver het is, de snelheid en de
+resterende tijd, met **Pauzeren** en **Annuleren**; allebei houden wat al gedownload is, zodat
+**Hervatten** of een latere *Installeren* verdergaat waar het stopte. Games installeren één voor
+één — een tweede wacht in de rij, en de pagina zegt dat. De app afsluiten kost ook geen
+installatie: die gaat verder zodra de app weer start (een gepauzeerde of geannuleerde wacht op jou).
+Archieven (Windows-zips, Linux-tarbestanden) worden na de download uitgepakt; die laatste stap is
+niet te onderbreken.
+
+Een mislukte installatie zegt waarom (geen ruimte meer, server niet bereikbaar, game weg van de
+server) met **Opnieuw proberen** ernaast; **Gedownloade bestanden verwijderen** gooit een halve
+installatie weg. **Van dit apparaat verwijderen** haalt een geïnstalleerde game weg, je saves
+blijven op de server.
+
+Elke game die op deze computer staat, staat ook onder *Instellingen › Downloads*, in een sectie
+**Games** met dezelfde knoppen, naast de gedownloade media.
 
 Een **Steam-game** werkt anders: *In Steam installeren* zet de game in een van je
 Steam-bibliotheekmappen (je kiest welke als er meerdere zijn) en Steam neemt het daarna over — het
 controleert de bestanden bij de eerste start en downloadt zo nodig een update. Steam-games starten
 via Steam, dus je Steam-account moet de game bezitten.
 
+## Updates
+
+Zijn de bestanden van een game op de server veranderd (opnieuw geüpload, een nieuwere build), dan
+toont de gamepagina **Update beschikbaar** met de omvang van wat er veranderde, en **Bijwerken**
+haalt alleen die bestanden op. De game blijft intussen speelbaar. Steam houdt zijn eigen games
+zelf bij, dus een Steam-game meldt alleen dat.
+
 ## Spelen
 
-Druk op **Spelen**. Vóór de game start downloadt de app je nieuwste save van de server; als de
-game stopt, uploadt hij de save als nieuwe versie en registreert hij je speeltijd. Wat er start,
-hangt af van het platform:
+Druk op **Spelen**. De pagina loopt de stappen af terwijl ze gebeuren: je nieuwste save wordt van
+de server gehaald, de game start, en als die stopt wordt de save als nieuwe versie geüpload,
+worden prestaties gelezen en wordt je speeltijd vastgelegd. Een kaart met de uitkomst — hoe lang
+je speelde, welke save-versie omhoog ging, nieuwe prestaties — blijft op de pagina staan tot je
+hem wegklikt. Mislukte een stap richting de server (verbinding weg), dan zegt de kaart dat en biedt
+hij **Synchronisatie opnieuw**; de sessie blijft open tot dat lukt. Wat er start, hangt af van het
+platform:
 
 | Platform | Gestart met | Zelf installeren |
 |---|---|---|
@@ -36,11 +59,15 @@ hangt af van het platform:
 | Steam | **Steam** (`steam://`-link) | Steam, aangemeld met een account dat de game bezit |
 
 De app vindt de emulators zelf (je PATH, de Flatpaks, de gebruikelijke Windows-mappen). Meldt hij
-er een als ontbrekend, installeer die dan of wijs de app ernaar onder *Instellingen › Games*. Mist
-RetroArch de core die een game nodig heeft, dan noemt de melding welke.
+er een als ontbrekend, dan heeft de melding een knop naar *Instellingen › Games*, waar je hem
+installeert of de app ernaar wijst. Mist RetroArch de core die een game nodig heeft, dan noemt de
+melding welke.
 
 Bij een Steam-game kan de app niet zien wanneer je stopt met spelen. Druk daarna op de gamepagina
-op **Ik ben klaar met spelen**; dat synchroniseert je saves en je prestaties.
+op **Ik ben klaar met spelen**; dat synchroniseert je saves en je prestaties. Een sessie die de app
+niet kon afronden — je sloot hem terwijl een game draaide — krijg je de volgende keer op de
+gamepagina aangeboden: **Nu synchroniseren** uploadt de save en legt de tijd vast, **Negeren**
+vergeet hem.
 
 ## Savegames
 
@@ -51,8 +78,10 @@ nieuwste tien. De gamepagina toont ze met het apparaat en het tijdstip waar ze v
 
 Heb je sinds de laatste synchronisatie van dit apparaat op een ander apparaat gespeeld, en is de
 lokale save op dit apparaat ook veranderd, dan vraagt de app vóór het starten met welke je verder
-wilt: *mijn save houden* uploadt de lokale save als nieuwe versie, *die van de server* downloadt
-die van het andere apparaat.
+wilt. De dialoog toont beide kanten — de versie op de server met het apparaat en tijdstip waar ze
+vandaan komt, en wanneer de save op deze computer het laatst veranderde — en wat je ook kiest, de
+andere blijft in de geschiedenis op de server. *Op de server* downloadt de save van het andere
+apparaat, *Op deze computer* uploadt de lokale als nieuwe versie.
 
 Bij pc- en Steam-games komen de save-locaties uit het community-
 [Ludusavi-manifest](https://github.com/mtkennerly/ludusavi-manifest); de gamepagina toont ze
@@ -75,4 +104,4 @@ een ander programma te kiezen, en schakelaars voor save- en prestatiesynchronisa
 ## Verder lezen
 
 - Door een bibliotheek bladeren: [Bladeren](03-browsing.md)
-- Games naar de server uploaden (beheerders): [Beheer](09-admin.md)
+- Games naar de server uploaden (beheerders): [Beheer](09-admin.md#games-uploaden)

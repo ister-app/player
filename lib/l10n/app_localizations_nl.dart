@@ -2549,7 +2549,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get uploadMediaSubtitle =>
-      'Series, albums of boeken aan een library toevoegen';
+      'Series, albums, boeken of games aan een library toevoegen';
 
   @override
   String get uploadIntro =>
@@ -3349,4 +3349,91 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get gameSessionSummary => 'Laatste sessie';
+
+  @override
+  String get uploadGamePlatform => 'Platform';
+
+  @override
+  String uploadGamePlatformHintRom(String extensions) {
+    return 'Een ROM-bestand ($extensions); een .cue heeft zijn .bin-bestanden ernaast nodig.';
+  }
+
+  @override
+  String get uploadGamePlatformHintPs3 =>
+      'De gamemap zoals RPCS3 hem verwacht: hij moet PS3_GAME/PARAM.SFO bevatten.';
+
+  @override
+  String get uploadGamePlatformHintSteam =>
+      'Steams appmanifest_<appid>.acf naast de map steamapps/common/<installdir> van de game.';
+
+  @override
+  String get uploadGamePlatformHintWindows =>
+      'Eén kant-en-klare .zip van de game; die wordt op de speler uitgepakt.';
+
+  @override
+  String get uploadGamePlatformHintLinux =>
+      'Een GOG .sh-installer of een .tar-archief van de game.';
+
+  @override
+  String get uploadGameTitle => 'Titel van de game';
+
+  @override
+  String get uploadGameYear => 'Jaar (optioneel)';
+
+  @override
+  String get uploadGameYearInvalid => 'Vier cijfers, 1950–2100';
+
+  @override
+  String get uploadGameTitleRequired =>
+      'Vul de titel van de game in; die bepaalt de mapnaam waaronder de game gescand wordt.';
+
+  @override
+  String uploadGameFolderPreview(String platform, String folder) {
+    return 'Wordt geüpload als $platform/$folder/';
+  }
+
+  @override
+  String uploadIgnoredGameIncomplete(String detail) {
+    return 'Niet geüpload: $detail. De hele gamemap, inclusief het markeerbestand, moet in één keer worden geüpload.';
+  }
+
+  @override
+  String uploadRootNotGame(String name) {
+    return '$name is geen gamemap: verwacht wordt platform/Titel (jaar)/… met de bestanden van de game erin';
+  }
+
+  @override
+  String uploadRootPlatformFolder(String name) {
+    return '$name is een platformmap: kies het platform hierboven en upload de gamemap zelf';
+  }
+
+  @override
+  String uploadRootGame(String name) {
+    return '$name — gezien als game';
+  }
+
+  @override
+  String get uploadGameLookingUp =>
+      'Wachten tot de bibliotheek de game oppikt…';
+
+  @override
+  String get uploadGameNotYetFound =>
+      'De scan heeft de game nog niet opgenomen; kijk over een minuut in de bibliotheek.';
+
+  @override
+  String uploadGameFound(String title, String platform) {
+    return 'Gevonden in de bibliotheek: $title ($platform)';
+  }
+
+  @override
+  String get uploadGameSavesKnown =>
+      'Save-locaties bekend (Ludusavi): saves worden tussen apparaten gesynchroniseerd.';
+
+  @override
+  String get uploadGameSavesAdmin =>
+      'Save-locaties ingesteld door een beheerder.';
+
+  @override
+  String get uploadGameSavesUnknown =>
+      'Nog geen save-locaties bekend: saves worden niet gesynchroniseerd tot een beheerder ze op de gamepagina instelt.';
 }

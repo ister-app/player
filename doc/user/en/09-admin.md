@@ -47,6 +47,39 @@ Admins always see every library, regardless of these switches.
 
 Every finished file is added to the library right away; there is no need to scan afterwards. If the app is closed mid-upload, the page offers to continue the next time you open it — choose the same folder again and it picks up where it stopped.
 
+## Uploading games
+
+A **game library** takes its games through the same upload page, with a guided target instead of
+the free *Inside folder* field, because the scanner expects every game as
+`<platform>/<Title (year)>/…`:
+
+1. Pick the game library and its directory. The *Inside folder* field becomes a **Platform**
+   list (the folders the server knows: `ps3`, `steam`, `snes`, …); under it the page says what a
+   game of that platform must consist of.
+2. **Choose folder…** and pick the game's folder. Its name is split into **Game title** and
+   **Year**, which you can correct; the line under them shows where it lands
+   (`ps3/Demon's Souls (2009)/`). A game is always one folder, so there is no *Upload as one
+   folder* switch here.
+3. Read the **preview**. What the server needs per platform:
+   - a ROM: the launchable file (`.cue`/`.chd`, `.z64`, `.gba`, …) with its companions (the `.bin`
+     files of a `.cue`) next to it;
+   - a PlayStation 3 game: the folder as RPCS3 expects it, with `PS3_GAME/PARAM.SFO` inside;
+   - a Steam game: Steam's `appmanifest_<appid>.acf` next to the game's `steamapps/common/<installdir>`
+     folder;
+   - a Windows game: one ready-to-run `.zip`; a Linux game: a GOG `.sh` installer or a `.tar`
+     archive.
+   A PS3 or Steam folder whose marker file is missing is shown as *Not uploaded* with the reason:
+   the whole game folder, marker included, has to go up in one session, and the server only scans
+   it once that session finished.
+4. **Start upload.** When it is done the page waits for the scan to list the game and then shows
+   **Found in the library** with a button to its page, plus — for PC and Steam games — whether its
+   save locations are known (from the Ludusavi manifest or set by an administrator) or still have
+   to be set before saves sync. If the scan has not listed the game within two minutes, the page
+   says so; check the library a little later.
+
+The folder layout, the platform folder names and the per-platform rules are described in the
+server's naming conventions. Playing, saves and achievements from the user's side: [Games](10-games.md).
+
 ## Podcasts
 
 Managing which podcasts the server carries is an admin task. In a podcast library, **Add podcast** subscribes the server to a new feed, and **Unsubscribe** on a podcast's page removes it. Ordinary users can browse, download and play episodes, but never see these controls.

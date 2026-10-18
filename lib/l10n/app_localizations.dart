@@ -4289,7 +4289,7 @@ abstract class AppLocalizations {
   /// Admin media upload page
   ///
   /// In en, this message translates to:
-  /// **'Add shows, albums or books to a library'**
+  /// **'Add shows, albums, books or games to a library'**
   String get uploadMediaSubtitle;
 
   /// Admin media upload page
@@ -5509,6 +5509,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Last session'**
   String get gameSessionSummary;
+
+  /// Game upload: which platform folder the game goes under
+  ///
+  /// In en, this message translates to:
+  /// **'Platform'**
+  String get uploadGamePlatform;
+
+  /// Game upload: what a ROM platform expects
+  ///
+  /// In en, this message translates to:
+  /// **'A ROM file ({extensions}); a .cue needs its .bin files next to it.'**
+  String uploadGamePlatformHintRom(String extensions);
+
+  /// Game upload: what the PS3 platform expects
+  ///
+  /// In en, this message translates to:
+  /// **'The game folder as RPCS3 expects it: it must contain PS3_GAME/PARAM.SFO.'**
+  String get uploadGamePlatformHintPs3;
+
+  /// Game upload: what the Steam platform expects
+  ///
+  /// In en, this message translates to:
+  /// **'Steam\'s appmanifest_<appid>.acf next to the steamapps/common/<installdir> folder of the game.'**
+  String get uploadGamePlatformHintSteam;
+
+  /// Game upload: what the Windows platform expects
+  ///
+  /// In en, this message translates to:
+  /// **'One ready-to-run .zip of the game; it is unpacked on the player.'**
+  String get uploadGamePlatformHintWindows;
+
+  /// Game upload: what the Linux platform expects
+  ///
+  /// In en, this message translates to:
+  /// **'A GOG .sh installer or a .tar archive of the game.'**
+  String get uploadGamePlatformHintLinux;
+
+  /// Game upload: title field
+  ///
+  /// In en, this message translates to:
+  /// **'Game title'**
+  String get uploadGameTitle;
+
+  /// Game upload: year field
+  ///
+  /// In en, this message translates to:
+  /// **'Year (optional)'**
+  String get uploadGameYear;
+
+  /// Game upload: year field error
+  ///
+  /// In en, this message translates to:
+  /// **'Four digits, 1950–2100'**
+  String get uploadGameYearInvalid;
+
+  /// Game upload: title missing
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the game\'s title; it names the folder the game is scanned as.'**
+  String get uploadGameTitleRequired;
+
+  /// Game upload: where the folder lands
+  ///
+  /// In en, this message translates to:
+  /// **'Uploads as {platform}/{folder}/'**
+  String uploadGameFolderPreview(String platform, String folder);
+
+  /// Upload preview: a game tree without its marker
+  ///
+  /// In en, this message translates to:
+  /// **'Not uploaded: {detail}. The whole game folder, including its marker file, must be uploaded in one go.'**
+  String uploadIgnoredGameIncomplete(String detail);
+
+  /// Upload preview: root folder not recognised in a game library
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is not a game folder: expected platform/Title (year)/… with the game\'s files inside'**
+  String uploadRootNotGame(String name);
+
+  /// Upload preview: root folder is a platform folder
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is a platform folder: pick the platform above and upload the game folder itself'**
+  String uploadRootPlatformFolder(String name);
+
+  /// Upload preview: root folder recognised as a game
+  ///
+  /// In en, this message translates to:
+  /// **'{name} — seen as a game'**
+  String uploadRootGame(String name);
+
+  /// After a game upload: polling
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the library to pick the game up…'**
+  String get uploadGameLookingUp;
+
+  /// After a game upload: not found in time
+  ///
+  /// In en, this message translates to:
+  /// **'The scan has not listed the game yet; check the library in a minute.'**
+  String get uploadGameNotYetFound;
+
+  /// After a game upload: the game is listed
+  ///
+  /// In en, this message translates to:
+  /// **'Found in the library: {title} ({platform})'**
+  String uploadGameFound(String title, String platform);
+
+  /// After a game upload: save paths from the manifest
+  ///
+  /// In en, this message translates to:
+  /// **'Save locations known (Ludusavi): saves sync between devices.'**
+  String get uploadGameSavesKnown;
+
+  /// After a game upload: admin save paths
+  ///
+  /// In en, this message translates to:
+  /// **'Save locations set by an administrator.'**
+  String get uploadGameSavesAdmin;
+
+  /// After a game upload: no save paths
+  ///
+  /// In en, this message translates to:
+  /// **'No save locations known yet: saves are not synced until an administrator sets them on the game page.'**
+  String get uploadGameSavesUnknown;
 }
 
 class _AppLocalizationsDelegate

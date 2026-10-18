@@ -13,8 +13,9 @@
 import 'dart:async' as _i50;
 
 import 'package:auto_route/auto_route.dart' as _i47;
-import 'package:flutter/foundation.dart' as _i52;
+import 'package:flutter/foundation.dart' as _i54;
 import 'package:material_ui/material_ui.dart' as _i48;
+import 'package:player/components/upload/GameUploadTarget.dart' as _i52;
 import 'package:player/pages/AddServerPage.dart' as _i1;
 import 'package:player/pages/AdminLibrariesPage.dart' as _i2;
 import 'package:player/pages/AdminUploadPage.dart' as _i3;
@@ -61,6 +62,7 @@ import 'package:player/pages/ShowHomePage.dart' as _i43;
 import 'package:player/pages/ShowOverviewContentPage.dart' as _i44;
 import 'package:player/pages/ShowOverviewPage.dart' as _i45;
 import 'package:player/pages/SleepTimerSettingsPage.dart' as _i46;
+import 'package:player/utils/upload/GameFoundProbe.dart' as _i53;
 import 'package:player/utils/upload/UploadApi.dart' as _i49;
 import 'package:player/utils/upload/UploadSource.dart' as _i51;
 
@@ -168,10 +170,22 @@ class AdminUploadRoute extends _i47.PageRouteInfo<AdminUploadRouteArgs> {
     _i48.Key? key,
     _i49.UploadApi? api,
     _i50.Future<_i51.UploadSourceFolder?> Function()? pickFolder,
+    _i50.Future<List<_i52.GamePlatformOption>> Function()? loadPlatforms,
+    _i53.GameLookup? findGame,
+    Duration gameProbeInterval = const Duration(seconds: 5),
+    Duration gameProbePatience = const Duration(minutes: 2),
     List<_i47.PageRouteInfo>? children,
   }) : super(
          AdminUploadRoute.name,
-         args: AdminUploadRouteArgs(key: key, api: api, pickFolder: pickFolder),
+         args: AdminUploadRouteArgs(
+           key: key,
+           api: api,
+           pickFolder: pickFolder,
+           loadPlatforms: loadPlatforms,
+           findGame: findGame,
+           gameProbeInterval: gameProbeInterval,
+           gameProbePatience: gameProbePatience,
+         ),
          initialChildren: children,
        );
 
@@ -189,13 +203,25 @@ class AdminUploadRoute extends _i47.PageRouteInfo<AdminUploadRouteArgs> {
         serverName: pathParams.getString('serverName'),
         api: args.api,
         pickFolder: args.pickFolder,
+        loadPlatforms: args.loadPlatforms,
+        findGame: args.findGame,
+        gameProbeInterval: args.gameProbeInterval,
+        gameProbePatience: args.gameProbePatience,
       );
     },
   );
 }
 
 class AdminUploadRouteArgs {
-  const AdminUploadRouteArgs({this.key, this.api, this.pickFolder});
+  const AdminUploadRouteArgs({
+    this.key,
+    this.api,
+    this.pickFolder,
+    this.loadPlatforms,
+    this.findGame,
+    this.gameProbeInterval = const Duration(seconds: 5),
+    this.gameProbePatience = const Duration(minutes: 2),
+  });
 
   final _i48.Key? key;
 
@@ -203,20 +229,37 @@ class AdminUploadRouteArgs {
 
   final _i50.Future<_i51.UploadSourceFolder?> Function()? pickFolder;
 
+  final _i50.Future<List<_i52.GamePlatformOption>> Function()? loadPlatforms;
+
+  final _i53.GameLookup? findGame;
+
+  final Duration gameProbeInterval;
+
+  final Duration gameProbePatience;
+
   @override
   String toString() {
-    return 'AdminUploadRouteArgs{key: $key, api: $api, pickFolder: $pickFolder}';
+    return 'AdminUploadRouteArgs{key: $key, api: $api, pickFolder: $pickFolder, loadPlatforms: $loadPlatforms, findGame: $findGame, gameProbeInterval: $gameProbeInterval, gameProbePatience: $gameProbePatience}';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! AdminUploadRouteArgs) return false;
-    return key == other.key && api == other.api;
+    return key == other.key &&
+        api == other.api &&
+        findGame == other.findGame &&
+        gameProbeInterval == other.gameProbeInterval &&
+        gameProbePatience == other.gameProbePatience;
   }
 
   @override
-  int get hashCode => key.hashCode ^ api.hashCode;
+  int get hashCode =>
+      key.hashCode ^
+      api.hashCode ^
+      findGame.hashCode ^
+      gameProbeInterval.hashCode ^
+      gameProbePatience.hashCode;
 }
 
 /// generated route for
@@ -585,7 +628,7 @@ class CastListRouteArgs {
 /// [_i9.ComicReaderPage]
 class ComicReaderRoute extends _i47.PageRouteInfo<ComicReaderRouteArgs> {
   ComicReaderRoute({
-    _i52.Key? key,
+    _i54.Key? key,
     required String bookId,
     required String mediaFileId,
     String? nodeUrl,
@@ -656,7 +699,7 @@ class ComicReaderRouteArgs {
     this.page,
   });
 
-  final _i52.Key? key;
+  final _i54.Key? key;
 
   final String bookId;
 
@@ -1659,7 +1702,7 @@ class PodcastRouteArgs {
 /// [_i24.ReaderPage]
 class ReaderRoute extends _i47.PageRouteInfo<ReaderRouteArgs> {
   ReaderRoute({
-    _i52.Key? key,
+    _i54.Key? key,
     required String bookId,
     required String mediaFileId,
     String? nodeUrl,
@@ -1730,7 +1773,7 @@ class ReaderRouteArgs {
     this.readAloud = false,
   });
 
-  final _i52.Key? key;
+  final _i54.Key? key;
 
   final String bookId;
 
@@ -2631,7 +2674,7 @@ class ServerSettingsLanguageRouteArgs {
 /// generated route for
 /// [_i39.ServerSettingsPage]
 class ServerSettingsRoute extends _i47.PageRouteInfo<ServerSettingsRouteArgs> {
-  ServerSettingsRoute({_i52.Key? key, List<_i47.PageRouteInfo>? children})
+  ServerSettingsRoute({_i54.Key? key, List<_i47.PageRouteInfo>? children})
     : super(
         ServerSettingsRoute.name,
         args: ServerSettingsRouteArgs(key: key),
@@ -2658,7 +2701,7 @@ class ServerSettingsRoute extends _i47.PageRouteInfo<ServerSettingsRouteArgs> {
 class ServerSettingsRouteArgs {
   const ServerSettingsRouteArgs({this.key});
 
-  final _i52.Key? key;
+  final _i54.Key? key;
 
   @override
   String toString() {
@@ -2681,7 +2724,7 @@ class ServerSettingsRouteArgs {
 class ServerSettingsPlaybackRoute
     extends _i47.PageRouteInfo<ServerSettingsPlaybackRouteArgs> {
   ServerSettingsPlaybackRoute({
-    _i52.Key? key,
+    _i54.Key? key,
     List<_i47.PageRouteInfo>? children,
   }) : super(
          ServerSettingsPlaybackRoute.name,
@@ -2709,7 +2752,7 @@ class ServerSettingsPlaybackRoute
 class ServerSettingsPlaybackRouteArgs {
   const ServerSettingsPlaybackRouteArgs({this.key});
 
-  final _i52.Key? key;
+  final _i54.Key? key;
 
   @override
   String toString() {

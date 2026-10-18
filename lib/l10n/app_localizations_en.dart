@@ -2537,7 +2537,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get uploadMedia => 'Upload media';
 
   @override
-  String get uploadMediaSubtitle => 'Add shows, albums or books to a library';
+  String get uploadMediaSubtitle =>
+      'Add shows, albums, books or games to a library';
 
   @override
   String get uploadIntro =>
@@ -3335,4 +3336,90 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gameSessionSummary => 'Last session';
+
+  @override
+  String get uploadGamePlatform => 'Platform';
+
+  @override
+  String uploadGamePlatformHintRom(String extensions) {
+    return 'A ROM file ($extensions); a .cue needs its .bin files next to it.';
+  }
+
+  @override
+  String get uploadGamePlatformHintPs3 =>
+      'The game folder as RPCS3 expects it: it must contain PS3_GAME/PARAM.SFO.';
+
+  @override
+  String get uploadGamePlatformHintSteam =>
+      'Steam\'s appmanifest_<appid>.acf next to the steamapps/common/<installdir> folder of the game.';
+
+  @override
+  String get uploadGamePlatformHintWindows =>
+      'One ready-to-run .zip of the game; it is unpacked on the player.';
+
+  @override
+  String get uploadGamePlatformHintLinux =>
+      'A GOG .sh installer or a .tar archive of the game.';
+
+  @override
+  String get uploadGameTitle => 'Game title';
+
+  @override
+  String get uploadGameYear => 'Year (optional)';
+
+  @override
+  String get uploadGameYearInvalid => 'Four digits, 1950–2100';
+
+  @override
+  String get uploadGameTitleRequired =>
+      'Enter the game\'s title; it names the folder the game is scanned as.';
+
+  @override
+  String uploadGameFolderPreview(String platform, String folder) {
+    return 'Uploads as $platform/$folder/';
+  }
+
+  @override
+  String uploadIgnoredGameIncomplete(String detail) {
+    return 'Not uploaded: $detail. The whole game folder, including its marker file, must be uploaded in one go.';
+  }
+
+  @override
+  String uploadRootNotGame(String name) {
+    return '$name is not a game folder: expected platform/Title (year)/… with the game\'s files inside';
+  }
+
+  @override
+  String uploadRootPlatformFolder(String name) {
+    return '$name is a platform folder: pick the platform above and upload the game folder itself';
+  }
+
+  @override
+  String uploadRootGame(String name) {
+    return '$name — seen as a game';
+  }
+
+  @override
+  String get uploadGameLookingUp =>
+      'Waiting for the library to pick the game up…';
+
+  @override
+  String get uploadGameNotYetFound =>
+      'The scan has not listed the game yet; check the library in a minute.';
+
+  @override
+  String uploadGameFound(String title, String platform) {
+    return 'Found in the library: $title ($platform)';
+  }
+
+  @override
+  String get uploadGameSavesKnown =>
+      'Save locations known (Ludusavi): saves sync between devices.';
+
+  @override
+  String get uploadGameSavesAdmin => 'Save locations set by an administrator.';
+
+  @override
+  String get uploadGameSavesUnknown =>
+      'No save locations known yet: saves are not synced until an administrator sets them on the game page.';
 }

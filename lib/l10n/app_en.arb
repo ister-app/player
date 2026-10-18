@@ -2661,7 +2661,7 @@
   "@uploadMedia": {
     "description": "Admin media upload page"
   },
-  "uploadMediaSubtitle": "Add shows, albums or books to a library",
+  "uploadMediaSubtitle": "Add shows, albums, books or games to a library",
   "@uploadMediaSubtitle": {
     "description": "Admin media upload page"
   },
@@ -3734,5 +3734,130 @@
   "gameSessionSummary": "Last session",
   "@gameSessionSummary": {
       "description": "Session summary card title"
+  },
+  "uploadGamePlatform": "Platform",
+  "@uploadGamePlatform": {
+      "description": "Game upload: which platform folder the game goes under"
+  },
+  "uploadGamePlatformHintRom": "A ROM file ({extensions}); a .cue needs its .bin files next to it.",
+  "@uploadGamePlatformHintRom": {
+      "description": "Game upload: what a ROM platform expects",
+      "placeholders": {
+          "extensions": {
+              "type": "String"
+          }
+      }
+  },
+  "uploadGamePlatformHintPs3": "The game folder as RPCS3 expects it: it must contain PS3_GAME/PARAM.SFO.",
+  "@uploadGamePlatformHintPs3": {
+      "description": "Game upload: what the PS3 platform expects"
+  },
+  "uploadGamePlatformHintSteam": "Steam's appmanifest_<appid>.acf next to the steamapps/common/<installdir> folder of the game.",
+  "@uploadGamePlatformHintSteam": {
+      "description": "Game upload: what the Steam platform expects"
+  },
+  "uploadGamePlatformHintWindows": "One ready-to-run .zip of the game; it is unpacked on the player.",
+  "@uploadGamePlatformHintWindows": {
+      "description": "Game upload: what the Windows platform expects"
+  },
+  "uploadGamePlatformHintLinux": "A GOG .sh installer or a .tar archive of the game.",
+  "@uploadGamePlatformHintLinux": {
+      "description": "Game upload: what the Linux platform expects"
+  },
+  "uploadGameTitle": "Game title",
+  "@uploadGameTitle": {
+      "description": "Game upload: title field"
+  },
+  "uploadGameYear": "Year (optional)",
+  "@uploadGameYear": {
+      "description": "Game upload: year field"
+  },
+  "uploadGameYearInvalid": "Four digits, 1950–2100",
+  "@uploadGameYearInvalid": {
+      "description": "Game upload: year field error"
+  },
+  "uploadGameTitleRequired": "Enter the game's title; it names the folder the game is scanned as.",
+  "@uploadGameTitleRequired": {
+      "description": "Game upload: title missing"
+  },
+  "uploadGameFolderPreview": "Uploads as {platform}/{folder}/",
+  "@uploadGameFolderPreview": {
+      "description": "Game upload: where the folder lands",
+      "placeholders": {
+          "platform": {
+              "type": "String"
+          },
+          "folder": {
+              "type": "String"
+          }
+      }
+  },
+  "uploadIgnoredGameIncomplete": "Not uploaded: {detail}. The whole game folder, including its marker file, must be uploaded in one go.",
+  "@uploadIgnoredGameIncomplete": {
+      "description": "Upload preview: a game tree without its marker",
+      "placeholders": {
+          "detail": {
+              "type": "String"
+          }
+      }
+  },
+  "uploadRootNotGame": "{name} is not a game folder: expected platform/Title (year)/… with the game's files inside",
+  "@uploadRootNotGame": {
+      "description": "Upload preview: root folder not recognised in a game library",
+      "placeholders": {
+          "name": {
+              "type": "String"
+          }
+      }
+  },
+  "uploadRootPlatformFolder": "{name} is a platform folder: pick the platform above and upload the game folder itself",
+  "@uploadRootPlatformFolder": {
+      "description": "Upload preview: root folder is a platform folder",
+      "placeholders": {
+          "name": {
+              "type": "String"
+          }
+      }
+  },
+  "uploadRootGame": "{name} — seen as a game",
+  "@uploadRootGame": {
+      "description": "Upload preview: root folder recognised as a game",
+      "placeholders": {
+          "name": {
+              "type": "String"
+          }
+      }
+  },
+  "uploadGameLookingUp": "Waiting for the library to pick the game up…",
+  "@uploadGameLookingUp": {
+      "description": "After a game upload: polling"
+  },
+  "uploadGameNotYetFound": "The scan has not listed the game yet; check the library in a minute.",
+  "@uploadGameNotYetFound": {
+      "description": "After a game upload: not found in time"
+  },
+  "uploadGameFound": "Found in the library: {title} ({platform})",
+  "@uploadGameFound": {
+      "description": "After a game upload: the game is listed",
+      "placeholders": {
+          "title": {
+              "type": "String"
+          },
+          "platform": {
+              "type": "String"
+          }
+      }
+  },
+  "uploadGameSavesKnown": "Save locations known (Ludusavi): saves sync between devices.",
+  "@uploadGameSavesKnown": {
+      "description": "After a game upload: save paths from the manifest"
+  },
+  "uploadGameSavesAdmin": "Save locations set by an administrator.",
+  "@uploadGameSavesAdmin": {
+      "description": "After a game upload: admin save paths"
+  },
+  "uploadGameSavesUnknown": "No save locations known yet: saves are not synced until an administrator sets them on the game page.",
+  "@uploadGameSavesUnknown": {
+      "description": "After a game upload: no save paths"
   }
 }

@@ -6,10 +6,15 @@ import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../components/SettingsSection.dart';
+import '../components/upload/GameUploadTarget.dart';
 import '../l10n/app_localizations.dart';
+import '../routes/AppRouter.gr.dart';
 import '../utils/LoggerService.dart';
 import '../utils/ScreenWakelock.dart';
 import '../utils/WellKnownService.dart';
+import '../utils/games/GameLabels.dart';
+import '../utils/upload/GameFoundProbe.dart';
+import '../utils/upload/GameUploadNaming.dart';
 import '../utils/upload/UploadApi.dart';
 import '../utils/upload/UploadModels.dart';
 import '../utils/upload/UploadRunner.dart';
@@ -24,6 +29,12 @@ import 'DownloadsPage.dart' show formatBytes;
 /// The server decides everything that matters (where a file lands, whether
 /// the scanner picks it up, whether it exists); this page only shows it and
 /// moves the bytes.
+///
+/// A GAME library gets a guided target: the platform folder from the
+/// server's platform table instead of a free text field, the game folder
+/// composed as `Title (year)`, the marker-file verdicts explained, and after
+/// the upload a look-up of the game in the library (with whether its saves
+/// will sync).
 @RoutePage()
 class AdminUploadPage extends StatefulWidget {
   final String serverName;
@@ -31,12 +42,20 @@ class AdminUploadPage extends StatefulWidget {
   /// Test seams.
   final UploadApi? api;
   final Future<UploadSourceFolder?> Function()? pickFolder;
+  final Future<List<GamePlatformOption>> Function()? loadPlatforms;
+  final GameLookup? findGame;
+  final Duration gameProbeInterval;
+  final Duration gameProbePatience;
 
   const AdminUploadPage({
     super.key,
     @PathParam.inherit('serverName') required this.serverName,
     this.api,
     this.pickFolder,
+    this.loadPlatforms,
+    this.findGame,
+    this.gameProbeInterval = const Duration(seconds: 5),
+    this.gameProbePatience = const Duration(minutes: 2),
   });
 
   @override
@@ -48,7 +67,21 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
   final SharedPreferencesAsync _prefs = SharedPreferencesAsync();
   final _targetParent = TextEditingController();
   final _rootName = TextEditingController();
+  final _gameTitle = TextEditingController();
+  final _gameYear = TextEditingController();
   Timer? _previewDebounce;
+
+  /// Game libraries: the server's platform table and the picked platform.
+  List<GamePlatformOption>? _platforms;
+  GamePlatformOption? _platform;
+  bool _platformsLoading = false;
+  String? _platformsError;
+
+  /// After a finished game upload: the look-up of the game in the library.
+  bool _gameProbing = false;
+  FoundGame? _gameFound;
+  bool _gameProbeTimedOut = false;
+  int _gameProbeGeneration = 0;
 
   List<UploadDirectory>? _directories;
   Object? _loadError;
@@ -97,8 +130,13 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
     _wakelock?.release();
     _targetParent.dispose();
     _rootName.dispose();
+    _gameTitle.dispose();
+    _gameYear.dispose();
+    _gameProbeGeneration++;
     super.dispose();
   }
+
+  bool get _isGameLibrary => _directory?.libraryType == 'GAME';
 
   Future<void> _load() async {
     try {
@@ -153,7 +191,54 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
     _libraryId = libraryId;
     final candidates = (_directories ?? []).where((d) => d.libraryId == libraryId && d.writable).toList();
     _directory = candidates.length == 1 ? candidates.first : null;
+    _onDirectoryChanged();
+  }
+
+  /// A game library gets its platform table; another kind drops it.
+  void _onDirectoryChanged() {
+    if (_isGameLibrary) {
+      _keepFolder = true;
+      if (_platforms == null && !_platformsLoading) unawaited(_loadPlatforms());
+      _targetParent.text = _platform?.folder ?? '';
+      _syncGameRootName();
+    }
     _schedulePreview();
+  }
+
+  Future<void> _loadPlatforms() async {
+    setState(() {
+      _platformsLoading = true;
+      _platformsError = null;
+    });
+    try {
+      final platforms = await (widget.loadPlatforms ?? () => GamePlatformOption.load(widget.serverName))();
+      if (!mounted) return;
+      setState(() {
+        _platforms = platforms;
+        _platformsLoading = false;
+      });
+    } catch (e) {
+      LoggerService().logger.w('Game platforms failed: $e');
+      if (mounted) {
+        setState(() {
+          _platformsLoading = false;
+          _platformsError = e.toString();
+        });
+      }
+    }
+  }
+
+  void _selectPlatform(GamePlatformOption? platform) {
+    setState(() {
+      _platform = platform;
+      _targetParent.text = platform?.folder ?? '';
+    });
+    _schedulePreview();
+  }
+
+  /// The game folder is `Title (year)` from the two fields.
+  void _syncGameRootName() {
+    _rootName.text = GameUploadNaming.compose(_gameTitle.text, _gameYear.text);
   }
 
   // ---- preview ----------------------------------------------------------------------------------
@@ -208,6 +293,12 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
     setState(() {
       _folder = folder;
       _rootName.text = folder.name;
+      if (_isGameLibrary) {
+        final parsed = GameUploadNaming.parse(folder.name);
+        _gameTitle.text = parsed.title;
+        _gameYear.text = parsed.year ?? '';
+        _syncGameRootName();
+      }
     });
     _runPreview();
   }
@@ -267,7 +358,10 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
   void _onRunnerChanged() {
     if (!mounted) return;
     final runner = _runner;
-    if (runner != null && runner.isFinished && runner.failedCount == 0) _forget();
+    if (runner != null && runner.isFinished && runner.failedCount == 0) {
+      _forget();
+      if (_isGameLibrary && !_gameProbing && _gameFound == null && !_gameProbeTimedOut) unawaited(_probeGame());
+    }
     if (runner != null && runner.isRunning) {
       _wakelock ??= ScreenWakelock.acquire();
       _throughput?.sample(runner.sentBytes, DateTime.now());
@@ -326,16 +420,50 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
     await _forget();
   }
 
+  /// Looks the uploaded game up until the scanner lists it. The title is
+  /// the folder's title without the year, which is what the scanner names
+  /// the game after.
+  Future<void> _probeGame() async {
+    final libraryId = _directory?.libraryId;
+    if (libraryId == null) return;
+    final title = _gameTitle.text.trim().isEmpty ? GameUploadNaming.parse(_rootName.text).title : _gameTitle.text.trim();
+    if (title.isEmpty) return;
+    final generation = ++_gameProbeGeneration;
+    setState(() {
+      _gameProbing = true;
+      _gameFound = null;
+      _gameProbeTimedOut = false;
+    });
+    final probe = GameFoundProbe(
+      lookup: widget.findGame ?? GameFoundProbe.graphQL(widget.serverName),
+      interval: widget.gameProbeInterval,
+      patience: widget.gameProbePatience,
+    );
+    final found = await probe.run(libraryId, title, cancelled: () => generation != _gameProbeGeneration);
+    if (!mounted || generation != _gameProbeGeneration) return;
+    setState(() {
+      _gameProbing = false;
+      _gameFound = found;
+      _gameProbeTimedOut = found == null;
+    });
+  }
+
   void _reset() {
     _runner?.removeListener(_onRunnerChanged);
     _ticker?.cancel();
     _ticker = null;
+    _gameProbeGeneration++;
     setState(() {
       _runner = null;
       _throughput = null;
       _folder = null;
       _preview = null;
       _rootName.clear();
+      _gameTitle.clear();
+      _gameYear.clear();
+      _gameProbing = false;
+      _gameFound = null;
+      _gameProbeTimedOut = false;
     });
     _load();
   }
@@ -416,7 +544,7 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
           groupValue: _directory?.id,
           onChanged: (id) => setState(() {
             _directory = directories.firstWhere((d) => d.id == id);
-            _schedulePreview();
+            _onDirectoryChanged();
           }),
           child: Column(children: [
             for (final d in directories)
@@ -433,7 +561,15 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
               ),
           ]),
         ),
-      if (_directory != null)
+      if (_directory != null && _isGameLibrary)
+        GameUploadTarget(
+          platforms: _platforms ?? const [],
+          selected: _platform,
+          loading: _platformsLoading,
+          error: _platformsError,
+          onChanged: _selectPlatform,
+        )
+      else if (_directory != null)
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
           child: TextField(
@@ -459,7 +595,8 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
         enabled: _directory != null,
         onTap: _pickFolder,
       ),
-      if (folder != null) ...[
+      if (folder != null && _isGameLibrary) _gameNameFields(loc),
+      if (folder != null && !_isGameLibrary) ...[
         SwitchListTile(
           key: const ValueKey('upload-keep-folder'),
           title: Text(loc.uploadKeepFolder),
@@ -480,6 +617,8 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
               onChanged: (_) => _schedulePreview(),
             ),
           ),
+      ],
+      if (folder != null) ...[
         SwitchListTile(
           key: const ValueKey('upload-overwrite'),
           title: Text(loc.uploadOverwrite),
@@ -492,6 +631,63 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
         ),
       ],
     ]);
+  }
+
+  /// A game is one folder named `Title (year)`: two fields compose it, and
+  /// the line under them shows where it lands.
+  Widget _gameNameFields(AppLocalizations loc) {
+    final theme = Theme.of(context);
+    final yearOk = GameUploadNaming.isValidYear(_gameYear.text);
+    final folder = GameUploadNaming.compose(_gameTitle.text, _gameYear.text);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 3,
+                child: TextField(
+                  key: const ValueKey('upload-game-title'),
+                  controller: _gameTitle,
+                  decoration: InputDecoration(labelText: loc.uploadGameTitle),
+                  onChanged: (_) => setState(() {
+                    _syncGameRootName();
+                    _schedulePreview();
+                  }),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  key: const ValueKey('upload-game-year'),
+                  controller: _gameYear,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: loc.uploadGameYear,
+                    errorText: yearOk ? null : loc.uploadGameYearInvalid,
+                  ),
+                  onChanged: (_) => setState(() {
+                    _syncGameRootName();
+                    _schedulePreview();
+                  }),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            folder.isEmpty
+                ? loc.uploadGameTitleRequired
+                : loc.uploadGameFolderPreview(_platform?.folder ?? '?', folder),
+            key: const ValueKey('upload-game-folder-preview'),
+            style: theme.textTheme.bodySmall?.copyWith(color: folder.isEmpty ? theme.colorScheme.error : null),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _previewCard(AppLocalizations loc) {
@@ -511,15 +707,7 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       SettingsSectionLabel(loc.uploadPreviewTitle),
       SettingsCard(children: [
-        for (final root in preview.roots)
-          ListTile(
-            dense: true,
-            leading: Icon(root.level == 'NONE' ? Icons.warning_amber_outlined : Icons.folder_outlined,
-                color: root.level == 'NONE' ? theme.colorScheme.error : null),
-            title: Text(root.level == 'NONE'
-                ? loc.uploadRootLevelNone(root.name)
-                : loc.uploadRootLevel(root.name, root.level)),
-          ),
+        for (final root in preview.roots) _rootTile(loc, theme, root),
         ListTile(
           key: const ValueKey('upload-preview-summary'),
           title: Text(preview.uploadFiles == 0
@@ -546,6 +734,23 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
     ]);
   }
 
+  Widget _rootTile(AppLocalizations loc, ThemeData theme, UploadPreviewRoot root) {
+    final game = _isGameLibrary;
+    final warn = root.level == 'NONE' || (game && root.level == 'GAME_PLATFORM');
+    final text = switch (root.level) {
+      'NONE' when game => loc.uploadRootNotGame(root.name),
+      'NONE' => loc.uploadRootLevelNone(root.name),
+      'GAME_PLATFORM' => loc.uploadRootPlatformFolder(root.name),
+      'GAME' => loc.uploadRootGame(root.name),
+      _ => loc.uploadRootLevel(root.name, root.level),
+    };
+    return ListTile(
+      dense: true,
+      leading: Icon(warn ? Icons.warning_amber_outlined : Icons.folder_outlined, color: warn ? theme.colorScheme.error : null),
+      title: Text(text),
+    );
+  }
+
   bool _willUpload(UploadPreviewEntry entry) =>
       entry.status == UploadPreviewStatus.recognised || (entry.status == UploadPreviewStatus.exists && _overwrite);
 
@@ -561,10 +766,12 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
       UploadPreviewStatus.ignored => (Icons.block, theme.disabledColor, loc.uploadStatusIgnored),
     };
     final detail = switch (entry.status) {
-      UploadPreviewStatus.recognised || UploadPreviewStatus.exists => entry.recognition?.summary() ?? '',
-      UploadPreviewStatus.ignored => entry.ignoreReason == 'FOLDER_NOT_SCANNED'
-          ? loc.uploadIgnoredFolder(entry.detail ?? '')
-          : loc.uploadIgnoredUnsupported,
+      UploadPreviewStatus.recognised || UploadPreviewStatus.exists => _recognitionLine(loc, entry.recognition),
+      UploadPreviewStatus.ignored => switch (entry.ignoreReason) {
+          'FOLDER_NOT_SCANNED' => loc.uploadIgnoredFolder(entry.detail ?? ''),
+          'GAME_INCOMPLETE' => loc.uploadIgnoredGameIncomplete(entry.detail ?? ''),
+          _ => loc.uploadIgnoredUnsupported,
+        },
       UploadPreviewStatus.invalid => entry.detail ?? '',
       _ => '',
     };
@@ -575,6 +782,60 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
       subtitle: Text(detail.isEmpty ? label : '$label · $detail', maxLines: 2, overflow: TextOverflow.ellipsis),
       trailing: Text(formatBytes(entry.size), style: theme.textTheme.bodySmall),
     );
+  }
+
+  /// The recognition summary, with a game's platform and form spelled out.
+  String _recognitionLine(AppLocalizations loc, UploadRecognition? recognition) {
+    if (recognition == null) return '';
+    final parts = <String>[recognition.summary()];
+    final platform = recognition.json['platform'] as String?;
+    final form = recognition.json['form'] as String?;
+    if (platform != null) parts.add(GameLabels.platformName(platform));
+    if (form != null) parts.add(GameLabels.formName(loc, form));
+    return parts.where((p) => p.isNotEmpty).join(' · ');
+  }
+
+  /// After a game upload: whether the library lists the game yet, and
+  /// whether its saves will sync.
+  Widget _gameFoundCard(AppLocalizations loc) {
+    final theme = Theme.of(context);
+    final found = _gameFound;
+    if (_gameProbing) {
+      return SettingsCard(children: [
+        ListTile(
+          key: const ValueKey('upload-game-probing'),
+          leading: const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+          title: Text(loc.uploadGameLookingUp),
+        ),
+      ]);
+    }
+    if (found == null) {
+      return SettingsCard(children: [
+        ListTile(
+          key: const ValueKey('upload-game-not-found'),
+          leading: const Icon(Icons.hourglass_bottom),
+          title: Text(loc.uploadGameNotYetFound),
+        ),
+      ]);
+    }
+    final saves = switch (found.savePathSource) {
+      'MANIFEST' => loc.uploadGameSavesKnown,
+      'ADMIN' => loc.uploadGameSavesAdmin,
+      _ => loc.uploadGameSavesUnknown,
+    };
+    return SettingsCard(children: [
+      ListTile(
+        key: const ValueKey('upload-game-found'),
+        leading: Icon(Icons.check_circle_outline, color: theme.colorScheme.primary),
+        title: Text(loc.uploadGameFound(found.title, GameLabels.platform(found.platform))),
+        subtitle: found.usesSavePaths ? Text(saves) : null,
+        trailing: TextButton(
+          key: const ValueKey('upload-game-open'),
+          onPressed: () => AutoRouter.of(context).push(GameRoute(gameId: found.id)),
+          child: Text(loc.gameOpenPage),
+        ),
+      ),
+    ]);
   }
 
   Widget _progress(AppLocalizations loc, UploadRunner runner) {
@@ -626,6 +887,10 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
             ]),
           ),
         ]),
+        if (finished && runner.failedCount == 0 && _isGameLibrary) ...[
+          const SizedBox(height: 16),
+          _gameFoundCard(loc),
+        ],
         const SizedBox(height: 16),
         SettingsCard(children: [for (final item in runner.items) _itemTile(loc, theme, item)]),
       ],

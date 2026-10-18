@@ -47,6 +47,39 @@ Met **Media uploaden** (Instellingen → Server) voeg je rechtstreeks vanuit de 
 
 Elk voltooid bestand wordt meteen aan de bibliotheek toegevoegd; scannen achteraf is niet nodig. Wordt de app midden in een upload gesloten, dan biedt de pagina de volgende keer aan om verder te gaan — kies dezelfde map opnieuw en hij gaat door waar hij gebleven was.
 
+## Games uploaden
+
+Een **gamebibliotheek** krijgt haar games via dezelfde uploadpagina, met een begeleid doel in
+plaats van het vrije veld *In map*, omdat de scanner elke game verwacht als
+`<platform>/<Titel (jaar)>/…`:
+
+1. Kies de gamebibliotheek en haar map. Het veld *In map* wordt een lijst **Platform** (de mappen
+   die de server kent: `ps3`, `steam`, `snes`, …); eronder zegt de pagina waaruit een game van dat
+   platform moet bestaan.
+2. **Map kiezen…** en kies de map van de game. De naam wordt gesplitst in **Titel van de game** en
+   **Jaar**, die je kunt corrigeren; de regel eronder toont waar hij belandt
+   (`ps3/Demon's Souls (2009)/`). Een game is altijd één map, dus de schakelaar *Als één map
+   uploaden* ontbreekt hier.
+3. Lees de **voorvertoning**. Wat de server per platform nodig heeft:
+   - een ROM: het startbare bestand (`.cue`/`.chd`, `.z64`, `.gba`, …) met zijn bijbehorende
+     bestanden (de `.bin`-bestanden van een `.cue`) ernaast;
+   - een PlayStation 3-game: de map zoals RPCS3 hem verwacht, met `PS3_GAME/PARAM.SFO` erin;
+   - een Steam-game: Steams `appmanifest_<appid>.acf` naast de map `steamapps/common/<installdir>`
+     van de game;
+   - een Windows-game: één kant-en-klare `.zip`; een Linux-game: een GOG `.sh`-installer of een
+     `.tar`-archief.
+   Een PS3- of Steam-map zonder markeerbestand staat als *Niet geüpload* met de reden: de hele
+   gamemap, markeerbestand inbegrepen, moet in één sessie omhoog, en de server scant hem pas als
+   die sessie klaar is.
+4. **Upload starten.** Als hij klaar is wacht de pagina tot de scan de game toont en meldt dan
+   **Gevonden in de bibliotheek** met een knop naar zijn pagina, plus — bij pc- en Steam-games — of
+   de save-locaties bekend zijn (uit het Ludusavi-manifest of ingesteld door een beheerder) of nog
+   ingesteld moeten worden voordat saves synchroniseren. Heeft de scan de game binnen twee minuten
+   niet opgenomen, dan zegt de pagina dat; kijk wat later in de bibliotheek.
+
+De mapindeling, de platformmapnamen en de regels per platform staan in de naamconventies van de
+server. Spelen, saves en prestaties vanuit de gebruiker: [Games](10-games.md).
+
 ## Podcasts
 
 Beheren welke podcasts de server bevat is een beheertaak. In een podcastbibliotheek abonneert **Podcast toevoegen** de server op een nieuwe feed, en **Abonnement opzeggen** op de pagina van een podcast verwijdert hem. Gewone gebruikers kunnen afleveringen bekijken, downloaden en afspelen, maar zien deze knoppen nooit.

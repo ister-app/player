@@ -69,6 +69,10 @@ class GameLabels {
     }
   }
 
+  /// [form] by its enum name as the upload preview and the install store carry it.
+  static String formName(AppLocalizations loc, String name) =>
+      form(loc, Enum$GameForm.values.firstWhere((f) => f.name == name, orElse: () => Enum$GameForm.$unknown));
+
   /// "1.2 GB" style size for the game page and install dialogs.
   static String bytes(num bytes) {
     const units = ['B', 'kB', 'MB', 'GB', 'TB'];
