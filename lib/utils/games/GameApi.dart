@@ -171,7 +171,7 @@ class GameApi {
     final request = http.StreamedRequest('POST', uri);
     final length = await zip.length();
     request.headers.addAll(await _headers(contentType: 'application/zip', extra: {
-      if (sha256 != null) 'X-Content-SHA256': sha256,
+      'X-Content-SHA256': ?sha256,
     }));
     request.contentLength = length;
     unawaited(zip.openRead().pipe(request.sink));

@@ -114,7 +114,7 @@ class GameInstall {
 /// (`<gamesRoot>/<server-slug>/installs.json`). Kept small and rewritten
 /// atomically; the game files themselves are the truth for "is it there".
 class GameInstallStore {
-  GameInstallStore({Directory? rootOverride}) : _rootOverride = rootOverride;
+  GameInstallStore([this._rootOverride]);
 
   final Directory? _rootOverride;
   final Map<String, Map<String, GameInstall>> _byServer = {};

@@ -337,7 +337,7 @@ class GameLibraryService {
       {int? exitCode, required Duration duration, String? error}) async {
     sessionOf(game.id).value = null;
     GameSaveInfo? uploaded;
-    final errors = <String>[if (error != null) error];
+    final errors = <String>[?error];
     if (await GameSettings.saveSyncEnabled()) {
       try {
         uploaded = await _sync(serverName).push(session.install, session.plan.saveSlots);
