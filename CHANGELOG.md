@@ -1,5 +1,37 @@
 # Changelog
 
+## player v2.15.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.15.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(upload): guide game uploads — platform picker, Title (year) folder, marker verdicts and a library look-up ([`5f0b705`](https://github.com/ister-app/player/commit/5f0b705))
+- feat(games): install queue with live progress, resume after restart, update detection and a transparent play loop ([`a51881a`](https://github.com/ister-app/player/commit/a51881a))
+- feat(games): game libraries with desktop install, launch, save sync and achievements ([`2afe158`](https://github.com/ister-app/player/commit/2afe158))
+
+### Fixes
+
+- fix(games): satisfy the strict analyzer in the game services ([`4a78280`](https://github.com/ister-app/player/commit/4a78280))
+
+### Other
+
+- ci(e2e): pin the 5.3.1-snapshot server line for the game schema ([`36a88d8`](https://github.com/ister-app/player/commit/36a88d8))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.15.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.14.1...v2.15.0
+
 ## player v2.14.1
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
