@@ -3955,5 +3955,17 @@
   "uploadGamesAllPlatforms": "All platforms",
   "@uploadGamesAllPlatforms": {"description": "Candidates page: platform filter chip"},
   "uploadGamesFromRpcs3": "RPCS3",
-  "@uploadGamesFromRpcs3": {"description": "Candidate subtitle: found through RPCS3's own game list"}
+  "@uploadGamesFromRpcs3": {"description": "Candidate subtitle: found through RPCS3's own game list"},
+  "gameAdoptedSteam": "Plays your Steam copy in {path}; nothing was downloaded.",
+  "@gameAdoptedSteam": {"description": "Game page: a copy that was already on this computer", "placeholders": {"path": {"type": "String"}}},
+  "gameAdoptedRpcs3": "Plays your RPCS3 copy in {path}; nothing was downloaded.",
+  "@gameAdoptedRpcs3": {"description": "Game page: a copy that was already on this computer", "placeholders": {"path": {"type": "String"}}},
+  "gameAdoptedTile": "your own copy, not downloaded by Ister",
+  "@gameAdoptedTile": {"description": "Game page: a copy that was already on this computer"},
+  "gameForgetCopy": "Forget on this device",
+  "@gameForgetCopy": {"description": "Game page: a copy that was already on this computer"},
+  "gameForgetCopyConfirm": "The game is no longer counted as installed here. Your copy and its saves stay where they are.",
+  "@gameForgetCopyConfirm": {"description": "Game page: a copy that was already on this computer"},
+  "gameAdoptedUpdateHint": "Update replaces your own copy with the server's files.",
+  "@gameAdoptedUpdateHint": {"description": "Game page: a copy that was already on this computer"}
 }

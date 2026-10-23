@@ -5923,6 +5923,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'RPCS3'**
   String get uploadGamesFromRpcs3;
+
+  /// Game page: a copy that was already on this computer
+  ///
+  /// In en, this message translates to:
+  /// **'Plays your Steam copy in {path}; nothing was downloaded.'**
+  String gameAdoptedSteam(String path);
+
+  /// Game page: a copy that was already on this computer
+  ///
+  /// In en, this message translates to:
+  /// **'Plays your RPCS3 copy in {path}; nothing was downloaded.'**
+  String gameAdoptedRpcs3(String path);
+
+  /// Game page: a copy that was already on this computer
+  ///
+  /// In en, this message translates to:
+  /// **'your own copy, not downloaded by Ister'**
+  String get gameAdoptedTile;
+
+  /// Game page: a copy that was already on this computer
+  ///
+  /// In en, this message translates to:
+  /// **'Forget on this device'**
+  String get gameForgetCopy;
+
+  /// Game page: a copy that was already on this computer
+  ///
+  /// In en, this message translates to:
+  /// **'The game is no longer counted as installed here. Your copy and its saves stay where they are.'**
+  String get gameForgetCopyConfirm;
+
+  /// Game page: a copy that was already on this computer
+  ///
+  /// In en, this message translates to:
+  /// **'Update replaces your own copy with the server\'s files.'**
+  String get gameAdoptedUpdateHint;
 }
 
 class _AppLocalizationsDelegate

@@ -24,7 +24,7 @@ herstart het bestand). Bestanden die al met de juiste grootte aanwezig zijn, wor
 dus opnieuw installeren na een fout is goedkoop. Daarna pakt `_postProcess` zips/tars uit met het
 `archive`-pakket (in een isolate), markeert Linux-executables en schrijft voor een Steam-game de
 `appmanifest_<appid>.acf` in de gekozen Steam-bibliotheek (`GameLaunchers.writeSteamManifest`,
-`Vdf.write`) zodat Steam hem als geïnstalleerd toont. De boekhouding is `GameInstallStore`
+`Vdf.write`) zodat Steam hem als geïnstalleerd toont. Een game die Steam of RPCS3 al op deze computer heeft wordt *geadopteerd* in plaats van gedownload: `LocalGameCopyFinder` (`lib/utils/games/LocalGameCopy.dart`) koppelt een Steam-game op `steamAppId` aan de `appmanifest_<id>.acf` van elke library (volledig geïnstalleerd, map aanwezig) en een PS3-game op `titleId` aan RPCS3's `dev_hdd0/game/<id>/USRDIR/EBOOT.BIN` of zijn `games.yml`; `GameLibraryService.adopt` schrijft een `installed`-record met `adoptedFrom`, `installedVersion` = de huidige serverversie en voor PS3 een **absoluut** `entryPath` (dat `GameLaunchers._entryFile` accepteert). Ister bezit alleen de `dir` van het record (save-tmp/outbox), dus `uninstall` laat de kopie staan en `bytesOnDisk` is 0; een update wist `adoptedFrom` en maakt er een gewone installatie van. De boekhouding is `GameInstallStore`
 (`installs.json` per server naast de gamemappen); `GameSettings.gamesRoot()` is `~/Games/Ister`
 op Linux en `%LOCALAPPDATA%\Ister\Games` op Windows — *niet* de app-support-map, die
 Flatpak-emulators niet kunnen lezen.

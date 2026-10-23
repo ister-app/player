@@ -261,9 +261,13 @@ class GameLaunchers {
 
   Future<File> _entryFile(GameInstall install) async {
     final files = install.filesDir;
-    if (install.entryPath != null) {
-      final file = File('${files.path}/${install.entryPath}');
+    final entryPath = install.entryPath;
+    if (entryPath != null) {
+      // An adopted copy names its entry by absolute path (RPCS3's own folder).
+      final absolute = _isAbsolute(entryPath);
+      final file = File(absolute ? entryPath : '${files.path}/$entryPath');
       if (await file.exists()) return file;
+      if (absolute) throw LaunchException(LaunchProblem.entryMissing, entryPath);
     }
     // Single-file forms: the first (or only) file the manifest marked as entry
     // is stored under its plain name.
@@ -277,6 +281,10 @@ class GameLaunchers {
     }
     throw LaunchException(LaunchProblem.entryMissing, files.path);
   }
+
+  /// `/…`, `C:\…` or a UNC path.
+  static bool _isAbsolute(String path) =>
+      path.startsWith('/') || path.startsWith(r'\\') || RegExp(r'^[A-Za-z]:[\\/]').hasMatch(path);
 
   static bool _isEntryName(String platform, String path) {
     final lower = path.toLowerCase();

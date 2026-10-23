@@ -54,6 +54,7 @@ class GameInstall {
     this.lastSaveVersion = 0,
     this.lastSaveSha,
     this.linuxInstalled = false,
+    this.adoptedFrom,
     this.error,
     this.queuedAt,
     this.sessionStartedAt,
@@ -96,6 +97,12 @@ class GameInstall {
 
   /// A Linux installer (.sh) has been run into `files/game`.
   bool linuxInstalled;
+
+  /// A copy that was already on this computer (a Steam library, RPCS3's own
+  /// games) and was taken as the install instead of a download: the path
+  /// of that copy. Ister owns only [dir] (tmp, outbox); the files are not
+  /// its to delete. Null for a game Ister installed itself.
+  String? adoptedFrom;
   String? error;
 
   /// When the install was asked for; the queue runs in this order.
@@ -123,8 +130,11 @@ class GameInstall {
 
   bool get hasOpenSession => sessionStartedAt != null;
 
-  /// What the install occupies on disk, as far as the bookkeeping knows.
-  int get bytesOnDisk => isInstalled ? totalBytes : doneBytes;
+  bool get isAdopted => adoptedFrom != null;
+
+  /// What the install occupies on disk, as far as the bookkeeping knows;
+  /// an adopted copy's files are not Ister's and do not count.
+  int get bytesOnDisk => isAdopted ? 0 : (isInstalled ? totalBytes : doneBytes);
 
   Map<String, dynamic> toJson() => {
         'gameId': gameId,
@@ -149,6 +159,7 @@ class GameInstall {
         'lastSaveVersion': lastSaveVersion,
         'lastSaveSha': lastSaveSha,
         'linuxInstalled': linuxInstalled,
+        'adoptedFrom': adoptedFrom,
         'error': error,
         'queuedAt': queuedAt?.toIso8601String(),
         'sessionStartedAt': sessionStartedAt?.toIso8601String(),
@@ -179,6 +190,7 @@ class GameInstall {
         lastSaveVersion: (json['lastSaveVersion'] as num?)?.toInt() ?? 0,
         lastSaveSha: json['lastSaveSha'] as String?,
         linuxInstalled: json['linuxInstalled'] == true,
+        adoptedFrom: json['adoptedFrom'] as String?,
         error: json['error'] as String?,
         queuedAt: DateTime.tryParse(json['queuedAt']?.toString() ?? ''),
         sessionStartedAt: DateTime.tryParse(json['sessionStartedAt']?.toString() ?? ''),

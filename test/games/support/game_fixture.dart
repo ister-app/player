@@ -15,6 +15,9 @@ Query$gameById$gameById gameFixture({
   double sizeBytes = 3010,
   String? version,
   String? updatedAt,
+  String? titleId,
+  String? steamAppId,
+  String? steamInstallDir,
 }) =>
     Query$gameById$gameById.fromJson({
       '__typename': 'Game',
@@ -31,6 +34,9 @@ Query$gameById$gameById gameFixture({
       'playTimeMs': 0.0,
       'version': version,
       'updatedAt': updatedAt,
+      'titleId': titleId,
+      'steamAppId': steamAppId,
+      'steamInstallDir': steamInstallDir,
       'savePaths': <Object>[],
       'savePathSource': 'NONE',
       'savePathOverride': <Object>[],
@@ -97,6 +103,7 @@ class FakeGameServer {
           }),
           headers: {'etag': '"$id-${versions[id]}"'});
     }
+    if (what == 'saves') return _response(200, '[]');
     if (what == 'file') {
       final path = segments.sublist(gameIndex + 3).join('/');
       final file = files.where((f) => f.path == path).firstOrNull;

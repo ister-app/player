@@ -9,21 +9,33 @@ import 'package:player/utils/download/DownloadStore.dart';
 import 'package:player/utils/games/GameApi.dart';
 import 'package:player/utils/games/GameInstallStore.dart';
 import 'package:player/utils/games/GameLibraryService.dart';
+import 'package:player/utils/games/LocalGameCopy.dart';
 
 import 'support/game_fixture.dart';
 
 const server = 'https://srv.example';
 
+/// Answers with a fixed copy, or none.
+class _FakeCopies extends LocalGameCopyFinder {
+  _FakeCopies(this.copy);
+  final LocalGameCopy? Function() copy;
+  @override
+  Future<LocalGameCopy?> find(game) async => copy();
+}
+
 void main() {
   late Directory tmp;
   late FakeGameServer fake;
   late GameLibraryService service;
+  LocalGameCopy? localCopy;
 
   setUp(() async {
     tmp = await Directory.systemTemp.createTemp('ister-game-panel-');
     fake = FakeGameServer();
+    localCopy = null;
     service = GameLibraryService.forTest(
       store: GameInstallStore(tmp, true),
+      localCopies: _FakeCopies(() => localCopy),
       http: DownloadHttp(
           httpClient: fake.client, tokenProvider: (_) async => 't', onAuthFailure: (_) {}, backoff: (_) => Duration.zero),
       apiFactory: (name) => GameApi(name, httpClient: fake.client, bearer: (_) async => 'b'),
@@ -36,12 +48,12 @@ void main() {
     await tmp.delete(recursive: true);
   });
 
-  Widget panel() => MaterialApp(
+  Widget panel({String form = 'ROM', String platform = 'PSX'}) => MaterialApp(
         localizationsDelegates: const [AppLocalizations.delegate, ...GlobalMaterialLocalizations.delegates],
         supportedLocales: const [Locale('en')],
         home: Scaffold(
           body: SingleChildScrollView(
-            child: GameActionsPanel(serverName: server, game: gameFixture(), service: service),
+            child: GameActionsPanel(serverName: server, game: gameFixture(form: form, platform: platform), service: service),
           ),
         ),
       );
@@ -155,5 +167,35 @@ void main() {
     expect(find.byKey(const ValueKey('game-resume-install')), findsOneWidget);
     expect((await service.store.get(server, 'g1'))!.status, GameInstallStatus.paused);
     service.stopActivity();
+  });
+
+  testWidgets('a copy already on this computer is adopted: play, no install, forget instead of remove', (tester) async {
+    localCopy = const LocalGameCopy(
+        kind: LocalGameCopyKind.steam, path: '/steam/steamapps/common/Portal 2', steamLibrary: '/steam', steamInstallDir: 'Portal 2');
+    await tester.pumpWidget(panel(form: 'STEAM', platform: 'STEAM'));
+    await settle(tester);
+    expect(find.byKey(const ValueKey('game-install')), findsNothing);
+    expect(find.byKey(const ValueKey('game-play')), findsOneWidget);
+    expect(find.text('Plays your Steam copy in /steam/steamapps/common/Portal 2; nothing was downloaded.'), findsOneWidget);
+    expect(find.text('Forget on this device'), findsOneWidget);
+    final install = (await service.installOf(server, 'g1'))!;
+    expect(install.isAdopted, isTrue);
+    expect(install.steamLibrary, '/steam');
+
+    await tester.tap(find.byKey(const ValueKey('game-uninstall')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Your copy and its saves stay'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('game-uninstall-confirm')));
+    await settle(tester);
+    expect(await service.installOf(server, 'g1'), isNull);
+    // Forgotten: the page would adopt it again on the next open, not now.
+    expect(find.byKey(const ValueKey('game-install')), findsOneWidget);
+  });
+
+  testWidgets('without a local copy the install button stays', (tester) async {
+    await tester.pumpWidget(panel(form: 'PS3_FOLDER', platform: 'PS3'));
+    await settle(tester);
+    expect(find.byKey(const ValueKey('game-install')), findsOneWidget);
+    expect(find.byKey(const ValueKey('game-adopted')), findsNothing);
   });
 }

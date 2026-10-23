@@ -34,6 +34,16 @@ Steam-bibliotheekmappen (je kiest welke als er meerdere zijn) en Steam neemt het
 controleert de bestanden bij de eerste start en downloadt zo nodig een update. Steam-games starten
 via Steam, dus je Steam-account moet de game bezitten.
 
+### Al op deze computer
+
+Een Steam-game die in een van je Steam-libraries staat, of een PlayStation 3-game die RPCS3 al
+heeft (onder zijn map `dev_hdd0/game` of in zijn gamelijst), wordt herkend zodra je zijn pagina
+opent: hij geldt meteen als geïnstalleerd, er wordt niets gedownload, en de pagina zegt welke
+kopie hij speelt (*Speelt je Steam-kopie in …*). Saves, prestaties en speeltijd werken als bij
+elke installatie. **Vergeten op dit apparaat** haalt hem weer van de lijst; je kopie en de saves
+blijven staan waar ze staan. Een aangeboden **Update** vervangt je kopie door de bestanden van de
+server, waarna het een gewone installatie is.
+
 ## Updates
 
 Zijn de bestanden van een game op de server veranderd (opnieuw geüpload, een nieuwere build), dan

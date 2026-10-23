@@ -68,6 +68,7 @@ class _GameActionsPanelState extends State<GameActionsPanel> {
   Future<void> _start() async {
     await _service.ensureStarted();
     await _refreshInstall();
+    await _adoptLocalCopy();
     await _service.restoreSession(widget.serverName, widget.game);
     await _service.checkForUpdate(widget.serverName, widget.game.id,
         version: widget.game.version, sizeBytes: widget.game.sizeBytes.toInt());
@@ -77,6 +78,16 @@ class _GameActionsPanelState extends State<GameActionsPanel> {
   Future<void> _refreshInstall() async {
     final install = await _service.installOf(widget.serverName, widget.game.id);
     if (mounted) setState(() => _install = install);
+  }
+
+  /// A game Steam or RPCS3 already has here is taken as installed, no
+  /// download involved; "Forget on this device" undoes it.
+  Future<void> _adoptLocalCopy() async {
+    if (_install != null || !mounted) return;
+    final copy = await _service.findLocalCopy(widget.serverName, widget.game);
+    if (copy == null || !mounted) return;
+    await _service.adopt(widget.serverName, widget.game, copy);
+    await _refreshInstall();
   }
 
   @override
@@ -253,7 +264,7 @@ class _GameActionsPanelState extends State<GameActionsPanel> {
               icon: const Icon(Icons.system_update_alt),
               label: Text(loc.gameUpdate),
             ),
-          _removeButton(loc, loc.gameUninstall),
+          _removeButton(loc, _install?.isAdopted == true ? loc.gameForgetCopy : loc.gameUninstall),
         ];
     }
   }
@@ -270,6 +281,19 @@ class _GameActionsPanelState extends State<GameActionsPanel> {
   List<Widget> _installDetail(AppLocalizations loc, GameInstallStatus? status, GameInstallProgress? progress) {
     final theme = Theme.of(context);
     final small = theme.textTheme.bodySmall;
+    final adopted = _install?.adoptedFrom;
+    if (adopted != null && (status == GameInstallStatus.installed || status == GameInstallStatus.updateAvailable)) {
+      final isSteam = widget.game.form == Enum$GameForm.STEAM;
+      return [
+        const SizedBox(height: 8),
+        Text(
+          key: const ValueKey('game-adopted'),
+          isSteam ? loc.gameAdoptedSteam(adopted) : loc.gameAdoptedRpcs3(adopted),
+          style: small,
+        ),
+        if (status == GameInstallStatus.updateAvailable) Text(loc.gameAdoptedUpdateHint, style: small),
+      ];
+    }
     switch (status) {
       case GameInstallStatus.queued:
         return [
@@ -509,17 +533,23 @@ class _GameActionsPanelState extends State<GameActionsPanel> {
   Future<void> _uninstall() async {
     final loc = AppLocalizations.of(context)!;
     final isSteam = widget.game.form == Enum$GameForm.STEAM;
+    final adopted = _install?.isAdopted == true;
+    final title = adopted ? loc.gameForgetCopy : loc.gameUninstall;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(loc.gameUninstall),
-        content: Text(isSteam ? loc.gameUninstallConfirmSteam : loc.gameUninstallConfirm),
+        title: Text(title),
+        content: Text(adopted
+            ? loc.gameForgetCopyConfirm
+            : isSteam
+                ? loc.gameUninstallConfirmSteam
+                : loc.gameUninstallConfirm),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(loc.cancel)),
           FilledButton(
               key: const ValueKey('game-uninstall-confirm'),
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text(loc.gameUninstall)),
+              child: Text(title)),
         ],
       ),
     );

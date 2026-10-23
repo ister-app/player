@@ -3633,4 +3633,28 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get uploadGamesFromRpcs3 => 'RPCS3';
+
+  @override
+  String gameAdoptedSteam(String path) {
+    return 'Speelt je Steam-kopie in $path; er is niets gedownload.';
+  }
+
+  @override
+  String gameAdoptedRpcs3(String path) {
+    return 'Speelt je RPCS3-kopie in $path; er is niets gedownload.';
+  }
+
+  @override
+  String get gameAdoptedTile => 'eigen kopie, niet door Ister gedownload';
+
+  @override
+  String get gameForgetCopy => 'Vergeten op dit apparaat';
+
+  @override
+  String get gameForgetCopyConfirm =>
+      'De game geldt hier niet meer als geïnstalleerd. Je kopie en de saves blijven staan waar ze staan.';
+
+  @override
+  String get gameAdoptedUpdateHint =>
+      'Bijwerken vervangt je eigen kopie door de bestanden van de server.';
 }

@@ -108,4 +108,12 @@ void main() {
     await tester.pump();
     expect((await service.store.get(server, 'p'))!.status, isNot(GameInstallStatus.paused));
   });
+
+  testWidgets('an adopted copy counts no bytes and says it is the user\'s own', (tester) async {
+    final adopted = install('a', GameInstallStatus.installed, done: 1000)..adoptedFrom = '/steam/common/Game';
+    await tester.pumpWidget(section([adopted, install('b', GameInstallStatus.installed, done: 1000)]));
+    await tester.pump();
+    expect(find.textContaining('your own copy, not downloaded by Ister'), findsOneWidget);
+    expect(GameInstallsSection.bytesOf([adopted]), 0);
+  });
 }

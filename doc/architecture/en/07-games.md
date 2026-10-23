@@ -24,7 +24,7 @@ file). Files already present with the right size are skipped, so a re-install af
 cheap. Afterwards `_postProcess` unpacks zips/tars with the `archive` package (in an isolate),
 marks Linux executables, and for a Steam game writes the `appmanifest_<appid>.acf` into the chosen
 Steam library (`GameLaunchers.writeSteamManifest`, `Vdf.write`) so Steam lists it as installed.
-The bookkeeping is `GameInstallStore` (`installs.json` per server next to the game folders);
+A game Steam or RPCS3 already has on this computer is *adopted* instead of downloaded: `LocalGameCopyFinder` (`lib/utils/games/LocalGameCopy.dart`) matches a Steam game by `steamAppId` against every library's `appmanifest_<id>.acf` (fully installed, folder present) and a PS3 game by `titleId` against RPCS3's `dev_hdd0/game/<id>/USRDIR/EBOOT.BIN` or its `games.yml`; `GameLibraryService.adopt` writes an `installed` record with `adoptedFrom` set, `installedVersion` = the server's current version, and for PS3 an **absolute** `entryPath` (which `GameLaunchers._entryFile` accepts). Ister owns only the record's `dir` (save tmp/outbox), so `uninstall` leaves the copy alone and `bytesOnDisk` is 0; an update clears `adoptedFrom` and the record becomes an ordinary install. The bookkeeping is `GameInstallStore` (`installs.json` per server next to the game folders);
 `GameSettings.gamesRoot()` is `~/Games/Ister` on Linux and `%LOCALAPPDATA%\Ister\Games` on Windows —
 *not* the app-support dir, which Flatpak emulators cannot read.
 

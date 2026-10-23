@@ -32,6 +32,16 @@ folders (you pick which one when there are several) and Steam takes it from ther
 the files on first start and may download an update. Steam games start through Steam, so your
 Steam account has to own the game.
 
+### Already on this computer
+
+A Steam game that is installed in one of your Steam libraries, or a PlayStation 3 game RPCS3
+already has (under its `dev_hdd0/game` folder or in its game list), is recognised when you open
+its page: it counts as installed right away, nothing is downloaded, and the page says which copy
+it plays (*Plays your Steam copy in …*). Saves, achievements and play time work as for any
+install. **Forget on this device** takes it off the installed list again; your copy and its saves
+stay where they are. An **Update** offered for such a game replaces your copy with the server's
+files, after which it is an ordinary install.
+
 ## Updates
 
 When the files of a game changed on the server (a re-upload, a newer build), the game page shows

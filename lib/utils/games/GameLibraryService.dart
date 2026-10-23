@@ -18,6 +18,7 @@ import 'GameInstallProgress.dart';
 import 'GameInstallState.dart';
 import 'GameInstallStore.dart';
 import 'GameSettings.dart';
+import 'LocalGameCopy.dart';
 import 'ManifestDiff.dart';
 import 'achievements/AchievementReport.dart';
 import 'achievements/AchievementSyncService.dart';
@@ -104,6 +105,7 @@ class GameLibraryService {
     GameProcessRunner? runner,
     EmulatorRegistry? registry,
     SteamLibraryLocator? steam,
+    LocalGameCopyFinder? localCopies,
     DateTime Function()? clock,
     Future<List<String>> Function()? servers,
     Future<void> Function(String serverName, String gameId, Duration duration)? recordPlayed,
@@ -114,6 +116,7 @@ class GameLibraryService {
         _runner = runner ?? GameProcessRunner(),
         registry = registry ?? EmulatorRegistry(),
         steam = steam ?? SteamLibraryLocator(),
+        localCopies = localCopies ?? LocalGameCopyFinder(steam: steam),
         _clock = clock ?? DateTime.now,
         _servers = servers ?? ServerStore.list,
         _recordPlayedOverride = recordPlayed;
@@ -123,6 +126,9 @@ class GameLibraryService {
   final GameInstallStore store;
   final EmulatorRegistry registry;
   final SteamLibraryLocator steam;
+
+  /// Finds a game Steam or RPCS3 already has on this computer.
+  final LocalGameCopyFinder localCopies;
   final DownloadHttp _http;
   final GameApi Function(String serverName) _apiFactory;
   final GameProcessRunner _runner;
@@ -171,6 +177,53 @@ class GameLibraryService {
   void dismissResult(String gameId) => lastResultOf(gameId).value = null;
 
   Future<GameInstall?> installOf(String serverName, String gameId) => store.get(serverName, gameId);
+
+  /// A copy of [game] Steam or RPCS3 already has on this computer, when
+  /// Ister has no install of it yet.
+  Future<LocalGameCopy?> findLocalCopy(String serverName, Query$gameById$gameById game) async {
+    if (await store.get(serverName, game.id) != null) return null;
+    try {
+      return await localCopies.find(game);
+    } catch (e) {
+      LoggerService().logger.w('Local copy look-up for ${game.id} failed: $e');
+      return null;
+    }
+  }
+
+  /// Registers [copy] as the install of [game]: installed at once, nothing
+  /// downloaded. Ister's own folder for the game is created for the save
+  /// tmp/outbox files; the copy's files stay where they are and stay the
+  /// emulator's (or Steam's). The server's current version is the baseline,
+  /// so an update is only offered once the server has a newer one — and
+  /// that update turns the record into an ordinary install.
+  Future<GameInstall> adopt(String serverName, Query$gameById$gameById game, LocalGameCopy copy) async {
+    final existing = await store.get(serverName, game.id);
+    if (existing != null) return existing;
+    final dir = await store.gameDir(serverName, game.id);
+    final install = GameInstall(
+      gameId: game.id,
+      form: game.form.name,
+      platform: game.platform.name,
+      dir: dir.path,
+      status: GameInstallStatus.installed,
+      title: game.title,
+      totalBytes: game.sizeBytes.toInt(),
+      filesTotal: game.fileCount,
+      filesDone: game.fileCount,
+      installedVersion: game.version,
+      entryPath: copy.entryPath,
+      titleId: game.titleId,
+      steamAppId: int.tryParse(game.steamAppId ?? ''),
+      steamInstallDir: copy.steamInstallDir ?? game.steamInstallDir,
+      steamLibrary: copy.steamLibrary,
+      adoptedFrom: copy.path,
+    );
+    // Ister's own folder for the save zips and outbox (never under a widget
+    // test's in-memory store: real file I/O does not complete there).
+    if (!store.inMemory) await install.tmpDir.create(recursive: true);
+    await _transitioned(serverName, install);
+    return install;
+  }
 
   GameApi api(String serverName) => _apiFactory(serverName);
 
@@ -411,6 +464,8 @@ class GameLibraryService {
         ..titleId = manifest.titleId
         ..steamAppId = manifest.steamAppId
         ..steamInstallDir = manifest.steamInstallDir
+        // From here on the files are Ister's: an adopted copy updated from the server becomes a plain install.
+        ..adoptedFrom = null
         ..error = null;
       await _transitioned(serverName, install);
 

@@ -10,6 +10,9 @@ import 'package:player/utils/games/GameInstallStore.dart';
 import 'package:player/utils/games/GameLibraryService.dart';
 import 'package:player/utils/games/launch/GameProcessRunner.dart';
 import 'package:player/utils/games/steam/SteamLibraryLocator.dart';
+import 'package:player/utils/upload/games/Rpcs3Locator.dart';
+import 'package:player/utils/games/launch/EmulatorRegistry.dart';
+import 'package:player/utils/games/LocalGameCopy.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
@@ -20,10 +23,18 @@ class FakeRunner extends GameProcessRunner {
   FakeRunner() : super(isFlatpak: () => false);
   int runs = 0;
 
+  /// Commands [canRun] answers yes to (an emulator the test pretends is installed).
+  final Set<String> runnable = {};
+  List<String>? lastArguments;
+
+  @override
+  Future<bool> canRun(String command) async => runnable.contains(command);
+
   @override
   Future<GameProcessResult> run(String command, List<String> arguments,
       {String? workingDirectory, Map<String, String>? environment, Duration? timeout}) async {
     runs++;
+    lastArguments = arguments;
     return const GameProcessResult(exitCode: 0, duration: Duration(minutes: 3), stderrTail: '');
   }
 }
@@ -55,9 +66,13 @@ void main() {
     recordFails = false;
   });
 
+  Map<String, String> env() => {'HOME': tmp.path, 'XDG_CONFIG_HOME': '${tmp.path}/.config'};
+
   GameLibraryService service({GameInstallStore? store}) => GameLibraryService.forTest(
         runner: runner,
-        steam: SteamLibraryLocator(environment: {'HOME': tmp.path}),
+        registry: EmulatorRegistry(runner: runner, environment: env()),
+        steam: SteamLibraryLocator(environment: env()),
+        localCopies: LocalGameCopyFinder(steam: SteamLibraryLocator(environment: env()), rpcs3: Rpcs3Locator(environment: env())),
         recordPlayed: (server, id, duration) async {
           if (recordFails) throw Exception('offline');
           recorded.add((id, duration));
@@ -394,6 +409,70 @@ void main() {
       final prepared = await s.prepare(server, game);
       await s.launch(server, game, prepared.plan);
       expect(() => s.uninstall(server, 'g1'), throwsStateError);
+    });
+  });
+
+  group('adopting a copy that is already on this computer', () {
+    void write(String path, String text) => File('${tmp.path}/$path')
+      ..createSync(recursive: true)
+      ..writeAsStringSync(text);
+
+    test('an RPCS3 HDD game: installed without a download, launches from its own folder, forgotten without deleting it',
+        () async {
+      write('.config/rpcs3/dev_hdd0/game/NPEA00111/PARAM.SFO', '');
+      write('.config/rpcs3/dev_hdd0/game/NPEA00111/USRDIR/EBOOT.BIN', '');
+      write('.config/rpcs3/dev_flash/vsh/x', '');
+      runner.runnable.add('rpcs3');
+      fake.games['g1'] = [];
+      final s = service();
+      final game = gameFixture(form: 'PS3_FOLDER', platform: 'PS3', titleId: 'NPEA00111', version: 'v1');
+
+      final copy = await s.findLocalCopy(server, game);
+      expect(copy!.kind, LocalGameCopyKind.rpcs3Hdd);
+      final install = await s.adopt(server, game, copy);
+      expect(install.status, GameInstallStatus.installed);
+      expect(install.isAdopted, isTrue);
+      expect(install.installedVersion, 'v1');
+      expect(install.bytesOnDisk, 0, reason: 'not Ister\'s bytes');
+      expect((await s.installOf(server, 'g1'))!.adoptedFrom, '${tmp.path}/.config/rpcs3/dev_hdd0/game/NPEA00111');
+      expect(await s.findLocalCopy(server, game), isNull, reason: 'already installed');
+      expect(Directory(install.dir).existsSync(), isTrue, reason: "Ister's own folder for tmp/outbox");
+
+      // Same version on the server: nothing to update; a newer one: offered.
+      await s.checkForUpdate(server, 'g1', version: 'v1');
+      expect((await s.installOf(server, 'g1'))!.status, GameInstallStatus.installed);
+      await s.checkForUpdate(server, 'g1', version: 'v2', sizeBytes: 5);
+      expect((await s.installOf(server, 'g1'))!.status, GameInstallStatus.updateAvailable);
+
+      final prepared = await s.prepare(server, game);
+      expect(prepared.plan.command, 'rpcs3');
+      expect(prepared.plan.arguments.last, '${tmp.path}/.config/rpcs3/dev_hdd0/game/NPEA00111/USRDIR/EBOOT.BIN');
+
+      await s.uninstall(server, 'g1');
+      expect(await s.installOf(server, 'g1'), isNull);
+      expect(File('${tmp.path}/.config/rpcs3/dev_hdd0/game/NPEA00111/USRDIR/EBOOT.BIN').existsSync(), isTrue);
+      expect(Directory(install.dir).existsSync(), isFalse);
+    });
+
+    test('a Steam game in a library: launches through Steam, no manifest is written', () async {
+      write('.local/share/Steam/steamapps/appmanifest_620.acf',
+          '"AppState" { "appid" "620" "name" "Portal 2" "StateFlags" "4" "installdir" "Portal 2" }');
+      write('.local/share/Steam/steamapps/common/Portal 2/portal2.sh', '');
+      runner.runnable.add('steam');
+      fake.games['g1'] = [];
+      final s = service();
+      final game = gameFixture(form: 'STEAM', platform: 'STEAM', steamAppId: '620', version: 'v1');
+      final copy = await s.findLocalCopy(server, game);
+      final install = await s.adopt(server, game, copy!);
+      expect(install.steamAppId, 620);
+      expect(install.steamLibrary, '${tmp.path}/.local/share/Steam');
+      expect(install.steamInstallDir, 'Portal 2');
+      final before = File('${tmp.path}/.local/share/Steam/steamapps/appmanifest_620.acf').readAsStringSync();
+      final prepared = await s.prepare(server, game);
+      expect(prepared.plan.detached, isTrue);
+      expect(prepared.plan.arguments, contains('steam://rungameid/620'));
+      expect(File('${tmp.path}/.local/share/Steam/steamapps/appmanifest_620.acf').readAsStringSync(), before,
+          reason: 'Steam owns the acf');
     });
   });
 }

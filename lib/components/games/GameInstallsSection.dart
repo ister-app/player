@@ -92,7 +92,7 @@ class _GameInstallTile extends StatelessWidget {
           GameInstallStatus.downloading => _downloadingLine(loc, progress, done, total),
           GameInstallStatus.extracting => loc.gameInstallStatusUnpacking,
           GameInstallStatus.paused => loc.gameInstallPaused(GameLabels.bytes(done), GameLabels.bytes(total)),
-          GameInstallStatus.installed => loc.gameInstallStatusInstalled,
+          GameInstallStatus.installed => install.isAdopted ? loc.gameAdoptedTile : loc.gameInstallStatusInstalled,
           GameInstallStatus.updateAvailable => loc.gameUpdateAvailable(GameLabels.bytes(install.availableBytes ?? total)),
           GameInstallStatus.failed => GameLabels.installError(loc, progress?.error ?? install.error ?? '?'),
           GameInstallStatus.cancelled => loc.gameInstallStatusCancelled(GameLabels.bytes(done)),
@@ -123,7 +123,7 @@ class _GameInstallTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  [platform, if (!active) GameLabels.bytes(install.bytesOnDisk), state].join(' · '),
+                  [platform, if (!active && !install.isAdopted) GameLabels.bytes(install.bytesOnDisk), state].join(' · '),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: status == GameInstallStatus.failed ? TextStyle(color: theme.colorScheme.error) : null,
@@ -187,21 +187,26 @@ class _GameInstallTile extends StatelessWidget {
       if (status == GameInstallStatus.queued || status == GameInstallStatus.downloading)
         item('cancel', Icons.close, loc.cancelDownload, () => service.cancel(serverName, id)),
       item('remove', Icons.delete_outline, status == GameInstallStatus.installed || status == GameInstallStatus.updateAvailable
-          ? loc.gameUninstall
+          ? (install.isAdopted ? loc.gameForgetCopy : loc.gameUninstall)
           : loc.gameRemovePartial, () => unawaited(_remove(context, loc))),
     ];
   }
 
   Future<void> _remove(BuildContext context, AppLocalizations loc) async {
     final isSteam = install.form == 'STEAM';
+    final title = install.isAdopted ? loc.gameForgetCopy : loc.gameUninstall;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(loc.gameUninstall),
-        content: Text(isSteam ? loc.gameUninstallConfirmSteam : loc.gameUninstallConfirm),
+        title: Text(title),
+        content: Text(install.isAdopted
+            ? loc.gameForgetCopyConfirm
+            : isSteam
+                ? loc.gameUninstallConfirmSteam
+                : loc.gameUninstallConfirm),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(loc.cancel)),
-          FilledButton(onPressed: () => Navigator.of(context).pop(true), child: Text(loc.gameUninstall)),
+          FilledButton(onPressed: () => Navigator.of(context).pop(true), child: Text(title)),
         ],
       ),
     );

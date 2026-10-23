@@ -1086,5 +1086,11 @@
   "gameSettingsSteamNone": "Geen Steam-installatie gevonden",
   "uploadGamesSave": "Opslaan",
   "uploadGamesAllPlatforms": "Alle platforms",
-  "uploadGamesFromRpcs3": "RPCS3"
+  "uploadGamesFromRpcs3": "RPCS3",
+  "gameAdoptedSteam": "Speelt je Steam-kopie in {path}; er is niets gedownload.",
+  "gameAdoptedRpcs3": "Speelt je RPCS3-kopie in {path}; er is niets gedownload.",
+  "gameAdoptedTile": "eigen kopie, niet door Ister gedownload",
+  "gameForgetCopy": "Vergeten op dit apparaat",
+  "gameForgetCopyConfirm": "De game geldt hier niet meer als geïnstalleerd. Je kopie en de saves blijven staan waar ze staan.",
+  "gameAdoptedUpdateHint": "Bijwerken vervangt je eigen kopie door de bestanden van de server."
 }
