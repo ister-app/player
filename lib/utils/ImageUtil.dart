@@ -26,8 +26,10 @@ class ImageUtil {
   static Fragment$fragmentImages? getImageByType(
       List<Fragment$fragmentImages>? images, ImageTypes backgroundType) {
     if (images == null) return null;
+    // A newer server may serve types this build does not know (ICON for a
+    // PS3 game's artwork): those are no match, not a crash.
     final candidates = images.where((element) =>
-        ImageTypes.values.byName(element.type.toLowerCase()) ==
+        ImageTypes.values.asNameMap()[element.type.toLowerCase()] ==
         backgroundType);
     if (candidates.isEmpty) return null;
     // Local artwork shipped next to the media files wins over scraped

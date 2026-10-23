@@ -117,4 +117,13 @@ void main() {
           ImageUtil.buildUrl(image));
     });
   });
+
+  test('an image type this build does not know is skipped, not thrown on', () {
+    final images = [
+      _image('icon', 'ICON', source: 'LOCAL_FILE'),
+      _image('cover', 'COVER', source: 'LOCAL_FILE'),
+    ];
+    expect(ImageUtil.getImageByType(images, ImageTypes.cover)?.id, 'cover');
+    expect(ImageUtil.getImageByType([images.first], ImageTypes.cover), isNull);
+  });
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:player/utils/ClosingTimeoutLink.dart';
 import 'package:player/utils/GraphQLCacheStore.dart';
 import 'package:player/utils/LoginManager.dart';
 import 'package:player/utils/WellKnownService.dart';
@@ -163,10 +164,12 @@ class ClientManager {
     _webSocketLinks[url]?.dispose();
     _webSocketLinks[url] = wsLink;
 
+    // The timeout sits in the link chain rather than in the client
+    // (queryRequestTimeout) so that it closes the stream: see ClosingTimeoutLink.
     final Link link = Link.split(
       (request) => request.isSubscription,
       wsLink,
-      authLink.concat(httpLink),
+      ClosingTimeoutLink(const Duration(seconds: 30)).concat(authLink).concat(httpLink),
     );
     ValueNotifier<GraphQLClient> client = ValueNotifier(
       GraphQLClient(
@@ -174,7 +177,7 @@ class ClientManager {
         // Disk-backed where the platform allows it, so a restart repaints the
         // last browsed content instead of empty shelves (GraphQLCacheStore).
         cache: GraphQLCache(store: GraphQLCacheStore.storeFor(url)),
-        queryRequestTimeout: Duration(seconds: 30),
+        queryRequestTimeout: null,
         // Every cache write rebroadcasts by deep-comparing all watched
         // queries on the UI thread; the default DeepCollectionEquality makes
         // that ~12x slower than this short-circuiting variant and freezes
