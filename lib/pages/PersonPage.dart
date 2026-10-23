@@ -453,7 +453,12 @@ class _PersonPageState extends State<PersonPage> {
         ),
         if (hasAlbums) ...[
           _sectionHeader(context, loc.albums),
-          _albumGrid(context, albums, placeholderCount: albumPlaceholders),
+          _albumGrid(
+            context,
+            albums,
+            placeholderCount: albumPlaceholders,
+            showYear: true,
+          ),
         ],
         // Compilations and guest appearances, newest added first; the tile
         // subtitle (the album artist) is what tells these apart.
@@ -497,10 +502,13 @@ class _PersonPageState extends State<PersonPage> {
 
   /// The album grid; with [placeholderCount] set it renders that many empty
   /// tiles instead — the page-level [Skeletonizer] turns those into bones.
+  /// [showYear] subtitles the tiles with the release year instead of the
+  /// album artist — on the person's own albums the artist is this page.
   Widget _albumGrid(
     BuildContext context,
     List<Fragment$fragmentAlbum> albums, {
     int placeholderCount = 0,
+    bool showYear = false,
   }) {
     return SliverToBoxAdapter(
       child: Center(
@@ -537,7 +545,9 @@ class _PersonPageState extends State<PersonPage> {
                 return CarouselItemView(
                   serverName: serverName,
                   title: MetadataUtil.getTitle(album.metadata) ?? album.name,
-                  subTitle: album.artist.name,
+                  subTitle: showYear
+                      ? (album.releaseYear > 0 ? '${album.releaseYear}' : '')
+                      : album.artist.name,
                   imageUrl: ImageUtil.buildUrl(
                     img,
                     token: StreamTokenService.getToken(serverName),

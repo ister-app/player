@@ -374,6 +374,23 @@ void main() {
     expect(find.text('Albums'), findsNothing);
   });
 
+  testWidgets('subtitles the person\'s own albums with the release year',
+      (tester) async {
+    final client = _fakeGraphQL(person: _person(), albums: [_ownAlbum()]);
+    useClient(client);
+    await tester.pumpWidget(_app(client));
+    await tester.pumpAndSettle();
+
+    final ownTile = find.ancestor(
+        of: find.text('Rocky Sings'), matching: find.byType(CarouselItemView));
+    // The artist is the page itself; the year is what tells the albums apart.
+    expect(find.descendant(of: ownTile, matching: find.text('1990')),
+        findsOneWidget);
+    expect(
+        find.descendant(of: ownTile, matching: find.text('Sylvester Stallone')),
+        findsNothing);
+  });
+
   testWidgets('hides "Appears on" when the person is on no other albums',
       (tester) async {
     final client = _fakeGraphQL(person: _person());
