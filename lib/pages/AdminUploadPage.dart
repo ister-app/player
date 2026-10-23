@@ -351,7 +351,8 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
   }
 
   Future<GameUploadSelection?> _pushCandidates(UploadDirectory directory, List<GamePlatformOption> platforms) =>
-      AutoRouter.of(context).push<GameUploadSelection>(GameUploadCandidatesRoute(directory: directory, platforms: platforms));
+      AutoRouter.of(context).push<GameUploadSelection>(
+          GameUploadCandidatesRoute(directory: directory, platforms: platforms, platform: _platform?.platform));
 
   // ---- transfer ---------------------------------------------------------------------------------
 

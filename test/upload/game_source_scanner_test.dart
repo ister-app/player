@@ -8,6 +8,7 @@ import 'package:player/utils/upload/games/FileSystemView.dart';
 import 'package:player/utils/upload/games/GamePlatformTable.dart';
 import 'package:player/utils/upload/games/GameSourceScanner.dart';
 import 'package:player/utils/upload/games/GameUploadCandidate.dart';
+import 'package:player/utils/upload/games/Rpcs3Locator.dart';
 
 import 'param_sfo_test.dart' show buildSfo;
 
@@ -156,5 +157,44 @@ void main() {
     expect(back.id, c.id);
     expect(back.rootName, 'Game (1999)');
     expect(back.files!.single.absolutePath, '/g/snes/Game (1999).sfc');
+  });
+
+  test("RPCS3's own games: disc dumps from games.yml when present, HDD games wrapped in PS3_GAME/, game data skipped", () async {
+    final hg = buildSfo({'TITLE': 'Fat Princess', 'TITLE_ID': 'NPEA00111', 'CATEGORY': 'HG'});
+    final gd = buildSfo({'TITLE': 'Red Dead Redemption', 'TITLE_ID': 'BLES00680', 'CATEGORY': 'GD'});
+    final fs = MemoryFileSystemView({
+      '/cfg/rpcs3/games.yml': utf8.encode('BLES01294: /media/RDR/Red Dead Redemption/\nBLUS99999: /media/gone/Game/\n'),
+      '/media/RDR/Red Dead Redemption/PS3_GAME/PARAM.SFO': sfo,
+      '/cfg/rpcs3/dev_hdd0/game/NPEA00111/PARAM.SFO': hg,
+      '/cfg/rpcs3/dev_hdd0/game/NPEA00111/USRDIR/EBOOT.BIN': bytes,
+      '/cfg/rpcs3/dev_hdd0/game/BLES00680/PARAM.SFO': gd,
+      '/cfg/rpcs3/dev_hdd0/game/BLES00680/USRDIR/dlc.sdat': bytes,
+      '/cfg/rpcs3/dev_hdd0/game/TEST12345/USRDIR/EBOOT.BIN': bytes,
+    });
+    final found = await scanner(fs).scan(const [], const [], rpcs3ConfigDirs: ['/cfg/rpcs3']);
+    expect(found.map((c) => c.title), ["Demon's Souls", 'Fat Princess']);
+    expect(found[0].sourcePath, '/media/RDR/Red Dead Redemption');
+    expect(found[0].treePrefix, isNull);
+    expect(found[1].treePrefix, 'PS3_GAME/');
+    expect(found[1].titleId, 'NPEA00111');
+  });
+
+  test('a dump both in a source folder and in games.yml, and a Steam library under two names, count once', () async {
+    final fs = MemoryFileSystemView({
+      '/g/Souls/PS3_GAME/PARAM.SFO': sfo,
+      '/cfg/rpcs3/games.yml': utf8.encode('BLUS30443: /g/Souls\n'),
+      '/steam/steamapps/appmanifest_620.acf': acf(620, 'Portal 2', 'Portal 2'),
+      '/steam/steamapps/common/Portal 2/portal2.exe': bytes,
+    });
+    final found = await scanner(fs).scan(
+      ['/g'],
+      [const SteamLibrary(path: '/steam', label: 'a'), const SteamLibrary(path: '/steam/', label: 'b')],
+      rpcs3ConfigDirs: ['/cfg/rpcs3'],
+    );
+    expect(found.map((c) => c.title), ["Demon's Souls", 'Portal 2'], reason: 'source folders first, then Steam');
+  });
+
+  test('games.yml parsing', () {
+    expect(Rpcs3Locator.parseGamesYml('A: /x/\nB: "/y z/"\n# c: /n\n\nbad\n'), {'A': '/x', 'B': '/y z'});
   });
 }

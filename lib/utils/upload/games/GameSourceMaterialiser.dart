@@ -24,7 +24,7 @@ class GameSourceMaterialiser {
       case GameCandidateKind.romFile:
         return candidate.files ?? const [];
       case GameCandidateKind.tree:
-        return _listTree(candidate.sourcePath, '');
+        return _listTree(candidate.sourcePath, candidate.treePrefix ?? '');
       case GameCandidateKind.steam:
         final manifest = candidate.steamManifestPath!;
         final installDir = candidate.steamInstallDir!;

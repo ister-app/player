@@ -3613,4 +3613,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get uploadGamesSave => 'Save';
+
+  @override
+  String get uploadGamesAllPlatforms => 'All platforms';
+
+  @override
+  String get uploadGamesFromRpcs3 => 'RPCS3';
 }

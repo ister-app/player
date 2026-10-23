@@ -66,8 +66,11 @@ naar de games op deze computer zoeken; één map met de hand kiezen kan nog stee
    - PlayStation 3-dumps, een paar niveaus diep waar dan ook, aan hun `PS3_GAME/PARAM.SFO`, met de
      titel van de disc;
    - volledig geïnstalleerde Steam-games, aan hun `appmanifest_<appid>.acf` (tools en runtimes
-     blijven weg).
-   Games die Ister zelf installeerde worden nooit aangeboden.
+     blijven weg);
+   - de eigen games van RPCS3: de disc-dumps uit zijn `games.yml` (als hun schijf gemount is) en de
+     PSN-titels onder `dev_hdd0/game`, die in een `PS3_GAME/`-map verpakt omhooggaan.
+   Games die Ister zelf installeerde worden nooit aangeboden. Met een gekozen **Platform** op de
+   uploadpagina opent de lijst alleen met dat platform; de chips bovenaan verbreden hem.
 2. De lijst is per platform gegroepeerd. Games die de bibliotheek al heeft staan als **Al in de
    bibliotheek** en zijn niet aangevinkt; een game zonder jaar of twee games die in dezelfde map
    zouden belanden krijgen ook een label. Tik op het potlood om een **titel** of **jaar** te

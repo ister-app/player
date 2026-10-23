@@ -65,8 +65,11 @@ on this computer itself; picking one folder by hand still works too.
      taken along;
    - PlayStation 3 dumps anywhere a few levels deep, by their `PS3_GAME/PARAM.SFO`, titled after
      the disc;
-   - fully installed Steam games, by their `appmanifest_<appid>.acf` (tools and runtimes left out).
-   Games Ister installed itself are never offered.
+   - fully installed Steam games, by their `appmanifest_<appid>.acf` (tools and runtimes left out);
+   - RPCS3's own games: the disc dumps it lists in `games.yml` (when their drive is mounted) and the
+     PSN titles installed under `dev_hdd0/game`, which go up wrapped in a `PS3_GAME/` folder.
+   Games Ister installed itself are never offered. With a **Platform** picked on the upload page
+   the list opens showing only that platform; the chips at the top widen it.
 2. The list is grouped by platform. Games the library already has are marked **Already in the
    library** and unticked; a game without a year or two games that would land in the same folder
    carry a badge too. Tap the pencil to correct a **title** or **year**. **Scan again** after moving

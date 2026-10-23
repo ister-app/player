@@ -22,6 +22,7 @@ class SteamAppManifest {
   /// are no games.
   static const runtimeAppIds = {
     228980, // Steamworks Common Redistributables
+    250820, // SteamVR
     1070560, 1391110, 1628350, // Steam Linux Runtime (scout, soldier, sniper)
     1887720, 1493710, 2180100, 1245040, 1420170, 1580130, 858280, 961940, 1054830, 1113280, 1161040, // Proton builds
   };
@@ -55,9 +56,12 @@ class SteamAppManifest {
     final dir = installDir.toLowerCase();
     return lower.startsWith('proton') ||
         lower.startsWith('steam linux runtime') ||
+        lower.startsWith('legacy steam runtime') ||
         lower.startsWith('steamworks') ||
+        lower == 'steamvr' ||
         dir.startsWith('proton') ||
         dir.startsWith('steamlinuxruntime') ||
+        dir.startsWith('legacysteamruntime') ||
         dir.startsWith('steamworks shared');
   }
 }

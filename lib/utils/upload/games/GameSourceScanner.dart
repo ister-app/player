@@ -10,6 +10,7 @@ import 'GamePlatformTable.dart';
 import 'GameSourceNaming.dart';
 import 'GameUploadCandidate.dart';
 import 'ParamSfo.dart';
+import 'Rpcs3Locator.dart';
 import 'SteamAppManifest.dart';
 
 /// Finds the games on this computer that the server's scanner would accept,
@@ -40,8 +41,11 @@ class GameSourceScanner {
 
   static const _ps3Marker = 'PS3_GAME/PARAM.SFO';
 
-  /// Every candidate under [roots] and in [steamLibraries], conflicts marked.
-  Future<List<GameUploadCandidate>> scan(List<String> roots, List<SteamLibrary> steamLibraries) async {
+  /// Every candidate under [roots], in [steamLibraries] and known to the
+  /// RPCS3 installs at [rpcs3ConfigDirs]; conflicts marked, a game reached
+  /// twice (two names for one Steam library, a dump RPCS3 also lists) once.
+  Future<List<GameUploadCandidate>> scan(List<String> roots, List<SteamLibrary> steamLibraries,
+      {List<String> rpcs3ConfigDirs = const []}) async {
     final found = <GameUploadCandidate>[];
     for (final root in roots) {
       found.addAll(await scanRoot(root));
@@ -49,7 +53,73 @@ class GameSourceScanner {
     for (final library in steamLibraries) {
       found.addAll(await scanSteamLibrary(library));
     }
-    return markConflicts(found);
+    for (final dir in rpcs3ConfigDirs) {
+      found.addAll(await scanRpcs3(dir));
+    }
+    return markConflicts(dedupe(found));
+  }
+
+  /// One candidate per game: Steam games by app id, everything else by source path.
+  static List<GameUploadCandidate> dedupe(List<GameUploadCandidate> candidates) {
+    final seen = <String>{};
+    return [
+      for (final c in candidates)
+        if (seen.add(c.steamAppId != null && c.kind == GameCandidateKind.steam
+            ? 'steam:${c.steamAppId}'
+            : '${c.platform.name}|${c.sourcePath.replaceAll(r'\', '/').toLowerCase()}'))
+          c
+    ];
+  }
+
+  /// RPCS3's games: the disc dumps `games.yml` points at (when their drive is
+  /// there) and the HDD games under `dev_hdd0/game` — PSN titles with their
+  /// `PARAM.SFO` and `USRDIR/EBOOT.BIN` at the top, which go up wrapped in
+  /// `PS3_GAME/` so the server sees a PS3 folder. Game data (`GD`, an update
+  /// or DLC next to a disc game) is no game and is left out.
+  Future<List<GameUploadCandidate>> scanRpcs3(String configDir) async {
+    final option = table.byPlatform(Enum$GamePlatform.PS3);
+    if (option == null) return const [];
+    final found = <GameUploadCandidate>[];
+    final yml = fs.join(configDir, 'games.yml');
+    if (await fs.exists(yml)) {
+      try {
+        for (final path in Rpcs3Locator.parseGamesYml(await fs.readString(yml)).values) {
+          if (_excluded(path) || !await fs.isDirectory(path)) continue;
+          final candidate = await _ps3Candidate(path, FileSystemView.baseName(path), platform: option);
+          if (candidate != null) found.add(candidate);
+        }
+      } catch (_) {
+        // An unreadable games.yml: the HDD games are still worth listing.
+      }
+    }
+    final hdd = fs.join(fs.join(configDir, 'dev_hdd0'), 'game');
+    if (await fs.isDirectory(hdd)) {
+      for (final entry in await fs.list(hdd)) {
+        if (!entry.isDirectory || entry.name.startsWith('.') || entry.name.startsWith('\$')) continue;
+        final sfoPath = fs.join(entry.path, 'PARAM.SFO');
+        final eboot = fs.join(fs.join(entry.path, 'USRDIR'), 'EBOOT.BIN');
+        if (!await fs.exists(sfoPath) || !await fs.exists(eboot)) continue;
+        final ParamSfo sfo;
+        try {
+          sfo = ParamSfo.parse(await fs.readBytes(sfoPath));
+        } catch (_) {
+          continue;
+        }
+        if (sfo.category == 'GD') continue;
+        final named = GameSourceNaming.titleAndYear(sfo.title ?? entry.name);
+        found.add(GameUploadCandidate(
+          platform: Enum$GamePlatform.PS3,
+          platformFolder: option.folder,
+          title: named.title,
+          year: named.year,
+          kind: GameCandidateKind.tree,
+          sourcePath: entry.path,
+          titleId: sfo.titleId ?? entry.name,
+          treePrefix: 'PS3_GAME/',
+        ));
+      }
+    }
+    return found;
   }
 
   /// A source folder: itself a platform folder, or a tree with platform

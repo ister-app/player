@@ -5911,6 +5911,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save'**
   String get uploadGamesSave;
+
+  /// Candidates page: platform filter chip
+  ///
+  /// In en, this message translates to:
+  /// **'All platforms'**
+  String get uploadGamesAllPlatforms;
+
+  /// Candidate subtitle: found through RPCS3's own game list
+  ///
+  /// In en, this message translates to:
+  /// **'RPCS3'**
+  String get uploadGamesFromRpcs3;
 }
 
 class _AppLocalizationsDelegate

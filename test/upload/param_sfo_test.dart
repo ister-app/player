@@ -55,6 +55,8 @@ void main() {
     expect(sfo.title, "Demon's Souls");
     expect(sfo.titleId, 'BLUS30443');
     expect(sfo.values['PARENTAL_LEVEL'], 9);
+    expect(ParamSfo.parse(buildSfo({'TITLE': "Uncharted: Drake's Fortune™\n1.02"})).title, "Uncharted: Drake's Fortune™");
+    expect(ParamSfo.parse(buildSfo({'TITLE': 'Portal\n2'})).title, 'Portal 2', reason: 'a bare number is part of the name');
   });
 
   test('rejects other files and truncated ones', () {

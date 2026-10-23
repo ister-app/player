@@ -3951,5 +3951,9 @@
   "gameSettingsSteamNone": "No Steam installation found",
   "@gameSettingsSteamNone": {"description": "Game settings info line"},
   "uploadGamesSave": "Save",
-  "@uploadGamesSave": {"description": "Edit dialog action"}
+  "@uploadGamesSave": {"description": "Edit dialog action"},
+  "uploadGamesAllPlatforms": "All platforms",
+  "@uploadGamesAllPlatforms": {"description": "Candidates page: platform filter chip"},
+  "uploadGamesFromRpcs3": "RPCS3",
+  "@uploadGamesFromRpcs3": {"description": "Candidate subtitle: found through RPCS3's own game list"}
 }

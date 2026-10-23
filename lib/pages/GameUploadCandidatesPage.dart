@@ -22,6 +22,7 @@ import '../utils/upload/games/GameLibraryIndex.dart';
 import '../utils/upload/games/GamePlatformTable.dart';
 import '../utils/upload/games/GameSourceScanner.dart';
 import '../utils/upload/games/GameUploadCandidate.dart';
+import '../utils/upload/games/Rpcs3Locator.dart';
 import 'DownloadsPage.dart' show formatBytes;
 
 /// What the admin ticked, back to the upload page.
@@ -46,6 +47,7 @@ class GameUploadCandidatesPage extends StatefulWidget {
     @PathParam.inherit('serverName') required this.serverName,
     required this.directory,
     required this.platforms,
+    this.platform,
     this.scan,
     this.indexLoader,
     this.pickFolder,
@@ -54,6 +56,9 @@ class GameUploadCandidatesPage extends StatefulWidget {
   final String serverName;
   final UploadDirectory directory;
   final List<GamePlatformOption> platforms;
+
+  /// The platform picked on the upload page: the list opens filtered to it.
+  final Enum$GamePlatform? platform;
 
   /// Test seams.
   final GameCandidateScan? scan;
@@ -75,7 +80,7 @@ class GameUploadCandidatesPage extends StatefulWidget {
       excludedPaths: {gamesRoot},
       excludedSteamAppIds: {for (final i in installs.values) if (i.steamAppId != null) i.steamAppId!},
     );
-    return scanner.scan(roots, await SteamLibraryLocator().libraries());
+    return scanner.scan(roots, await SteamLibraryLocator().libraries(), rpcs3ConfigDirs: await Rpcs3Locator().configDirs());
   }
 }
 
@@ -86,9 +91,13 @@ class _GameUploadCandidatesPageState extends State<GameUploadCandidatesPage> {
   final Set<String> _selected = {};
   List<String> _folders = const [];
 
+  /// The platform shown; null = all.
+  Enum$GamePlatform? _filter;
+
   @override
   void initState() {
     super.initState();
+    _filter = widget.platform;
     unawaited(_load());
     unawaited(_loadIndex());
   }
@@ -250,10 +259,30 @@ class _GameUploadCandidatesPageState extends State<GameUploadCandidatesPage> {
     for (final c in candidates) {
       groups.putIfAbsent(c.platform, () => []).add(c);
     }
+    final filter = groups.containsKey(_filter) ? _filter : null;
+    final shown = [for (final e in groups.entries) if (filter == null || e.key == filter) e];
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
       children: [
-        for (final entry in groups.entries) ...[
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Wrap(spacing: 8, runSpacing: 4, children: [
+            ChoiceChip(
+              key: const ValueKey('game-candidates-filter-all'),
+              label: Text(loc.uploadGamesAllPlatforms),
+              selected: filter == null,
+              onSelected: (_) => setState(() => _filter = null),
+            ),
+            for (final platform in groups.keys)
+              ChoiceChip(
+                key: ValueKey('game-candidates-filter-${platform.name}'),
+                label: Text('${GameLabels.platform(platform)} (${groups[platform]!.length})'),
+                selected: filter == platform,
+                onSelected: (_) => setState(() => _filter = platform),
+              ),
+          ]),
+        ),
+        for (final entry in shown) ...[
           Row(children: [
             Expanded(child: SettingsSectionLabel('${GameLabels.platform(entry.key)} (${entry.value.length})')),
             TextButton(

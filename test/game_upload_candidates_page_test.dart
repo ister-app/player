@@ -48,7 +48,7 @@ void main() {
 
   /// Opens the page from a host screen so that popping with a selection
   /// lands in [result].
-  Future<void> pump(WidgetTester tester, List<GameUploadCandidate> candidates) async {
+  Future<void> pump(WidgetTester tester, List<GameUploadCandidate> candidates, {Enum$GamePlatform? platform}) async {
     tester.view.physicalSize = const Size(900, 1600);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -66,6 +66,7 @@ void main() {
                   serverName: 'http://srv',
                   directory: directory,
                   platforms: platforms,
+                  platform: platform,
                   scan: (_) async => candidates,
                   indexLoader: (_) async => GameLibraryIndex({
                     GameLibraryIndex.key(Enum$GamePlatform.SNES, 'Chrono Trigger'): const FoundGame(
@@ -88,8 +89,8 @@ void main() {
     final mario = rom('Super Mario World');
     await pump(tester, [chrono, mario, souls]);
 
-    expect(find.text('SNES (2)'), findsOneWidget);
-    expect(find.text('PlayStation 3 (1)'), findsOneWidget);
+    expect(find.text('SNES (2)'), findsNWidgets(2), reason: 'the chip and the group label');
+    expect(find.text('PlayStation 3 (1)'), findsNWidgets(2));
     expect(find.text('Already in the library'), findsOneWidget);
     expect(find.text('No year'), findsOneWidget, reason: 'Mario has none');
     expect(find.textContaining('BLUS30443'), findsOneWidget);
@@ -130,5 +131,18 @@ void main() {
     // Which message depends on whether this machine has a ~/Games; both point at the settings.
     expect(find.textContaining('Game settings'), findsOneWidget);
     expect(find.byKey(const ValueKey('game-candidates-upload')), findsNothing);
+  });
+
+  testWidgets('a platform from the upload page opens the list filtered; the chips widen it', (tester) async {
+    await pump(tester, [rom('Chrono Trigger', year: '1995'), souls], platform: Enum$GamePlatform.PS3);
+    expect(find.text("Demon's Souls (2009)"), findsOneWidget);
+    expect(find.text('Chrono Trigger (1995)'), findsNothing);
+    expect(find.byKey(const ValueKey('game-candidates-filter-PS3')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('game-candidates-filter-all')));
+    await tester.pumpAndSettle();
+    expect(find.text('Chrono Trigger (1995)'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('game-candidates-filter-SNES')));
+    await tester.pumpAndSettle();
+    expect(find.text("Demon's Souls (2009)"), findsNothing);
   });
 }

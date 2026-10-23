@@ -31,6 +31,7 @@ class GameCandidateTile extends StatelessWidget {
       candidate.sourcePath,
       if (candidate.steamAppId != null) loc.uploadGamesSteamApp(candidate.steamAppId!),
       if (candidate.titleId != null) candidate.titleId!,
+      if (candidate.treePrefix != null) loc.uploadGamesFromRpcs3,
       size == null ? loc.uploadGamesSizeUnknown : formatBytes(size),
     ];
     final badges = <Widget>[

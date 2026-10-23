@@ -45,7 +45,9 @@ class SteamLibraryLocator {
     for (final candidate in rootCandidates()) {
       final dir = Directory(candidate);
       if (dir.existsSync() && Directory('${dir.path}${Platform.pathSeparator}steamapps').existsSync()) {
-        return dir;
+        // `~/.steam/steam` is a symlink to the real root, which libraryfolders.vdf
+        // names by its real path: compare and list resolved paths only.
+        return Directory(_resolved(dir.path));
       }
     }
     return null;
@@ -64,8 +66,8 @@ class SteamLibraryLocator {
         for (final entry in body.values) {
           if (entry is Map<String, Object>) {
             final path = Vdf.string(entry, 'path');
-            if (path != null && path.isNotEmpty && !libraries.any((l) => _samePath(l.path, path))) {
-              libraries.add(SteamLibrary(path: path, label: Vdf.string(entry, 'label') ?? path));
+            if (path != null && path.isNotEmpty && !libraries.any((l) => _samePath(l.path, _resolved(path)))) {
+              libraries.add(SteamLibrary(path: _resolved(path), label: Vdf.string(entry, 'label') ?? path));
             }
           }
         }
@@ -123,6 +125,14 @@ class SteamLibraryLocator {
       return match?.group(1)?.trim().replaceAll('/', r'\');
     } catch (_) {
       return null;
+    }
+  }
+
+  static String _resolved(String path) {
+    try {
+      return Directory(path).resolveSymbolicLinksSync();
+    } catch (_) {
+      return path;
     }
   }
 

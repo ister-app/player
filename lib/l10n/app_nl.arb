@@ -1084,5 +1084,7 @@
   "gameSettingsSourceMissing": "Map niet gevonden",
   "gameSettingsSteamLibraries": "Steam-libraries: {paths}",
   "gameSettingsSteamNone": "Geen Steam-installatie gevonden",
-  "uploadGamesSave": "Opslaan"
+  "uploadGamesSave": "Opslaan",
+  "uploadGamesAllPlatforms": "Alle platforms",
+  "uploadGamesFromRpcs3": "RPCS3"
 }

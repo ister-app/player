@@ -50,13 +50,23 @@ class ParamSfo {
     return utf8.decode(bytes.sublist(start, end), allowMalformed: true);
   }
 
-  /// The game's title with the line breaks some discs put in collapsed.
+  /// The game's title. Some discs break it over lines, and an updated HDD
+  /// game carries its patch version on a line of its own (`…\n1.02`), which
+  /// is no part of the name.
   String? get title {
     final raw = values['TITLE'];
     if (raw is! String) return null;
-    final clean = raw.replaceAll(RegExp(r'\s+'), ' ').trim();
+    final lines = [for (final l in raw.split(RegExp(r'[\r\n]+'))) l.trim()].where((l) => l.isNotEmpty).toList();
+    while (lines.length > 1 && RegExp(r'^v?\d+(\.\d+)+$').hasMatch(lines.last)) {
+      lines.removeLast();
+    }
+    final clean = lines.join(' ').replaceAll(RegExp(r'\s+'), ' ').trim();
     return clean.isEmpty ? null : clean;
   }
 
   String? get titleId => values['TITLE_ID'] is String ? (values['TITLE_ID'] as String).trim() : null;
+
+  /// `DG` disc game, `HG` HDD game (a PSN title), `GD` game data (an update
+  /// or DLC pack next to a disc game — not a game by itself).
+  String? get category => values['CATEGORY'] is String ? (values['CATEGORY'] as String).trim() : null;
 }

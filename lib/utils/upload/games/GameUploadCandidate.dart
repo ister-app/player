@@ -34,6 +34,7 @@ class GameUploadCandidate {
     this.steamManifestPath,
     this.steamInstallDir,
     this.titleId,
+    this.treePrefix,
     this.conflictWith,
   });
 
@@ -60,6 +61,10 @@ class GameUploadCandidate {
   /// `steamapps/common/<installdir>` of a [GameCandidateKind.steam] candidate.
   final String? steamInstallDir;
   final String? titleId;
+
+  /// For [GameCandidateKind.tree]: put in front of every relative path —
+  /// `PS3_GAME/` wraps an RPCS3 HDD game the way the server expects a PS3 folder.
+  final String? treePrefix;
 
   /// The title of an earlier candidate that lands in the same server folder.
   final String? conflictWith;
@@ -93,6 +98,7 @@ class GameUploadCandidate {
         steamManifestPath: steamManifestPath,
         steamInstallDir: steamInstallDir,
         titleId: titleId,
+        treePrefix: treePrefix,
         conflictWith: clearConflict ? null : (conflictWith ?? this.conflictWith),
       );
 
@@ -111,6 +117,7 @@ class GameUploadCandidate {
         'steamManifestPath': steamManifestPath,
         'steamInstallDir': steamInstallDir,
         'titleId': titleId,
+        'treePrefix': treePrefix,
       };
 
   factory GameUploadCandidate.fromJson(Map<String, dynamic> json) => GameUploadCandidate(
@@ -131,5 +138,6 @@ class GameUploadCandidate {
         steamManifestPath: json['steamManifestPath'] as String?,
         steamInstallDir: json['steamInstallDir'] as String?,
         titleId: json['titleId'] as String?,
+        treePrefix: json['treePrefix'] as String?,
       );
 }

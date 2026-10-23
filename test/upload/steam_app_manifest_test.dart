@@ -32,6 +32,8 @@ void main() {
     expect(SteamAppManifest.parse(acf(appid: 228980, name: 'Steamworks Common Redistributables'))!.isRuntimeOrRedist, isTrue);
     expect(SteamAppManifest.parse(acf(appid: 1, name: 'Proton 9.0', dir: 'Proton 9.0'))!.isRuntimeOrRedist, isTrue);
     expect(SteamAppManifest.parse(acf(appid: 2, name: 'Steam Linux Runtime 3.0 (sniper)', dir: 'SteamLinuxRuntime_sniper'))!.isRuntimeOrRedist, isTrue);
+    expect(SteamAppManifest.parse(acf(appid: 3, name: 'Legacy Steam Runtime', dir: 'LegacySteamRuntime'))!.isRuntimeOrRedist, isTrue);
+    expect(SteamAppManifest.parse(acf(appid: 250820, name: 'SteamVR', dir: 'SteamVR'))!.isRuntimeOrRedist, isTrue);
   });
 
   test('a manifest without appid or installdir, or garbage, is null', () {

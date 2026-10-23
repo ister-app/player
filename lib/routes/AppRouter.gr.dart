@@ -13,10 +13,11 @@
 import 'dart:async' as _i52;
 
 import 'package:auto_route/auto_route.dart' as _i48;
-import 'package:collection/collection.dart' as _i59;
+import 'package:collection/collection.dart' as _i62;
 import 'package:flutter/foundation.dart' as _i50;
 import 'package:material_ui/material_ui.dart' as _i49;
 import 'package:player/components/upload/GameUploadTarget.dart' as _i54;
+import 'package:player/graphql/schema.graphql.dart' as _i61;
 import 'package:player/pages/AddServerPage.dart' as _i1;
 import 'package:player/pages/AdminLibrariesPage.dart' as _i2;
 import 'package:player/pages/AdminUploadPage.dart' as _i3;
@@ -64,8 +65,10 @@ import 'package:player/pages/ShowHomePage.dart' as _i44;
 import 'package:player/pages/ShowOverviewContentPage.dart' as _i45;
 import 'package:player/pages/ShowOverviewPage.dart' as _i46;
 import 'package:player/pages/SleepTimerSettingsPage.dart' as _i47;
+import 'package:player/utils/games/steam/SteamLibraryLocator.dart' as _i60;
 import 'package:player/utils/upload/GameFoundProbe.dart' as _i55;
 import 'package:player/utils/upload/games/GameLibraryIndex.dart' as _i57;
+import 'package:player/utils/upload/games/GameSourceMaterialiser.dart' as _i59;
 import 'package:player/utils/upload/games/GameUploadBatch.dart' as _i58;
 import 'package:player/utils/upload/UploadApi.dart' as _i51;
 import 'package:player/utils/upload/UploadModels.dart' as _i56;
@@ -186,6 +189,7 @@ class AdminUploadRoute extends _i48.PageRouteInfo<AdminUploadRouteArgs> {
     pickCandidates,
     _i57.GameLibraryIndexLoader? indexLoader,
     _i58.GameUploadRunnerFactory? runnerFactory,
+    _i59.GameSourceMaterialiser? materialiser,
     _i52.Future<_i53.UploadSourceFolder?> Function(String)? reopenFolder,
     List<_i48.PageRouteInfo>? children,
   }) : super(
@@ -201,6 +205,7 @@ class AdminUploadRoute extends _i48.PageRouteInfo<AdminUploadRouteArgs> {
            pickCandidates: pickCandidates,
            indexLoader: indexLoader,
            runnerFactory: runnerFactory,
+           materialiser: materialiser,
            reopenFolder: reopenFolder,
          ),
          initialChildren: children,
@@ -227,6 +232,7 @@ class AdminUploadRoute extends _i48.PageRouteInfo<AdminUploadRouteArgs> {
         pickCandidates: args.pickCandidates,
         indexLoader: args.indexLoader,
         runnerFactory: args.runnerFactory,
+        materialiser: args.materialiser,
         reopenFolder: args.reopenFolder,
       );
     },
@@ -245,6 +251,7 @@ class AdminUploadRouteArgs {
     this.pickCandidates,
     this.indexLoader,
     this.runnerFactory,
+    this.materialiser,
     this.reopenFolder,
   });
 
@@ -272,11 +279,13 @@ class AdminUploadRouteArgs {
 
   final _i58.GameUploadRunnerFactory? runnerFactory;
 
+  final _i59.GameSourceMaterialiser? materialiser;
+
   final _i52.Future<_i53.UploadSourceFolder?> Function(String)? reopenFolder;
 
   @override
   String toString() {
-    return 'AdminUploadRouteArgs{key: $key, api: $api, pickFolder: $pickFolder, loadPlatforms: $loadPlatforms, findGame: $findGame, gameProbeInterval: $gameProbeInterval, gameProbePatience: $gameProbePatience, pickCandidates: $pickCandidates, indexLoader: $indexLoader, runnerFactory: $runnerFactory, reopenFolder: $reopenFolder}';
+    return 'AdminUploadRouteArgs{key: $key, api: $api, pickFolder: $pickFolder, loadPlatforms: $loadPlatforms, findGame: $findGame, gameProbeInterval: $gameProbeInterval, gameProbePatience: $gameProbePatience, pickCandidates: $pickCandidates, indexLoader: $indexLoader, runnerFactory: $runnerFactory, materialiser: $materialiser, reopenFolder: $reopenFolder}';
   }
 
   @override
@@ -289,7 +298,8 @@ class AdminUploadRouteArgs {
         gameProbeInterval == other.gameProbeInterval &&
         gameProbePatience == other.gameProbePatience &&
         indexLoader == other.indexLoader &&
-        runnerFactory == other.runnerFactory;
+        runnerFactory == other.runnerFactory &&
+        materialiser == other.materialiser;
   }
 
   @override
@@ -300,7 +310,8 @@ class AdminUploadRouteArgs {
       gameProbeInterval.hashCode ^
       gameProbePatience.hashCode ^
       indexLoader.hashCode ^
-      runnerFactory.hashCode;
+      runnerFactory.hashCode ^
+      materialiser.hashCode;
 }
 
 /// generated route for
@@ -981,12 +992,20 @@ class GameRouteArgs {
 /// generated route for
 /// [_i13.GameSettingsPage]
 class GameSettingsRoute extends _i48.PageRouteInfo<GameSettingsRouteArgs> {
-  GameSettingsRoute({_i49.Key? key, List<_i48.PageRouteInfo>? children})
-    : super(
-        GameSettingsRoute.name,
-        args: GameSettingsRouteArgs(key: key),
-        initialChildren: children,
-      );
+  GameSettingsRoute({
+    _i49.Key? key,
+    _i52.Future<List<_i60.SteamLibrary>> Function()? steamLibraries,
+    _i52.Future<String?> Function()? pickDirectory,
+    List<_i48.PageRouteInfo>? children,
+  }) : super(
+         GameSettingsRoute.name,
+         args: GameSettingsRouteArgs(
+           key: key,
+           steamLibraries: steamLibraries,
+           pickDirectory: pickDirectory,
+         ),
+         initialChildren: children,
+       );
 
   static const String name = 'GameSettingsRoute';
 
@@ -1000,19 +1019,29 @@ class GameSettingsRoute extends _i48.PageRouteInfo<GameSettingsRouteArgs> {
       return _i13.GameSettingsPage(
         key: args.key,
         serverName: pathParams.getString('serverName'),
+        steamLibraries: args.steamLibraries,
+        pickDirectory: args.pickDirectory,
       );
     },
   );
 }
 
 class GameSettingsRouteArgs {
-  const GameSettingsRouteArgs({this.key});
+  const GameSettingsRouteArgs({
+    this.key,
+    this.steamLibraries,
+    this.pickDirectory,
+  });
 
   final _i49.Key? key;
 
+  final _i52.Future<List<_i60.SteamLibrary>> Function()? steamLibraries;
+
+  final _i52.Future<String?> Function()? pickDirectory;
+
   @override
   String toString() {
-    return 'GameSettingsRouteArgs{key: $key}';
+    return 'GameSettingsRouteArgs{key: $key, steamLibraries: $steamLibraries, pickDirectory: $pickDirectory}';
   }
 
   @override
@@ -1034,6 +1063,7 @@ class GameUploadCandidatesRoute
     _i49.Key? key,
     required _i56.UploadDirectory directory,
     required List<_i54.GamePlatformOption> platforms,
+    _i61.Enum$GamePlatform? platform,
     _i14.GameCandidateScan? scan,
     _i57.GameLibraryIndexLoader? indexLoader,
     _i52.Future<_i53.UploadSourceFolder?> Function()? pickFolder,
@@ -1044,6 +1074,7 @@ class GameUploadCandidatesRoute
            key: key,
            directory: directory,
            platforms: platforms,
+           platform: platform,
            scan: scan,
            indexLoader: indexLoader,
            pickFolder: pickFolder,
@@ -1063,6 +1094,7 @@ class GameUploadCandidatesRoute
         serverName: pathParams.getString('serverName'),
         directory: args.directory,
         platforms: args.platforms,
+        platform: args.platform,
         scan: args.scan,
         indexLoader: args.indexLoader,
         pickFolder: args.pickFolder,
@@ -1076,6 +1108,7 @@ class GameUploadCandidatesRouteArgs {
     this.key,
     required this.directory,
     required this.platforms,
+    this.platform,
     this.scan,
     this.indexLoader,
     this.pickFolder,
@@ -1087,6 +1120,8 @@ class GameUploadCandidatesRouteArgs {
 
   final List<_i54.GamePlatformOption> platforms;
 
+  final _i61.Enum$GamePlatform? platform;
+
   final _i14.GameCandidateScan? scan;
 
   final _i57.GameLibraryIndexLoader? indexLoader;
@@ -1095,7 +1130,7 @@ class GameUploadCandidatesRouteArgs {
 
   @override
   String toString() {
-    return 'GameUploadCandidatesRouteArgs{key: $key, directory: $directory, platforms: $platforms, scan: $scan, indexLoader: $indexLoader, pickFolder: $pickFolder}';
+    return 'GameUploadCandidatesRouteArgs{key: $key, directory: $directory, platforms: $platforms, platform: $platform, scan: $scan, indexLoader: $indexLoader, pickFolder: $pickFolder}';
   }
 
   @override
@@ -1104,10 +1139,11 @@ class GameUploadCandidatesRouteArgs {
     if (other is! GameUploadCandidatesRouteArgs) return false;
     return key == other.key &&
         directory == other.directory &&
-        const _i59.ListEquality<_i54.GamePlatformOption>().equals(
+        const _i62.ListEquality<_i54.GamePlatformOption>().equals(
           platforms,
           other.platforms,
         ) &&
+        platform == other.platform &&
         scan == other.scan &&
         indexLoader == other.indexLoader;
   }
@@ -1116,7 +1152,8 @@ class GameUploadCandidatesRouteArgs {
   int get hashCode =>
       key.hashCode ^
       directory.hashCode ^
-      const _i59.ListEquality<_i54.GamePlatformOption>().hash(platforms) ^
+      const _i62.ListEquality<_i54.GamePlatformOption>().hash(platforms) ^
+      platform.hashCode ^
       scan.hashCode ^
       indexLoader.hashCode;
 }
