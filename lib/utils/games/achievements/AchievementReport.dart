@@ -34,8 +34,13 @@ class ReportedAchievement {
 }
 
 class AchievementReport {
-  const AchievementReport({required this.source, required this.achievements});
+  const AchievementReport({required this.source, required this.achievements, this.complete = true});
   final String source; // PS3_TROPHY | STEAM
   final List<ReportedAchievement> achievements;
+
+  /// Whether [achievements] is the game's whole set (a trophy config, a Steam
+  /// schema). The server then drops definitions of this source it no longer
+  /// sees — the way a set once credited to the wrong game gets cleaned up.
+  final bool complete;
   int get unlocked => achievements.where((a) => a.unlockedAt != null).length;
 }

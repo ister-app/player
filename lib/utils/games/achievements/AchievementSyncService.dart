@@ -42,6 +42,7 @@ class AchievementSyncService {
       'source': report.source,
       'deviceName': deviceName,
       'achievements': [for (final a in report.achievements) a.toJson()],
+      'complete': report.complete,
     });
     for (final achievement in report.achievements) {
       final icon = achievement.iconPng;
