@@ -905,7 +905,11 @@ class GameLibraryService {
       final config = rpcs3?.configDir;
       if (config != null) {
         final reader = Ps3TrophyReader(rpcs3Config: Directory(config));
-        for (final folder in await reader.foldersFor(install.titleId)) {
+        // The game's own TROPDIR says which trophy set is its: an adopted
+        // copy's folder, or the files Ister installed.
+        final gameRoot = Directory(install.adoptedFrom ?? install.filesDir.path);
+        final commIds = await Ps3TrophyReader.commIdsOf(gameRoot);
+        for (final folder in await reader.foldersFor(install.titleId, commIds: commIds, title: install.title)) {
           report = await reader.read(folder);
           if (report != null) break;
         }

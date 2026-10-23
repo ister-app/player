@@ -19,25 +19,71 @@ class Ps3TrophyReader {
 
   Directory get trophyRoot => Directory('${rpcs3Config.path}${Platform.pathSeparator}dev_hdd0${Platform.pathSeparator}home${Platform.pathSeparator}$userId${Platform.pathSeparator}trophy');
 
-  /// The trophy folders that belong to a game: the ones whose TROPCONF.SFM
-  /// names the title id, or (older dumps) every folder when none does.
-  Future<List<Directory>> foldersFor(String? titleId) async {
+  /// The trophy folders that belong to a game. RPCS3 names them by trophy
+  /// set (`NPWR00737_00`), not by title id, and `TROPCONF.SFM` carries no
+  /// title id either — only the set's `npcommid` and `title-name`. So the
+  /// game's own `TROPDIR` (which lists its set ids, see [commIdsOf]) is the
+  /// authoritative link, the title id a bonus when a config happens to name
+  /// it, and the title name the last resort. Nothing matches → nothing: a
+  /// guess would credit another game's trophies.
+  Future<List<Directory>> foldersFor(String? titleId, {Set<String> commIds = const {}, String? title}) async {
     if (!await trophyRoot.exists()) return const [];
-    final all = <Directory>[];
+    final wantedTitle = title == null ? null : _normalise(title);
     final matching = <Directory>[];
     await for (final entity in trophyRoot.list()) {
       if (entity is! Directory) continue;
       final conf = File('${entity.path}${Platform.pathSeparator}TROPCONF.SFM');
       if (!await conf.exists()) continue;
-      all.add(entity);
-      if (titleId != null) {
-        try {
-          final text = await conf.readAsString();
-          if (text.contains(titleId)) matching.add(entity);
-        } catch (_) {}
+      final name = entity.path.substring(entity.path.lastIndexOf(Platform.pathSeparator) + 1);
+      if (commIds.contains(name)) {
+        matching.add(entity);
+        continue;
+      }
+      try {
+        final text = await conf.readAsString();
+        if (titleId != null && titleId.isNotEmpty && text.contains(titleId)) {
+          matching.add(entity);
+          continue;
+        }
+        final named = _titleName.firstMatch(text)?.group(1);
+        if (wantedTitle != null && named != null && _normalise(named) == wantedTitle) matching.add(entity);
+      } catch (_) {}
+    }
+    return matching;
+  }
+
+  static final RegExp _titleName = RegExp(r'<title-name>([^<]*)</title-name>');
+
+  static String _normalise(String title) => title
+      .replaceAll('&amp;', '&')
+      .replaceAll('&apos;', "'")
+      .replaceAll('&quot;', '"')
+      .replaceAll(RegExp(r'[™®©]'), '')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim()
+      .toLowerCase();
+
+  /// The trophy set ids a game ships: the folder names under its `TROPDIR`
+  /// (`PS3_GAME/TROPDIR/NPWR…` for a disc, `TROPDIR/NPWR…` for an HDD game,
+  /// one wrapper folder deeper for a dump kept under its serial).
+  static Future<Set<String>> commIdsOf(Directory gameRoot) async {
+    final ids = <String>{};
+    if (!await gameRoot.exists()) return ids;
+    final sep = Platform.pathSeparator;
+    final candidates = <Directory>[
+      Directory('${gameRoot.path}${sep}TROPDIR'),
+      Directory('${gameRoot.path}${sep}PS3_GAME${sep}TROPDIR'),
+    ];
+    await for (final child in gameRoot.list(followLinks: false)) {
+      if (child is Directory) candidates.add(Directory('${child.path}${sep}PS3_GAME${sep}TROPDIR'));
+    }
+    for (final dir in candidates) {
+      if (!await dir.exists()) continue;
+      await for (final set in dir.list(followLinks: false)) {
+        if (set is Directory) ids.add(set.path.substring(set.path.lastIndexOf(sep) + 1));
       }
     }
-    return matching.isNotEmpty ? matching : all;
+    return ids;
   }
 
   Future<AchievementReport?> read(Directory folder) async {
