@@ -8,9 +8,16 @@ import 'package:player/components/upload/GameUploadTarget.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/l10n/app_localizations.dart';
 import 'package:player/pages/AdminUploadPage.dart';
+import 'package:player/pages/GameUploadCandidatesPage.dart';
 import 'package:player/utils/upload/GameFoundProbe.dart';
 import 'package:player/utils/upload/UploadApi.dart';
+import 'package:player/utils/upload/UploadResumeStore.dart';
+import 'package:player/utils/upload/UploadRunner.dart';
 import 'package:player/utils/upload/UploadSource.dart';
+import 'package:player/utils/upload/games/GameLibraryIndex.dart';
+import 'package:player/utils/upload/games/GameSourceMaterialiser.dart';
+import 'package:player/utils/upload/games/GameUploadCandidate.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
@@ -114,7 +121,21 @@ void main() {
     SharedPreferencesAsyncPlatform.instance = InMemorySharedPreferencesAsync.empty();
   });
 
-  Future<void> pumpPage(WidgetTester tester, {String folderName = "Demon's Souls (2009)"}) async {
+  /// A scanned PS3 dump whose files are the ones the fake node's session lists.
+  GameUploadCandidate candidate(String title) => GameUploadCandidate(
+        platform: Enum$GamePlatform.PS3,
+        platformFolder: 'ps3',
+        title: title,
+        year: '2009',
+        kind: GameCandidateKind.romFolder,
+        sourcePath: '/dumps/$title',
+        files: [
+          (relativePath: 'PS3_GAME/PARAM.SFO', absolutePath: '/dumps/$title/PS3_GAME/PARAM.SFO', size: 5),
+          (relativePath: 'PS3_GAME/USRDIR/EBOOT.BIN', absolutePath: '/dumps/$title/PS3_GAME/USRDIR/EBOOT.BIN', size: 15),
+        ],
+      );
+
+  Future<void> pumpPage(WidgetTester tester, {String folderName = "Demon's Souls (2009)", List<GameUploadCandidate>? candidates}) async {
     tester.view.physicalSize = const Size(900, 2400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -140,7 +161,25 @@ void main() {
               id: 'game-1', title: title, platform: Enum$GamePlatform.PS3, form: Enum$GameForm.PS3_FOLDER, savePathSource: 'NONE');
         },
         gameProbeInterval: const Duration(milliseconds: 100),
-        gameProbePatience: const Duration(seconds: 5),
+        gameProbePatience: candidates == null ? const Duration(seconds: 5) : const Duration(seconds: 1),
+        pickCandidates: candidates == null ? null : (d, p) async => GameUploadSelection(candidates),
+        materialiser: GameSourceMaterialiser(listTree: (dir, prefix) async => const []),
+        runnerFactory: ({required api, required nodeUrl, required session, required sources, required partsAddressedByNumber}) =>
+            UploadRunner(
+              api: api,
+              nodeUrl: nodeUrl,
+              session: session,
+              sources: {for (final f in session.files) f.relativePath: _File(f.relativePath, f.size)},
+              partsAddressedByNumber: partsAddressedByNumber,
+            ),
+        indexLoader: (_) async {
+          lookups++;
+          return GameLibraryIndex({
+            if (lookups >= 2)
+              GameLibraryIndex.key(Enum$GamePlatform.PS3, "Demon's Souls"): const FoundGame(
+                  id: 'game-1', title: "Demon's Souls", platform: Enum$GamePlatform.PS3, form: Enum$GameForm.PS3_FOLDER, savePathSource: 'NONE'),
+          });
+        },
       ),
     ));
     await tester.pumpAndSettle();
@@ -223,5 +262,65 @@ void main() {
     expect(find.byKey(const ValueKey('upload-game-open')), findsOneWidget);
     // A PS3 game keeps its saves in the emulator: no Ludusavi verdict.
     expect(find.textContaining('save locations', skipOffstage: false), findsNothing);
+  });
+
+  testWidgets('the ticked games of the candidates page go up as one batch', (tester) async {
+    await pumpPage(tester, candidates: [candidate("Demon's Souls"), candidate('Dark Souls')]);
+    await tester.tap(find.byKey(const ValueKey('upload-scan-games')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('upload-selection-summary')), findsOneWidget);
+    expect(find.textContaining('2 games selected'), findsOneWidget);
+    expect(find.text("ps3/Demon's Souls (2009)"), findsOneWidget);
+    expect(find.byKey(const ValueKey('upload-game-platform')), findsNothing, reason: 'the candidates carry their platform');
+
+    await tester.tap(find.byKey(const ValueKey('upload-start')));
+    await tester.pump();
+    final found = find.byKey(const ValueKey('upload-batch-item-PS3|/dumps/Demon\'s Souls'));
+    for (var i = 0; i < 100 && find.byKey(const ValueKey('upload-batch-more')).evaluate().isEmpty; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    expect(find.text('2 games uploaded'), findsOneWidget);
+    expect(calls.where((c) => c == 'POST /library-upload/sessions').length, 2, reason: 'one session per game');
+    expect(find.text("ps3/Dark Souls (2009)"), findsOneWidget);
+    // The end-of-batch look-up lists Demon's Souls on the second look.
+    for (var i = 0; i < 100 && find.byKey(const ValueKey('upload-game-open')).evaluate().isEmpty; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    expect(found, findsOneWidget);
+    expect(find.textContaining("Found in the library: Demon's Souls"), findsOneWidget);
+    expect(find.text('1 of 2 listed in the library'), findsOneWidget);
+    expect(await SharedPreferencesAsync().getString('upload_session_http://srv'), isNull, reason: 'forgotten when done');
+    // Dark Souls never shows up: the look-up gives up after its patience.
+    await tester.pump(const Duration(milliseconds: 1500));
+    expect(find.text('PlayStation 3 · Not listed by the scan yet'), findsOneWidget);
+  });
+
+  testWidgets('a stored batch is offered to continue, and continues', (tester) async {
+    await UploadResumeStore('http://srv').save(StoredUpload(
+      sessionId: 'gone',
+      nodeUrl: 'http://node-a',
+      s3: false,
+      batch: StoredBatch(
+        directoryId: 'g1',
+        libraryId: 'lg',
+        overwrite: false,
+        current: candidate("Demon's Souls"),
+        queue: [candidate('Dark Souls')],
+        done: ['Earlier Game'],
+      ),
+    ));
+    await pumpPage(tester, candidates: const []);
+    expect(find.byKey(const ValueKey('upload-unfinished')), findsOneWidget);
+    expect(find.textContaining("Demon's Souls (2009) and 1 more game"), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('upload-resume')));
+    await tester.pump();
+    for (var i = 0; i < 100 && find.byKey(const ValueKey('upload-batch-more')).evaluate().isEmpty; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    expect(find.text('3 games uploaded'), findsOneWidget, reason: 'the earlier game counts');
+    expect(find.text('Earlier Game'), findsOneWidget);
+    expect(calls.where((c) => c == 'POST /library-upload/sessions').length, 2, reason: 'the stored session was gone: both games afresh');
+    await tester.pump(const Duration(milliseconds: 1500));
   });
 }

@@ -122,6 +122,7 @@ class AppRouter extends RootStackRouter {
           AutoRoute(path: 'settings/users/:userId', page: AdminUserAccessRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/libraries', page: AdminLibrariesRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/upload', page: AdminUploadRoute.page, guards: [_deepLinkGuard]),
+          AutoRoute(path: 'settings/upload/games', page: GameUploadCandidatesRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'settings/games', page: GameSettingsRoute.page, guards: [_deepLinkGuard]),
           AutoRoute(path: 'shows/:showId', page: ShowOverviewRoute.page,
             guards: [_deepLinkGuard],

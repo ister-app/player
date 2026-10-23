@@ -26,6 +26,7 @@ Also available as a [mermaid diagram](../diagrams/route-tree.md).
 ├── settings/playback                    ServerSettingsPlaybackRoute   [guard]
 ├── settings/nowplaying                  ServerNowPlayingRoute         [guard]
 ├── settings/upload                      AdminUploadRoute              [guard]
+├── settings/upload/games                GameUploadCandidatesRoute     [guard]
 ├── shows/:showId                        ShowOverviewRoute             [guard]
 │   ├── overview                         ShowOverviewContentRoute (initial)
 │   └── episodes/:episodeId              ShowEpisodeRoute

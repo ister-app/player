@@ -99,7 +99,9 @@ nog geen prestatiebron.
 ## Instellingen
 
 *Instellingen › Games* (alleen desktop) bevat de gamesmap, de gevonden emulators met een manier om
-een ander programma te kiezen, en schakelaars voor save- en prestatiesynchronisatie.
+een ander programma te kiezen, de **gamemappen op deze computer** waarin de beheerders-uploadpagina
+zoekt (standaard de gebruikelijke plekken; voeg je eigen mappen toe, Steam-libraries worden vanzelf
+gevonden), en schakelaars voor save- en prestatiesynchronisatie.
 
 ## Verder lezen
 

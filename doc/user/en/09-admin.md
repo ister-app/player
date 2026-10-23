@@ -49,33 +49,61 @@ Every finished file is added to the library right away; there is no need to scan
 
 ## Uploading games
 
-A **game library** takes its games through the same upload page, with a guided target instead of
-the free *Inside folder* field, because the scanner expects every game as
-`<platform>/<Title (year)>/…`:
+A **game library** takes its games through the same upload page, but guided, because the scanner
+expects every game as `<platform>/<Title (year)>/…`. On a desktop the page can look for the games
+on this computer itself; picking one folder by hand still works too.
 
-1. Pick the game library and its directory. The *Inside folder* field becomes a **Platform**
-   list (the folders the server knows: `ps3`, `steam`, `snes`, …); under it the page says what a
-   game of that platform must consist of.
-2. **Choose folder…** and pick the game's folder. Its name is split into **Game title** and
-   **Year**, which you can correct; the line under them shows where it lands
-   (`ps3/Demon's Souls (2009)/`). A game is always one folder, so there is no *Upload as one
-   folder* switch here.
-3. Read the **preview**. What the server needs per platform:
-   - a ROM: the launchable file (`.cue`/`.chd`, `.z64`, `.gba`, …) with its companions (the `.bin`
-     files of a `.cue`) next to it;
-   - a PlayStation 3 game: the folder as RPCS3 expects it, with `PS3_GAME/PARAM.SFO` inside;
-   - a Steam game: Steam's `appmanifest_<appid>.acf` next to the game's `steamapps/common/<installdir>`
-     folder;
-   - a Windows game: one ready-to-run `.zip`; a Linux game: a GOG `.sh` installer or a `.tar`
-     archive.
-   A PS3 or Steam folder whose marker file is missing is shown as *Not uploaded* with the reason:
-   the whole game folder, marker included, has to go up in one session, and the server only scans
-   it once that session finished.
-4. **Start upload.** When it is done the page waits for the scan to list the game and then shows
-   **Found in the library** with a button to its page, plus — for PC and Steam games — whether its
-   save locations are known (from the Ludusavi manifest or set by an administrator) or still have
-   to be set before saves sync. If the scan has not listed the game within two minutes, the page
-   says so; check the library a little later.
+### Games on this computer
+
+1. Pick the game library and its directory, then **Find games on this computer**. The app looks in
+   your game folders (`~/Games`, `~/ROMs`, EmuDeck's `~/Emulation/roms` on Linux, `Games` under
+   your profile on Windows — or the folders you set under *Settings › Games*) and in every Steam
+   library Steam itself knows. It recognises:
+   - platform folders (`snes/`, `n64/`, `ps1/`, …, with the names the server uses) with a folder
+     per game or loose ROM files in them — a loose `Super Mario World (USA).sfc` becomes the game
+     *Super Mario World*, region and dump tags stripped, with its `.bin` tracks or other companions
+     taken along;
+   - PlayStation 3 dumps anywhere a few levels deep, by their `PS3_GAME/PARAM.SFO`, titled after
+     the disc;
+   - fully installed Steam games, by their `appmanifest_<appid>.acf` (tools and runtimes left out).
+   Games Ister installed itself are never offered.
+2. The list is grouped by platform. Games the library already has are marked **Already in the
+   library** and unticked; a game without a year or two games that would land in the same folder
+   carry a badge too. Tap the pencil to correct a **title** or **year**. **Scan again** after moving
+   files; the menu offers **Choose another folder…** for a game the scan did not find, and the
+   link to the folder settings.
+3. **Upload N games** returns the selection to the upload page; **Start upload** sends them one
+   after the other, each as its own `Title (year)` folder. A game the server already has is
+   skipped, a failed one does not stop the rest (**Retry failed** afterwards), and when the last
+   game is up the page waits for the scan and shows which of them the library lists, with a button
+   to each game's page.
+
+If the app is closed mid-batch, the upload page offers to **continue** the next time you open it:
+the game in flight resumes where it stopped and the rest follow — nothing has to be picked again.
+
+### One folder by hand
+
+**Choose folder…** and pick the game's folder. The *Inside folder* field is a **Platform** list
+(the folders the server knows: `ps3`, `steam`, `snes`, …) saying what a game of that platform must
+consist of; the folder name is split into **Game title** and **Year** (optional), and the line
+under them shows where it lands (`ps3/Demon's Souls (2009)/`). The **preview** tells what the
+server needs per platform:
+
+- a ROM: the launchable file (`.cue`/`.chd`, `.z64`, `.gba`, …) with its companions (the `.bin`
+  files of a `.cue`) next to it;
+- a PlayStation 3 game: the folder as RPCS3 expects it, with `PS3_GAME/PARAM.SFO` inside;
+- a Steam game: Steam's `appmanifest_<appid>.acf` next to the game's `steamapps/common/<installdir>`
+  folder;
+- a Windows game: one ready-to-run `.zip`; a Linux game: a GOG `.sh` installer or a `.tar`
+  archive.
+
+A PS3 or Steam folder whose marker file is missing is shown as *Not uploaded* with the reason: the
+whole game folder, marker included, has to go up in one session, and the server only scans it once
+that session finished. After **Start upload** the page waits for the scan to list the game and
+shows **Found in the library** with a button to its page, plus — for PC and Steam games — whether
+its save locations are known (from the Ludusavi manifest or set by an administrator) or still have
+to be set before saves sync. If the scan has not listed the game within two minutes, the page says
+so; check the library a little later.
 
 The folder layout, the platform folder names and the per-platform rules are described in the
 server's naming conventions. Playing, saves and achievements from the user's side: [Games](10-games.md).

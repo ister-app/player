@@ -49,36 +49,66 @@ Elk voltooid bestand wordt meteen aan de bibliotheek toegevoegd; scannen achtera
 
 ## Games uploaden
 
-Een **gamebibliotheek** krijgt haar games via dezelfde uploadpagina, met een begeleid doel in
-plaats van het vrije veld *In map*, omdat de scanner elke game verwacht als
-`<platform>/<Titel (jaar)>/…`:
+Een **gamebibliotheek** krijgt haar games via dezelfde uploadpagina, maar begeleid, omdat de
+scanner elke game verwacht als `<platform>/<Titel (jaar)>/…`. Op een desktop kan de pagina zelf
+naar de games op deze computer zoeken; één map met de hand kiezen kan nog steeds.
 
-1. Kies de gamebibliotheek en haar map. Het veld *In map* wordt een lijst **Platform** (de mappen
-   die de server kent: `ps3`, `steam`, `snes`, …); eronder zegt de pagina waaruit een game van dat
-   platform moet bestaan.
-2. **Map kiezen…** en kies de map van de game. De naam wordt gesplitst in **Titel van de game** en
-   **Jaar**, die je kunt corrigeren; de regel eronder toont waar hij belandt
-   (`ps3/Demon's Souls (2009)/`). Een game is altijd één map, dus de schakelaar *Als één map
-   uploaden* ontbreekt hier.
-3. Lees de **voorvertoning**. Wat de server per platform nodig heeft:
-   - een ROM: het startbare bestand (`.cue`/`.chd`, `.z64`, `.gba`, …) met zijn bijbehorende
-     bestanden (de `.bin`-bestanden van een `.cue`) ernaast;
-   - een PlayStation 3-game: de map zoals RPCS3 hem verwacht, met `PS3_GAME/PARAM.SFO` erin;
-   - een Steam-game: Steams `appmanifest_<appid>.acf` naast de map `steamapps/common/<installdir>`
-     van de game;
-   - een Windows-game: één kant-en-klare `.zip`; een Linux-game: een GOG `.sh`-installer of een
-     `.tar`-archief.
-   Een PS3- of Steam-map zonder markeerbestand staat als *Niet geüpload* met de reden: de hele
-   gamemap, markeerbestand inbegrepen, moet in één sessie omhoog, en de server scant hem pas als
-   die sessie klaar is.
-4. **Upload starten.** Als hij klaar is wacht de pagina tot de scan de game toont en meldt dan
-   **Gevonden in de bibliotheek** met een knop naar zijn pagina, plus — bij pc- en Steam-games — of
-   de save-locaties bekend zijn (uit het Ludusavi-manifest of ingesteld door een beheerder) of nog
-   ingesteld moeten worden voordat saves synchroniseren. Heeft de scan de game binnen twee minuten
-   niet opgenomen, dan zegt de pagina dat; kijk wat later in de bibliotheek.
+### Games op deze computer
+
+1. Kies de gamebibliotheek en haar map, dan **Games op deze computer zoeken**. De app kijkt in je
+   gamemappen (`~/Games`, `~/ROMs`, EmuDecks `~/Emulation/roms` op Linux, `Games` onder je
+   profiel op Windows — of de mappen die je instelt onder *Instellingen › Games*) en in elke
+   Steam-library die Steam zelf kent. Hij herkent:
+   - platformmappen (`snes/`, `n64/`, `ps1/`, …, met de namen die de server gebruikt) met daarin
+     een map per game of losse ROM-bestanden — een losse `Super Mario World (USA).sfc` wordt de game
+     *Super Mario World*, regio- en dumptags weg, met zijn `.bin`-tracks of andere bijbehorende
+     bestanden erbij;
+   - PlayStation 3-dumps, een paar niveaus diep waar dan ook, aan hun `PS3_GAME/PARAM.SFO`, met de
+     titel van de disc;
+   - volledig geïnstalleerde Steam-games, aan hun `appmanifest_<appid>.acf` (tools en runtimes
+     blijven weg).
+   Games die Ister zelf installeerde worden nooit aangeboden.
+2. De lijst is per platform gegroepeerd. Games die de bibliotheek al heeft staan als **Al in de
+   bibliotheek** en zijn niet aangevinkt; een game zonder jaar of twee games die in dezelfde map
+   zouden belanden krijgen ook een label. Tik op het potlood om een **titel** of **jaar** te
+   corrigeren. **Opnieuw zoeken** na het verplaatsen van bestanden; het menu biedt **Andere map
+   kiezen…** voor een game die de zoektocht miste, en de link naar de mapinstellingen.
+3. **N games uploaden** brengt de selectie terug naar de uploadpagina; **Upload starten** stuurt ze
+   één voor één, elk als eigen map `Titel (jaar)`. Een game die de server al heeft wordt
+   overgeslagen, een mislukte stopt de rest niet (**Mislukte opnieuw** achteraf), en als de laatste
+   game boven is wacht de pagina op de scan en toont welke ervan de bibliotheek al noemt, met een
+   knop naar elke gamepagina.
+
+Sluit je de app midden in een batch, dan biedt de uploadpagina de volgende keer aan om
+**verder te gaan**: de game die bezig was hervat waar hij stopte en de rest volgt — niets hoeft
+opnieuw gekozen te worden.
+
+### Eén map met de hand
+
+**Map kiezen…** en kies de map van de game. Het veld *In map* is een lijst **Platform** (de
+mappen die de server kent: `ps3`, `steam`, `snes`, …) die zegt waaruit een game van dat platform
+moet bestaan; de mapnaam wordt gesplitst in **Titel van de game** en **Jaar** (optioneel), en de
+regel eronder toont waar hij belandt (`ps3/Demon's Souls (2009)/`). De **voorvertoning** vertelt
+wat de server per platform nodig heeft:
+
+- een ROM: het startbare bestand (`.cue`/`.chd`, `.z64`, `.gba`, …) met zijn bijbehorende
+  bestanden (de `.bin`-bestanden van een `.cue`) ernaast;
+- een PlayStation 3-game: de map zoals RPCS3 hem verwacht, met `PS3_GAME/PARAM.SFO` erin;
+- een Steam-game: Steams `appmanifest_<appid>.acf` naast de map `steamapps/common/<installdir>`
+  van de game;
+- een Windows-game: één kant-en-klare `.zip`; een Linux-game: een GOG `.sh`-installer of een
+  `.tar`-archief.
+
+Een PS3- of Steam-map zonder markeerbestand staat als *Niet geüpload* met de reden: de hele
+gamemap, markeerbestand inbegrepen, moet in één sessie omhoog, en de server scant hem pas als die
+sessie klaar is. Na **Upload starten** wacht de pagina tot de scan de game toont en meldt
+**Gevonden in de bibliotheek** met een knop naar zijn pagina, plus — bij pc- en Steam-games — of de
+save-locaties bekend zijn (uit het Ludusavi-manifest of ingesteld door een beheerder) of nog
+ingesteld moeten worden voordat saves synchroniseren. Heeft de scan de game binnen twee minuten
+niet opgenomen, dan zegt de pagina dat; kijk wat later in de bibliotheek.
 
 De mapindeling, de platformmapnamen en de regels per platform staan in de naamconventies van de
-server. Spelen, saves en prestaties vanuit de gebruiker: [Games](10-games.md).
+server. Spelen, saves en prestaties vanuit de gebruiker gezien: [Games](10-games.md).
 
 ## Podcasts
 

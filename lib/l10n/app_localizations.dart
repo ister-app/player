@@ -5635,6 +5635,282 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No save locations known yet: saves are not synced until an administrator sets them on the game page.'**
   String get uploadGameSavesUnknown;
+
+  /// Admin game upload: entry tile
+  ///
+  /// In en, this message translates to:
+  /// **'Find games on this computer'**
+  String get uploadGamesScanTitle;
+
+  /// Admin game upload: entry tile subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Looks in your game folders and Steam libraries'**
+  String get uploadGamesScanSubtitle;
+
+  /// Game candidates page title
+  ///
+  /// In en, this message translates to:
+  /// **'Games on this computer'**
+  String get uploadGamesCandidatesTitle;
+
+  /// Game candidates page: scanning
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for games…'**
+  String get uploadGamesScanning;
+
+  /// Game candidates page: empty
+  ///
+  /// In en, this message translates to:
+  /// **'No games found in {folders}. Add the folders your games are in under Game settings.'**
+  String uploadGamesNoneFound(String folders);
+
+  /// Game candidates page: nothing to scan
+  ///
+  /// In en, this message translates to:
+  /// **'No game folders on this computer yet: add one under Game settings.'**
+  String get uploadGamesNoFolders;
+
+  /// Candidate badge
+  ///
+  /// In en, this message translates to:
+  /// **'Already in the library'**
+  String get uploadGamesInLibrary;
+
+  /// Candidate badge
+  ///
+  /// In en, this message translates to:
+  /// **'No year'**
+  String get uploadGamesNoYear;
+
+  /// Candidate badge: two candidates land in one server folder
+  ///
+  /// In en, this message translates to:
+  /// **'Same folder as {title}'**
+  String uploadGamesConflict(String title);
+
+  /// Per platform group
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get uploadGamesSelectAll;
+
+  /// Per platform group
+  ///
+  /// In en, this message translates to:
+  /// **'Select none'**
+  String get uploadGamesSelectNone;
+
+  /// FAB; size is '' or ' · 12 GB'
+  ///
+  /// In en, this message translates to:
+  /// **'Upload {count, plural, =1{1 game} other{{count} games}}{size}'**
+  String uploadGamesUpload(int count, String size);
+
+  /// Action
+  ///
+  /// In en, this message translates to:
+  /// **'Scan again'**
+  String get uploadGamesRescan;
+
+  /// Action: manual pick
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another folder…'**
+  String get uploadGamesOtherFolder;
+
+  /// Action: link to the game settings
+  ///
+  /// In en, this message translates to:
+  /// **'Game folders…'**
+  String get uploadGamesSettings;
+
+  /// Edit dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Title and year'**
+  String get uploadGamesEditTitle;
+
+  /// Candidate subtitle when the tree is not listed yet
+  ///
+  /// In en, this message translates to:
+  /// **'size known when listed'**
+  String get uploadGamesSizeUnknown;
+
+  /// Candidate subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Steam app {appId}'**
+  String uploadGamesSteamApp(int appId);
+
+  /// Admin upload page: batch summary
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 game selected} other{{count} games selected}} · {size}'**
+  String uploadGamesSelected(int count, String size);
+
+  /// Admin upload page: back to the list
+  ///
+  /// In en, this message translates to:
+  /// **'Change selection'**
+  String get uploadGamesChange;
+
+  /// Batch progress headline
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} games up'**
+  String uploadGamesBatchProgress(int done, int total);
+
+  /// Batch finished headline; rest is '' or ', 2 skipped, 1 failed'
+  ///
+  /// In en, this message translates to:
+  /// **'{done, plural, =1{1 game uploaded} other{{done} games uploaded}}{rest}'**
+  String uploadGamesBatchFinished(int done, String rest);
+
+  /// Part of the finished headline
+  ///
+  /// In en, this message translates to:
+  /// **'{count} skipped'**
+  String uploadGamesSkippedN(int count);
+
+  /// Part of the finished headline
+  ///
+  /// In en, this message translates to:
+  /// **'{count} failed'**
+  String uploadGamesFailedN(int count);
+
+  /// Batch item phase
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get uploadGamesPhaseQueued;
+
+  /// Batch item phase
+  ///
+  /// In en, this message translates to:
+  /// **'Listing files…'**
+  String get uploadGamesPhasePreparing;
+
+  /// Batch item phase
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded'**
+  String get uploadGamesPhaseDone;
+
+  /// Batch item phase
+  ///
+  /// In en, this message translates to:
+  /// **'Already on the server'**
+  String get uploadGamesPhaseSkipped;
+
+  /// Batch item phase
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get uploadGamesPhaseFailed;
+
+  /// Batch item phase
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get uploadGamesPhaseCancelled;
+
+  /// Batch item: 429
+  ///
+  /// In en, this message translates to:
+  /// **'The server is busy; trying again shortly'**
+  String get uploadGamesWaitingServer;
+
+  /// After the batch
+  ///
+  /// In en, this message translates to:
+  /// **'{found} of {count} listed in the library'**
+  String uploadGamesFoundCount(int found, int count);
+
+  /// After the batch
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the scan to list the games…'**
+  String get uploadGamesLookingUp;
+
+  /// Batch item after the probe
+  ///
+  /// In en, this message translates to:
+  /// **'Not listed by the scan yet'**
+  String get uploadGamesNotListed;
+
+  /// After the batch
+  ///
+  /// In en, this message translates to:
+  /// **'Upload more games'**
+  String get uploadGamesUploadMore;
+
+  /// Resume card
+  ///
+  /// In en, this message translates to:
+  /// **'A game batch was interrupted'**
+  String get uploadGamesResumeTitle;
+
+  /// Resume card
+  ///
+  /// In en, this message translates to:
+  /// **'{title} and {count, plural, =0{no others} =1{1 more game} other{{count} more games}} are still to go up. Continue where it stopped?'**
+  String uploadGamesResumeBody(String title, int count);
+
+  /// Resume card action
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get uploadResumeNow;
+
+  /// Game settings section
+  ///
+  /// In en, this message translates to:
+  /// **'Game folders on this computer'**
+  String get gameSettingsSources;
+
+  /// Game settings section hint
+  ///
+  /// In en, this message translates to:
+  /// **'Where the upload page looks for games. Steam libraries are found on their own.'**
+  String get gameSettingsSourcesHint;
+
+  /// Game settings: a default source folder
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get gameSettingsSourceDefault;
+
+  /// Game settings action
+  ///
+  /// In en, this message translates to:
+  /// **'Add folder…'**
+  String get gameSettingsAddSource;
+
+  /// Game settings: configured folder is gone
+  ///
+  /// In en, this message translates to:
+  /// **'Folder not found'**
+  String get gameSettingsSourceMissing;
+
+  /// Game settings info line
+  ///
+  /// In en, this message translates to:
+  /// **'Steam libraries: {paths}'**
+  String gameSettingsSteamLibraries(String paths);
+
+  /// Game settings info line
+  ///
+  /// In en, this message translates to:
+  /// **'No Steam installation found'**
+  String get gameSettingsSteamNone;
+
+  /// Edit dialog action
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get uploadGamesSave;
 }
 
 class _AppLocalizationsDelegate

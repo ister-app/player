@@ -8,6 +8,9 @@ import 'UploadSource.dart';
 
 const bool supported = true;
 
+/// A browser hands out no paths: nothing to reopen.
+Future<UploadSourceFolder?> reopenFolder(String path) async => null;
+
 /// `<input type="file" webkitdirectory>`: the one way a browser hands over a
 /// whole folder with its structure (`webkitRelativePath`). file_picker has no
 /// directory mode on web.

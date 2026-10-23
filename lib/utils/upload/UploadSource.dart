@@ -15,11 +15,15 @@ abstract class UploadSourceFile {
 
 /// A folder the admin picked to upload.
 class UploadSourceFolder {
-  UploadSourceFolder({required this.name, required this.files});
+  UploadSourceFolder({required this.name, required this.files, this.path});
 
   /// The folder's own name: the default for the name it gets on the server.
   final String name;
   final List<UploadSourceFile> files;
+
+  /// Where it is on disk, when the platform can reopen it later (desktop);
+  /// null for a browser or a storage-framework pick.
+  final String? path;
 
   int get totalBytes => files.fold(0, (sum, f) => sum + f.size);
 }
@@ -29,6 +33,11 @@ bool get uploadSourceSupported => platform.supported;
 
 /// Lets the admin pick a folder; null when they cancelled.
 Future<UploadSourceFolder?> pickUploadFolder() => platform.pickFolder();
+
+/// Reopens a folder picked earlier by its [UploadSourceFolder.path], so an
+/// upload resumes after a restart without a second pick; null when the
+/// platform cannot (web, mobile) or the folder is gone.
+Future<UploadSourceFolder?> reopenUploadFolder(String path) => platform.reopenFolder(path);
 
 /// Hidden files and OS droppings never belong in a library, and the server
 /// rejects dot-prefixed names anyway: leaving them out here keeps them from

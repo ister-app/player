@@ -92,7 +92,9 @@ source yet.
 ## Settings
 
 *Settings › Games* (desktop only) holds the games folder, the detected emulators with a way to pick
-another executable, and switches for save and achievement sync.
+another executable, the **game folders on this computer** that the admin upload page searches
+(the usual places by default; add your own, Steam libraries are found on their own), and switches
+for save and achievement sync.
 
 ## Where to next
 

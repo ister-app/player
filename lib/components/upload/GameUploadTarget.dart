@@ -10,15 +10,39 @@ import '../../l10n/app_localizations.dart';
 /// One platform a game library accepts: the folder it is scanned under and
 /// what a game of it has to consist of.
 class GamePlatformOption {
-  const GamePlatformOption({required this.platform, required this.folder, required this.entryExtensions});
+  const GamePlatformOption({
+    required this.platform,
+    required this.folder,
+    required this.entryExtensions,
+    List<String>? folderNames,
+    this.companionExtensions = const [],
+    this.launcherKind,
+  }) : _folderNames = folderNames; // ignore: prefer_initializing_formals
   final Enum$GamePlatform platform;
+
+  /// The folder an upload goes into: the first of the scanner's aliases.
   final String folder;
   final List<String> entryExtensions;
+  final List<String> companionExtensions;
+  final List<String>? _folderNames;
+
+  /// `RETROARCH`, `RPCS3`, `NATIVE_WINDOWS`, `NATIVE_LINUX` or `STEAM`.
+  final String? launcherKind;
+
+  /// Every folder name the scanner accepts for this platform (`snes`, `sfc`).
+  List<String> get folderNames => _folderNames ?? [folder];
 
   static List<GamePlatformOption> fromQuery(Query$gamePlatforms data) => [
         for (final p in data.gamePlatforms)
           if (p.folderNames.isNotEmpty)
-            GamePlatformOption(platform: p.platform, folder: p.folderNames.first, entryExtensions: p.entryExtensions),
+            GamePlatformOption(
+              platform: p.platform,
+              folder: p.folderNames.first,
+              folderNames: p.folderNames,
+              entryExtensions: p.entryExtensions,
+              companionExtensions: p.companionExtensions,
+              launcherKind: p.launcher.kind.name,
+            ),
       ];
 
   /// Loads the server's platform table through the server's GraphQL client.

@@ -3436,4 +3436,195 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get uploadGameSavesUnknown =>
       'Nog geen save-locaties bekend: saves worden niet gesynchroniseerd tot een beheerder ze op de gamepagina instelt.';
+
+  @override
+  String get uploadGamesScanTitle => 'Games op deze computer zoeken';
+
+  @override
+  String get uploadGamesScanSubtitle =>
+      'Kijkt in je gamemappen en Steam-libraries';
+
+  @override
+  String get uploadGamesCandidatesTitle => 'Games op deze computer';
+
+  @override
+  String get uploadGamesScanning => 'Games zoeken…';
+
+  @override
+  String uploadGamesNoneFound(String folders) {
+    return 'Geen games gevonden in $folders. Voeg de mappen met je games toe onder Game-instellingen.';
+  }
+
+  @override
+  String get uploadGamesNoFolders =>
+      'Nog geen gamemappen op deze computer: voeg er een toe onder Game-instellingen.';
+
+  @override
+  String get uploadGamesInLibrary => 'Al in de bibliotheek';
+
+  @override
+  String get uploadGamesNoYear => 'Geen jaar';
+
+  @override
+  String uploadGamesConflict(String title) {
+    return 'Zelfde map als $title';
+  }
+
+  @override
+  String get uploadGamesSelectAll => 'Alles selecteren';
+
+  @override
+  String get uploadGamesSelectNone => 'Niets selecteren';
+
+  @override
+  String uploadGamesUpload(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count games',
+      one: '1 game',
+    );
+    return '$_temp0 uploaden$size';
+  }
+
+  @override
+  String get uploadGamesRescan => 'Opnieuw zoeken';
+
+  @override
+  String get uploadGamesOtherFolder => 'Andere map kiezen…';
+
+  @override
+  String get uploadGamesSettings => 'Gamemappen…';
+
+  @override
+  String get uploadGamesEditTitle => 'Titel en jaar';
+
+  @override
+  String get uploadGamesSizeUnknown => 'grootte bekend na het inlezen';
+
+  @override
+  String uploadGamesSteamApp(int appId) {
+    return 'Steam-app $appId';
+  }
+
+  @override
+  String uploadGamesSelected(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count games geselecteerd',
+      one: '1 game geselecteerd',
+    );
+    return '$_temp0 · $size';
+  }
+
+  @override
+  String get uploadGamesChange => 'Selectie wijzigen';
+
+  @override
+  String uploadGamesBatchProgress(int done, int total) {
+    return '$done van $total games geüpload';
+  }
+
+  @override
+  String uploadGamesBatchFinished(int done, String rest) {
+    String _temp0 = intl.Intl.pluralLogic(
+      done,
+      locale: localeName,
+      other: '$done games geüpload',
+      one: '1 game geüpload',
+    );
+    return '$_temp0$rest';
+  }
+
+  @override
+  String uploadGamesSkippedN(int count) {
+    return '$count overgeslagen';
+  }
+
+  @override
+  String uploadGamesFailedN(int count) {
+    return '$count mislukt';
+  }
+
+  @override
+  String get uploadGamesPhaseQueued => 'Wacht';
+
+  @override
+  String get uploadGamesPhasePreparing => 'Bestanden inlezen…';
+
+  @override
+  String get uploadGamesPhaseDone => 'Geüpload';
+
+  @override
+  String get uploadGamesPhaseSkipped => 'Staat al op de server';
+
+  @override
+  String get uploadGamesPhaseFailed => 'Mislukt';
+
+  @override
+  String get uploadGamesPhaseCancelled => 'Geannuleerd';
+
+  @override
+  String get uploadGamesWaitingServer =>
+      'De server is bezet; zo opnieuw proberen';
+
+  @override
+  String uploadGamesFoundCount(int found, int count) {
+    return '$found van $count in de bibliotheek';
+  }
+
+  @override
+  String get uploadGamesLookingUp => 'Wachten tot de scan de games toont…';
+
+  @override
+  String get uploadGamesNotListed => 'Nog niet door de scan gevonden';
+
+  @override
+  String get uploadGamesUploadMore => 'Meer games uploaden';
+
+  @override
+  String get uploadGamesResumeTitle => 'Een game-batch is onderbroken';
+
+  @override
+  String uploadGamesResumeBody(String title, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'nog $count games',
+      one: 'nog 1 game',
+      zero: 'geen andere',
+    );
+    return '$title en $_temp0 moeten nog omhoog. Verdergaan waar het stopte?';
+  }
+
+  @override
+  String get uploadResumeNow => 'Verdergaan';
+
+  @override
+  String get gameSettingsSources => 'Gamemappen op deze computer';
+
+  @override
+  String get gameSettingsSourcesHint =>
+      'Waar de uploadpagina naar games zoekt. Steam-libraries worden vanzelf gevonden.';
+
+  @override
+  String get gameSettingsSourceDefault => 'Standaard';
+
+  @override
+  String get gameSettingsAddSource => 'Map toevoegen…';
+
+  @override
+  String get gameSettingsSourceMissing => 'Map niet gevonden';
+
+  @override
+  String gameSettingsSteamLibraries(String paths) {
+    return 'Steam-libraries: $paths';
+  }
+
+  @override
+  String get gameSettingsSteamNone => 'Geen Steam-installatie gevonden';
+
+  @override
+  String get uploadGamesSave => 'Opslaan';
 }

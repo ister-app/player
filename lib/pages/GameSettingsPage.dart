@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:file_picker/file_picker.dart';
@@ -6,6 +7,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:player/utils/games/GameLibraryService.dart';
 import 'package:player/utils/games/GameSettings.dart';
 import 'package:player/utils/games/launch/EmulatorRegistry.dart';
+import 'package:player/utils/games/steam/SteamLibraryLocator.dart';
+import 'package:player/utils/upload/UploadSource.dart' show uploadSourceSupported;
 
 import '../components/SettingsSection.dart';
 import '../l10n/app_localizations.dart';
@@ -17,9 +20,15 @@ class GameSettingsPage extends StatefulWidget {
   const GameSettingsPage({
     super.key,
     @PathParam.inherit('serverName') required this.serverName,
+    this.steamLibraries,
+    this.pickDirectory,
   });
 
   final String serverName;
+
+  /// Test seams.
+  final Future<List<SteamLibrary>> Function()? steamLibraries;
+  final Future<String?> Function()? pickDirectory;
 
   @override
   State<GameSettingsPage> createState() => _GameSettingsPageState();
@@ -34,6 +43,13 @@ class _GameSettingsPageState extends State<GameSettingsPage> {
   bool _saveSync = true;
   bool _achievementSync = true;
   bool _loading = true;
+
+  /// Where the upload page looks for games: the user's folders (or the
+  /// defaults when none are set) and the Steam libraries found on their own.
+  List<String> _sources = const [];
+  List<String> _defaultSources = const [];
+  bool _sourcesAreDefaults = true;
+  List<String> _steamLibraries = const [];
 
   @override
   void initState() {
@@ -50,10 +66,17 @@ class _GameSettingsPageState extends State<GameSettingsPage> {
     }
     final saveSync = await GameSettings.saveSyncEnabled();
     final achievementSync = await GameSettings.achievementSyncEnabled();
+    final configured = await GameSettings.uploadSourceFolders();
+    final defaults = GameSettings.defaultUploadSourceFolders();
+    final steam = widget.steamLibraries == null ? await SteamLibraryLocator().libraries() : await widget.steamLibraries!();
     if (!mounted) return;
     setState(() {
       _gamesRoot = root.path;
       _defaultRoot = defaultRoot;
+      _sources = configured.isNotEmpty ? configured : defaults;
+      _defaultSources = defaults;
+      _sourcesAreDefaults = configured.isEmpty;
+      _steamLibraries = [for (final l in steam) l.path];
       _saveSync = saveSync;
       _achievementSync = achievementSync;
       _loading = false;
@@ -102,6 +125,7 @@ class _GameSettingsPageState extends State<GameSettingsPage> {
                     ),
                   ],
                 ),
+                if (uploadSourceSupported) _sourcesSection(loc),
                 SettingsSection(
                   title: loc.gameSettingsSync,
                   children: [
@@ -163,6 +187,71 @@ class _GameSettingsPageState extends State<GameSettingsPage> {
         ),
       ]),
     );
+  }
+
+  Widget _sourcesSection(AppLocalizations loc) {
+    final theme = Theme.of(context);
+    return SettingsSection(
+      title: loc.gameSettingsSources,
+      hint: loc.gameSettingsSourcesHint,
+      children: [
+        for (final folder in _sources)
+          ListTile(
+            key: ValueKey('game-settings-source-$folder'),
+            leading: Icon(
+              Directory(folder).existsSync() ? Icons.folder_outlined : Icons.folder_off_outlined,
+              color: Directory(folder).existsSync() ? null : theme.colorScheme.error,
+            ),
+            title: Text(folder),
+            subtitle: _sourcesAreDefaults
+                ? Text(loc.gameSettingsSourceDefault)
+                : Directory(folder).existsSync()
+                    ? null
+                    : Text(loc.gameSettingsSourceMissing),
+            trailing: _sourcesAreDefaults
+                ? null
+                : IconButton(
+                    key: ValueKey('game-settings-source-remove-$folder'),
+                    icon: const Icon(Icons.close),
+                    onPressed: () => unawaited(_setSources([for (final f in _sources) if (f != folder) f])),
+                  ),
+          ),
+        ListTile(
+          key: const ValueKey('game-settings-source-add'),
+          leading: const Icon(Icons.create_new_folder_outlined),
+          title: Text(loc.gameSettingsAddSource),
+          onTap: () => unawaited(_addSource()),
+        ),
+        if (!_sourcesAreDefaults && _defaultSources.isNotEmpty)
+          ListTile(
+            leading: const Icon(Icons.restore),
+            title: Text(loc.gameSettingsResetDefault),
+            onTap: () => unawaited(_setSources(const [])),
+          ),
+        ListTile(
+          dense: true,
+          leading: const Icon(Icons.info_outline),
+          title: Text(
+            _steamLibraries.isEmpty ? loc.gameSettingsSteamNone : loc.gameSettingsSteamLibraries(_steamLibraries.join(', ')),
+            style: theme.textTheme.bodySmall,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _addSource() async {
+    final picked = await (widget.pickDirectory ?? FilePicker.getDirectoryPath)();
+    if (picked == null || picked.isEmpty) return;
+    // Adding to the defaults keeps them: the user list starts as a copy.
+    final current = _sourcesAreDefaults ? _defaultSources : _sources;
+    if (current.contains(picked)) return;
+    await _setSources([...current, picked]);
+  }
+
+  Future<void> _setSources(List<String> folders) async {
+    await GameSettings.setUploadSourceFolders(folders);
+    await _load();
   }
 
   Future<void> _pickRoot() async {

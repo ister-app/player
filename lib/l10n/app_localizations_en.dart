@@ -3422,4 +3422,195 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get uploadGameSavesUnknown =>
       'No save locations known yet: saves are not synced until an administrator sets them on the game page.';
+
+  @override
+  String get uploadGamesScanTitle => 'Find games on this computer';
+
+  @override
+  String get uploadGamesScanSubtitle =>
+      'Looks in your game folders and Steam libraries';
+
+  @override
+  String get uploadGamesCandidatesTitle => 'Games on this computer';
+
+  @override
+  String get uploadGamesScanning => 'Looking for games…';
+
+  @override
+  String uploadGamesNoneFound(String folders) {
+    return 'No games found in $folders. Add the folders your games are in under Game settings.';
+  }
+
+  @override
+  String get uploadGamesNoFolders =>
+      'No game folders on this computer yet: add one under Game settings.';
+
+  @override
+  String get uploadGamesInLibrary => 'Already in the library';
+
+  @override
+  String get uploadGamesNoYear => 'No year';
+
+  @override
+  String uploadGamesConflict(String title) {
+    return 'Same folder as $title';
+  }
+
+  @override
+  String get uploadGamesSelectAll => 'Select all';
+
+  @override
+  String get uploadGamesSelectNone => 'Select none';
+
+  @override
+  String uploadGamesUpload(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count games',
+      one: '1 game',
+    );
+    return 'Upload $_temp0$size';
+  }
+
+  @override
+  String get uploadGamesRescan => 'Scan again';
+
+  @override
+  String get uploadGamesOtherFolder => 'Choose another folder…';
+
+  @override
+  String get uploadGamesSettings => 'Game folders…';
+
+  @override
+  String get uploadGamesEditTitle => 'Title and year';
+
+  @override
+  String get uploadGamesSizeUnknown => 'size known when listed';
+
+  @override
+  String uploadGamesSteamApp(int appId) {
+    return 'Steam app $appId';
+  }
+
+  @override
+  String uploadGamesSelected(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count games selected',
+      one: '1 game selected',
+    );
+    return '$_temp0 · $size';
+  }
+
+  @override
+  String get uploadGamesChange => 'Change selection';
+
+  @override
+  String uploadGamesBatchProgress(int done, int total) {
+    return '$done of $total games up';
+  }
+
+  @override
+  String uploadGamesBatchFinished(int done, String rest) {
+    String _temp0 = intl.Intl.pluralLogic(
+      done,
+      locale: localeName,
+      other: '$done games uploaded',
+      one: '1 game uploaded',
+    );
+    return '$_temp0$rest';
+  }
+
+  @override
+  String uploadGamesSkippedN(int count) {
+    return '$count skipped';
+  }
+
+  @override
+  String uploadGamesFailedN(int count) {
+    return '$count failed';
+  }
+
+  @override
+  String get uploadGamesPhaseQueued => 'Waiting';
+
+  @override
+  String get uploadGamesPhasePreparing => 'Listing files…';
+
+  @override
+  String get uploadGamesPhaseDone => 'Uploaded';
+
+  @override
+  String get uploadGamesPhaseSkipped => 'Already on the server';
+
+  @override
+  String get uploadGamesPhaseFailed => 'Failed';
+
+  @override
+  String get uploadGamesPhaseCancelled => 'Cancelled';
+
+  @override
+  String get uploadGamesWaitingServer =>
+      'The server is busy; trying again shortly';
+
+  @override
+  String uploadGamesFoundCount(int found, int count) {
+    return '$found of $count listed in the library';
+  }
+
+  @override
+  String get uploadGamesLookingUp => 'Waiting for the scan to list the games…';
+
+  @override
+  String get uploadGamesNotListed => 'Not listed by the scan yet';
+
+  @override
+  String get uploadGamesUploadMore => 'Upload more games';
+
+  @override
+  String get uploadGamesResumeTitle => 'A game batch was interrupted';
+
+  @override
+  String uploadGamesResumeBody(String title, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count more games',
+      one: '1 more game',
+      zero: 'no others',
+    );
+    return '$title and $_temp0 are still to go up. Continue where it stopped?';
+  }
+
+  @override
+  String get uploadResumeNow => 'Continue';
+
+  @override
+  String get gameSettingsSources => 'Game folders on this computer';
+
+  @override
+  String get gameSettingsSourcesHint =>
+      'Where the upload page looks for games. Steam libraries are found on their own.';
+
+  @override
+  String get gameSettingsSourceDefault => 'Default';
+
+  @override
+  String get gameSettingsAddSource => 'Add folder…';
+
+  @override
+  String get gameSettingsSourceMissing => 'Folder not found';
+
+  @override
+  String gameSettingsSteamLibraries(String paths) {
+    return 'Steam libraries: $paths';
+  }
+
+  @override
+  String get gameSettingsSteamNone => 'No Steam installation found';
+
+  @override
+  String get uploadGamesSave => 'Save';
 }

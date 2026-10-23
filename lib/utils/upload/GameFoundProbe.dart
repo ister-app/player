@@ -5,6 +5,8 @@ import 'package:player/graphql/games.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/utils/ClientManager.dart';
 
+import 'games/GameLibraryIndex.dart';
+
 /// What the probe found: the game as the library now lists it.
 class FoundGame {
   const FoundGame({required this.id, required this.title, required this.platform, required this.form, required this.savePathSource});
@@ -68,9 +70,9 @@ class GameFoundProbe {
               .toJson(),
         ));
         if (result.hasException) throw result.exception!;
-        final wanted = title.trim().toLowerCase();
+        final wanted = GameLibraryIndex.normalise(title);
         for (final game in Query$games.fromJson(result.data!).games?.content ?? const []) {
-          if (game.title.trim().toLowerCase() == wanted || game.name.trim().toLowerCase() == wanted) {
+          if (GameLibraryIndex.normalise(game.title) == wanted || GameLibraryIndex.normalise(game.name) == wanted) {
             return FoundGame(
               id: game.id,
               title: game.title,
