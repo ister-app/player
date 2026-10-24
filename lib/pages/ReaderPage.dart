@@ -24,6 +24,8 @@ import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/ReaderFullscreen.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:player/utils/ScreenWakelock.dart';
+import 'package:player/utils/activity/ActivityPresenceService.dart';
+import 'package:player/graphql/schema.graphql.dart';
 
 /// The native epub reader. Loads the book's structure through the node's
 /// `/epub` resource endpoint, renders one chapter at a time as a scrolling
@@ -46,11 +48,20 @@ class ReaderPage extends StatefulWidget {
     @QueryParam('title') this.title,
     @QueryParam('chapter') this.chapter,
     @QueryParam('readAloud') this.readAloud = false,
+    this.publishPresence = true,
+    this.presence,
   });
 
   final String serverName;
   final String bookId;
   final String mediaFileId;
+
+  /// Whether reading this book shows up in the server's now-playing list.
+  /// Off for the offline reader (downloads page), which has no server shell.
+  final bool publishPresence;
+
+  /// Test seam; the app uses [ActivityPresenceService.instance].
+  final ActivityPresenceService? presence;
 
   /// URL of the node that stores the epub file (epubFile.directory.servingNode.url).
   final String? nodeUrl;
@@ -69,6 +80,7 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
   ReaderBookController? _book;
   ReadingSyncService? _sync;
   ReadAloudController? _readAloud;
+  ActivityHandle? _presence;
 
   bool _loading = true;
   bool _loadFailed = false;
@@ -125,6 +137,7 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
     if (_fullscreen) unawaited(ReaderFullscreen.exit());
     _readAloud?.dispose();
     _sync?.dispose(); // flushes the pending position
+    unawaited(_presence?.end());
     _book?.removeListener(_onBookChanged);
     _book?.dispose();
     super.dispose();
@@ -136,9 +149,11 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
         state == AppLifecycleState.inactive) {
       unawaited(_readAloud?.pause());
       unawaited(_sync?.flush());
+      _presence?.update(playState: Enum$PlayState.PAUSED);
     }
-    if (state == AppLifecycleState.resumed && _fullscreen) {
-      unawaited(ReaderFullscreen.reassert());
+    if (state == AppLifecycleState.resumed) {
+      _presence?.update(playState: Enum$PlayState.PLAYING);
+      if (_fullscreen) unawaited(ReaderFullscreen.reassert());
     }
   }
 
@@ -202,6 +217,16 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
       _startPosition = start;
       await _showChapter(start.spineIndex, blockIndex: start.blockIndex);
       if (mounted) setState(() => _loading = false);
+      if (widget.publishPresence && mounted) {
+        _presence = (widget.presence ?? ActivityPresenceService.instance).begin(
+          serverName: widget.serverName,
+          mediaType: Enum$MediaType.BOOK,
+          mediaId: widget.bookId,
+          mediaFileId: widget.mediaFileId,
+          progressFraction: _currentBookFraction(),
+          progressLabel: _chapterLabel(),
+        );
+      }
       // Saving stays suppressed until every chapter is weighed: before that
       // the whole-book fraction (and the proportional audiobook mapping for
       // unaligned books) is based on uniform guesses. The web reader did the
@@ -335,6 +360,7 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
       });
       _readAloud?.invalidateSection();
       _reportCurrentPosition();
+      _updatePresence();
     } catch (error) {
       LoggerService().logger.e('Could not load chapter $spineIndex: $error');
       if (mounted) {
@@ -370,6 +396,7 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
     if (top == null || top == _topBlockIndex) return;
     _topBlockIndex = top;
     _reportCurrentPosition();
+    _updatePresence();
     // Only the progress label needs a rebuild, and only while visible.
     if (_chromeVisible && mounted) setState(() {});
   }
@@ -397,6 +424,26 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
       fragment: block?.ids.firstOrNull,
       bookFraction: _currentBookFraction(),
     ));
+  }
+
+  /// The now-playing card: whole-book fraction plus the chapter's TOC label.
+  void _updatePresence() {
+    _presence?.update(
+        progressFraction: _currentBookFraction(), progressLabel: _chapterLabel());
+  }
+
+  /// TOC label of the current spine item, else "Chapter n" in the reader's
+  /// locale — the server stores the label as text, like the client renders it.
+  String? _chapterLabel() {
+    final book = _book;
+    if (book == null || !mounted) return null;
+    final href = book.package.spine[_spineIndex].href;
+    final entry = book.package.toc
+        .where((entry) => entry.href == href && entry.label.trim().isNotEmpty)
+        .firstOrNull;
+    if (entry != null) return entry.label.trim();
+    final loc = AppLocalizations.of(context);
+    return loc == null ? null : '${loc.chapter} ${_spineIndex + 1}';
   }
 
   double _currentBookFraction() {

@@ -1628,6 +1628,18 @@ abstract class AppLocalizations {
   /// **'Paused'**
   String get statePaused;
 
+  /// State chip on a now-playing card of a game that is being played right now.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing'**
+  String get activityPlayingChip;
+
+  /// State chip on a now-playing card of a book or comic that is open in a reader right now.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading'**
+  String get activityReadingChip;
+
   /// No description provided for @liveUpdatesUnavailable.
   ///
   /// In en, this message translates to:

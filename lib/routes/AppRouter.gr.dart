@@ -13,11 +13,11 @@
 import 'dart:async' as _i53;
 
 import 'package:auto_route/auto_route.dart' as _i49;
-import 'package:collection/collection.dart' as _i64;
+import 'package:collection/collection.dart' as _i65;
 import 'package:flutter/foundation.dart' as _i51;
 import 'package:material_ui/material_ui.dart' as _i50;
 import 'package:player/components/upload/GameUploadTarget.dart' as _i55;
-import 'package:player/graphql/schema.graphql.dart' as _i63;
+import 'package:player/graphql/schema.graphql.dart' as _i64;
 import 'package:player/pages/AddServerPage.dart' as _i1;
 import 'package:player/pages/AdminLibrariesPage.dart' as _i2;
 import 'package:player/pages/AdminUploadPage.dart' as _i3;
@@ -66,8 +66,9 @@ import 'package:player/pages/ShowHomePage.dart' as _i45;
 import 'package:player/pages/ShowOverviewContentPage.dart' as _i46;
 import 'package:player/pages/ShowOverviewPage.dart' as _i47;
 import 'package:player/pages/SleepTimerSettingsPage.dart' as _i48;
+import 'package:player/utils/activity/ActivityPresenceService.dart' as _i62;
 import 'package:player/utils/artwork/ArtworkAdminApi.dart' as _i61;
-import 'package:player/utils/games/steam/SteamLibraryLocator.dart' as _i62;
+import 'package:player/utils/games/steam/SteamLibraryLocator.dart' as _i63;
 import 'package:player/utils/upload/GameFoundProbe.dart' as _i56;
 import 'package:player/utils/upload/games/GameLibraryIndex.dart' as _i58;
 import 'package:player/utils/upload/games/GameSourceMaterialiser.dart' as _i60;
@@ -831,6 +832,8 @@ class ComicReaderRoute extends _i49.PageRouteInfo<ComicReaderRouteArgs> {
     String? title,
     String? seriesId,
     int? page,
+    bool publishPresence = true,
+    _i62.ActivityPresenceService? presence,
     List<_i49.PageRouteInfo>? children,
   }) : super(
          ComicReaderRoute.name,
@@ -842,6 +845,8 @@ class ComicReaderRoute extends _i49.PageRouteInfo<ComicReaderRouteArgs> {
            title: title,
            seriesId: seriesId,
            page: page,
+           publishPresence: publishPresence,
+           presence: presence,
          ),
          rawPathParams: {'bookId': bookId, 'mediaFileId': mediaFileId},
          rawQueryParams: {
@@ -879,6 +884,8 @@ class ComicReaderRoute extends _i49.PageRouteInfo<ComicReaderRouteArgs> {
         title: args.title,
         seriesId: args.seriesId,
         page: args.page,
+        publishPresence: args.publishPresence,
+        presence: args.presence,
       );
     },
   );
@@ -893,6 +900,8 @@ class ComicReaderRouteArgs {
     this.title,
     this.seriesId,
     this.page,
+    this.publishPresence = true,
+    this.presence,
   });
 
   final _i51.Key? key;
@@ -909,9 +918,13 @@ class ComicReaderRouteArgs {
 
   final int? page;
 
+  final bool publishPresence;
+
+  final _i62.ActivityPresenceService? presence;
+
   @override
   String toString() {
-    return 'ComicReaderRouteArgs{key: $key, bookId: $bookId, mediaFileId: $mediaFileId, nodeUrl: $nodeUrl, title: $title, seriesId: $seriesId, page: $page}';
+    return 'ComicReaderRouteArgs{key: $key, bookId: $bookId, mediaFileId: $mediaFileId, nodeUrl: $nodeUrl, title: $title, seriesId: $seriesId, page: $page, publishPresence: $publishPresence, presence: $presence}';
   }
 
   @override
@@ -924,7 +937,9 @@ class ComicReaderRouteArgs {
         nodeUrl == other.nodeUrl &&
         title == other.title &&
         seriesId == other.seriesId &&
-        page == other.page;
+        page == other.page &&
+        publishPresence == other.publishPresence &&
+        presence == other.presence;
   }
 
   @override
@@ -935,7 +950,9 @@ class ComicReaderRouteArgs {
       nodeUrl.hashCode ^
       title.hashCode ^
       seriesId.hashCode ^
-      page.hashCode;
+      page.hashCode ^
+      publishPresence.hashCode ^
+      presence.hashCode;
 }
 
 /// generated route for
@@ -1138,7 +1155,7 @@ class GameRouteArgs {
 class GameSettingsRoute extends _i49.PageRouteInfo<GameSettingsRouteArgs> {
   GameSettingsRoute({
     _i50.Key? key,
-    _i53.Future<List<_i62.SteamLibrary>> Function()? steamLibraries,
+    _i53.Future<List<_i63.SteamLibrary>> Function()? steamLibraries,
     _i53.Future<String?> Function()? pickDirectory,
     List<_i49.PageRouteInfo>? children,
   }) : super(
@@ -1179,7 +1196,7 @@ class GameSettingsRouteArgs {
 
   final _i50.Key? key;
 
-  final _i53.Future<List<_i62.SteamLibrary>> Function()? steamLibraries;
+  final _i53.Future<List<_i63.SteamLibrary>> Function()? steamLibraries;
 
   final _i53.Future<String?> Function()? pickDirectory;
 
@@ -1207,7 +1224,7 @@ class GameUploadCandidatesRoute
     _i50.Key? key,
     required _i57.UploadDirectory directory,
     required List<_i55.GamePlatformOption> platforms,
-    _i63.Enum$GamePlatform? platform,
+    _i64.Enum$GamePlatform? platform,
     _i15.GameCandidateScan? scan,
     _i58.GameLibraryIndexLoader? indexLoader,
     _i53.Future<_i54.UploadSourceFolder?> Function()? pickFolder,
@@ -1264,7 +1281,7 @@ class GameUploadCandidatesRouteArgs {
 
   final List<_i55.GamePlatformOption> platforms;
 
-  final _i63.Enum$GamePlatform? platform;
+  final _i64.Enum$GamePlatform? platform;
 
   final _i15.GameCandidateScan? scan;
 
@@ -1283,7 +1300,7 @@ class GameUploadCandidatesRouteArgs {
     if (other is! GameUploadCandidatesRouteArgs) return false;
     return key == other.key &&
         directory == other.directory &&
-        const _i64.ListEquality<_i55.GamePlatformOption>().equals(
+        const _i65.ListEquality<_i55.GamePlatformOption>().equals(
           platforms,
           other.platforms,
         ) &&
@@ -1296,7 +1313,7 @@ class GameUploadCandidatesRouteArgs {
   int get hashCode =>
       key.hashCode ^
       directory.hashCode ^
-      const _i64.ListEquality<_i55.GamePlatformOption>().hash(platforms) ^
+      const _i65.ListEquality<_i55.GamePlatformOption>().hash(platforms) ^
       platform.hashCode ^
       scan.hashCode ^
       indexLoader.hashCode;
@@ -2026,6 +2043,8 @@ class ReaderRoute extends _i49.PageRouteInfo<ReaderRouteArgs> {
     String? title,
     int? chapter,
     bool readAloud = false,
+    bool publishPresence = true,
+    _i62.ActivityPresenceService? presence,
     List<_i49.PageRouteInfo>? children,
   }) : super(
          ReaderRoute.name,
@@ -2037,6 +2056,8 @@ class ReaderRoute extends _i49.PageRouteInfo<ReaderRouteArgs> {
            title: title,
            chapter: chapter,
            readAloud: readAloud,
+           publishPresence: publishPresence,
+           presence: presence,
          ),
          rawPathParams: {'bookId': bookId, 'mediaFileId': mediaFileId},
          rawQueryParams: {
@@ -2074,6 +2095,8 @@ class ReaderRoute extends _i49.PageRouteInfo<ReaderRouteArgs> {
         title: args.title,
         chapter: args.chapter,
         readAloud: args.readAloud,
+        publishPresence: args.publishPresence,
+        presence: args.presence,
       );
     },
   );
@@ -2088,6 +2111,8 @@ class ReaderRouteArgs {
     this.title,
     this.chapter,
     this.readAloud = false,
+    this.publishPresence = true,
+    this.presence,
   });
 
   final _i51.Key? key;
@@ -2104,9 +2129,13 @@ class ReaderRouteArgs {
 
   final bool readAloud;
 
+  final bool publishPresence;
+
+  final _i62.ActivityPresenceService? presence;
+
   @override
   String toString() {
-    return 'ReaderRouteArgs{key: $key, bookId: $bookId, mediaFileId: $mediaFileId, nodeUrl: $nodeUrl, title: $title, chapter: $chapter, readAloud: $readAloud}';
+    return 'ReaderRouteArgs{key: $key, bookId: $bookId, mediaFileId: $mediaFileId, nodeUrl: $nodeUrl, title: $title, chapter: $chapter, readAloud: $readAloud, publishPresence: $publishPresence, presence: $presence}';
   }
 
   @override
@@ -2119,7 +2148,9 @@ class ReaderRouteArgs {
         nodeUrl == other.nodeUrl &&
         title == other.title &&
         chapter == other.chapter &&
-        readAloud == other.readAloud;
+        readAloud == other.readAloud &&
+        publishPresence == other.publishPresence &&
+        presence == other.presence;
   }
 
   @override
@@ -2130,7 +2161,9 @@ class ReaderRouteArgs {
       nodeUrl.hashCode ^
       title.hashCode ^
       chapter.hashCode ^
-      readAloud.hashCode;
+      readAloud.hashCode ^
+      publishPresence.hashCode ^
+      presence.hashCode;
 }
 
 /// generated route for

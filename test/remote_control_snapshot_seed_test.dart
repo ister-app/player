@@ -20,6 +20,11 @@ const _queueId = 'queue-1';
 
 Map<String, dynamic> _session() => {
       '__typename': 'PlaybackSession',
+      // Every field the fragment selects: the normalized cache re-reads the
+      // result and a missing key is a cache miss, not a null.
+      'activityKind': 'PLAYBACK',
+      'progressFraction': null,
+      'progressLabel': null,
       'playQueueId': _queueId,
       'playQueueItemId': null,
       'userId': 'user-1',

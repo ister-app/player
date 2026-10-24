@@ -13,10 +13,12 @@ import 'package:player/utils/games/steam/SteamLibraryLocator.dart';
 import 'package:player/utils/upload/games/Rpcs3Locator.dart';
 import 'package:player/utils/games/launch/EmulatorRegistry.dart';
 import 'package:player/utils/games/LocalGameCopy.dart';
+import 'package:player/utils/activity/ActivityPresenceService.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import 'support/game_fixture.dart';
+import '../support/recording_presence.dart';
 
 /// Pretends to run the game: returns at once with exit code 0.
 class FakeRunner extends GameProcessRunner {
@@ -68,8 +70,10 @@ void main() {
 
   Map<String, String> env() => {'HOME': tmp.path, 'XDG_CONFIG_HOME': '${tmp.path}/.config'};
 
-  GameLibraryService service({GameInstallStore? store}) => GameLibraryService.forTest(
+  GameLibraryService service({GameInstallStore? store, ActivityPresenceService? presence}) =>
+      GameLibraryService.forTest(
         runner: runner,
+        presence: presence,
         registry: EmulatorRegistry(runner: runner, environment: env()),
         steam: SteamLibraryLocator(environment: env()),
         localCopies: LocalGameCopyFinder(steam: SteamLibraryLocator(environment: env()), rpcs3: Rpcs3Locator(environment: env())),
@@ -399,6 +403,43 @@ void main() {
       expect(result.hasErrors, isFalse);
       expect(recorded.single.$2.inMinutes, greaterThanOrEqualTo(9));
       expect((await s.store.get(server, 'g1'))!.hasOpenSession, isFalse);
+    });
+
+    test('a running game is reported as a now-playing session and ended with the session', () async {
+      final presence = RecordingPresence();
+      final s = service(presence: presence.service);
+      await installedNative(s);
+      final game = gameFixture(form: 'PC_LINUX_PORTABLE', platform: 'LINUX');
+
+      final prepared = await s.prepare(server, game);
+      await s.launch(server, game, prepared.plan);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(presence.reports, hasLength(1));
+      expect(presence.reports.single.variables['mediaType'], 'GAME');
+      expect(presence.reports.single.variables['mediaId'], 'g1');
+      expect(presence.reports.single.variables['progressFraction'], isNull);
+      expect(presence.ends, hasLength(1), reason: 'the session closed with the process');
+      expect(presence.ends.single.variables['sessionId'],
+          presence.reports.single.variables['sessionId']);
+    });
+
+    test('a session restored after a restart is reported again until it is discarded', () async {
+      final presence = RecordingPresence();
+      final s = service(presence: presence.service);
+      final install = await installedNative(s);
+      install.sessionStartedAt = DateTime.utc(2026, 10, 24, 11);
+      await s.store.put(server, install);
+      final game = gameFixture(form: 'PC_LINUX_PORTABLE', platform: 'LINUX');
+
+      expect(await s.restoreSession(server, game), isNotNull);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(presence.reports, hasLength(1));
+      expect(presence.ends, isEmpty);
+
+      await s.discardSession(server, 'g1');
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(presence.ends, hasLength(1));
     });
 
     test('uninstall is refused while a session is open', () async {

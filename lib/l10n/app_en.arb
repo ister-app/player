@@ -1115,6 +1115,14 @@
   },
   "statePlaying": "Playing",
   "statePaused": "Paused",
+  "activityPlayingChip": "Playing",
+  "@activityPlayingChip": {
+    "description": "State chip on a now-playing card of a game that is being played right now."
+  },
+  "activityReadingChip": "Reading",
+  "@activityReadingChip": {
+    "description": "State chip on a now-playing card of a book or comic that is open in a reader right now."
+  },
   "liveUpdatesUnavailable": "Live updates interrupted — reconnecting",
   "sessionEnded": "Session ended",
   "addToSession": "Add to session",

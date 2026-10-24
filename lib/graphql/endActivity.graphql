@@ -1,0 +1,3 @@
+mutation endActivity($sessionId: ID!) {
+    endActivity(sessionId: $sessionId)
+}

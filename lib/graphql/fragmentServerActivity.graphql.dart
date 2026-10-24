@@ -2748,6 +2748,9 @@ class Fragment$fragmentPlaybackSession {
     this.anchorPositionMs,
     this.anchorServerTimeMs,
     this.repeatMode,
+    required this.activityKind,
+    this.progressFraction,
+    this.progressLabel,
     this.$__typename = 'PlaybackSession',
   });
 
@@ -2773,6 +2776,9 @@ class Fragment$fragmentPlaybackSession {
     final l$anchorPositionMs = json['anchorPositionMs'];
     final l$anchorServerTimeMs = json['anchorServerTimeMs'];
     final l$repeatMode = json['repeatMode'];
+    final l$activityKind = json['activityKind'];
+    final l$progressFraction = json['progressFraction'];
+    final l$progressLabel = json['progressLabel'];
     final l$$__typename = json['__typename'];
     return Fragment$fragmentPlaybackSession(
       playQueueId: (l$playQueueId as String),
@@ -2800,6 +2806,9 @@ class Fragment$fragmentPlaybackSession {
       repeatMode: l$repeatMode == null
           ? null
           : fromJson$Enum$RepeatMode((l$repeatMode as String)),
+      activityKind: fromJson$Enum$ActivityKind((l$activityKind as String)),
+      progressFraction: (l$progressFraction as num?)?.toDouble(),
+      progressLabel: (l$progressLabel as String?),
       $__typename: (l$$__typename as String),
     );
   }
@@ -2845,6 +2854,12 @@ class Fragment$fragmentPlaybackSession {
   final double? anchorServerTimeMs;
 
   final Enum$RepeatMode? repeatMode;
+
+  final Enum$ActivityKind activityKind;
+
+  final double? progressFraction;
+
+  final String? progressLabel;
 
   final String $__typename;
 
@@ -2896,6 +2911,12 @@ class Fragment$fragmentPlaybackSession {
     _resultData['repeatMode'] = l$repeatMode == null
         ? null
         : toJson$Enum$RepeatMode(l$repeatMode);
+    final l$activityKind = activityKind;
+    _resultData['activityKind'] = toJson$Enum$ActivityKind(l$activityKind);
+    final l$progressFraction = progressFraction;
+    _resultData['progressFraction'] = l$progressFraction;
+    final l$progressLabel = progressLabel;
+    _resultData['progressLabel'] = l$progressLabel;
     final l$$__typename = $__typename;
     _resultData['__typename'] = l$$__typename;
     return _resultData;
@@ -2924,6 +2945,9 @@ class Fragment$fragmentPlaybackSession {
     final l$anchorPositionMs = anchorPositionMs;
     final l$anchorServerTimeMs = anchorServerTimeMs;
     final l$repeatMode = repeatMode;
+    final l$activityKind = activityKind;
+    final l$progressFraction = progressFraction;
+    final l$progressLabel = progressLabel;
     final l$$__typename = $__typename;
     return Object.hashAll([
       l$playQueueId,
@@ -2947,6 +2971,9 @@ class Fragment$fragmentPlaybackSession {
       l$anchorPositionMs,
       l$anchorServerTimeMs,
       l$repeatMode,
+      l$activityKind,
+      l$progressFraction,
+      l$progressLabel,
       l$$__typename,
     ]);
   }
@@ -3065,6 +3092,21 @@ class Fragment$fragmentPlaybackSession {
     if (l$repeatMode != lOther$repeatMode) {
       return false;
     }
+    final l$activityKind = activityKind;
+    final lOther$activityKind = other.activityKind;
+    if (l$activityKind != lOther$activityKind) {
+      return false;
+    }
+    final l$progressFraction = progressFraction;
+    final lOther$progressFraction = other.progressFraction;
+    if (l$progressFraction != lOther$progressFraction) {
+      return false;
+    }
+    final l$progressLabel = progressLabel;
+    final lOther$progressLabel = other.progressLabel;
+    if (l$progressLabel != lOther$progressLabel) {
+      return false;
+    }
     final l$$__typename = $__typename;
     final lOther$$__typename = other.$__typename;
     if (l$$__typename != lOther$$__typename) {
@@ -3111,6 +3153,9 @@ abstract class CopyWith$Fragment$fragmentPlaybackSession<TRes> {
     int? anchorPositionMs,
     double? anchorServerTimeMs,
     Enum$RepeatMode? repeatMode,
+    Enum$ActivityKind? activityKind,
+    double? progressFraction,
+    String? progressLabel,
     String? $__typename,
   });
 }
@@ -3147,6 +3192,9 @@ class _CopyWithImpl$Fragment$fragmentPlaybackSession<TRes>
     Object? anchorPositionMs = _undefined,
     Object? anchorServerTimeMs = _undefined,
     Object? repeatMode = _undefined,
+    Object? activityKind = _undefined,
+    Object? progressFraction = _undefined,
+    Object? progressLabel = _undefined,
     Object? $__typename = _undefined,
   }) => _then(
     Fragment$fragmentPlaybackSession(
@@ -3210,6 +3258,15 @@ class _CopyWithImpl$Fragment$fragmentPlaybackSession<TRes>
       repeatMode: repeatMode == _undefined
           ? _instance.repeatMode
           : (repeatMode as Enum$RepeatMode?),
+      activityKind: activityKind == _undefined || activityKind == null
+          ? _instance.activityKind
+          : (activityKind as Enum$ActivityKind),
+      progressFraction: progressFraction == _undefined
+          ? _instance.progressFraction
+          : (progressFraction as double?),
+      progressLabel: progressLabel == _undefined
+          ? _instance.progressLabel
+          : (progressLabel as String?),
       $__typename: $__typename == _undefined || $__typename == null
           ? _instance.$__typename
           : ($__typename as String),
@@ -3245,6 +3302,9 @@ class _CopyWithStubImpl$Fragment$fragmentPlaybackSession<TRes>
     int? anchorPositionMs,
     double? anchorServerTimeMs,
     Enum$RepeatMode? repeatMode,
+    Enum$ActivityKind? activityKind,
+    double? progressFraction,
+    String? progressLabel,
     String? $__typename,
   }) => _res;
 }
@@ -3402,6 +3462,27 @@ const fragmentDefinitionfragmentPlaybackSession = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'repeatMode'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'activityKind'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'progressFraction'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'progressLabel'),
         alias: null,
         arguments: [],
         directives: [],

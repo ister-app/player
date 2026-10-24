@@ -128,8 +128,9 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
 
   /// Runs the 1s ticker only while at least one session is playing.
   void _syncTicker() {
-    final anyPlaying = _sessions?.any(
-            (s) => s.playState != Enum$PlayState.PAUSED) ??
+    // Activity sessions (reading, gaming) have no timeline to interpolate.
+    final anyPlaying = _sessions?.any((s) =>
+            s.playState != Enum$PlayState.PAUSED && !_isActivity(s)) ??
         false;
     if (anyPlaying && _ticker == null) {
       _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -154,6 +155,11 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
     return pos < 0 ? 0 : pos;
   }
 
+  /// A reading or gaming session: no queue, so no remote control, no listening
+  /// along and no timeline — the card shows the reading progress instead.
+  static bool _isActivity(Fragment$fragmentPlaybackSession session) =>
+      session.activityKind != Enum$ActivityKind.PLAYBACK;
+
   IconData _mediaIcon(Enum$MediaType? type) {
     switch (type) {
       case Enum$MediaType.EPISODE:
@@ -162,9 +168,29 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
         return Icons.music_note;
       case Enum$MediaType.MOVIE:
         return Icons.movie;
+      case Enum$MediaType.BOOK:
+        return Icons.menu_book;
+      case Enum$MediaType.COMIC:
+        return Icons.auto_stories;
+      case Enum$MediaType.GAME:
+        return Icons.sports_esports;
       default:
         return Icons.play_circle_outline;
     }
+  }
+
+  /// Where a tap on an activity card goes: the game or the book page, inside
+  /// this server's shell. Null when the session carries no item id.
+  VoidCallback? _openActivityItem(Fragment$fragmentPlaybackSession session) {
+    final mediaId = session.mediaId;
+    if (mediaId == null) return null;
+    return switch (session.mediaType) {
+      Enum$MediaType.GAME => () => context.router.push(GameRoute(gameId: mediaId)),
+      Enum$MediaType.BOOK ||
+      Enum$MediaType.COMIC =>
+        () => context.router.push(BookRoute(bookId: mediaId)),
+      _ => null,
+    };
   }
 
   String _formatProgress(int milliseconds) {
@@ -227,19 +253,22 @@ class _ServerNowPlayingPageState extends State<ServerNowPlayingPage> {
               // Party mode: open the remote control overlay for this session — but only when the
               // owner allows this user to control it (server-computed per viewer). A view-only
               // session has no tap target.
-              onTap: session.controllable
-                  ? () => context.router.root.push(RemoteControlRoute(
-                      serverName: widget.serverName,
-                      playQueueId: session.playQueueId))
-                  : null,
+              onTap: _isActivity(session)
+                  ? _openActivityItem(session)
+                  : session.controllable
+                      ? () => context.router.root.push(RemoteControlRoute(
+                          serverName: widget.serverName,
+                          playQueueId: session.playQueueId))
+                      : null,
               // Listen together: the owner manages the session (listeners,
               // devices, sharing); anyone who may control it may also join it
               // on this device — except for this device's own session as seen
               // through another card, where the owner check already covers it.
-              onListenTogether: session.userId == _ownUserId ||
+              onListenTogether: !_isActivity(session) &&
+                      (session.userId == _ownUserId ||
                       (session.controllable &&
                           !MediaPlayerHandler.instance.isOwnLiveQueue(
-                              widget.serverName, session.playQueueId))
+                              widget.serverName, session.playQueueId)))
                   ? () => showListenTogetherSheet(context,
                       serverName: widget.serverName,
                       playQueueId: session.playQueueId,
@@ -292,6 +321,9 @@ class _SessionCard extends StatelessWidget {
         ? (positionMs / total).clamp(0.0, 1.0)
         : null;
 
+    final activity = session.activityKind != Enum$ActivityKind.PLAYBACK;
+    final readingFraction = session.progressFraction?.clamp(0.0, 1.0);
+
     final loc = AppLocalizations.of(context)!;
     final subtitleParts = [
       if (session.userName != null) session.userName!,
@@ -303,6 +335,7 @@ class _SessionCard extends StatelessWidget {
     ];
 
     return Card(
+      key: ValueKey('session-card-${session.playQueueId}'),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -331,7 +364,7 @@ class _SessionCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      _StateChip(paused: paused),
+                      _StateChip(paused: paused, kind: session.activityKind),
                       if (onListenTogether != null)
                         IconButton(
                           icon: Icon(isVideo
@@ -355,33 +388,70 @@ class _SessionCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
-                  const SizedBox(height: 10),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: fraction,
-                      minHeight: 4,
-                      backgroundColor:
-                          theme.colorScheme.surfaceContainerHighest,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        formatProgress(positionMs),
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(color: mutedColor),
+                  if (session.activityKind == Enum$ActivityKind.READING) ...[
+                    // Reading: how far into the book, and where (chapter/page).
+                    const SizedBox(height: 10),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        key: ValueKey('activity-progress-${session.playQueueId}'),
+                        value: readingFraction,
+                        minHeight: 4,
+                        backgroundColor:
+                            theme.colorScheme.surfaceContainerHighest,
                       ),
-                      if (total != null)
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            session.progressLabel ?? '',
+                            style: theme.textTheme.bodySmall
+                                ?.copyWith(color: mutedColor),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (readingFraction != null)
+                          Text(
+                            '${(readingFraction * 100).round()}%',
+                            style: theme.textTheme.bodySmall
+                                ?.copyWith(color: mutedColor),
+                          ),
+                      ],
+                    ),
+                  ] else if (!activity) ...[
+                    const SizedBox(height: 10),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: fraction,
+                        minHeight: 4,
+                        backgroundColor:
+                            theme.colorScheme.surfaceContainerHighest,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
                         Text(
-                          formatProgress(total),
+                          formatProgress(positionMs),
                           style: theme.textTheme.bodySmall
                               ?.copyWith(color: mutedColor),
                         ),
-                    ],
-                  ),
+                        if (total != null)
+                          Text(
+                            formatProgress(total),
+                            style: theme.textTheme.bodySmall
+                                ?.copyWith(color: mutedColor),
+                          ),
+                      ],
+                    ),
+                  ],
+                  // A game: nothing to measure, the chip says it all.
                 ],
               ),
             ),
@@ -429,17 +499,25 @@ class _Artwork extends StatelessWidget {
 
 class _StateChip extends StatelessWidget {
   final bool paused;
+  final Enum$ActivityKind kind;
 
-  const _StateChip({required this.paused});
+  const _StateChip({required this.paused, this.kind = Enum$ActivityKind.PLAYBACK});
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final (icon, label) = paused
+        ? (Icons.pause, loc.statePaused)
+        : switch (kind) {
+            Enum$ActivityKind.READING => (Icons.menu_book, loc.activityReadingChip),
+            Enum$ActivityKind.GAME => (Icons.sports_esports, loc.activityPlayingChip),
+            _ => (Icons.play_arrow, loc.statePlaying),
+          };
     return Chip(
-      avatar: Icon(paused ? Icons.pause : Icons.play_arrow, size: 16),
+      avatar: Icon(icon, size: 16),
       label: Text(
-        paused ? loc.statePaused : loc.statePlaying,
+        label,
         style: theme.textTheme.bodySmall,
       ),
       padding: EdgeInsets.zero,

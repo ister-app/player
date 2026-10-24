@@ -13,8 +13,11 @@ import 'package:flutter/foundation.dart';
 import 'package:player/pages/ComicReaderPage.dart';
 import 'package:player/utils/comic/ComicPageSource.dart';
 import 'package:player/utils/comic/ComicPreferences.dart';
+import 'package:player/utils/activity/ActivityPresenceService.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
+
+import 'support/recording_presence.dart';
 
 /// A 1×1 transparent PNG; every page image in the tests is this.
 final Uint8List _pixel = base64Decode(
@@ -147,18 +150,19 @@ MockClient _fakeGraphQL({
       );
     });
 
-Widget _app({http.Client? graphQLClient}) => GraphQLProvider(
+Widget _app({http.Client? graphQLClient, ActivityPresenceService? presence}) =>
+    GraphQLProvider(
       client: ValueNotifier(GraphQLClient(
         link: HttpLink('https://api.example/graphql',
             httpClient: graphQLClient ?? _fakeGraphQL()),
         cache: GraphQLCache(),
       )),
-      child: const MaterialApp(
-        localizationsDelegates: [
+      child: MaterialApp(
+        localizationsDelegates: const [
           AppLocalizations.delegate,
           ...GlobalMaterialLocalizations.delegates,
         ],
-        supportedLocales: [Locale('en')],
+        supportedLocales: const [Locale('en')],
         home: ComicReaderPage(
           serverName: 'test-server',
           bookId: 'book-1',
@@ -166,6 +170,7 @@ Widget _app({http.Client? graphQLClient}) => GraphQLProvider(
           nodeUrl: 'https://node.example',
           title: 'Test Comic',
           seriesId: 'series-1',
+          presence: presence,
         ),
       ),
     );
@@ -610,5 +615,34 @@ void main() {
       expect(find.byIcon(Icons.fullscreen_exit), findsOneWidget);
     }, () => _fakeServer([]));
     await ComicPreferences.setFullscreen(false);
+  });
+
+  testWidgets('the open volume is reported as a reading session with its page, and ended on close',
+      (tester) async {
+    var now = DateTime.utc(2026, 10, 24, 12);
+    final presence = RecordingPresence(clock: () => now);
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app(presence: presence.service));
+      await tester.pumpAndSettle();
+
+      expect(presence.reports, hasLength(1));
+      final report = presence.reports.single.variables;
+      expect(report['mediaType'], 'COMIC');
+      expect(report['mediaId'], 'book-1');
+      expect(report['mediaFileId'], 'file-1');
+      expect(report['progressLabel'], 'Page 1 of 10');
+      expect(report['progressFraction'], closeTo(0.1, 0.001));
+
+      now = now.add(const Duration(seconds: 10));
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.pumpAndSettle();
+      expect(presence.reports.last.variables['progressLabel'], 'Page 2 of 10');
+      expect(presence.reports.last.variables['progressFraction'], closeTo(0.2, 0.001));
+
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpAndSettle();
+      expect(presence.ends, hasLength(1));
+      expect(presence.ends.single.variables['sessionId'], report['sessionId']);
+    }, () => _fakeServer([]));
   });
 }

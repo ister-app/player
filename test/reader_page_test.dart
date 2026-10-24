@@ -11,8 +11,11 @@ import 'package:player/l10n/app_localizations.dart';
 import 'package:player/pages/ReaderPage.dart';
 import 'package:player/utils/ReaderFullscreen.dart';
 import 'package:player/utils/epub/ReaderPreferences.dart';
+import 'package:player/utils/activity/ActivityPresenceService.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
+
+import 'support/recording_presence.dart';
 
 const _container = '''
 <?xml version="1.0"?>
@@ -98,6 +101,25 @@ Widget _app() => const MaterialApp(
         mediaFileId: 'file-1',
         nodeUrl: 'https://node.example',
         title: 'Widget Test Book',
+      ),
+    );
+
+Widget _appWithPresence(ActivityPresenceService presence,
+        {bool publishPresence = true}) =>
+    MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
+      ],
+      supportedLocales: const [Locale('en')],
+      home: ReaderPage(
+        serverName: 'test-server',
+        bookId: 'book-1',
+        mediaFileId: 'file-1',
+        nodeUrl: 'https://node.example',
+        title: 'Widget Test Book',
+        publishPresence: publishPresence,
+        presence: presence,
       ),
     );
 
@@ -276,6 +298,79 @@ void main() {
       expect(chromeVisible(), isFalse);
       expect(find.textContaining('Second chapter heading', findRichText: true),
           findsOneWidget);
+    });
+  });
+
+  group('now-playing presence', () {
+    late DateTime now;
+    late RecordingPresence presence;
+
+    setUp(() {
+      now = DateTime.utc(2026, 10, 24, 12);
+      presence = RecordingPresence(clock: () => now);
+    });
+
+    testWidgets('the open book is reported with its chapter, updated on a chapter change and ended on close',
+        (tester) async {
+      await _withFakeServer(tester, [], () async {
+        await tester.pumpWidget(_appWithPresence(presence.service));
+        await tester.pumpAndSettle();
+
+        expect(presence.reports, hasLength(1));
+        final report = presence.reports.single.variables;
+        expect(report['mediaType'], 'BOOK');
+        expect(report['mediaId'], 'book-1');
+        expect(report['mediaFileId'], 'file-1');
+        expect(report['progressLabel'], 'Hoofdstuk een');
+        expect(report['playState'], 'PLAYING');
+        expect(presence.ends, isEmpty);
+
+        // Past the resend gap, the next chapter goes out as a new label.
+        now = now.add(const Duration(seconds: 10));
+        await tester.tap(find.byIcon(Icons.skip_next));
+        await tester.pumpAndSettle();
+        expect(presence.reports.last.variables['progressLabel'], 'Hoofdstuk twee');
+        expect(presence.reports.last.variables['progressFraction'], greaterThan(0.0));
+
+        // Closing the reader ends the session.
+        await tester.pumpWidget(const SizedBox());
+        await tester.pumpAndSettle();
+        expect(presence.ends, hasLength(1));
+        expect(presence.ends.single.variables['sessionId'], report['sessionId']);
+      });
+    });
+
+    testWidgets('backgrounding the app pauses the session, resuming plays it again',
+        (tester) async {
+      await _withFakeServer(tester, [], () async {
+        await tester.pumpWidget(_appWithPresence(presence.service));
+        await tester.pumpAndSettle();
+        expect(presence.reports, hasLength(1));
+
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+        await tester.pumpAndSettle();
+        expect(presence.reports.last.variables['playState'], 'PAUSED');
+
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+        await tester.pumpAndSettle();
+        expect(presence.reports.last.variables['playState'], 'PLAYING');
+
+        await tester.pumpWidget(const SizedBox());
+        await tester.pumpAndSettle();
+      });
+    });
+
+    testWidgets('the offline reader does not report presence', (tester) async {
+      await _withFakeServer(tester, [], () async {
+        await tester.pumpWidget(
+            _appWithPresence(presence.service, publishPresence: false));
+        await tester.pumpAndSettle();
+        expect(find.textContaining('First chapter heading', findRichText: true),
+            findsOneWidget);
+        await tester.pumpWidget(const SizedBox());
+        await tester.pumpAndSettle();
+      });
+      expect(presence.calls, isEmpty);
     });
   });
 }

@@ -24,6 +24,8 @@ import 'package:player/utils/download/DownloadService.dart';
 import 'package:player/utils/comic/SeriesDirectionService.dart';
 import 'package:player/utils/ReaderFullscreen.dart';
 import 'package:player/utils/ScreenWakelock.dart';
+import 'package:player/utils/activity/ActivityPresenceService.dart';
+import 'package:player/graphql/schema.graphql.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 /// The comic reader: page images in a swiping [PageView], one *spread* per
@@ -46,11 +48,20 @@ class ComicReaderPage extends StatefulWidget {
     @QueryParam('title') this.title,
     @QueryParam('seriesId') this.seriesId,
     @QueryParam('page') this.page,
+    this.publishPresence = true,
+    this.presence,
   });
 
   final String serverName;
   final String bookId;
   final String mediaFileId;
+
+  /// Whether reading this volume shows up in the server's now-playing list.
+  /// Off for the offline reader (downloads page), which has no server shell.
+  final bool publishPresence;
+
+  /// Test seam; the app uses [ActivityPresenceService.instance].
+  final ActivityPresenceService? presence;
 
   /// URL of the node that stores the volume (mediaFile.directory.servingNode.url).
   final String? nodeUrl;
@@ -72,6 +83,7 @@ class _ComicReaderPageState extends State<ComicReaderPage>
   ComicResourceClient? _client;
   ComicPageSource? _source;
   ComicSyncService? _sync;
+  ActivityHandle? _presence;
 
   bool _loading = true;
   bool _loadFailed = false;
@@ -139,6 +151,7 @@ class _ComicReaderPageState extends State<ComicReaderPage>
     // Leave fullscreen but keep the preference: the next open restores it.
     if (_fullscreen) unawaited(ReaderFullscreen.exit());
     _sync?.dispose(); // flushes the pending position
+    unawaited(_presence?.end());
     _source?.dispose();
     _client?.dispose();
     _pageController?.dispose();
@@ -150,9 +163,11 @@ class _ComicReaderPageState extends State<ComicReaderPage>
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       unawaited(_sync?.flush());
+      _presence?.update(playState: Enum$PlayState.PAUSED);
     }
-    if (state == AppLifecycleState.resumed && _fullscreen) {
-      unawaited(ReaderFullscreen.reassert());
+    if (state == AppLifecycleState.resumed) {
+      _presence?.update(playState: Enum$PlayState.PLAYING);
+      if (_fullscreen) unawaited(ReaderFullscreen.reassert());
     }
   }
 
@@ -255,6 +270,16 @@ class _ComicReaderPageState extends State<ComicReaderPage>
         _loading = false;
       });
       _precacheAround(_spreadIndex);
+      if (widget.publishPresence) {
+        _presence = (widget.presence ?? ActivityPresenceService.instance).begin(
+          serverName: widget.serverName,
+          mediaType: Enum$MediaType.COMIC,
+          mediaId: widget.bookId,
+          mediaFileId: widget.mediaFileId,
+          progressFraction: _presenceFraction(),
+          progressLabel: _pageLabel(AppLocalizations.of(context)!),
+        );
+      }
     } catch (error) {
       _failLoad('Could not load the comic: $error');
     }
@@ -408,6 +433,17 @@ class _ComicReaderPageState extends State<ComicReaderPage>
     setState(() => _spreadIndex = spreadIndex);
     _precacheAround(spreadIndex);
     _reportCurrentPosition();
+    _presence?.update(
+        progressFraction: _presenceFraction(),
+        progressLabel: _pageLabel(AppLocalizations.of(context)!));
+  }
+
+  /// Share of the volume read, by the last visible page — what the server
+  /// gets as reading progress too.
+  double _presenceFraction() {
+    if (_pageCount == 0 || _spreads.isEmpty) return 0;
+    final lastVisible = _spreads[_spreadIndex.clamp(0, _spreads.length - 1)].last;
+    return ((lastVisible + 1) / _pageCount).clamp(0.0, 1.0);
   }
 
   void _reportCurrentPosition() {

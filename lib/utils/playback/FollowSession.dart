@@ -192,7 +192,11 @@ class FollowSession {
     if (!core.followMode || _busy) return;
     final pqId = core.playQueue?.id;
     if (pqId == null) return;
-    final session = sessions.where((s) => s.playQueueId == pqId).firstOrNull;
+    // An activity session (reading, gaming) can never be the one followed.
+    final session = sessions
+        .where((s) =>
+            s.playQueueId == pqId && s.activityKind == Enum$ActivityKind.PLAYBACK)
+        .firstOrNull;
     if (session == null) {
       // The list is always complete: an emission without our session means
       // the leader stopped (or timed out server-side). The media is gone from

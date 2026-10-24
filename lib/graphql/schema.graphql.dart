@@ -2737,6 +2737,44 @@ Enum$PlayState fromJson$Enum$PlayState(String value) {
   }
 }
 
+enum Enum$ActivityKind {
+  PLAYBACK,
+  READING,
+  GAME,
+  $unknown;
+
+  factory Enum$ActivityKind.fromJson(String value) =>
+      fromJson$Enum$ActivityKind(value);
+
+  String toJson() => toJson$Enum$ActivityKind(this);
+}
+
+String toJson$Enum$ActivityKind(Enum$ActivityKind e) {
+  switch (e) {
+    case Enum$ActivityKind.PLAYBACK:
+      return r'PLAYBACK';
+    case Enum$ActivityKind.READING:
+      return r'READING';
+    case Enum$ActivityKind.GAME:
+      return r'GAME';
+    case Enum$ActivityKind.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$ActivityKind fromJson$Enum$ActivityKind(String value) {
+  switch (value) {
+    case r'PLAYBACK':
+      return Enum$ActivityKind.PLAYBACK;
+    case r'READING':
+      return Enum$ActivityKind.READING;
+    case r'GAME':
+      return Enum$ActivityKind.GAME;
+    default:
+      return Enum$ActivityKind.$unknown;
+  }
+}
+
 enum Enum$ServerActivityEventType {
   NODE_ACTIVITY,
   QUEUE_STATS,

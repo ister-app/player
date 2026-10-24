@@ -79,7 +79,10 @@ class _AddToSessionSheetState extends State<_AddToSessionSheet> {
       setState(() {
         _sessions = Query$serverActivitySnapshot.fromJson(result.data!)
             .serverActivitySnapshot
-            .nowPlaying;
+            .nowPlaying
+            // Reading and gaming sessions have no queue to add to.
+            .where((s) => s.activityKind == Enum$ActivityKind.PLAYBACK)
+            .toList();
       });
     });
   }

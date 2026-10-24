@@ -100,4 +100,7 @@ fragment fragmentPlaybackSession on PlaybackSession {
     anchorPositionMs
     anchorServerTimeMs
     repeatMode
+    activityKind
+    progressFraction
+    progressLabel
 }

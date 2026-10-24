@@ -7,10 +7,12 @@ import 'package:flutter/foundation.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/gameById.graphql.dart';
 import 'package:player/graphql/recordGamePlayed.graphql.dart';
+import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/utils/ClientManager.dart';
 import 'package:player/utils/LoggerService.dart';
 import 'package:player/utils/ScreenWakelock.dart';
 import 'package:player/utils/ServerStore.dart';
+import 'package:player/utils/activity/ActivityPresenceService.dart';
 import 'package:player/utils/download/DownloadHttp.dart';
 
 import 'GameApi.dart';
@@ -109,8 +111,10 @@ class GameLibraryService {
     DateTime Function()? clock,
     Future<List<String>> Function()? servers,
     Future<void> Function(String serverName, String gameId, Duration duration)? recordPlayed,
+    ActivityPresenceService? presence,
     this.deviceName = '',
   })  : store = store ?? GameInstallStore(),
+        _presence = presence ?? ActivityPresenceService.instance,
         _http = http ?? DownloadHttp(maxAttempts: 6, bodyTimeout: const Duration(hours: 6)),
         _apiFactory = apiFactory ?? GameApi.new,
         _runner = runner ?? GameProcessRunner(),
@@ -136,6 +140,11 @@ class GameLibraryService {
   final Future<List<String>> Function() _servers;
   final Future<void> Function(String serverName, String gameId, Duration duration)? _recordPlayedOverride;
   final String deviceName;
+
+  /// Now-playing presence: a running game shows up next to the playback
+  /// sessions on every device that may see this user's activity.
+  final ActivityPresenceService _presence;
+  final Map<String, ActivityHandle> _presenceHandles = {};
 
   /// Bumped on every persisted change to any install: lists rebuild on it.
   final ValueNotifier<int> revision = ValueNotifier(0);
@@ -763,6 +772,7 @@ class GameLibraryService {
     await store.put(serverName, install);
     sessionOf(game.id).value = session;
     phaseOf(game.id).value = GamePlayPhase.launching;
+    _beginPresence(serverName, game.id);
     if (plan.detached) {
       try {
         await _runner.detach(plan.command, plan.arguments);
@@ -805,6 +815,8 @@ class GameLibraryService {
       final session = GameSession(gameId: game.id, startedAt: startedAt, plan: plan, install: install, restored: true);
       sessionOf(game.id).value = session;
       phaseOf(game.id).value = GamePlayPhase.running;
+      // A detached (Steam) game may well still be running.
+      _beginPresence(serverName, game.id);
       return session;
     } on LaunchException {
       // The emulator went away; the saves can still be pushed without a plan
@@ -890,12 +902,22 @@ class GameLibraryService {
   }
 
   Future<void> _clearSession(String serverName, GameInstall install) async {
+    unawaited(_presenceHandles.remove(_presenceKey(serverName, install.gameId))?.end());
     install
       ..sessionStartedAt = null
       ..sessionDetached = false;
     await store.put(serverName, install);
     sessionOf(install.gameId).value = null;
     phaseOf(install.gameId).value = GamePlayPhase.idle;
+  }
+
+  static String _presenceKey(String serverName, String gameId) => '$serverName\u0000$gameId';
+
+  void _beginPresence(String serverName, String gameId) {
+    final key = _presenceKey(serverName, gameId);
+    if (_presenceHandles.containsKey(key)) return;
+    _presenceHandles[key] = _presence.begin(
+        serverName: serverName, mediaType: Enum$MediaType.GAME, mediaId: gameId);
   }
 
   Future<List<ReportedAchievement>> _syncAchievements(String serverName, GameInstall install) async {

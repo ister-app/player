@@ -282,7 +282,11 @@ class _RemotePlayerController
         final sessions =
             Subscription$nowPlaying.fromJson(result.data!).nowPlaying;
         final session =
-            sessions.where((s) => s.playQueueId == playQueueId).firstOrNull;
+            sessions
+                .where((s) =>
+                    s.playQueueId == playQueueId &&
+                    s.activityKind == Enum$ActivityKind.PLAYBACK)
+                .firstOrNull;
         liveFeedBroken = false;
         if (session == null) {
           sessionEnded = true;

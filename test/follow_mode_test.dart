@@ -97,6 +97,7 @@ Fragment$fragmentPlaybackSession _session({
       playQueueItemId: playQueueItemId,
       userId: 'owner-1',
       userName: 'Owner',
+      activityKind: Enum$ActivityKind.PLAYBACK,
       progressInMilliseconds: progressInMilliseconds,
       playState: playState,
       nodeName: 'node-1',

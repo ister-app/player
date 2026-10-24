@@ -1,0 +1,7 @@
+mutation reportActivity($sessionId: ID!, $mediaType: MediaType!, $mediaId: ID!, $mediaFileId: ID,
+                        $progressFraction: Float, $progressLabel: String, $playState: PlayState!,
+                        $deviceId: ID!) {
+    reportActivity(sessionId: $sessionId, mediaType: $mediaType, mediaId: $mediaId,
+                   mediaFileId: $mediaFileId, progressFraction: $progressFraction,
+                   progressLabel: $progressLabel, playState: $playState, deviceId: $deviceId)
+}

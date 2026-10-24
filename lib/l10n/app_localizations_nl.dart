@@ -931,6 +931,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get statePaused => 'Gepauzeerd';
 
   @override
+  String get activityPlayingChip => 'Speelt';
+
+  @override
+  String get activityReadingChip => 'Leest';
+
+  @override
   String get liveUpdatesUnavailable =>
       'Live updates onderbroken — opnieuw verbinden';
 

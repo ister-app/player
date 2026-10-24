@@ -29,6 +29,8 @@ class OfflineReaderPage extends StatelessWidget {
         mediaFileId: mediaFileId,
         nodeUrl: nodeUrl,
         title: title,
+        // No server shell here; the downloaded book is read without presence.
+        publishPresence: false,
       );
 }
 
@@ -57,5 +59,6 @@ class OfflineComicReaderPage extends StatelessWidget {
         mediaFileId: mediaFileId,
         nodeUrl: nodeUrl,
         title: title,
+        publishPresence: false,
       );
 }

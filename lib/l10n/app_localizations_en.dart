@@ -929,6 +929,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statePaused => 'Paused';
 
   @override
+  String get activityPlayingChip => 'Playing';
+
+  @override
+  String get activityReadingChip => 'Reading';
+
+  @override
   String get liveUpdatesUnavailable =>
       'Live updates interrupted — reconnecting';
 
