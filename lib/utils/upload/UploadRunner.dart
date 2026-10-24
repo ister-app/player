@@ -93,6 +93,13 @@ class UploadRunner extends ChangeNotifier {
     return Duration(milliseconds: base + (base * 0.2 * (_random.nextDouble() * 2 - 1)).round());
   }
 
+  /// Completions in flight: a file whose bytes are all sent is completed in
+  /// the background while its worker already streams the next one. `complete`
+  /// is where a local directory fsyncs the whole file, seconds per gigabyte on
+  /// a disk, and with equal-sized files every worker used to hit it at once —
+  /// the link sat idle a third of the time.
+  final Set<Future<void>> _completing = {};
+
   /// Runs until every file is done, failed or skipped, or until [pause].
   Future<void> start() async {
     if (_running) return;
@@ -104,11 +111,21 @@ class UploadRunner extends ChangeNotifier {
       var next = 0;
       Future<void> worker() async {
         while (!_paused && !_cancelled && next < queue.length) {
-          await _upload(queue[next++]);
+          // Each worker runs at most one file ahead of its completions: a server
+          // that is slow to complete should slow the upload down, not pile up requests.
+          while (_completing.length > parallelFiles) {
+            await Future.any(_completing);
+          }
+          final finish = await _upload(queue[next++]);
+          if (finish == null) continue;
+          late final Future<void> tracked;
+          tracked = finish().whenComplete(() => _completing.remove(tracked));
+          _completing.add(tracked);
         }
       }
 
       await Future.wait([for (var i = 0; i < min(parallelFiles, queue.length); i++) worker()]);
+      await Future.wait(_completing.toList());
     } finally {
       _running = false;
       notifyListeners();
@@ -143,19 +160,31 @@ class UploadRunner extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _upload(UploadItem item) async {
+  /// Sends the file's chunks. Returns the completion to start and await — or
+  /// null when paused, cancelled or failed before the last chunk went out.
+  Future<Future<void> Function()?> _upload(UploadItem item) async {
     item.phase = UploadItemPhase.uploading;
     notifyListeners();
     try {
+      await _sendChunks(item);
+    } catch (e) {
+      _fail(item, e);
+      return null;
+    }
+    if (_paused || _cancelled) {
+      item.phase = UploadItemPhase.queued;
+      notifyListeners();
+      return null;
+    }
+    item.phase = UploadItemPhase.completing;
+    notifyListeners();
+    return () => _finish(item);
+  }
+
+  Future<void> _finish(UploadItem item) async {
+    try {
       // One resync is enough: it happens when a response got lost, not in a loop.
       for (var pass = 0; pass < 2; pass++) {
-        await _sendChunks(item);
-        if (_paused || _cancelled) {
-          item.phase = UploadItemPhase.queued;
-          return;
-        }
-        item.phase = UploadItemPhase.completing;
-        notifyListeners();
         try {
           final result = await _retrying(() => api.complete(nodeUrl, sessionId, item.state.fileId));
           item
@@ -168,15 +197,28 @@ class UploadRunner extends ChangeNotifier {
           item.received = e.continueAt!;
           item.haveParts.clear();
           item.phase = UploadItemPhase.uploading;
+          notifyListeners();
+          await _sendChunks(item);
+          if (_paused || _cancelled) {
+            item.phase = UploadItemPhase.queued;
+            return;
+          }
+          item.phase = UploadItemPhase.completing;
+          notifyListeners();
         }
       }
     } catch (e) {
-      item
-        ..phase = UploadItemPhase.failed
-        ..error = e is UploadApiException ? e.message : e.toString();
+      _fail(item, e);
     } finally {
       notifyListeners();
     }
+  }
+
+  void _fail(UploadItem item, Object e) {
+    item
+      ..phase = UploadItemPhase.failed
+      ..error = e is UploadApiException ? e.message : e.toString();
+    notifyListeners();
   }
 
   /// Walks the chunk grid and sends what the server does not have yet.

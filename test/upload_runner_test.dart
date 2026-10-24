@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -35,6 +36,9 @@ class _FakeServer {
   /// Runs before a chunk is handled; return a response to short-circuit it.
   http.Response? Function(String fileId, int offset)? onChunk;
 
+  /// Awaited before a complete is answered (a local directory fsyncs the whole file there).
+  Future<void> Function(String fileId)? onComplete;
+
   Future<http.Response> handle(http.Request request) async {
     final segments = request.url.pathSegments;
     expect(request.headers['Authorization'], 'Bearer test');
@@ -54,6 +58,7 @@ class _FakeServer {
     if (segments.last == 'complete') {
       final fileId = segments[segments.length - 2];
       calls.add('complete $fileId');
+      await onComplete?.call(fileId);
       completed.add(fileId);
       return http.Response(
           jsonEncode({'fileId': fileId, 'receivedBytes': received[fileId]?.length ?? 0, 'status': 'COMPLETED'}), 200);
@@ -118,6 +123,42 @@ void main() {
     expect(r.isFinished, isTrue);
     expect(r.sentBytes, r.totalBytes);
     expect(a.reads, [(0, 10), (10, 20), (20, 25)]);
+  });
+
+  test('streams the next file while the server still completes the previous one', () async {
+    final a = _FakeFile('a.mkv', 20);
+    final b = _FakeFile('b.mkv', 20);
+    final c = _FakeFile('c.mkv', 20);
+    final r = UploadRunner(
+        api: api,
+        nodeUrl: 'http://node',
+        session: _session([
+          (id: 'fa', path: a.relativePath, size: 20, chunk: 10, received: 0, parts: const []),
+          (id: 'fb', path: b.relativePath, size: 20, chunk: 10, received: 0, parts: const []),
+          (id: 'fc', path: c.relativePath, size: 20, chunk: 10, received: 0, parts: const []),
+        ]),
+        sources: {a.relativePath: a, b.relativePath: b, c.relativePath: c},
+        partsAddressedByNumber: false,
+        parallelFiles: 1);
+    final slowComplete = Completer<void>();
+    server.onComplete = (fileId) => fileId == 'fc' ? Future.value() : slowComplete.future;
+
+    final run = r.start();
+    // the single worker has moved on to b while a's complete is still pending...
+    while (!server.calls.contains('chunk fb 10')) {
+      await Future<void>.delayed(Duration.zero);
+    }
+    expect(server.completed, isEmpty);
+    expect(r.items[0].phase, UploadItemPhase.completing);
+    // ...but with a and b both pending it does not run further ahead
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    expect(r.items[1].phase, UploadItemPhase.completing);
+    expect(server.calls.where((c) => c.startsWith('chunk fc')), isEmpty);
+
+    slowComplete.complete();
+    await run;
+    expect(server.completed, {'fa', 'fb', 'fc'});
+    expect(r.isFinished, isTrue);
   });
 
   test('resumes a file from what the server already has', () async {
