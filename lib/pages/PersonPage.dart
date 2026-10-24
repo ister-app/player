@@ -38,6 +38,8 @@ import '../components/SourceAttribution.dart';
 import '../components/TvFocusable.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/ServerTaskRunner.dart';
+import '../utils/artwork/ArtworkNavigation.dart';
+import '../utils/artwork/ArtworkTarget.dart';
 
 @RoutePage()
 class PersonPage extends StatefulWidget {
@@ -62,6 +64,8 @@ class _PersonPageState extends State<PersonPage> {
   String get personId => widget.personId;
 
   bool _showAdminActions = true;
+  /// The page query's refetch, for the artwork picker's return.
+  VoidCallback? _pageRefetch;
 
   /// Accent extracted from the hero image, tinting the play button; null
   /// until extraction succeeds.
@@ -124,6 +128,7 @@ class _PersonPageState extends State<PersonPage> {
           fetchPolicy: FetchPolicy.cacheAndNetwork,
         ),
         builder: (QueryResult result, {VoidCallback? refetch, FetchMore? fetchMore}) {
+          _pageRefetch = refetch;
           if (result.hasException) {
             return Scaffold(
               appBar: AppBar(),
@@ -310,6 +315,17 @@ class _PersonPageState extends State<PersonPage> {
               ),
             if (skeleton && _showAdminActions)
               const IconButton(onPressed: null, icon: Icon(Icons.analytics)),
+            if (artist != null && _showAdminActions)
+              IconButton(
+                key: ChangeArtworkMenuItem.itemKey,
+                icon: const Icon(Icons.wallpaper_outlined),
+                tooltip: loc.changeArtwork,
+                onPressed: () => openArtworkPicker(
+                  context,
+                  target: ArtworkTarget(ArtworkTargetKind.person, artist.id),
+                  title: MetadataUtil.getTitle(artist.metadata) ?? artist.name,
+                ).then((_) => _pageRefetch?.call()),
+              ),
             if (artist != null && _showAdminActions)
               IconButton(
                 icon: const Icon(Icons.analytics),

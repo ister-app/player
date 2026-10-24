@@ -1,0 +1,14 @@
+query imageCandidates($target: ImageTargetInput!, $type: ImageType!) {
+    imageCandidates(target: $target, type: $type) {
+        current { ...fragmentImages }
+        remote {
+            previewUrl
+            sourceUri
+            source
+            width
+            height
+            language
+            score
+        }
+    }
+}

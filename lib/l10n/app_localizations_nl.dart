@@ -3657,4 +3657,98 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get gameAdoptedUpdateHint =>
       'Bijwerken vervangt je eigen kopie door de bestanden van de server.';
+
+  @override
+  String get changeArtwork => 'Afbeeldingen wijzigen';
+
+  @override
+  String get artworkCover => 'Cover';
+
+  @override
+  String get artworkBackground => 'Achtergrond';
+
+  @override
+  String get artworkCurrent => 'Nu getoond';
+
+  @override
+  String get artworkSelectedByAdmin => 'Gekozen door een beheerder';
+
+  @override
+  String get artworkAutomatic => 'Automatisch gekozen';
+
+  @override
+  String get artworkOnServer => 'Op de server';
+
+  @override
+  String artworkFromProvider(String source) {
+    return 'Van $source';
+  }
+
+  @override
+  String get artworkNoRemote =>
+      'Geen alternatieven van een metadatabron voor dit item.';
+
+  @override
+  String get artworkEmpty => 'Nog geen afbeeldingen';
+
+  @override
+  String get artworkUpload => 'Afbeelding uploaden…';
+
+  @override
+  String get artworkFromVideo => 'Frame uit video…';
+
+  @override
+  String artworkFrameAt(String time) {
+    return 'Frame op $time';
+  }
+
+  @override
+  String get artworkFrameHint =>
+      'De server pakt dit frame uit de video en gebruikt het als afbeelding.';
+
+  @override
+  String get artworkUseFrame => 'Gebruik dit frame';
+
+  @override
+  String get artworkResetAuto => 'Terug naar automatisch';
+
+  @override
+  String get artworkAlreadyOnServer => 'Al op de server';
+
+  @override
+  String get artworkDelete => 'Afbeelding verwijderen';
+
+  @override
+  String get artworkDeleteConfirm =>
+      'De geüploade afbeelding wordt van de server verwijderd. Gescande en provider-afbeeldingen kunnen niet verwijderd worden.';
+
+  @override
+  String get artworkSourceLocal => 'Lokaal bestand of gegenereerd frame';
+
+  @override
+  String get artworkSourceFrame => 'Frame uit de video';
+
+  @override
+  String get artworkSourceUpload => 'Geüpload';
+
+  @override
+  String get artworkChanged => 'Afbeelding bijgewerkt';
+
+  @override
+  String artworkFailed(String error) {
+    return 'Afbeelding wijzigen mislukt: $error';
+  }
+
+  @override
+  String get artworkServerTooOld =>
+      'Deze server ondersteunt het wijzigen van afbeeldingen nog niet.';
+
+  @override
+  String get artworkMenuTooltip => 'Afbeeldingen';
+
+  @override
+  String get artworkSetFrameAsBackground => 'Gebruik dit beeld als achtergrond';
+
+  @override
+  String get artworkSetFrameAsCover => 'Gebruik dit beeld als cover';
 }

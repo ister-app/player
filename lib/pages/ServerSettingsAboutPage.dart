@@ -105,6 +105,7 @@ class ServerSettingsAboutPage extends StatelessWidget {
       case Enum$MetadataSource.PODCAST_FEED:
         return Icons.podcasts_outlined;
       case Enum$MetadataSource.LOCAL_FILE:
+      case Enum$MetadataSource.USER:
       case Enum$MetadataSource.$unknown:
         return Icons.public;
     }

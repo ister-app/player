@@ -5959,6 +5959,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Update replaces your own copy with the server\'s files.'**
   String get gameAdoptedUpdateHint;
+
+  /// Menu item on a movie/show/album/… page (admins only): opens the artwork picker
+  ///
+  /// In en, this message translates to:
+  /// **'Change artwork'**
+  String get changeArtwork;
+
+  /// Artwork picker: the poster/cover slot
+  ///
+  /// In en, this message translates to:
+  /// **'Cover'**
+  String get artworkCover;
+
+  /// Artwork picker: the backdrop slot
+  ///
+  /// In en, this message translates to:
+  /// **'Background'**
+  String get artworkBackground;
+
+  /// Artwork picker: section with the image that wins today
+  ///
+  /// In en, this message translates to:
+  /// **'Currently shown'**
+  String get artworkCurrent;
+
+  /// Artwork picker: the shown image is an explicit choice
+  ///
+  /// In en, this message translates to:
+  /// **'Chosen by an admin'**
+  String get artworkSelectedByAdmin;
+
+  /// Artwork picker: the shown image is the automatic pick (no admin choice)
+  ///
+  /// In en, this message translates to:
+  /// **'Picked automatically'**
+  String get artworkAutomatic;
+
+  /// Artwork picker: section with the images the server already has
+  ///
+  /// In en, this message translates to:
+  /// **'On the server'**
+  String get artworkOnServer;
+
+  /// Artwork picker: section with alternatives a metadata provider offers; {source} is the provider name, e.g. TMDB
+  ///
+  /// In en, this message translates to:
+  /// **'From {source}'**
+  String artworkFromProvider(String source);
+
+  /// Artwork picker: empty state of the provider section
+  ///
+  /// In en, this message translates to:
+  /// **'No alternatives from a metadata provider for this item.'**
+  String get artworkNoRemote;
+
+  /// Artwork picker: the item has no image of this type
+  ///
+  /// In en, this message translates to:
+  /// **'No images yet'**
+  String get artworkEmpty;
+
+  /// Artwork picker: button that opens the file picker
+  ///
+  /// In en, this message translates to:
+  /// **'Upload image…'**
+  String get artworkUpload;
+
+  /// Artwork picker: button that opens the frame position dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Frame from video…'**
+  String get artworkFromVideo;
+
+  /// Frame dialog: the chosen position, e.g. 'Frame at 12:34'
+  ///
+  /// In en, this message translates to:
+  /// **'Frame at {time}'**
+  String artworkFrameAt(String time);
+
+  /// Frame dialog: explanation under the slider
+  ///
+  /// In en, this message translates to:
+  /// **'The server grabs this frame from the video and uses it as the image.'**
+  String get artworkFrameHint;
+
+  /// Frame dialog: confirm button
+  ///
+  /// In en, this message translates to:
+  /// **'Use this frame'**
+  String get artworkUseFrame;
+
+  /// Artwork picker: drop the admin's choice
+  ///
+  /// In en, this message translates to:
+  /// **'Back to automatic'**
+  String get artworkResetAuto;
+
+  /// Artwork picker: badge on a provider candidate the server already stored
+  ///
+  /// In en, this message translates to:
+  /// **'Already on the server'**
+  String get artworkAlreadyOnServer;
+
+  /// Artwork picker: delete an uploaded/grabbed image (tooltip + dialog title + confirm button)
+  ///
+  /// In en, this message translates to:
+  /// **'Delete image'**
+  String get artworkDelete;
+
+  /// Artwork picker: body of the delete confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'The uploaded image is removed from the server. Scanned and provider images cannot be deleted.'**
+  String get artworkDeleteConfirm;
+
+  /// Artwork picker: source label for an image the server found next to the media or generated itself
+  ///
+  /// In en, this message translates to:
+  /// **'Local file or generated frame'**
+  String get artworkSourceLocal;
+
+  /// Artwork picker: source label for a frame an admin grabbed
+  ///
+  /// In en, this message translates to:
+  /// **'Frame from the video'**
+  String get artworkSourceFrame;
+
+  /// Artwork picker: source label for an admin upload
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded'**
+  String get artworkSourceUpload;
+
+  /// Snackbar after a successful artwork change
+  ///
+  /// In en, this message translates to:
+  /// **'Artwork updated'**
+  String get artworkChanged;
+
+  /// Snackbar after a failed artwork change; {error} is the server's message
+  ///
+  /// In en, this message translates to:
+  /// **'Could not change the artwork: {error}'**
+  String artworkFailed(String error);
+
+  /// Artwork picker: the server predates the feature
+  ///
+  /// In en, this message translates to:
+  /// **'This server does not support changing artwork yet.'**
+  String get artworkServerTooOld;
+
+  /// Video controls: tooltip of the admin's artwork button
+  ///
+  /// In en, this message translates to:
+  /// **'Artwork'**
+  String get artworkMenuTooltip;
+
+  /// Video controls sheet: take the current frame as the item's background image
+  ///
+  /// In en, this message translates to:
+  /// **'Use this frame as background'**
+  String get artworkSetFrameAsBackground;
+
+  /// Video controls sheet: take the current frame as the item's cover image
+  ///
+  /// In en, this message translates to:
+  /// **'Use this frame as cover'**
+  String get artworkSetFrameAsCover;
 }
 
 class _AppLocalizationsDelegate

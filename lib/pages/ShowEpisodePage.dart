@@ -34,6 +34,9 @@ import '../utils/ServerTaskRunner.dart';
 import '../utils/PermissionsService.dart';
 import '../utils/PlayQueueService.dart';
 import '../utils/VideoAutoStart.dart';
+import '../utils/artwork/ArtworkNavigation.dart';
+import '../utils/artwork/ArtworkTarget.dart';
+import '../utils/EpisodeParts.dart';
 
 @RoutePage()
 class ShowEpisodePage extends StatefulWidget {
@@ -372,6 +375,17 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                         ),
                       ),
                     if (episode != null && _showAdminActions)
+                      ChangeArtworkMenuItem(
+                        target: ArtworkTarget(ArtworkTargetKind.episode, episode.id),
+                        title: title,
+                        frameMediaFileId: episode.mediaFile?.firstOrNull?.id,
+                        // A multi-episode file: the slider spans this episode's
+                        // slice, the server gets file positions.
+                        frameDurationMs: _frameBounds(episode)?.durationMs,
+                        frameStartMs: _frameBounds(episode)?.startMs,
+                        onClosed: () => _refetch?.call(),
+                      ),
+                    if (episode != null && _showAdminActions)
                       MenuItemButton(
                         onPressed: () => runServerTask(
                           context,
@@ -541,4 +555,15 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
       },
     );
   }
+
+  /// Duration and file offset for the frame slider of [episode]'s first file.
+  static ({int startMs, int durationMs})? _frameBounds(Fragment$fragmentEpisode episode) {
+    final file = episode.mediaFile?.firstOrNull;
+    if (file == null) return null;
+    final part = EpisodeParts.bounds(episode, mediaFileId: file.id);
+    if (part != null) return (startMs: part.startMs, durationMs: part.endMs - part.startMs);
+    final duration = file.durationInMilliseconds?.toInt() ?? 0;
+    return duration > 0 ? (startMs: 0, durationMs: duration) : null;
+  }
+
 }

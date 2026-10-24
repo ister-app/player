@@ -1,0 +1,3 @@
+mutation selectRemoteImage($target: ImageTargetInput!, $type: ImageType!, $sourceUri: String!) {
+    selectRemoteImage(target: $target, type: $type, sourceUri: $sourceUri) { ...fragmentImages }
+}

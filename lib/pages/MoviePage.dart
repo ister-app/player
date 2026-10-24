@@ -33,6 +33,8 @@ import '../utils/ServerTaskRunner.dart';
 import '../utils/StreamTokenService.dart';
 import '../utils/PermissionsService.dart';
 import '../utils/VideoAutoStart.dart';
+import '../utils/artwork/ArtworkNavigation.dart';
+import '../utils/artwork/ArtworkTarget.dart';
 
 /// The page is one centred column on a wide window: a backdrop stretched
 /// over 1900 px was a 4:1 strip of it, with left-aligned text under it and a
@@ -390,6 +392,14 @@ class _MoviePageState extends State<MoviePage> {
                                 mediaFileId: _versionForDownload),
                           ],
                         ),
+                      ),
+                    if (movie != null && _showAdminActions)
+                      ChangeArtworkMenuItem(
+                        target: ArtworkTarget(ArtworkTargetKind.movie, movie.id),
+                        title: MetadataUtil.getTitle(movie.metadata) ?? movie.name,
+                        frameMediaFileId: movie.mediaFile?.firstOrNull?.id,
+                        frameDurationMs: movie.mediaFile?.firstOrNull?.durationInMilliseconds?.toInt(),
+                        onClosed: () => _refetch?.call(),
                       ),
                     if (movie != null && _showAdminActions)
                       MenuItemButton(

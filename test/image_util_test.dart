@@ -3,12 +3,13 @@ import 'package:player/graphql/fragmentImages.graphql.dart';
 import 'package:player/utils/ImageTypes.dart';
 import 'package:player/utils/ImageUtil.dart';
 
-Fragment$fragmentImages _image(String id, String type, {String? source}) =>
+Fragment$fragmentImages _image(String id, String type, {String? source, bool selected = false}) =>
     Fragment$fragmentImages.fromJson({
       '__typename': 'Image',
       'type': type,
       'id': id,
       'source': source,
+      'selected': selected,
       'directory': {
         '__typename': 'Directory',
         'servingNode': {'__typename': 'Node', 'url': 'http://localhost'},
@@ -59,6 +60,17 @@ void main() {
         'zz-local');
     expect(ImageUtil.getImageByType([local, a], ImageTypes.background)?.id,
         'zz-local');
+  });
+
+  test("an admin's selected image wins over local files and lower ids", () {
+    final local = _image('aa-local', 'COVER', source: 'LOCAL_FILE');
+    final lowId = _image('ab-tmdb', 'COVER', source: 'TMDB');
+    final chosen = _image('zz-chosen', 'COVER', source: 'TMDB', selected: true);
+    expect(ImageUtil.getImageByType([local, lowId, chosen], ImageTypes.cover)?.id, 'zz-chosen');
+    expect(ImageUtil.getImageByType([chosen, lowId, local], ImageTypes.cover)?.id, 'zz-chosen');
+    // The choice is per type: the background is still picked automatically.
+    final bg = _image('bg', 'BACKGROUND', source: 'TMDB');
+    expect(ImageUtil.getImageByType([chosen, bg], ImageTypes.background)?.id, 'bg');
   });
 
   test('handles null and empty lists', () {

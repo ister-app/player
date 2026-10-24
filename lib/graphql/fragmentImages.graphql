@@ -3,6 +3,8 @@ fragment fragmentImages on Image {
     id
     language
     source
+    sourceUri
+    selected
     blurHash
     directory {
         servingNode {

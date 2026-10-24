@@ -7,6 +7,7 @@ import 'package:player/graphql/fragmentImages.graphql.dart';
 Fragment$fragmentImages _image(String id) => Fragment$fragmentImages(
       id: id,
       type: 'COVER',
+      selected: false,
       directory: Fragment$fragmentImages$directory(
         servingNode: Fragment$fragmentImages$directory$servingNode(url: 'http://node.example'),
       ),

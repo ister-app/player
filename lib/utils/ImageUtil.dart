@@ -15,14 +15,17 @@ class ImageUtil {
 
   /// The artwork of [backgroundType] to show for an entity.
   ///
-  /// Order-independent on purpose: the server returns image lists without an
-  /// ORDER BY, and the same show reaches the client through several queries
-  /// (`showById`, the shows list, `related`, `recentlyWatched`), each of which
-  /// can hand the list back in a different order. All of them write the same
-  /// normalized `Show` entity, so a list that comes back reordered is
-  /// rebroadcast to every widget showing that show — and picking "the first"
-  /// then swaps the tile to another image for a moment, which the user sees as
-  /// a grey flash. Ties are therefore broken on the image id, which is stable.
+  /// An admin's choice ([Fragment$fragmentImages.selected], at most one per
+  /// item and type) wins outright. Below that the pick is order-independent on
+  /// purpose: the same show reaches the client through several queries
+  /// (`showById`, the shows list, `related`, `recentlyWatched`), all of which
+  /// write the same normalized `Show` entity, so a list that comes back in
+  /// another order is rebroadcast to every widget showing that show — and
+  /// picking "the first" then swaps the tile to another image for a moment,
+  /// which the user sees as a grey flash. Ties are therefore broken on the
+  /// image id, which is stable. The server mirrors this order in
+  /// `PlayQueueController.artworkOf`, so a session card and the local mini
+  /// player show the same cover.
   static Fragment$fragmentImages? getImageByType(
       List<Fragment$fragmentImages>? images, ImageTypes backgroundType) {
     if (images == null) return null;
@@ -32,6 +35,8 @@ class ImageUtil {
         ImageTypes.values.asNameMap()[element.type.toLowerCase()] ==
         backgroundType);
     if (candidates.isEmpty) return null;
+    final chosen = candidates.where((i) => i.selected).firstOrNull;
+    if (chosen != null) return chosen;
     // Local artwork shipped next to the media files wins over scraped
     // provider images. Newer servers label it LOCAL_FILE; older ones leave
     // the source null.

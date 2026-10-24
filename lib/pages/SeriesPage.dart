@@ -20,6 +20,9 @@ import '../components/MusicDetailHero.dart';
 import '../components/SourceAttribution.dart';
 import '../components/SeriesCarouselTile.dart';
 import '../l10n/app_localizations.dart';
+import 'package:player/utils/artwork/ArtworkNavigation.dart';
+import 'package:player/utils/artwork/ArtworkTarget.dart';
+import 'package:player/utils/PermissionsService.dart';
 
 /// A comic series: cover, description and the volumes in series order. Tapping
 /// a volume opens its book page, where reading starts.
@@ -39,6 +42,18 @@ class SeriesPage extends StatefulWidget {
 }
 
 class _SeriesPageState extends State<SeriesPage> {
+  bool _showAdminActions = true;
+
+  @override
+  void initState() {
+    super.initState();
+    PermissionsService().adminStatusFor(widget.serverName).then((status) {
+      if (mounted && status == AdminStatus.notAdmin) {
+        setState(() => _showAdminActions = false);
+      }
+    });
+  }
+
   /// Volume tiles the skeleton reserves. A series holds a handful of volumes,
   /// and a grid of nothing was what the loading page used to show.
   static const int _skeletonVolumeCount = 6;
@@ -108,6 +123,19 @@ class _SeriesPageState extends State<SeriesPage> {
           pinned: true,
           stretch: true,
           foregroundColor: Colors.white,
+          actions: [
+            if (series != null && _showAdminActions)
+              IconButton(
+                key: ChangeArtworkMenuItem.itemKey,
+                icon: const Icon(Icons.wallpaper_outlined),
+                tooltip: loc.changeArtwork,
+                onPressed: () => openArtworkPicker(
+                  context,
+                  target: ArtworkTarget(ArtworkTargetKind.series, series.id),
+                  title: series.name,
+                ).then((_) => _refetch?.call()),
+              ),
+          ],
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
             background: _buildHeader(series, skeleton: skeleton),

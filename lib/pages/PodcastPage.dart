@@ -29,6 +29,8 @@ import '../components/PlaybackHistorySheet.dart';
 import '../components/SourceAttribution.dart';
 import '../components/RatingStars.dart';
 import '../l10n/app_localizations.dart';
+import 'package:player/utils/artwork/ArtworkNavigation.dart';
+import 'package:player/utils/artwork/ArtworkTarget.dart';
 
 @RoutePage()
 class PodcastPage extends StatefulWidget {
@@ -54,6 +56,8 @@ class _PodcastPageState extends State<PodcastPage> {
   static const int _skeletonEpisodeCount = 8;
 
   bool _showAdminActions = true;
+  /// The page query's refetch, for the artwork picker's return.
+  VoidCallback? _pageRefetch;
 
   @override
   void initState() {
@@ -228,6 +232,7 @@ class _PodcastPageState extends State<PodcastPage> {
       ),
       builder: (QueryResult result,
           {VoidCallback? refetch, FetchMore? fetchMore}) {
+        _pageRefetch = refetch;
         if (result.hasException) {
           return Scaffold(
             appBar: AppBar(),
@@ -289,6 +294,12 @@ class _PodcastPageState extends State<PodcastPage> {
                           leading: const Icon(Icons.download_for_offline_outlined),
                           title: Text(loc.downloadNextUnlistened),
                         ),
+                      ),
+                    if (_showAdminActions)
+                      ChangeArtworkMenuItem(
+                        target: ArtworkTarget(ArtworkTargetKind.podcast, podcast.id),
+                        title: MetadataUtil.getTitle(podcast.metadata) ?? podcast.title,
+                        onClosed: () => _pageRefetch?.call(),
                       ),
                     if (_showAdminActions)
                       MenuItemButton(

@@ -8,6 +8,8 @@ class Fragment$fragmentImages {
     required this.id,
     this.language,
     this.source,
+    this.sourceUri,
+    required this.selected,
     this.blurHash,
     required this.directory,
     this.$__typename = 'Image',
@@ -18,6 +20,8 @@ class Fragment$fragmentImages {
     final l$id = json['id'];
     final l$language = json['language'];
     final l$source = json['source'];
+    final l$sourceUri = json['sourceUri'];
+    final l$selected = json['selected'];
     final l$blurHash = json['blurHash'];
     final l$directory = json['directory'];
     final l$$__typename = json['__typename'];
@@ -28,6 +32,8 @@ class Fragment$fragmentImages {
       source: l$source == null
           ? null
           : fromJson$Enum$MetadataSource((l$source as String)),
+      sourceUri: (l$sourceUri as String?),
+      selected: (l$selected as bool),
       blurHash: (l$blurHash as String?),
       directory: Fragment$fragmentImages$directory.fromJson(
         (l$directory as Map<String, dynamic>),
@@ -43,6 +49,10 @@ class Fragment$fragmentImages {
   final String? language;
 
   final Enum$MetadataSource? source;
+
+  final String? sourceUri;
+
+  final bool selected;
 
   final String? blurHash;
 
@@ -62,6 +72,10 @@ class Fragment$fragmentImages {
     _resultData['source'] = l$source == null
         ? null
         : toJson$Enum$MetadataSource(l$source);
+    final l$sourceUri = sourceUri;
+    _resultData['sourceUri'] = l$sourceUri;
+    final l$selected = selected;
+    _resultData['selected'] = l$selected;
     final l$blurHash = blurHash;
     _resultData['blurHash'] = l$blurHash;
     final l$directory = directory;
@@ -77,6 +91,8 @@ class Fragment$fragmentImages {
     final l$id = id;
     final l$language = language;
     final l$source = source;
+    final l$sourceUri = sourceUri;
+    final l$selected = selected;
     final l$blurHash = blurHash;
     final l$directory = directory;
     final l$$__typename = $__typename;
@@ -85,6 +101,8 @@ class Fragment$fragmentImages {
       l$id,
       l$language,
       l$source,
+      l$sourceUri,
+      l$selected,
       l$blurHash,
       l$directory,
       l$$__typename,
@@ -117,6 +135,16 @@ class Fragment$fragmentImages {
     final l$source = source;
     final lOther$source = other.source;
     if (l$source != lOther$source) {
+      return false;
+    }
+    final l$sourceUri = sourceUri;
+    final lOther$sourceUri = other.sourceUri;
+    if (l$sourceUri != lOther$sourceUri) {
+      return false;
+    }
+    final l$selected = selected;
+    final lOther$selected = other.selected;
+    if (l$selected != lOther$selected) {
       return false;
     }
     final l$blurHash = blurHash;
@@ -157,6 +185,8 @@ abstract class CopyWith$Fragment$fragmentImages<TRes> {
     String? id,
     String? language,
     Enum$MetadataSource? source,
+    String? sourceUri,
+    bool? selected,
     String? blurHash,
     Fragment$fragmentImages$directory? directory,
     String? $__typename,
@@ -179,6 +209,8 @@ class _CopyWithImpl$Fragment$fragmentImages<TRes>
     Object? id = _undefined,
     Object? language = _undefined,
     Object? source = _undefined,
+    Object? sourceUri = _undefined,
+    Object? selected = _undefined,
     Object? blurHash = _undefined,
     Object? directory = _undefined,
     Object? $__typename = _undefined,
@@ -194,6 +226,12 @@ class _CopyWithImpl$Fragment$fragmentImages<TRes>
       source: source == _undefined
           ? _instance.source
           : (source as Enum$MetadataSource?),
+      sourceUri: sourceUri == _undefined
+          ? _instance.sourceUri
+          : (sourceUri as String?),
+      selected: selected == _undefined || selected == null
+          ? _instance.selected
+          : (selected as bool),
       blurHash: blurHash == _undefined
           ? _instance.blurHash
           : (blurHash as String?),
@@ -226,6 +264,8 @@ class _CopyWithStubImpl$Fragment$fragmentImages<TRes>
     String? id,
     String? language,
     Enum$MetadataSource? source,
+    String? sourceUri,
+    bool? selected,
     String? blurHash,
     Fragment$fragmentImages$directory? directory,
     String? $__typename,
@@ -266,6 +306,20 @@ const fragmentDefinitionfragmentImages = FragmentDefinitionNode(
       ),
       FieldNode(
         name: NameNode(value: 'source'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'sourceUri'),
+        alias: null,
+        arguments: [],
+        directives: [],
+        selectionSet: null,
+      ),
+      FieldNode(
+        name: NameNode(value: 'selected'),
         alias: null,
         arguments: [],
         directives: [],

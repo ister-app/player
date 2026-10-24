@@ -1,3 +1,322 @@
+class Input$ImageTargetInput {
+  factory Input$ImageTargetInput({
+    String? movieId,
+    String? showId,
+    String? episodeId,
+    String? albumId,
+    String? personId,
+    String? bookId,
+    String? podcastId,
+    String? gameId,
+    String? seriesId,
+  }) => Input$ImageTargetInput._({
+    if (movieId != null) r'movieId': movieId,
+    if (showId != null) r'showId': showId,
+    if (episodeId != null) r'episodeId': episodeId,
+    if (albumId != null) r'albumId': albumId,
+    if (personId != null) r'personId': personId,
+    if (bookId != null) r'bookId': bookId,
+    if (podcastId != null) r'podcastId': podcastId,
+    if (gameId != null) r'gameId': gameId,
+    if (seriesId != null) r'seriesId': seriesId,
+  });
+
+  Input$ImageTargetInput._(this._$data);
+
+  factory Input$ImageTargetInput.fromJson(Map<String, dynamic> data) {
+    final result$data = <String, dynamic>{};
+    if (data.containsKey('movieId')) {
+      final l$movieId = data['movieId'];
+      result$data['movieId'] = (l$movieId as String?);
+    }
+    if (data.containsKey('showId')) {
+      final l$showId = data['showId'];
+      result$data['showId'] = (l$showId as String?);
+    }
+    if (data.containsKey('episodeId')) {
+      final l$episodeId = data['episodeId'];
+      result$data['episodeId'] = (l$episodeId as String?);
+    }
+    if (data.containsKey('albumId')) {
+      final l$albumId = data['albumId'];
+      result$data['albumId'] = (l$albumId as String?);
+    }
+    if (data.containsKey('personId')) {
+      final l$personId = data['personId'];
+      result$data['personId'] = (l$personId as String?);
+    }
+    if (data.containsKey('bookId')) {
+      final l$bookId = data['bookId'];
+      result$data['bookId'] = (l$bookId as String?);
+    }
+    if (data.containsKey('podcastId')) {
+      final l$podcastId = data['podcastId'];
+      result$data['podcastId'] = (l$podcastId as String?);
+    }
+    if (data.containsKey('gameId')) {
+      final l$gameId = data['gameId'];
+      result$data['gameId'] = (l$gameId as String?);
+    }
+    if (data.containsKey('seriesId')) {
+      final l$seriesId = data['seriesId'];
+      result$data['seriesId'] = (l$seriesId as String?);
+    }
+    return Input$ImageTargetInput._(result$data);
+  }
+
+  Map<String, dynamic> _$data;
+
+  String? get movieId => (_$data['movieId'] as String?);
+
+  String? get showId => (_$data['showId'] as String?);
+
+  String? get episodeId => (_$data['episodeId'] as String?);
+
+  String? get albumId => (_$data['albumId'] as String?);
+
+  String? get personId => (_$data['personId'] as String?);
+
+  String? get bookId => (_$data['bookId'] as String?);
+
+  String? get podcastId => (_$data['podcastId'] as String?);
+
+  String? get gameId => (_$data['gameId'] as String?);
+
+  String? get seriesId => (_$data['seriesId'] as String?);
+
+  Map<String, dynamic> toJson() {
+    final result$data = <String, dynamic>{};
+    if (_$data.containsKey('movieId')) {
+      final l$movieId = movieId;
+      result$data['movieId'] = l$movieId;
+    }
+    if (_$data.containsKey('showId')) {
+      final l$showId = showId;
+      result$data['showId'] = l$showId;
+    }
+    if (_$data.containsKey('episodeId')) {
+      final l$episodeId = episodeId;
+      result$data['episodeId'] = l$episodeId;
+    }
+    if (_$data.containsKey('albumId')) {
+      final l$albumId = albumId;
+      result$data['albumId'] = l$albumId;
+    }
+    if (_$data.containsKey('personId')) {
+      final l$personId = personId;
+      result$data['personId'] = l$personId;
+    }
+    if (_$data.containsKey('bookId')) {
+      final l$bookId = bookId;
+      result$data['bookId'] = l$bookId;
+    }
+    if (_$data.containsKey('podcastId')) {
+      final l$podcastId = podcastId;
+      result$data['podcastId'] = l$podcastId;
+    }
+    if (_$data.containsKey('gameId')) {
+      final l$gameId = gameId;
+      result$data['gameId'] = l$gameId;
+    }
+    if (_$data.containsKey('seriesId')) {
+      final l$seriesId = seriesId;
+      result$data['seriesId'] = l$seriesId;
+    }
+    return result$data;
+  }
+
+  CopyWith$Input$ImageTargetInput<Input$ImageTargetInput> get copyWith =>
+      CopyWith$Input$ImageTargetInput(this, (i) => i);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Input$ImageTargetInput || runtimeType != other.runtimeType) {
+      return false;
+    }
+    final l$movieId = movieId;
+    final lOther$movieId = other.movieId;
+    if (_$data.containsKey('movieId') != other._$data.containsKey('movieId')) {
+      return false;
+    }
+    if (l$movieId != lOther$movieId) {
+      return false;
+    }
+    final l$showId = showId;
+    final lOther$showId = other.showId;
+    if (_$data.containsKey('showId') != other._$data.containsKey('showId')) {
+      return false;
+    }
+    if (l$showId != lOther$showId) {
+      return false;
+    }
+    final l$episodeId = episodeId;
+    final lOther$episodeId = other.episodeId;
+    if (_$data.containsKey('episodeId') !=
+        other._$data.containsKey('episodeId')) {
+      return false;
+    }
+    if (l$episodeId != lOther$episodeId) {
+      return false;
+    }
+    final l$albumId = albumId;
+    final lOther$albumId = other.albumId;
+    if (_$data.containsKey('albumId') != other._$data.containsKey('albumId')) {
+      return false;
+    }
+    if (l$albumId != lOther$albumId) {
+      return false;
+    }
+    final l$personId = personId;
+    final lOther$personId = other.personId;
+    if (_$data.containsKey('personId') !=
+        other._$data.containsKey('personId')) {
+      return false;
+    }
+    if (l$personId != lOther$personId) {
+      return false;
+    }
+    final l$bookId = bookId;
+    final lOther$bookId = other.bookId;
+    if (_$data.containsKey('bookId') != other._$data.containsKey('bookId')) {
+      return false;
+    }
+    if (l$bookId != lOther$bookId) {
+      return false;
+    }
+    final l$podcastId = podcastId;
+    final lOther$podcastId = other.podcastId;
+    if (_$data.containsKey('podcastId') !=
+        other._$data.containsKey('podcastId')) {
+      return false;
+    }
+    if (l$podcastId != lOther$podcastId) {
+      return false;
+    }
+    final l$gameId = gameId;
+    final lOther$gameId = other.gameId;
+    if (_$data.containsKey('gameId') != other._$data.containsKey('gameId')) {
+      return false;
+    }
+    if (l$gameId != lOther$gameId) {
+      return false;
+    }
+    final l$seriesId = seriesId;
+    final lOther$seriesId = other.seriesId;
+    if (_$data.containsKey('seriesId') !=
+        other._$data.containsKey('seriesId')) {
+      return false;
+    }
+    if (l$seriesId != lOther$seriesId) {
+      return false;
+    }
+    return true;
+  }
+
+  @override
+  int get hashCode {
+    final l$movieId = movieId;
+    final l$showId = showId;
+    final l$episodeId = episodeId;
+    final l$albumId = albumId;
+    final l$personId = personId;
+    final l$bookId = bookId;
+    final l$podcastId = podcastId;
+    final l$gameId = gameId;
+    final l$seriesId = seriesId;
+    return Object.hashAll([
+      _$data.containsKey('movieId') ? l$movieId : const {},
+      _$data.containsKey('showId') ? l$showId : const {},
+      _$data.containsKey('episodeId') ? l$episodeId : const {},
+      _$data.containsKey('albumId') ? l$albumId : const {},
+      _$data.containsKey('personId') ? l$personId : const {},
+      _$data.containsKey('bookId') ? l$bookId : const {},
+      _$data.containsKey('podcastId') ? l$podcastId : const {},
+      _$data.containsKey('gameId') ? l$gameId : const {},
+      _$data.containsKey('seriesId') ? l$seriesId : const {},
+    ]);
+  }
+}
+
+abstract class CopyWith$Input$ImageTargetInput<TRes> {
+  factory CopyWith$Input$ImageTargetInput(
+    Input$ImageTargetInput instance,
+    TRes Function(Input$ImageTargetInput) then,
+  ) = _CopyWithImpl$Input$ImageTargetInput;
+
+  factory CopyWith$Input$ImageTargetInput.stub(TRes res) =
+      _CopyWithStubImpl$Input$ImageTargetInput;
+
+  TRes call({
+    String? movieId,
+    String? showId,
+    String? episodeId,
+    String? albumId,
+    String? personId,
+    String? bookId,
+    String? podcastId,
+    String? gameId,
+    String? seriesId,
+  });
+}
+
+class _CopyWithImpl$Input$ImageTargetInput<TRes>
+    implements CopyWith$Input$ImageTargetInput<TRes> {
+  _CopyWithImpl$Input$ImageTargetInput(this._instance, this._then);
+
+  final Input$ImageTargetInput _instance;
+
+  final TRes Function(Input$ImageTargetInput) _then;
+
+  static const _undefined = <dynamic, dynamic>{};
+
+  TRes call({
+    Object? movieId = _undefined,
+    Object? showId = _undefined,
+    Object? episodeId = _undefined,
+    Object? albumId = _undefined,
+    Object? personId = _undefined,
+    Object? bookId = _undefined,
+    Object? podcastId = _undefined,
+    Object? gameId = _undefined,
+    Object? seriesId = _undefined,
+  }) => _then(
+    Input$ImageTargetInput._({
+      ..._instance._$data,
+      if (movieId != _undefined) 'movieId': (movieId as String?),
+      if (showId != _undefined) 'showId': (showId as String?),
+      if (episodeId != _undefined) 'episodeId': (episodeId as String?),
+      if (albumId != _undefined) 'albumId': (albumId as String?),
+      if (personId != _undefined) 'personId': (personId as String?),
+      if (bookId != _undefined) 'bookId': (bookId as String?),
+      if (podcastId != _undefined) 'podcastId': (podcastId as String?),
+      if (gameId != _undefined) 'gameId': (gameId as String?),
+      if (seriesId != _undefined) 'seriesId': (seriesId as String?),
+    }),
+  );
+}
+
+class _CopyWithStubImpl$Input$ImageTargetInput<TRes>
+    implements CopyWith$Input$ImageTargetInput<TRes> {
+  _CopyWithStubImpl$Input$ImageTargetInput(this._res);
+
+  TRes _res;
+
+  call({
+    String? movieId,
+    String? showId,
+    String? episodeId,
+    String? albumId,
+    String? personId,
+    String? bookId,
+    String? podcastId,
+    String? gameId,
+    String? seriesId,
+  }) => _res;
+}
+
 class Input$FilterConditionInput {
   factory Input$FilterConditionInput({
     required Enum$FilterField field,
@@ -2001,6 +2320,7 @@ enum Enum$MetadataSource {
   OPEN_LIBRARY,
   PODCAST_FEED,
   LOCAL_FILE,
+  USER,
   $unknown;
 
   factory Enum$MetadataSource.fromJson(String value) =>
@@ -2029,6 +2349,8 @@ String toJson$Enum$MetadataSource(Enum$MetadataSource e) {
       return r'PODCAST_FEED';
     case Enum$MetadataSource.LOCAL_FILE:
       return r'LOCAL_FILE';
+    case Enum$MetadataSource.USER:
+      return r'USER';
     case Enum$MetadataSource.$unknown:
       return r'$unknown';
   }
@@ -2054,8 +2376,43 @@ Enum$MetadataSource fromJson$Enum$MetadataSource(String value) {
       return Enum$MetadataSource.PODCAST_FEED;
     case r'LOCAL_FILE':
       return Enum$MetadataSource.LOCAL_FILE;
+    case r'USER':
+      return Enum$MetadataSource.USER;
     default:
       return Enum$MetadataSource.$unknown;
+  }
+}
+
+enum Enum$ImageType {
+  COVER,
+  BACKGROUND,
+  $unknown;
+
+  factory Enum$ImageType.fromJson(String value) =>
+      fromJson$Enum$ImageType(value);
+
+  String toJson() => toJson$Enum$ImageType(this);
+}
+
+String toJson$Enum$ImageType(Enum$ImageType e) {
+  switch (e) {
+    case Enum$ImageType.COVER:
+      return r'COVER';
+    case Enum$ImageType.BACKGROUND:
+      return r'BACKGROUND';
+    case Enum$ImageType.$unknown:
+      return r'$unknown';
+  }
+}
+
+Enum$ImageType fromJson$Enum$ImageType(String value) {
+  switch (value) {
+    case r'COVER':
+      return Enum$ImageType.COVER;
+    case r'BACKGROUND':
+      return Enum$ImageType.BACKGROUND;
+    default:
+      return Enum$ImageType.$unknown;
   }
 }
 

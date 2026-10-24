@@ -41,6 +41,7 @@ class SourceAttribution extends StatelessWidget {
       // Not external providers to credit.
       case Enum$MetadataSource.PODCAST_FEED:
       case Enum$MetadataSource.LOCAL_FILE:
+      case Enum$MetadataSource.USER:
       case Enum$MetadataSource.$unknown:
         return null;
     }

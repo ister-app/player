@@ -1,0 +1,3 @@
+mutation selectImage($imageId: ID!) {
+    selectImage(imageId: $imageId) { ...fragmentImages }
+}

@@ -8,7 +8,9 @@ import 'package:player/utils/QueueItemDisplay.dart';
 /// tracks, movies and episodes and showed "unknown" for the rest.
 Map<String, dynamic> _image(String id) => {
       '__typename': 'Image',
-      'id': id,
+      'selected': false,
+      'sourceUri': null,
+            'id': id,
       'type': 'COVER',
       'language': null,
       'source': null,

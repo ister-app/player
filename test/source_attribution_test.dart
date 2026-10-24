@@ -17,7 +17,9 @@ Fragment$fragmentMetadata _metadata(String? source) =>
 Fragment$fragmentImages _image(String? source) =>
     Fragment$fragmentImages.fromJson({
       '__typename': 'Image',
+      'selected': false,
       'type': 'COVER',
+      'sourceUri': null,
       'id': 'image-1',
       'source': source,
       'directory': {

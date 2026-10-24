@@ -31,6 +31,8 @@ import 'package:player/utils/PermissionsService.dart';
 import 'package:player/utils/ServerTaskRunner.dart';
 import 'package:player/utils/StreamTokenService.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:player/utils/artwork/ArtworkNavigation.dart';
+import 'package:player/utils/artwork/ArtworkTarget.dart';
 
 @RoutePage()
 class ShowOverviewContentPage extends StatefulWidget {
@@ -203,6 +205,11 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
                             leading: const Icon(Icons.autorenew),
                             title: Text(AppLocalizations.of(context)!.autoNextTitle),
                           ),
+                        ),
+                      if (_showAdminActions)
+                        ChangeArtworkMenuItem(
+                          target: ArtworkTarget(ArtworkTargetKind.show, showId),
+                          title: title,
                         ),
                       if (_showAdminActions)
                         MenuItemButton(

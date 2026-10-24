@@ -70,7 +70,9 @@ class _MemImageCache implements BaseCacheManager {
 
 Map<String, dynamic> _image(String id) => {
   '__typename': 'Image',
+  'selected': false,
   'type': 'BACKGROUND',
+  'sourceUri': null,
   'id': id,
   'language': null,
   'source': 'TMDB',

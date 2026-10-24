@@ -3643,4 +3643,98 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get gameAdoptedUpdateHint =>
       'Update replaces your own copy with the server\'s files.';
+
+  @override
+  String get changeArtwork => 'Change artwork';
+
+  @override
+  String get artworkCover => 'Cover';
+
+  @override
+  String get artworkBackground => 'Background';
+
+  @override
+  String get artworkCurrent => 'Currently shown';
+
+  @override
+  String get artworkSelectedByAdmin => 'Chosen by an admin';
+
+  @override
+  String get artworkAutomatic => 'Picked automatically';
+
+  @override
+  String get artworkOnServer => 'On the server';
+
+  @override
+  String artworkFromProvider(String source) {
+    return 'From $source';
+  }
+
+  @override
+  String get artworkNoRemote =>
+      'No alternatives from a metadata provider for this item.';
+
+  @override
+  String get artworkEmpty => 'No images yet';
+
+  @override
+  String get artworkUpload => 'Upload image…';
+
+  @override
+  String get artworkFromVideo => 'Frame from video…';
+
+  @override
+  String artworkFrameAt(String time) {
+    return 'Frame at $time';
+  }
+
+  @override
+  String get artworkFrameHint =>
+      'The server grabs this frame from the video and uses it as the image.';
+
+  @override
+  String get artworkUseFrame => 'Use this frame';
+
+  @override
+  String get artworkResetAuto => 'Back to automatic';
+
+  @override
+  String get artworkAlreadyOnServer => 'Already on the server';
+
+  @override
+  String get artworkDelete => 'Delete image';
+
+  @override
+  String get artworkDeleteConfirm =>
+      'The uploaded image is removed from the server. Scanned and provider images cannot be deleted.';
+
+  @override
+  String get artworkSourceLocal => 'Local file or generated frame';
+
+  @override
+  String get artworkSourceFrame => 'Frame from the video';
+
+  @override
+  String get artworkSourceUpload => 'Uploaded';
+
+  @override
+  String get artworkChanged => 'Artwork updated';
+
+  @override
+  String artworkFailed(String error) {
+    return 'Could not change the artwork: $error';
+  }
+
+  @override
+  String get artworkServerTooOld =>
+      'This server does not support changing artwork yet.';
+
+  @override
+  String get artworkMenuTooltip => 'Artwork';
+
+  @override
+  String get artworkSetFrameAsBackground => 'Use this frame as background';
+
+  @override
+  String get artworkSetFrameAsCover => 'Use this frame as cover';
 }

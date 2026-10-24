@@ -14,6 +14,7 @@ import '../../utils/VideoLoadState.dart';
 import '../VideoCoverView.dart';
 import '../WatchTogetherButton.dart';
 import 'SegmentOverlayButtons.dart';
+import 'ArtworkMenuButton.dart';
 import 'BitmapSubtitleOverlay.dart';
 import 'TrackMenuButton.dart';
 import 'TrackSelectionController.dart';
@@ -363,6 +364,7 @@ class _IsterVideoControlsState extends State<IsterVideoControls> {
         const SizedBox(width: 8),
         const PositionText(),
         const Spacer(),
+        ArtworkMenuButton(onMenuOpenChanged: _setMenuOpen),
         SleepTimerButton(onMenuOpenChanged: _setMenuOpen),
         ZoomToggleButton(state: widget.state),
         TrackMenuButton(controller: _tracks, onMenuOpenChanged: _setMenuOpen),

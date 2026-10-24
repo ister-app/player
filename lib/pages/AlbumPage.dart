@@ -37,6 +37,8 @@ import '../dto/IsterMediaItem.dart';
 import '../dto/MediaItemId.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/ServerTaskRunner.dart';
+import '../utils/artwork/ArtworkNavigation.dart';
+import '../utils/artwork/ArtworkTarget.dart';
 
 @RoutePage()
 class AlbumPage extends StatefulWidget {
@@ -68,6 +70,8 @@ class _AlbumPageState extends State<AlbumPage> {
   // the per-track dialog shows immediately without waiting for a refetch.
   final Map<String, int?> _trackRatingOverrides = {};
   bool _showAdminActions = true;
+  /// The page query's refetch, for the artwork picker's return.
+  VoidCallback? _pageRefetch;
 
   final GlobalKey _requestedTrackKey = GlobalKey();
   bool _scrolledToRequestedTrack = false;
@@ -232,6 +236,7 @@ class _AlbumPageState extends State<AlbumPage> {
         ),
       builder: (QueryResult result,
           {VoidCallback? refetch, FetchMore? fetchMore}) {
+        _pageRefetch = refetch;
         if (result.hasException) {
           return Scaffold(
             appBar: AppBar(),
@@ -527,6 +532,12 @@ class _AlbumPageState extends State<AlbumPage> {
             title: Text(loc.playbackHistory),
           ),
         ),
+        if (_showAdminActions)
+          ChangeArtworkMenuItem(
+            target: ArtworkTarget(ArtworkTargetKind.album, album.id),
+            title: MetadataUtil.getTitle(album.metadata) ?? album.name,
+            onClosed: () => _pageRefetch?.call(),
+          ),
         if (_showAdminActions)
           MenuItemButton(
             onPressed: () => runServerTask(

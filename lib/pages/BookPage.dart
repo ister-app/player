@@ -25,6 +25,9 @@ import '../components/MusicDetailHero.dart';
 import '../components/PlaybackHistorySheet.dart';
 import '../components/RatingStars.dart';
 import '../l10n/app_localizations.dart';
+import 'package:player/utils/artwork/ArtworkNavigation.dart';
+import 'package:player/utils/artwork/ArtworkTarget.dart';
+import 'package:player/utils/PermissionsService.dart';
 
 /// How the user wants to consume a book: audiobook, epub, or epub with read-aloud audio.
 enum _ReadMode {
@@ -63,6 +66,18 @@ class BookPage extends StatefulWidget {
 class _BookPageState extends State<BookPage> {
   /// Chapter rows the skeleton reserves — roughly a screenful.
   static const int _skeletonChapterCount = 8;
+
+  bool _showAdminActions = true;
+
+  @override
+  void initState() {
+    super.initState();
+    PermissionsService().adminStatusFor(widget.serverName).then((status) {
+      if (mounted && status == AdminStatus.notAdmin) {
+        setState(() => _showAdminActions = false);
+      }
+    });
+  }
 
   Query$bookById$bookById? _book;
   VoidCallback? _refetch;
@@ -327,6 +342,12 @@ class _BookPageState extends State<BookPage> {
                       title: Text(loc.playbackHistory),
                     ),
                   ),
+                  if (_showAdminActions)
+                    ChangeArtworkMenuItem(
+                      target: ArtworkTarget(ArtworkTargetKind.book, book.id),
+                      title: book.title,
+                      onClosed: () => _refetch?.call(),
+                    ),
                 ],
                 builder: (_, MenuController controller, Widget? child) {
                   return IconButton(

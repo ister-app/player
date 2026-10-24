@@ -1,0 +1,3 @@
+mutation selectVideoFrame($target: ImageTargetInput!, $type: ImageType!, $mediaFileId: ID!, $positionMs: Int!) {
+    selectVideoFrame(target: $target, type: $type, mediaFileId: $mediaFileId, positionMs: $positionMs) { ...fragmentImages }
+}

@@ -1,0 +1,3 @@
+mutation clearSelectedImage($target: ImageTargetInput!, $type: ImageType!) {
+    clearSelectedImage(target: $target, type: $type)
+}

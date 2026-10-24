@@ -71,8 +71,10 @@ class PermissionsService {
   }
 
   Future<AdminStatus> _load(String server) async {
-    final client = ClientManager.getClientForUrl(server).value;
     try {
+      // Inside the try: building the client needs the server's well-known data, which a
+      // page opened early (or a widget test) may not have fetched yet.
+      final client = ClientManager.getClientForUrl(server).value;
       final QueryResult result = await client.query(QueryOptions(
         document: documentNodeQueryme,
         fetchPolicy: FetchPolicy.networkOnly,
@@ -95,7 +97,12 @@ class PermissionsService {
       return status;
     } catch (e) {
       LoggerService().logger.w('Could not load permissions from $server: $e');
-      final local = await _prefs.getBool('perm_is_admin_$server');
+      bool? local;
+      try {
+        local = await _prefs.getBool('perm_is_admin_$server');
+      } catch (_) {
+        // No preferences store (a bare widget test): unknown is the honest answer.
+      }
       final fallback = local == null
           ? AdminStatus.unknown
           : (local ? AdminStatus.admin : AdminStatus.notAdmin);

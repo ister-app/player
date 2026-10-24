@@ -20,6 +20,9 @@ import '../components/MusicDetailHero.dart';
 import '../components/SourceAttribution.dart';
 import '../components/games/GameActionsPanel.dart';
 import '../l10n/app_localizations.dart';
+import 'package:player/utils/artwork/ArtworkNavigation.dart';
+import 'package:player/utils/artwork/ArtworkTarget.dart';
+import 'package:player/utils/PermissionsService.dart';
 
 /// A game: cover, facts, how it is launched, the calling user's saves and
 /// achievements. Installing and playing happen on desktop through
@@ -40,6 +43,18 @@ class GamePage extends StatefulWidget {
 }
 
 class _GamePageState extends State<GamePage> {
+  bool _showAdminActions = true;
+
+  @override
+  void initState() {
+    super.initState();
+    PermissionsService().adminStatusFor(widget.serverName).then((status) {
+      if (mounted && status == AdminStatus.notAdmin) {
+        setState(() => _showAdminActions = false);
+      }
+    });
+  }
+
   Query$gameById$gameById? _game;
   VoidCallback? _refetch;
   bool _saveBusy = false;
@@ -89,6 +104,19 @@ class _GamePageState extends State<GamePage> {
           pinned: true,
           stretch: true,
           foregroundColor: Colors.white,
+          actions: [
+            if (game != null && _showAdminActions)
+              IconButton(
+                key: ChangeArtworkMenuItem.itemKey,
+                icon: const Icon(Icons.wallpaper_outlined),
+                tooltip: loc.changeArtwork,
+                onPressed: () => openArtworkPicker(
+                  context,
+                  target: ArtworkTarget(ArtworkTargetKind.game, game.id),
+                  title: game.title,
+                ).then((_) => _refetch?.call()),
+              ),
+          ],
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
             background: _buildHeader(game, skeleton: skeleton),

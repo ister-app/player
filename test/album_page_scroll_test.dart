@@ -53,7 +53,9 @@ Map<String, dynamic> _album(
         if (cover)
           {
             '__typename': 'Image',
+            'selected': false,
             'type': 'cover',
+            'sourceUri': null,
             'id': 'image-1',
             'language': null,
             'source': null,
