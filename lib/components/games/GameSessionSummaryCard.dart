@@ -46,6 +46,7 @@ class GameSessionSummaryCard extends StatelessWidget {
             Text(loc.gameSessionLength(GameLabels.playTime(loc, result.duration.inMilliseconds))),
             if (result.uploadedSave != null) Text(loc.gameSaveUploaded(result.uploadedSave!.version)),
             if (result.saveUnchanged) Text(loc.gameSaveUnchanged),
+            if (result.noSaveFound) Text(loc.gameSaveNotFound),
             if (result.newAchievements.isNotEmpty) ...[
               Text(loc.gameNewAchievements(result.newAchievements.length)),
               const SizedBox(height: 4),

@@ -1015,6 +1015,7 @@
   "gameSaveConflictHistoryNote": "De andere versie blijft in de geschiedenis op de server.",
   "gameContinue": "Doorgaan",
   "gameSaveUnchanged": "Save ongewijzigd, niets geüpload",
+  "gameSaveNotFound": "Geen savebestanden gevonden: het spel slaat ergens anders op dan waar deze app kijkt, of heeft niet opgeslagen",
   "gameSessionRetrySync": "Synchronisatie opnieuw",
   "gameSessionDoneSnack": "Gespeeld: {time}",
   "gameSessionDoneSnackSaved": "Gespeeld: {time} · save geüpload als versie {version}",

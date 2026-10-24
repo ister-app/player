@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:player/utils/download/DownloadHttp.dart';
 import 'package:player/utils/download/DownloadStore.dart';
@@ -18,6 +19,7 @@ import 'package:shared_preferences_platform_interface/in_memory_shared_preferenc
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import 'support/game_fixture.dart';
+import '../support/sfo_builder.dart';
 import '../support/recording_presence.dart';
 
 /// Pretends to run the game: returns at once with exit code 0.
@@ -493,6 +495,60 @@ void main() {
       expect(await s.installOf(server, 'g1'), isNull);
       expect(File('${tmp.path}/.config/rpcs3/dev_hdd0/game/NPEA00111/USRDIR/EBOOT.BIN').existsSync(), isTrue);
       expect(Directory(install.dir).existsSync(), isFalse);
+    });
+
+    test('an RPCS3 game that saves under another folder name: the folder is found by its SFO title and uploaded', () async {
+      write('.config/rpcs3/dev_hdd0/game/NPEA00363/PARAM.SFO', '');
+      write('.config/rpcs3/dev_hdd0/game/NPEA00363/USRDIR/EBOOT.BIN', '');
+      write('.config/rpcs3/dev_flash/vsh/x', '');
+      const savedata = '.config/rpcs3/dev_hdd0/home/00000001/savedata';
+      File('${tmp.path}/$savedata/BCES00065_NDI_UNCHARTED_DF_0/PARAM.SFO')
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(buildSfo({'TITLE': "Uncharted: Drake's Fortune™", 'SAVEDATA_DIRECTORY': 'BCES00065_NDI_UNCHARTED_DF_0'}));
+      write('$savedata/BCES00065_NDI_UNCHARTED_DF_0/SAVE.DAT', 'the fortress');
+      File('${tmp.path}/$savedata/NPEA00111-AUTO-SCORES/PARAM.SFO')
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(buildSfo({'TITLE': 'PixelJunk™ Monsters'}));
+      write('$savedata/NPEA00111-AUTO-SCORES/SCORES.DAT', 'not ours');
+      runner.runnable.add('rpcs3');
+      fake.games['g1'] = [];
+      final s = service();
+      // The server's title still carries the patch version an older scanner kept.
+      final game = gameFixture(form: 'PS3_FOLDER', platform: 'PS3', titleId: 'NPEA00363', title: "Uncharted: Drake's Fortune™ 1.02", version: 'v1');
+      final copy = await s.findLocalCopy(server, game);
+      await s.adopt(server, game, copy!);
+
+      final prepared = await s.prepare(server, game);
+      expect(prepared.plan.saveSlots.map((slot) => slot.template), ['rpcs3:NPEA00363', 'rpcs3:BCES00065_NDI_UNCHARTED_DF_0']);
+      final result = await s.launch(server, game, prepared.plan);
+      expect(result!.errors, isEmpty);
+      expect(result.noSaveFound, isFalse);
+      expect(result.uploadedSave?.version, 1);
+      expect(fake.uploadedSaves['g1'], hasLength(1));
+      final names = ZipDecoder().decodeBytes(fake.uploadedSaves['g1']!.single).map((f) => f.name).toList();
+      expect(names, contains('1/SAVE.DAT'));
+      expect(names, isNot(contains(contains('SCORES.DAT'))));
+      expect((await s.installOf(server, 'g1'))!.lastSaveVersion, 1);
+
+      // Nothing changed: the next session uploads nothing and says so.
+      final again = await s.launch(server, game, (await s.prepare(server, game)).plan);
+      expect(again!.saveUnchanged, isTrue, reason: 'errors=${again.errors} uploaded=${again.uploadedSave?.version} noSave=${again.noSaveFound} sha=${(await s.installOf(server, 'g1'))!.lastSaveSha}');
+      expect(fake.uploadedSaves['g1'], hasLength(1));
+    });
+
+    test('an RPCS3 game that never saved reports that no save was found', () async {
+      write('.config/rpcs3/dev_hdd0/game/NPEA00111/PARAM.SFO', '');
+      write('.config/rpcs3/dev_hdd0/game/NPEA00111/USRDIR/EBOOT.BIN', '');
+      write('.config/rpcs3/dev_flash/vsh/x', '');
+      runner.runnable.add('rpcs3');
+      fake.games['g1'] = [];
+      final s = service();
+      final game = gameFixture(form: 'PS3_FOLDER', platform: 'PS3', titleId: 'NPEA00111', version: 'v1');
+      await s.adopt(server, game, (await s.findLocalCopy(server, game))!);
+      final result = await s.launch(server, game, (await s.prepare(server, game)).plan);
+      expect(result!.noSaveFound, isTrue);
+      expect(result.saveUnchanged, isFalse);
+      expect(fake.uploadedSaves['g1'], isNull);
     });
 
     test('a Steam game in a library: launches through Steam, no manifest is written', () async {

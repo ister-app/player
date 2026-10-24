@@ -3324,6 +3324,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gameSaveUnchanged => 'Save unchanged, nothing uploaded';
 
   @override
+  String get gameSaveNotFound =>
+      'No save files found: the game saved somewhere this app does not look, or did not save';
+
+  @override
   String get gameSessionRetrySync => 'Retry sync';
 
   @override

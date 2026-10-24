@@ -3337,6 +3337,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get gameSaveUnchanged => 'Save ongewijzigd, niets geüpload';
 
   @override
+  String get gameSaveNotFound =>
+      'Geen savebestanden gevonden: het spel slaat ergens anders op dan waar deze app kijkt, of heeft niet opgeslagen';
+
+  @override
   String get gameSessionRetrySync => 'Synchronisatie opnieuw';
 
   @override

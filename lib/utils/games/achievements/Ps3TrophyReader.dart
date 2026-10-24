@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:xml/xml.dart';
 
+import '../Ps3Titles.dart';
 import 'AchievementReport.dart';
 
 /// Reads a PS3 game's trophies from RPCS3's trophy folder
@@ -28,7 +29,7 @@ class Ps3TrophyReader {
   /// guess would credit another game's trophies.
   Future<List<Directory>> foldersFor(String? titleId, {Set<String> commIds = const {}, String? title}) async {
     if (!await trophyRoot.exists()) return const [];
-    final wantedTitle = title == null ? null : _normalise(title);
+    final wantedTitle = title == null ? null : Ps3Titles.normalise(title);
     final matching = <Directory>[];
     await for (final entity in trophyRoot.list()) {
       if (entity is! Directory) continue;
@@ -46,22 +47,13 @@ class Ps3TrophyReader {
           continue;
         }
         final named = _titleName.firstMatch(text)?.group(1);
-        if (wantedTitle != null && named != null && _normalise(named) == wantedTitle) matching.add(entity);
+        if (wantedTitle != null && named != null && Ps3Titles.normalise(named) == wantedTitle) matching.add(entity);
       } catch (_) {}
     }
     return matching;
   }
 
   static final RegExp _titleName = RegExp(r'<title-name>([^<]*)</title-name>');
-
-  static String _normalise(String title) => title
-      .replaceAll('&amp;', '&')
-      .replaceAll('&apos;', "'")
-      .replaceAll('&quot;', '"')
-      .replaceAll(RegExp(r'[™®©]'), '')
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim()
-      .toLowerCase();
 
   /// The trophy set ids a game ships: the folder names under its `TROPDIR`
   /// (`PS3_GAME/TROPDIR/NPWR…` for a disc, `TROPDIR/NPWR…` for an HDD game,

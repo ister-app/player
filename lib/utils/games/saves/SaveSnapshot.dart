@@ -28,9 +28,12 @@ class SaveSnapshot {
       if (type == FileSystemEntityType.file) {
         consider(await File(slot.path).lastModified());
       } else if (type == FileSystemEntityType.directory) {
-        await for (final entity in Directory(slot.path).list(recursive: true, followLinks: false)) {
+        final dir = Directory(slot.path);
+        await for (final entity in dir.list(recursive: true, followLinks: false)) {
           if (entity is! File) continue;
-          if (entity.uri.pathSegments.any((s) => s.startsWith('.'))) continue;
+          // Hidden within the slot only: the slot itself may live under
+          // `~/.var/app/...` or `~/.config`.
+          if (_relative(dir, entity).split('/').any((s) => s.startsWith('.'))) continue;
           consider(await entity.lastModified());
         }
       }
@@ -53,7 +56,7 @@ class SaveSnapshot {
         final dir = Directory(slot.path);
         await for (final entity in dir.list(recursive: true, followLinks: false)) {
           if (entity is! File) continue;
-          final relative = entity.path.substring(dir.path.length).replaceAll(r'\', '/').replaceFirst(RegExp('^/'), '');
+          final relative = _relative(dir, entity);
           if (relative.split('/').any((s) => s.startsWith('.'))) continue;
           archive.addFile(ArchiveFile.bytes('${slot.index}/$relative', await entity.readAsBytes()));
           files++;
@@ -73,19 +76,24 @@ class SaveSnapshot {
     return sha256.convert(bytes).toString();
   }
 
-  /// Restores a snapshot into the slots: each `<index>/...` entry lands under
-  /// the slot with that index. Entries of unknown slots and entries escaping
-  /// their slot folder are skipped. A file slot takes the single entry.
+  /// Restores a snapshot into the slots. Each `<index>/...` entry goes to the
+  /// slot whose template `snapshot.json` names for that index — not the slot
+  /// with that index here, since indices depend on which folders exist on
+  /// the packing machine. An `rpcs3:<folder>` template with no slot of its
+  /// own (a save folder this machine has not seen yet) is restored next to
+  /// the game's `rpcs3:<title id>` slot. Entries of unknown slots and entries
+  /// escaping their slot folder are skipped. A file slot takes the single
+  /// entry.
   static Future<int> unpack(File zip, List<SaveSlot> slots) async {
-    final bySlot = {for (final slot in slots) slot.index: slot};
     final archive = ZipDecoder().decodeBytes(await zip.readAsBytes());
+    final resolve = _slotResolver(archive, slots);
     var written = 0;
     for (final entry in archive) {
       if (!entry.isFile || entry.name == manifestName) continue;
       final slash = entry.name.indexOf('/');
       if (slash <= 0) continue;
       final index = int.tryParse(entry.name.substring(0, slash));
-      final slot = index == null ? null : bySlot[index];
+      final slot = index == null ? null : resolve(index);
       if (slot == null) continue;
       final relative = entry.name.substring(slash + 1);
       if (relative.isEmpty || relative.split('/').any((s) => s == '..' || s.isEmpty)) continue;
@@ -97,6 +105,39 @@ class SaveSnapshot {
       written++;
     }
     return written;
+  }
+
+  /// Maps a packed slot index to a slot here, by template when the archive
+  /// carries its manifest, by index for an archive without one.
+  static SaveSlot? Function(int index) _slotResolver(Archive archive, List<SaveSlot> slots) {
+    final byIndex = {for (final slot in slots) slot.index: slot};
+    final manifest = archive.findFile(manifestName);
+    if (manifest == null) return (index) => byIndex[index];
+    final templateOf = <int, String>{};
+    try {
+      final json = jsonDecode(utf8.decode(manifest.readBytes() ?? const [])) as Map<String, dynamic>;
+      for (final slot in json['slots'] as List) {
+        final map = slot as Map<String, dynamic>;
+        templateOf[(map['index'] as num).toInt()] = map['template'] as String;
+      }
+    } catch (_) {
+      return (index) => byIndex[index];
+    }
+    final byTemplate = {for (final slot in slots) slot.template: slot};
+    final rpcs3Root = slots.where((s) => s.template.startsWith('rpcs3:')).firstOrNull;
+    return (index) {
+      final template = templateOf[index];
+      if (template == null) return null;
+      final known = byTemplate[template];
+      if (known != null) return known;
+      if (rpcs3Root != null && template.startsWith('rpcs3:')) {
+        final name = template.substring('rpcs3:'.length);
+        if (name.isEmpty || name.contains('/') || name.contains(r'\') || name == '..') return null;
+        final savedata = File(rpcs3Root.path).parent.path;
+        return SaveSlot(index: index, path: '$savedata${Platform.pathSeparator}$name', template: template);
+      }
+      return null;
+    };
   }
 
   /// A fingerprint of the slots' current content (paths, sizes, mtimes) to
@@ -119,6 +160,9 @@ class SaveSnapshot {
     lines.sort();
     return sha256.convert(utf8.encode(lines.join('\n'))).toString();
   }
+
+  static String _relative(Directory dir, FileSystemEntity entity) =>
+      entity.path.substring(dir.path.length).replaceAll(r'\', '/').replaceFirst(RegExp('^/'), '');
 
   static String _name(String path) => path.split(RegExp(r'[\\/]')).last;
 

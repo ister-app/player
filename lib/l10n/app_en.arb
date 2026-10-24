@@ -3710,6 +3710,10 @@
   "@gameSaveUnchanged": {
       "description": "Session summary line"
   },
+  "gameSaveNotFound": "No save files found: the game saved somewhere this app does not look, or did not save",
+  "@gameSaveNotFound": {
+      "description": "Session summary line"
+  },
   "gameSessionRetrySync": "Retry sync",
   "@gameSessionRetrySync": {
       "description": "Button on a session summary with errors"

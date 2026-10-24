@@ -5492,6 +5492,12 @@ abstract class AppLocalizations {
   /// **'Save unchanged, nothing uploaded'**
   String get gameSaveUnchanged;
 
+  /// Session summary line
+  ///
+  /// In en, this message translates to:
+  /// **'No save files found: the game saved somewhere this app does not look, or did not save'**
+  String get gameSaveNotFound;
+
   /// Button on a session summary with errors
   ///
   /// In en, this message translates to:

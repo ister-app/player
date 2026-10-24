@@ -73,6 +73,7 @@ class GameSessionResult {
     this.exitCode,
     this.uploadedSave,
     this.saveUnchanged = false,
+    this.noSaveFound = false,
     this.newAchievements = const [],
     this.errors = const [],
   });
@@ -82,6 +83,10 @@ class GameSessionResult {
 
   /// Save sync ran and found nothing to upload.
   final bool saveUnchanged;
+
+  /// Save sync ran but the game's save locations hold no files at all: the
+  /// game saved somewhere this app does not look (or never saved).
+  final bool noSaveFound;
   final List<ReportedAchievement> newAchievements;
   final List<String> errors;
   String? get error => errors.isEmpty ? null : errors.join('\n');
@@ -715,11 +720,18 @@ class GameLibraryService {
     if (install == null || !install.isInstalled) throw LaunchException(LaunchProblem.entryMissing, 'not installed');
     phaseOf(game.id).value = GamePlayPhase.preparingSaves;
     try {
-      final plan = await _plan(install, game);
+      var plan = await _plan(install, game);
       final sync = _sync(serverName);
       await sync.replayOutbox(install);
       if (!await GameSettings.saveSyncEnabled()) return (plan: plan, conflict: null);
       final pull = await sync.pull(install, plan.saveSlots);
+      if (pull.outcome == SavePullOutcome.downloaded) {
+        // The download may have created save folders this machine had not
+        // seen (an RPCS3 folder named by the game): plan again so the
+        // session's slots — and the "unchanged" fingerprint — include them.
+        plan = await _plan(install, game);
+        await sync.refreshFingerprint(install, plan.saveSlots);
+      }
       if (pull.outcome == SavePullOutcome.conflict) {
         return (
           plan: plan,
@@ -847,12 +859,17 @@ class GameLibraryService {
       {int? exitCode, required Duration duration, String? error}) async {
     GameSaveInfo? uploaded;
     var saveUnchanged = false;
+    var noSaveFound = false;
     final errors = <String>[?error];
     if (await GameSettings.saveSyncEnabled()) {
       phaseOf(game.id).value = GamePlayPhase.uploadingSaves;
       try {
-        uploaded = await _sync(serverName).push(session.install, session.plan.saveSlots);
-        saveUnchanged = uploaded == null && session.plan.saveSlots.isNotEmpty;
+        final slots = session.plan.saveSlots;
+        uploaded = await _sync(serverName).push(session.install, slots);
+        if (uploaded == null) {
+          noSaveFound = slots.isEmpty || await SaveSnapshot.newestModified(slots) == null;
+          saveUnchanged = !noSaveFound;
+        }
       } on GameSaveConflict catch (c) {
         // Someone played elsewhere while this session ran: keep ours as the
         // head (history keeps theirs) rather than lose a just-finished session.
@@ -886,6 +903,7 @@ class GameLibraryService {
       exitCode: exitCode,
       uploadedSave: uploaded,
       saveUnchanged: saveUnchanged,
+      noSaveFound: noSaveFound,
       newAchievements: newAchievements,
       errors: errors,
     );

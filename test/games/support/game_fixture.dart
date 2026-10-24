@@ -74,6 +74,9 @@ class FakeGameServer {
   /// Status to answer for a game's manifest instead of 200.
   final Map<String, int> manifestStatus = {};
 
+  /// Save snapshots uploaded per game id, in order (version = index + 1).
+  final Map<String, List<Uint8List>> uploadedSaves = {};
+
   http.Client get client => MockClient.streaming(_handle);
 
   Future<http.StreamedResponse> _handle(http.BaseRequest request, http.ByteStream body) async {
@@ -102,6 +105,12 @@ class FakeGameServer {
             'files': [for (final f in files) f.toJson()],
           }),
           headers: {'etag': '"$id-${versions[id]}"'});
+    }
+    if (what == 'saves' && request.method == 'POST') {
+      final bytes = await body.toBytes();
+      final version = (uploadedSaves[id] ??= []).length + 1;
+      uploadedSaves[id]!.add(bytes);
+      return _response(200, jsonEncode({'version': version, 'sizeBytes': bytes.length, 'sha256': 'x', 'deviceName': 'test-box'}));
     }
     if (what == 'saves') return _response(200, '[]');
     if (what == 'file') {

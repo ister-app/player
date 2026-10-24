@@ -77,6 +77,13 @@ class SaveSyncService {
     } catch (_) {}
   }
 
+  /// Records the slots' current content as what was last synced, after the
+  /// slot list changed (a pull created folders the plan did not know).
+  Future<void> refreshFingerprint(GameInstall install, List<SaveSlot> slots) async {
+    install.lastSaveSha = await Isolate.run(() => SaveSnapshot.fingerprint(slots));
+    await store.put(serverName, install);
+  }
+
   /// Uploads the local saves as a new version. Returns null when nothing
   /// changed since the last sync (no upload needed). Throws
   /// [GameSaveConflict] when the server head moved; [force] overrides.

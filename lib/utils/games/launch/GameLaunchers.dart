@@ -6,7 +6,10 @@ import 'package:player/utils/games/saves/SavePathResolver.dart';
 import 'package:player/utils/games/steam/SteamLibraryLocator.dart';
 import 'package:player/utils/games/steam/Vdf.dart';
 
+import 'package:player/utils/upload/games/ParamSfo.dart';
+
 import 'EmulatorRegistry.dart';
+import 'Rpcs3SaveFolders.dart';
 
 /// Why a game cannot be launched right now; the panel turns it into a message.
 enum LaunchProblem { emulatorMissing, coreMissing, entryMissing, steamMissing, firmwareMissing }
@@ -116,15 +119,22 @@ class GameLaunchers {
       // A PS3 game owns every savedata folder starting with its title id
       // (BLUS30443-AUTOSAVE, BLUS30443-SLOT01, ...); one slot per folder,
       // plus the bare prefix for folders created during this session.
+      // A folder whose own PARAM.SFO names the game is its too: a PSN
+      // re-release saves under the disc version's name (Rpcs3SaveFolders).
       var index = 0;
       slots.add(SaveSlot(index: index++, path: '${savedata.path}${Platform.pathSeparator}${install.titleId}', template: 'rpcs3:${install.titleId}'));
-      if (await savedata.exists()) {
-        await for (final entity in savedata.list()) {
-          final name = entity.uri.pathSegments.where((s) => s.isNotEmpty).last;
-          if (entity is Directory && name.startsWith(install.titleId!) && name != install.titleId) {
-            slots.add(SaveSlot(index: index++, path: entity.path, template: 'rpcs3:$name'));
-          }
-        }
+      final names = <String>[];
+      await for (final entity in savedata.list()) {
+        if (entity is Directory) names.add(entity.uri.pathSegments.where((s) => s.isNotEmpty).last);
+      }
+      final owned = await Rpcs3SaveFolders.select(
+        folderNames: names,
+        titleId: install.titleId!,
+        title: install.title,
+        sfoTitleOf: (name) => _sfoTitle(File('${savedata.path}${Platform.pathSeparator}$name${Platform.pathSeparator}PARAM.SFO')),
+      );
+      for (final name in owned) {
+        slots.add(SaveSlot(index: index++, path: '${savedata.path}${Platform.pathSeparator}$name', template: 'rpcs3:$name'));
       }
     }
     return LaunchPlan(
@@ -132,6 +142,15 @@ class GameLaunchers {
       arguments: ['--no-gui', eboot.path],
       saveSlots: slots,
     );
+  }
+
+  static Future<String?> _sfoTitle(File sfo) async {
+    try {
+      if (!await sfo.exists()) return null;
+      return ParamSfo.parse(await sfo.readAsBytes()).title;
+    } catch (_) {
+      return null;
+    }
   }
 
   // ---- native PC ---------------------------------------------------------

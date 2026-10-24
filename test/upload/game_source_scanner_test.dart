@@ -10,7 +10,7 @@ import 'package:player/utils/upload/games/GameSourceScanner.dart';
 import 'package:player/utils/upload/games/GameUploadCandidate.dart';
 import 'package:player/utils/upload/games/Rpcs3Locator.dart';
 
-import 'param_sfo_test.dart' show buildSfo;
+import '../support/sfo_builder.dart';
 
 const platforms = [
   GamePlatformOption(platform: Enum$GamePlatform.SNES, folder: 'snes', folderNames: ['snes', 'sfc'], entryExtensions: ['sfc', 'smc']),
