@@ -19,7 +19,26 @@ Future<void> openArtworkPicker(
   int? frameDurationMs,
   int? frameStartMs,
 }) {
-  return AutoRouter.of(context).push(
+  return pushArtworkPicker(
+    AutoRouter.of(context),
+    target: target,
+    title: title,
+    frameMediaFileId: frameMediaFileId,
+    frameDurationMs: frameDurationMs,
+    frameStartMs: frameStartMs,
+  );
+}
+
+/// [openArtworkPicker] for callers that resolved the router up front.
+Future<void> pushArtworkPicker(
+  StackRouter router, {
+  required ArtworkTarget target,
+  String? title,
+  String? frameMediaFileId,
+  int? frameDurationMs,
+  int? frameStartMs,
+}) {
+  return router.push(
     ArtworkPickerRoute(
       kind: target.kind.name,
       id: target.id,
@@ -57,10 +76,13 @@ class ChangeArtworkMenuItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    // MenuItemButton invokes onPressed a frame after the menu closed, and the
+    // menu takes this context with it — resolve the router now.
+    final router = AutoRouter.of(context);
     return MenuItemButton(
       key: itemKey,
-      onPressed: () => openArtworkPicker(
-        context,
+      onPressed: () => pushArtworkPicker(
+        router,
         target: target,
         title: title,
         frameMediaFileId: frameMediaFileId,
