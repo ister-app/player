@@ -4035,5 +4035,9 @@
   "artworkSetFrameAsBackground": "Use this frame as background",
   "@artworkSetFrameAsBackground": {"description": "Video controls sheet: take the current frame as the item's background image"},
   "artworkSetFrameAsCover": "Use this frame as cover",
-  "@artworkSetFrameAsCover": {"description": "Video controls sheet: take the current frame as the item's cover image"}
+  "@artworkSetFrameAsCover": {"description": "Video controls sheet: take the current frame as the item's cover image"},
+  "uploadUnfinishedHomeBody": "{title} stopped before it was done. Continue where it left off?",
+  "@uploadUnfinishedHomeBody": {"description": "Server home: reminder card for an upload interrupted in an earlier run of the app", "placeholders": {"title": {"type": "String"}}},
+  "uploadUnfinishedHomeBodyUnnamed": "It stopped before it was done. Continue where it left off?",
+  "@uploadUnfinishedHomeBodyUnnamed": {"description": "Server home: reminder card when the interrupted upload has no stored name"}
 }

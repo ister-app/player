@@ -1123,5 +1123,7 @@
   "artworkServerTooOld": "Deze server ondersteunt het wijzigen van afbeeldingen nog niet.",
   "artworkMenuTooltip": "Afbeeldingen",
   "artworkSetFrameAsBackground": "Gebruik dit beeld als achtergrond",
-  "artworkSetFrameAsCover": "Gebruik dit beeld als cover"
+  "artworkSetFrameAsCover": "Gebruik dit beeld als cover",
+  "uploadUnfinishedHomeBody": "{title} is gestopt voordat het klaar was. Verdergaan waar het bleef?",
+  "uploadUnfinishedHomeBodyUnnamed": "Hij is gestopt voordat het klaar was. Verdergaan waar het bleef?"
 }

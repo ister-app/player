@@ -3747,4 +3747,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get artworkSetFrameAsCover => 'Use this frame as cover';
+
+  @override
+  String uploadUnfinishedHomeBody(String title) {
+    return '$title stopped before it was done. Continue where it left off?';
+  }
+
+  @override
+  String get uploadUnfinishedHomeBodyUnnamed =>
+      'It stopped before it was done. Continue where it left off?';
 }

@@ -294,6 +294,7 @@ class GameUploadBatch extends ChangeNotifier {
       sessionId: session.sessionId,
       nodeUrl: _nodeUrl,
       s3: _s3,
+      title: current.rootName,
       batch: StoredBatch(
         directoryId: directory.id,
         libraryId: directory.libraryId,

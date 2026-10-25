@@ -3761,4 +3761,13 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get artworkSetFrameAsCover => 'Gebruik dit beeld als cover';
+
+  @override
+  String uploadUnfinishedHomeBody(String title) {
+    return '$title is gestopt voordat het klaar was. Verdergaan waar het bleef?';
+  }
+
+  @override
+  String get uploadUnfinishedHomeBodyUnnamed =>
+      'Hij is gestopt voordat het klaar was. Verdergaan waar het bleef?';
 }

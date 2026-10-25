@@ -179,6 +179,7 @@ class AdminLibrariesRouteArgs {
 class AdminUploadRoute extends _i49.PageRouteInfo<AdminUploadRouteArgs> {
   AdminUploadRoute({
     _i51.Key? key,
+    bool resume = false,
     _i52.UploadApi? api,
     _i53.Future<_i54.UploadSourceFolder?> Function()? pickFolder,
     _i53.Future<List<_i55.GamePlatformOption>> Function()? loadPlatforms,
@@ -199,6 +200,7 @@ class AdminUploadRoute extends _i49.PageRouteInfo<AdminUploadRouteArgs> {
          AdminUploadRoute.name,
          args: AdminUploadRouteArgs(
            key: key,
+           resume: resume,
            api: api,
            pickFolder: pickFolder,
            loadPlatforms: loadPlatforms,
@@ -211,6 +213,7 @@ class AdminUploadRoute extends _i49.PageRouteInfo<AdminUploadRouteArgs> {
            materialiser: materialiser,
            reopenFolder: reopenFolder,
          ),
+         rawQueryParams: {'resume': resume},
          initialChildren: children,
        );
 
@@ -220,12 +223,15 @@ class AdminUploadRoute extends _i49.PageRouteInfo<AdminUploadRouteArgs> {
     name,
     builder: (data) {
       final pathParams = data.inheritedPathParams;
+      final queryParams = data.queryParams;
       final args = data.argsAs<AdminUploadRouteArgs>(
-        orElse: () => AdminUploadRouteArgs(),
+        orElse: () =>
+            AdminUploadRouteArgs(resume: queryParams.getBool('resume', false)),
       );
       return _i3.AdminUploadPage(
         key: args.key,
         serverName: pathParams.getString('serverName'),
+        resume: args.resume,
         api: args.api,
         pickFolder: args.pickFolder,
         loadPlatforms: args.loadPlatforms,
@@ -245,6 +251,7 @@ class AdminUploadRoute extends _i49.PageRouteInfo<AdminUploadRouteArgs> {
 class AdminUploadRouteArgs {
   const AdminUploadRouteArgs({
     this.key,
+    this.resume = false,
     this.api,
     this.pickFolder,
     this.loadPlatforms,
@@ -259,6 +266,8 @@ class AdminUploadRouteArgs {
   });
 
   final _i51.Key? key;
+
+  final bool resume;
 
   final _i52.UploadApi? api;
 
@@ -288,7 +297,7 @@ class AdminUploadRouteArgs {
 
   @override
   String toString() {
-    return 'AdminUploadRouteArgs{key: $key, api: $api, pickFolder: $pickFolder, loadPlatforms: $loadPlatforms, findGame: $findGame, gameProbeInterval: $gameProbeInterval, gameProbePatience: $gameProbePatience, pickCandidates: $pickCandidates, indexLoader: $indexLoader, runnerFactory: $runnerFactory, materialiser: $materialiser, reopenFolder: $reopenFolder}';
+    return 'AdminUploadRouteArgs{key: $key, resume: $resume, api: $api, pickFolder: $pickFolder, loadPlatforms: $loadPlatforms, findGame: $findGame, gameProbeInterval: $gameProbeInterval, gameProbePatience: $gameProbePatience, pickCandidates: $pickCandidates, indexLoader: $indexLoader, runnerFactory: $runnerFactory, materialiser: $materialiser, reopenFolder: $reopenFolder}';
   }
 
   @override
@@ -296,6 +305,7 @@ class AdminUploadRouteArgs {
     if (identical(this, other)) return true;
     if (other is! AdminUploadRouteArgs) return false;
     return key == other.key &&
+        resume == other.resume &&
         api == other.api &&
         findGame == other.findGame &&
         gameProbeInterval == other.gameProbeInterval &&
@@ -308,6 +318,7 @@ class AdminUploadRouteArgs {
   @override
   int get hashCode =>
       key.hashCode ^
+      resume.hashCode ^
       api.hashCode ^
       findGame.hashCode ^
       gameProbeInterval.hashCode ^

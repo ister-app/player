@@ -137,7 +137,8 @@ void main() {
         ],
       );
 
-  Future<void> pumpPage(WidgetTester tester, {String folderName = "Demon's Souls (2009)", List<GameUploadCandidate>? candidates}) async {
+  Future<void> pumpPage(WidgetTester tester,
+      {String folderName = "Demon's Souls (2009)", List<GameUploadCandidate>? candidates, bool resume = false}) async {
     tester.view.physicalSize = const Size(900, 2400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -146,6 +147,7 @@ void main() {
       supportedLocales: AppLocalizations.supportedLocales,
       home: AdminUploadPage(
         serverName: 'http://srv',
+        resume: resume,
         api: UploadApi('http://srv', httpClient: MockClient(server), bearer: (_) async => 'Bearer t'),
         pickFolder: () async => UploadSourceFolder(name: folderName, files: [
           if (withMarker) _File('PS3_GAME/PARAM.SFO', 5),
@@ -323,6 +325,29 @@ void main() {
     expect(find.text('3 games uploaded'), findsOneWidget, reason: 'the earlier game counts');
     expect(find.text('Earlier Game'), findsOneWidget);
     expect(calls.where((c) => c == 'POST /library-upload/sessions').length, 2, reason: 'the stored session was gone: both games afresh');
+    await tester.pump(const Duration(milliseconds: 1500));
+  });
+
+  testWidgets('opened with resume, a stored batch continues without a tap', (tester) async {
+    await UploadResumeStore('http://srv').save(StoredUpload(
+      sessionId: 'gone',
+      nodeUrl: 'http://node-a',
+      s3: false,
+      batch: StoredBatch(
+        directoryId: 'g1',
+        libraryId: 'lg',
+        overwrite: false,
+        current: candidate("Demon's Souls"),
+        queue: [candidate('Dark Souls')],
+        done: const [],
+      ),
+    ));
+    await pumpPage(tester, candidates: const [], resume: true);
+    for (var i = 0; i < 100 && find.byKey(const ValueKey('upload-batch-more')).evaluate().isEmpty; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    expect(find.byKey(const ValueKey('upload-unfinished')), findsNothing, reason: 'no card to tap: it went straight on');
+    expect(find.text('2 games uploaded'), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 1500));
   });
 }

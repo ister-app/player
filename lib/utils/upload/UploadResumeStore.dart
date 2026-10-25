@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'UploadApi.dart';
+import 'UploadModels.dart';
 import 'games/GameUploadCandidate.dart';
 
 /// A game batch in flight: what is being uploaded now and what still waits,
@@ -54,11 +56,17 @@ class StoredUpload {
     required this.s3,
     this.sourcePath,
     this.batch,
+    this.title,
   });
 
   final String sessionId;
   final String nodeUrl;
   final bool s3;
+
+  /// What is being uploaded, as the user named it (the root folder or the
+  /// game), so a reminder can say more than "an upload"; null for entries
+  /// written before this was stored.
+  final String? title;
 
   /// The picked folder's path, when the platform can reopen it (desktop).
   final String? sourcePath;
@@ -71,7 +79,14 @@ class StoredUpload {
         's3': s3,
         'sourcePath': sourcePath,
         'batch': batch?.toJson(),
+        'title': title,
       };
+
+  /// Whether the upload can go on without asking for the folder again.
+  bool get resumesWithoutPicking => batch != null || sourcePath != null;
+
+  /// The name to show for it: the stored title, else the game in flight.
+  String? get displayTitle => title ?? batch?.current?.rootName ?? batch?.queue.firstOrNull?.rootName;
 
   /// Reads the v2 shape and the first one (`{sessionId, nodeUrl, s3}`).
   factory StoredUpload.fromJson(Map<String, dynamic> json) => StoredUpload(
@@ -80,6 +95,7 @@ class StoredUpload {
         s3: json['s3'] == true,
         sourcePath: json['sourcePath'] as String?,
         batch: json['batch'] == null ? null : StoredBatch.fromJson((json['batch'] as Map).cast()),
+        title: json['title'] as String?,
       );
 }
 
@@ -102,6 +118,25 @@ class UploadResumeStore {
       await clear();
       return null;
     }
+  }
+
+  /// The remembered upload if there is still something to do: the server
+  /// holds its session open, or a batch has games left. Anything else is
+  /// forgotten here and now, so no page keeps offering a finished upload.
+  Future<StoredUpload?> loadUnfinished(UploadApi api) async {
+    final stored = await load();
+    if (stored == null) return null;
+    UploadSession? session;
+    try {
+      session = await api.session(stored.nodeUrl, stored.sessionId);
+    } catch (_) {
+      // gone, or the server is unreachable: a batch still has its queue
+    }
+    final active = session != null && session.status == 'ACTIVE' && session.files.any((f) => f.isActive);
+    final batchLeft = stored.batch != null && stored.batch!.queue.isNotEmpty;
+    if (active || batchLeft) return stored;
+    await clear();
+    return null;
   }
 
   Future<void> save(StoredUpload upload) => _prefs.setString(_key, jsonEncode(upload.toJson()));

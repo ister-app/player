@@ -63,9 +63,14 @@ class AdminUploadPage extends StatefulWidget {
   final GameSourceMaterialiser? materialiser;
   final Future<UploadSourceFolder?> Function(String path)? reopenFolder;
 
+  /// Opened from a "continue the upload" reminder elsewhere: go on with the
+  /// remembered upload right away when that needs no folder pick.
+  final bool resume;
+
   const AdminUploadPage({
     super.key,
     @PathParam.inherit('serverName') required this.serverName,
+    @QueryParam() this.resume = false,
     this.api,
     this.pickFolder,
     this.loadPlatforms,
@@ -179,6 +184,7 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
         final libraries = _libraries();
         if (libraries.length == 1) _selectLibrary(libraries.first.libraryId);
       });
+      if (widget.resume && _unfinished?.resumesWithoutPicking == true) unawaited(_resumeUnfinished(pickIfGone: false));
     } catch (e) {
       LoggerService().logger.e('Upload directories failed: $e');
       if (mounted) setState(() => _loadError = e);
@@ -186,26 +192,11 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
   }
 
   Future<void> _loadUnfinished() async {
-    final stored = await _store.load();
-    if (stored == null) return;
-    UploadSession? session;
-    try {
-      session = await _api.session(stored.nodeUrl, stored.sessionId);
-    } catch (e) {
-      LoggerService().logger.w('Stored upload session is gone: $e');
-    }
-    final active = session != null && session.status == 'ACTIVE' && session.files.any((f) => f.isActive);
-    // A batch whose game in flight finished (or was lost) still has the rest to do.
-    final batchLeft = stored.batch != null && stored.batch!.queue.isNotEmpty;
-    if (active || batchLeft) {
-      _unfinished = stored;
-      return;
-    }
-    await _store.clear();
+    _unfinished = await _store.loadUnfinished(_api);
   }
 
-  Future<void> _remember(String sessionId, String nodeUrl, bool s3, String? sourcePath) =>
-      _store.save(StoredUpload(sessionId: sessionId, nodeUrl: nodeUrl, s3: s3, sourcePath: sourcePath));
+  Future<void> _remember(String sessionId, String nodeUrl, bool s3, String? sourcePath, String title) =>
+      _store.save(StoredUpload(sessionId: sessionId, nodeUrl: nodeUrl, s3: s3, sourcePath: sourcePath, title: title));
 
   Future<void> _forget() => _store.clear();
 
@@ -368,7 +359,7 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
           overwrite: _overwrite,
           entries: _entries());
       final s3 = directory.storageKind == 'S3';
-      await _remember(session.sessionId, directory.nodeUrl!, s3, folder.path);
+      await _remember(session.sessionId, directory.nodeUrl!, s3, folder.path, _effectiveRootName ?? folder.name);
       _run(session, directory.nodeUrl!, s3, folder);
     } catch (e) {
       if (!mounted) return;
@@ -471,14 +462,16 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
     }
   }
 
-  Future<void> _resumeUnfinished() async {
+  /// [pickIfGone]: whether to open the folder picker when the remembered
+  /// folder cannot be reopened — not when nobody asked for a dialog.
+  Future<void> _resumeUnfinished({bool pickIfGone = true}) async {
     final unfinished = _unfinished!;
     final batch = unfinished.batch;
     if (batch != null) return _resumeBatch(unfinished, batch);
     UploadSourceFolder? folder;
     final path = unfinished.sourcePath;
     if (path != null) folder = await (widget.reopenFolder ?? reopenUploadFolder)(path);
-    folder ??= await (widget.pickFolder ?? pickUploadFolder)();
+    if (folder == null && pickIfGone) folder = await (widget.pickFolder ?? pickUploadFolder)();
     if (folder == null || !mounted) return;
     try {
       final session = await _api.session(unfinished.nodeUrl, unfinished.sessionId);

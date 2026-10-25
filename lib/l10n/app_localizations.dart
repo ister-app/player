@@ -6145,6 +6145,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Use this frame as cover'**
   String get artworkSetFrameAsCover;
+
+  /// Server home: reminder card for an upload interrupted in an earlier run of the app
+  ///
+  /// In en, this message translates to:
+  /// **'{title} stopped before it was done. Continue where it left off?'**
+  String uploadUnfinishedHomeBody(String title);
+
+  /// Server home: reminder card when the interrupted upload has no stored name
+  ///
+  /// In en, this message translates to:
+  /// **'It stopped before it was done. Continue where it left off?'**
+  String get uploadUnfinishedHomeBodyUnnamed;
 }
 
 class _AppLocalizationsDelegate

@@ -17,6 +17,7 @@ import 'package:player/utils/WellKnownService.dart';
 import '../components/CarouselItemView.dart';
 import '../components/RecentCarouselView.dart';
 import '../components/RowHeader.dart';
+import '../components/upload/UnfinishedUploadCard.dart';
 import '../l10n/app_localizations.dart';
 import '../pages/MediaListPage.dart';
 import '../utils/LibrarySelectionNotifier.dart';
@@ -220,6 +221,7 @@ class _ServerHomeContentPageState extends State<ServerHomeContentPage> {
                 return ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   children: [
+                    UnfinishedUploadCard(serverName: widget.serverName),
                     _recentViewEmpty
                         ? Container()
                         : RowHeader(
