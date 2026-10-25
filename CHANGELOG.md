@@ -1,5 +1,47 @@
 # Changelog
 
+## player v2.16.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.16.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(nowplaying): show games being played and books being read as sessions ([`46c81fa`](https://github.com/ister-app/player/commit/46c81fa))
+- feat(artwork): admin picker for covers and backgrounds, frame grab while watching ([`d208833`](https://github.com/ister-app/player/commit/d208833))
+- feat(music): show the release year on an artist's own albums ([`c8b10c7`](https://github.com/ister-app/player/commit/c8b10c7))
+- feat(games): vouch for a complete achievement set so the server can drop stale ones ([`9091398`](https://github.com/ister-app/player/commit/9091398))
+- feat(games): adopt a Steam or RPCS3 copy that is already on this computer ([`ebbff81`](https://github.com/ister-app/player/commit/ebbff81))
+- feat(upload): find the games on this computer and upload the ticked ones as one batch ([`247bc5b`](https://github.com/ister-app/player/commit/247bc5b))
+
+### Fixes
+
+- fix(games): find PS3 saves by the save folder's own title, not only the title id ([`7dc8b89`](https://github.com/ister-app/player/commit/7dc8b89))
+- fix(artwork): resolve the router before the overflow menu closes ([`ed6c6ed`](https://github.com/ister-app/player/commit/ed6c6ed))
+- fix(games): re-send trophy icons when a set reuses another set's ids ([`01a5a46`](https://github.com/ister-app/player/commit/01a5a46))
+- fix(games): credit a PS3 game only with its own trophy set ([`58b6736`](https://github.com/ister-app/player/commit/58b6736))
+- fix: survive a slow server after a game session and a game's ICON artwork ([`5f8fcd2`](https://github.com/ister-app/player/commit/5f8fcd2))
+- fix(upload): one Steam library per path, RPCS3's own games, and the platform as a filter ([`1306129`](https://github.com/ister-app/player/commit/1306129))
+
+### Other
+
+- perf(upload): complete files in the background while the next one streams ([`4c715bd`](https://github.com/ister-app/player/commit/4c715bd))
+- test(artwork): mock the media_kit_video channel in the controls button test ([`8915c0b`](https://github.com/ister-app/player/commit/8915c0b))
+- ci(e2e): pin the 5.5.1-snapshot server line for the artwork schema ([`597b5cf`](https://github.com/ister-app/player/commit/597b5cf))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.16.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.15.0...v2.16.0
+
 ## player v2.15.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
