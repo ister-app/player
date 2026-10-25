@@ -38,12 +38,20 @@ class UploadApi {
   final Future<String?> Function(String serverName) _bearer;
 
   Future<Map<String, String>> _headers({String? contentType}) async {
-    final token = await _bearer(serverName);
+    final token = await authorization();
     return {
       'Authorization': ?token,
       'Content-Type': ?contentType,
     };
   }
+
+  /// The `Authorization` header value for this server right now, refreshed by
+  /// the login when it is about to expire; null when not logged in.
+  Future<String?> authorization() => _bearer(serverName);
+
+  /// Where one chunk of a file goes.
+  static Uri chunkUri(String nodeUrl, String sessionId, String fileId, int offset) =>
+      Uri.parse(_join(nodeUrl, '/library-upload/sessions/$sessionId/files/$fileId/chunk?offset=$offset'));
 
   static String _join(String base, String path) =>
       base.endsWith('/') ? '${base.substring(0, base.length - 1)}$path' : '$base$path';
@@ -108,8 +116,7 @@ class UploadApi {
   /// complete chunk from a connection that broke off.
   Future<UploadChunkResult> chunk(String nodeUrl, String sessionId, String fileId,
       {required int offset, required int length, required Stream<List<int>> bytes}) async {
-    final request = http.StreamedRequest(
-        'POST', Uri.parse(_join(nodeUrl, '/library-upload/sessions/$sessionId/files/$fileId/chunk?offset=$offset')))
+    final request = http.StreamedRequest('POST', chunkUri(nodeUrl, sessionId, fileId, offset))
       ..headers.addAll(await _headers(contentType: 'application/octet-stream'))
       ..contentLength = length;
     // Feed the body while the request is in flight; a read error travels through the sink and
@@ -146,7 +153,13 @@ class UploadApi {
   }
 
   void _check(http.Response response) {
-    if (response.statusCode >= 200 && response.statusCode < 300) return;
+    final error = errorOf(response);
+    if (error != null) throw error;
+  }
+
+  /// The [UploadApiException] a response stands for, or null for a 2xx.
+  static UploadApiException? errorOf(http.Response response) {
+    if (response.statusCode >= 200 && response.statusCode < 300) return null;
     Map<String, dynamic>? json;
     try {
       json = (jsonDecode(utf8.decode(response.bodyBytes)) as Map).cast<String, dynamic>();
@@ -154,7 +167,7 @@ class UploadApi {
       json = null;
     }
     final retryAfter = int.tryParse(response.headers['retry-after'] ?? '');
-    throw UploadApiException(
+    return UploadApiException(
       response.statusCode,
       (json?['detail'] ?? json?['title'] ?? response.reasonPhrase ?? 'HTTP ${response.statusCode}').toString(),
       continueAt: (json?['receivedBytes'] as num?)?.toInt(),

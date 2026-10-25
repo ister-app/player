@@ -44,6 +44,9 @@ class _NativeFile implements UploadSourceFile {
   final int size;
 
   @override
+  String? get localPath => null;
+
+  @override
   Stream<List<int>> openRead(int start, int end) async* {
     var offset = start;
     while (offset < end) {

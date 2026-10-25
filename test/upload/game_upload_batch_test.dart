@@ -244,5 +244,7 @@ class _MemFile implements UploadSourceFile {
   @override
   final int size;
   @override
+  String? get localPath => null;
+  @override
   Stream<List<int>> openRead(int start, int end) => Stream.value(List.filled(end - start, 1));
 }

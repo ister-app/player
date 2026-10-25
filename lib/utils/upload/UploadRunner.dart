@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 
+import 'ChunkSender.dart';
 import 'UploadApi.dart';
 import 'UploadModels.dart';
 import 'UploadSource.dart';
@@ -51,16 +52,21 @@ class UploadRunner extends ChangeNotifier {
     required UploadSession session,
     required Map<String, UploadSourceFile> sources,
     required this.partsAddressedByNumber,
+    ChunkSender? chunkSender,
     this.parallelFiles = 2,
     this.maxAttempts = 8,
     Duration Function(int attempt)? backoff,
     Future<void> Function(Duration)? sleep,
   })  : sessionId = session.sessionId,
         items = [for (final f in session.files) UploadItem(f, sources[f.relativePath])],
+        _chunks = chunkSender ?? ChunkSender.forApi(api),
         _backoff = backoff ?? _defaultBackoff,
         _sleep = sleep ?? Future<void>.delayed;
 
   final UploadApi api;
+
+  /// Moves the bytes; off the UI isolate on desktop (see `IsolateChunkSender`).
+  final ChunkSender _chunks;
   final String nodeUrl;
   final String sessionId;
   final List<UploadItem> items;
@@ -127,6 +133,7 @@ class UploadRunner extends ChangeNotifier {
       await Future.wait([for (var i = 0; i < min(parallelFiles, queue.length); i++) worker()]);
       await Future.wait(_completing.toList());
     } finally {
+      await _chunks.dispose();
       _running = false;
       notifyListeners();
     }
@@ -233,8 +240,8 @@ class UploadRunner extends ChangeNotifier {
       if (!alreadyThere) {
         try {
           final at = offset;
-          final result = await _retrying(() => api.chunk(nodeUrl, sessionId, item.state.fileId,
-              offset: at, length: end - at, bytes: item.source!.openRead(at, end)));
+          final result = await _retrying(
+              () => _chunks.send(nodeUrl, sessionId, item.state.fileId, offset: at, end: end, source: item.source!));
           item.received = result.receivedBytes;
           item.haveParts.add(part);
         } on UploadApiException catch (e) {

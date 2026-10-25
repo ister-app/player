@@ -17,6 +17,8 @@ class _FakeFile implements UploadSourceFile {
   final String relativePath;
   @override
   final int size;
+  @override
+  String? get localPath => null;
   final List<(int, int)> reads = [];
 
   @override

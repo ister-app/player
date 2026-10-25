@@ -11,6 +11,11 @@ abstract class UploadSourceFile {
 
   /// Bytes `[start, end)`.
   Stream<List<int>> openRead(int start, int end);
+
+  /// The file's absolute path when another isolate could open it with plain
+  /// `dart:io` (desktop); null when the bytes only come through this isolate
+  /// (a browser blob, a storage-framework URI, a security-scoped folder).
+  String? get localPath;
 }
 
 /// A folder the admin picked to upload.

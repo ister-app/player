@@ -67,6 +67,9 @@ class _WebFile implements UploadSourceFile {
   /// One slice, read in one go: a chunk is the unit the uploader asks for, and
   /// it bounds how much of the file is in memory at once.
   @override
+  String? get localPath => null;
+
+  @override
   Stream<List<int>> openRead(int start, int end) async* {
     final buffer = await _file.slice(start, end).arrayBuffer().toDart;
     yield Uint8List.view(buffer.toDart);

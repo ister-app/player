@@ -76,4 +76,7 @@ class IoUploadFile implements UploadSourceFile {
 
   @override
   Stream<List<int>> openRead(int start, int end) => _file.openRead(start, end);
+
+  @override
+  String get localPath => _file.absolute.path;
 }
