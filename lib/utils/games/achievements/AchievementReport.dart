@@ -22,6 +22,17 @@ class ReportedAchievement {
   /// Icon bytes to upload separately, when the reader found one.
   final List<int>? iconPng;
 
+  ReportedAchievement withIcon(List<int> png) => ReportedAchievement(
+        externalId: externalId,
+        name: name,
+        description: description,
+        grade: grade,
+        hidden: hidden,
+        sortOrder: sortOrder,
+        unlockedAt: unlockedAt,
+        iconPng: png,
+      );
+
   Map<String, dynamic> toJson() => {
         'externalId': externalId,
         'name': name,

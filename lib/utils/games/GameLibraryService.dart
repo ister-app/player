@@ -957,7 +957,8 @@ class GameLibraryService {
     } else if (install.form == 'STEAM' && install.steamAppId != null) {
       final root = await steam.root();
       if (root != null) {
-        report = await SteamAchievementReader(steamRoot: root).read(install.steamAppId!, await steam.mostRecentAccountId());
+        report = await SteamAchievementReader(steamRoot: root, iconCacheDir: Directory('${install.dir}/achievement-icons'))
+            .read(install.steamAppId!, await steam.mostRecentAccountId());
       }
     }
     if (report == null) return const [];

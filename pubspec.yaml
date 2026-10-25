@@ -66,6 +66,7 @@ dependencies:
   # Game installs: zip/tar extraction and save snapshots (zip + sha-256).
   archive: ^4.0.7
   crypto: ^3.0.6
+  image: ^4.12.0 # Steam achievement icons arrive as JPEG; the server stores PNG
   web: ^1.1.1 # folder picker of the admin upload on web (webkitdirectory)
   gamepads: ^0.1.11 # Native controller input for the desktop TV mode
   file: ^7.0.0 # NotificationArtCache writes through a FileSystem (MemoryFileSystem in tests)
