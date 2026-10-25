@@ -940,7 +940,7 @@
   "gameCoreMissing": "RetroArch heeft geen \"{core}\"-core. Voeg die toe via RetroArch › Online Updater › Core Downloader.",
   "gameEntryMissing": "De gamebestanden zijn onvolledig; verwijder de game en installeer opnieuw.",
   "gamePs3FirmwareMissing": "RPCS3 heeft nog geen PS3-firmware. Installeer die eerst in RPCS3 (File › Install Firmware).",
-  "gameSteamLaunched": "Steam start de game. Druk daarna op \"Ik ben klaar met spelen\" om je saves te synchroniseren.",
+  "gameSteamLaunched": "Steam start de game. Je saves worden gesynchroniseerd zodra je stopt; gebeurt dat niet, druk dan op \"Ik ben klaar met spelen\".",
   "gameSteamRestartHint": "Geïnstalleerd. Herstart Steam als de game nog niet als geïnstalleerd verschijnt; Steam controleert de bestanden bij de eerste start.",
   "gamePickSteamLibrary": "Kies de Steam-bibliotheekmap",
   "gameSessionLength": "{time} gespeeld",

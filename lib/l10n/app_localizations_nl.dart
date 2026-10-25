@@ -3048,7 +3048,7 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get gameSteamLaunched =>
-      'Steam start de game. Druk daarna op \"Ik ben klaar met spelen\" om je saves te synchroniseren.';
+      'Steam start de game. Je saves worden gesynchroniseerd zodra je stopt; gebeurt dat niet, druk dan op \"Ik ben klaar met spelen\".';
 
   @override
   String get gameSteamRestartHint =>

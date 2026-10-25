@@ -6,10 +6,14 @@ import 'package:player/utils/LoggerService.dart';
 
 /// How a launched game or emulator ended.
 class GameProcessResult {
-  const GameProcessResult({required this.exitCode, required this.duration, required this.stderrTail});
+  const GameProcessResult({required this.exitCode, required this.duration, required this.stderrTail, this.stdout = ''});
   final int exitCode;
   final Duration duration;
   final String stderrTail;
+
+  /// The first [GameProcessRunner.stdoutLimit] characters, for the tools
+  /// whose answer is their output (`reg query`); a game's own chatter is cut.
+  final String stdout;
 }
 
 /// Starts an emulator or a game and waits for it to exit. Inside the Flatpak
@@ -18,6 +22,8 @@ class GameProcessResult {
 /// that needs `--talk-name=org.freedesktop.Flatpak` in the manifest.
 class GameProcessRunner {
   GameProcessRunner({this.isFlatpak = _detectFlatpak});
+
+  static const int stdoutLimit = 64 * 1024;
 
   final bool Function() isFlatpak;
 
@@ -62,7 +68,10 @@ class GameProcessRunner {
       stderrTail.add(line);
       if (stderrTail.length > 40) stderrTail.removeAt(0);
     }).asFuture<void>();
-    unawaited(process.stdout.drain<void>());
+    final stdout = StringBuffer();
+    final stdoutDone = process.stdout.transform(const Utf8Decoder(allowMalformed: true)).listen((chunk) {
+      if (stdout.length < stdoutLimit) stdout.write(chunk.substring(0, (stdoutLimit - stdout.length).clamp(0, chunk.length)));
+    }).asFuture<void>();
     int exitCode;
     if (timeout != null) {
       exitCode = await process.exitCode.timeout(timeout, onTimeout: () {
@@ -73,12 +82,13 @@ class GameProcessRunner {
       exitCode = await process.exitCode;
     }
     try {
-      await stderrDone.timeout(const Duration(seconds: 2));
+      await Future.wait([stderrDone, stdoutDone]).timeout(const Duration(seconds: 2));
     } catch (_) {}
     return GameProcessResult(
       exitCode: exitCode,
       duration: DateTime.now().difference(started),
       stderrTail: stderrTail.join('\n'),
+      stdout: stdout.toString(),
     );
   }
 

@@ -56,13 +56,23 @@ class _GameActionsPanelState extends State<GameActionsPanel> {
   void initState() {
     super.initState();
     _service.revision.addListener(_refreshInstall);
+    _service.lastResultOf(widget.game.id).addListener(_onResult);
     unawaited(_start());
   }
 
   @override
   void dispose() {
     _service.revision.removeListener(_refreshInstall);
+    _service.lastResultOf(widget.game.id).removeListener(_onResult);
     super.dispose();
+  }
+
+  /// Results of this panel's own launch / finish are announced there; this
+  /// catches a Steam session the service wrapped up when the game exited.
+  void _onResult() {
+    final result = _service.lastResultOf(widget.game.id).value;
+    if (result == null || _busy || !mounted) return;
+    _announce(AppLocalizations.of(context)!, result);
   }
 
   Future<void> _start() async {

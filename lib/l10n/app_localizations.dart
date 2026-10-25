@@ -4952,7 +4952,7 @@ abstract class AppLocalizations {
   /// **'Game is running…'**
   String get gameRunning;
 
-  /// Game page: ends a Steam session (the app cannot see Steam's process) and syncs saves
+  /// Game page: ends a Steam session by hand (the app notices the game quitting where it can) and syncs saves
   ///
   /// In en, this message translates to:
   /// **'I finished playing'**
@@ -5038,7 +5038,7 @@ abstract class AppLocalizations {
   /// Message after a Steam launch
   ///
   /// In en, this message translates to:
-  /// **'Steam is starting the game. Press \"I finished playing\" afterwards to sync your saves.'**
+  /// **'Steam is starting the game. Your saves are synced when you quit it; if that does not happen, press \"I finished playing\".'**
   String get gameSteamLaunched;
 
   /// Message after restoring a Steam game

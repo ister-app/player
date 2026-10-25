@@ -3036,7 +3036,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gameSteamLaunched =>
-      'Steam is starting the game. Press \"I finished playing\" afterwards to sync your saves.';
+      'Steam is starting the game. Your saves are synced when you quit it; if that does not happen, press \"I finished playing\".';
 
   @override
   String get gameSteamRestartHint =>

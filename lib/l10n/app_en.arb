@@ -3216,7 +3216,7 @@
   },
   "gameFinishedPlaying": "I finished playing",
   "@gameFinishedPlaying": {
-    "description": "Game page: ends a Steam session (the app cannot see Steam's process) and syncs saves"
+    "description": "Game page: ends a Steam session by hand (the app notices the game quitting where it can) and syncs saves"
   },
   "gameInstall": "Install ({size})",
   "@gameInstall": {
@@ -3287,7 +3287,7 @@
   "@gamePs3FirmwareMissing": {
     "description": "Launch problem: RPCS3 firmware missing"
   },
-  "gameSteamLaunched": "Steam is starting the game. Press \"I finished playing\" afterwards to sync your saves.",
+  "gameSteamLaunched": "Steam is starting the game. Your saves are synced when you quit it; if that does not happen, press \"I finished playing\".",
   "@gameSteamLaunched": {
     "description": "Message after a Steam launch"
   },

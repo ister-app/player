@@ -33,6 +33,7 @@ import 'saves/SavePathResolver.dart';
 import 'saves/SaveSnapshot.dart';
 import 'saves/SaveSyncService.dart';
 import 'steam/SteamLibraryLocator.dart';
+import 'steam/SteamRunningProbe.dart';
 
 export 'GameInstallProgress.dart' show GameInstallProgress;
 
@@ -117,12 +118,15 @@ class GameLibraryService {
     Future<List<String>> Function()? servers,
     Future<void> Function(String serverName, String gameId, Duration duration)? recordPlayed,
     ActivityPresenceService? presence,
+    SteamRunningProbe? steamProbe,
+    this.steamPollInterval = const Duration(seconds: 5),
     this.deviceName = '',
   })  : store = store ?? GameInstallStore(),
         _presence = presence ?? ActivityPresenceService.instance,
         _http = http ?? DownloadHttp(maxAttempts: 6, bodyTimeout: const Duration(hours: 6)),
         _apiFactory = apiFactory ?? GameApi.new,
         _runner = runner ?? GameProcessRunner(),
+        _steamProbe = steamProbe ?? SteamRunningProbe(runner: runner),
         registry = registry ?? EmulatorRegistry(),
         steam = steam ?? SteamLibraryLocator(),
         localCopies = localCopies ?? LocalGameCopyFinder(steam: steam),
@@ -141,6 +145,11 @@ class GameLibraryService {
   final DownloadHttp _http;
   final GameApi Function(String serverName) _apiFactory;
   final GameProcessRunner _runner;
+
+  /// Watches a detached Steam session so it wraps up when the game exits.
+  final SteamRunningProbe _steamProbe;
+  final Duration steamPollInterval;
+  final Map<String, Timer> _steamWatches = {};
   final DateTime Function() _clock;
   final Future<List<String>> Function() _servers;
   final Future<void> Function(String serverName, String gameId, Duration duration)? _recordPlayedOverride;
@@ -793,6 +802,7 @@ class GameLibraryService {
         return GameSessionResult(duration: Duration.zero, errors: [e.toString()]);
       }
       phaseOf(game.id).value = GamePlayPhase.running;
+      _watchSteamSession(serverName, game, session);
       return null;
     }
     try {
@@ -829,6 +839,7 @@ class GameLibraryService {
       phaseOf(game.id).value = GamePlayPhase.running;
       // A detached (Steam) game may well still be running.
       _beginPresence(serverName, game.id);
+      _watchSteamSession(serverName, game, session);
       return session;
     } on LaunchException {
       // The emulator went away; the saves can still be pushed without a plan
@@ -919,7 +930,54 @@ class GameLibraryService {
     return result;
   }
 
+  /// Polls Steam until the game of [session] has been seen running and is
+  /// gone again, then runs [finishDetached]. Gives up silently when Steam's
+  /// state cannot be read (the "I finished playing" button stays), and when
+  /// the session ends some other way. Seen-running first: right after the
+  /// launch Steam may still be updating or starting the game. A restored
+  /// session is only followed when the game is still running.
+  void _watchSteamSession(String serverName, Query$gameById$gameById game, GameSession session) {
+    final appId = session.install.steamAppId;
+    if (!session.detached || appId == null || _steamWatches.containsKey(game.id)) return;
+    var seenRunning = false;
+    var probing = false;
+    void stop() => _steamWatches.remove(game.id)?.cancel();
+    _steamWatches[game.id] = Timer.periodic(steamPollInterval, (_) async {
+      if (probing) return;
+      if (sessionOf(game.id).value != session || phaseOf(game.id).value != GamePlayPhase.running) {
+        stop();
+        return;
+      }
+      probing = true;
+      try {
+        final running = await _steamProbe.isRunning(appId);
+        if (sessionOf(game.id).value != session || phaseOf(game.id).value != GamePlayPhase.running) {
+          stop();
+        } else if (running == null) {
+          LoggerService().logger.i('Cannot tell whether Steam app $appId runs; leaving the session to the user');
+          stop();
+        } else if (running) {
+          seenRunning = true;
+        } else if (session.restored && !seenRunning) {
+          // Ended while the app was closed: when is unknown, so the play
+          // time is the user's call (the restored-session card asks).
+          stop();
+        } else if (seenRunning) {
+          stop();
+          LoggerService().logger.i('Steam app $appId exited; wrapping up the session');
+          await finishDetached(serverName, game);
+        }
+      } catch (e) {
+        LoggerService().logger.w('Steam session watch failed: $e');
+        stop();
+      } finally {
+        probing = false;
+      }
+    });
+  }
+
   Future<void> _clearSession(String serverName, GameInstall install) async {
+    _steamWatches.remove(install.gameId)?.cancel();
     unawaited(_presenceHandles.remove(_presenceKey(serverName, install.gameId))?.end());
     install
       ..sessionStartedAt = null

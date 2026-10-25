@@ -11,6 +11,7 @@ import 'package:player/utils/games/GameInstallStore.dart';
 import 'package:player/utils/games/GameLibraryService.dart';
 import 'package:player/utils/games/launch/GameProcessRunner.dart';
 import 'package:player/utils/games/steam/SteamLibraryLocator.dart';
+import 'package:player/utils/games/steam/SteamRunningProbe.dart';
 import 'package:player/utils/upload/games/Rpcs3Locator.dart';
 import 'package:player/utils/games/launch/EmulatorRegistry.dart';
 import 'package:player/utils/games/LocalGameCopy.dart';
@@ -43,6 +44,16 @@ class FakeRunner extends GameProcessRunner {
   }
 }
 
+/// Answers [isRunning] from a script, one value per probe (the last repeats).
+class ScriptedSteamProbe extends SteamRunningProbe {
+  ScriptedSteamProbe(this.answers);
+  final List<bool?> answers;
+  int probes = 0;
+
+  @override
+  Future<bool?> isRunning(int appId) async => answers[(probes++).clamp(0, answers.length - 1)];
+}
+
 const server = 'https://srv.example';
 final slug = DownloadStore.slug(server);
 
@@ -72,10 +83,12 @@ void main() {
 
   Map<String, String> env() => {'HOME': tmp.path, 'XDG_CONFIG_HOME': '${tmp.path}/.config'};
 
-  GameLibraryService service({GameInstallStore? store, ActivityPresenceService? presence}) =>
+  GameLibraryService service({GameInstallStore? store, ActivityPresenceService? presence, SteamRunningProbe? steamProbe}) =>
       GameLibraryService.forTest(
         runner: runner,
         presence: presence,
+        steamProbe: steamProbe,
+        steamPollInterval: const Duration(milliseconds: 10),
         registry: EmulatorRegistry(runner: runner, environment: env()),
         steam: SteamLibraryLocator(environment: env()),
         localCopies: LocalGameCopyFinder(steam: SteamLibraryLocator(environment: env()), rpcs3: Rpcs3Locator(environment: env())),
@@ -570,6 +583,72 @@ void main() {
       expect(prepared.plan.arguments, contains('steam://rungameid/620'));
       expect(File('${tmp.path}/.local/share/Steam/steamapps/appmanifest_620.acf').readAsStringSync(), before,
           reason: 'Steam owns the acf');
+    });
+
+    Future<(GameLibraryService, dynamic)> adoptedSteamGame(SteamRunningProbe probe) async {
+      write('.local/share/Steam/steamapps/appmanifest_620.acf',
+          '"AppState" { "appid" "620" "name" "Portal 2" "StateFlags" "4" "installdir" "Portal 2" }');
+      write('.local/share/Steam/steamapps/common/Portal 2/portal2.sh', '');
+      runner.runnable.add('steam');
+      fake.games['g1'] = [];
+      final s = service(steamProbe: probe);
+      final game = gameFixture(form: 'STEAM', platform: 'STEAM', steamAppId: '620', version: 'v1');
+      await s.adopt(server, game, (await s.findLocalCopy(server, game))!);
+      return (s, game);
+    }
+
+    test('a Steam session wraps itself up once the game has run and exited', () async {
+      final probe = ScriptedSteamProbe([false, false, true, true, false]);
+      final (s, game) = await adoptedSteamGame(probe);
+      final result = await s.launch(server, game, (await s.prepare(server, game)).plan);
+      expect(result, isNull, reason: 'detached');
+      expect(s.phaseOf('g1').value, GamePlayPhase.running);
+
+      await until(() => s.lastResultOf('g1').value != null);
+      expect(probe.probes, 5, reason: 'not before it was seen running, and no probing after');
+      expect(recorded.single.$1, 'g1');
+      expect(s.sessionOf('g1').value, isNull);
+      expect((await s.store.get(server, 'g1'))!.hasOpenSession, isFalse);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(probe.probes, 5);
+    });
+
+    test('when Steam cannot be asked, the session waits for "I finished playing"', () async {
+      final probe = ScriptedSteamProbe([null]);
+      final (s, game) = await adoptedSteamGame(probe);
+      await s.launch(server, game, (await s.prepare(server, game)).plan);
+      await until(() => probe.probes > 0);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(probe.probes, 1);
+      expect(s.sessionOf('g1').value, isNotNull);
+      expect(recorded, isEmpty);
+    });
+
+    test('finishing by hand stops the watch', () async {
+      final probe = ScriptedSteamProbe([true]);
+      final (s, game) = await adoptedSteamGame(probe);
+      await s.launch(server, game, (await s.prepare(server, game)).plan);
+      await until(() => probe.probes > 1);
+      await s.finishDetached(server, game);
+      final probes = probe.probes;
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(probe.probes, probes);
+      expect(recorded, hasLength(1));
+    });
+
+    test('a restored Steam session that is no longer running is left to the user', () async {
+      final probe = ScriptedSteamProbe([false]);
+      final (s, game) = await adoptedSteamGame(probe);
+      final install = (await s.store.get(server, 'g1'))!
+        ..sessionStartedAt = DateTime(2026, 1, 1, 12)
+        ..sessionDetached = true;
+      await s.store.put(server, install);
+      await s.restoreSession(server, game);
+      await until(() => probe.probes > 0);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(probe.probes, 1);
+      expect(s.sessionOf('g1').value?.restored, isTrue);
+      expect(recorded, isEmpty);
     });
   });
 }
