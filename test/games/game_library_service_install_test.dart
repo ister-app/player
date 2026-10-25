@@ -42,6 +42,12 @@ class FakeRunner extends GameProcessRunner {
     lastArguments = arguments;
     return const GameProcessResult(exitCode: 0, duration: Duration(minutes: 3), stderrTail: '');
   }
+
+  /// Steam launches: recorded, never started (a real `steam` would launch the game).
+  final List<List<String>> detached = [];
+
+  @override
+  Future<void> detach(String command, List<String> arguments) async => detached.add([command, ...arguments]);
 }
 
 /// Answers [isRunning] from a script, one value per probe (the last repeats).
@@ -602,6 +608,7 @@ void main() {
       final (s, game) = await adoptedSteamGame(probe);
       final result = await s.launch(server, game, (await s.prepare(server, game)).plan);
       expect(result, isNull, reason: 'detached');
+      expect(runner.detached.single, ['steam', 'steam://rungameid/620']);
       expect(s.phaseOf('g1').value, GamePlayPhase.running);
 
       await until(() => s.lastResultOf('g1').value != null);
