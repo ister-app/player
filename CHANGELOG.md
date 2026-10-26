@@ -1,5 +1,37 @@
 # Changelog
 
+## player v2.17.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.17.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(games): wrap up Steam sessions when the game exits ([`fedf0d4`](https://github.com/ister-app/player/commit/fedf0d4))
+- feat(upload): offer to continue an interrupted upload from the server home ([`d0256c9`](https://github.com/ister-app/player/commit/d0256c9))
+
+### Fixes
+
+- fix(games): fetch Steam achievement icons from the CDN ([`99e7512`](https://github.com/ister-app/player/commit/99e7512))
+
+### Other
+
+- test(games): never start Steam from the session-watch tests ([`1c9518d`](https://github.com/ister-app/player/commit/1c9518d))
+- perf(upload): stream chunks from a background isolate ([`a3163c1`](https://github.com/ister-app/player/commit/a3163c1))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.17.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.16.0...v2.17.0
+
 ## player v2.16.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
