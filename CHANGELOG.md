@@ -1,5 +1,31 @@
 # Changelog
 
+## player v2.17.1
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.17.1` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Fixes
+
+- fix(docker): apk upgrade on top of nginx-unprivileged ([`8946ada`](https://github.com/ister-app/player/commit/8946ada))
+
+### Other
+
+- ci(e2e): diagnose stalled segment detection and keep the full pod logs ([`866b7a3`](https://github.com/ister-app/player/commit/866b7a3))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.17.1
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.17.0...v2.17.1
+
 ## player v2.17.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
