@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -52,6 +54,27 @@ void main() {
       },
       timeout: const Duration(minutes: 5),
       description: 'segment detection to produce INTRO and OUTRO',
+      // Which step of the server's chain stalled: an episode without a media
+      // file (scan message lost), a file without a duration (analysis never
+      // ran), or analysed files without segments (detection ran and missed) —
+      // plus whatever the server dead-lettered.
+      diagnose: () async {
+        final ids = (episodes['episodes']['content'] as List)
+            .where((e) =>
+                e['show']?['name'] == 'Cicada' && e['season']?['number'] == 1)
+            .map((e) => e['id'] as String);
+        final season = <String>[];
+        for (final id in ids) {
+          final data = await gqlRaw('{ episodeById(id: "$id") { number '
+              'mediaFile { path durationInMilliseconds segments { type '
+              'startInMilliseconds endInMilliseconds } } } }');
+          season.add(jsonEncode(data['episodeById']));
+        }
+        final failures = await gqlRaw('{ serverActivitySnapshot { '
+            'recentFailures { queue eventType errorMessage occurredAt } } }');
+        return 'Cicada season 1: $season; dead-lettered: '
+            '${jsonEncode(failures['serverActivitySnapshot']['recentFailures'])}';
+      },
     );
 
     final intro = segments.firstWhere((s) => s['type'] == 'INTRO');

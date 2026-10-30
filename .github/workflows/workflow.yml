@@ -493,15 +493,49 @@ jobs:
           free -m || true
           docker exec ister-control-plane dmesg 2>/dev/null | grep -iE "oom|killed process|out of memory" | tail -20 || true
           sudo dmesg 2>/dev/null | grep -iE "oom|killed process|out of memory" | tail -20 || true
+          # Server-side pipeline state. A message that exhausted its retries sits in a
+          # dead-letter queue; a test waiting on server work (segment detection after
+          # the scan) only says *that* nothing arrived, these say where it stopped.
+          echo "----- rabbitmq queues (messages / consumers)"
+          kubectl exec -n ister ister-rabbitmq-0 -c rabbitmq -- \
+            rabbitmqctl list_queues -q name messages consumers 2>/dev/null \
+            | awk 'NR == 1 || $2 > 0 || $1 ~ /dead|dlq/' || true
+          echo "----- episodes per season: media files, analysed, segment-detected, segments"
+          kubectl exec -n ister deploy/ister-database -c postgres -- sh -c \
+            'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -P pager=off -c "
+              SELECT s.name AS show, se.number AS season, count(DISTINCT e.id) AS episodes,
+                     count(DISTINCT mf.id) AS files,
+                     count(DISTINCT mf.id) FILTER (WHERE mf.duration_in_milliseconds > 0) AS analysed,
+                     count(DISTINCT mf.id) FILTER (WHERE mf.segment_detector_version IS NOT NULL) AS detected,
+                     count(DISTINCT seg.id) AS segments
+              FROM show_entity s
+              JOIN season_entity se ON se.show_entity_id = s.id
+              JOIN episode_entity e ON e.season_entity_id = se.id
+              LEFT JOIN media_file_entity mf ON mf.episode_entity_id = e.id
+              LEFT JOIN media_file_segment_entity seg ON seg.media_file_entity_id = mf.id
+              GROUP BY s.name, se.number ORDER BY s.name, se.number"' || true
+          # Full logs go to the e2e-pod-logs artifact: the server's scan burst is long
+          # gone from a 2000-line tail by the time a late test fails.
+          logs_dir="$RUNNER_TEMP/e2e-pod-logs"
+          mkdir -p "$logs_dir"
           kubectl get pods -n ister -o name | while read -r p; do
             echo "----- $p"
+            kubectl logs -n ister "$p" --all-containers --prefix > "$logs_dir/${p#pod/}.log" 2>&1 || true
             # 2000, not 100: a single Java stacktrace is ~100 lines, so a small
             # tail can show one exception and nothing of what preceded it.
-            kubectl logs -n ister "$p" --all-containers --prefix --tail=2000 || true
+            tail -n 2000 "$logs_dir/${p#pod/}.log"
             # The log of the *previous* instance of a restarted container is where
             # the final moments before the kill are.
             kubectl logs -n ister "$p" --all-containers --prefix --previous --tail=200 2>/dev/null || true
           done
+
+      - name: Upload full pod logs
+        if: failure() && steps.chart-e2e.outputs.supported == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-pod-logs
+          path: ${{ runner.temp }}/e2e-pod-logs
+          if-no-files-found: ignore
 
   flatpak:
     needs: build

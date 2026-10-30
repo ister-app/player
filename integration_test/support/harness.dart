@@ -243,11 +243,16 @@ Future<void> tapVideoPlay(
 }
 
 /// Pumps frames until [condition] returns true, or fails after [timeout].
+///
+/// [diagnose] runs once on a timeout and its result goes into the failure (and
+/// the live trace): for a wait on server-side work, the server state that
+/// explains *why* it never arrived — the visible texts alone say nothing there.
 Future<void> pumpUntil(
   WidgetTester tester,
   bool Function() condition, {
   Duration timeout = const Duration(seconds: 30),
   String description = 'condition',
+  Future<String> Function()? diagnose,
 }) async {
   trace('waiting for $description');
   final deadline = DateTime.now().add(timeout);
@@ -261,7 +266,17 @@ Future<void> pumpUntil(
       .map((e) => (e.widget as Text).data)
       .whereType<String>()
       .toList();
+  var diagnosis = '';
+  if (diagnose != null) {
+    try {
+      diagnosis = await diagnose().timeout(const Duration(seconds: 20));
+    } catch (e) {
+      diagnosis = 'diagnose failed: $e';
+    }
+    trace('diagnosis for $description: $diagnosis');
+  }
   fail('Timed out after $timeout waiting for $description; '
+      '${diagnosis.isEmpty ? '' : 'diagnosis: $diagnosis; '}'
       'visible texts: $texts');
 }
 
