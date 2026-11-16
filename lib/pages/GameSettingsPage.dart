@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:player/utils/DirectoryPicker.dart';
 import 'package:player/utils/games/GameLibraryService.dart';
 import 'package:player/utils/games/GameSettings.dart';
 import 'package:player/utils/games/launch/EmulatorRegistry.dart';
@@ -241,7 +242,7 @@ class _GameSettingsPageState extends State<GameSettingsPage> {
   }
 
   Future<void> _addSource() async {
-    final picked = await (widget.pickDirectory ?? FilePicker.getDirectoryPath)();
+    final picked = await (widget.pickDirectory ?? pickDirectoryPath)();
     if (picked == null || picked.isEmpty) return;
     // Adding to the defaults keeps them: the user list starts as a copy.
     final current = _sourcesAreDefaults ? _defaultSources : _sources;
@@ -255,7 +256,7 @@ class _GameSettingsPageState extends State<GameSettingsPage> {
   }
 
   Future<void> _pickRoot() async {
-    final picked = await FilePicker.getDirectoryPath();
+    final picked = await pickDirectoryPath();
     if (picked != null) await _setRoot(picked);
   }
 

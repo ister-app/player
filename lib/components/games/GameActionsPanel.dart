@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:player/graphql/gameById.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 import 'package:player/routes/AppRouter.gr.dart';
 import 'package:player/utils/AppMessenger.dart';
+import 'package:player/utils/DirectoryPicker.dart';
 import 'package:player/utils/games/GameInstallStore.dart';
 import 'package:player/utils/games/GameLabels.dart';
 import 'package:player/utils/games/GameLibraryService.dart';
@@ -472,7 +472,7 @@ class _GameActionsPanelState extends State<GameActionsPanel> {
     if (!mounted) return null;
     if (libraries.isEmpty) {
       // No Steam found: let the user point at a library folder by hand.
-      final picked = await FilePicker.getDirectoryPath(dialogTitle: loc.gamePickSteamLibrary);
+      final picked = await pickDirectoryPath(dialogTitle: loc.gamePickSteamLibrary);
       if (picked == null) return null;
       return SteamLibrary(path: picked, label: picked);
     }

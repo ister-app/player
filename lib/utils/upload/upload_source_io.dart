@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
+import '../DirectoryPicker.dart';
 
 import 'UploadSource.dart';
 import 'upload_source_native.dart';
@@ -12,7 +12,7 @@ bool get supported =>
 
 Future<UploadSourceFolder?> pickFolder() async {
   if (Platform.isAndroid || Platform.isIOS) return pickNativeFolder();
-  final path = await FilePicker.getDirectoryPath();
+  final path = await pickDirectoryPath();
   if (path == null) return null;
   return folderFromDirectory(Directory(path));
 }
