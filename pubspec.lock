@@ -78,7 +78,7 @@ packages:
     description:
       path: audio_service
       ref: "feat/carplay-audio"
-      resolved-ref: "0fc3921fcb9fa8b945edc0f1040d4b42ff880798"
+      resolved-ref: af141e0d64a2766297f2032825070f9a7836302a
       url: "https://github.com/ister-app/audio_service"
     source: git
     version: "0.18.19"
@@ -1001,8 +1001,8 @@ packages:
     dependency: "direct main"
     description:
       path: media_kit
-      ref: "540eaebaa995bbb0f8158a541c3296f2898260d6"
-      resolved-ref: "540eaebaa995bbb0f8158a541c3296f2898260d6"
+      ref: "5acea1d194a7f6e5f1c8c3d0db27c3d5d7f70d35"
+      resolved-ref: "5acea1d194a7f6e5f1c8c3d0db27c3d5d7f70d35"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.2.6"
@@ -1010,8 +1010,8 @@ packages:
     dependency: "direct overridden"
     description:
       path: "libs/android/media_kit_libs_android_video"
-      ref: "540eaebaa995bbb0f8158a541c3296f2898260d6"
-      resolved-ref: "540eaebaa995bbb0f8158a541c3296f2898260d6"
+      ref: "5acea1d194a7f6e5f1c8c3d0db27c3d5d7f70d35"
+      resolved-ref: "5acea1d194a7f6e5f1c8c3d0db27c3d5d7f70d35"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.3.9"
@@ -1019,8 +1019,8 @@ packages:
     dependency: "direct overridden"
     description:
       path: "libs/ios/media_kit_libs_ios_video"
-      ref: "540eaebaa995bbb0f8158a541c3296f2898260d6"
-      resolved-ref: "540eaebaa995bbb0f8158a541c3296f2898260d6"
+      ref: "5acea1d194a7f6e5f1c8c3d0db27c3d5d7f70d35"
+      resolved-ref: "5acea1d194a7f6e5f1c8c3d0db27c3d5d7f70d35"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.1.5"
@@ -1028,8 +1028,8 @@ packages:
     dependency: "direct overridden"
     description:
       path: "libs/linux/media_kit_libs_linux"
-      ref: "540eaebaa995bbb0f8158a541c3296f2898260d6"
-      resolved-ref: "540eaebaa995bbb0f8158a541c3296f2898260d6"
+      ref: "5acea1d194a7f6e5f1c8c3d0db27c3d5d7f70d35"
+      resolved-ref: "5acea1d194a7f6e5f1c8c3d0db27c3d5d7f70d35"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.2.1"
@@ -1037,8 +1037,8 @@ packages:
     dependency: "direct overridden"
     description:
       path: "libs/macos/media_kit_libs_macos_video"
-      ref: "540eaebaa995bbb0f8158a541c3296f2898260d6"
-      resolved-ref: "540eaebaa995bbb0f8158a541c3296f2898260d6"
+      ref: "5acea1d194a7f6e5f1c8c3d0db27c3d5d7f70d35"
+      resolved-ref: "5acea1d194a7f6e5f1c8c3d0db27c3d5d7f70d35"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.1.5"
@@ -1046,8 +1046,8 @@ packages:
     dependency: "direct main"
     description:
       path: "libs/universal/media_kit_libs_video"
-      ref: "540eaebaa995bbb0f8158a541c3296f2898260d6"
-      resolved-ref: "540eaebaa995bbb0f8158a541c3296f2898260d6"
+      ref: "5acea1d194a7f6e5f1c8c3d0db27c3d5d7f70d35"
+      resolved-ref: "5acea1d194a7f6e5f1c8c3d0db27c3d5d7f70d35"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.0.8"
@@ -1055,8 +1055,8 @@ packages:
     dependency: "direct overridden"
     description:
       path: "libs/windows/media_kit_libs_windows_video"
-      ref: "540eaebaa995bbb0f8158a541c3296f2898260d6"
-      resolved-ref: "540eaebaa995bbb0f8158a541c3296f2898260d6"
+      ref: "5acea1d194a7f6e5f1c8c3d0db27c3d5d7f70d35"
+      resolved-ref: "5acea1d194a7f6e5f1c8c3d0db27c3d5d7f70d35"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "1.0.12"
@@ -1064,8 +1064,8 @@ packages:
     dependency: "direct main"
     description:
       path: media_kit_video
-      ref: "540eaebaa995bbb0f8158a541c3296f2898260d6"
-      resolved-ref: "540eaebaa995bbb0f8158a541c3296f2898260d6"
+      ref: "5acea1d194a7f6e5f1c8c3d0db27c3d5d7f70d35"
+      resolved-ref: "5acea1d194a7f6e5f1c8c3d0db27c3d5d7f70d35"
       url: "https://github.com/ister-app/media-kit"
     source: git
     version: "2.0.1"
