@@ -295,6 +295,9 @@ class GameLaunchers {
       await for (final entity in files.list(followLinks: false)) {
         if (entity is File && !entity.path.endsWith('.part')) candidates.add(entity);
       }
+      // Directory listings come in file-system order; sort so a multi-file
+      // game starts from the same file on every machine and every run.
+      candidates.sort((a, b) => a.path.compareTo(b.path));
       final entry = candidates.where((f) => _isEntryName(install.platform, f.path)).firstOrNull ?? candidates.firstOrNull;
       if (entry != null) return entry;
     }
