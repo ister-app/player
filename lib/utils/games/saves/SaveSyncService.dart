@@ -56,7 +56,13 @@ class SaveSyncService {
     if (head.version <= install.lastSaveVersion) {
       return SavePullResult(SavePullOutcome.upToDate, serverHead: head, localFingerprint: fingerprint);
     }
-    final localChanged = install.lastSaveSha != null && install.lastSaveSha != fingerprint;
+    // Never synced on this device (a fresh install record, an adopted
+    // Steam/RPCS3 copy, a reinstall next to save folders that stayed behind):
+    // any save already there is the user's own progress, not something the
+    // server head may silently replace.
+    final localChanged = install.lastSaveSha == null
+        ? await SaveSnapshot.newestModified(slots) != null
+        : install.lastSaveSha != fingerprint;
     if (localChanged) {
       return SavePullResult(SavePullOutcome.conflict, serverHead: head, localFingerprint: fingerprint);
     }

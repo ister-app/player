@@ -64,7 +64,11 @@ class GameProcessRunner {
     final process = await Process.start(executable, args,
         workingDirectory: workingDirectory, environment: environment, runInShell: false);
     final stderrTail = <String>[];
-    final stderrDone = process.stderr.transform(utf8.decoder).transform(const LineSplitter()).listen((line) {
+    final stderrDone = process.stderr
+        // Lenient like stdout: one non-UTF-8 byte (Wine, Shift-JIS) used to
+        // end the listener, after which nobody drained the game's stderr.
+        .transform(const Utf8Decoder(allowMalformed: true))
+        .transform(const LineSplitter()).listen((line) {
       stderrTail.add(line);
       if (stderrTail.length > 40) stderrTail.removeAt(0);
     }).asFuture<void>();
