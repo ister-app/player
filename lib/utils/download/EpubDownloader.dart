@@ -1,3 +1,4 @@
+import 'package:player/utils/download/SafePath.dart';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
@@ -79,7 +80,7 @@ class EpubDownloader {
       package.opfPath,
       for (final item in package.manifest.values)
         if (!_skipped(item, withAudio: withAudio)) item.href,
-    }.where((href) => href.isNotEmpty && !href.startsWith('/')).toList();
+    }.where(isSafeRelativePath).toList();
 
     var done = 0;
     var bytes = await DownloadHttp.existingBytes(dir);

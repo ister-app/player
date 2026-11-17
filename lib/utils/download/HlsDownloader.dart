@@ -1,3 +1,4 @@
+import 'package:player/utils/download/SafePath.dart';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
@@ -188,7 +189,7 @@ class HlsDownloader implements HlsDownloaderApi {
           serverName, _fileUrl(nodeUrl, mediaFileId, name), cancel,
           timeout: segmentTimeout);
       await DownloadHttp.writeAtomic(
-          File('${dir.path}/$name'), M3u8.rewriteMediaPlaylist(text));
+          safeFile(dir, name), M3u8.rewriteMediaPlaylist(text));
       work.add(
           [for (final uri in M3u8.parseSegmentUris(text)) if (seen.add(uri)) uri]);
     }
@@ -316,7 +317,7 @@ class HlsDownloader implements HlsDownloaderApi {
         if (at >= names.length) return;
         final name = names[at];
         try {
-          final target = File('${dir.path}/$name');
+          final target = safeFile(dir, name);
           if (await target.exists()) {
             onSegmentDone(0);
             continue;
@@ -409,13 +410,15 @@ class HlsDownloader implements HlsDownloaderApi {
     var bytes = 0;
     for (final sheet in BitmapSubtitleIndex.parse(json).sheets) {
       DownloadHttp.checkCancel(cancel);
-      final target = File('${dir.path}/$sheet');
+      final target = safeFile(dir, sheet);
       if (await target.exists()) continue;
       bytes += await _http.getToFile(
           serverName, _fileUrl(nodeUrl, mediaFileId, sheet), target, cancel,
           timeout: segmentTimeout);
     }
-    await indexFile.writeAsString(json);
+    // Atomic: the index on disk *is* the record that this track was
+    // mirrored, so a half-written one must never be left behind.
+    await DownloadHttp.writeAtomic(indexFile, json);
     return bytes + json.length;
   }
 

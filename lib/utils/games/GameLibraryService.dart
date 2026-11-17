@@ -1,3 +1,4 @@
+import 'package:player/utils/download/SafePath.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
@@ -671,6 +672,11 @@ class GameLibraryService {
   }
 
   File _targetFor(Directory root, GameInstall install, GameManifestFile file) {
+    // The manifest names where to write (and, for an update, what to
+    // delete): never outside the game's own folder.
+    if (!isSafeRelativePath(file.path)) {
+      throw DownloadFailure('unsafe path in the game manifest: ${file.path}');
+    }
     final relative = file.path.replaceAll('/', Platform.pathSeparator);
     if (install.form == 'STEAM' && install.steamLibrary != null) {
       // appmanifest_<id>.acf lands in steamapps/, the tree in steamapps/common/<installdir>/.

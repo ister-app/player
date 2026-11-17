@@ -116,6 +116,8 @@ class SavePathResolver {
         .map(_norm)
         .toList();
     final normalized = _norm(path);
+    // A prefix test alone lets `<home>/../../x` through.
+    if (normalized.split('/').contains('..')) return false;
     return roots.any((root) => normalized == root || normalized.startsWith('$root/'));
   }
 

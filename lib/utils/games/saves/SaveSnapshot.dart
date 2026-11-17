@@ -1,3 +1,4 @@
+import 'package:player/utils/download/SafePath.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -96,7 +97,7 @@ class SaveSnapshot {
       final slot = index == null ? null : resolve(index);
       if (slot == null) continue;
       final relative = entry.name.substring(slash + 1);
-      if (relative.isEmpty || relative.split('/').any((s) => s == '..' || s.isEmpty)) continue;
+      if (!isSafeRelativePath(relative) || relative.split('/').any((s) => s.isEmpty)) continue;
       final slotIsFile = FileSystemEntity.typeSync(slot.path, followLinks: false) == FileSystemEntityType.file ||
           (!slot.path.endsWith('/') && !slot.path.endsWith(r'\') && _looksLikeFile(slot.template));
       final target = slotIsFile ? File(slot.path) : File('${slot.path}${Platform.pathSeparator}${relative.replaceAll('/', Platform.pathSeparator)}');
