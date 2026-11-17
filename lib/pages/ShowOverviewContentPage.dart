@@ -1,3 +1,4 @@
+import 'package:player/components/QueryErrorView.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
@@ -90,7 +91,7 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
                   skeleton: true,
                   relatedRow: const RelatedShowsRowSkeleton()));
         } else if (result.hasException) {
-          body = Text(result.exception.toString());
+          body = QueryErrorView(exception: result.exception, onRetry: refetch);
         } else {
           final parsedData = Query$showById.fromJson(result.data!);
 

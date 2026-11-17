@@ -192,11 +192,15 @@ class SettingsErrorState extends StatelessWidget {
   final String? details;
   final String detailsLabel;
 
+  /// A way forward under the headline — typically a retry button.
+  final Widget? action;
+
   const SettingsErrorState({
     super.key,
     required this.message,
     required this.detailsLabel,
     this.details,
+    this.action,
   });
 
   @override
@@ -217,6 +221,10 @@ class SettingsErrorState extends StatelessWidget {
               Text(message,
                   style: theme.textTheme.titleMedium,
                   textAlign: TextAlign.center),
+              if (action != null) ...[
+                const SizedBox(height: 16),
+                action!,
+              ],
               if (details != null) ...[
                 const SizedBox(height: 8),
                 ExpansionTile(

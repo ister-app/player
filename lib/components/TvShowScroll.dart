@@ -1,3 +1,4 @@
+import 'package:player/components/QueryErrorView.dart';
 import 'package:auto_route/auto_route.dart' show AutoRouter;
 import 'package:material_ui/material_ui.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -115,7 +116,7 @@ class _TvShowScrollState extends State<TvShowScroll> {
         }
 
         if (result.hasException && _pageData.isEmpty) {
-          return Center(child: Text(result.exception.toString()));
+          return QueryErrorView(exception: result.exception, onRetry: refetch);
         }
 
         final int itemCount = _totalItems ?? (_pageSize * 2);

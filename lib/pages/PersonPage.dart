@@ -1,3 +1,4 @@
+import 'package:player/components/QueryErrorView.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:gql/ast.dart';
@@ -132,7 +133,7 @@ class _PersonPageState extends State<PersonPage> {
           if (result.hasException) {
             return Scaffold(
               appBar: AppBar(),
-              body: Center(child: Text(result.exception.toString())),
+              body: QueryErrorView(exception: result.exception, onRetry: refetch),
             );
           }
 

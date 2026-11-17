@@ -1,3 +1,4 @@
+import 'package:player/components/QueryErrorView.dart';
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
@@ -209,7 +210,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
           {VoidCallback? refetch, FetchMore? fetchMore}) {
         _refetch = refetch;
         if (result.hasException) {
-          return Center(child: Text(result.exception.toString()));
+          return QueryErrorView(exception: result.exception, onRetry: refetch);
         // Skeletonize only while there is nothing to show: with
         // `cacheAndNetwork` every revalidation reports `isLoading` over a
         // perfectly good cached result, which flashed the whole page away.

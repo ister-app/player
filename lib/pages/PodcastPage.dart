@@ -1,3 +1,4 @@
+import 'package:player/components/QueryErrorView.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:player/utils/PermissionsService.dart';
@@ -268,7 +269,7 @@ class _PodcastPageState extends State<PodcastPage> {
         if (result.hasException) {
           return Scaffold(
             appBar: AppBar(),
-            body: Center(child: Text(result.exception.toString())),
+            body: QueryErrorView(exception: result.exception, onRetry: refetch),
           );
         }
 

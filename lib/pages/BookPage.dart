@@ -1,3 +1,4 @@
+import 'package:player/components/QueryErrorView.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -273,7 +274,7 @@ class _BookPageState extends State<BookPage> {
         if (result.hasException) {
           return Scaffold(
             appBar: AppBar(),
-            body: Center(child: Text(result.exception.toString())),
+            body: QueryErrorView(exception: result.exception, onRetry: refetch),
           );
         }
 

@@ -1,3 +1,4 @@
+import 'package:player/components/QueryErrorView.dart';
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
@@ -84,7 +85,7 @@ class _SeriesPageState extends State<SeriesPage> {
             if (result.hasException) {
               return Scaffold(
                 appBar: AppBar(),
-                body: Center(child: Text(result.exception.toString())),
+                body: QueryErrorView(exception: result.exception, onRetry: refetch),
               );
             }
 

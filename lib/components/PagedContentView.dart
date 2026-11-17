@@ -1,3 +1,4 @@
+import 'package:player/components/QueryErrorView.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:gql/ast.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -183,7 +184,7 @@ class _PagedContentViewState<T> extends State<PagedContentView<T>> {
         }
 
         if (result.hasException && _pageData.isEmpty) {
-          return Center(child: Text(result.exception.toString()));
+          return QueryErrorView(exception: result.exception, onRetry: refetch);
         }
 
         return widget.builder(

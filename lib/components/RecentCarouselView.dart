@@ -1,3 +1,4 @@
+import 'package:player/components/QueryErrorView.dart';
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
@@ -100,7 +101,8 @@ class _RecentCarouselViewState extends State<RecentCarouselView> {
             widget.onEmptyView?.call();
             return const SizedBox.shrink();
           }
-          return Text(result.exception.toString());
+          return QueryErrorView.compact(
+              exception: result.exception, onRetry: refetch);
         }
 
         if (result.data == null) {

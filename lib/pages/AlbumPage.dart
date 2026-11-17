@@ -1,3 +1,4 @@
+import 'package:player/components/QueryErrorView.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:player/utils/TrackArtists.dart';
 import 'package:auto_route/auto_route.dart';
@@ -240,7 +241,7 @@ class _AlbumPageState extends State<AlbumPage> {
         if (result.hasException) {
           return Scaffold(
             appBar: AppBar(),
-            body: Center(child: Text(result.exception.toString())),
+            body: QueryErrorView(exception: result.exception, onRetry: refetch),
           );
         }
 

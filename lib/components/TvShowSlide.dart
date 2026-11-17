@@ -1,3 +1,4 @@
+import 'package:player/components/QueryErrorView.dart';
 import 'package:auto_route/auto_route.dart' show AutoRouter;
 import 'package:material_ui/material_ui.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -116,7 +117,7 @@ class _TvShowSlideState extends State<TvShowSlide> {
         final items = _orderedItems;
 
         if (result.hasException && items.isEmpty) {
-          return Center(child: Text(result.exception.toString()));
+          return QueryErrorView(exception: result.exception, onRetry: refetch);
         }
 
         final int placeholderCount = _totalItems == null

@@ -1,3 +1,4 @@
+import 'package:player/components/QueryErrorView.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -48,7 +49,7 @@ class ShowOverviewPage extends StatelessWidget {
           body = getContent(null);
         } else if (result.hasException) {
           title = Text("Show");
-          body = Text(result.exception.toString());
+          body = QueryErrorView(exception: result.exception, onRetry: refetch);
         } else if (show == null) {
           title = Text("Show");
           body = Text(AppLocalizations.of(context)!.noShowFound);

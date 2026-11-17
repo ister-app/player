@@ -1,3 +1,4 @@
+import 'package:player/components/QueryErrorView.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
@@ -45,7 +46,8 @@ class TvShowSeasonList extends StatelessWidget {
         builder: (QueryResult result,
             {VoidCallback? refetch, FetchMore? fetchMore}) {
           if (result.hasException) {
-            return Text(result.exception.toString());
+            return QueryErrorView.compact(
+              exception: result.exception, onRetry: refetch);
           }
 
           if (result.data == null) {
