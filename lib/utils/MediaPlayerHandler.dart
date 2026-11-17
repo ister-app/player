@@ -796,11 +796,17 @@ class MediaPlayerHandler extends BaseAudioHandler
         startMs,
       );
 
+      // A failed round-trip (5xx, timeout) comes back as null, not as an
+      // exception. Opening the stream anyway played it without a queue: no
+      // progress, no mini player, and a second tap restored the last music
+      // queue over it. Fail the start so the surface offers its retry.
+      if (playQueueObject == null) {
+        throw StateError('The play queue could not be loaded');
+      }
+
       queueTitle.add("Now Playing");
 
-      queue.add(playQueueObject == null
-          ? const []
-          : buildQueueMediaItems(playQueueObject, newServerName));
+      queue.add(buildQueueMediaItems(playQueueObject, newServerName));
 
       playQueue = playQueueObject;
       ensureCommandSubscription();
@@ -1016,11 +1022,17 @@ class MediaPlayerHandler extends BaseAudioHandler
         startMs,
       );
 
+      // A failed round-trip (5xx, timeout) comes back as null, not as an
+      // exception. Opening the stream anyway played it without a queue: no
+      // progress, no mini player, and a second tap restored the last music
+      // queue over it. Fail the start so the surface offers its retry.
+      if (playQueueObject == null) {
+        throw StateError('The play queue could not be loaded');
+      }
+
       queueTitle.add("Now Playing");
 
-      queue.add(playQueueObject == null
-          ? const []
-          : buildQueueMediaItems(playQueueObject, newServerName));
+      queue.add(buildQueueMediaItems(playQueueObject, newServerName));
 
       playQueue = playQueueObject;
       ensureCommandSubscription();
@@ -1085,19 +1097,29 @@ class MediaPlayerHandler extends BaseAudioHandler
         newAlbum.id,
         trackId,
       );
+      if (playQueueObject == null) {
+        // The round-trip failed and the previous stream is already silenced.
+        // Forget the tapped track so the next tap starts over instead of
+        // "resuming" a stream that never opened, and say why it is quiet.
+        album = null;
+        currentTrackId = null;
+        playQueue = null;
+        mediaLoading.value = false;
+        showAppSnackBar(IsterMediaService.loc.playbackStartFailed);
+        updatePlaybackState();
+        return;
+      }
 
       queueTitle.add("Now Playing");
 
-      queue.add(playQueueObject == null
-          ? const []
-          : buildQueueMediaItems(playQueueObject, newServerName));
+      queue.add(buildQueueMediaItems(playQueueObject, newServerName));
 
       playQueue = playQueueObject;
       ensureCommandSubscription();
       currentPlayQueueItem =
           PlayQueueService.getCurrentPlayQueueItem(playQueue);
 
-      final currentTrack = playQueueObject?.playQueueItems
+      final currentTrack = playQueueObject.playQueueItems
           ?.where((e) => e.track?.id == trackId)
           .firstOrNull
           ?.track;

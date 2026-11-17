@@ -1698,6 +1698,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get devicePullRequested => 'Moving playback to this device…';
 
   @override
+  String get playbackStartFailed =>
+      'Playback could not be started. Check the connection and try again.';
+
+  @override
   String get mediaNotReady =>
       'This item cannot be played yet — the media file is still being processed.';
 

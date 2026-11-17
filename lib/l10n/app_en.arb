@@ -1904,6 +1904,7 @@
   "@devicePullRequested": {
     "description": "Snackbar after the pull request was delivered to the playing device"
   },
+  "playbackStartFailed": "Playback could not be started. Check the connection and try again.",
   "mediaNotReady": "This item cannot be played yet — the media file is still being processed.",
   "@mediaNotReady": {
     "description": "Snackbar when playback is requested for an item whose media file has not been analyzed yet"

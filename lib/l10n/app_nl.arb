@@ -554,6 +554,7 @@
   "deviceCommandFailed": "Het apparaat accepteerde de opdracht niet. Mogelijk is het net offline gegaan.",
   "devicePullQueueHere": "Op dit apparaat afspelen",
   "devicePullRequested": "Afspelen wordt naar dit apparaat verplaatst…",
+  "playbackStartFailed": "Afspelen kon niet worden gestart. Controleer de verbinding en probeer het opnieuw.",
   "mediaNotReady": "Dit item kan nog niet worden afgespeeld — het mediabestand wordt nog verwerkt.",
   "@mediaNotReady": {
     "description": "Snackbar when playback is requested for an item whose media file has not been analyzed yet"

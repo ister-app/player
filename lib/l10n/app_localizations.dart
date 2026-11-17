@@ -2906,6 +2906,12 @@ abstract class AppLocalizations {
   /// **'Moving playback to this device…'**
   String get devicePullRequested;
 
+  /// No description provided for @playbackStartFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback could not be started. Check the connection and try again.'**
+  String get playbackStartFailed;
+
   /// Snackbar when playback is requested for an item whose media file has not been analyzed yet
   ///
   /// In en, this message translates to:

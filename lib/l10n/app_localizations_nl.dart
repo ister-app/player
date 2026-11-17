@@ -1703,6 +1703,10 @@ class AppLocalizationsNl extends AppLocalizations {
       'Afspelen wordt naar dit apparaat verplaatst…';
 
   @override
+  String get playbackStartFailed =>
+      'Afspelen kon niet worden gestart. Controleer de verbinding en probeer het opnieuw.';
+
+  @override
   String get mediaNotReady =>
       'Dit item kan nog niet worden afgespeeld — het mediabestand wordt nog verwerkt.';
 
