@@ -456,6 +456,7 @@ class _ShowEpisodePageState extends State<ShowEpisodePage> {
                   ],
                   builder: (_, MenuController controller, Widget? child) {
                     return IconButton(
+                      tooltip: AppLocalizations.of(context)?.moreOptions,
                       onPressed: () {
                         if (controller.isOpen) {
                           controller.close();

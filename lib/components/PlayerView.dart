@@ -580,6 +580,7 @@ class _PlayerViewState extends State<PlayerView>
       child: Row(
         children: [
           IconButton(
+            tooltip: AppLocalizations.of(context)?.close,
             icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 32),
             onPressed: dismiss,
           ),
@@ -1210,6 +1211,7 @@ class _Controls extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             IconButton(
+              tooltip: AppLocalizations.of(context)?.skipPrevious,
               icon: Icon(Icons.skip_previous,
                   color: hasPrevious ? Colors.white : Colors.white30),
               iconSize: 40,
@@ -1234,6 +1236,7 @@ class _Controls extends StatelessWidget {
               child: controller.buildPlayPauseButton(context),
             ),
             IconButton(
+              tooltip: AppLocalizations.of(context)?.skipNext,
               icon: Icon(Icons.skip_next,
                   color: hasNext ? Colors.white : Colors.white30),
               iconSize: 40,
@@ -1460,7 +1463,7 @@ class _RepeatButton extends StatelessWidget {
           color: controller.repeatActive ? color : Colors.white54,
         ),
         iconSize: 24,
-        tooltip: 'Repeat',
+        tooltip: AppLocalizations.of(context)?.repeat,
         onPressed: controller.cycleRepeatMode,
       ),
     );

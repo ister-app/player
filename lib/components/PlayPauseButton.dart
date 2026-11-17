@@ -1,3 +1,4 @@
+import 'package:player/l10n/app_localizations.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:player/utils/MediaPlayerHandler.dart';
@@ -32,7 +33,9 @@ class PlayPauseButton extends StatelessWidget {
             snapshot.data?.processingState == AudioProcessingState.buffering;
         final showSpinner = isLoading && !isPlaying;
 
+        final loc = AppLocalizations.of(context);
         return IconButton(
+          tooltip: isPlaying ? loc?.pause : loc?.play,
           iconSize: iconSize,
           icon: SizedBox.square(
             dimension: iconSize,

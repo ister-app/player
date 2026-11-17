@@ -761,7 +761,9 @@ class _RemotePlayerController
   @override
   Widget buildPlayPauseButton(BuildContext context) {
     final paused = _displayPaused();
+    final loc = AppLocalizations.of(context);
     return IconButton(
+      tooltip: paused ? loc?.play : loc?.pause,
       icon: Icon(paused ? Icons.play_arrow : Icons.pause, color: Colors.black),
       iconSize: 48,
       onPressed: sessionEnded

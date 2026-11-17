@@ -549,6 +549,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
             titleSpacing: 8,
             actions: [
               IconButton(
+                tooltip: AppLocalizations.of(context)?.search,
                 icon: const Icon(Icons.search),
                 // Switches to the search tab, scoped to this library.
                 onPressed: () => context.router.navigate(
@@ -559,7 +560,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
                   _showAdminActions)
                 IconButton(
                   icon: const Icon(Icons.add),
-                  tooltip: AppLocalizations.of(context)!.addPodcast,
+                  tooltip: AppLocalizations.of(context)?.addPodcast,
                   onPressed: () => showAddPodcastSheet(
                     context,
                     onSubscribed: triggerRefresh,
@@ -569,7 +570,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
                   _selectedLibraryType != Enum$LibraryType.PODCAST)
                 IconButton(
                   icon: const Icon(Icons.shuffle),
-                  tooltip: AppLocalizations.of(context)!.shufflePlay,
+                  tooltip: AppLocalizations.of(context)?.shufflePlay,
                   onPressed: () {
                     final client = GraphQLProvider.of(context).value;
                     MediaPlayerHandler.instance.startLibraryShuffle(
@@ -580,6 +581,7 @@ class _ShowHomePageState extends State<ShowHomePage> {
                   },
                 ),
               IconButton(
+                tooltip: AppLocalizations.of(context)?.refreshPage,
                 icon: const Icon(Icons.refresh),
                 onPressed: triggerRefresh,
               ),

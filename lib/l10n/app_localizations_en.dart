@@ -955,6 +955,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stopPlayback => 'Stop playback';
 
   @override
+  String get repeat => 'Repeat';
+
+  @override
+  String get clearSearch => 'Clear';
+
+  @override
+  String get removeCondition => 'Remove condition';
+
+  @override
+  String get decrease => 'Decrease';
+
+  @override
+  String get increase => 'Increase';
+
+  @override
+  String get changeFolder => 'Change folder';
+
+  @override
   String get moreOptions => 'More options';
 
   @override

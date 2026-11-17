@@ -307,6 +307,7 @@ class _PlaylistPageState extends State<PlaylistPage> {
                 ),
               ],
               builder: (_, MenuController controller, _) => IconButton(
+                tooltip: AppLocalizations.of(context)?.moreOptions,
                 icon: const Icon(Icons.more_vert),
                 onPressed: () =>
                     controller.isOpen ? controller.close() : controller.open(),

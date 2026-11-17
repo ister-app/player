@@ -251,6 +251,7 @@ class _ShowOverviewContentPageState extends State<ShowOverviewContentPage> {
                     ],
                     builder: (_, MenuController controller, Widget? child) {
                       return IconButton(
+                        tooltip: AppLocalizations.of(context)?.moreOptions,
                         onPressed: () {
                           if (controller.isOpen) {
                             controller.close();

@@ -126,6 +126,7 @@ class _AddPodcastSheetState extends State<_AddPodcastSheet> {
               hintText: loc.addPodcastHint,
               border: const OutlineInputBorder(),
               suffixIcon: IconButton(
+                tooltip: _inputIsUrl ? loc.addPodcast : loc.search,
                 icon: Icon(_inputIsUrl ? Icons.rss_feed : Icons.search),
                 onPressed: _busy ? null : _submit,
               ),

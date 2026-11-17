@@ -142,6 +142,7 @@ class _GameInstallTile extends StatelessWidget {
             trailing: MenuAnchor(
               menuChildren: _menu(context, loc, status),
               builder: (context, controller, _) => IconButton(
+                tooltip: AppLocalizations.of(context)?.moreOptions,
                 key: ValueKey('game-install-menu-${install.gameId}'),
                 icon: const Icon(Icons.more_vert),
                 onPressed: () => controller.isOpen ? controller.close() : controller.open(),

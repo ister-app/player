@@ -106,7 +106,7 @@ class _GameSettingsPageState extends State<GameSettingsPage> {
                       trailing: Wrap(children: [
                         if (_gamesRoot != _defaultRoot)
                           TextButton(onPressed: () => unawaited(_setRoot(null)), child: Text(loc.gameSettingsResetDefault)),
-                        IconButton(icon: const Icon(Icons.edit_outlined), onPressed: () => unawaited(_pickRoot())),
+                        IconButton(tooltip: AppLocalizations.of(context)?.changeFolder, icon: const Icon(Icons.edit_outlined), onPressed: () => unawaited(_pickRoot())),
                       ]),
                     ),
                   ],
@@ -212,6 +212,7 @@ class _GameSettingsPageState extends State<GameSettingsPage> {
             trailing: _sourcesAreDefaults
                 ? null
                 : IconButton(
+                    tooltip: AppLocalizations.of(context)?.close,
                     key: ValueKey('game-settings-source-remove-$folder'),
                     icon: const Icon(Icons.close),
                     onPressed: () => unawaited(_setSources([for (final f in _sources) if (f != folder) f])),

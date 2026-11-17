@@ -957,6 +957,24 @@ class AppLocalizationsNl extends AppLocalizations {
   String get stopPlayback => 'Afspelen stoppen';
 
   @override
+  String get repeat => 'Herhalen';
+
+  @override
+  String get clearSearch => 'Wissen';
+
+  @override
+  String get removeCondition => 'Voorwaarde verwijderen';
+
+  @override
+  String get decrease => 'Verlagen';
+
+  @override
+  String get increase => 'Verhogen';
+
+  @override
+  String get changeFolder => 'Map wijzigen';
+
+  @override
   String get moreOptions => 'Meer opties';
 
   @override

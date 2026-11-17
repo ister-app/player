@@ -192,6 +192,7 @@ class TrackScroll extends StatelessWidget {
                   menuChildren: _menuItems(context, track),
                   builder: (_, MenuController controller, Widget? child) {
                     return IconButton(
+                      tooltip: AppLocalizations.of(context)?.moreOptions,
                       icon: const Icon(Icons.more_vert),
                       onPressed: () => controller.isOpen
                           ? controller.close()

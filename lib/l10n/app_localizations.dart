@@ -1682,6 +1682,42 @@ abstract class AppLocalizations {
   /// **'Stop playback'**
   String get stopPlayback;
 
+  /// No description provided for @repeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat'**
+  String get repeat;
+
+  /// No description provided for @clearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clearSearch;
+
+  /// No description provided for @removeCondition.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove condition'**
+  String get removeCondition;
+
+  /// No description provided for @decrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease'**
+  String get decrease;
+
+  /// No description provided for @increase.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase'**
+  String get increase;
+
+  /// No description provided for @changeFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Change folder'**
+  String get changeFolder;
+
   /// Tooltip for the overflow (...) button in the player opening the less-used actions sheet
   ///
   /// In en, this message translates to:

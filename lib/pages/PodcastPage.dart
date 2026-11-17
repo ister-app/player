@@ -344,6 +344,7 @@ class _PodcastPageState extends State<PodcastPage> {
                   ],
                   builder: (_, MenuController controller, Widget? child) {
                     return IconButton(
+                      tooltip: AppLocalizations.of(context)?.moreOptions,
                       icon: const Icon(Icons.more_vert),
                       onPressed: () => controller.isOpen
                           ? controller.close()
@@ -575,6 +576,7 @@ class _PodcastPageState extends State<PodcastPage> {
               ),
             ],
             builder: (context, controller, _) => IconButton(
+              tooltip: AppLocalizations.of(context)?.moreOptions,
               icon: const Icon(Icons.more_vert),
               onPressed: () =>
                   controller.isOpen ? controller.close() : controller.open(),

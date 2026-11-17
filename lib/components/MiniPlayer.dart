@@ -404,6 +404,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                 state?.repeatMode ?? AudioServiceRepeatMode.none,
                           ).hasNext;
                           return IconButton(
+                            tooltip: AppLocalizations.of(context)?.skipNext,
                             key: MiniPlayer.skipNextKey,
                             icon: const Icon(Icons.skip_next),
                             iconSize: 32,

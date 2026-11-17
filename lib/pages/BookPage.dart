@@ -351,6 +351,7 @@ class _BookPageState extends State<BookPage> {
                 ],
                 builder: (_, MenuController controller, Widget? child) {
                   return IconButton(
+                    tooltip: AppLocalizations.of(context)?.moreOptions,
                     onPressed: () => controller.isOpen
                         ? controller.close()
                         : controller.open(),

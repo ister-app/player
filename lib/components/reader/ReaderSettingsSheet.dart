@@ -98,6 +98,7 @@ class _ReaderSettingsSheetState extends State<ReaderSettingsSheet> {
           TvFocusable(
             onTap: () => onChanged(value - step),
             child: IconButton(
+              tooltip: AppLocalizations.of(context)?.decrease,
               onPressed: () => onChanged(value - step),
               icon: Icon(decreaseIcon),
             ),
@@ -115,6 +116,7 @@ class _ReaderSettingsSheetState extends State<ReaderSettingsSheet> {
           TvFocusable(
             onTap: () => onChanged(value + step),
             child: IconButton(
+              tooltip: AppLocalizations.of(context)?.increase,
               onPressed: () => onChanged(value + step),
               icon: Icon(increaseIcon),
             ),

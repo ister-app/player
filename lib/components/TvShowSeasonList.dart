@@ -304,6 +304,7 @@ class TvShowSeasonList extends StatelessWidget {
                   ),
                 ],
                 builder: (context, controller, _) => IconButton(
+                  tooltip: AppLocalizations.of(context)?.moreOptions,
                   icon: const Icon(Icons.more_vert),
                   onPressed: () => controller.isOpen
                       ? controller.close()

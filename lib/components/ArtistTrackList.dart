@@ -333,6 +333,7 @@ class _ArtistTrackListState extends State<ArtistTrackList> {
                 ],
                 builder: (_, MenuController controller, Widget? child) {
                   return IconButton(
+                    tooltip: AppLocalizations.of(context)?.moreOptions,
                     icon: const Icon(Icons.more_vert),
                     onPressed: () => controller.isOpen
                         ? controller.close()

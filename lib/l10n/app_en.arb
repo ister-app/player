@@ -1106,6 +1106,12 @@
   "@stopPlayback": {
     "description": "Tooltip/label for the stop button that ends the session and dismisses the mini player"
   },
+  "repeat": "Repeat",
+  "clearSearch": "Clear",
+  "removeCondition": "Remove condition",
+  "decrease": "Decrease",
+  "increase": "Increase",
+  "changeFolder": "Change folder",
   "moreOptions": "More options",
   "@moreOptions": {
     "description": "Tooltip for the overflow (...) button in the player opening the less-used actions sheet"

@@ -250,6 +250,7 @@ class _FilterSheetState extends State<FilterSheet> {
               ),
             ],
             builder: (context, controller, child) => IconButton(
+              tooltip: AppLocalizations.of(context)?.moreOptions,
               icon: const Icon(Icons.more_vert),
               onPressed: () =>
                   controller.isOpen ? controller.close() : controller.open(),
@@ -257,6 +258,7 @@ class _FilterSheetState extends State<FilterSheet> {
           )
         else
           IconButton(
+            tooltip: AppLocalizations.of(context)?.removeCondition,
             icon: const Icon(Icons.remove_circle_outline),
             onPressed: () => setState(() => _model.groups.remove(group)),
           ),
@@ -445,6 +447,7 @@ class _ConditionRowState extends State<_ConditionRow> {
           const SizedBox(width: 8),
           Expanded(flex: 3, child: _valueEditor(context, loc, condition)),
           IconButton(
+            tooltip: AppLocalizations.of(context)?.removeCondition,
             icon: const Icon(Icons.remove),
             onPressed: widget.onRemove,
           ),
