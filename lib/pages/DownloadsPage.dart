@@ -1,3 +1,4 @@
+import 'package:player/utils/LoggerService.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -86,15 +87,24 @@ class _DownloadsPageState extends State<DownloadsPage> {
 
   Future<void> _load() async {
     final service = DownloadService.instance;
-    await service.ensureStarted();
-    await service.store.load(widget.serverName);
-    await OfflineProgressStore.instance.load(widget.serverName);
-    if (kGamesSupported) {
-      await GameLibraryService.instance.ensureStarted();
-      await GameLibraryService.instance.store.load(widget.serverName);
+    try {
+      await service.ensureStarted();
+      await service.store.load(widget.serverName);
+      await OfflineProgressStore.instance.load(widget.serverName);
+      if (kGamesSupported) {
+        await GameLibraryService.instance.ensureStarted();
+        await GameLibraryService.instance.store.load(widget.serverName);
+      }
+      await _loadFollows();
+    } catch (e, stackTrace) {
+      // One store that cannot be read (a damaged manifest, a games folder on
+      // an unplugged disk) must not leave the page on its spinner forever:
+      // show what did load.
+      LoggerService().logger.w('Downloads page loaded partially: $e',
+          stackTrace: stackTrace);
     }
-    await _loadFollows();
-    if (mounted) setState(() => _ready = true);
+    if (!mounted) return;
+    setState(() => _ready = true);
     // Opening this page is a good moment to catch up on episodes watched
     // elsewhere: drop the watched ones and fetch what comes next.
     unawaited(AutoNextService.instance.runAll(widget.serverName));

@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:player/graphql/schema.graphql.dart';
@@ -66,6 +67,37 @@ class _RatingStarsState extends State<RatingStars> {
   /// Value (1-10) under the mouse cursor, previewed but not yet saved.
   int? _hover;
 
+  /// Value (0-10, 0 = no rating) being picked with the arrow keys or a
+  /// D-pad, previewed until select/enter saves it. A remote has no pointer,
+  /// so without this the stars could not be operated on a TV at all.
+  int? _keyValue;
+  bool _focused = false;
+
+  KeyEventResult _onKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is KeyUpEvent || _saving) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    final current = _keyValue ?? _rating ?? 0;
+    if (key == LogicalKeyboardKey.arrowRight ||
+        key == LogicalKeyboardKey.arrowLeft) {
+      final next = current + (key == LogicalKeyboardKey.arrowRight ? 1 : -1);
+      // At either end the key is not ours: focus moves on as usual.
+      if (next < 0 || next > 10) return KeyEventResult.ignored;
+      setState(() => _keyValue = next);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.select ||
+        key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.space) {
+      final picked = _keyValue;
+      if (picked == null) return KeyEventResult.ignored;
+      setState(() => _keyValue = null);
+      final value = picked == 0 ? null : picked;
+      if (value != _rating) _apply(value);
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -126,15 +158,18 @@ class _RatingStarsState extends State<RatingStars> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final loc = AppLocalizations.of(context)!;
-    final shown = _hover ?? _rating;
+    final keyValue = _keyValue;
+    final shown =
+        _hover ?? (keyValue == null ? _rating : (keyValue == 0 ? null : keyValue));
     final rating = shown ?? 0;
     final baseColor = widget.color ?? theme.colorScheme.primary;
     // Preview the hovered value in a translucent tint until it is saved.
-    final filled =
-        _hover != null ? baseColor.withValues(alpha: 0.6) : baseColor;
+    final filled = _hover != null || keyValue != null
+        ? baseColor.withValues(alpha: 0.6)
+        : baseColor;
     final empty = widget.emptyColor ?? theme.colorScheme.onSurfaceVariant;
 
-    return Row(
+    final stars = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         for (var i = 0; i < 5; i++)
@@ -167,6 +202,49 @@ class _RatingStarsState extends State<RatingStars> {
           ),
         ],
       ],
+    );
+
+    void step(int delta) {
+      final next = ((_rating ?? 0) + delta).clamp(0, 10);
+      if (next != (_rating ?? 0)) _apply(next == 0 ? null : next);
+    }
+
+    return Semantics(
+      slider: true,
+      label: loc.rate,
+      // An adjustable node must name its value and both neighbours.
+      value: loc.ratingValue(shown ?? 0),
+      increasedValue: loc.ratingValue(((_rating ?? 0) + 1).clamp(0, 10)),
+      decreasedValue: loc.ratingValue(((_rating ?? 0) - 1).clamp(0, 10)),
+      onIncrease: _saving ? null : () => step(1),
+      onDecrease: _saving ? null : () => step(-1),
+      child: Focus(
+        onKeyEvent: _onKeyEvent,
+        onFocusChange: (focused) => setState(() {
+          _focused = focused;
+          if (!focused) _keyValue = null;
+        }),
+        child: DecoratedBox(
+          // Only while navigating with keys: a pointer needs no focus ring.
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              width: 2,
+              color: _focused &&
+                      FocusManager.instance.highlightMode ==
+                          FocusHighlightMode.traditional
+                  ? theme.colorScheme.primary
+                  : Colors.transparent,
+            ),
+          ),
+          // The node above already says "Rate, 8/10"; the icons and the
+          // value text would only repeat it.
+          child: Padding(
+            padding: const EdgeInsets.all(2),
+            child: ExcludeSemantics(child: stars),
+          ),
+        ),
+      ),
     );
   }
 }

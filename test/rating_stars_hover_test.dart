@@ -1,4 +1,5 @@
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:player/components/RatingStars.dart';
@@ -52,5 +53,58 @@ void main() {
 
     expect(find.textContaining('/10'), findsNothing);
     expect(find.byIcon(Icons.star_outline_rounded), findsNWidgets(5));
+  });
+
+  testWidgets('arrow keys preview a value from the keyboard or a remote',
+      (tester) async {
+    await tester.pumpWidget(wrap(const RatingStars(
+      mediaType: Enum$RatingMediaType.MOVIE,
+      mediaId: 'm1',
+      rating: 6,
+    )));
+    expect(find.text('6/10'), findsOneWidget);
+
+    // Reachable with tab / the D-pad.
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pump();
+    expect(find.text('7/10'), findsOneWidget);
+    expect(find.byIcon(Icons.star_half_rounded), findsOneWidget);
+
+    for (var i = 0; i < 3; i++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+    }
+    await tester.pump();
+    expect(find.text('4/10'), findsOneWidget);
+    expect(find.byIcon(Icons.star_rounded), findsNWidgets(2));
+
+    // All the way down is "no rating".
+    for (var i = 0; i < 4; i++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+    }
+    await tester.pump();
+    expect(find.textContaining('/10'), findsNothing);
+    expect(find.byIcon(Icons.star_outline_rounded), findsNWidgets(5));
+
+    // Leaving without confirming drops the preview.
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('6/10'), findsOneWidget);
+  });
+
+  testWidgets('announces itself as an adjustable rating', (tester) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(wrap(const RatingStars(
+      mediaType: Enum$RatingMediaType.MOVIE,
+      mediaId: 'm1',
+      rating: 8,
+    )));
+    final node = tester.getSemantics(find.byType(RatingStars));
+    expect(node.label, 'Rate');
+    expect(node.value, '8/10');
+    handle.dispose();
   });
 }
