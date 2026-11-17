@@ -1315,6 +1315,11 @@ class MediaPlayerHandler extends BaseAudioHandler
       GraphQLClient client, Fragment$fragmentPlayQueue pq, String srv,
       {String? startMediaId, int? startTimeMs}) async {
     // Same follow-mode rule as startPlayQueue: only a *different* queue ends it.
+    // An empty queue (a shuffle or filter that matched nothing) starts
+    // nothing — and must leave whatever is playing, possibly from another
+    // server, exactly as it was.
+    final items = PlayQueueService.sortedItems(pq);
+    if (items.isEmpty) return;
     if (followMode && playQueue?.id != pq.id) await stopFollowing();
     _beginQueueStart();
     _sync.bump();
@@ -1322,8 +1327,6 @@ class MediaPlayerHandler extends BaseAudioHandler
     serverName = srv;
     graphQLClient = client;
 
-    final items = PlayQueueService.sortedItems(pq);
-    if (items.isEmpty) return;
     final current = (startMediaId == null
             ? null
             : PlayQueueService.itemForMedia(items, startMediaId)) ??
@@ -1372,6 +1375,9 @@ class MediaPlayerHandler extends BaseAudioHandler
   Future<void> startLocalPlayQueue(
       String srv, Fragment$fragmentPlayQueue pq,
       {String? startItemId, int? startTimeMs, bool openPlayer = true}) async {
+    // Nothing to play: leave the current playback untouched.
+    final items = PlayQueueService.sortedItems(pq);
+    if (items.isEmpty) return;
     if (followMode) await stopFollowing();
     _beginQueueStart(heartbeat: false);
     _sync.bump();
@@ -1386,11 +1392,6 @@ class MediaPlayerHandler extends BaseAudioHandler
     _beginMediaLoading();
     if (openPlayer) openMusicPlayerRequest.value++;
 
-    final items = PlayQueueService.sortedItems(pq);
-    if (items.isEmpty) {
-      mediaLoading.value = false;
-      return;
-    }
     final current = items.where((e) => e.id == startItemId).firstOrNull ??
         PlayQueueService.getCurrentPlayQueueItem(pq) ??
         items.first;
@@ -1899,10 +1900,10 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// command echo — executes it, so the session stays in step. Returns true
   /// when the tap was forwarded and the caller must not act locally; false
   /// when not following, or while the echo/leader state itself is being
-  /// applied ([_applyingRemoteSync]).
+  /// applied ([applyingRemoteSync]).
   Future<bool> _forwardedToLeader(Enum$PlaybackCommandType command,
       {Duration? position, String? playQueueItemId}) async {
-    if (!_followMode || _applyingRemoteSync) return false;
+    if (!_followMode || applyingRemoteSync) return false;
     await _follow.sendCommand(command,
         position: position, playQueueItemId: playQueueItemId);
     return true;
@@ -2328,8 +2329,14 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   /// Replays the current track from the start — used by the completion/stall
   /// handlers when [AudioServiceRepeatMode.one] is active.
+  ///
+  /// The start of the *item*, not of the file: an episode that shares its
+  /// file with others (`s04e06-e07.mkv`) begins at its own offset, and a
+  /// stream opened mid-file needs [seekAware]'s re-open to get back before
+  /// its open position.
   Future<void> _repeatCurrent() async {
-    await _player.seek(Duration.zero);
+    await seekAware(
+        Duration(milliseconds: _partBoundsOf(episode)?.startMs ?? 0));
     await _player.play();
   }
 
@@ -2588,13 +2595,16 @@ class MediaPlayerHandler extends BaseAudioHandler
       }
 
 
+      // Read before the await: the flag belongs to the scope that called us
+      // and may be released while the item opens.
+      final leaderDriven = _followMode && applyingRemoteSync;
       if (!await _openQueueItem(queueItem, mediaItemId.serverName)) return;
 
       // A leader-driven switch (never a heartbeat — same-item emissions don't
       // reach this method) keeps the follower's screen on the right surface:
       // video items get their page opened, and leaving video for audio brings
       // up the music overlay. Track→track stays as it always was.
-      if (_followMode && _applyingRemoteSync) {
+      if (leaderDriven) {
         if (queueItem.movie != null || queueItem.episode != null) {
           openVideoPageRequest.value++;
         } else if (wasVideo) {
@@ -2608,12 +2618,18 @@ class MediaPlayerHandler extends BaseAudioHandler
       // the only progress writer for this queue.
       if (_followMode) return;
 
+      // A downloaded queue has no server side (and offline there may be no
+      // client to build); playback stopped while the item opened leaves
+      // nothing to report either.
+      final openedQueue = playQueue;
+      if (openedQueue == null || isLocalQueue) return;
+
       // Sync the new current item to the server. The local state above is
       // already final; the response only refreshes progress data, and is
       // dropped when another skip happened in the meantime.
       final playQueueObject = await _sync.sendProgressUpdate(
         ClientManager.getClientForUrl(mediaItemId.serverName).value,
-        playQueue!.id,
+        openedQueue.id,
         mediaItemId.id,
         // Progress is absolute within the file: a multi-episode slice starts
         // at its own offset, not at 0 (that would resume in the previous
@@ -2813,9 +2829,15 @@ class MediaPlayerHandler extends BaseAudioHandler
   set intendsToPlay(bool value) => _intendsToPlay = value;
 
   @override
-  bool get applyingRemoteSync => _applyingRemoteSync;
+  bool get applyingRemoteSync => _remoteSyncDepth > 0;
   @override
-  set applyingRemoteSync(bool value) => _applyingRemoteSync = value;
+  set applyingRemoteSync(bool value) {
+    if (value) {
+      _remoteSyncDepth++;
+    } else if (_remoteSyncDepth > 0) {
+      _remoteSyncDepth--;
+    }
+  }
 
   @override
   int get streamOpenPositionMs => _streamOpenPositionMs;
@@ -3302,12 +3324,12 @@ class MediaPlayerHandler extends BaseAudioHandler
     _showRemoteCommandToast(command.command);
     // In follow mode the bus is the transport: commands (including this
     // device's own echoes) must run the local paths, not be re-sent.
-    final wasApplying = _applyingRemoteSync;
-    if (_followMode) _applyingRemoteSync = true;
+    final applying = _followMode;
+    if (applying) _remoteSyncDepth++;
     try {
       await _executeRemoteCommand(command);
     } finally {
-      _applyingRemoteSync = wasApplying;
+      if (applying && _remoteSyncDepth > 0) _remoteSyncDepth--;
     }
   }
 
@@ -3431,8 +3453,11 @@ class MediaPlayerHandler extends BaseAudioHandler
 
   // Set while a bus command or nowPlaying state is being applied locally: the
   // transport overrides then run their normal local path instead of sending
-  // a command (which would echo forever).
-  bool _applyingRemoteSync = false;
+  // a command (which would echo forever). A depth, not a flag: a bus command
+  // and a nowPlaying emission are applied concurrently, and with one bool the
+  // first to finish cleared it under the other (whose later play/seek was
+  // then sent to the leader as a command) or restored a stale `true`.
+  int _remoteSyncDepth = 0;
 
   /// Starts following [playQueueId]'s live session on [srv]. Returns the
   /// server's decision: only [Enum$FollowResult.OK] means playback started;

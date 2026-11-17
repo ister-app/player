@@ -125,6 +125,40 @@ void main() {
     expect(MediaPlayerHandler.isLocalMediaUrl(handler.currentMediaUrl!), isFalse);
   });
 
+  test('Windows download paths count as local', () {
+    expect(MediaPlayerHandler.isLocalMediaUrl('/data/downloads/mf/master.m3u8'), isTrue);
+    expect(MediaPlayerHandler.isLocalMediaUrl('file:///data/mf/master.m3u8'), isTrue);
+    expect(
+        MediaPlayerHandler.isLocalMediaUrl(
+            r'C:\Users\me\AppData\Roaming\player\downloads/srv/mf/master.m3u8'),
+        isTrue);
+    expect(MediaPlayerHandler.isLocalMediaUrl('d:/downloads/mf/master.m3u8'), isTrue);
+    expect(MediaPlayerHandler.isLocalMediaUrl(r'\\nas\share\mf\master.m3u8'), isTrue);
+    expect(MediaPlayerHandler.isLocalMediaUrl('https://node.example/hls/mf/master.m3u8'),
+        isFalse);
+    expect(MediaPlayerHandler.isLocalMediaUrl('http://localhost:8080/hls/mf/master.m3u8'),
+        isFalse);
+  });
+
+  test('an empty queue starts nothing and leaves the current playback alone',
+      () async {
+    final items = [trackItem('t1'), trackItem('t2', number: 2)];
+    await handler.startFromServerQueue(client(), _queue(items), _server);
+    final playing = handler.playQueue;
+    final url = handler.currentMediaUrl;
+
+    final empty = _queue(items).copyWith(id: 'pq-empty', playQueueItems: const []);
+    await handler.startFromServerQueue(client(), empty, 'other-server');
+    expect(handler.playQueue, same(playing));
+    expect(handler.serverName, _server);
+    expect(handler.currentMediaUrl, url);
+
+    await handler.startLocalPlayQueue('other-server', empty);
+    expect(handler.playQueue, same(playing));
+    expect(handler.serverName, _server);
+    expect(handler.isLocalQueue, isFalse);
+  });
+
   test('a local queue plays without a client and is never remembered as last music queue',
       () async {
     final e1 = await completeEntry('t1', sortKey: 1);

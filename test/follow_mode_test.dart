@@ -339,6 +339,24 @@ void main() {
     expect(operations, isNot(contains('updatePlayQueue')));
   });
 
+  test('overlapping remote-sync scopes do not release each other', () {
+    // A bus command and a now-playing emission are applied concurrently; the
+    // first to finish must not clear the guard under the other.
+    expect(handler.applyingRemoteSync, isFalse);
+    handler.applyingRemoteSync = true;
+    handler.applyingRemoteSync = true;
+    handler.applyingRemoteSync = false;
+    expect(handler.applyingRemoteSync, isTrue);
+    handler.applyingRemoteSync = false;
+    expect(handler.applyingRemoteSync, isFalse);
+    // An unbalanced release never goes negative (and so never sticks).
+    handler.applyingRemoteSync = false;
+    handler.applyingRemoteSync = true;
+    expect(handler.applyingRemoteSync, isTrue);
+    handler.applyingRemoteSync = false;
+    expect(handler.applyingRemoteSync, isFalse);
+  });
+
   test('an emission without the followed session ends follow mode', () async {
     final operations = <String>[];
     useClient(_fakeGraphQL(queue: _queue(), operations: operations));
