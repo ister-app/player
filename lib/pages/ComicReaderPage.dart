@@ -256,6 +256,13 @@ class _ComicReaderPageState extends State<ComicReaderPage>
         mediaFileId: widget.mediaFileId,
       );
       await sync.init();
+      if (!mounted) {
+        // Closed while loading: dispose() ran before these were assigned.
+        sync.dispose();
+        source.dispose();
+        client.dispose();
+        return;
+      }
 
       _client = client;
       _source = source;
@@ -711,6 +718,12 @@ class _ComicReaderPageState extends State<ComicReaderPage>
       );
     }
     return PageView.builder(
+      // Keyed on the controller: a layout change (single ⇄ double pages, a
+      // rotation, a wide scan found) swaps in a controller with a new
+      // initialPage, but an unkeyed PageView keeps its scroll position and
+      // merely re-attaches it — the label then named one page while the
+      // view showed another, and progress followed the label.
+      key: ObjectKey(_pageController),
       controller: _pageController,
       reverse: _rtl,
       onPageChanged: _onSpreadChanged,

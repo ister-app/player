@@ -42,6 +42,12 @@ class ReadAloudController extends ChangeNotifier {
   final Map<int, SmilDocument?> _smilCache = {};
 
   bool playing = false;
+
+  /// Set by [dispose]. Every continuation after an await checks it: a SMIL
+  /// fetch or chapter load that finishes after the reader closed would
+  /// otherwise build a fresh [Player] nobody owns and read on with no page
+  /// on screen.
+  bool _disposed = false;
   int? _spineIndex;
   List<SmilPar> _pars = const [];
   int _activeIndex = -1;
@@ -107,6 +113,7 @@ class ReadAloudController extends ChangeNotifier {
 
   Future<bool> play(int spineIndex, {int? fromBlockIndex}) async {
     final smil = await _smilFor(spineIndex);
+    if (_disposed) return false;
     if (smil == null || smil.pars.isEmpty) return false;
 
     if (_spineIndex != spineIndex) {
@@ -117,6 +124,7 @@ class ReadAloudController extends ChangeNotifier {
     var index = _activeIndex >= 0 ? _activeIndex : 0;
     if (fromBlockIndex != null) {
       index = await _parIndexForBlock(spineIndex, fromBlockIndex) ?? index;
+      if (_disposed) return false;
     }
     // Other audio (music, audiobook) has to stop before read-aloud starts.
     unawaited(MediaPlayerHandler.instance.pause());
@@ -161,7 +169,7 @@ class ReadAloudController extends ChangeNotifier {
 
   Future<void> _playPar(int index) async {
     final spineIndex = _spineIndex;
-    if (spineIndex == null) return;
+    if (_disposed || spineIndex == null) return;
     if (index < 0 || index >= _pars.length) {
       await _advanceToNextSection();
       return;
@@ -183,12 +191,13 @@ class ReadAloudController extends ChangeNotifier {
       LoggerService().logger.e('Read-aloud playback failed: $error');
       playing = false;
     }
+    if (_disposed) return;
     _notifyActiveBlock();
     notifyListeners();
   }
 
   void _onPositionChanged(Duration position) {
-    if (!playing || _activeIndex < 0 || _activeIndex >= _pars.length) return;
+    if (_disposed || !playing || _activeIndex < 0 || _activeIndex >= _pars.length) return;
     final current = _pars[_activeIndex];
     if (position < current.clipEnd - const Duration(milliseconds: 50)) return;
 
@@ -219,7 +228,10 @@ class ReadAloudController extends ChangeNotifier {
     if (spineIndex == null || fragment == null) return;
     unawaited(book.contentFor(spineIndex).then((content) {
       final blockIndex = content.blockIndexForId(fragment);
-      if (blockIndex == null || blockIndex == _lastNotifiedBlock || !playing) {
+      if (_disposed ||
+          blockIndex == null ||
+          blockIndex == _lastNotifiedBlock ||
+          !playing) {
         return;
       }
       _lastNotifiedBlock = blockIndex;
@@ -229,10 +241,11 @@ class ReadAloudController extends ChangeNotifier {
 
   Future<void> _advanceToNextSection() async {
     final current = _spineIndex;
-    if (current == null) return;
+    if (_disposed || current == null) return;
     for (var next = current + 1; next < book.package.spine.length; next++) {
       if (!book.package.spine[next].linear) continue;
       final smil = await _smilFor(next);
+      if (_disposed) return;
       if (smil != null && smil.pars.isNotEmpty) {
         _spineIndex = next;
         _pars = smil.pars;
@@ -260,11 +273,14 @@ class ReadAloudController extends ChangeNotifier {
   Future<void> pause() async {
     playing = false;
     await _player?.pause();
+    if (_disposed) return;
     notifyListeners();
   }
 
   @override
   void dispose() {
+    _disposed = true;
+    playing = false;
     _positionSubscription?.cancel();
     _completedSubscription?.cancel();
     final player = _player;

@@ -192,6 +192,7 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
         localDir: localDir,
       );
       final package = await EpubPackage.load(client);
+      if (!mounted) return;
       final book = ReaderBookController(client: client, package: package);
       book.addListener(_onBookChanged);
       final sync = ReadingSyncService(
@@ -201,6 +202,15 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
         book: book,
       );
       await sync.init();
+      if (!mounted) {
+        // Closed while loading: dispose() ran before these existed, so
+        // nothing else will ever release them — or stop a read-aloud that
+        // would otherwise start below with no page on screen.
+        book.removeListener(_onBookChanged);
+        book.dispose();
+        sync.dispose();
+        return;
+      }
 
       _book = book;
       _sync = sync;
@@ -216,7 +226,8 @@ class _ReaderPageState extends State<ReaderPage> with WidgetsBindingObserver {
       final start = await _resolveStartPosition(book, sync);
       _startPosition = start;
       await _showChapter(start.spineIndex, blockIndex: start.blockIndex);
-      if (mounted) setState(() => _loading = false);
+      if (!mounted) return;
+      setState(() => _loading = false);
       if (widget.publishPresence && mounted) {
         _presence = (widget.presence ?? ActivityPresenceService.instance).begin(
           serverName: widget.serverName,

@@ -440,6 +440,41 @@ void main() {
     }, () => _fakeServer([]));
   });
 
+  testWidgets('changing the spread layout keeps the page that is on screen',
+      (tester) async {
+    tester.view.physicalSize = const Size(1600, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+
+      // Three spreads in: far enough that a spread index and a page index
+      // are different numbers.
+      for (var i = 0; i < 3; i++) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+        await tester.pumpAndSettle();
+      }
+      expect(find.text('Page 6-7 of 10'), findsOneWidget);
+      expect(find.byKey(const ValueKey('spread-5-2')), findsOneWidget);
+
+      // auto → single: the label and the picture both land on page 6.
+      await tester.tap(find.byIcon(Icons.auto_awesome_motion));
+      await tester.pumpAndSettle();
+      expect(find.text('Page 6 of 10'), findsOneWidget);
+      expect(find.byKey(const ValueKey('spread-5-1')), findsOneWidget,
+          reason: 'the view must show the page the label names');
+
+      // single → double → auto, restoring the shared preference.
+      await tester.tap(find.byIcon(Icons.filter_1));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('spread-5-2')), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.auto_stories));
+      await tester.pumpAndSettle();
+    }, () => _fakeServer([]));
+  });
+
   testWidgets('the last page offers the next volume of the series',
       (tester) async {
     await http.runWithClient(() async {
