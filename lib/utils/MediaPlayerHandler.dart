@@ -89,7 +89,8 @@ class MediaPlayerHandler extends BaseAudioHandler
       debugPrint('[mpv][${e.level}] ${e.prefix}: ${e.text}');
       final line = _mpvLogThrottle.admit(VideoLoadState.redact(
           '[mpv][${e.level}] ${e.prefix}: ${e.text.trimRight()}'));
-      if (line != null) LoggerService().logger.w(line);
+      // File only: the debugPrint above already put it on the console.
+      if (line != null) LoggerService().fileLogger.w(line);
     });
 
     _videoController = VideoController(
@@ -1772,7 +1773,8 @@ class MediaPlayerHandler extends BaseAudioHandler
     lastStartTimeMs = startTimeInMilliseconds;
     _streamOpenPositionMs = startTimeInMilliseconds ?? 0;
     _stall.noteOpened(startTimeInMilliseconds ?? 0);
-    LoggerService().logger.d('openmedia: $serverName$mediaUrl');
+    LoggerService().logger.d(
+        'openmedia: $serverName ${VideoLoadState.redact(mediaUrl)}');
     final start = Duration(milliseconds: startTimeInMilliseconds ?? 0);
     final media = Media(
       mediaUrl,

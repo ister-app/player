@@ -52,14 +52,13 @@ Future<void> applyMpvNetworkOptions(Player player) async {
     // expensive part of the pipeline and recovers within a few frames.
     await applyMpvAudioOutput(player);
     await native.setProperty('framedrop', 'decoder+vo');
-    // media_kit turns on cache-on-disk but sets no demuxer-cache-dir; on
-    // Android mpv has no user cache dir to fall back to, so every demuxer
-    // open (one per HLS sub-playlist) logs "Failed to create file cache"
-    // and buffers in RAM anyway. Say so explicitly. Desktop keeps the disk
-    // cache: there mp_find_user_file resolves a real directory.
-    if (Platform.isAndroid) {
-      await native.setProperty('cache-on-disk', 'no');
-    }
+    // media_kit turns on cache-on-disk but sets no demuxer-cache-dir, and
+    // libmpv runs with config=no, under which mpv resolves no user cache
+    // dir on any platform (path.c hands out NULL for everything but an
+    // explicit config dir). So every demuxer open (one per HLS
+    // sub-playlist) logs "Failed to create file cache" and buffers in RAM
+    // anyway. Say so explicitly.
+    await native.setProperty('cache-on-disk', 'no');
     await native.setProperty('network-timeout', '30');
     await native.setProperty('stream-lavf-o', reconnect);
     await native.setProperty('demuxer-lavf-o', '$reconnect,$demuxerExtras');

@@ -595,7 +595,15 @@ class PlayQueueService {
     final QueryResult result = await graphQLClient.mutate(options);
 
     if (result.hasException) {
-      LoggerService().logger.e(result.exception);
+      final link = result.exception?.linkException;
+      if (link != null) {
+        // The server did not answer (offline, DNS, timeout): the next beat
+        // retries, so one line is enough — not a stack trace per beat.
+        LoggerService().logger.w(
+            'Progress heartbeat not delivered: ${link.originalException ?? link}');
+      } else {
+        LoggerService().logger.e(result.exception);
+      }
       return null;
     }
     return Mutation$updatePlayQueueHeartbeat.fromJson(result.data!)

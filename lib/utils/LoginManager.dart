@@ -97,8 +97,11 @@ class LoginManager {
     );
     managers[serverUrl] = manager;
     manager.userChanges().listen((event) {
+      // Never the claims themselves: this lands in the exported app log,
+      // and an ID token carries the user's name and e-mail address.
       LoggerService().logger.d(
-        'User changed: ${event?.claims.toJson()}, info: ${event?.userInfo}',
+        'User changed for $serverUrl: '
+        '${event == null ? 'signed out' : 'signed in'}',
       );
     });
     await manager.init();
