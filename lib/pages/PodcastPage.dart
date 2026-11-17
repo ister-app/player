@@ -88,8 +88,30 @@ class _PodcastPageState extends State<PodcastPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadMoreEpisodes());
   }
 
-  Future<void> _loadMoreEpisodes() async {
-    if (_loadingEpisodes || !_hasMoreEpisodes || !mounted) return;
+  /// Bumped by [_refreshEpisodes]: a page requested before it belongs to the
+  /// old list (another order) and is dropped when it arrives.
+  int _episodesGeneration = 0;
+
+  /// The page load in flight, so a second caller waits for *it*. Returning
+  /// early instead made a loop that awaits this method spin without ever
+  /// yielding to the event loop — the response could not arrive and the app
+  /// froze.
+  Future<bool>? _episodesLoad;
+
+  /// Loads the next page. True when a page was added to the list.
+  Future<bool> _loadMoreEpisodes() {
+    final inFlight = _episodesLoad;
+    if (inFlight != null) return inFlight;
+    if (!_hasMoreEpisodes || !mounted) return Future.value(false);
+    late final Future<bool> load;
+    load = _fetchEpisodePage().whenComplete(() {
+      if (identical(_episodesLoad, load)) _episodesLoad = null;
+    });
+    return _episodesLoad = load;
+  }
+
+  Future<bool> _fetchEpisodePage() async {
+    final generation = _episodesGeneration;
     setState(() => _loadingEpisodes = true);
     final client = GraphQLProvider.of(context).value;
     final result = await client.query(QueryOptions(
@@ -102,11 +124,14 @@ class _PodcastPageState extends State<PodcastPage> {
       },
       fetchPolicy: FetchPolicy.networkOnly,
     ));
-    if (!mounted) return;
+    if (!mounted) return false;
+    // The list was reset meanwhile (another order): this page is not part of
+    // it, and the loading flag now belongs to the reload.
+    if (generation != _episodesGeneration) return false;
     if (result.hasException || result.data == null) {
       LoggerService().logger.e(result.exception);
       setState(() => _loadingEpisodes = false);
-      return;
+      return false;
     }
     final page = Query$podcastEpisodes.fromJson(result.data!).podcastEpisodes;
     setState(() {
@@ -115,13 +140,17 @@ class _PodcastPageState extends State<PodcastPage> {
       _nextPage++;
       _loadingEpisodes = false;
     });
+    return true;
   }
 
   Future<void> _refreshEpisodes() async {
+    _episodesGeneration++;
+    _episodesLoad = null;
     setState(() {
       _episodes.clear();
       _nextPage = 0;
       _totalPages = null;
+      _loadingEpisodes = false;
     });
     await _loadMoreEpisodes();
   }
@@ -203,8 +232,11 @@ class _PodcastPageState extends State<PodcastPage> {
         (e.mediaFile?.isNotEmpty ?? false) &&
         e.watchStatus?.firstOrNull?.watched != true;
     while (_episodes.where(candidate).length < n && _hasMoreEpisodes) {
-      await _loadMoreEpisodes();
+      // A page that fails ends the search: work with what is loaded rather
+      // than re-request without end.
+      final added = await _loadMoreEpisodes();
       if (!mounted) return;
+      if (!added) break;
     }
     final picked = _episodes.where(candidate).take(n).toList();
     if (!mounted) return;

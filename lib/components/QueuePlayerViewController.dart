@@ -62,7 +62,7 @@ abstract class QueuePlayerViewController<T> extends PlayerViewController {
     // The index can briefly be stale (e.g. right after switching to a shorter
     // album); clamp so sublist can never reach past the queue.
     if (index >= items.length) index = items.length - 1;
-    final previous =
+    var previous =
         index > 0 ? items.sublist(0, index).reversed.toList() : <T>[];
     var upNext =
         index >= 0 && index + 1 < items.length ? items.sublist(index + 1) : <T>[];
@@ -70,10 +70,13 @@ abstract class QueuePlayerViewController<T> extends PlayerViewController {
     // server) is off the list already. Filtered here rather than through the
     // optimistic queue: that one is a snapshot, which a queue refresh inside
     // the undo window would silently throw away.
+    // Both lists: rows of "previous" can be swiped away too, and one left in
+    // the tree is a dismissed Dismissible that Flutter asserts on (and that
+    // "undo" cannot bring back).
     if (_hiddenEntryIds.isNotEmpty) {
-      upNext = upNext
-          .where((item) => !_hiddenEntryIds.contains(entryFor(item).id))
-          .toList();
+      bool shown(T item) => !_hiddenEntryIds.contains(entryFor(item).id);
+      previous = previous.where(shown).toList();
+      upNext = upNext.where(shown).toList();
     }
     return (previous: previous, upNext: upNext);
   }

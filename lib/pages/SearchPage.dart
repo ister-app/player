@@ -95,6 +95,7 @@ class _SearchPageState extends State<SearchPage> {
     setState(() {
       _libraryId = widget.libraryId;
       if (incoming.isEmpty) {
+        _requestId++; // a search still in flight must not land here
         _results = const [];
         _loading = false;
       } else {
@@ -131,6 +132,9 @@ class _SearchPageState extends State<SearchPage> {
   void _onChanged(String value) {
     _debounce?.cancel();
     if (value.trim().isEmpty) {
+      // Invalidate a search still in flight: its results would reappear
+      // under the emptied field.
+      _requestId++;
       setState(() {
         _results = const [];
         _loading = false;

@@ -109,7 +109,17 @@ class _VideoSeekBarState extends State<VideoSeekBar> {
     widget.onDragActive?.call(true);
   }
 
+  /// Nothing to seek in until the stream reports its length. A touch on the
+  /// bar while a resumed item was still opening computed "0 % of nothing" and
+  /// re-opened the stream at the very start, losing the resume position.
+  bool get _canSeek => _duration > Duration.zero;
+
   void _endDrag() {
+    if (!_canSeek) {
+      setState(() => _dragging = false);
+      widget.onDragActive?.call(false);
+      return;
+    }
     final target = Duration(
         milliseconds: (_dragFraction * _duration.inMilliseconds).round());
     setState(() {
@@ -123,6 +133,7 @@ class _VideoSeekBarState extends State<VideoSeekBar> {
   }
 
   void _seekRelative(Duration delta) {
+    if (!_canSeek) return;
     final target = _position + delta;
     final clamped = target < Duration.zero
         ? Duration.zero

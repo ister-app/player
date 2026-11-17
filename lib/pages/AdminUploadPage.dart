@@ -360,6 +360,7 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
           entries: _entries());
       final s3 = directory.storageKind == 'S3';
       await _remember(session.sessionId, directory.nodeUrl!, s3, folder.path, _effectiveRootName ?? folder.name);
+      if (!mounted) return; // the session is remembered; resume picks it up
       _run(session, directory.nodeUrl!, s3, folder);
     } catch (e) {
       if (!mounted) return;
@@ -475,6 +476,7 @@ class _AdminUploadPageState extends State<AdminUploadPage> {
     if (folder == null || !mounted) return;
     try {
       final session = await _api.session(unfinished.nodeUrl, unfinished.sessionId);
+      if (!mounted) return;
       _run(session, unfinished.nodeUrl, unfinished.s3, folder);
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));

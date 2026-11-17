@@ -112,6 +112,26 @@ void main() {
     });
   });
 
+  test('a row removed from "previous" leaves that list too, and undo restores it',
+      () {
+    fakeAsync((async) {
+      final c = _Controller()..current = 'c';
+      expect(c.previous.map((e) => e.id), ['entry-b', 'entry-a']);
+
+      c.removeEntry(c.previous[0]); // b
+      async.flushMicrotasks();
+      // Still in the tree it would be a dismissed Dismissible.
+      expect(c.previous.map((e) => e.id), ['entry-a']);
+      expect(_upNext(c), ['entry-d']);
+
+      c.undoRemove();
+      expect(c.previous.map((e) => e.id), ['entry-b', 'entry-a']);
+      async.elapse(const Duration(seconds: 30));
+      expect(c.removeCalls, isEmpty);
+      c.dispose();
+    });
+  });
+
   test('a second removal settles the first; only the last can be undone', () {
     fakeAsync((async) {
       final c = _Controller();

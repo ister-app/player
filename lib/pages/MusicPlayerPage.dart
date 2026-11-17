@@ -393,8 +393,15 @@ class _LocalPlayerController extends QueuePlayerViewController<MediaItem> {
   void seek(Duration position) => _handler.seek(position);
 
   @override
-  void tapPrevious(int index) =>
-      _handler.skipToQueueItem(currentIndex - 1 - index);
+  void tapPrevious(int index) {
+    // By item, like tapUpNext: a row swiped away is hidden from this list
+    // while its removal can still be undone.
+    final previous = sliceQueue().previous;
+    if (index < 0 || index >= previous.length) return;
+    final item = previous[index];
+    final target = _handler.queue.value.indexWhere((q) => q.id == item.id);
+    if (target != -1) _handler.skipToQueueItem(target);
+  }
 
   @override
   void tapUpNext(int index) {
