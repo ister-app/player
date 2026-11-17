@@ -1,4 +1,5 @@
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -56,6 +57,73 @@ void main() {
       expect(range, 'bytes=2-');
       expect(seen, [2, 3, 4]);
       expect(target.readAsBytesSync(), [9, 9, 7, 8]);
+    });
+
+    test('a part the server cannot continue (416) is fetched whole again', () async {
+      final target = File('${tmp.path}/f.bin');
+      // As long as the file, or longer: nothing left to ask for.
+      File('${target.path}.part').writeAsBytesSync([9, 9, 9, 9]);
+      final ranges = <String?>[];
+      final mock = MockClient.streaming((req, _) async {
+        ranges.add(req.headers['Range']);
+        if (req.headers['Range'] != null) {
+          return http.StreamedResponse(const Stream.empty(), 416);
+        }
+        return http.StreamedResponse(
+            Stream.fromIterable([
+              [1, 2, 3]
+            ]),
+            200);
+      });
+      final size = await client(mock).getToFile('srv', 'https://n/f', target, DownloadCancelToken(),
+          timeout: const Duration(seconds: 5), resume: true, onProgress: (_) {});
+      expect(ranges, ['bytes=4-', null]);
+      expect(size, 3);
+      expect(target.readAsBytesSync(), [1, 2, 3]);
+    });
+
+    test('a 206 for another range is not appended; the part is dropped', () async {
+      final target = File('${tmp.path}/f.bin');
+      final part = File('${target.path}.part')..writeAsBytesSync([9, 9]);
+      final mock = MockClient.streaming((req, _) async => http.StreamedResponse(
+          Stream.fromIterable([
+            [7, 8]
+          ]),
+          206,
+          headers: {'content-range': 'bytes 0-1/2'}));
+      await expectLater(
+        client(mock).getToFile('srv', 'https://n/f', target, DownloadCancelToken(),
+            timeout: const Duration(seconds: 5), resume: true),
+        throwsA(isA<DownloadFailure>().having((e) => e.transient, 'transient', isTrue)),
+      );
+      expect(part.existsSync(), isFalse);
+      expect(target.existsSync(), isFalse);
+    });
+
+    test('a body that goes silent ends at the idle timeout, not the body budget', () async {
+      final mock = MockClient.streaming((req, _) async => http.StreamedResponse(
+          () async* {
+            yield [1, 2];
+            await Future<void>.delayed(const Duration(seconds: 5));
+            yield [3];
+          }(),
+          200));
+      final slow = DownloadHttp(
+        httpClient: mock,
+        tokenProvider: (_) async => 'tok',
+        onAuthFailure: (_) {},
+        backoff: (_) => Duration.zero,
+        bodyTimeout: const Duration(hours: 6),
+        idleTimeout: const Duration(milliseconds: 100),
+      );
+      final target = File('${tmp.path}/f.bin');
+      await expectLater(
+        slow.getToFile('srv', 'https://n/f', target, DownloadCancelToken(),
+            timeout: const Duration(seconds: 5), resume: true, onProgress: (_) {}),
+        throwsA(isA<TimeoutException>()),
+      );
+      // What arrived is kept for the retry.
+      expect(File('${target.path}.part').lengthSync(), 2);
     });
 
     test('cancelling mid-body stops the stream and keeps a resumable part', () async {

@@ -36,6 +36,7 @@ class DownloadHttp {
     Duration Function(int attempt)? backoff,
     this.maxAttempts = 8,
     this.bodyTimeout = const Duration(minutes: 5),
+    this.idleTimeout = const Duration(minutes: 2),
   })  : _http = httpClient ?? http.Client(),
         _tokenProvider = tokenProvider ?? StreamTokenService.ensureToken,
         _onAuthFailure = onAuthFailure ?? StreamTokenService.invalidateToken,
@@ -47,6 +48,13 @@ class DownloadHttp {
   final Duration Function(int attempt) _backoff;
   final int maxAttempts;
   final Duration bodyTimeout;
+
+  /// The longest silence between two chunks of a body that reports progress
+  /// ([getToFile] with `onProgress`). Separate from [bodyTimeout], which is a
+  /// budget for a *whole* body: a game install allows hours for one file,
+  /// and with that as the gap a dead connection held the install slot —
+  /// deaf to pause and cancel, which are only checked per chunk — for as long.
+  final Duration idleTimeout;
 
   /// Bumped whenever a request reacted to an auth rejection by dropping the
   /// token. Requests running in parallel share one token, so they all get the
@@ -113,6 +121,16 @@ class DownloadHttp {
         maxAttemptsOverride: maxAttemptsOverride,
         rangeStart: offset > 0 ? offset : null);
     final append = offset > 0 && response.statusCode == 206;
+    if (append) {
+      // The server must continue exactly where the part ends; anything else
+      // would glue a wrong tail onto it. Start this file over next time.
+      final range = response.headers['content-range'];
+      if (range != null && !range.trim().toLowerCase().startsWith('bytes $offset-')) {
+        await _drain(response);
+        await tryDelete(part);
+        throw DownloadFailure('unexpected range "$range" for $url', transient: true);
+      }
+    }
     final sink = part.openWrite(mode: append ? FileMode.append : FileMode.write);
     var written = append ? offset : 0;
     onProgress?.call(written);
@@ -122,11 +140,10 @@ class DownloadHttp {
             .pipe(sink)
             .timeout(bodyTimeoutOverride ?? bodyTimeout);
       } else {
-        // Per-chunk accounting; the timeout guards every gap between chunks
-        // the way `pipe().timeout()` guards the whole body.
+        // Per-chunk accounting; [idleTimeout] guards every gap between
+        // chunks.
         try {
-          await for (final chunk in response.stream
-              .timeout(bodyTimeoutOverride ?? bodyTimeout)) {
+          await for (final chunk in response.stream.timeout(idleTimeout)) {
             checkCancel(cancel);
             sink.add(chunk);
             written += chunk.length;
@@ -159,6 +176,7 @@ class DownloadHttp {
       String serverName, String url, DownloadCancelToken cancel,
       {required Duration timeout, int? maxAttemptsOverride, int? rangeStart}) async {
     final attempts = maxAttemptsOverride ?? maxAttempts;
+    var range = rangeStart;
     var authRetried = false;
     for (var attempt = 0;; attempt++) {
       checkCancel(cancel);
@@ -169,8 +187,8 @@ class DownloadHttp {
       try {
         final uri = await tokenized(serverName, url);
         final request = http.Request('GET', uri);
-        if (rangeStart != null && rangeStart > 0) {
-          request.headers['Range'] = 'bytes=$rangeStart-';
+        if (range != null && range > 0) {
+          request.headers['Range'] = 'bytes=$range-';
         }
         response = await _http.send(request).timeout(timeout);
       } on TimeoutException catch (e) {
@@ -184,8 +202,16 @@ class DownloadHttp {
       }
       if (response != null) {
         final code = response.statusCode;
-        if (code == 200 || (code == 206 && rangeStart != null)) return response;
+        if (code == 200 || (code == 206 && range != null)) return response;
         await _drain(response);
+        if (code == 416 && range != null) {
+          // The part is as long as the file, or longer (the file shrank, or
+          // a crash between close and rename): nothing to continue. Ask for
+          // the whole file — the 200 makes the caller start it from zero —
+          // instead of failing the same way on every retry.
+          range = null;
+          continue;
+        }
         if ((code == 401 || code == 403) && generation != _authGeneration) {
           // Another request already dropped this token; retry with whatever
           // the refresh produced instead of invalidating it again.

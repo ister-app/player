@@ -375,9 +375,13 @@ class GameLibraryService {
       unawaited(_runInstall(key).whenComplete(() {
         _running.remove(key);
         _updateActivity();
-        // Queue positions moved up.
+        // Queue positions moved up. A game that was resumed while its
+        // paused worker was still winding down could not be enqueued then
+        // (it was still running); it is now.
         for (final (server, install) in store.all()) {
-          if (install.status == GameInstallStatus.queued) _publish(server, install);
+          if (install.status != GameInstallStatus.queued) continue;
+          _enqueue(server, install);
+          _publish(server, install);
         }
         _pump();
       }));
@@ -521,12 +525,19 @@ class GameLibraryService {
             report();
             continue;
           }
-          await _http.getToFile(serverName, api.fileUrl(install.gameId, file.path), target, cancel,
+          final size = await _http.getToFile(serverName, api.fileUrl(install.gameId, file.path), target, cancel,
               timeout: const Duration(minutes: 2), resume: true, onProgress: (bytes) {
             tracker.fileProgress(file.path, bytes);
             tracker.tick(_clock());
             report();
           });
+          if (size != file.size) {
+            // A resumed part glued to a file that changed on the server, or
+            // a body that ended early: not the file the manifest describes.
+            // Drop it so the retry fetches it whole.
+            await DownloadHttp.tryDelete(target);
+            throw DownloadFailure('${file.path}: got $size of ${file.size} bytes', transient: true);
+          }
           tracker.fileDone(file.path, file.size);
           report();
           if (tracker.filesDone - persistedAt >= 25) {
@@ -556,8 +567,10 @@ class GameLibraryService {
     } on DownloadCancelled {
       // pause()/cancel() already persisted the status the user chose; a
       // token cancelled for a reason we did not record counts as cancelled.
+      // `queued` is a resume that arrived before this worker noticed the
+      // pause: it stays queued and [_pump] picks it up again.
       final current = await store.get(serverName, install.gameId);
-      if (current != null && current.isActive) {
+      if (current != null && current.isActive && current.status != GameInstallStatus.queued) {
         current.status = GameInstallStatus.cancelled;
         await _transitioned(serverName, current);
       } else if (current != null) {

@@ -181,6 +181,26 @@ void main() {
     expect(File('${done.filesDir.path}/rom.bin').readAsBytesSync(), big.bytes);
   });
 
+  test('a resume that arrives before the paused worker stops is not lost', () async {
+    final big = FakeGameFile('rom.bin', 3000, chunk: 500)..gate = Completer<void>();
+    fake.games['g1'] = [big];
+    final s = service();
+    await s.install(server, gameFixture());
+    await until(() => (s.progressOf('g1').value?.doneBytes ?? 0) >= 500);
+
+    // The worker is parked on the gate and has not seen the pause yet.
+    await s.pause(server, 'g1');
+    await s.resume(server, 'g1');
+    expect((await s.store.get(server, 'g1'))!.status, GameInstallStatus.queued);
+
+    big.gate!.complete();
+    big.gate = null;
+    await until(() => s.store.all().any((e) =>
+        e.$2.gameId == 'g1' && e.$2.status == GameInstallStatus.installed));
+    final done = (await s.store.get(server, 'g1'))!;
+    expect(File('${done.filesDir.path}/rom.bin').readAsBytesSync(), big.bytes);
+  });
+
   test('cancel stops with the files kept; installing again resumes', () async {
     final big = FakeGameFile('rom.bin', 3000, chunk: 500)..gate = Completer<void>();
     fake.games['g1'] = [big];
