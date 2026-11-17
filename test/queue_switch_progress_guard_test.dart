@@ -242,4 +242,25 @@ void main() {
     await waitForUpdateOf('alb-item-1');
     expect(updatedItemIds(), isNot(contains('ep-item-1')));
   });
+
+  test('a stop while the play queue is still being created does not start '
+      'playback after all', () async {
+    final c = client();
+    albumCreateGate = Completer<void>();
+    final starting =
+        handler.startPlayQueueForAlbum(c, null, _album, 'track-1', _server);
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+
+    // The stop button, a remote STOP or the notification: everything is torn
+    // down while the server is still answering.
+    await handler.endPlaybackLocally(flushProgress: false);
+
+    albumCreateGate!.complete();
+    albumCreateGate = null;
+    await starting;
+    expect(handler.playQueue, isNull,
+        reason: 'the late response must not resurrect the stopped start');
+    expect(handler.currentMediaUrl, isNull);
+    expect(handler.serverName, isNull);
+  });
 }

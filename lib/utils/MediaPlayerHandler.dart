@@ -787,6 +787,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       final stoppedMs =
           _takeStoppedResumeMs(newServerName, episodeId: newEpisode.id);
       final startMs = startTimeMs ?? stoppedMs ?? _episodeStartMs(file);
+      final teardowns = _teardownCount;
       await _silenceForQueueSwitch();
       final playQueueObject = await _playQueueService.getOrCreatePlayQueue(
         client,
@@ -796,6 +797,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         startMs,
       );
 
+      if (teardowns != _teardownCount) return;
       // A failed round-trip (5xx, timeout) comes back as null, not as an
       // exception. Opening the stream anyway played it without a queue: no
       // progress, no mini player, and a second tap restored the last music
@@ -1014,6 +1016,7 @@ class MediaPlayerHandler extends BaseAudioHandler
       final stoppedMs =
           _takeStoppedResumeMs(newServerName, movieId: newMovie.id);
       final startMs = startTimeMs ?? stoppedMs ?? _movieStartTimeMs;
+      final teardowns = _teardownCount;
       await _silenceForQueueSwitch();
       final playQueueObject = await _playQueueService.getOrCreatePlayQueueForMovie(
         client,
@@ -1022,6 +1025,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         startMs,
       );
 
+      if (teardowns != _teardownCount) return;
       // A failed round-trip (5xx, timeout) comes back as null, not as an
       // exception. Opening the stream anyway played it without a queue: no
       // progress, no mini player, and a second tap restored the last music
@@ -1089,6 +1093,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     graphQLClient = client;
 
     if (shouldRefresh) {
+      final teardowns = _teardownCount;
       await _silenceForQueueSwitch();
       final playQueueObject =
           await _playQueueService.getOrCreatePlayQueueForAlbum(
@@ -1097,6 +1102,7 @@ class MediaPlayerHandler extends BaseAudioHandler
         newAlbum.id,
         trackId,
       );
+      if (teardowns != _teardownCount) return;
       if (playQueueObject == null) {
         // The round-trip failed and the previous stream is already silenced.
         // Forget the tapped track so the next tap starts over instead of
@@ -1567,6 +1573,14 @@ class MediaPlayerHandler extends BaseAudioHandler
   /// finished, playback is meant to run, the load watchdog starts fresh and
   /// (for a server queue) the session heartbeat runs. A downloaded queue has
   /// no client to report to.
+  /// Counts local teardowns ([endPlaybackLocally]). A start captures it before
+  /// its play-queue round-trip and gives up when it moved: a stop that arrives
+  /// while the server is still answering (the stop button, a remote STOP, the
+  /// notification) cleared server, client and item, and the start resuming
+  /// after it would open the stream anyway — playback nobody asked for any
+  /// more, with no progress sync, heartbeat or queue index.
+  int _teardownCount = 0;
+
   void _beginQueueStart({bool heartbeat = true}) {
     queueEnded.value = null;
     _intendsToPlay = true;
@@ -2111,6 +2125,7 @@ class MediaPlayerHandler extends BaseAudioHandler
     final stopPosition = ClientManager.usesTestClients
         ? playbackState.value.position
         : _player.state.position;
+    _teardownCount++;
     await stopFollowing();
     _intendsToPlay = false;
     _sync.stopHeartbeat();
