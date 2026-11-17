@@ -82,7 +82,13 @@ class GameLabels {
       value /= 1000;
       unit++;
     }
-    final digits = value >= 100 || unit == 0 ? 0 : 1;
+    // Rounding can carry into the next unit (999.96 kB would print as
+    // "1000 kB"): step up once more so it reads "1.0 MB".
+    if (unit > 0 && unit < units.length - 1 && value >= 999.5) {
+      value /= 1000;
+      unit++;
+    }
+    final digits = value >= 99.95 || unit == 0 ? 0 : 1;
     return '${value.toStringAsFixed(digits)} ${units[unit]}';
   }
 
