@@ -5,40 +5,29 @@ import 'package:player/graphql/fragmentMetadata.graphql.dart';
 import 'package:player/graphql/schema.graphql.dart';
 
 class MetadataUtil {
-  /// Get the description from te metadata.
-  /// Use a try catch block for if for all selected lang the description is null
-  static String? getDescription(List<Fragment$fragmentMetadata>? metadataList) {
-    try {
-      return getMetadata(metadataList)
-          ?.firstWhere((element) => (element.description ?? "") != "")
-          .description;
-    } on StateError catch (_) {
-      return null;
+  /// The first non-empty [field] among the rows in the preferred languages,
+  /// best language first — so a row that lacks the field (a Dutch row
+  /// without a description) falls through to the next language.
+  static String? _first(List<Fragment$fragmentMetadata>? metadataList,
+      String? Function(Fragment$fragmentMetadata row) field) {
+    for (final row in getMetadata(metadataList) ?? const []) {
+      final value = field(row);
+      if (value != null && value.isNotEmpty) return value;
     }
+    return null;
   }
 
-  /// Get the title from te metadata.
-  /// Use a try catch block for if for all selected lang the title is null
-  static String? getTitle(List<Fragment$fragmentMetadata>? metadataList) {
-    try {
-      return getMetadata(metadataList)
-          ?.firstWhere((element) => (element.title ?? "") != "")
-          .title;
-    } on StateError catch (_) {
-      return null;
-    }
-  }
+  /// The description, in the best available language.
+  static String? getDescription(List<Fragment$fragmentMetadata>? metadataList) =>
+      _first(metadataList, (row) => row.description);
 
-  /// Get the release date/year string from the metadata.
-  static String? getReleased(List<Fragment$fragmentMetadata>? metadataList) {
-    try {
-      return getMetadata(metadataList)
-          ?.firstWhere((element) => (element.released ?? "") != "")
-          .released;
-    } on StateError catch (_) {
-      return null;
-    }
-  }
+  /// The title, in the best available language.
+  static String? getTitle(List<Fragment$fragmentMetadata>? metadataList) =>
+      _first(metadataList, (row) => row.title);
+
+  /// The release date/year string.
+  static String? getReleased(List<Fragment$fragmentMetadata>? metadataList) =>
+      _first(metadataList, (row) => row.released);
 
   /// Appends a release/birth year in parentheses to [title], e.g.
   /// "Blade Runner (1982)". A year of 0 or null counts as unknown and is
@@ -46,27 +35,13 @@ class MetadataUtil {
   static String titleWithYear(String title, int? year) =>
       (year != null && year > 0) ? '$title ($year)' : title;
 
-  /// Get the tagline from the metadata.
-  static String? getTagline(List<Fragment$fragmentMetadata>? metadataList) {
-    try {
-      return getMetadata(metadataList)
-          ?.firstWhere((element) => (element.tagline ?? "") != "")
-          .tagline;
-    } on StateError catch (_) {
-      return null;
-    }
-  }
+  /// The tagline, in the best available language.
+  static String? getTagline(List<Fragment$fragmentMetadata>? metadataList) =>
+      _first(metadataList, (row) => row.tagline);
 
-  /// Get the genre from the metadata.
-  static String? getGenre(List<Fragment$fragmentMetadata>? metadataList) {
-    try {
-      return getMetadata(metadataList)
-          ?.firstWhere((element) => (element.genre ?? "") != "")
-          .genre;
-    } on StateError catch (_) {
-      return null;
-    }
-  }
+  /// The genre.
+  static String? getGenre(List<Fragment$fragmentMetadata>? metadataList) =>
+      _first(metadataList, (row) => row.genre);
 
   /// A short "released • genre" subtitle, omitting whichever part is missing.
   /// Returns null when neither is available.
