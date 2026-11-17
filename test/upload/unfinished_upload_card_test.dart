@@ -73,4 +73,27 @@ void main() {
     await pump(tester, api());
     expect(find.byKey(const ValueKey('home-unfinished-upload')), findsNothing);
   });
+
+  group('loadUnfinished', () {
+    const stored = StoredUpload(sessionId: 's1', nodeUrl: 'http://node', s3: false, sourcePath: '/x');
+
+    UploadApi answering(Future<http.Response> Function() answer) => UploadApi('srv',
+        bearer: (_) async => 'Bearer t', httpClient: MockClient((_) => answer()));
+
+    test('an unreachable or failing server keeps the remembered upload', () async {
+      final store = UploadResumeStore('srv');
+      await store.save(stored);
+      expect(await store.loadUnfinished(answering(() async => throw http.ClientException('no route'))), isNotNull);
+      expect(await store.loadUnfinished(answering(() async => http.Response('busy', 503))), isNotNull);
+      expect(await store.loadUnfinished(answering(() async => http.Response('who?', 401))), isNotNull);
+      expect(await store.load(), isNotNull);
+    });
+
+    test('a session the server no longer knows is forgotten', () async {
+      final store = UploadResumeStore('srv');
+      await store.save(stored);
+      expect(await store.loadUnfinished(answering(() async => http.Response('{"detail":"gone"}', 404))), isNull);
+      expect(await store.load(), isNull);
+    });
+  });
 }

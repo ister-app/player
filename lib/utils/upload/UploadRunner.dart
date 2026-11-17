@@ -122,6 +122,10 @@ class UploadRunner extends ChangeNotifier {
           while (_completing.length > parallelFiles) {
             await Future.any(_completing);
           }
+          // Re-check after the wait: another worker may have taken the last
+          // file meanwhile, and indexing past the end aborted the whole run
+          // (and, in a game batch, every game after this one).
+          if (_paused || _cancelled || next >= queue.length) break;
           final finish = await _upload(queue[next++]);
           if (finish == null) continue;
           late final Future<void> tracked;

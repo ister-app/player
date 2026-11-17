@@ -129,8 +129,14 @@ class UploadResumeStore {
     UploadSession? session;
     try {
       session = await api.session(stored.nodeUrl, stored.sessionId);
+    } on UploadApiException catch (e) {
+      // Only a definitive "no such session" forgets the upload. A 5xx, a
+      // rate limit or an auth hiccup says nothing about it.
+      if (e.statusCode != 404 && e.statusCode != 410) return stored;
     } catch (_) {
-      // gone, or the server is unreachable: a batch still has its queue
+      // Unreachable (timeout, DNS, no network): keep the record — opening
+      // the page during a blip must not throw away a multi-hour upload.
+      return stored;
     }
     final active = session != null && session.status == 'ACTIVE' && session.files.any((f) => f.isActive);
     final batchLeft = stored.batch != null && stored.batch!.queue.isNotEmpty;
