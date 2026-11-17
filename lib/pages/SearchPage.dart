@@ -1,3 +1,4 @@
+import 'package:player/components/QueryErrorView.dart';
 import 'dart:async';
 import 'package:player/utils/TrackArtists.dart';
 
@@ -52,6 +53,10 @@ class _SearchPageState extends State<SearchPage> {
   /// results of a later query.
   int _requestId = 0;
   List<Query$search$search> _results = const [];
+
+  /// The term whose search failed, while that failure is what is on screen.
+  /// "No results" would be a lie: the server never answered.
+  String? _failedTerm;
   bool _loading = false;
 
   /// The library the query is scoped to — null means every library.
@@ -152,7 +157,7 @@ class _SearchPageState extends State<SearchPage> {
   Future<void> _runSearch(String term) async {
     final requestId = ++_requestId;
     final client = ClientManager.getClientForUrl(widget.serverName).value;
-    final results = await SearchService().search(
+    final results = await SearchService().searchOrNull(
       client,
       term,
       libraryId: _libraryId,
@@ -160,7 +165,10 @@ class _SearchPageState extends State<SearchPage> {
     );
     if (!mounted || requestId != _requestId) return;
     setState(() {
-      _results = results;
+      // A failed search keeps nothing on screen: stale results under a new
+      // term would be worse than the error.
+      _results = results ?? const [];
+      _failedTerm = results == null ? term : null;
       _loading = false;
     });
   }
@@ -256,6 +264,16 @@ class _SearchPageState extends State<SearchPage> {
   Widget _buildBody(BuildContext context) {
     if (_loading && _results.isEmpty) {
       return const Center(child: CircularProgressIndicator());
+    }
+    final failedTerm = _failedTerm;
+    if (failedTerm != null && _controller.text.trim().isNotEmpty) {
+      return QueryErrorView(onRetry: () {
+        setState(() {
+          _failedTerm = null;
+          _loading = true;
+        });
+        _runSearch(failedTerm);
+      });
     }
     if (_results.isEmpty) {
       return Center(
