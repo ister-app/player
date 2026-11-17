@@ -137,6 +137,18 @@ class ReadingProgressOutbox {
     }
   }
 
+  /// Whether [status] is the server's final word on one position — as
+  /// opposed to an auth, rate-limit or server problem that a later replay
+  /// can get past.
+  @visibleForTesting
+  static bool isPermanentRejection(int status) =>
+      status >= 400 &&
+      status < 500 &&
+      status != 401 &&
+      status != 403 &&
+      status != 408 &&
+      status != 429;
+
   /// POSTs every pending position; stops at the first failure. Returns how
   /// many the server accepted.
   Future<int> replay(String server, {http.Client? httpClient}) async {
@@ -148,14 +160,24 @@ class ReadingProgressOutbox {
     try {
       for (final p in map.values.toList()
         ..sort((a, b) => a.updatedAt.compareTo(b.updatedAt))) {
-        final response = await client.post(
-          await BookProgressApi.endpoint(server, '/reading-progress'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode(p.payload),
-        );
-        if (response.statusCode >= 400) {
-          throw Exception('status ${response.statusCode}');
+        final response = await client
+            .post(
+              await BookProgressApi.endpoint(server, '/reading-progress'),
+              headers: {'Content-Type': 'application/json'},
+              body: json.encode(p.payload),
+            )
+            .timeout(const Duration(seconds: 20));
+        final status = response.statusCode;
+        if (isPermanentRejection(status)) {
+          // The book is gone or the payload is not accepted: it never will
+          // be. Drop it instead of retrying it first on every connect, which
+          // kept every newer position behind it from syncing.
+          LoggerService().logger.w(
+              'reading progress for ${p.bookId} rejected ($status), dropped');
+          map.remove(p.bookId);
+          continue;
         }
+        if (status >= 400) throw Exception('status $status');
         map.remove(p.bookId);
         n++;
       }

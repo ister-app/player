@@ -123,6 +123,10 @@ class EpubResourceClient {
 
   void _store(String entryPath, Uint8List body) {
     if (body.length > _cacheCapacityBytes) return;
+    // Two concurrent fetches of one entry both land here: count it once, or
+    // the size only drifts up and the cache evicts earlier and earlier.
+    final replaced = _cache.remove(entryPath);
+    if (replaced != null) _cacheSize -= replaced.length;
     _cache[entryPath] = body;
     _cacheSize += body.length;
     while (_cacheSize > _cacheCapacityBytes && _cache.isNotEmpty) {

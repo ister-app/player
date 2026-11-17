@@ -595,6 +595,13 @@ class DownloadService {
         } catch (e) {
           LoggerService().logger.w('no stream token before download: $e');
         }
+        // Those waits can take seconds at app start. Continue from the entry
+        // as it is *now*: writing the captured one back re-added a download
+        // the user removed meanwhile, and reverted a pin set in between
+        // (after which the music cache could evict a manual download).
+        final fresh = store.get(server, entry.key);
+        if (fresh == null || cancel.isCancelled) return;
+        entry = fresh;
       }
       await store.put(server, entry.copyWith(status: DownloadStatus.downloading, clearError: true));
       revision.value++;
