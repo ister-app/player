@@ -43,9 +43,6 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get noLanguagesFound => 'Geen talen gevonden.';
-
-  @override
   String get searchHint => 'Zoek naar een taal...';
 
   @override
@@ -214,9 +211,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get watchNext => 'Blijf kijken';
 
   @override
-  String get recentlyAddedShows => 'Onlangs toegevoegde shows';
-
-  @override
   String season(int number) {
     return 'Seizoen $number';
   }
@@ -262,14 +256,6 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get languageSettings => 'Taalinstellingen';
-
-  @override
-  String get loginTitle => 'Aanmelden';
-
-  @override
-  String loginDescription(Object serverName) {
-    return 'Meld je aan om toegang te krijgen tot $serverName';
-  }
 
   @override
   String loginButton(Object serverName) {
@@ -334,9 +320,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get nextUnplayedEpisode => 'Volgende onbeluisterde aflevering';
 
   @override
-  String get switchServer => 'Wissel van server';
-
-  @override
   String get servers => 'Servers';
 
   @override
@@ -344,12 +327,6 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get noSeason => 'Geen seizoen';
-
-  @override
-  String get addServer => 'Voeg een server toe';
-
-  @override
-  String get noServersAdded => 'Nog geen servers toegevoegd';
 
   @override
   String get noSeasonsFound => 'Geen seizoenen gevonden';
@@ -409,9 +386,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get sortOrderFailed => 'Kon de sorteervolgorde niet wijzigen';
 
   @override
-  String get sortBy => 'Sorteren op';
-
-  @override
   String get sortByName => 'Naam';
 
   @override
@@ -449,9 +423,6 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get rate => 'Beoordelen';
-
-  @override
-  String get yourRating => 'Jouw beoordeling';
 
   @override
   String ratingValue(int value) {
@@ -746,9 +717,6 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get noActiveSessions => 'Geen actieve afspeelsessies';
-
-  @override
-  String get queues => 'Wachtrijen';
 
   @override
   String queueDepth(int depth) {
@@ -1319,7 +1287,7 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get customFilter => 'Custom filter';
+  String get customFilter => 'Aangepast filter';
 
   @override
   String get filterMatchAll => 'Overeenkomen met al het volgende';
@@ -1511,9 +1479,6 @@ class AppLocalizationsNl extends AppLocalizations {
     );
     return '$_temp0';
   }
-
-  @override
-  String get followersSheetTitle => 'Luistert mee';
 
   @override
   String get followersNone => 'Er luistert nu niemand mee';
@@ -1854,12 +1819,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get downloadStatusDownloading => 'Bezig met downloaden';
 
   @override
-  String get downloadStatusFailed => 'Mislukt';
-
-  @override
-  String get downloadStatusComplete => 'Gedownload';
-
-  @override
   String get pauseAllDownloads => 'Downloads pauzeren';
 
   @override
@@ -1987,9 +1946,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get openDownloads => 'Downloads openen';
 
   @override
-  String get offlineMode => 'Offline';
-
-  @override
   String get playOffline => 'Afspelen';
 
   @override
@@ -2008,11 +1964,6 @@ class AppLocalizationsNl extends AppLocalizations {
       zero: 'Niets te synchroniseren',
     );
     return '$_temp0';
-  }
-
-  @override
-  String downloadsForServer(String server) {
-    return 'Downloads · $server';
   }
 
   @override
@@ -2053,9 +2004,6 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get musicCacheDisableBody =>
       'De cache wordt niet meer gevuld. De nummers die al op dit apparaat staan kunnen blijven of nu verwijderd worden.';
-
-  @override
-  String get cachedDownloads => 'Muziekcache';
 
   @override
   String get downloadNotificationTitle => 'Bezig met downloaden';
@@ -2447,9 +2395,6 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get activityGroupOther => 'Overig werk';
-
-  @override
   String get nodeDetailsHint => 'Tik op een node voor de schijven en details.';
 
   @override
@@ -2567,9 +2512,6 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get uploadLibrary => 'Library';
-
-  @override
-  String get uploadDirectory => 'Directory';
 
   @override
   String uploadDirectoryFree(String free, String node) {
@@ -3006,19 +2948,6 @@ class AppLocalizationsNl extends AppLocalizations {
       'De gamebestanden op dit apparaat worden verwijderd. Je saves blijven op de server staan.';
 
   @override
-  String get gameExtracting => 'Uitpakken…';
-
-  @override
-  String gameDownloadingProgress(
-    String done,
-    String total,
-    int filesDone,
-    int filesTotal,
-  ) {
-    return '$done van $total · $filesDone van $filesTotal bestanden';
-  }
-
-  @override
   String gameInstallFailed(String error) {
     return 'Installeren mislukt: $error';
   }
@@ -3080,17 +3009,6 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get gameSaveConflictTitle => 'Nieuwere save op de server';
-
-  @override
-  String gameSaveConflictBody(int version, String device, String date) {
-    return 'Versie $version is door $device geüpload ($date) nadat dit apparaat voor het laatst synchroniseerde, en je lokale save is ook gewijzigd. Met welke wil je spelen?';
-  }
-
-  @override
-  String get gameSaveConflictKeepLocal => 'Mijn save houden';
-
-  @override
-  String get gameSaveConflictUseServer => 'Die van de server';
 
   @override
   String get gameSettings => 'Games';
@@ -3211,9 +3129,6 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get gamePhaseRecording => 'Speeltijd vastleggen…';
-
-  @override
-  String get gamePhaseDone => 'Klaar';
 
   @override
   String gameInstallQueued(int position) {

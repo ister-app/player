@@ -43,9 +43,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get noLanguagesFound => 'No languages found.';
-
-  @override
   String get searchHint => 'Search for a language...';
 
   @override
@@ -212,9 +209,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get watchNext => 'Continue watching';
 
   @override
-  String get recentlyAddedShows => 'Recently added shows';
-
-  @override
   String season(int number) {
     return 'Season $number';
   }
@@ -260,14 +254,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageSettings => 'Language settings';
-
-  @override
-  String get loginTitle => 'Sign in';
-
-  @override
-  String loginDescription(Object serverName) {
-    return 'Sign in to access $serverName';
-  }
 
   @override
   String loginButton(Object serverName) {
@@ -332,9 +318,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nextUnplayedEpisode => 'Next unplayed episode';
 
   @override
-  String get switchServer => 'Switch server';
-
-  @override
   String get servers => 'Servers';
 
   @override
@@ -342,12 +325,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noSeason => 'No season';
-
-  @override
-  String get addServer => 'Add a server';
-
-  @override
-  String get noServersAdded => 'No servers added yet';
 
   @override
   String get noSeasonsFound => 'No seasons found';
@@ -407,9 +384,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sortOrderFailed => 'Could not change the sort order';
 
   @override
-  String get sortBy => 'Sort by';
-
-  @override
   String get sortByName => 'Name';
 
   @override
@@ -447,9 +421,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rate => 'Rate';
-
-  @override
-  String get yourRating => 'Your rating';
 
   @override
   String ratingValue(int value) {
@@ -744,9 +715,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noActiveSessions => 'No active playback sessions';
-
-  @override
-  String get queues => 'Queues';
 
   @override
   String queueDepth(int depth) {
@@ -1510,9 +1478,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get followersSheetTitle => 'Listening along';
-
-  @override
   String get followersNone => 'Nobody is listening along right now';
 
   @override
@@ -1848,12 +1813,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get downloadStatusDownloading => 'Downloading';
 
   @override
-  String get downloadStatusFailed => 'Failed';
-
-  @override
-  String get downloadStatusComplete => 'Downloaded';
-
-  @override
   String get pauseAllDownloads => 'Pause downloads';
 
   @override
@@ -1979,9 +1938,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openDownloads => 'Open downloads';
 
   @override
-  String get offlineMode => 'Offline';
-
-  @override
   String get playOffline => 'Play';
 
   @override
@@ -2000,11 +1956,6 @@ class AppLocalizationsEn extends AppLocalizations {
       zero: 'Nothing to sync',
     );
     return '$_temp0';
-  }
-
-  @override
-  String downloadsForServer(String server) {
-    return 'Downloads · $server';
   }
 
   @override
@@ -2044,9 +1995,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get musicCacheDisableBody =>
       'The cache will no longer be filled. The tracks already on this device can stay or be removed now.';
-
-  @override
-  String get cachedDownloads => 'Music cache';
 
   @override
   String get downloadNotificationTitle => 'Downloading';
@@ -2437,9 +2385,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get activityGroupOther => 'Other work';
-
-  @override
   String get nodeDetailsHint => 'Tap a node for its disks and details.';
 
   @override
@@ -2556,9 +2501,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get uploadLibrary => 'Library';
-
-  @override
-  String get uploadDirectory => 'Directory';
 
   @override
   String uploadDirectoryFree(String free, String node) {
@@ -2994,19 +2936,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'The game files on this device are deleted. Your saves stay on the server.';
 
   @override
-  String get gameExtracting => 'Unpacking…';
-
-  @override
-  String gameDownloadingProgress(
-    String done,
-    String total,
-    int filesDone,
-    int filesTotal,
-  ) {
-    return '$done of $total · $filesDone of $filesTotal files';
-  }
-
-  @override
   String gameInstallFailed(String error) {
     return 'Install failed: $error';
   }
@@ -3068,17 +2997,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gameSaveConflictTitle => 'Newer save on the server';
-
-  @override
-  String gameSaveConflictBody(int version, String device, String date) {
-    return 'Version $version was uploaded by $device ($date) after this device last synced, and your local save changed too. Which one do you want to play with?';
-  }
-
-  @override
-  String get gameSaveConflictKeepLocal => 'Keep mine';
-
-  @override
-  String get gameSaveConflictUseServer => 'Use the server\'s';
 
   @override
   String get gameSettings => 'Games';
@@ -3198,9 +3116,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gamePhaseRecording => 'Recording play time…';
-
-  @override
-  String get gamePhaseDone => 'Done';
 
   @override
   String gameInstallQueued(int position) {

@@ -37,7 +37,6 @@
   },
   "selectLanguage": "Select a Language",
   "error": "Error: {error}",
-  "noLanguagesFound": "No languages found.",
   "searchHint": "Search for a language...",
   "noLanguageFound": "No Language Found!",
   "addLanguage": "Add language",
@@ -248,10 +247,6 @@
   "@watchNext": {
     "description": "Text above recently watched media"
   },
-  "recentlyAddedShows": "Recently added shows",
-  "@recentlyAddedShows": {
-    "description": "Text above recently added shows"
-  },
   "season": "Season {number}",
   "@season": {
     "description": "Season with a number of the season after",
@@ -313,17 +308,6 @@
     "description": "Subtitle of the Server entry in the settings list"
   },
   "languageSettings": "Language settings",
-  "loginTitle": "Sign in",
-  "@loginTitle": {
-    "description": "Title on the login screen"
-  },
-  "loginDescription": "Sign in to access {serverName}",
-  "@loginDescription": {
-    "description": "Explanation text on the login screen",
-    "placeholders": {
-      "serverName": {}
-    }
-  },
   "loginButton": "Sign in with {serverName}",
   "@loginButton": {
     "description": "Label on the login button",
@@ -409,10 +393,6 @@
   "@nextUnplayedEpisode": {
     "description": "Header above the next unplayed episode of the podcast that just finished"
   },
-  "switchServer": "Switch server",
-  "@switchServer": {
-    "description": "Menu item to navigate back to the server list"
-  },
   "servers": "Servers",
   "@servers": {
     "description": "Title of the server list / home page"
@@ -424,14 +404,6 @@
   "noSeason": "No season",
   "@noSeason": {
     "description": "Shown when a season cannot be found"
-  },
-  "addServer": "Add a server",
-  "@addServer": {
-    "description": "Hint text in the add-server text field"
-  },
-  "noServersAdded": "No servers added yet",
-  "@noServersAdded": {
-    "description": "Shown when no servers have been added"
   },
   "noSeasonsFound": "No seasons found",
   "@noSeasonsFound": {
@@ -505,10 +477,6 @@
   "@sortOrderFailed": {
     "description": "Snackbar shown when saving the podcast episode sort order failed"
   },
-  "sortBy": "Sort by",
-  "@sortBy": {
-    "description": "Tooltip for the library grid sort menu button"
-  },
   "sortByName": "Name",
   "@sortByName": {
     "description": "Library sort field: item name; clicking again flips the direction"
@@ -560,10 +528,6 @@
   "rate": "Rate",
   "@rate": {
     "description": "Menu item / dialog title for setting a personal 1-10 rating on a media item"
-  },
-  "yourRating": "Your rating",
-  "@yourRating": {
-    "description": "Label shown above the star rating control on a detail page"
   },
   "ratingValue": "{value}/10",
   "@ratingValue": {
@@ -950,7 +914,6 @@
   },
   "nowPlaying": "Now playing",
   "noActiveSessions": "No active playback sessions",
-  "queues": "Queues",
   "queueDepth": "Depth {depth}",
   "@queueDepth": {
     "placeholders": {
@@ -1713,10 +1676,6 @@
       }
     }
   },
-  "followersSheetTitle": "Listening along",
-  "@followersSheetTitle": {
-    "description": "Title of the sheet listing the devices that listen along with your session, grouped per user"
-  },
   "followersNone": "Nobody is listening along right now",
   "@followersNone": {
     "description": "Empty state of the listeners sheet"
@@ -2043,8 +2002,6 @@
   "downloadNoSpace": "Not enough storage space",
   "downloadStatusQueued": "Queued",
   "downloadStatusDownloading": "Downloading",
-  "downloadStatusFailed": "Failed",
-  "downloadStatusComplete": "Downloaded",
   "pauseAllDownloads": "Pause downloads",
   "resumeAllDownloads": "Resume downloads",
   "clearAllDownloads": "Remove all downloads",
@@ -2121,7 +2078,6 @@
     }
   },
   "openDownloads": "Open downloads",
-  "offlineMode": "Offline",
   "playOffline": "Play",
   "cancel": "Cancel",
   "syncOfflineProgress": "Sync offline progress",
@@ -2131,14 +2087,6 @@
     "placeholders": {
       "count": {
         "type": "int"
-      }
-    }
-  },
-  "downloadsForServer": "Downloads · {server}",
-  "@downloadsForServer": {
-    "placeholders": {
-      "server": {
-        "type": "String"
       }
     }
   },
@@ -2154,7 +2102,6 @@
   "musicCacheDisableRemove": "Remove files",
   "musicCacheDisableTitle": "Keep the cached music?",
   "musicCacheDisableBody": "The cache will no longer be filled. The tracks already on this device can stay or be removed now.",
-  "cachedDownloads": "Music cache",
   "downloadNotificationTitle": "Downloading",
   "downloadNotificationText": "{count, plural, =1{1 download · {percent}%} other{{count} downloads · {percent}%}}",
   "@downloadNotificationText": {
@@ -2602,7 +2549,6 @@
   "activityStepUpload": "Uploading result to the owning node",
   "activityOnNode": "on {node}",
   "@activityOnNode": {"placeholders": {"node": {"type": "String"}}},
-  "activityGroupOther": "Other work",
   "nodeDetailsHint": "Tap a node for its disks and details.",
   "nodeStatus": "Status",
   "nodeOnline": "Online",
@@ -2683,10 +2629,6 @@
   },
   "uploadLibrary": "Library",
   "@uploadLibrary": {
-    "description": "Admin media upload page"
-  },
-  "uploadDirectory": "Directory",
-  "@uploadDirectory": {
     "description": "Admin media upload page"
   },
   "uploadDirectoryFree": "{free} free · {node}",
@@ -3237,20 +3179,6 @@
   "@gameUninstallConfirm": {
     "description": "Confirmation body for removing a local install"
   },
-  "gameExtracting": "Unpacking…",
-  "@gameExtracting": {
-    "description": "Install progress: archives are being extracted"
-  },
-  "gameDownloadingProgress": "{done} of {total} · {filesDone} of {filesTotal} files",
-  "@gameDownloadingProgress": {
-    "description": "Install progress line",
-    "placeholders": {
-      "done": {"type": "String"},
-      "total": {"type": "String"},
-      "filesDone": {"type": "int"},
-      "filesTotal": {"type": "int"}
-    }
-  },
   "gameInstallFailed": "Install failed: {error}",
   "@gameInstallFailed": {
     "description": "Install error line",
@@ -3323,23 +3251,6 @@
   "gameSaveConflictTitle": "Newer save on the server",
   "@gameSaveConflictTitle": {
     "description": "Dialog title for a save conflict"
-  },
-  "gameSaveConflictBody": "Version {version} was uploaded by {device} ({date}) after this device last synced, and your local save changed too. Which one do you want to play with?",
-  "@gameSaveConflictBody": {
-    "description": "Dialog body for a save conflict",
-    "placeholders": {
-      "version": {"type": "int"},
-      "device": {"type": "String"},
-      "date": {"type": "String"}
-    }
-  },
-  "gameSaveConflictKeepLocal": "Keep mine",
-  "@gameSaveConflictKeepLocal": {
-    "description": "Conflict choice: upload the local save as the new head"
-  },
-  "gameSaveConflictUseServer": "Use the server's",
-  "@gameSaveConflictUseServer": {
-    "description": "Conflict choice: download the server head"
   },
   "gameSettings": "Games",
   "@gameSettings": {
@@ -3501,10 +3412,6 @@
   },
   "gamePhaseRecording": "Recording play time…",
   "@gamePhaseRecording": {
-      "description": "Play step"
-  },
-  "gamePhaseDone": "Done",
-  "@gamePhaseDone": {
       "description": "Play step"
   },
   "gameInstallQueued": "Waiting to download ({position} in line)",

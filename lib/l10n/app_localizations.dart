@@ -152,12 +152,6 @@ abstract class AppLocalizations {
   /// **'Error: {error}'**
   String error(Object error);
 
-  /// No description provided for @noLanguagesFound.
-  ///
-  /// In en, this message translates to:
-  /// **'No languages found.'**
-  String get noLanguagesFound;
-
   /// No description provided for @searchHint.
   ///
   /// In en, this message translates to:
@@ -458,12 +452,6 @@ abstract class AppLocalizations {
   /// **'Continue watching'**
   String get watchNext;
 
-  /// Text above recently added shows
-  ///
-  /// In en, this message translates to:
-  /// **'Recently added shows'**
-  String get recentlyAddedShows;
-
   /// Season with a number of the season after
   ///
   /// In en, this message translates to:
@@ -541,18 +529,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Language settings'**
   String get languageSettings;
-
-  /// Title on the login screen
-  ///
-  /// In en, this message translates to:
-  /// **'Sign in'**
-  String get loginTitle;
-
-  /// Explanation text on the login screen
-  ///
-  /// In en, this message translates to:
-  /// **'Sign in to access {serverName}'**
-  String loginDescription(Object serverName);
 
   /// Label on the login button
   ///
@@ -662,12 +638,6 @@ abstract class AppLocalizations {
   /// **'Next unplayed episode'**
   String get nextUnplayedEpisode;
 
-  /// Menu item to navigate back to the server list
-  ///
-  /// In en, this message translates to:
-  /// **'Switch server'**
-  String get switchServer;
-
   /// Title of the server list / home page
   ///
   /// In en, this message translates to:
@@ -685,18 +655,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No season'**
   String get noSeason;
-
-  /// Hint text in the add-server text field
-  ///
-  /// In en, this message translates to:
-  /// **'Add a server'**
-  String get addServer;
-
-  /// Shown when no servers have been added
-  ///
-  /// In en, this message translates to:
-  /// **'No servers added yet'**
-  String get noServersAdded;
 
   /// Shown when a show has no seasons
   ///
@@ -806,12 +764,6 @@ abstract class AppLocalizations {
   /// **'Could not change the sort order'**
   String get sortOrderFailed;
 
-  /// Tooltip for the library grid sort menu button
-  ///
-  /// In en, this message translates to:
-  /// **'Sort by'**
-  String get sortBy;
-
   /// Library sort field: item name; clicking again flips the direction
   ///
   /// In en, this message translates to:
@@ -889,12 +841,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rate'**
   String get rate;
-
-  /// Label shown above the star rating control on a detail page
-  ///
-  /// In en, this message translates to:
-  /// **'Your rating'**
-  String get yourRating;
 
   /// Compact display of a 1-10 rating next to the stars
   ///
@@ -1327,12 +1273,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No active playback sessions'**
   String get noActiveSessions;
-
-  /// No description provided for @queues.
-  ///
-  /// In en, this message translates to:
-  /// **'Queues'**
-  String get queues;
 
   /// No description provided for @queueDepth.
   ///
@@ -2636,12 +2576,6 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 device listening along} other{{count} devices listening along}}'**
   String followersListening(int count);
 
-  /// Title of the sheet listing the devices that listen along with your session, grouped per user
-  ///
-  /// In en, this message translates to:
-  /// **'Listening along'**
-  String get followersSheetTitle;
-
   /// Empty state of the listeners sheet
   ///
   /// In en, this message translates to:
@@ -3176,18 +3110,6 @@ abstract class AppLocalizations {
   /// **'Downloading'**
   String get downloadStatusDownloading;
 
-  /// No description provided for @downloadStatusFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed'**
-  String get downloadStatusFailed;
-
-  /// No description provided for @downloadStatusComplete.
-  ///
-  /// In en, this message translates to:
-  /// **'Downloaded'**
-  String get downloadStatusComplete;
-
   /// No description provided for @pauseAllDownloads.
   ///
   /// In en, this message translates to:
@@ -3380,12 +3302,6 @@ abstract class AppLocalizations {
   /// **'Open downloads'**
   String get openDownloads;
 
-  /// No description provided for @offlineMode.
-  ///
-  /// In en, this message translates to:
-  /// **'Offline'**
-  String get offlineMode;
-
   /// No description provided for @playOffline.
   ///
   /// In en, this message translates to:
@@ -3409,12 +3325,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =0{Nothing to sync} =1{1 play synced} other{{count} plays synced}}'**
   String offlineProgressSynced(int count);
-
-  /// No description provided for @downloadsForServer.
-  ///
-  /// In en, this message translates to:
-  /// **'Downloads · {server}'**
-  String downloadsForServer(String server);
 
   /// No description provided for @musicCache.
   ///
@@ -3487,12 +3397,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The cache will no longer be filled. The tracks already on this device can stay or be removed now.'**
   String get musicCacheDisableBody;
-
-  /// No description provided for @cachedDownloads.
-  ///
-  /// In en, this message translates to:
-  /// **'Music cache'**
-  String get cachedDownloads;
 
   /// No description provided for @downloadNotificationTitle.
   ///
@@ -4112,12 +4016,6 @@ abstract class AppLocalizations {
   /// **'on {node}'**
   String activityOnNode(String node);
 
-  /// No description provided for @activityGroupOther.
-  ///
-  /// In en, this message translates to:
-  /// **'Other work'**
-  String get activityGroupOther;
-
   /// No description provided for @nodeDetailsHint.
   ///
   /// In en, this message translates to:
@@ -4321,12 +4219,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Library'**
   String get uploadLibrary;
-
-  /// Admin media upload page
-  ///
-  /// In en, this message translates to:
-  /// **'Directory'**
-  String get uploadDirectory;
 
   /// Admin media upload page
   ///
@@ -4982,23 +4874,6 @@ abstract class AppLocalizations {
   /// **'The game files on this device are deleted. Your saves stay on the server.'**
   String get gameUninstallConfirm;
 
-  /// Install progress: archives are being extracted
-  ///
-  /// In en, this message translates to:
-  /// **'Unpacking…'**
-  String get gameExtracting;
-
-  /// Install progress line
-  ///
-  /// In en, this message translates to:
-  /// **'{done} of {total} · {filesDone} of {filesTotal} files'**
-  String gameDownloadingProgress(
-    String done,
-    String total,
-    int filesDone,
-    int filesTotal,
-  );
-
   /// Install error line
   ///
   /// In en, this message translates to:
@@ -5076,24 +4951,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Newer save on the server'**
   String get gameSaveConflictTitle;
-
-  /// Dialog body for a save conflict
-  ///
-  /// In en, this message translates to:
-  /// **'Version {version} was uploaded by {device} ({date}) after this device last synced, and your local save changed too. Which one do you want to play with?'**
-  String gameSaveConflictBody(int version, String device, String date);
-
-  /// Conflict choice: upload the local save as the new head
-  ///
-  /// In en, this message translates to:
-  /// **'Keep mine'**
-  String get gameSaveConflictKeepLocal;
-
-  /// Conflict choice: download the server head
-  ///
-  /// In en, this message translates to:
-  /// **'Use the server\'s'**
-  String get gameSaveConflictUseServer;
 
   /// Settings entry: game installs, emulators and sync
   ///
@@ -5304,12 +5161,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Recording play time…'**
   String get gamePhaseRecording;
-
-  /// Play step
-  ///
-  /// In en, this message translates to:
-  /// **'Done'**
-  String get gamePhaseDone;
 
   /// Install state while another game installs first
   ///
