@@ -1,5 +1,55 @@
 # Changelog
 
+## player v2.18.0
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.18.0` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Features
+
+- feat(a11y): rate with the keyboard or a remote; downloads page never spins forever ([`8da992a`](https://github.com/ister-app/player/commit/8da992a))
+- feat(ui): a proper error state with retry instead of the raw exception ([`c1dca61`](https://github.com/ister-app/player/commit/c1dca61))
+- feat(a11y): label the icon-only buttons ([`a933f35`](https://github.com/ister-app/player/commit/a933f35))
+
+### Fixes
+
+- fix(linux): hardware video rendering under X11 and gamescope too ([`c492ed7`](https://github.com/ister-app/player/commit/c492ed7))
+- fix(log): keep ID-token claims and stream tokens out of the app log ([`9532140`](https://github.com/ister-app/player/commit/9532140))
+- fix(linux): hardware video rendering again under Flutter 3.50 ([`5945e28`](https://github.com/ister-app/player/commit/5945e28))
+- fix(search): a failed search no longer reads as "no results" ([`e721ee8`](https://github.com/ister-app/player/commit/e721ee8))
+- fix(security): keep server- and archive-supplied file names inside their folder ([`efdcda5`](https://github.com/ister-app/player/commit/efdcda5))
+- fix(ui): podcast paging freeze, stale search results, seek before duration ([`f17ca5d`](https://github.com/ister-app/player/commit/f17ca5d))
+- fix(reader): wrong page after a layout change, playback and leaks after closing ([`51af596`](https://github.com/ister-app/player/commit/51af596))
+- fix(downloads): stale entry write-back, blocked reading sync, epub cache drift ([`8b9e40f`](https://github.com/ister-app/player/commit/8b9e40f))
+- fix(games): make install resume and pause robust ([`da9a4a5`](https://github.com/ister-app/player/commit/da9a4a5))
+- fix(upload): keep a resumable upload through a server blip, fix a worker overrun ([`84d9242`](https://github.com/ister-app/player/commit/84d9242))
+- fix(games): never overwrite unsynced local saves with the server head ([`9b44d85`](https://github.com/ister-app/player/commit/9b44d85))
+- fix(playback): a stop during the play-queue round-trip cancels the start ([`4082847`](https://github.com/ister-app/player/commit/4082847))
+- fix(playback): fail the start when the play queue cannot be loaded ([`2601d71`](https://github.com/ister-app/player/commit/2601d71))
+- fix(playback): harden follow sync, empty queues, repeat-one and local paths ([`1dd6b6d`](https://github.com/ister-app/player/commit/1dd6b6d))
+- fix(games): pick a multi-file game's entry file deterministically ([`cc02600`](https://github.com/ister-app/player/commit/cc02600))
+- fix(games): never show 1000 of a unit in a size label ([`0d27962`](https://github.com/ister-app/player/commit/0d27962))
+- fix(metadata): prefer titles and descriptions in the UI language ([`c725f06`](https://github.com/ister-app/player/commit/c725f06))
+
+### Other
+
+- docs: note the query error view and the safe-path rule in CLAUDE.md ([`96de5d4`](https://github.com/ister-app/player/commit/96de5d4))
+- refactor(metadata): one field lookup instead of five try/catch copies ([`ac626b7`](https://github.com/ister-app/player/commit/ac626b7))
+- chore(l10n): drop 24 unused strings and translate the custom filter label ([`1038d94`](https://github.com/ister-app/player/commit/1038d94))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.18.0
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.17.1...v2.18.0
+
 ## player v2.17.1
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
