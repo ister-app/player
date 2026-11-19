@@ -137,6 +137,7 @@ class UploadProgressView extends StatelessWidget {
       UploadItemPhase.skipped => loc.uploadPhaseSkipped,
       UploadItemPhase.failed => item.error == null ? loc.uploadPhaseFailed : '${loc.uploadPhaseFailed} · ${item.error}',
     };
+    final retrying = item.isOpen || item.phase == UploadItemPhase.completing ? item.retrying : null;
     return ListTile(
       dense: true,
       leading: switch (item.phase) {
@@ -150,7 +151,13 @@ class UploadProgressView extends StatelessWidget {
             child: CircularProgressIndicator(strokeWidth: 3, value: size == 0 ? null : item.sentBytes / size)),
       },
       title: Text(item.state.relativePath, maxLines: 1, overflow: TextOverflow.ellipsis),
-      subtitle: Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis),
+      subtitle: retrying == null
+          ? Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis)
+          : Text('$subtitle\n${loc.uploadRetrying(retrying)}',
+              key: const ValueKey('upload-item-retrying'),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: theme.colorScheme.error)),
     );
   }
 }

@@ -212,6 +212,39 @@ void main() {
     expect(r.items.single.phase, UploadItemPhase.done);
   });
 
+  test('shows the error it is retrying after, and clears it once a chunk gets through', () async {
+    final a = _FakeFile('e01.mkv', 10);
+    final seen = <String?>[];
+    var hiccups = 0;
+    server.onChunk = (_, _) => ++hiccups <= 2 ? http.Response('{"detail":"Cannot stage e01.mkv"}', 503) : null;
+    final r = runner(
+        _session([(id: 'fa', path: a.relativePath, size: 10, chunk: 10, received: 0, parts: const [])]),
+        {a.relativePath: a});
+    r.addListener(() => seen.add(r.items.single.retrying));
+
+    await r.start();
+
+    expect(seen, contains('Cannot stage e01.mkv'));
+    expect(r.items.single.retrying, isNull);
+    expect(r.items.single.phase, UploadItemPhase.done);
+  });
+
+  test('a 409 without an offset (the server may not write there) fails at once with its message', () async {
+    final a = _FakeFile('e01.mkv', 10);
+    const message = 'The server has no permission to write /mnt2/.ister-upload (owned by root). '
+        'Fix the ownership or permissions of that folder on the server.';
+    server.onChunk = (_, _) => http.Response(jsonEncode({'status': 409, 'detail': message}), 409);
+    final r = runner(
+        _session([(id: 'fa', path: a.relativePath, size: 10, chunk: 10, received: 0, parts: const [])]),
+        {a.relativePath: a});
+
+    await r.start();
+
+    expect(r.items.single.phase, UploadItemPhase.failed);
+    expect(r.items.single.error, message);
+    expect(server.calls.where((c) => c.startsWith('chunk')).length, 1);
+  });
+
   test('fails a file on a refusal that retrying cannot fix, and can retry it later', () async {
     final a = _FakeFile('e01.mkv', 10);
     var refuse = true;

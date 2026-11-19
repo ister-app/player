@@ -2758,6 +2758,11 @@ class AppLocalizationsNl extends AppLocalizations {
   String get uploadPhaseFailed => 'Mislukt';
 
   @override
+  String uploadRetrying(String error) {
+    return 'Opnieuw proberen: $error';
+  }
+
+  @override
   String get nodeReadOnly => 'Alleen-lezen';
 
   @override

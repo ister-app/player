@@ -864,6 +864,7 @@
   "uploadPhaseDone": "Klaar",
   "uploadPhaseSkipped": "Overgeslagen, bestaat al",
   "uploadPhaseFailed": "Mislukt",
+  "uploadRetrying": "Opnieuw proberen: {error}",
   "nodeReadOnly": "Alleen-lezen",
   "videoVersionLabel": "Versie",
   "videoVersionPickTitle": "Kies een versie",

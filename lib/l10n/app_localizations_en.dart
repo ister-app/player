@@ -2746,6 +2746,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get uploadPhaseFailed => 'Failed';
 
   @override
+  String uploadRetrying(String error) {
+    return 'Retrying: $error';
+  }
+
+  @override
   String get nodeReadOnly => 'Read-only';
 
   @override

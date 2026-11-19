@@ -4574,6 +4574,12 @@ abstract class AppLocalizations {
   /// **'Failed'**
   String get uploadPhaseFailed;
 
+  /// Admin media upload page: a file whose chunks keep failing; error is the server's or the connection's message
+  ///
+  /// In en, this message translates to:
+  /// **'Retrying: {error}'**
+  String uploadRetrying(String error);
+
   /// Marks a disk on the node page the server cannot write to (so it takes no uploads)
   ///
   /// In en, this message translates to:

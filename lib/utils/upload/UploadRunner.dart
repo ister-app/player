@@ -36,6 +36,11 @@ class UploadItem {
   UploadItemPhase phase;
   String? error;
 
+  /// The error the runner is retrying after, while it still is: the server or
+  /// the connection keeps refusing, and a retry loop can take minutes before the
+  /// file fails. Null once a call got through.
+  String? retrying;
+
   bool get isOpen => phase == UploadItemPhase.queued || phase == UploadItemPhase.uploading;
 }
 
@@ -197,7 +202,7 @@ class UploadRunner extends ChangeNotifier {
       // One resync is enough: it happens when a response got lost, not in a loop.
       for (var pass = 0; pass < 2; pass++) {
         try {
-          final result = await _retrying(() => api.complete(nodeUrl, sessionId, item.state.fileId));
+          final result = await _retrying(item, () => api.complete(nodeUrl, sessionId, item.state.fileId));
           item
             ..sentBytes = item.state.size
             ..phase = result.status == 'SKIPPED' ? UploadItemPhase.skipped : UploadItemPhase.done;
@@ -244,7 +249,7 @@ class UploadRunner extends ChangeNotifier {
       if (!alreadyThere) {
         try {
           final at = offset;
-          final result = await _retrying(
+          final result = await _retrying(item,
               () => _chunks.send(nodeUrl, sessionId, item.state.fileId, offset: at, end: end, source: item.source!));
           item.received = result.receivedBytes;
           item.haveParts.add(part);
@@ -268,20 +273,35 @@ class UploadRunner extends ChangeNotifier {
 
   /// Retries what is worth retrying: transport errors, 5xx, and 429 (after
   /// the pause the server asked for). Everything else goes to the caller.
-  Future<T> _retrying<T>(Future<T> Function() call) async {
-    for (var attempt = 0;; attempt++) {
-      try {
-        return await call();
-      } on UploadApiException catch (e) {
-        if (!e.isTransient || attempt + 1 >= maxAttempts || _cancelled) rethrow;
-        await _sleep(e.retryAfter ?? _backoff(attempt));
-      } on Exception catch (e) {
-        // socket closed, timeout, DNS: the http client's own exception types
-        if (attempt + 1 >= maxAttempts || _cancelled) {
-          throw UploadApiException(0, e.toString());
+  Future<T> _retrying<T>(UploadItem item, Future<T> Function() call) async {
+    try {
+      for (var attempt = 0;; attempt++) {
+        try {
+          return await call();
+        } on UploadApiException catch (e) {
+          if (!e.isTransient || attempt + 1 >= maxAttempts || _cancelled) rethrow;
+          // A busy server is routine, not worth showing.
+          if (e.statusCode != 429) _showRetrying(item, e.message);
+          await _sleep(e.retryAfter ?? _backoff(attempt));
+        } on Exception catch (e) {
+          // socket closed, timeout, DNS: the http client's own exception types
+          if (attempt + 1 >= maxAttempts || _cancelled) {
+            throw UploadApiException(0, e.toString());
+          }
+          _showRetrying(item, e.toString());
+          await _sleep(_backoff(attempt));
         }
-        await _sleep(_backoff(attempt));
+      }
+    } finally {
+      if (item.retrying != null) {
+        item.retrying = null;
+        notifyListeners();
       }
     }
+  }
+
+  void _showRetrying(UploadItem item, String message) {
+    item.retrying = message;
+    notifyListeners();
   }
 }

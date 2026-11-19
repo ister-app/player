@@ -2916,6 +2916,15 @@
   "@uploadPhaseFailed": {
     "description": "Admin media upload page"
   },
+  "uploadRetrying": "Retrying: {error}",
+  "@uploadRetrying": {
+    "description": "Admin media upload page: a file whose chunks keep failing; error is the server's or the connection's message",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "nodeReadOnly": "Read-only",
   "@nodeReadOnly": {
     "description": "Marks a disk on the node page the server cannot write to (so it takes no uploads)"
