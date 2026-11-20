@@ -1,5 +1,33 @@
 # Changelog
 
+## player v2.18.1
+
+The web player ships as an image; the Android and Linux builds are attached to this release.
+
+| Platform | Where |
+|---|---|
+| Web | `ghcr.io/ister-app/player:2.18.1` |
+| Android | `app-release.apk` below |
+| Linux | `app.ister.Player.flatpak` below |
+
+### Fixes
+
+- fix(upload): show why a file is being retried instead of stalling silently ([`28dc8b2`](https://github.com/ister-app/player/commit/28dc8b2))
+
+### Other
+
+- ci: time out a hanging unit-test step and log each test ([`01087c1`](https://github.com/ister-app/player/commit/01087c1))
+- ci: fetch apt packages from the Azure mirror first ([`2039c84`](https://github.com/ister-app/player/commit/2039c84))
+- ci: drop the runner-wide apt upgrade from the build job ([`5dd1318`](https://github.com/ister-app/player/commit/5dd1318))
+
+### Run
+
+```sh
+docker pull ghcr.io/ister-app/player:2.18.1
+```
+
+**Full changelog**: https://github.com/ister-app/player/compare/v2.18.0...v2.18.1
+
 ## player v2.18.0
 
 The web player ships as an image; the Android and Linux builds are attached to this release.
