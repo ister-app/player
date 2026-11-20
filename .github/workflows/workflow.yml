@@ -86,19 +86,20 @@ jobs:
           java-version: 21
           distribution: 'zulu' # Alternative distribution options are available
 
+      # No `apt upgrade` of the whole runner image: it is not needed for the build, and on
+      # 2026-11-19 it hung this step for an hour twice in a row (the e2e job, which only
+      # installs, went through). The timeout turns a stuck mirror into a failure to re-run.
       - name: Install dependencies from Apt
+        timeout-minutes: 15
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo apt update -y && sudo apt upgrade -y;
-          
+          sudo apt-get update
           # These packages are listed in the setup instructions for Linux desktop. They may not all be necessary.
           # For reference: https://docs.flutter.dev/get-started/install/linux/desktop
-          sudo apt install -y curl git unzip xz-utils zip libglu1-mesa clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev
-
-      - name: Install mpv # for media_kit
-        run: sudo apt install -y libmpv-dev mpv
-
-      - name: Install libsecret # for OIDC
-        run: sudo apt install -y libsecret-1-0 libsecret-1-dev libjsoncpp26 libjsoncpp-dev
+          # mpv for media_kit, libsecret for OIDC.
+          sudo -E apt-get install -y curl git unzip xz-utils zip libglu1-mesa clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev \
+            libmpv-dev mpv libsecret-1-0 libsecret-1-dev libjsoncpp26 libjsoncpp-dev
 
       - name: Install Flutter
         # Running "flutter doctor" will download Flutter's dependencies
@@ -303,9 +304,12 @@ jobs:
           key: pub-${{ runner.os }}-${{ hashFiles('player/pubspec.lock') }}
 
       - name: Install dependencies from Apt
+        timeout-minutes: 15
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg zip curl git unzip xz-utils libglu1-mesa clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libmpv-dev mpv libsecret-1-0 libsecret-1-dev libjsoncpp26 libjsoncpp-dev xvfb dbus-x11 pulseaudio pipewire gdb imagemagick x11-utils
+          sudo -E apt-get install -y ffmpeg zip curl git unzip xz-utils libglu1-mesa clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libmpv-dev mpv libsecret-1-0 libsecret-1-dev libjsoncpp26 libjsoncpp-dev xvfb dbus-x11 pulseaudio pipewire gdb imagemagick x11-utils
 
       - uses: azure/setup-helm@v5
 
