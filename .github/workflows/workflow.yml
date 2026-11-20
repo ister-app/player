@@ -113,7 +113,10 @@ jobs:
         run: flutter pub get
 
       - name: Run tests
-        run: flutter test
+        # Normally ~5 min. A hang (2026-11-20: 3h50m, no log) must fail with
+        # a log that names the test, so: a timeout and one line per test.
+        timeout-minutes: 20
+        run: flutter test -r expanded
 
       - name: Build Linux
         run: flutter build linux --release
